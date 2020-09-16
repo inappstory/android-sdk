@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="2dp"
+    android:layout_width="120dp"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:id="@+id/container"
+        android:layout_height="120dp">
+        <View
+            android:layout_width="match_parent"
+            android:id="@+id/border"
+            android:background="@drawable/cs_story_border_square"
+            android:layout_height="match_parent"/>
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_margin="5dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="#FFF"
+            android:layout_height="match_parent">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="match_parent"
+                    android:id="@+id/image"
+                    android:scaleType="centerCrop"
+                    android:layout_height="match_parent" />
+                <View
+                    android:layout_width="match_parent"
+                    android:elevation="8dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/rounded_gradient_black" />
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="match_parent"
+                    android:id="@+id/title"
+                    android:elevation="9dp"
+                    android:textColor="#FFF"
+                    android:maxLines="3"
+                    android:textSize="10dp"
+                    android:ellipsize="end"
+                    android:text="test dasd asd as asdas as asd"
+                    android:layout_alignParentBottom="true"
+                    android:layout_margin="8dp"
+                    android:layout_height="wrap_content" />
+            </RelativeLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </RelativeLayout>
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_below="@id/container"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:id="@+id/source"
+        android:gravity="center"
+        android:layout_marginTop="4dp"
+        android:textColor="#000000"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="wrap_content" />
+</RelativeLayout>
