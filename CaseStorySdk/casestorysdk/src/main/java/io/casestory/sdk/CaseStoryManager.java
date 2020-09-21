@@ -1,8 +1,12 @@
 package io.casestory.sdk;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Build;
+import android.os.IBinder;
+import android.os.Messenger;
 import android.text.TextUtils;
 
 import androidx.core.content.ContextCompat;
@@ -42,6 +46,15 @@ public class CaseStoryManager {
     }
 
     ArrayList<String> tags;
+
+    public boolean closeOnOverscroll() {
+        return closeOnOverscroll;
+    }
+
+    public boolean closeOnSwipe() {
+        return closeOnSwipe;
+    }
+
     boolean closeOnOverscroll = true;
     boolean closeOnSwipe = true;
 
@@ -76,6 +89,24 @@ public class CaseStoryManager {
 
     Intent intent;
 
+    Messenger mService = null;
+
+    /** Flag indicating whether we have called bind on the service. */
+    boolean mBound;
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mService = new Messenger(service);
+            mBound = true;
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            mService = null;
+            mBound = false;
+        }
+    };
+
+
     private CaseStoryManager(Builder builder) {
 
         KeyValueStorage.setContext(builder.context);
@@ -95,14 +126,11 @@ public class CaseStoryManager {
                 builder.hasShare);
 
         if (intent != null) {
-            context.stopService(intent);
+            context.unbindService(mConnection);
+            mBound = false;
         }
         intent = new Intent(context, CaseStoryService.class);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
-            ContextCompat.startForegroundService(context, intent);
-        } else {
-            context.startService(intent);
-        }
+        context.startService(intent);
     }
 
     public void setUserId(String userId) throws DataException {

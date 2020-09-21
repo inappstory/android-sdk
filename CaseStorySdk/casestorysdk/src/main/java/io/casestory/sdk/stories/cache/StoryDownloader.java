@@ -72,6 +72,9 @@ public class StoryDownloader {
         for (Story story : stories) {
             if (!this.stories.contains(story))
                 this.stories.add(story);
+            else {
+                this.stories.set(this.stories.indexOf(story), story);
+            }
         }
     }
 
@@ -382,13 +385,14 @@ public class StoryDownloader {
 
     public StoryDownloader(Context context) {
         this.context = context;
+        thread = new HandlerThread("StoryContentDownloaderThread" + System.currentTimeMillis());
         thread.start();
         handler = new Handler(thread.getLooper());
         handler.postDelayed(queueStoryReadRunnable, 100);
         handler.postDelayed(queuePageReadRunnable, 100);
     }
 
-    private static HandlerThread thread = new HandlerThread("StoryContentDownloaderThread");
+    private static HandlerThread thread;
 
     public static void destroy() {
         handler.removeCallbacks(queueStoryReadRunnable);
@@ -406,7 +410,7 @@ public class StoryDownloader {
         final Future<File> ff = imageExecutor.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return Downloader.downVideo(context, url, FileType.Story_IMAGE, StoryId, Sizes.getScreenSize());
+                return Downloader.downVideo(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
             }
         });
         runnableExecutor.submit(new Runnable() {
@@ -428,7 +432,7 @@ public class StoryDownloader {
         final Future<File> ff = imageExecutor.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return Downloader.downAndCompressImg(context, url, FileType.Story_IMAGE, StoryId, Sizes.getScreenSize());
+                return Downloader.downAndCompressImg(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
             }
         });
         runnableExecutor.submit(new Runnable() {
@@ -521,7 +525,7 @@ public class StoryDownloader {
                 sync = true;
             } else {
                 sync = true;
-                for (int i = 0; i < storyTasks.size(); i++) {
+                for (Integer i : storyTasks.keySet()) {
                     if (storyTasks.get(i).loadType <= 1) sync = false;
                 }
             }
@@ -552,7 +556,7 @@ public class StoryDownloader {
                 sync = true;
             } else {
                 sync = true;
-                for (int i = 0; i < storyTasks.size(); i++) {
+                for (Integer i : storyTasks.keySet()) {
                     if (storyTasks.get(i).loadType <= 1) sync = false;
                 }
             }
@@ -738,7 +742,7 @@ public class StoryDownloader {
                                     Point size) throws IOException {
         FileCache cache = FileCache.INSTANCE;
 
-        File img = cache.getStoredFile(con, cropUrl(url), FileType.Story_IMAGE, sourceId, null);
+        File img = cache.getStoredFile(con, cropUrl(url), FileType.STORY_IMAGE, sourceId, null);
         if (img.exists()) {
             return img;
         }

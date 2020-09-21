@@ -13,15 +13,15 @@ public class StoryPageOpenEvent {
 
     public int index;
 
-    public int getNarrativeId() {
-        return narrativeId;
+    public int getStoryId() {
+        return storyId;
     }
 
-    public int narrativeId;
+    public int storyId;
 
     public StoryPageOpenEvent(int narrativeId, int index) {
         this.index = index;
-        this.narrativeId = narrativeId;
+        this.storyId = narrativeId;
     }
 
 

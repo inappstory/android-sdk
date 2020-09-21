@@ -1,5 +1,7 @@
 package io.casestory.sdk.stories.ui.list;
 
+import android.graphics.Bitmap;
+
 import java.util.List;
 
 import io.casestory.sdk.stories.api.models.Image;
@@ -14,6 +16,16 @@ public class FavoriteImage {
     }
 
     private int id;
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    private Bitmap bitmap;
 
     private List<Image> image;
     public String backgroundColor;

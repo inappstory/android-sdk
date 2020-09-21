@@ -7,6 +7,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.AppearanceManager;
+import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.stories.api.models.callbacks.GetListItem;
 import io.casestory.sdk.stories.utils.Sizes;
 
@@ -124,7 +126,88 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     }
 
     public void bindFavorite() {
+      /*  RelativeLayout imageViewLayout = new RelativeLayout(itemView.getContext());
+        imageViewLayout.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(120), Sizes.dpToPxExt(120)));
+        if (CaseStoryService.getInstance().favoriteImages.size() > 0) {
+            CoreImageView image1 = new CoreImageView(itemView.getContext());
+            CoreImageView image2 = new CoreImageView(itemView.getContext());
+            CoreImageView image3 = new CoreImageView(itemView.getContext());
+            CoreImageView image4 = new CoreImageView(itemView.getContext());
 
+            RelativeLayout.LayoutParams piece2;
+            RelativeLayout.LayoutParams piece3;
+            RelativeLayout.LayoutParams piece4;
+            switch (favImages.size()) {
+                case 1:
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                            RelativeLayout.LayoutParams.MATCH_PARENT));
+                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
+                    imageViewLayout.addView(image1);
+                    break;
+                case 2:
+                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            RelativeLayout.LayoutParams.MATCH_PARENT);
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            RelativeLayout.LayoutParams.MATCH_PARENT));
+                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    image2.setLayoutParams(piece2);
+                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
+                    image2.setImageUri(favImages.get(1).getImage().get(0).getUrl(), null);
+                    imageViewLayout.addView(image1);
+                    imageViewLayout.addView(image2);
+                    break;
+                case 3:
+                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            Sizes.dpToPxExt(60));
+                    piece3 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            Sizes.dpToPxExt(60));
+                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            RelativeLayout.LayoutParams.MATCH_PARENT));
+                    image2.setLayoutParams(piece2);
+                    image3.setLayoutParams(piece3);
+                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
+                    image2.setImageUri(favImages.get(1).getImage().get(0).getUrl(), null);
+                    image3.setImageUri(favImages.get(2).getImage().get(0).getUrl(), null);
+                    imageViewLayout.addView(image1);
+                    imageViewLayout.addView(image2);
+                    imageViewLayout.addView(image3);
+                    break;
+                default:
+
+                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            Sizes.dpToPxExt(60));
+                    piece3 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            Sizes.dpToPxExt(60));
+                    piece4 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            Sizes.dpToPxExt(60));
+
+                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+                    piece4.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                            RelativeLayout.LayoutParams.MATCH_PARENT));
+                    image2.setLayoutParams(piece2);
+                    image3.setLayoutParams(piece3);
+                    image4.setLayoutParams(piece4);
+                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
+                    image2.setImageUri(favImages.get(1).getImage().get(0).getUrl(), null);
+                    image3.setImageUri(favImages.get(2).getImage().get(0).getUrl(), null);
+                    image4.setImageUri(favImages.get(3).getImage().get(0).getUrl(), null);
+                    imageViewLayout.addView(image1);
+                    imageViewLayout.addView(image2);
+                    imageViewLayout.addView(image3);
+                    imageViewLayout.addView(image4);
+                    break;
+
+            }
+        } else {
+
+        }
+        return imageViewLayout;*/
     }
 
     public void bind(String titleText, String sourceText, String imageUrl, Integer backgroundColor) {

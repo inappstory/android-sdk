@@ -8,16 +8,16 @@ import android.util.Log;
 
 public class PrevStoryPageEvent {
 
-    public int getNarrativeIndex() {
-        return narrativeIndex;
+    public int getStoryIndex() {
+        return storyIndex;
     }
 
-    public PrevStoryPageEvent(int narrativeIndex)
+    public PrevStoryPageEvent(int storyIndex)
     {
         Log.d("Events", "prevNarrativePageEvent");
-        this.narrativeIndex = narrativeIndex;
+        this.storyIndex = storyIndex;
     }
 
-    int narrativeIndex;
+    int storyIndex;
 
 }

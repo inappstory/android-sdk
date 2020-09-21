@@ -41,6 +41,7 @@ import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.networkclient.ApiClient;
@@ -96,6 +97,7 @@ public class StoriesWebView extends WebView {
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
 
     public void loadStory(int id, int index) {
+        Log.e("loadStory", id + " " + index);
         if (loadedId == id && loadedIndex == index) return;
         if (CaseStoryManager.getInstance() == null)
             return;
@@ -135,6 +137,7 @@ public class StoriesWebView extends WebView {
                 isVideo = true;
                 setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, layout);
+                return;
             } else {
                 if (Build.VERSION.SDK_INT >= 19) {
                     setLayerType(View.LAYER_TYPE_NONE, null);
@@ -143,26 +146,31 @@ public class StoriesWebView extends WebView {
                     setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 }
                 WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, layout);
+
+                return;
             }
 
 
-            final String finalWebData = layout
+         /*   final String finalWebData = layout
                     .replace("//_ratio = 0.66666666666,", "")
                     .replace("{{%content}}", innerWebData);
-            new Handler().postDelayed(new Runnable() {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    EventBus.getDefault().post(new GeneratedWebPageEvent(finalWebData));
+                    EventBus.getDefault().post(new GeneratedWebPageEvent(finalWebData, storyId));
                 }
-            }, 200);
+            }, 200);*/
 
 
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void generatedWebPageEvent(GeneratedWebPageEvent event) {
-        loadDataWithBaseURL("", injectUnselectableStyle(event.getWebData()), "text/html; charset=utf-8", "UTF-8", null);
+        if (storyId != event.getStoryId()) return;
+        final String data = event.getWebData();
+        loadDataWithBaseURL("", injectUnselectableStyle(data), "text/html; charset=utf-8", "UTF-8", null);
+       //
     }
 
     public static String injectUnselectableStyle(String html) {
@@ -193,8 +201,9 @@ public class StoriesWebView extends WebView {
     boolean redirect = false;
 
     @Subscribe
-    public void changeNarrativePageEvent(StoryPageOpenEvent event) {
-
+    public void changeStoryPageEvent(StoryPageOpenEvent event) {
+        if (this.storyId != event.getStoryId()) return;
+        setCurrentItem(event.getIndex(), false);
     }
 
     @Subscribe
@@ -250,7 +259,18 @@ public class StoriesWebView extends WebView {
 
     public void resumeVideo() {
         //  if (!isVideo) return;
+
         loadUrl("javascript:(function(){narrative_slide_resume();})()");
+    }
+
+    @Override
+    public void loadUrl(final String url) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                StoriesWebView.super.loadUrl(url);
+            }
+        });
     }
 
     public void cancelDialog(String id) {
@@ -276,6 +296,11 @@ public class StoriesWebView extends WebView {
     ValueAnimator animationOut;
 
     public void destroyWebView() {
+        final Runtime runtime = Runtime.getRuntime();
+        final long usedMemInMB=(runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
+        final long maxHeapSizeInMB=runtime.maxMemory() / 1048576L;
+        final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
+        Log.e("destroyWebView", "destroyWebView" + usedMemInMB + " " + availHeapSizeInMB);
         loadedIndex = -1;
         loadedId = -1;
         removeAllViews();
@@ -450,6 +475,7 @@ public class StoriesWebView extends WebView {
          */
         @JavascriptInterface
         public void narrativeClick(String payload) {
+            Log.d("story_tap", "story_tap" + " " + index + " " + storyId);
             if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 400) {
                 return;
             }

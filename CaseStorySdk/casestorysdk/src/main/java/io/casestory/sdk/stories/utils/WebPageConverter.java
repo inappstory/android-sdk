@@ -19,7 +19,7 @@ import io.casestory.sdk.stories.cache.HtmlParser;
 import io.casestory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 
 public class WebPageConverter {
-    public static void replaceImagesAndLoad(String innerWebData, int storyId, String layout) {
+    public static void replaceImagesAndLoad(String innerWebData, final int storyId, String layout) {
         boolean exists = false;
         List<String> imgs = HtmlParser.getSrcUrls(innerWebData);
 
@@ -50,18 +50,12 @@ public class WebPageConverter {
             String webData = layout
                     .replace("//_ratio = 0.66666666666,", "")
                     .replace("{{%content}}", innerWebData);
-            final String fWebData = webData;
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    EventBus.getDefault().post(new GeneratedWebPageEvent(fWebData));
-                }
-            }, 50);
+            EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
             return;
         }
     }
 
-    public static void replaceVideoAndLoad(String innerWebData, int storyId, String layout) {
+    public static void replaceVideoAndLoad(String innerWebData, final int storyId, String layout) {
         boolean exists = false;
         List<String> imgs = HtmlParser.getSrcUrls(innerWebData);
         for (String img : imgs) {
@@ -89,13 +83,7 @@ public class WebPageConverter {
             String webData = layout
                     .replace("//_ratio = 0.66666666666,", "")
                     .replace("{{%content}}", innerWebData);
-            final String fWebData = webData;
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    EventBus.getDefault().post(new GeneratedWebPageEvent(fWebData));
-                }
-            }, 50);
+            EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
             return;
         }
     }

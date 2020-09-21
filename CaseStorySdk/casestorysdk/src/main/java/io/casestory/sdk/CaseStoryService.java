@@ -1,8 +1,5 @@
 package io.casestory.sdk;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -22,12 +19,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,14 +45,21 @@ import io.casestory.sdk.stories.cache.Downloader;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ContentLoadedEvent;
 import io.casestory.sdk.stories.events.ListVisibilityEvent;
-import io.casestory.sdk.stories.events.LoadFavNarratives;
+import io.casestory.sdk.stories.events.LoadFavStories;
 import io.casestory.sdk.stories.events.LoadNarrativesOnEmpty;
 import io.casestory.sdk.stories.events.LoadNarrativesOnError;
 import io.casestory.sdk.stories.events.NextStoryReaderEvent;
+import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
-import io.casestory.sdk.stories.events.ReloadStoriesManagerNarratives;
+import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
+import io.casestory.sdk.stories.serviceevents.ContentRenewPriorities;
+import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
+import io.casestory.sdk.stories.serviceevents.LikeDislikeEvent;
+import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import io.casestory.sdk.stories.ui.list.FavoriteImage;
 import io.casestory.sdk.stories.utils.Sizes;
+import okhttp3.ResponseBody;
 
 public class CaseStoryService extends Service {
 
@@ -128,12 +132,24 @@ public class CaseStoryService extends Service {
     private String getTags() {
         return CaseStoryManager.getInstance().getTagsString();
     }
+
     private String getTestKey() {
         return CaseStoryManager.getInstance().getTestKey();
     }
 
+    @Subscribe
+    public void contentRenewPriorities(ContentRenewPriorities event) {
+        try {
+            StoryDownloader.getInstance().renewPriorities(event.getIndex());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-    public List<Story> favNarratives = new ArrayList<>();
+    public List<Story> favStories = new ArrayList<>();
+    public List<FavoriteImage> favoriteImages = new ArrayList<>();
 
     RetrofitCallback reloadCallback = new RetrofitCallback<List<Story>>() {
 
@@ -200,18 +216,26 @@ public class CaseStoryService extends Service {
                         getApiKey()).enqueue(new RetrofitCallback<List<Story>>() {
                     @Override
                     public void onSuccess(List<Story> response2) {
-                        favNarratives.clear();
-                        favNarratives.addAll(response2);
-                        EventBus.getDefault().post(new LoadFavNarratives());
+                        favStories.clear();
+                        favStories.addAll(response2);
+                        favoriteImages.clear();
+                        EventBus.getDefault().post(new LoadFavStories());
                         if (response2 != null && response2.size() > 0) {
                             for (Story story : response2) {
+                                favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
+
+                            }
+                            for (final Story story : response2) {
+                                final int id = story.id;
                                 Glide.with(getApplicationContext())
                                         .asBitmap()
                                         .load(story.getImage().get(0).getUrl())
                                         .into(new CustomTarget<Bitmap>() {
                                             @Override
                                             public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-
+                                                for (FavoriteImage image : favoriteImages) {
+                                                    if (id == image.getId()) image.setBitmap(resource);
+                                                }
                                             }
 
                                             @Override
@@ -228,6 +252,14 @@ public class CaseStoryService extends Service {
                                 loadStoriesCallback.storiesLoaded(ids);
                             }
 
+                        } else {
+                            if (loadStoriesCallback != null) {
+                                List<Integer> ids = new ArrayList<>();
+                                for (Story story : response) {
+                                    ids.add(story.id);
+                                }
+                                loadStoriesCallback.storiesLoaded(ids);
+                            }
                         }
                     }
 
@@ -270,17 +302,177 @@ public class CaseStoryService extends Service {
     public boolean cubeAnimation = false;
 
     @Subscribe
-    public void nextNarrativeEvent(NextStoryReaderEvent event) {
+    public void nextStoryEvent(NextStoryReaderEvent event) {
         lastTapEventTime = System.currentTimeMillis() + 100;
         cubeAnimation = true;
     }
 
 
     @Subscribe
-    public void prevNarrativeEvent(PrevStoryReaderEvent event) {
+    public void prevStoryEvent(PrevStoryReaderEvent event) {
         lastTapEventTime = System.currentTimeMillis() + 100;
         cubeAnimation = true;
     }
+
+    public void closeStatisticEvent() {
+        closeStatisticEvent(null, false);
+    }
+
+    public class StatisticEvent {
+        public int eventType;
+        public int storyId;
+        public int index;
+        public long timer;
+
+        public StatisticEvent(int eventType, int storyId, int index) {
+            this.eventType = eventType;
+            this.storyId = storyId;
+            this.index = index;
+            this.timer = System.currentTimeMillis();
+        }
+
+        public StatisticEvent(int eventType, int storyId, int index, long timer) {
+            this.eventType = eventType;
+            this.storyId = storyId;
+            this.index = index;
+            this.timer = timer;
+        }
+    }
+
+    public StatisticEvent currentEvent;
+
+    private void addStatisticEvent(int eventType, int narrativeId, int index) {
+        currentEvent = new StatisticEvent(eventType, narrativeId, index);
+    }
+
+    private void addArticleStatisticEvent(int eventType, int articleId) {
+        currentEvent = new StatisticEvent(eventType, articleEventCount, articleId, articleTimer);
+    }
+
+
+    public int eventCount = 0;
+
+    public void addStatisticBlock(int narrativeId, int index) {
+        //if (currentEvent != null)
+        //Log.e("closeStatistic", "addStatisticBlock");
+        closeStatisticEvent();
+        addStatisticEvent(1, narrativeId, index);
+        eventCount++;
+    }
+
+    public int articleEventCount = 0;
+    public long articleTimer = 0;
+
+    public void addArticleOpenStatistic(int eventType, int articleId) {
+        articleEventCount = eventCount;
+        currentEvent.eventType = 2;
+        closeStatisticEvent();
+        eventCount++;
+        articleTimer = System.currentTimeMillis();
+        addArticleStatisticEvent(eventType, articleId);
+    }
+
+    public void addLinkOpenStatistic() {
+        currentEvent.eventType = 2;
+    }
+
+    public void addDeeplinkClickStatistic(int id) {
+        closeStatisticEvent();
+        eventCount++;
+        addStatisticEvent(1, id, 0);
+        closeStatisticEvent(0, false);
+        eventCount++;
+        addStatisticEvent(2, id, 0);
+        closeStatisticEvent(0, false);
+    }
+
+    public void addArticleCloseStatistic() {
+        closeStatisticEvent();
+        eventCount++;
+        addStatisticEvent(1, currentId, currentIndex);
+    }
+
+    public void resumeTimer() {
+        currentEvent.eventType = 1;
+        currentEvent.timer = System.currentTimeMillis();
+        pauseTime += System.currentTimeMillis() - startPauseTime;
+        startPauseTime = 0;
+        // Log.e("pauseTimer", Long.toString(pauseTime));
+    }
+
+
+    public long startPauseTime;
+
+
+    public long pauseTime = 0;
+
+    public void pauseTimer() {
+        startPauseTime = System.currentTimeMillis();
+        closeStatisticEvent(null, true);
+        sendStatistic();
+        eventCount++;
+        //  Log.e("startPauseTime", Long.toString(startPauseTime));
+    }
+
+    public void closeStatisticEvent(final Integer time, boolean clear) {
+        if (currentEvent != null) {
+
+
+            //if (isBackgroundPause)
+            //    resumeTimer();
+            statistic.add(new ArrayList<Object>() {{
+                add(currentEvent.eventType);
+                add(eventCount);
+                add(currentEvent.storyId);
+                add(currentEvent.index);
+                add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
+            }});
+            //if (isBackgroundPause)
+            //    pauseTimer();
+            if (!clear)
+                currentEvent = null;
+        }
+    }
+
+    public boolean isBackgroundPause = false;
+
+
+
+    @Subscribe
+    public void destroyFragmentEvent(DestroyStoriesFragmentEvent event) {
+        currentId = 0;
+        currentIndex = 0;
+        for (int i = 0; i < StoryDownloader.getInstance().getStories().size(); i++) {
+            StoryDownloader.getInstance().getStories().get(i).lastIndex = 0;
+        }
+    }
+
+    public void changeOuterIndex(int storyIndex) {
+
+    }
+
+    @Subscribe
+    public void pauseStoryEvent(PauseStoryReaderEvent event) {
+        try {
+            if (event.isWithBackground()) {
+                isBackgroundPause = true;
+                pauseTimer();
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    boolean backPaused = false;
+
+    @Subscribe
+    public void resumeNarrativeEvent(ResumeStoryReaderEvent event) {
+        if (event.isWithBackground()) {
+            isBackgroundPause = false;
+            resumeTimer();
+        }
+    }
+
 
     public boolean isConnected() {
         if (CaseStoryManager.getInstance().context == null) return false;
@@ -459,6 +651,73 @@ public class CaseStoryService extends Service {
         });
     }
 
+    public void likeDislikeClick(boolean isDislike, final int storyId) {
+        final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
+        final int val;
+        if (isDislike) {
+            if (story.disliked()) {
+                val = 0;
+            } else {
+                val = -1;
+            }
+        } else {
+            if (story.liked()) {
+                val = 0;
+            } else {
+                val = 1;
+            }
+        }
+        ApiClient.getFastApi().storyLike(Integer.toString(storyId),
+                StatisticSession.getInstance().id,
+                getApiKey(), val).enqueue(
+                new RetrofitCallback<ResponseBody>() {
+                    @Override
+                    public void onSuccess(ResponseBody response) {
+                        if (story != null)
+                            story.like = val;
+                        EventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
+                    }
+                });
+    }
+
+    public void favoriteClick(final int storyId) {
+        final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
+        final boolean val = story.favorite;
+        ApiClient.getFastApi().storyFavorite(Integer.toString(storyId),
+                StatisticSession.getInstance().id,
+                getApiKey(), val ? 0 : 1).enqueue(
+                new RetrofitCallback<ResponseBody>() {
+                    @Override
+                    public void onSuccess(ResponseBody response) {
+                        if (story != null)
+                            story.favorite = !val;
+                        EventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
+                    }
+                });
+
+    }
+
+    public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, int id) {
+        for (Story story : StoryDownloader.getInstance().getStories()) {
+            if (story.id == id && story.pages != null) {
+                storyByIdCallback.getStory(story);
+                return;
+            }
+        }
+        ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id,
+                getApiKey(), EXPAND_STRING
+        ).enqueue(new RetrofitCallback<Story>() {
+            @Override
+            public void onSuccess(final Story response) {
+                StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
+                    add(response);
+                }});
+                StoryDownloader.getInstance().setStory(response, response.id);
+                storyByIdCallback.getStory(response);
+            }
+        });
+    }
+
     private static final String EXPAND_STRING = "slides_html,layout,slides_duration";
 
     private String getApiKey() {
@@ -468,20 +727,31 @@ public class CaseStoryService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        statistic = new ArrayList<>();
         INSTANCE = this;
-        if (Build.VERSION.SDK_INT >= 26) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_DEFAULT);
-
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+        /*if (Build.VERSION.SDK_INT >= 26) {
+            final NotificationManager manager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("Stories service");
+            channel.setShowBadge(false);
+            manager.createNotificationChannel(channel);
 
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("")
-                    .setContentText("").build();
+                    .setContentTitle("123")
+                    .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+                    .setContentText("456")
+                    .setChannelId(CHANNEL_ID)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true).build();
 
             startForeground(NOTIFICATION_ID, notification);
-        }
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    manager.cancel(NOTIFICATION_ID);
+                }
+            }, 200);
+        }*/
     }
 
     public void onStart(Intent intent, int startId) {
@@ -497,7 +767,7 @@ public class CaseStoryService extends Service {
     @Override
     public int onStartCommand(Intent startIntent, int flags, int startId) {
         INSTANCE = this;
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     public int getCurrentId() {

@@ -164,7 +164,7 @@ public enum FileCache {
         File directory = context.getFilesDir();
         String uid = "";
         switch (type) {
-            case FileType.Story_IMAGE:
+            case FileType.STORY_IMAGE:
                 directory = new File(directory, File.separator + "Stories" + File.separator);
                 if (!directory.exists() || directory.listFiles() == null) return;
                 deleteRecursive(directory);
@@ -271,7 +271,7 @@ public enum FileCache {
     public File getStoredFile(Context context, String uri1, String type, Integer id, String ext) {
         String uri = Downloader.cropUrl(uri1);
         switch (type) {
-            case FileType.Story_IMAGE:
+            case FileType.STORY_IMAGE:
                 return getSavedStoryImage(context, uri, id, ext);
             case FileType.TEMP_FILE:
                 return getTempFile(context, uri, ext);

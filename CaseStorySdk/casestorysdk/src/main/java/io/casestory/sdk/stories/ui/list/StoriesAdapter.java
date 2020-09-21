@@ -1,5 +1,6 @@
 package io.casestory.sdk.stories.ui.list;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.casestory.casestorysdk.R;
@@ -19,16 +21,27 @@ import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
+import io.casestory.sdk.stories.ui.reader.StoriesActivity;
 
 public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     private List<Integer> storiesIds;
     private boolean isFavoriteList;
+    StoriesList.OnBindFavoriteItem bindFavoriteItem;
 
-    public StoriesAdapter(List<Integer> storiesIds, AppearanceManager manager, boolean isFavoriteList) {
+    public StoriesAdapter(List<Integer> storiesIds, AppearanceManager manager, StoriesList.OnBindFavoriteItem bindFavoriteItem, boolean isFavoriteList) {
         this.storiesIds = storiesIds;
         this.manager = manager;
+        this.bindFavoriteItem = bindFavoriteItem;
         this.isFavoriteList = isFavoriteList;
+        hasFavItem = CaseStoryService.getInstance().favoriteImages.size() > 0;
     }
+
+    public int getIndexById(int id) {
+        if (storiesIds == null) return -1;
+        return storiesIds.indexOf(id);
+    }
+
+    private boolean hasFavItem = false;
 
     AppearanceManager manager;
 
@@ -40,7 +53,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final StoryListItem holder, int position) {
+    public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
         if (holder.isFavorite) {
             holder.bindFavorite();
         } else {
@@ -58,8 +71,25 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 }
             }, storiesIds.get(position));
         }
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onItemClick(position);
+            }
+        });
     }
 
+    public void onItemClick(int index) {
+        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
+                StoryDownloader.getInstance().getStories().get(index).id);
+        Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
+        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent2.putExtra("index", index);
+        intent2.putIntegerArrayListExtra("stories_ids", new ArrayList<Integer>() {{
+            addAll(storiesIds);
+        }});
+        CaseStoryManager.getInstance().getContext().startActivity(intent2);
+    }
 
     @Override
     public int getItemViewType(int position) {
@@ -74,6 +104,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     @Override
     public int getItemCount() {
-        return storiesIds.size();
+        return storiesIds.size() + (hasFavItem ? 1 : 0);
     }
 }

@@ -15,6 +15,11 @@ public class EventBus {
     private final Map<Object, List<Class<?>>> typesBySubscriber;
     private final boolean eventInheritance;
 
+    private final MainThreadSupport mainThreadSupport;
+    // @Nullable
+    private final Poster mainThreadPoster;
+
+
     void invokeSubscriber(Subscription subscription, Object event) {
         try {
             subscription.subscriberMethod.method.invoke(subscription.subscriber, event);
@@ -49,13 +54,22 @@ public class EventBus {
         subscriptionsByEventType = new HashMap<>();
         typesBySubscriber = new HashMap<>();
         asyncManager = new AsyncManager(this);
+
+        mainThreadSupport = builder.getMainThreadSupport();
+        mainThreadPoster = mainThreadSupport != null ? mainThreadSupport.createPoster(this) : null;
         subscriberMethodFinder = new SubscriberMethodFinder(builder.strictMethodVerification);
         eventInheritance = builder.eventInheritance;
         executorService = builder.executorService;
     }
 
     private void postToSubscription(Subscription subscription, Object event) {
-        asyncManager.enqueue(subscription, event);
+        switch (subscription.subscriberMethod.threadMode) {
+            case MAIN:
+                mainThreadPoster.enqueue(subscription, event);
+                break;
+            default:
+                asyncManager.enqueue(subscription, event);
+        }
     }
 
     final static class PostingThreadState {

@@ -19,6 +19,9 @@ import java.util.List;
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.stories.events.NextStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
+import io.casestory.sdk.stories.storieslistenerevents.OnCompleteEvent;
+import io.casestory.sdk.stories.storieslistenerevents.OnNextEvent;
+import io.casestory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import io.casestory.sdk.stories.utils.Sizes;
 
 public class StoriesProgressView extends LinearLayout {
@@ -45,15 +48,6 @@ public class StoriesProgressView extends LinearLayout {
     boolean isComplete;
 
     public interface StoriesListener {
-        void onNext();
-
-        void onNextNarrative();
-
-        void onPrev();
-
-        void onPrevNarrative();
-
-        void onComplete();
 
         boolean webViewLoaded(int index);
     }
@@ -298,7 +292,7 @@ public class StoriesProgressView extends LinearLayout {
 
                 if (isReverse) {
                     isReverse = false;
-                    if (storiesListener != null) storiesListener.onPrev();
+                    EventBus.getDefault().post(new OnPrevEvent());
                     if (0 <= (current - 1)) {
                         PausableProgressBar p = progressBars.get(current - 1);
                         p.setMinWithoutCallback();
@@ -313,8 +307,7 @@ public class StoriesProgressView extends LinearLayout {
                 }
                 final int next = current + 1;
                 if (next <= (progressBars.size() - 1)) {
-                    if (storiesListener != null)
-                        storiesListener.onNext();
+                    EventBus.getDefault().post(new OnNextEvent());
                     if (progressBars.get(next).duration <= 1) {
                         current = next;
                     }
@@ -334,7 +327,7 @@ public class StoriesProgressView extends LinearLayout {
                     return false;
                 } else {
                     isComplete = true;
-                    if (storiesListener != null) storiesListener.onComplete();
+                    EventBus.getDefault().post(new OnCompleteEvent());
                     return true;
                 }
             }

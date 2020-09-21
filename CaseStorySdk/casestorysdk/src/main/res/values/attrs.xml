@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="StoriesReaderPager">
+
+        <attr name="cs_readerTransitionAnimation" format="dimension">
+            <enum name="cube" value="0" />
+            <enum name="depth" value="1" />
+        </attr>
+        <attr name="cs_readerCloseOnSwipe" format="boolean" />
+    </declare-styleable>
+</resources>

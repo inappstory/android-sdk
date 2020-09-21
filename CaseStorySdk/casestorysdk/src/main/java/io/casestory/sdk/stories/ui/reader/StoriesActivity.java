@@ -4,6 +4,9 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import java.util.ArrayList;
 
@@ -12,10 +15,18 @@ import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.stories.api.models.Story;
+import io.casestory.sdk.stories.cache.StoryDownloader;
+import io.casestory.sdk.stories.events.CloseStoriesReaderEvent;
 import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
+import io.casestory.sdk.stories.events.OpenStoriesScreenEvent;
+import io.casestory.sdk.stories.events.SwipeDownEvent;
+import io.casestory.sdk.stories.events.SwipeLeftEvent;
 import io.casestory.sdk.stories.events.SwipeRightEvent;
 import io.casestory.sdk.stories.events.WidgetTapEvent;
 import io.casestory.sdk.stories.utils.Sizes;
+import io.casestory.sdk.stories.utils.StatusBarController;
 
 public class StoriesActivity extends AppCompatActivity {
     @Override
@@ -54,10 +65,10 @@ public class StoriesActivity extends AppCompatActivity {
         if (CaseStoryManager.getInstance() == null) return;
         if (CaseStoryService.getInstance() == null) return;
         super.onCreate(savedInstanceState1);
-        setContentView(R.layout.activity_stories);
+        setContentView(R.layout.cs_activity_stories);
         final Bundle savedInstanceState = savedInstanceState1;
         try {
-            if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet(StoriesActivity.this)) {
+            if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
                 StatusBarController.hideStatusBar(StoriesActivity.this, true);
             }
         } catch (Exception e) {
@@ -79,7 +90,7 @@ public class StoriesActivity extends AppCompatActivity {
                 bundle.putBoolean("closeOnSwipe", getIntent().getBooleanExtra("closeOnSwipe", false));
                 bundle.putBoolean("onboarding", getIntent().getBooleanExtra("onboarding", false));
                 bundle.putInt("closePosition", getIntent().getIntExtra("closePosition", 1));
-                //bundle.putStringArrayList("content", getIntent().getStringArrayListExtra("contentLayouts"));
+                bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
             }
 
@@ -87,47 +98,48 @@ public class StoriesActivity extends AppCompatActivity {
             storiesFragment = (StoriesFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
 
-        FragmentController.openFragment(StoriesActivity.this, storiesFragment);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
+   //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
+        FragmentTransaction t = fragmentManager.beginTransaction()
+                .replace(R.id.fragments_layout, storiesFragment);
+        t.addToBackStack("STORIES_FRAGMENT");
+        t.commit();
+
+  //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
-    @Subscribe
-    public void closeNarrativeEvent(CloseNarrativeEvent event) {
-
-        //Log.e("closeStatistic", "closeNarrativeEvent");
-        StoriesManager.getInstance().closeStatisticEvent();
-        StoriesManager.getInstance().currentId = 0;
-        StoriesManager.getInstance().isBackgroundPause = false;
-        StoriesManager.getInstance().currentIndex = 0;
-        StoriesManager.getInstance().currentNarrativeFragment.storiesProgressView.current = 0;
-        ArrayList<Narrative> currentNarratives = (getIntent().getBooleanExtra("onboarding", false) ?
-                StoriesManager.getInstance().onboardNarratives : StoriesManager.getInstance().narratives);
-        for (Narrative narrative : currentNarratives) {
-            narrative.lastIndex = 0;
-        }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
+        CaseStoryService.getInstance().closeStatisticEvent();
+        CaseStoryService.getInstance().setCurrentIndex(0);
+        CaseStoryService.getInstance().setCurrentId(0);
+        CaseStoryService.getInstance().isBackgroundPause = false;
+        for (Story story : StoryDownloader.getInstance().getStories())
+            story.lastIndex = 0;
         finish();
     }
 
     @Subscribe
     public void swipeDownEvent(SwipeDownEvent event) {
-        if (getIntent().getBooleanExtra("closeOnSwipe", false) && StoriesManager.getInstance().closeOnSwipe) {
-            boolean isOnboarding = StoriesManager.getInstance().isOnboardingOpened;
+        if (getIntent().getBooleanExtra("closeOnSwipe", false)
+                && CaseStoryManager.getInstance().closeOnSwipe()) {
             finishActivityWithCustomAnimation(0, R.anim.popup_hide);
-            EventBus.getDefault().post(new CloseNarrativeEvent(isOnboarding));
+            EventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
 
     @Subscribe
     public void swipeLeftEvent(SwipeLeftEvent event) {
-        if (StoriesManager.getInstance().closeOnOverscroll) {
-            boolean isOnboarding = StoriesManager.getInstance().isOnboardingOpened;
+        if (CaseStoryManager.getInstance().closeOnOverscroll()) {
             finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
-            EventBus.getDefault().post(new CloseNarrativeEvent(isOnboarding));
+            EventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
 
     @Subscribe
     public void swipeRightEvent(SwipeRightEvent event) {
-        if (StoriesManager.getInstance().closeOnOverscroll) {
+        if (CaseStoryManager.getInstance().closeOnOverscroll()) {
             finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
             EventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }

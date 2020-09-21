@@ -4,11 +4,13 @@ import java.lang.reflect.Method;
 
 public class SubscriberMethod {
     final Method method;
+    final ThreadMode threadMode;
     final Class<?> eventType;
     String methodString;
 
-    public SubscriberMethod(Method method, Class<?> eventType) {
+    public SubscriberMethod(Method method, ThreadMode threadMode, Class<?> eventType) {
         this.method = method;
+        this.threadMode = threadMode;
         this.eventType = eventType;
     }
 

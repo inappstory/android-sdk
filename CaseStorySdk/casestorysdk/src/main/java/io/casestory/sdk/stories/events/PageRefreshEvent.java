@@ -5,13 +5,13 @@ package io.casestory.sdk.stories.events;
  */
 
 public class PageRefreshEvent {
-    public int getNarrativeId() {
-        return narrativeId;
+    public int getStoryId() {
+        return storyId;
     }
 
-    private int narrativeId;
+    private int storyId;
 
-    public PageRefreshEvent(int narrativeId) {
-        this.narrativeId = narrativeId;
+    public PageRefreshEvent(int storyId) {
+        this.storyId = storyId;
     }
 }
