@@ -24,13 +24,13 @@ import retrofit2.http.Query;
 
 public interface ApiInterface {
 
-    @GET("v1/narrative")
+    @GET("v2/story")
     Call<List<Story>> getStories(@Query("session_id") String sessionId,
                                  @Query("tags") String tags,
                                  @Query("test") String test,
                                  @Query("token") String token);
 
-    @GET("v1/narrative")
+    @GET("v2/story")
     Call<List<Story>> getStories(@Query("session_id") String sessionId,
                                  @Query("test") String test,
                                  @Query("favorite") Integer favorite,
@@ -38,37 +38,38 @@ public interface ApiInterface {
                                  @Query("fields") String fields,
                                  @Query("token") String token);
 
-    @GET("v1/narrative")
+    @GET("v2/story")
     Call<List<Story>> getStories(@Query("session_id") String sessionId,
                                  @Query("tags") String tags,
                                  @Query("favorite") Integer favorite,
                                  @Query("token") String token);
 
-    @GET("v1/narrative-popup")
+    @GET("v2/story-popup")
     Call<List<Story>> popupStories(@Query("session_id") String sessionId,
                                    @Query("tags") String tags,
                                    @Query("token") String token);
 
-    @GET("v1/narrative/{id}")
+    @GET("v2/story/{id}")
     Call<Story> getStoryById(@Path("id") String id,
                              @Query("session_id") String sessionId,
+                             @Query("src_list") Integer srcList,
                              @Query("token") String token,
                              @Query("expand") String expand
     );
 
     @FormUrlEncoded
-    @PUT("v1/narrative-data/{id}")
+    @PUT("v2/story-data/{id}")
     Call<ResponseBody> sendStoryData(@Path("id") String id,
                                      @Field("data") String data,
                                      @Query("session_id") String sessionId);
 
-    @POST("v1/narrative-like/{id}")
+    @POST("v2/story-like/{id}")
     Call<ResponseBody> storyLike(@Path("id") String id,
                                  @Query("session_id") String sessionId,
                                  @Query("token") String token,
                                  @Query("value") Integer value);
 
-    @POST("v1/narrative-favorite/{id}")
+    @POST("v2/story-favorite/{id}")
     Call<ResponseBody> storyFavorite(@Path("id") String id,
                                      @Query("session_id") String sessionId,
                                      @Query("token") String token,
@@ -76,7 +77,7 @@ public interface ApiInterface {
 
 
 
-    @GET("v1/narrative-share/{id}")
+    @GET("v2/story-share/{id}")
     Call<ShareObject> share(@Path("id") String id,
                             @Query("session_id") String sessionId,
                             @Query("token") String token,

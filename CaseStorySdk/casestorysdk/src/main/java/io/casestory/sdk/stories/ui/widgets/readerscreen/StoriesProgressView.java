@@ -100,6 +100,7 @@ public class StoriesProgressView extends LinearLayout {
     }
 
     public void setCurrentCounterAndRestart(int counter) {
+        Log.e("loadStory", "setCurrentCounterAndRestart");
         if (storiesCount <= 0) {
             current = counter;
             return;
@@ -219,6 +220,7 @@ public class StoriesProgressView extends LinearLayout {
     }
 
     public void same() {
+        Log.e("loadStory" , "same isComplete " + isComplete);
         if (isComplete) {
             return;
         }
@@ -302,11 +304,11 @@ public class StoriesProgressView extends LinearLayout {
                         if (storiesListener.webViewLoaded(current))
                             progressBars.get(current).startProgress();
                     }
-                    Log.d("onFinishProgress", Integer.toString(current));
                     return false;
                 }
                 final int next = current + 1;
                 if (next <= (progressBars.size() - 1)) {
+                    Log.e("loadStory", "onFinishProgress " + next);
                     EventBus.getDefault().post(new OnNextEvent());
                     if (progressBars.get(next).duration <= 1) {
                         current = next;
@@ -318,12 +320,9 @@ public class StoriesProgressView extends LinearLayout {
                         public void run() {
                             if (!storiesListener.webViewLoaded(next)) {
                                 progressBars.get(next).pauseProgress(false);
-                                Log.d("progressPaused", "paused");
                             }
                         }
                     });
-
-                    Log.d("onFinishProgress", Integer.toString(next));
                     return false;
                 } else {
                     isComplete = true;

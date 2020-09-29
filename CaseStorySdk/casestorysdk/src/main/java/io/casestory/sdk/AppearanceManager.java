@@ -2,7 +2,8 @@ package io.casestory.sdk;
 
 import android.graphics.Color;
 
-import io.casestory.sdk.stories.api.models.callbacks.GetListItem;
+import io.casestory.sdk.stories.ui.views.IGetFavoriteListItem;
+import io.casestory.sdk.stories.ui.views.IStoriesListItem;
 import io.casestory.sdk.stories.utils.Sizes;
 
 public class AppearanceManager {
@@ -27,7 +28,8 @@ public class AppearanceManager {
     private int csListItemBorderSize = Sizes.dpToPxExt(1);
     private int csListItemBorderColor = Color.BLACK;
 
-    private GetListItem csListItemInterface;
+    private IGetFavoriteListItem csFavoriteListItemInterface;
+    private IStoriesListItem csListItemInterface;
 
     private boolean csListReadedItemBorderVisibility = false;
     private int csListReadedItemBorderColor = Color.GRAY;
@@ -174,11 +176,20 @@ public class AppearanceManager {
     private int csClosePosition = TOP_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
     private int csStoryReaderAnimation = ANIMATION_CUBE;
 
-    public GetListItem csListItemInterface() {
+    public IGetFavoriteListItem csFavoriteListItemInterface() {
+        return csFavoriteListItemInterface;
+    }
+
+    public AppearanceManager csFavoriteListItemInterface(IGetFavoriteListItem csFavoriteListItemInterface) {
+        this.csFavoriteListItemInterface = csFavoriteListItemInterface;
+        return AppearanceManager.this;
+    }
+
+    public IStoriesListItem csListItemInterface() {
         return csListItemInterface;
     }
 
-    public AppearanceManager csListItemInterface(GetListItem csListItemInterface) {
+    public AppearanceManager csListItemInterface(IStoriesListItem csFavoriteListItemInterface) {
         this.csListItemInterface = csListItemInterface;
         return AppearanceManager.this;
     }

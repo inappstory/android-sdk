@@ -2,6 +2,7 @@ package io.casestory.sdk.stories.ui.widgets.readerscreen;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -107,6 +108,8 @@ final class PausableProgressBar extends FrameLayout {
             animation.setAnimationListener(null);
             animation.cancel();
             if (callback != null) {
+
+                Log.e("loadStory", "clearProgress");
                 callback.onFinishProgress(isDestroy);
             }
         }
@@ -126,6 +129,8 @@ final class PausableProgressBar extends FrameLayout {
 
         }
         if (callback != null) {
+
+            Log.e("loadStory", "finishProgress");
             callback.onFinishProgress();
         }
     }
@@ -155,6 +160,7 @@ final class PausableProgressBar extends FrameLayout {
             @Override
             public void onAnimationEnd(Animation animation) {
                 if (callback != null) {
+                    Log.e("loadStory", "onAnimationEnd");
                     if (callback.onFinishProgress()) {
                         EventBus.getDefault().post(new NextStoryReaderEvent());
                     } else {

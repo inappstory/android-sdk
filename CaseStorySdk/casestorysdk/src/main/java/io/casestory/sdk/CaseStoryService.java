@@ -222,19 +222,20 @@ public class CaseStoryService extends Service {
                         EventBus.getDefault().post(new LoadFavStories());
                         if (response2 != null && response2.size() > 0) {
                             for (Story story : response2) {
-                                favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
-
+                                if (favoriteImages.size() < 4)
+                                    favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                             }
-                            for (final Story story : response2) {
-                                final int id = story.id;
+                            for (final FavoriteImage favoriteImage : favoriteImages) {
+                                final int id = favoriteImage.getId();
                                 Glide.with(getApplicationContext())
                                         .asBitmap()
-                                        .load(story.getImage().get(0).getUrl())
+                                        .load(favoriteImage.getImage().get(0).getUrl())
                                         .into(new CustomTarget<Bitmap>() {
                                             @Override
                                             public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                                                 for (FavoriteImage image : favoriteImages) {
-                                                    if (id == image.getId()) image.setBitmap(resource);
+                                                    if (id == image.getId())
+                                                        image.setBitmap(resource);
                                                 }
                                             }
 
@@ -437,7 +438,6 @@ public class CaseStoryService extends Service {
     public boolean isBackgroundPause = false;
 
 
-
     @Subscribe
     public void destroyFragmentEvent(DestroyStoriesFragmentEvent event) {
         currentId = 0;
@@ -638,7 +638,7 @@ public class CaseStoryService extends Service {
                 return;
             }
         }
-        ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id,
+        ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
                 getApiKey(), EXPAND_STRING
         ).enqueue(new RetrofitCallback<Story>() {
             @Override
@@ -704,7 +704,7 @@ public class CaseStoryService extends Service {
                 return;
             }
         }
-        ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id,
+        ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id,1,
                 getApiKey(), EXPAND_STRING
         ).enqueue(new RetrofitCallback<Story>() {
             @Override
@@ -718,7 +718,7 @@ public class CaseStoryService extends Service {
         });
     }
 
-    private static final String EXPAND_STRING = "slides_html,layout,slides_duration";
+    public static final String EXPAND_STRING = "slides_html,layout,slides_duration,src_list";
 
     private String getApiKey() {
         return CaseStoryManager.getInstance().getApiKey();

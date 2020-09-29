@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,20 +62,25 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     View buttonsPanel;
     StoriesReaderPagerAdapter host;
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
+
         if (event.getCurItem() != storyId) return;
-        int curIndex = event.getIndex();
+        final int curIndex = event.getIndex();
+
         int index = storiesProgressView.current;
+
+        Log.e("loadStory", "SPFchangeIndexEvent " + event.getIndex());
         storiesProgressView.setActive(true);
         counter = curIndex;
-        storiesProgressView.setCurrentCounterAndRestart(curIndex);
-        storiesWebView.setCurrentItem(curIndex);
         storiesProgressView.clearAnimation(index);
+        storiesProgressView.setCurrentCounterAndRestart(curIndex);
+
+        storiesWebView.setCurrentItem(curIndex);
     }
 
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void refreshPageEvent(PageByIndexRefreshEvent event) {
         if (event.getStoryId() != storyId) return;
         refreshFragment();
@@ -117,22 +123,17 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void nextStoryPage(NextStoryPageEvent event) {
         final int ind = event.getStoryIndex();
         if (ind != storyId) return;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesProgressView.skip()) {
-                    EventBus.getDefault().post(new StoryTimerSkipEvent(storyId, ind));
-                }
-            }
-        });
+        if (storiesProgressView.skip()) {
+            EventBus.getDefault().post(new StoryTimerSkipEvent(storyId, ind));
+        }
 
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void storyPageLoadedEvent(StoryPageLoadedEvent event) {
         if (this.storyId != event.getNarrativeId()) return;
         final int ind = event.index;
@@ -153,61 +154,43 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 }
             }
         }, storyId);
-
-
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void prevStoryPage(PrevStoryPageEvent event) {
         final int ind = event.getStoryIndex();
         if (ind != storyId) return;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesProgressView.reverse()) {
-                    EventBus.getDefault().post(new StoryTimerReverseEvent(storyId, ind));
-                }
-            }
-        });
+        if (storiesProgressView.reverse()) {
+            EventBus.getDefault().post(new StoryTimerReverseEvent(storyId, ind));
+        }
     }
 
 
-    @Subscribe
-    public void resumeNarrativeEvent(ResumeStoryReaderEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (CaseStoryService.getInstance().getCurrentId() != storyId) return;
         final boolean isWithBackground = event.isWithBackground();
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                storiesProgressView.resumeWithoutRestart(isWithBackground);
-            }
-        });
+        storiesProgressView.resumeWithoutRestart(isWithBackground);
+
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void pauseStoryEvent(PauseStoryReaderEvent event) {
         if (CaseStoryService.getInstance().getCurrentId() != storyId) return;
         final boolean isWithBackground = event.isWithBackground();
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                storiesProgressView.pause(isWithBackground);
-            }
-        });
+        storiesProgressView.pause(isWithBackground);
+
     }
 
-    @Subscribe
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void pageByIdSelected(PageByIdSelectedEvent event) {
+        Log.e("PageByIdSelectedEvent", event.getStoryId() + " " + storyId);
         if (event.getStoryId() != storyId) return;
         Handler handler = new Handler(Looper.getMainLooper());
         if (event.isOnlyResume()) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
                     if (storiesProgressView != null)
                         storiesProgressView.resumeWithoutRestart(false);
-                }
-            });
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -231,6 +214,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             counter = ind;
             if (storiesWebView != null) {
                 CaseStoryService.getInstance().setCurrentIndex(ind);
+
+                Log.e("loadStory", "PageByIdSelectedEvent");
                 storiesWebView.setCurrentItem(ind);
                 storiesProgressView.setCurrentCounter(ind);
                 if (CaseStoryService.getInstance().isConnected()) {
@@ -242,7 +227,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void prevStoryFragment(PrevStoryFragmentEvent event) {
         if (storyId != event.getId()) return;
         storiesProgressView.same();
@@ -254,7 +239,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     public AppCompatImageView favorite;
     public AppCompatImageView share;
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void noConnectionEvent(NoConnectionEvent event) {
         storiesWebView.setVisibility(View.INVISIBLE);
         refresh.setVisibility(View.VISIBLE);
@@ -271,6 +256,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void likeSuccess(LikeDislikeEvent event) {
+        if (storyId != event.getId()) return;
         if (like != null) {
             like.setActivated(event.likeStatus == 1);
         }
@@ -279,7 +265,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void restartEvent(RestartStoryReaderEvent event) {
         if (storyId == event.getId() && storiesWebView.getCurrentItem() == event.getIndex()) {
             storiesProgressView.setSlideDuration(event.getIndex(), event.getNewDuration());
@@ -355,6 +341,9 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         refresh = view.findViewById(R.id.refresh);
         refresh.setVisibility(View.INVISIBLE);
         storyId = getArguments().getInt("story_id");
+
+        Log.e("PageByIdSelectedEvent", "created " + storyId);
+        EventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
         if (!Sizes.isTablet() && !CaseStoryManager.getInstance().hasLike() &&
                 !CaseStoryManager.getInstance().hasShare() &&
                 !CaseStoryManager.getInstance().hasFavorite()) {

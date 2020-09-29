@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.casestory.sdk.AppearanceManager;
@@ -20,10 +21,13 @@ import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.exceptions.DataException;
+import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeStoryEvent;
 import io.casestory.sdk.stories.events.OpenStoryByIdEvent;
+import io.casestory.sdk.stories.events.StoryFavEvent;
+import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
 
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
@@ -37,8 +41,8 @@ public class StoriesList extends RecyclerView {
         init();
     }
 
-    public interface OnBindFavoriteItem {
-        View getFavoriteCell(List<FavoriteImage> favoriteImages);
+    public interface OnFavoriteItemClick {
+        void onClick();
     }
 
     public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -57,12 +61,12 @@ public class StoriesList extends RecyclerView {
         this.appearanceManager = appearanceManager;
     }
 
-    public void setOnBindFavoriteItem(OnBindFavoriteItem bindFavoriteItem) {
-        this.bindFavoriteItem = bindFavoriteItem;
+    public void setOnFavoriteItemClick(OnFavoriteItemClick favoriteItemClick) {
+        this.favoriteItemClick = favoriteItemClick;
     }
 
     AppearanceManager appearanceManager;
-    OnBindFavoriteItem bindFavoriteItem;
+    OnFavoriteItemClick favoriteItemClick;
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void openStoryByIdEvent(OpenStoryByIdEvent event) {
@@ -74,6 +78,38 @@ public class StoriesList extends RecyclerView {
         if (layoutManager instanceof LinearLayoutManager) {
             int ind = adapter.getIndexById(event.getId());
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
+        }
+    }
+
+    boolean hasFavItem;
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void favItem(StoryFavoriteEvent event) {
+        if (CaseStoryService.getInstance().favoriteImages == null) CaseStoryService.getInstance().favoriteImages = new ArrayList<>();
+        List<FavoriteImage> favImages = CaseStoryService.getInstance().favoriteImages;
+        boolean isEmpty = favImages.isEmpty();
+        Story story = StoryDownloader.getInstance().getStoryById(event.getId());
+        if (event.favStatus) {
+            favImages.add(0, new FavoriteImage(Integer.valueOf(event.getId()), story.getImage(), story.getBackgroundColor()));
+        } else {
+            for (FavoriteImage favoriteImage : favImages) {
+                if (favoriteImage.getId() == Integer.valueOf(event.getId())) {
+                    favImages.remove(favoriteImage);
+                    break;
+                }
+            }
+        }
+        if (isEmpty && !favImages.isEmpty()) {
+            adapter.hasFavItem = (true && CaseStoryManager.getInstance().hasFavorite());
+           // adapter.refresh();
+            adapter.notifyDataSetChanged();
+        } else if (!isEmpty && favImages.isEmpty()) {
+            adapter.hasFavItem = false;
+            adapter.notifyDataSetChanged();
+           // adapter.refresh();
+        } else {
+            adapter.notifyItemChanged(getAdapter().getItemCount()-1);
+           // adapter.refresh();
         }
     }
 
@@ -89,7 +125,7 @@ public class StoriesList extends RecyclerView {
             CaseStoryService.getInstance().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
-                    adapter = new StoriesAdapter(storiesIds, appearanceManager, bindFavoriteItem,false);
+                    adapter = new StoriesAdapter(storiesIds, appearanceManager, favoriteItemClick,false);
                     setLayoutManager(layoutManager);
                     setAdapter(adapter);
                 }
@@ -102,7 +138,7 @@ public class StoriesList extends RecyclerView {
                     CaseStoryService.getInstance().loadStories(new LoadStoriesCallback() {
                         @Override
                         public void storiesLoaded(List<Integer> storiesIds) {
-                            adapter = new StoriesAdapter(storiesIds, appearanceManager, bindFavoriteItem,false);
+                            adapter = new StoriesAdapter(storiesIds, appearanceManager, favoriteItemClick,false);
                             setLayoutManager(layoutManager);
                             setAdapter(adapter);
                         }

@@ -37,6 +37,8 @@ import io.casestory.sdk.stories.api.networkclient.ApiClient;
 import io.casestory.sdk.stories.utils.Sizes;
 import okhttp3.Request;
 
+import static io.casestory.sdk.CaseStoryService.EXPAND_STRING;
+
 public class StoryDownloader {
     private static StoryDownloader INSTANCE;
 
@@ -205,9 +207,9 @@ public class StoryDownloader {
                 @Override
                 public Story call() throws Exception {
                     return ApiClient.getApi().getStoryById(Integer.toString(key),
-                            StatisticSession.getInstance().id,
+                            StatisticSession.getInstance().id,1,
                             CaseStoryManager.getInstance().getApiKey(),
-                            "slides_html,layout,slides_duration")
+                            EXPAND_STRING)
                             .execute().body();
                 }
             };
@@ -478,9 +480,9 @@ public class StoryDownloader {
                             if (storyTasks.get(stories.get(i).id) != null) continue;
                             Story storyResponse = ApiClient.getApi().getStoryById(Integer.toString(
                                     stories.get(i).id),
-                                    StatisticSession.getInstance().id,
+                                    StatisticSession.getInstance().id,1,
                                     CaseStoryManager.getInstance().getApiKey(),
-                                    "slides_html,layout,slides_duration")
+                                    EXPAND_STRING)
                                     .execute().body();
 
 

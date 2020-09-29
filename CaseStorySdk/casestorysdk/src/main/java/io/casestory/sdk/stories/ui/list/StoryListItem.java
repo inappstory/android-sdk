@@ -23,69 +23,40 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
-import java.util.Map;
+import java.util.List;
 
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.AppearanceManager;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.stories.api.models.callbacks.GetListItem;
+import io.casestory.sdk.stories.ui.views.IGetFavoriteListItem;
+import io.casestory.sdk.stories.ui.views.IStoriesListItem;
 import io.casestory.sdk.stories.utils.Sizes;
 
 public class StoryListItem extends RecyclerView.ViewHolder {
-    public AppCompatTextView getTitle() {
-        return title;
-    }
-
-    public AppCompatTextView getSource() {
-        return source;
-    }
-
-    public AppCompatImageView getImage() {
-        return image;
-    }
-
-    public static final String TITLE_ID = "title_id";
-    public static final String SOURCE_ID = "source_id";
-    public static final String IMAGE_ID = "image_id";
-    public static final String BORDER_ID = "border_id";
 
     AppCompatTextView title;
     AppCompatTextView source;
     AppCompatImageView image;
     View border;
-    GetListItem csListItemInterface;
+    AppearanceManager manager;
     boolean isFavorite;
+    IGetFavoriteListItem getFavoriteListItem;
+    IStoriesListItem getListItem;
 
     protected View getDefaultFavoriteCell() {
-        return new View(itemView.getContext());
+        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages) != null) {
+            return getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages);
+        }
+        View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
+        title = v.findViewById(R.id.title);
+        return v;
     }
 
-    protected View getDefaultCell(AppearanceManager manager, boolean isReaded) {
+    protected View getDefaultCell() {
 
-        View v = null;
-        if (csListItemInterface != null) {
-            Map<String, Integer> binds = csListItemInterface.getBinds();
-            v = isReaded ? csListItemInterface.getReadedItem() : csListItemInterface.getItem();
-            if (binds.get(TITLE_ID) != null) {
-                title = v.findViewById(binds.get(TITLE_ID));
-            } else {
-                title = v.findViewById(R.id.title);
-            }
-            if (binds.get(SOURCE_ID) != null) {
-                source = v.findViewById(binds.get(SOURCE_ID));
-            } else {
-                source = v.findViewById(R.id.source);
-            }
-            if (binds.get(IMAGE_ID) != null) {
-                image = v.findViewById(binds.get(IMAGE_ID));
-            } else {
-                image = v.findViewById(R.id.image);
-            }
-            if (binds.get(BORDER_ID) != null) {
-                border = v.findViewById(binds.get(BORDER_ID));
-            } else {
-                border = v.findViewById(R.id.border);
-            }
+        View v;
+        if (getListItem != null) {
+            v = getListItem.getView();
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
             title = v.findViewById(R.id.title);
@@ -98,24 +69,30 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             source.setTextColor(manager.csListItemSourceColor());
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
-            border.setVisibility(isReaded ? View.GONE : View.VISIBLE);
         }
         return v;
     }
 
+    View v0;
+
+    public boolean isReaded;
+
     public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isReaded, boolean isFavorite) {
         super(itemView);
+        this.manager = manager;
         this.isFavorite = isFavorite;
+        this.isReaded = isReaded;
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
         vg.removeAllViews();
-        csListItemInterface = manager.csListItemInterface();
-        View v = null;
+        getFavoriteListItem = manager.csFavoriteListItemInterface();
+        getListItem = manager.csListItemInterface();
+
         if (isFavorite) {
-            v = getDefaultFavoriteCell();
+            vg.addView(getDefaultFavoriteCell());
         } else {
-            v = getDefaultCell(manager, isReaded);
+            v0 = getDefaultCell();
+            vg.addView(v0);
         }
-        vg.addView(v);
         if (manager.csListItemMargin() > 0) {
             RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
             lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin() / 2), Sizes.dpToPxExt(2),
@@ -125,14 +102,35 @@ public class StoryListItem extends RecyclerView.ViewHolder {
 
     }
 
+    private void setImageWithGlide(AppCompatImageView imageView, String url) {
+        RequestOptions emptyOptions = new RequestOptions().centerCrop();
+        Glide.with(imageView).load(Uri.parse(url)).listener(new RequestListener<Drawable>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                return false;
+            }
+        })
+                .skipMemoryCache(true)
+                .centerCrop()
+                .apply(emptyOptions)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).into(imageView);
+    }
+
     public void bindFavorite() {
-      /*  RelativeLayout imageViewLayout = new RelativeLayout(itemView.getContext());
-        imageViewLayout.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(120), Sizes.dpToPxExt(120)));
-        if (CaseStoryService.getInstance().favoriteImages.size() > 0) {
-            CoreImageView image1 = new CoreImageView(itemView.getContext());
-            CoreImageView image2 = new CoreImageView(itemView.getContext());
-            CoreImageView image3 = new CoreImageView(itemView.getContext());
-            CoreImageView image4 = new CoreImageView(itemView.getContext());
+        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages) != null) return;
+        RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
+        title.setText("Favorites");
+        List<FavoriteImage> favImages = CaseStoryService.getInstance().favoriteImages;
+        if (favImages.size() > 0) {
+            AppCompatImageView image1 = new AppCompatImageView(itemView.getContext());
+            AppCompatImageView image2 = new AppCompatImageView(itemView.getContext());
+            AppCompatImageView image3 = new AppCompatImageView(itemView.getContext());
+            AppCompatImageView image4 = new AppCompatImageView(itemView.getContext());
 
             RelativeLayout.LayoutParams piece2;
             RelativeLayout.LayoutParams piece3;
@@ -141,7 +139,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 case 1:
                     image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
-                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
+                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     break;
                 case 2:
@@ -151,8 +149,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     image2.setLayoutParams(piece2);
-                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
-                    image2.setImageUri(favImages.get(1).getImage().get(0).getUrl(), null);
+
+                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImageWithGlide(image2, favImages.get(1).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     break;
@@ -168,9 +167,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
-                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
-                    image2.setImageUri(favImages.get(1).getImage().get(0).getUrl(), null);
-                    image3.setImageUri(favImages.get(2).getImage().get(0).getUrl(), null);
+                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImageWithGlide(image2, favImages.get(1).getImage().get(0).getUrl());
+                    setImageWithGlide(image3, favImages.get(2).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     imageViewLayout.addView(image3);
@@ -193,10 +192,10 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
                     image4.setLayoutParams(piece4);
-                    image1.setImageUri(favImages.get(0).getImage().get(0).getUrl(), null);
-                    image2.setImageUri(favImages.get(1).getImage().get(0).getUrl(), null);
-                    image3.setImageUri(favImages.get(2).getImage().get(0).getUrl(), null);
-                    image4.setImageUri(favImages.get(3).getImage().get(0).getUrl(), null);
+                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImageWithGlide(image2, favImages.get(1).getImage().get(0).getUrl());
+                    setImageWithGlide(image3, favImages.get(2).getImage().get(0).getUrl());
+                    setImageWithGlide(image4, favImages.get(3).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     imageViewLayout.addView(image3);
@@ -204,19 +203,25 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     break;
 
             }
-        } else {
-
         }
-        return imageViewLayout;*/
     }
 
-    public void bind(String titleText, String sourceText, String imageUrl, Integer backgroundColor) {
+    public void bind(String titleText, String sourceText, String imageUrl, Integer backgroundColor, boolean isReaded) {
+        if (getListItem != null) {
+            getListItem.setTitle(itemView, titleText);
+            getListItem.setSource(itemView, sourceText);
+            getListItem.setImage(itemView, imageUrl, backgroundColor);
+            getListItem.setReaded(itemView, isReaded);
+            return;
+        }
         if (title != null) {
             title.setText(titleText);
         }
         if (source != null) {
             source.setText(sourceText);
         }
+
+        border.setVisibility(isReaded ? View.GONE : View.VISIBLE);
         if (image != null) {
             if (imageUrl != null) {
                 RequestOptions emptyOptions = new RequestOptions().centerCrop();

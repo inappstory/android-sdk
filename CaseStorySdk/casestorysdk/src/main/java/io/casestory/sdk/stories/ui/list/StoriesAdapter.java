@@ -26,12 +26,15 @@ import io.casestory.sdk.stories.ui.reader.StoriesActivity;
 public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     private List<Integer> storiesIds;
     private boolean isFavoriteList;
-    StoriesList.OnBindFavoriteItem bindFavoriteItem;
+    StoriesList.OnFavoriteItemClick favoriteItemClick;
 
-    public StoriesAdapter(List<Integer> storiesIds, AppearanceManager manager, StoriesList.OnBindFavoriteItem bindFavoriteItem, boolean isFavoriteList) {
+    boolean hasFavItem = false;
+
+    public StoriesAdapter(List<Integer> storiesIds, AppearanceManager manager,
+                          StoriesList.OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList) {
         this.storiesIds = storiesIds;
         this.manager = manager;
-        this.bindFavoriteItem = bindFavoriteItem;
+        this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
         hasFavItem = CaseStoryService.getInstance().favoriteImages.size() > 0;
     }
@@ -41,7 +44,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         return storiesIds.indexOf(id);
     }
 
-    private boolean hasFavItem = false;
 
     AppearanceManager manager;
 
@@ -56,6 +58,14 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
         if (holder.isFavorite) {
             holder.bindFavorite();
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (favoriteItemClick != null) {
+                        favoriteItemClick.onClick();
+                    }
+                }
+            });
         } else {
             CaseStoryService.getInstance().getStoryById(new GetStoryByIdCallback() {
                 @Override
@@ -65,18 +75,19 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         public void run() {
                             holder.bind(story.getTitle(), story.getSource(),
                                     (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
-                                    Color.parseColor(story.getBackgroundColor()));
+                                    Color.parseColor(story.getBackgroundColor()), holder.isReaded);
                         }
                     });
                 }
             }, storiesIds.get(position));
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClick(position);
+                }
+            });
         }
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onItemClick(position);
-            }
-        });
+
     }
 
     public void onItemClick(int index) {

@@ -23,7 +23,6 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -97,7 +96,7 @@ public class StoriesWebView extends WebView {
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
 
     public void loadStory(int id, int index) {
-        Log.e("loadStory", id + " " + index);
+        Log.e("loadStory", id + " " + index + " " + loadedId + " " + loadedIndex);
         if (loadedId == id && loadedIndex == index) return;
         if (CaseStoryManager.getInstance() == null)
             return;
@@ -168,6 +167,7 @@ public class StoriesWebView extends WebView {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void generatedWebPageEvent(GeneratedWebPageEvent event) {
         if (storyId != event.getStoryId()) return;
+        Log.e("loadStory",  "injectUnselectableStyle " + index + " " + storyId);
         final String data = event.getWebData();
         loadDataWithBaseURL("", injectUnselectableStyle(data), "text/html; charset=utf-8", "UTF-8", null);
        //
@@ -190,10 +190,12 @@ public class StoriesWebView extends WebView {
     }
 
     public void setCurrentItem(int index, boolean withAnimation) {
+        Log.e("loadStory", "setCurrentItemWA");
         loadStory(this.storyId, index);
     }
 
     public void setCurrentItem(int index) {
+        Log.e("loadStory", "setCurrentItem");
         loadStory(this.storyId, index);
     }
 
@@ -203,12 +205,13 @@ public class StoriesWebView extends WebView {
     @Subscribe
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         if (this.storyId != event.getStoryId()) return;
+        Log.e("loadStory", "changeStoryPageEvent");
         setCurrentItem(event.getIndex(), false);
     }
 
     @Subscribe
-    public void changeNarrativeEvent(StoryOpenEvent event) {
-        if (event.getNarrativeId() != storyId)
+    public void changeStoryEvent(StoryOpenEvent event) {
+        if (event.getStoryId() != storyId)
             stopVideo();
         else {
             playVideo();
@@ -242,25 +245,25 @@ public class StoriesWebView extends WebView {
 
     public void playVideo() {
         // if (!isVideo) return;
-        loadUrl("javascript:(function(){narrative_slide_start();})()");
+        loadUrl("javascript:(function(){story_slide_start();})()");
     }
 
     public void pauseVideo() {
         // if (!isVideo) return;
-        loadUrl("javascript:(function(){narrative_slide_pause();})()");
+        loadUrl("javascript:(function(){story_slide_pause();})()");
     }
 
     public void stopVideo() {
         // if (!isVideo) return;
         //loadUrl("javascript:(function(){window.Android.defaultTap('test');})()");
-        loadUrl("javascript:(function(){narrative_slide_stop();})()");
+        loadUrl("javascript:(function(){story_slide_stop();})()");
 
     }
 
     public void resumeVideo() {
         //  if (!isVideo) return;
 
-        loadUrl("javascript:(function(){narrative_slide_resume();})()");
+        loadUrl("javascript:(function(){story_slide_resume();})()");
     }
 
     @Override
@@ -274,12 +277,12 @@ public class StoriesWebView extends WebView {
     }
 
     public void cancelDialog(String id) {
-        loadUrl("javascript:(function(){narrative_send_text_input_result(\"" + id + "\", \"\");})()");
+        loadUrl("javascript:(function(){story_send_text_input_result(\"" + id + "\", \"\");})()");
     }
 
     public void sendDialog(String id, String data) {
         data = data.replaceAll("\n", "<br>");
-        loadUrl("javascript:narrative_send_text_input_result(\"" + id + "\", \"" + data + "\")");
+        loadUrl("javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")");
     }
 
     public StoriesWebView(Context context) {
@@ -474,7 +477,7 @@ public class StoriesWebView extends WebView {
          * Show a toast from the web page
          */
         @JavascriptInterface
-        public void narrativeClick(String payload) {
+        public void storyClick(String payload) {
             Log.d("story_tap", "story_tap" + " " + index + " " + storyId);
             if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 400) {
                 return;
@@ -498,25 +501,26 @@ public class StoriesWebView extends WebView {
         }
 
         @JavascriptInterface
-        public void narrativeShowSlide(int index) {
-            Log.d("quiz", "narrativeShowSlide" + " " + index);
+        public void storyShowSlide(int index) {
+            Log.d("loadStory", "storyShowNextSlideIndex " + index);
             if (StoriesWebView.this.index != index) {
                 EventBus.getDefault().post(new ChangeIndexEvent(index));
             }
         }
 
         @JavascriptInterface
-        public void narrativeShowNextSlide(long delay) {
-            Log.d("quiz", "narrativeShowNextSlide" + " " + delay);
+        public void storyShowNextSlide(long delay) {
+            Log.d("quiz", "storyShowNextSlide" + " " + delay);
             if (delay != 0) {
                 EventBus.getDefault().post(new RestartStoryReaderEvent(StoriesWebView.this.storyId, StoriesWebView.this.index, delay));
             } else {
+                Log.d("loadStory", "storyShowNextSlide " + (StoriesWebView.this.index + 1));
                 EventBus.getDefault().post(new ChangeIndexEvent(StoriesWebView.this.index + 1));
             }
         }
 
         @JavascriptInterface
-        public void narrativeShowTextInput(String id, String data) {
+        public void storyShowTextInput(String id, String data) {
             ContactDialog alert = new ContactDialog(storyId, id, data,
                     new ContactDialog.SendListener() {
                         @Override
@@ -544,7 +548,7 @@ public class StoriesWebView extends WebView {
         }
 
         @JavascriptInterface
-        public void narrativeFreezeUI() {
+        public void storyFreezeUI() {
             touchSlider = true;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
@@ -553,9 +557,9 @@ public class StoriesWebView extends WebView {
 
 
         @JavascriptInterface
-        public void narrativeSendData(String data) {
+        public void storySendData(String data) {
 
-            Log.d("quiz", "narrativeSendData" + " " + data);
+            Log.d("quiz", "storySendData" + " " + data);
             ApiClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                     .enqueue(new RetrofitCallback<ResponseBody>() {
                         @Override
@@ -566,10 +570,10 @@ public class StoriesWebView extends WebView {
         }
 
         @JavascriptInterface
-        public void narrativeSetLocalData(String data, boolean sendToServer) {
+        public void storySetLocalData(String data, boolean sendToServer) {
 
-            Log.d("quiz", "narrativeSetLocalData" + " " + data + " " + sendToServer);
-            KeyValueStorage.saveString("narrative" + storyId
+            Log.d("quiz", "storySetLocalData" + " " + data + " " + sendToServer);
+            KeyValueStorage.saveString("story" + storyId
                     + "__" + CaseStoryManager.getInstance().getUserId(), data);
 
             if (sendToServer) {
@@ -585,9 +589,9 @@ public class StoriesWebView extends WebView {
 
 
         @JavascriptInterface
-        public String narrativeGetLocalData() {
-            Log.d("quiz", "narrativeGetLocalData");
-            String res = KeyValueStorage.getString("narrative" + storyId
+        public String storyGetLocalData() {
+            Log.d("quiz", "storyGetLocalData");
+            String res = KeyValueStorage.getString("story" + storyId
                     + "__" + CaseStoryManager.getInstance().getUserId());
             return res == null ? "" : res;
         }

@@ -220,14 +220,16 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                     StoryDownloader.getInstance().findItemByStoryId(currentIds.get(position)).lastIndex);
             EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(position), position));
         }
-        EventBus.getDefault().post(new PageSelectedEvent(position));
-        if (position > 0) {
-            EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(position - 1), true));
+        final int pos = position;
+
+        EventBus.getDefault().post(new PageSelectedEvent(pos));
+        EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos), false));
+        if (pos > 0) {
+            EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos - 1), true));
         }
-        if (position < currentIds.size() - 1) {
-            EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(position + 1), true));
+        if (pos < currentIds.size() - 1) {
+            EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos + 1), true));
         }
-        EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(position), false));
     }
 
 
@@ -236,6 +238,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
     int currentIndex = 0;
+
 
     @Override
     public void onPageScrollStateChanged(int state) {
@@ -249,6 +252,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                     }
                 }, 50);
             }
+
         }
         currentIndex = getCurIndexById(CaseStoryService.getInstance().getCurrentId());
 
@@ -331,33 +335,39 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void setCurrentIndexEvent(ChangeIndexEvent event) {
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
             StoryDownloader.getInstance().findItemByStoryId(currentIds.get(curItem)).lastIndex = event.getIndex();
-            EventBus.getDefault().post(new ChangeIndexEventInFragment(event.getIndex(), curItem));
+            EventBus.getDefault().post(new ChangeIndexEventInFragment(event.getIndex(), currentIds.get(curItem)));
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNext(OnNextEvent event) {
-        if (currentIndex < currentIds.size() - 1) {
+        if (currentIndex < StoryDownloader.getInstance().findItemByStoryId(CaseStoryService.getInstance().getCurrentId()).pages.size() - 1) {
             currentIndex++;
         }
-        Log.d("Events", "Next");
+        Log.e("loadStory", "onNextEvent " + currentIndex);
         EventBus.getDefault().post(new StoryPageOpenEvent(
                 CaseStoryService.getInstance().getCurrentId(),
                 currentIndex
         ));
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void changeIndexEvent(ChangeIndexEventInFragment event) {
+        Log.e("loadStory", "SFchangeIndexEvent " + event.getIndex());
+        currentIndex = event.getIndex();
+    }
 
-    @Subscribe
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPrev(OnPrevEvent event) {
         if (currentIndex > 0) {
             currentIndex--;
-            Log.e("currentIndex", "OnPrevEvent " + currentIndex);
+            Log.e("loadStory", "onPrevEvent " + currentIndex);
             EventBus.getDefault().post(new StoryPageOpenEvent(
                     CaseStoryService.getInstance().getCurrentId(),
                     currentIndex

@@ -74,8 +74,8 @@ public class CaseStoryManager {
     boolean hasShare = false;
     boolean hasFavorite = false;
 
-    private static final String TEST_DOMAIN = "https://api-narrator.test.kiozk.ru/";
-    private static final String PRODUCT_DOMAIN = "https://api-narrator.kiozk.ru/";
+    private static final String TEST_DOMAIN = "https://api.casestory.io/";
+    private static final String PRODUCT_DOMAIN = "https://api.casestory.io/";
 
     public String getApiKey() {
         return API_KEY;
@@ -265,7 +265,7 @@ public class CaseStoryManager {
             return tags;
         }
 
-        boolean sandbox = false;
+        boolean sandbox = true;
         boolean closeOnOverscroll = true;
         boolean closeOnSwipe = true;
         boolean hasLike = false;

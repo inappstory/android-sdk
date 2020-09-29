@@ -46,13 +46,11 @@ public class WebPageConverter {
                 }
             }
         }
-        if (exists) {
-            String webData = layout
-                    .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", innerWebData);
-            EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
-            return;
-        }
+        String webData = layout
+                .replace("//_ratio = 0.66666666666,", "")
+                .replace("{{%content}}", innerWebData);
+        EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
+        return;
     }
 
     public static void replaceVideoAndLoad(String innerWebData, final int storyId, String layout) {
@@ -79,13 +77,11 @@ public class WebPageConverter {
                 }
             }
         }
-        if (exists) {
-            String webData = layout
-                    .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", innerWebData);
-            EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
-            return;
-        }
+        String webData = layout
+                .replace("//_ratio = 0.66666666666,", "")
+                .replace("{{%content}}", innerWebData);
+        EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
+        return;
     }
 
 }
