@@ -14,7 +14,7 @@ public class ChangeStoryEvent {
     private int index;
     public ChangeStoryEvent(int index) {
         this.index = index;
-        Log.d("Events","changeNarrativeEvent");
+        Log.d("Events","changeStoryEvent");
     }
 
     public int getId() {

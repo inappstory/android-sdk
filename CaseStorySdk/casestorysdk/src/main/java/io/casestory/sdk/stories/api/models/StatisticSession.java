@@ -23,9 +23,9 @@ public class StatisticSession {
     public static boolean needToUpdate() {
         if (INSTANCE == null) return true;
         if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;
-        if (((System.currentTimeMillis() - INSTANCE.updatedAt) / 1000) > (INSTANCE.expireIn/2)) {
+        /*if (((System.currentTimeMillis() - INSTANCE.updatedAt) / 1000) > (INSTANCE.expireIn/2)) {
             return true;
-        }
+        }*/
         return false;
     }
 

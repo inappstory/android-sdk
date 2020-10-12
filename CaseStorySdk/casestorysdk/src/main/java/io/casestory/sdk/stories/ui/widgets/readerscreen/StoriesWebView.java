@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -51,6 +52,8 @@ import io.casestory.sdk.stories.cache.FileType;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeIndexEvent;
 import io.casestory.sdk.stories.events.NoConnectionEvent;
+import io.casestory.sdk.stories.events.PageTaskLoadedEvent;
+import io.casestory.sdk.stories.events.PageTaskToLoadEvent;
 import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
 import io.casestory.sdk.stories.events.RestartStoryReaderEvent;
 import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
@@ -88,15 +91,15 @@ public class StoriesWebView extends WebView {
 
     public int index;
 
-    public int loadedIndex;
-    public int loadedId;
+    public int loadedIndex = -1;
+    public int loadedId = -1;
 
     String innerWebText;
 
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
-
+    boolean isLoaded = false;
+    public boolean isWebPageLoaded = false;
     public void loadStory(int id, int index) {
-        Log.e("loadStory", id + " " + index + " " + loadedId + " " + loadedIndex);
         if (loadedId == id && loadedIndex == index) return;
         if (CaseStoryManager.getInstance() == null)
             return;
@@ -109,6 +112,38 @@ public class StoriesWebView extends WebView {
             return;
         }
         if (story.pages.size() <= index) return;
+        isWebPageLoaded = false;
+        this.storyId = id;
+        this.loadedIndex = index;
+        this.index = index;
+        this.loadedId = id;
+        isLoaded = StoryDownloader.getInstance().checkIfPageLoaded(new Pair<>(id, index));
+
+        String layout = story.getLayout();
+
+       // EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
+        if (!isLoaded) {
+            EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
+            if (Build.VERSION.SDK_INT >= 19) {
+                setLayerType(View.LAYER_TYPE_NONE, null);
+            } else {
+                getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+                setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            }
+            WebPageConverter.replaceEmptyAndLoad("", storyId, index, layout);
+
+            return;
+        } else {
+            pageTaskLoaded(null);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void pageTaskLoaded(PageTaskLoadedEvent event) {
+        if (event != null) {
+            if (storyId != event.getId() || index != event.getIndex()) return;
+        }
+        Story story = StoryDownloader.getInstance().getStoryById(storyId);
         String layout = story.getLayout();
         List<String> fonturls = new ArrayList<>();
 
@@ -123,19 +158,14 @@ public class StoriesWebView extends WebView {
             if (fileLink != null)
                 layout = layout.replaceFirst(fonturl, "file://" + fileLink);
         }
-        this.storyId = id;
-        this.loadedIndex = index;
-        this.index = index;
-        this.loadedId = id;
+
         String innerWebData = story.pages.get(index);
         innerWebText = innerWebData;
         if (CaseStoryService.getInstance().isConnected()) {
-
-            boolean exists = false;
             if (innerWebData.contains("<video")) {
                 isVideo = true;
                 setLayerType(View.LAYER_TYPE_HARDWARE, null);
-                WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, layout);
+                WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
                 return;
             } else {
                 if (Build.VERSION.SDK_INT >= 19) {
@@ -144,30 +174,18 @@ public class StoriesWebView extends WebView {
                     getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
                     setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 }
-                WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, layout);
+                WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, index, layout);
 
                 return;
             }
-
-
-         /*   final String finalWebData = layout
-                    .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", innerWebData);
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    EventBus.getDefault().post(new GeneratedWebPageEvent(finalWebData, storyId));
-                }
-            }, 200);*/
-
-
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void generatedWebPageEvent(GeneratedWebPageEvent event) {
-        if (storyId != event.getStoryId()) return;
-        Log.e("loadStory",  "injectUnselectableStyle " + index + " " + storyId);
+        if (storyId != event.getStoryId() ) return;
+
+        Log.e("JavascriptInterface", "GeneratedWebPageEvent " + storyId + " " + index);
         final String data = event.getWebData();
         loadDataWithBaseURL("", injectUnselectableStyle(data), "text/html; charset=utf-8", "UTF-8", null);
        //
@@ -190,22 +208,21 @@ public class StoriesWebView extends WebView {
     }
 
     public void setCurrentItem(int index, boolean withAnimation) {
-        Log.e("loadStory", "setCurrentItemWA");
+        Log.e("loadStory0", "setCurrentItemWA " + this.storyId + " " + index);
         loadStory(this.storyId, index);
     }
 
     public void setCurrentItem(int index) {
-        Log.e("loadStory", "setCurrentItem");
+        Log.e("loadStory0", "setCurrentItemWA " + this.storyId + " " + index);
         loadStory(this.storyId, index);
     }
 
     boolean loadingFinished = true;
     boolean redirect = false;
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         if (this.storyId != event.getStoryId()) return;
-        Log.e("loadStory", "changeStoryPageEvent");
         setCurrentItem(event.getIndex(), false);
     }
 
@@ -294,9 +311,6 @@ public class StoriesWebView extends WebView {
     String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
 
     private CoreProgressBar progressBar;
-    ValueAnimator animation2;
-    ValueAnimator animationIn;
-    ValueAnimator animationOut;
 
     public void destroyWebView() {
         final Runtime runtime = Runtime.getRuntime();
@@ -399,23 +413,7 @@ public class StoriesWebView extends WebView {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                if (CaseStoryService.getInstance() == null) return;
-                if (CaseStoryService.getInstance().getCurrentId() != storyId) {
-                    stopVideo();
-                } else {
-                    playVideo();
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            resumeVideo();
-                        }
-                    }, 200);
-                }
-                if (animation2 != null) {
-                    animation2.cancel();
-                    animation2 = null;
-                }
-                EventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
+
             }
         });
         setWebChromeClient(new WebChromeClient() {
@@ -478,8 +476,7 @@ public class StoriesWebView extends WebView {
          */
         @JavascriptInterface
         public void storyClick(String payload) {
-            Log.d("story_tap", "story_tap" + " " + index + " " + storyId);
-            if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 400) {
+            if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 700) {
                 return;
             }
             CaseStoryService.getInstance().lastTapEventTime = System.currentTimeMillis();
@@ -491,7 +488,7 @@ public class StoriesWebView extends WebView {
                 }
             } else if (payload.equals("forbidden")) {
                 if (CaseStoryService.getInstance().isConnected()) {
-                    EventBus.getDefault().post(new StoryReaderTapEvent((int) coordinate1, true));
+                  //  EventBus.getDefault().post(new StoryReaderTapEvent((int) coordinate1, true));
                 } else {
                     EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
                 }
@@ -502,19 +499,16 @@ public class StoriesWebView extends WebView {
 
         @JavascriptInterface
         public void storyShowSlide(int index) {
-            Log.d("loadStory", "storyShowNextSlideIndex " + index);
             if (StoriesWebView.this.index != index) {
-                EventBus.getDefault().post(new ChangeIndexEvent(index));
+               // EventBus.getDefault().post(new ChangeIndexEvent(index));
             }
         }
 
         @JavascriptInterface
         public void storyShowNextSlide(long delay) {
-            Log.d("quiz", "storyShowNextSlide" + " " + delay);
             if (delay != 0) {
                 EventBus.getDefault().post(new RestartStoryReaderEvent(StoriesWebView.this.storyId, StoriesWebView.this.index, delay));
             } else {
-                Log.d("loadStory", "storyShowNextSlide " + (StoriesWebView.this.index + 1));
                 EventBus.getDefault().post(new ChangeIndexEvent(StoriesWebView.this.index + 1));
             }
         }
@@ -548,11 +542,39 @@ public class StoriesWebView extends WebView {
         }
 
         @JavascriptInterface
+        public void storyLoaded() {
+            isWebPageLoaded = true;
+            if (CaseStoryService.getInstance() == null) return;
+            if (CaseStoryService.getInstance().getCurrentId() != storyId) {
+                stopVideo();
+            } else {
+                playVideo();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        resumeVideo();
+                    }
+                }, 200);
+            }
+
+            EventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
+            EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
+            Log.e("JavascriptInterface", "storyLoaded " + storyId + " " + index);
+        }
+
+        @JavascriptInterface
+        public void emptyLoaded() {
+            Log.e("JavascriptInterface", "emptyLoaded " + storyId + " " + index);
+        }
+
+        @JavascriptInterface
         public void storyFreezeUI() {
             touchSlider = true;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
             }
+
+            Log.e("JavascriptInterface", "storyFreezeUI " + storyId + " " + index);
         }
 
 
@@ -635,6 +657,7 @@ public class StoriesWebView extends WebView {
                 StoriesWebView.this.pauseVideo();
                 break;
             case MotionEvent.ACTION_UP:
+                Log.e("resumeTimer", "WVTouch");
                 EventBus.getDefault().post(new ResumeStoryReaderEvent(false));
                 StoriesWebView.this.resumeVideo();
                 break;
@@ -647,6 +670,7 @@ public class StoriesWebView extends WebView {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        if (CaseStoryService.getInstance().cubeAnimation) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
@@ -666,6 +690,7 @@ public class StoriesWebView extends WebView {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
+
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;

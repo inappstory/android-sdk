@@ -44,9 +44,9 @@ public interface ApiInterface {
                                  @Query("favorite") Integer favorite,
                                  @Query("token") String token);
 
-    @GET("v2/story-popup")
-    Call<List<Story>> popupStories(@Query("session_id") String sessionId,
-                                   @Query("tags") String tags,
+    @GET("v2/story-onboarding")
+    Call<List<Story>> onboardingStories(@Query("session_id") String sessionId,
+                                   @Query("tags") List<String> tags,
                                    @Query("token") String token);
 
     @GET("v2/story/{id}")
@@ -110,19 +110,4 @@ public interface ApiInterface {
     @POST("v1/session/close")
     Call<StatisticResponse> statisticsClose(@Body StatisticSendObject request);
 
-
-   /* @GET("v1/article/{id}")
-    Call<Article> article(@Path("id") String id,
-                          @Query("session_id") String sessionId,
-                          @Query("expand") String expand
-    );
-
-
-    @GET("v1/issue-article/{id}")
-    Call<Article> issueArticle(@Path("id") String id,
-                               @Query("session_id") String sessionId,
-                               @Query("expand") String expand
-    );
-
-*/
 }

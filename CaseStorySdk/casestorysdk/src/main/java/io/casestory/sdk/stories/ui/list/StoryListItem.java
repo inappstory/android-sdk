@@ -63,9 +63,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             source = v.findViewById(R.id.source);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
+            title.setTextSize(TypedValue.COMPLEX_UNIT_SP, manager.csListItemTitleSize());
             title.setTextColor(manager.csListItemTitleColor());
-            source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
+            source.setTextSize(TypedValue.COMPLEX_UNIT_SP, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);

@@ -1,14 +1,19 @@
 package io.casestory.sdk.stories.ui.list;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -22,21 +27,38 @@ import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.ui.reader.StoriesActivity;
+import io.casestory.sdk.stories.ui.reader.StoriesDialogFragment;
+import io.casestory.sdk.stories.utils.Sizes;
+
+import static io.casestory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static io.casestory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static java.security.AccessController.getContext;
 
 public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
-    private List<Integer> storiesIds;
+    public List<Integer> getStoriesIds() {
+        return storiesIds;
+    }
+
+    private List<Integer> storiesIds = new ArrayList<>();
     private boolean isFavoriteList;
     StoriesList.OnFavoriteItemClick favoriteItemClick;
 
     boolean hasFavItem = false;
 
-    public StoriesAdapter(List<Integer> storiesIds, AppearanceManager manager,
+    public Context context;
+
+    public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
                           StoriesList.OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList) {
+        this.context = context;
         this.storiesIds = storiesIds;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
         hasFavItem = CaseStoryService.getInstance().favoriteImages.size() > 0;
+    }
+
+    public void refresh(List<Integer> storiesIds) {
+        this.storiesIds = storiesIds;
     }
 
     public int getIndexById(int id) {
@@ -75,7 +97,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         public void run() {
                             holder.bind(story.getTitle(), story.getSource(),
                                     (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
-                                    Color.parseColor(story.getBackgroundColor()), holder.isReaded);
+                                    Color.parseColor(story.getBackgroundColor()), story.isReaded || isFavoriteList);
                         }
                     });
                 }
@@ -91,15 +113,32 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     public void onItemClick(int index) {
-        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                StoryDownloader.getInstance().getStories().get(index).id);
-        Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
-        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent2.putExtra("index", index);
-        intent2.putIntegerArrayListExtra("stories_ids", new ArrayList<Integer>() {{
-            addAll(storiesIds);
-        }});
-        CaseStoryManager.getInstance().getContext().startActivity(intent2);
+        if (Sizes.isTablet()) {
+            DialogFragment settingsDialogFragment = new StoriesDialogFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt("index", index);
+            bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
+            bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
+            bundle.putIntegerArrayList("stories_ids", new ArrayList<Integer>() {{
+                addAll(storiesIds);
+            }});
+            settingsDialogFragment.setArguments(bundle);
+            settingsDialogFragment.show(
+                    ((AppCompatActivity)context).getSupportFragmentManager(),
+                    "DialogFragment");
+        } else {
+            StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
+                    StoryDownloader.getInstance().getStories().get(index).id);
+            Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
+           // intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
+            intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
+            intent2.putExtra("index", index);
+            intent2.putIntegerArrayListExtra("stories_ids", new ArrayList<Integer>() {{
+                addAll(storiesIds);
+            }});
+            context.startActivity(intent2);
+        }
     }
 
     @Override

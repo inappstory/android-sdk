@@ -1,7 +1,14 @@
 package io.casestory.sdk.stories.ui.reader;
 
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -25,26 +32,87 @@ import io.casestory.sdk.stories.events.SwipeDownEvent;
 import io.casestory.sdk.stories.events.SwipeLeftEvent;
 import io.casestory.sdk.stories.events.SwipeRightEvent;
 import io.casestory.sdk.stories.events.WidgetTapEvent;
+import io.casestory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import io.casestory.sdk.stories.utils.Sizes;
 import io.casestory.sdk.stories.utils.StatusBarController;
 
+import static io.casestory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
+import static io.casestory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static io.casestory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+
 public class StoriesActivity extends AppCompatActivity {
+
+    public static long destroyed = 0;
+
     @Override
     public void finish() {
-        switch (getIntent().getIntExtra("narrativesOpenAnimation", 1)) {
-            case 0:
-                finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
-                break;
-            case 1:
-                super.finish();
-                break;
-            case 2:
-                finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
-                break;
-            default:
-                super.finish();
-                break;
+        if (animateFirst) {
+            animateFirst = false;
+            loadAnim();
+        } else {
+            switch (getIntent().getIntExtra("narrativesOpenAnimation", 1)) {
+                case 0:
+                    finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
+                    break;
+                case 1:
+                    super.finish();
+                    break;
+                case 2:
+                    finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
+                    break;
+                default:
+                    super.finish();
+                    break;
+            }
         }
+
+    }
+
+    boolean animateFirst = true;
+
+
+    public void loadAnim() {
+        float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
+        float y = draggableFrame.getY();
+        AnimationSet animationSet = new AnimationSet(true);
+        Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
+        anim.setDuration(200);
+        animationSet.addAnimation(anim);
+        if (CaseStoryManager.getInstance().coordinates != null) {
+            Log.e("coordinates", "" + CaseStoryManager.getInstance().coordinates.y);
+            Animation anim2 = new TranslateAnimation(draggableFrame.getX(), CaseStoryManager.getInstance().coordinates.x - Sizes.getScreenSize().x/2,
+                    0f, CaseStoryManager.getInstance().coordinates.y - draggableFrame.getY());
+            anim2.setDuration(200);
+            animationSet.addAnimation(anim2);
+
+        }
+        animationSet.setAnimationListener(new Animation.AnimationListener() {
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                draggableFrame.setVisibility(View.GONE);
+                StoriesActivity.super.finish();
+            }
+        });
+        draggableFrame.startAnimation(animationSet);
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 
     public void finishActivityWithCustomAnimation(int enter, int exit) {
@@ -55,17 +123,35 @@ public class StoriesActivity extends AppCompatActivity {
     @Subscribe
     public void widgetTapEvent(WidgetTapEvent event) {
         if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
-           // StatusBarController.hideStatusBar(this, true);
+            // StatusBarController.hideStatusBar(this, true);
         }
     }
 
+
+    ElasticDragDismissFrameLayout draggableFrame;
+
+    private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
+
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
+        destroyed = -1;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         if (CaseStoryManager.getInstance() == null) return;
         if (CaseStoryService.getInstance() == null) return;
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_activity_stories);
+        draggableFrame = findViewById(R.id.draggable_frame);
+        if (Build.VERSION.SDK_INT >= 21) {
+            chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
+                @Override
+                public void onDragDismissed() {
+                    if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
+                    else animateFirst = false;
+                    finishAfterTransition();
+                }
+            };
+        }
+        draggableFrame.addListener(chromeFader);
         final Bundle savedInstanceState = savedInstanceState1;
         try {
             if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
@@ -86,10 +172,10 @@ public class StoriesActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putBoolean("canUseNotLoaded", getIntent().getBooleanExtra("canUseNotLoaded", false));
-                bundle.putInt("narrativesSwitchAnimation", getIntent().getIntExtra("narrativesSwitchAnimation", 0));
-                bundle.putBoolean("closeOnSwipe", getIntent().getBooleanExtra("closeOnSwipe", false));
+                bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
+                bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
                 bundle.putBoolean("onboarding", getIntent().getBooleanExtra("onboarding", false));
-                bundle.putInt("closePosition", getIntent().getIntExtra("closePosition", 1));
+                bundle.putInt(CS_CLOSE_POSITION, getIntent().getIntExtra(CS_CLOSE_POSITION, 1));
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
             }
@@ -100,13 +186,13 @@ public class StoriesActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
-   //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
+        //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
         FragmentTransaction t = fragmentManager.beginTransaction()
                 .replace(R.id.fragments_layout, storiesFragment);
         t.addToBackStack("STORIES_FRAGMENT");
         t.commit();
 
-  //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
+        //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -122,7 +208,7 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Subscribe
     public void swipeDownEvent(SwipeDownEvent event) {
-        if (getIntent().getBooleanExtra("closeOnSwipe", false)
+        if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && CaseStoryManager.getInstance().closeOnSwipe()) {
             finishActivityWithCustomAnimation(0, R.anim.popup_hide);
             EventBus.getDefault().post(new CloseStoryReaderEvent(false));

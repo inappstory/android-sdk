@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import io.casestory.sdk.stories.api.networkclient.ApiClient;
+import io.casestory.sdk.stories.utils.KeyValueStorage;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -59,7 +60,6 @@ public class Downloader {
                                           Integer sourceId,
                                           Point size) throws IOException {
         FileCache cache = FileCache.INSTANCE;
-
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
         File img2;
         if (img.exists()) {
@@ -72,20 +72,13 @@ public class Downloader {
             }
         }
         byte[] bytes = null;
-        // Log.e("urlCrash", url);
         Response response = ApiClient.getImageApiOk().newCall(
                 new Request.Builder().url(url).build()).execute();
         String ctType = response.header("Content-Type");
         boolean isPng = false;
         if (ctType != null && ctType.equals("image/png")) isPng = true;
         bytes = response.body().bytes();
-        if (bytes.length < 200) {
-            //     Log.e("errBytes", url + " " + new String(bytes));
-        } else {
-            //     Log.e("errBytes", url + " " + "Success");
-        }
-        File file = saveCompressedImg(bytes, img, size, isPng);
-        Log.e("downloadStoryFile", file.getAbsolutePath());
+        File file = downloadFile(bytes, img, ctType);
         return file;
     }
 
@@ -111,17 +104,11 @@ public class Downloader {
             }
         }
         byte[] bytes = null;
-        // Log.e("urlCrash", url);
         Response response = ApiClient.getImageApiOk().newCall(
                 new Request.Builder().url(url).build()).execute();
         String ctType = response.header("Content-Type");
         bytes = response.body().bytes();
-        if (bytes.length < 200) {
-            //     Log.e("errBytes", url + " " + new String(bytes));
-        } else {
-            //     Log.e("errBytes", url + " " + "Success");
-        }
-        File file = downloadFile(bytes, img);
+        File file = downloadFile(bytes, img, ctType);
         return file;
     }
 
@@ -219,12 +206,10 @@ public class Downloader {
     @WorkerThread
     public static File downFile(Context con, String url, String type, Integer id) throws IOException {
         if (url == null || url.isEmpty()) return null;
-        Log.e("downloadStoryUrl", url);
         FileCache cache = FileCache.INSTANCE;
         File img = cache.getStoredFile(con, cropUrl(url), type, id, null);
         File img2;
         if (img.exists()) {
-            Log.e("downloadStoryPath", img.getAbsolutePath());
             return img;
         } else {
             img2 = cache.getStoredFile(con, cropUrl(url), FileType.TEMP_FILE, null, null);
@@ -233,7 +218,6 @@ public class Downloader {
                     cache.moveFileToStorage(con, cropUrl(url), type, id, null);
                 }
 
-                Log.e("downloadStoryPath", img2.getAbsolutePath());
                 return img2;
             }
         }
@@ -253,7 +237,6 @@ public class Downloader {
             fout = new FileOutputStream(img);
             fout.write(bytes);
             fout.close();
-            Log.e("downloadStoryPath", img.getAbsolutePath());
             return img;
         } catch (Exception e) {
             e.printStackTrace();
@@ -375,7 +358,7 @@ public class Downloader {
                 bm = decodeSampledBitmapFromResource(bytes, 150000);
             }
         if (bm == null) {
-            throw new IOException("опять они всё сломали");
+            throw new IOException("wrong bitmap");
         }
         if (!isPng) {
             if (limitedSize != null && (bm.getWidth() > limitedSize.x || bm.getHeight() > limitedSize.y)) {
@@ -399,12 +382,16 @@ public class Downloader {
     }
 
 
-    public static File downloadFile(byte[] bytes, File outputFile) throws IOException {
+    public static File downloadFile(byte[] bytes, File outputFile, String contentType) throws IOException {
         if (bytes == null) return null;
-        FileOutputStream fos = new FileOutputStream(outputFile);
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();
+        if (contentType != null)
+            KeyValueStorage.saveString(outputFile.getName(), contentType);
+        else
+            KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
+        FileOutputStream fos = new FileOutputStream(outputFile);
         fos.write(bytes);
         fos.flush();
         fos.close();

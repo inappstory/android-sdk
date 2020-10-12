@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,6 +17,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +25,7 @@ import androidx.annotation.Nullable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,11 +33,13 @@ import java.util.List;
 
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.CacheFontObject;
 import io.casestory.sdk.stories.api.models.StatisticResponse;
 import io.casestory.sdk.stories.api.models.StatisticSendObject;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
+import io.casestory.sdk.stories.api.models.StoryLinkObject;
 import io.casestory.sdk.stories.api.models.callbacks.CloseStatisticCallback;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -43,20 +48,24 @@ import io.casestory.sdk.stories.api.networkclient.ApiClient;
 import io.casestory.sdk.stories.api.networkclient.RetrofitCallback;
 import io.casestory.sdk.stories.cache.Downloader;
 import io.casestory.sdk.stories.cache.StoryDownloader;
+import io.casestory.sdk.stories.events.ChangeStoryEvent;
 import io.casestory.sdk.stories.events.ContentLoadedEvent;
 import io.casestory.sdk.stories.events.ListVisibilityEvent;
 import io.casestory.sdk.stories.events.LoadFavStories;
 import io.casestory.sdk.stories.events.LoadNarrativesOnEmpty;
 import io.casestory.sdk.stories.events.LoadNarrativesOnError;
+import io.casestory.sdk.stories.events.NextStoryPageEvent;
 import io.casestory.sdk.stories.events.NextStoryReaderEvent;
 import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
 import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
+import io.casestory.sdk.stories.events.StoryTapEvent;
 import io.casestory.sdk.stories.serviceevents.ContentRenewPriorities;
 import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import io.casestory.sdk.stories.serviceevents.LikeDislikeEvent;
 import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import io.casestory.sdk.stories.storieslistenerevents.OnNextEvent;
 import io.casestory.sdk.stories.ui.list.FavoriteImage;
 import io.casestory.sdk.stories.utils.Sizes;
 import okhttp3.ResponseBody;
@@ -139,12 +148,73 @@ public class CaseStoryService extends Service {
 
     @Subscribe
     public void contentRenewPriorities(ContentRenewPriorities event) {
+        Log.e("ContentRenewPriorities", "ContentRenewPriorities");
+
+    }
+
+    Handler timerHandler = new Handler();
+    public long timerStart;
+    public long timerDuration;
+    public long pauseShift;
+
+    Runnable timerTask = new Runnable() {
+        @Override
+        public void run() {
+            if (System.currentTimeMillis() - timerStart >= timerDuration) {
+                timerHandler.removeCallbacks(timerTask);
+                pauseShift = 0;
+                EventBus.getDefault().post(new NextStoryPageEvent(currentId));
+                return;
+                //if (currentIndex == )
+            }
+            timerHandler.postDelayed(timerTask, 50);
+        }
+    };
+
+    public void startTimer(long timerDuration) {
+        if (timerDuration <= 0) return;
+        pauseShift = 0;
+        timerStart = System.currentTimeMillis();
+        this.timerDuration = timerDuration;
         try {
-            StoryDownloader.getInstance().renewPriorities(event.getIndex());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            timerHandler.removeCallbacks(timerTask);
+        } catch (Exception e) {
+
+        }
+        timerHandler.post(timerTask);
+    }
+
+    @Subscribe
+    public void storyPageTapEvent(StoryTapEvent event) {
+        if (event.getLink() != null && !event.getLink().isEmpty()) {
+            StoryLinkObject object = new Gson().fromJson(event.getLink(), StoryLinkObject.class);
+            if (object != null) {
+                switch (object.getLink().getType()) {
+                    case "url":
+                        addLinkOpenStatistic();
+                        if (CaseStoryManager.getInstance().getUrlClickCallback() != null) {
+                            CaseStoryManager.getInstance().getUrlClickCallback().onUrlClick(
+                                    object.getLink().getTarget()
+                            );
+                        } else {
+                            if (!isConnected()) {
+                                return;
+                            }
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(object.getLink().getTarget()));
+                            startActivity(i);
+                        }
+                        break;
+                    default:
+                        if (CaseStoryManager.getInstance().getAppClickCallback() != null) {
+                            CaseStoryManager.getInstance().getAppClickCallback().onAppClick(
+                                    object.getLink().getType(),
+                                    object.getLink().getTarget()
+                            );
+                        }
+                        break;
+                }
+            }
         }
     }
 
@@ -394,6 +464,7 @@ public class CaseStoryService extends Service {
     }
 
     public void resumeTimer() {
+        resumeLocalTimer();
         currentEvent.eventType = 1;
         currentEvent.timer = System.currentTimeMillis();
         pauseTime += System.currentTimeMillis() - startPauseTime;
@@ -401,13 +472,25 @@ public class CaseStoryService extends Service {
         // Log.e("pauseTimer", Long.toString(pauseTime));
     }
 
+    public void resumeLocalTimer() {
+        startTimer(timerDuration - pauseShift);
+    }
+
+
 
     public long startPauseTime;
 
 
     public long pauseTime = 0;
 
+    public void pauseLocalTimer() {
+        timerHandler.removeCallbacks(timerTask);
+        pauseShift = (System.currentTimeMillis() - timerStart);
+        //  Log.e("startPauseTime", Long.toString(startPauseTime));
+    }
+
     public void pauseTimer() {
+        pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
         closeStatisticEvent(null, true);
         sendStatistic();
@@ -451,12 +534,15 @@ public class CaseStoryService extends Service {
 
     }
 
-    @Subscribe
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void pauseStoryEvent(PauseStoryReaderEvent event) {
         try {
             if (event.isWithBackground()) {
                 isBackgroundPause = true;
                 pauseTimer();
+            } else {
+                pauseLocalTimer();
             }
         } catch (Exception e) {
 
@@ -465,11 +551,13 @@ public class CaseStoryService extends Service {
 
     boolean backPaused = false;
 
-    @Subscribe
-    public void resumeNarrativeEvent(ResumeStoryReaderEvent event) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (event.isWithBackground()) {
             isBackgroundPause = false;
             resumeTimer();
+        } else {
+            resumeLocalTimer();
         }
     }
 
@@ -486,6 +574,7 @@ public class CaseStoryService extends Service {
     }
 
     public void openStatistic(final OpenStatisticCallback callback) {
+        if (openProcess) return;
         Context context = CaseStoryManager.getInstance().context;
         openProcess = true;
         String platform = "android";
@@ -512,6 +601,7 @@ public class CaseStoryService extends Service {
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
         if (!isConnected()) {
+            openProcess = false;
             return;
         }
         ApiClient.getFastApi().statisticsOpen(
@@ -556,6 +646,7 @@ public class CaseStoryService extends Service {
 
             @Override
             public void onError(int code, String message) {
+                openProcess = false;
                 EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 super.onError(code, message);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -569,6 +660,7 @@ public class CaseStoryService extends Service {
 
             @Override
             public void onTimeout() {
+                openProcess = false;
                 EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
@@ -604,6 +696,24 @@ public class CaseStoryService extends Service {
         }
     };
 
+    public void previewStatisticEvent(ArrayList<Integer> vals) {
+        ArrayList<Object> sendObject = new ArrayList<Object>() {{
+            add(5);
+            add(eventCount);
+        }};
+        ArrayList<Integer> addedVals = new ArrayList<>();
+        for (Integer val : vals) {
+            if (!StatisticSession.getInstance().viewed.contains(val)) {
+                sendObject.add(val);
+                StatisticSession.getInstance().viewed.add(val);
+            }
+        }
+        if (sendObject.size() > 2) {
+            statistic.add(sendObject);
+            eventCount++;
+        }
+    }
+
     private boolean sendStatistic() {
         if (!isConnected()) return true;
         if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
@@ -631,24 +741,72 @@ public class CaseStoryService extends Service {
 
     public static boolean openProcess = false;
 
-    public void getStoryById(final GetStoryByIdCallback storyByIdCallback, int id) {
+    interface CheckStatisticCallback {
+        void openStatistic();
+    }
+
+    public static boolean checkOpenStatistic(final CheckStatisticCallback callback) {
+        if (getInstance().isConnected()) {
+            if (StatisticSession.getInstance() == null
+                    || StatisticSession.getInstance().id == null
+                    || StatisticSession.getInstance().id.isEmpty()) {
+                getInstance().openStatistic(new OpenStatisticCallback() {
+                    @Override
+                    public void onSuccess() {
+                        callback.openStatistic();
+                    }
+
+                    @Override
+                    public void onError() {
+                    }
+                });
+                return false;
+            } else if (StatisticSession.needToUpdate()) {
+                getInstance().openStatistic(new OpenStatisticCallback() {
+                    @Override
+                    public void onSuccess() {
+                        callback.openStatistic();
+                    }
+
+                    @Override
+                    public void onError() {
+                    }
+                });
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public void getStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
         for (Story story : StoryDownloader.getInstance().getStories()) {
             if (story.id == id) {
                 storyByIdCallback.getStory(story);
                 return;
             }
         }
-        ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
-                getApiKey(), EXPAND_STRING
-        ).enqueue(new RetrofitCallback<Story>() {
+
+        if (checkOpenStatistic(new CheckStatisticCallback() {
             @Override
-            public void onSuccess(final Story response) {
-                StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
-                    add(response);
-                }});
-                storyByIdCallback.getStory(response);
+            public void openStatistic() {
+                getStoryById(storyByIdCallback, id);
             }
-        });
+        })) {
+            ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
+                    getApiKey(), EXPAND_STRING
+            ).enqueue(new RetrofitCallback<Story>() {
+                @Override
+                public void onSuccess(final Story response) {
+                    StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
+                        add(response);
+                    }});
+                    storyByIdCallback.getStory(response);
+                }
+            });
+        }
     }
 
     public void likeDislikeClick(boolean isDislike, final int storyId) {
@@ -697,26 +855,56 @@ public class CaseStoryService extends Service {
 
     }
 
-    public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, int id) {
+    public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
         for (Story story : StoryDownloader.getInstance().getStories()) {
             if (story.id == id && story.pages != null) {
                 storyByIdCallback.getStory(story);
                 return;
             }
         }
-        ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id,1,
-                getApiKey(), EXPAND_STRING
-        ).enqueue(new RetrofitCallback<Story>() {
+        if (checkOpenStatistic(new CheckStatisticCallback() {
             @Override
-            public void onSuccess(final Story response) {
-                StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
-                    add(response);
-                }});
-                StoryDownloader.getInstance().setStory(response, response.id);
-                storyByIdCallback.getStory(response);
+            public void openStatistic() {
+                getFullStoryById(storyByIdCallback, id);
             }
-        });
+        })) {
+            ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
+                    getApiKey(), EXPAND_STRING
+            ).enqueue(new RetrofitCallback<Story>() {
+                @Override
+                public void onSuccess(final Story response) {
+                    StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
+                        add(response);
+                    }});
+                    StoryDownloader.getInstance().setStory(response, response.id);
+                    storyByIdCallback.getStory(response);
+                }
+            });
+        }
     }
+
+    public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback, final String id) {
+        if (checkOpenStatistic(new CheckStatisticCallback() {
+            @Override
+            public void openStatistic() {
+                getFullStoryByStringId(storyByIdCallback, id);
+            }
+        })) {
+            ApiClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
+                    getApiKey(), EXPAND_STRING
+            ).enqueue(new RetrofitCallback<Story>() {
+                @Override
+                public void onSuccess(final Story response) {
+                    StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
+                        add(response);
+                    }});
+                    StoryDownloader.getInstance().setStory(response, response.id);
+                    storyByIdCallback.getStory(response);
+                }
+            });
+        }
+    }
+
 
     public static final String EXPAND_STRING = "slides_html,layout,slides_duration,src_list";
 
@@ -727,6 +915,7 @@ public class CaseStoryService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().register(this);
         statistic = new ArrayList<>();
         INSTANCE = this;
         /*if (Build.VERSION.SDK_INT >= 26) {

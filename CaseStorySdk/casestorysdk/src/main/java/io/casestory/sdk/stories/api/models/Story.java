@@ -70,6 +70,33 @@ public class Story implements Parcelable {
     @SerializedName("image")
     public List<Image> image;
 
+    public List<ResourceMappingObject> getSrcList() {
+        if (srcList == null) srcList = new ArrayList<>();
+        return srcList;
+    }
+
+    public List<String> getSrcListKeys(int index, String type) {
+        ArrayList<String> res = new ArrayList<>();
+        for (ResourceMappingObject object : getSrcList()) {
+            if (object.getIndex() == index && (type == null || object.getType().equals(type)))
+                res.add(object.getKey());
+        }
+        return res;
+    }
+
+    public List<String> getSrcListUrls(int index, String type) {
+        ArrayList<String> res = new ArrayList<>();
+        for (ResourceMappingObject object : getSrcList()) {
+
+            if (object.getIndex() == index && (type == null || object.getType().equals(type)))
+                res.add(object.getUrl());
+        }
+        return res;
+    }
+
+    @SerializedName("src_list")
+    private List<ResourceMappingObject> srcList;
+
     @SerializedName("like")
     public Integer like;
 
@@ -106,7 +133,7 @@ public class Story implements Parcelable {
     @SerializedName("deeplink")
     public String deeplink;
 
-    @SerializedName("is_readed")
+    @SerializedName("is_opened")
     public boolean isReaded;
 
     @SerializedName("disable_close")

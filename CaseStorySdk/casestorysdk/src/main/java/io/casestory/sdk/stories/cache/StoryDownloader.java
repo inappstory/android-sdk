@@ -30,10 +30,13 @@ import java.util.concurrent.Future;
 
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
+import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.OpenStatisticCallback;
 import io.casestory.sdk.stories.api.networkclient.ApiClient;
+import io.casestory.sdk.stories.events.PageTaskLoadErrorEvent;
+import io.casestory.sdk.stories.events.PageTaskLoadedEvent;
 import io.casestory.sdk.stories.utils.Sizes;
 import okhttp3.Request;
 
@@ -81,11 +84,13 @@ public class StoryDownloader {
     }
 
     public static void clearCache() {
-        if (getInstance().stories != null)
-            getInstance().stories.clear();
-        getInstance().pageTasks.clear();
-        getInstance().storyTasks.clear();
-
+        synchronized (getInstance().pageTasksLock) {
+            getInstance().pageTasks.clear();
+        }
+        synchronized (getInstance().storyTasksLock) {
+            getInstance().storyTasks.clear();
+        }
+        FileCache.INSTANCE.deleteFolderRecursive(getInstance().context.getFilesDir(), false);
     }
 
     public void setStory(final Story story, int id) {
@@ -109,23 +114,74 @@ public class StoryDownloader {
     public static class StoryPageTask {
         public int priority = 0;
         public List<String> urls = new ArrayList<>();
+        public List<String> urlKeys = new ArrayList<>();
         public List<String> videoUrls = new ArrayList<>();
         public int loadType = 0; //0 - not loaded, 1 - loading, 2 - loaded
     }
 
     public class StoryTask {
         public int priority;
-        public int loadType = 0; //0 - not loaded, 1 - loading, 2 - loaded, 3 - partial
+        public int loadType = 0; //1 - not loaded, 2 - loading, 3 - loaded, 4 - not loaded partial, 5 - loading partial, 6 - loaded partial
     }
 
     public HashMap<Pair<Integer, Integer>, StoryPageTask> pageTasks = new HashMap<>();
     public HashMap<Integer, StoryTask> storyTasks = new HashMap<>();
 
-    public void cleanStories() {
+    public void cleanTasks() {
+        synchronized (storyTasksLock) {
+            storyTasks.clear();
+        }
+        synchronized (pageTasksLock) {
+            pageTasks.clear();
+        }
+    }
+
+    int currentId = 0;
+
+    public void setCurrentSlide(int index) {
 
     }
 
-    public void addStoryTasks() {
+    public void addStoryTask(int storyId, ArrayList<Integer> addIds) {
+        synchronized (storyTasksLock) {
+
+            currentId = storyId;
+            for (Integer storyTaskKey : storyTasks.keySet()) {
+                storyTasks.get(storyTaskKey).priority += (1 + addIds.size());
+                if (storyTasks.get(storyTaskKey).loadType != 3) {
+                    storyTasks.get(storyTaskKey).loadType += 3;
+                }
+            }
+            if (storyTasks.get(storyId) != null) {
+                if (storyTasks.get(storyId).loadType != 3) {
+                    storyTasks.get(storyId).loadType = 1;
+                    storyTasks.get(storyId).priority = 0;
+                } else {
+                    return;
+                }
+            } else {
+                storyTasks.put(storyId, new StoryTask() {{
+                    priority = 0;
+                    loadType = 1;
+                }});
+            }
+            int i = 1;
+            for (Integer storyTaskKey : addIds) {
+                if (storyTasks.get(storyTaskKey) != null) {
+                    storyTasks.get(storyTaskKey).priority = i;
+                    if (storyTasks.get(storyTaskKey).loadType != 3) {
+                        storyTasks.get(storyTaskKey).loadType = 4;
+                    }
+                } else {
+                    StoryTask st = new StoryTask();
+                    st.priority = i;
+                    st.loadType = 4;
+                    storyTasks.put(storyTaskKey, st);
+                }
+                i += 1;
+            }
+
+        }
         //  Stories.set(findIndexByStoryId(Story.id), Story);
 
     }
@@ -136,7 +192,7 @@ public class StoryDownloader {
 
     private Pair<Integer, Integer> getMaxPriorityPageTaskKey() {
         Pair<Integer, Integer> keyRes = null;
-        int priority = 100;
+        int priority = 100000;
         synchronized (pageTasksLock) {
             if (pageTasks.size() == 0) return null;
             Set<Pair<Integer, Integer>> keys = pageTasks.keySet();
@@ -147,18 +203,20 @@ public class StoryDownloader {
                     priority = pageTasks.get(key).priority;
                 }
             }
+            return keyRes;
         }
-        return keyRes;
     }
 
     private Integer getMaxPriorityStoryTaskKey() {
         Integer keyRes = null;
-        int priority = 100;
+        int priority = 100000;
         synchronized (storyTasksLock) {
             if (storyTasks.size() == 0) return null;
             Set<Integer> keys = storyTasks.keySet();
             for (Integer key : keys) {
-                if (storyTasks.get(key).loadType != 0) continue;
+                if (storyTasks.get(key).loadType != 1 && storyTasks.get(key).loadType != 4)
+                    continue;
+
                 if (storyTasks.get(key).priority < priority) {
                     keyRes = key;
                     priority = storyTasks.get(key).priority;
@@ -173,44 +231,49 @@ public class StoryDownloader {
 
         @Override
         public void run() {
-            ExecutorService executorService = runnableExecutor;
             final Integer key = getInstance().getMaxPriorityStoryTaskKey();
             if (key == null) {
                 handler.postDelayed(queueStoryReadRunnable, 100);
                 return;
             }
+            synchronized (getInstance().storyTasksLock) {
+
+                if (getInstance().storyTasks.get(key).loadType == 4) {
+                    getInstance().storyTasks.get(key).loadType = 5;
+                } else if (getInstance().storyTasks.get(key).loadType == 1) {
+                    getInstance().storyTasks.get(key).loadType = 2;
+                }
+            }
             if (StatisticSession.needToUpdate()) {
-                if (!isRefreshing)
+                if (!isRefreshing) {
                     isRefreshing = true;
-                CaseStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        isRefreshing = false;
-                    }
+                    CaseStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
+                        @Override
+                        public void onSuccess() {
+                            isRefreshing = false;
+                        }
 
-                    @Override
-                    public void onError() {
+                        @Override
+                        public void onError() {
 
-                    }
-                });
+                        }
+                    });
+                }
                 handler.postDelayed(queueStoryReadRunnable, 100);
                 return;
             }
             final Story[] story = new Story[1];
-            story[0] = null;
-            synchronized (getInstance().storyTasksLock) {
-                getInstance().storyTasks.get(key).loadType = 1;
-            }
-            Log.d("StoryDownload", "id " + Integer.toString(key));
-            Log.d("StoryDownload", "index " + Integer.toString(getInstance().findIndexByStoryId(key)));
+            ExecutorService executorService = runnableExecutor;
+
             final Callable<Story> _ff = new Callable<Story>() {
                 @Override
                 public Story call() throws Exception {
-                    return ApiClient.getApi().getStoryById(Integer.toString(key),
-                            StatisticSession.getInstance().id,1,
+                    Story story1 = ApiClient.getApi().getStoryById(Integer.toString(key),
+                            StatisticSession.getInstance().id, 1,
                             CaseStoryManager.getInstance().getApiKey(),
                             EXPAND_STRING)
                             .execute().body();
+                    return story1;
                 }
             };
             final Future<Story> ff = netExecutor.submit(_ff);
@@ -219,54 +282,67 @@ public class StoryDownloader {
                 public void run() {
                     try {
                         story[0] = ff.get();
+                        int loadType;
+                        int cellPriority;
                         synchronized (getInstance().storyTasksLock) {
-                            getInstance().storyTasks.get(key).loadType = 2;
+                            if (getInstance().storyTasks.get(key).loadType < 4) {
+                                loadType = getInstance().storyTasks.get(key).loadType = 3;
+                                cellPriority = getInstance().storyTasks.get(key).priority;
+                                getInstance().addStoryPageTasks(story[0]);
+                            } else {
+                                loadType = getInstance().storyTasks.get(key).loadType = 6;
+                                cellPriority = getInstance().storyTasks.get(key).priority;
+                                getInstance().addStoryPageTasks(story[0]);
+                            }
                         }
+
                         if (story[0] != null) {
                             synchronized (getInstance().pageTasksLock) {
-                                int c = 0;
-                                int pr = 0;
                                 Set<Pair<Integer, Integer>> keys = getInstance().pageTasks.keySet();
-                                for (Pair<Integer, Integer> taskKey : keys) {
-                                    if (getInstance().pageTasks.get(taskKey).loadType != 0)
-                                        continue;
-                                    if (getInstance().pageTasks.get(taskKey).priority > pr) {
-                                        pr = getInstance().pageTasks.get(taskKey).priority;
+                                int sz;
+                                if (loadType == 3) {
+                                    sz = story[0].pages.size();
+                                    for (Pair<Integer, Integer> taskKey : keys) {
+                                        if (getInstance().pageTasks.get(taskKey).loadType != 0)
+                                            continue;
+                                        getInstance().pageTasks.get(taskKey).priority += story[0].pages.size() + 4;
                                     }
-                                }
-                                pr += 6;
-                                int ind = getInstance().findIndexByStoryId(key);
-                                for (String page : story[0].pages) {
-                                    if (getInstance().pageTasks.get(new Pair<>(key, c)) == null) {
-                                        final int prT;
-                                        if (ind == getInstance().currentStoryIndex && c < 2) {
-                                            prT = c;
-                                        } else if (ind == getInstance().currentStoryIndex + 1 && c < 2) {
-                                            prT = c + 2;
-                                        } else if (ind == getInstance().currentStoryIndex - 1 && c < 2) {
-                                            prT = c + 4;
+                                    for (int i = 0; i < sz; i++) {
+                                        if (getInstance().pageTasks.get(new Pair<>(key, i)) == null) {
+                                            StoryPageTask spt = new StoryPageTask();
+                                            spt.loadType = 0;
+                                            spt.urls = story[0].getSrcListUrls(i, null);
+                                            spt.videoUrls = story[0].getSrcListUrls(i, "video");
+                                            spt.priority = i < 2 ? i : i + 4;
+                                            getInstance().pageTasks.put(new Pair<>(key, i), spt);
                                         } else {
-                                            prT = pr + c;
+                                            getInstance().pageTasks.get(new Pair<>(key, i)).priority = i < 2 ? i : i + 4;
                                         }
-                                        final List<String> links = HtmlParser.getSrcUrls(page);
-                                        final List<String> videos = HtmlParser.getSrcVideoUrls(page);
-                                        getInstance().pageTasks.put(new Pair<>(key, c), new StoryPageTask() {{
-                                            loadType = 0;
-                                            urls = links;
-                                            videoUrls = videos;
-                                            priority = prT;
-                                        }});
-                                        c++;
-                                    } else {
-                                        c++;
                                     }
+                                } else {
+                                    int skipPr = getInstance().getStoryById(getInstance().currentId).pages.size() + (cellPriority - 1) * 2;
+                                    sz = 2;
+                                    for (int i = 0; i < sz; i++) {
+                                        if (getInstance().pageTasks.get(new Pair<>(key, i)) == null) {
+                                            StoryPageTask spt = new StoryPageTask();
+                                            spt.loadType = 0;
+                                            spt.urls = story[0].getSrcListUrls(i, null);
+                                            spt.videoUrls = story[0].getSrcListUrls(i, "video");
+                                            spt.priority = i + 2;
+                                            getInstance().pageTasks.put(new Pair<>(key, i), spt);
+                                        } else {
+                                            getInstance().pageTasks.get(new Pair<>(key, i)).priority = i + 2;
+                                        }
+                                    }
+
                                 }
                             }
                         }
                         handler.postDelayed(queueStoryReadRunnable, 200);
                     } catch (Throwable t) {
                         synchronized (getInstance().storyTasksLock) {
-                            getInstance().storyTasks.get(key).loadType = 0;
+                            EventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
+                            getInstance().storyTasks.get(key).loadType = -1;
                         }
                         handler.postDelayed(queueStoryReadRunnable, 200);
                     }
@@ -289,6 +365,7 @@ public class StoryDownloader {
                 handler.postDelayed(queuePageReadRunnable, 100);
                 return;
             }
+
             if (StatisticSession.needToUpdate()) {
                 if (!isRefreshing)
                     isRefreshing = true;
@@ -308,37 +385,69 @@ public class StoryDownloader {
             }
             synchronized (getInstance().pageTasksLock) {
                 getInstance().pageTasks.get(key).loadType = 1;
-
-                final Callable _ff = new Callable() {
-                    @Override
-                    public Object call() throws Exception {
-                        for (String url : getInstance().pageTasks.get(key).urls) {
+            }
+            final Callable _ff = new Callable() {
+                @Override
+                public Object call() throws Exception {
+                    synchronized (getInstance().pageTasksLock) {
+                        for (int i = 0; i < getInstance().pageTasks.get(key).urls.size(); i++) {
+                            String url = getInstance().pageTasks.get(key).urls.get(i);
                             downloadImageByUrl(getInstance().context, url, key.first, key.second);
+                            Log.e("endImage", "endImage1 " + url);
                         }
+
                         for (String url : getInstance().pageTasks.get(key).videoUrls) {
                             downloadVideoByUrl(getInstance().context, url, key.first, key.second);
                         }
                         return null;
                     }
-                };
-                final Future<Story> ff = imageExecutor.submit(_ff);
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ff.get();
+                }
+            };
+            final Future<Story> ff = imageExecutor.submit(_ff);
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ff.get();
+                        synchronized (getInstance().pageTasksLock) {
                             getInstance().pageTasks.get(key).loadType = 2;
-                            handler.postDelayed(queuePageReadRunnable, 200);
-                        } catch (Throwable t) {
-                            getInstance().pageTasks.get(key).loadType = 0;
-                            handler.postDelayed(queuePageReadRunnable, 200);
+                            EventBus.getDefault().post(new PageTaskLoadedEvent(key.first, key.second));
                         }
+                        handler.postDelayed(queuePageReadRunnable, 200);
+                    } catch (Throwable t) {
+                        synchronized (getInstance().pageTasksLock) {
+                            getInstance().pageTasks.get(key).loadType = -1;
+                            EventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
+                        }
+                        handler.postDelayed(queuePageReadRunnable, 200);
                     }
-                });
-            }
+                }
+            });
         }
     };
 
+    public void reloadTask(int id, int index) {
+        if (index >= 0) {
+            Pair<Integer, Integer> pair = new Pair(id, index);
+            if (getInstance().pageTasks.containsKey(pair)) {
+                getInstance().pageTasks.get(pair).priority = 0;
+                getInstance().pageTasks.get(pair).loadType = 0;
+            }
+        } else {
+            getInstance().storyTasks.get(id).priority = 0;
+            getInstance().storyTasks.get(id).loadType = 0;
+        }
+    }
+
+
+    public boolean checkIfPageLoaded(Pair<Integer, Integer> key) {
+        if (getInstance().pageTasks.get(key) != null && getInstance().pageTasks.get(key).loadType == 2) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
 
     private static Handler handler = new Handler();
 
@@ -353,11 +462,7 @@ public class StoryDownloader {
     }
 
     public Story findItemByStoryId(int id) {
-       /* if (onboardStories != null) {
-            for (int i = 0; i < onboardStories.size(); i++) {
-                if (onboardStories.get(i).id == id) return onboardStories.get(i);
-            }
-        }*/
+
         if (stories != null) {
             for (int i = 0; i < stories.size(); i++) {
                 if (stories.get(i).id == id) return stories.get(i);
@@ -408,11 +513,13 @@ public class StoryDownloader {
         INSTANCE = null;
     }
 
-    public static void downloadVideoByUrl(final Context context, final String url, final int StoryId, int ind) {
-        final Future<File> ff = imageExecutor.submit(new Callable<File>() {
+    public static void downloadVideoByUrl(final Context context, final String url, final int StoryId, int ind) throws IOException {
+
+        Downloader.downVideo(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
+       /* final Future<File> ff = imageExecutor.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return Downloader.downVideo(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
+                return
             }
         });
         runnableExecutor.submit(new Runnable() {
@@ -426,15 +533,21 @@ public class StoryDownloader {
                     e.printStackTrace();
                 }
             }
-        });
+        });*/
 
     }
 
-    public static void downloadImageByUrl(final Context context, final String url, final int StoryId, int ind) {
-        final Future<File> ff = imageExecutor.submit(new Callable<File>() {
+    public static void downloadImageByUrl(final Context context, final String url, final int StoryId, int ind) throws IOException {
+       // try {
+            Downloader.downAndCompressImg(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
+            Log.e("endImage", "endImage2 " + url);
+       /* } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+     /*   final Future<File> ff = imageExecutor.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return Downloader.downAndCompressImg(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
+                return
             }
         });
         runnableExecutor.submit(new Runnable() {
@@ -442,18 +555,20 @@ public class StoryDownloader {
             public void run() {
                 try {
                     ff.get();
+                    Log.e("endImage", "endImage2 " + url);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
             }
-        });
+        });*/
 
     }
 
     @WorkerThread
     public void startedLoading(final List<Story> stories) {
+        if (1 == 1) return;
         if (StatisticSession.needToUpdate()) {
             CaseStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
                 @Override
@@ -480,7 +595,7 @@ public class StoryDownloader {
                             if (storyTasks.get(stories.get(i).id) != null) continue;
                             Story storyResponse = ApiClient.getApi().getStoryById(Integer.toString(
                                     stories.get(i).id),
-                                    StatisticSession.getInstance().id,1,
+                                    StatisticSession.getInstance().id, 1,
                                     CaseStoryManager.getInstance().getApiKey(),
                                     EXPAND_STRING)
                                     .execute().body();
@@ -498,14 +613,12 @@ public class StoryDownloader {
                         for (int i = 0; i < Math.min(stories.size(), 4); i++) {
                             for (int j = 0; j < Math.min(stories.get(i).pages.size(), 2); j++) {
                                 final int cPriority = currentPriority;
-                                final List<String> links = HtmlParser.getSrcUrls(stories.get(i).pages.get(j));
-                                final List<String> videos = HtmlParser.getSrcVideoUrls(stories.get(i).pages.get(j));
-                                pageTasks.put(new Pair<>(stories.get(i).id, j), new StoryPageTask() {{
-                                    loadType = 0;
-                                    urls = links;
-                                    videoUrls = videos;
-                                    priority = cPriority;
-                                }});
+                                StoryPageTask spt = new StoryPageTask();
+                                spt.loadType = 0;
+                                spt.urls = stories.get(i).getSrcListUrls(j, null);
+                                spt.videoUrls = stories.get(i).getSrcListUrls(j, "video");
+                                spt.priority = cPriority;
+                                pageTasks.put(new Pair<>(stories.get(i).id, j), spt);
                                 currentPriority++;
                             }
                         }
@@ -522,7 +635,7 @@ public class StoryDownloader {
     public void uploadingAdditional(final List<Story> newStories) {
         boolean sync = false;
         addStories(newStories);
-        synchronized (pageTasksLock) {
+        synchronized (storyTasksLock) {
             if (storyTasks.isEmpty()) {
                 sync = true;
             } else {
@@ -553,7 +666,7 @@ public class StoryDownloader {
     @WorkerThread
     public void uploadingAdditional(final List<Story> stories, final List<Story> newStories) {
         boolean sync = false;
-        synchronized (pageTasksLock) {
+        synchronized (storyTasksLock) {
             if (storyTasks.isEmpty()) {
                 sync = true;
             } else {
@@ -583,7 +696,7 @@ public class StoryDownloader {
 
     public void loadStories(List<Story> stories,
                             int currentStory) {
-        stopStartedLoading = true;
+        //stopStartedLoading = true;
         if (this.stories == null || this.stories.isEmpty()) {
             this.stories = new ArrayList<>();
             this.stories.addAll(stories);
@@ -604,37 +717,6 @@ public class StoryDownloader {
         }
         this.currentStoryIndex = findIndexByStoryId(currentStory);
         if (currentStoryIndex == -1) return;
-        synchronized (storyTasksLock) {
-            int i = 0;
-            int c = 1;
-            boolean f1 = false;
-            boolean f2 = false;
-            while (!f1 || !f2) {
-                c *= -1;
-                i++;
-                int ind = currentStoryIndex + ((i) / 2) * c;
-                if (ind < 0) {
-                    f1 = true;
-                    continue;
-                }
-                if (ind > stories.size() - 1) {
-                    f2 = true;
-                    continue;
-                }
-                Story story = stories.get(ind);
-                if (storyTasks.get(story.id) == null) {
-                    final int pr = i;
-                    storyTasks.put(story.id, new StoryTask() {{
-                        loadType = 0;
-                        priority = pr;
-                    }});
-                } else if (storyTasks.get(story.id).loadType == 3) {
-
-                    storyTasks.get(story.id).priority = i;
-                    storyTasks.get(story.id).loadType = 0;
-                }
-            }
-        }
     }
 
     public void renewPriorities(final int currentStoryIndex) throws IOException, InterruptedException {
@@ -642,25 +724,27 @@ public class StoryDownloader {
         runnableExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                synchronized (pageTasksLock) {
-                    int i = 0;
-                    int c = 1;
-                    int t = 6;
-                    boolean f1 = false;
-                    boolean f2 = false;
-                    while (!f1 || !f2) {
-                        c *= -1;
-                        i++;
-                        int ind = currentStoryIndex + ((i) / 2) * c;
-                        if (ind < 0) {
-                            f1 = true;
-                            continue;
-                        }
-                        if (ind > stories.size() - 1) {
-                            f2 = true;
-                            continue;
-                        }
-                        Story story = stories.get(ind);
+
+                Log.e("StoryDownloadPriority", "renewPriorities");
+                int i = 0;
+                int c = 1;
+                int t = 6;
+                boolean f1 = false;
+                boolean f2 = false;
+                while (!f1 || !f2) {
+                    c *= -1;
+                    i++;
+                    int ind = currentStoryIndex + ((i) / 2) * c;
+                    if (ind < 0) {
+                        f1 = true;
+                        continue;
+                    }
+                    if (ind > stories.size() - 1) {
+                        f2 = true;
+                        continue;
+                    }
+                    Story story = stories.get(ind);
+                    synchronized (storyTasksLock) {
                         if (storyTasks.get(story.id) != null) {
                             if (storyTasks.get(story.id).loadType == 0) {
                                 storyTasks.get(story.id).priority = i;
@@ -669,6 +753,9 @@ public class StoryDownloader {
                                 storyTasks.get(story.id).loadType = 0;
                             }
                         }
+                    }
+
+                    synchronized (pageTasksLock) {
                         for (int j = 0; j < stories.get(ind).pages.size(); j++) {
                             if (pageTasks.get(new Pair<>(story.id, j)) != null) {
                                 if (ind == currentStoryIndex && j < 2) {
@@ -681,28 +768,31 @@ public class StoryDownloader {
                                     pageTasks.get(new Pair<>(story.id, j)).priority = t;
                                     t++;
                                 }
+                                Log.e("StoryDownloadPriority2", pageTasks.get(new Pair<>(story.id, j)).priority + "");
                             }
                         }
                     }
                 }
-                synchronized (storyTasksLock) {
-                    int i = 0;
-                    int c = 1;
-                    boolean f1 = false;
-                    boolean f2 = false;
-                    while (!f1 || !f2) {
-                        c *= -1;
-                        i++;
-                        int ind = currentStoryIndex + ((i) / 2) * c;
-                        if (ind < 0) {
-                            f1 = true;
-                            continue;
-                        }
-                        if (ind > stories.size() - 1) {
-                            f2 = true;
-                            continue;
-                        }
-                        Story story = stories.get(ind);
+
+                i = 0;
+                c = 1;
+                f1 = false;
+                f2 = false;
+                while (!f1 || !f2) {
+                    c *= -1;
+                    i++;
+                    int ind = currentStoryIndex + ((i) / 2) * c;
+                    if (ind < 0) {
+                        f1 = true;
+                        continue;
+                    }
+                    if (ind > stories.size() - 1) {
+                        f2 = true;
+                        continue;
+                    }
+                    Story story = stories.get(ind);
+
+                    synchronized (storyTasksLock) {
                         if (storyTasks.get(story.id) != null) {
                             if (storyTasks.get(story.id).loadType == 0) {
                                 storyTasks.get(story.id).priority = i;
@@ -821,7 +911,7 @@ public class StoryDownloader {
                 bm = decodeSampledBitmapFromResource(bytes, 150000);
             }
         if (bm == null) {
-            throw new IOException("опять они всё сломали");
+            throw new IOException("wrong bitmap");
         }
         if (limitedSize != null && (bm.getWidth() > limitedSize.x || bm.getHeight() > limitedSize.y)) {
             Bitmap outBm = Bitmap.createScaledBitmap(bm, limitedSize.x, bm.getHeight() * limitedSize.x / bm.getWidth(), true);

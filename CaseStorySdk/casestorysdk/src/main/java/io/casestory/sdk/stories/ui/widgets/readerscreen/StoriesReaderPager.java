@@ -3,6 +3,7 @@ package io.casestory.sdk.stories.ui.widgets.readerscreen;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
@@ -97,6 +98,12 @@ public class StoriesReaderPager extends ViewPager {
         if (CaseStoryService.getInstance().cubeAnimation) {
             return false;
         }
+
+        if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 700) {
+            Log.e("VPIntTouch_skip", motionEvent.toString());
+            return false;
+        }
+        Log.e("VPIntTouch_done", motionEvent.toString());
         long pressEndTime;
         float pressedEndX = 0f;
         float pressedEndY = 0f;
@@ -120,7 +127,7 @@ public class StoriesReaderPager extends ViewPager {
             distanceY = pressedEndY > 400;
             if (pressedEndY > 0) {
             }
-
+            Log.e("resumeTimer", "ReaderTouch");
             EventBus.getDefault().post(new ResumeStoryReaderEvent(false));
             EventBus.getDefault().post(new StorySwipeBackEvent(CaseStoryService.getInstance().getCurrentId()));
             if (distanceY) {

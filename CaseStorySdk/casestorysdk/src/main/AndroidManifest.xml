@@ -13,7 +13,7 @@
         <activity
             android:name="io.casestory.sdk.stories.ui.reader.StoriesActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/StoriesSDKAppTheme.NoActionBar" />
+            android:theme="@style/Theme.Transparent" />
     </application>
 
 </manifest>

@@ -16,19 +16,20 @@ import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.stories.cache.FileCache;
 import io.casestory.sdk.stories.cache.FileType;
 import io.casestory.sdk.stories.cache.HtmlParser;
+import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 
 public class WebPageConverter {
-    public static void replaceImagesAndLoad(String innerWebData, final int storyId, String layout) {
+    public static void replaceImagesAndLoad(String innerWebData, final int storyId, final int index, String layout) {
         boolean exists = false;
-        List<String> imgs = HtmlParser.getSrcUrls(innerWebData);
-
-        for (String img : imgs) {
+        List<String> imgs = StoryDownloader.getInstance().getStoryById(storyId).getSrcListUrls(index, null);
+        List<String> imgKeys = StoryDownloader.getInstance().getStoryById(storyId).getSrcListKeys(index, null);
+        for (int i = 0; i < imgs.size(); i++) {
+            String img = imgs.get(i);
+            String imgKey = imgKeys.get(i);
             Context con = CaseStoryManager.getInstance().getContext();
             FileCache cache = FileCache.INSTANCE;
             File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
-
-            Log.d("LoadEvents", "loadImage " + img);
             if (file.exists()) {
                 exists = true;
                 FileInputStream fis = null;
@@ -36,9 +37,14 @@ public class WebPageConverter {
                     fis = new FileInputStream(file);
                     byte[] imageRaw = new byte[(int) file.length()];
                     fis.read(imageRaw);
-                    String image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
+                    String cType = KeyValueStorage.getString(file.getName());
+                    String image64;
+                    if (cType != null)
+                        image64 = "data:" + cType + ";base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
+                    else
+                        image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
                     fis.close();
-                    innerWebData = innerWebData.replace(img.replace("&", "&amp;"), image64);
+                    innerWebData = innerWebData.replace(imgKey, image64);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -53,33 +59,26 @@ public class WebPageConverter {
         return;
     }
 
-    public static void replaceVideoAndLoad(String innerWebData, final int storyId, String layout) {
-        boolean exists = false;
-        List<String> imgs = HtmlParser.getSrcUrls(innerWebData);
-        for (String img : imgs) {
-            Context con = CaseStoryManager.getInstance().getContext();
-            FileCache cache = FileCache.INSTANCE;
-            File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
-            if (file.exists()) {
-                exists = true;
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(file);
-                    byte[] imageRaw = new byte[(int) file.length()];
-                    fis.read(imageRaw);
-                    String image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
-                    fis.close();
-                    innerWebData = innerWebData.replace(img.replace("&", "&amp;"), image64);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+    public static void replaceVideoAndLoad(String innerWebData, final int storyId, final int index, String layout) {
+        List<String> imgs = StoryDownloader.getInstance().getStoryById(storyId).getSrcListUrls(index, "video");
+        List<String> imgKeys = StoryDownloader.getInstance().getStoryById(storyId).getSrcListKeys(index, "video");
+        for (int i = 0; i < imgs.size(); i++) {
+            String img = imgs.get(i);
+            String imgKey = imgKeys.get(i);
+            innerWebData = innerWebData.replace(imgKey, img);
         }
         String webData = layout
                 .replace("//_ratio = 0.66666666666,", "")
                 .replace("{{%content}}", innerWebData);
+        EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
+        return;
+    }
+
+    public static void replaceEmptyAndLoad(String innerWebData, final int storyId, final int index, String layout) {
+        String webData = layout
+                .replace("//_ratio = 0.66666666666,", "")
+                .replace("{{%content}}", innerWebData)
+                .replace("window.Android.storyLoaded", "window.Android.emptyLoaded");
         EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
         return;
     }

@@ -13,15 +13,15 @@ public class StoryPageLoadedEvent {
 
     public int index;
 
-    public int getNarrativeId() {
-        return narrativeId;
+    public int getStoryId() {
+        return storyId;
     }
 
-    public int narrativeId;
+    public int storyId;
 
-    public StoryPageLoadedEvent(int narrativeId, int index) {
+    public StoryPageLoadedEvent(int storyId, int index) {
         this.index = index;
-        this.narrativeId = narrativeId;
+        this.storyId = storyId;
     }
 
 

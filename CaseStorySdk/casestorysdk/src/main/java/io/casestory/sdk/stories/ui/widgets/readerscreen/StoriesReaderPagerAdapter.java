@@ -23,6 +23,12 @@ import io.casestory.sdk.stories.events.PageByIndexRefreshEvent;
 import io.casestory.sdk.stories.events.PageRefreshEvent;
 import io.casestory.sdk.stories.events.PageSelectedEvent;
 
+import static io.casestory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
+import static io.casestory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static io.casestory.sdk.AppearanceManager.CS_HAS_FAVORITE;
+import static io.casestory.sdk.AppearanceManager.CS_HAS_LIKE;
+import static io.casestory.sdk.AppearanceManager.CS_HAS_SHARE;
+
 public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
     private List<Integer> storiesIds = new ArrayList<>();
 
@@ -89,11 +95,11 @@ public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
         StoriesReaderPageFragment frag = new StoriesReaderPageFragment();
         Bundle a = new Bundle();
         a.putInt("story_id", storiesIds.get(position));
-        a.putInt("closePosition", closePosition);
-        a.putBoolean("closeOnSwipe", closeOnSwipe);
-        a.putBoolean("hasFavorite", hasFavorite);
-        a.putBoolean("hasLike", hasLike);
-        a.putBoolean("hasShare", hasShare);
+        a.putInt(CS_CLOSE_POSITION, closePosition);
+        a.putBoolean(CS_CLOSE_ON_SWIPE, closeOnSwipe);
+        a.putBoolean(CS_HAS_FAVORITE, hasFavorite);
+        a.putBoolean(CS_HAS_LIKE, hasLike);
+        a.putBoolean(CS_HAS_SHARE, hasShare);
         frag.setArguments(a);
         fragMap.put(position, frag);
         return frag;

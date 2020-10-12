@@ -159,14 +159,14 @@ final class PausableProgressBar extends FrameLayout {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                if (callback != null) {
+               /* if (callback != null) {
                     Log.e("loadStory", "onAnimationEnd");
                     if (callback.onFinishProgress()) {
-                        EventBus.getDefault().post(new NextStoryReaderEvent());
+                     //   EventBus.getDefault().post(new NextStoryReaderEvent());
                     } else {
-                        EventBus.getDefault().post(new StoriesNextPageEvent(0));
+                     //   EventBus.getDefault().post(new StoriesNextPageEvent(0));
                     }
-                }
+                }*/
             }
         });
         animation.setFillAfter(true);

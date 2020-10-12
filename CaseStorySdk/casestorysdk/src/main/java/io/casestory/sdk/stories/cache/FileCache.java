@@ -292,6 +292,22 @@ public enum FileCache {
         }
     }
 
+    public void deleteFolderRecursive(File fileOrDirectory, boolean deleteRoot) {
+
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteFolderRecursive(child, true);
+            }
+        }
+        if (deleteRoot) {
+            try {
+                fileOrDirectory.delete();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
     private File getSavedStoryImage(Context context, String uri1, int StoryId, String ext) {
         String uri = Downloader.cropUrl(uri1);
         String fName = hashed.get(uri);
