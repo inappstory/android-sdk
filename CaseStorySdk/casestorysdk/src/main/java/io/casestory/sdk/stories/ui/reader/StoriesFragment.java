@@ -316,6 +316,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 } else if (real < 0.3 * sz) {
                     EventBus.getDefault().post(new PrevStoryPageEvent(currentIds.get(storiesViewPager.getCurrentItem())));
                 }
+            } else {
+
             }
         }
     }

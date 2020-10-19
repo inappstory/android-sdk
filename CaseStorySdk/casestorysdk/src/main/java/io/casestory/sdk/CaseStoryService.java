@@ -60,6 +60,7 @@ import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
 import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.events.StoryPageOpenEvent;
+import io.casestory.sdk.stories.events.StoryReaderTapEvent;
 import io.casestory.sdk.stories.events.StoryTapEvent;
 import io.casestory.sdk.stories.serviceevents.ContentRenewPriorities;
 import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
@@ -191,7 +192,7 @@ public class CaseStoryService extends Service {
     }
 
     @Subscribe
-    public void storyPageTapEvent(StoryTapEvent event) {
+    public void storyPageTapEvent(StoryReaderTapEvent event) {
         if (event.getLink() != null && !event.getLink().isEmpty()) {
             StoryLinkObject object = new Gson().fromJson(event.getLink(), StoryLinkObject.class);
             if (object != null) {
@@ -207,6 +208,7 @@ public class CaseStoryService extends Service {
                                 return;
                             }
                             Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             i.setData(Uri.parse(object.getLink().getTarget()));
                             startActivity(i);
                         }
