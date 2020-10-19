@@ -11,6 +11,7 @@ public class StoriesErrorEvent {
     public static final int LOAD_ONBOARD = 3;
     public static final int READER = 4;
     public static final int EMPTY_LINK = 5;
+    public static final int CACHE = 6;
 
     public int getType() {
         return type;

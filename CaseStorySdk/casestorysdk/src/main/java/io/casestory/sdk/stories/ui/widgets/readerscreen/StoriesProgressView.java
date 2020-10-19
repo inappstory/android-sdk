@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.NextStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
 import io.casestory.sdk.stories.storieslistenerevents.OnCompleteEvent;
@@ -78,6 +79,7 @@ public class StoriesProgressView extends LinearLayout {
     }
 
     public void clearAnimation(int index) {
+
         progressBars.get(index).finishAnimationProgress();
     }
 
@@ -100,7 +102,6 @@ public class StoriesProgressView extends LinearLayout {
             current = counter;
             return;
         }
-        Log.e("baseTimer", "setCurrentCounter " + counter);
         if (counter < progressBars.size() - 1) {
             isComplete = false;
         }
@@ -118,7 +119,6 @@ public class StoriesProgressView extends LinearLayout {
     }
 
     public void setCurrentCounterAndRestart(int counter) {
-        Log.e("timers", "setCurrentCounterAndRestart");
         if (storiesCount <= 0) {
             current = counter;
             return;
@@ -186,34 +186,6 @@ public class StoriesProgressView extends LinearLayout {
         this.storiesListener = storiesListener;
     }
 
-    /**
-     * Skip current story
-     */
-    public boolean skip() {
-        PausableProgressBar p = progressBars.get(current);
-        p.setMax();
-        if (isComplete) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Reverse current story
-     */
-    public boolean reverse() {
-        // if (isComplete) return;
-        if (current == 0) {
-            return false;
-        }
-        isComplete = false;
-        setCurrentCounter(current - 1);
-        return true;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
 
     boolean active;
 
@@ -234,6 +206,7 @@ public class StoriesProgressView extends LinearLayout {
     }
 
     public void same() {
+        Log.e("eventsLoaded", "same");
         if (isComplete) {
             return;
         }
@@ -268,10 +241,12 @@ public class StoriesProgressView extends LinearLayout {
     }
 
     public void setStoryDurations(List<Integer> durations) {
+        if (durations == null) return;
         for (int i = 0; i < progressBars.size(); i++) {
             progressBars.get(i).setDuration(durations.get(i));
             progressBars.get(i).setCallback(callback(i));
         }
+        Log.e("eventsLoaded", "StoryCacheLoadedEvent set");
     }
 
     /**
@@ -292,56 +267,11 @@ public class StoriesProgressView extends LinearLayout {
         return new PausableProgressBar.Callback() {
             @Override
             public void onStartProgress() {
-               // current = index;
             }
 
             @Override
             public boolean onFinishProgress(boolean isDestroy) {
-              /*  if (isDestroy) return false;
-                if (same) {
-                    same = false;
-                    PausableProgressBar p = progressBars.get(current);
-                    p.setMinWithoutCallback();
-                    if (storiesListener.webViewLoaded(current))
-                        progressBars.get(current).startProgress();
-                    return false;
-                }
 
-                if (isReverse) {
-                    isReverse = false;
-                    if (0 <= (current - 1)) {
-                        PausableProgressBar p = progressBars.get(current - 1);
-                        p.setMinWithoutCallback();
-                        if (storiesListener.webViewLoaded(current > 0 ? --current : current))
-                            progressBars.get(current).startProgress();
-                    } else {
-                        if (storiesListener.webViewLoaded(current))
-                            progressBars.get(current).startProgress();
-                    }
-                    return false;
-                }
-                final int next = current + 1;
-                if (next <= (progressBars.size() - 1)) {
-                    Log.e("loadStory", "onFinishProgress " + next);
-                    if (progressBars.get(next).duration <= 1) {
-                        current = next;
-                    }
-                    if (storiesListener != null)
-                        progressBars.get(next).startProgress();
-                    new Handler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!storiesListener.webViewLoaded(next)) {
-                                progressBars.get(next).pauseProgress(false);
-                            }
-                        }
-                    });
-                    return false;
-                } else {
-                    isComplete = true;
-                 //   EventBus.getDefault().post(new OnCompleteEvent());
-                    return true;
-                }*/
                 return true;
             }
 
@@ -356,11 +286,6 @@ public class StoriesProgressView extends LinearLayout {
 
     public void startProgress(int ind) {
         setCurrentCounter(ind);
-      /*  if (progressBars.get(ind).animationIsEmpty() && storiesListener.webViewLoaded(current)) {
-            progressBars.get(ind).startProgress();
-        } else {
-            progressBars.get(ind).resumeProgress(false);
-        }*/
     }
 
 
@@ -372,10 +297,9 @@ public class StoriesProgressView extends LinearLayout {
      * Start progress animation
      */
     public void startStories() {
-        Log.d("Events", "startStories");
+        Log.e("eventsLoaded", "startStories");
         try {
             if (progressBars.get(current).startProgress()) {
-                Log.d("Events", "startStories2");
                 started = true;
             }
         } catch (Exception e) {

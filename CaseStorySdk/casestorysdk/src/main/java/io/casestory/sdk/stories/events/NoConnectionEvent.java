@@ -11,6 +11,7 @@ public class NoConnectionEvent {
     public static final int LOAD_SINGLE = 2;
     public static final int LOAD_ONBOARD = 3;
     public static final int READER = 4;
+    public static final int LINK = 5;
 
     public int getType() {
         return type;

@@ -31,7 +31,7 @@ final class PausableProgressBar extends FrameLayout {
     private View maxProgressView;
 
     private PausableScaleAnimation animation;
-    public long duration = DEFAULT_PROGRESS_DURATION;
+    public long duration = -7;
     private Callback callback;
 
     interface Callback {
@@ -108,8 +108,6 @@ final class PausableProgressBar extends FrameLayout {
             animation.setAnimationListener(null);
             animation.cancel();
             if (callback != null) {
-
-                Log.e("loadStory", "clearProgress");
                 callback.onFinishProgress(isDestroy);
             }
         }
@@ -129,8 +127,6 @@ final class PausableProgressBar extends FrameLayout {
 
         }
         if (callback != null) {
-
-            Log.e("loadStory", "finishProgress");
             callback.onFinishProgress();
         }
     }

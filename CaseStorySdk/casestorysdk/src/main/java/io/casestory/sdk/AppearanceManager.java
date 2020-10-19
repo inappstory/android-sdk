@@ -1,6 +1,7 @@
 package io.casestory.sdk;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 
 import io.casestory.sdk.stories.ui.views.IGetFavoriteListItem;
 import io.casestory.sdk.stories.ui.views.IStoriesListItem;
@@ -14,21 +15,23 @@ public class AppearanceManager {
     public static final String CS_HAS_FAVORITE = "hasFavorite";
     public static final String CS_HAS_SHARE = "hasShare";
     public static final String CS_CLOSE_ON_SWIPE = "closeOnSwipe";
+    public static final String CS_READER_OPEN_ANIM = "readerOpenAnimation";
+
 
     public static final int TOP_LEFT = 1;
     public static final int TOP_RIGHT = 2;
     public static final int BOTTOM_LEFT = 3;
     public static final int BOTTOM_RIGHT = 4;
 
-    public static final int ANIMATION_CUBE = 1;
-    public static final int ANIMATION_DEPTH = 2;
+    public static final int ANIMATION_CUBE = 2;
+    public static final int ANIMATION_DEPTH = 1;
 
     private boolean csListItemTitleVisibility = true;
-    private int csListItemTitleSize = Sizes.dpToPxExt(14);
+    private int csListItemTitleSize = -1;
     private int csListItemTitleColor = Color.BLACK;
 
     private boolean csListItemSourceVisibility = false;
-    private int csListItemSourceSize = Sizes.dpToPxExt(14);
+    private int csListItemSourceSize = -1;
     private int csListItemSourceColor = Color.BLACK;
 
     private boolean csListItemBorderVisibility = true;
@@ -37,6 +40,17 @@ public class AppearanceManager {
 
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
+
+    public Typeface csCustomFont() {
+        return csCustomFont;
+    }
+
+    Typeface csCustomFont;
+
+    public AppearanceManager csCustomFont(Typeface csCustomFont) {
+        this.csCustomFont = csCustomFont;
+        return AppearanceManager.this;
+    }
 
     private boolean csListReadedItemBorderVisibility = false;
     private int csListReadedItemBorderColor = Color.GRAY;
@@ -123,6 +137,7 @@ public class AppearanceManager {
     }
 
     public int csListItemTitleSize() {
+        if (csListItemTitleSize == -1) return Sizes.dpToPxExt(14);
         return csListItemTitleSize;
     }
 
@@ -135,6 +150,7 @@ public class AppearanceManager {
     }
 
     public int csListItemSourceSize() {
+        if (csListItemSourceSize == -1) return Sizes.dpToPxExt(14);
         return csListItemSourceSize;
     }
 

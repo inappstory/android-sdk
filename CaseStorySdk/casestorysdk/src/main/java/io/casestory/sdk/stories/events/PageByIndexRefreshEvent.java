@@ -11,7 +11,14 @@ public class PageByIndexRefreshEvent {
 
     private int storyId;
 
-    public PageByIndexRefreshEvent(int storyId) {
+    public int getIndex() {
+        return index;
+    }
+
+    private int index;
+
+    public PageByIndexRefreshEvent(int storyId, int index) {
         this.storyId = storyId;
+        this.index = index;
     }
 }

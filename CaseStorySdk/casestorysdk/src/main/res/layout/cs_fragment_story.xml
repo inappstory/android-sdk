@@ -67,16 +67,8 @@
             android:elevation="7dp"
             android:clickable="false"
             android:visibility="visible"
-            android:id="@+id/refresh"
+            android:id="@+id/progress"
             android:layout_height="match_parent">
-            <ImageView
-                android:layout_width="32dp"
-                android:scaleType="fitCenter"
-                android:id="@+id/refreshButton"
-                android:layout_centerInParent="true"
-                android:visibility="gone"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_refresh"/>
 
             <RelativeLayout
                 android:id="@+id/blackMask"
@@ -120,7 +112,7 @@
         </LinearLayout>
         <View
             android:layout_width="match_parent"
-            android:background="@drawable/narrative_gradient"
+            android:background="@drawable/story_gradient"
             android:clickable="false"
             android:elevation="9dp"
             android:layout_height="match_parent"/>
@@ -154,12 +146,21 @@
             android:paddingBottom="8dp"
             android:tint="@color/white"
             android:tintMode="src_atop"
-            app:srcCompat="@drawable/narrative_close" />
+            app:srcCompat="@drawable/cs_reader_close" />
     </RelativeLayout>
 
 
 
 
+    <ImageView
+        android:layout_width="32dp"
+        android:scaleType="fitCenter"
+        android:elevation="18dp"
+        android:id="@+id/refreshButton"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:layout_height="32dp"
+        android:src="@drawable/ic_refresh"/>
 
     <View
         android:layout_width="match_parent"

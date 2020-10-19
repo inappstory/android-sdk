@@ -38,6 +38,7 @@ import io.casestory.sdk.stories.utils.StatusBarController;
 
 import static io.casestory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static io.casestory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static io.casestory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static io.casestory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 
 public class StoriesActivity extends AppCompatActivity {
@@ -50,7 +51,7 @@ public class StoriesActivity extends AppCompatActivity {
             animateFirst = false;
             loadAnim();
         } else {
-            switch (getIntent().getIntExtra("narrativesOpenAnimation", 1)) {
+            switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
                 case 0:
                     finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
                     break;
@@ -79,7 +80,6 @@ public class StoriesActivity extends AppCompatActivity {
         anim.setDuration(200);
         animationSet.addAnimation(anim);
         if (CaseStoryManager.getInstance().coordinates != null) {
-            Log.e("coordinates", "" + CaseStoryManager.getInstance().coordinates.y);
             Animation anim2 = new TranslateAnimation(draggableFrame.getX(), CaseStoryManager.getInstance().coordinates.x - Sizes.getScreenSize().x/2,
                     0f, CaseStoryManager.getInstance().coordinates.y - draggableFrame.getY());
             anim2.setDuration(200);

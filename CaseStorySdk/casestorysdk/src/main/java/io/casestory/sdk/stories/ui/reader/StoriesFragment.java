@@ -33,6 +33,7 @@ import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
 import io.casestory.sdk.stories.events.NextStoryPageEvent;
 import io.casestory.sdk.stories.events.NextStoryReaderEvent;
 import io.casestory.sdk.stories.events.PageByIdSelectedEvent;
+import io.casestory.sdk.stories.events.PageByIndexRefreshEvent;
 import io.casestory.sdk.stories.events.PageSelectedEvent;
 import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryPageEvent;
@@ -206,7 +207,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         backPaused = false;
         if (!isDestroyed) {
             if (!created)
-                Log.e("resumeTimer", "SFOnResume");
                 EventBus.getDefault().post(new ResumeStoryReaderEvent(true));
             if (!Sizes.isTablet())
                 StatusBarController.hideStatusBar(getActivity(), true);
@@ -215,6 +215,23 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         super.onResume();
     }
 
+
+    @Subscribe
+    public void refreshPageEvent(PageByIndexRefreshEvent event) {
+        ArrayList<Integer> adds = new ArrayList<>();
+        int position = currentIds.indexOf(event.getStoryId());
+        if (currentIds.size() > 1) {
+            if (position == 0) {
+                adds.add(currentIds.get(position + 1));
+            } else if (position == currentIds.size() - 1) {
+                adds.add(currentIds.get(position - 1));
+            } else {
+                adds.add(currentIds.get(position + 1));
+                adds.add(currentIds.get(position - 1));
+            }
+        }
+        StoryDownloader.getInstance().reloadPage(event.getStoryId(), event.getIndex(), adds);
+    }
 
     @Override
     public void onPageSelected(int position) {
@@ -264,7 +281,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onPageScrollStateChanged(int state) {
         if (state == ViewPager.SCROLL_STATE_IDLE) {
             if (getCurIndexById(CaseStoryService.getInstance().getCurrentId()) == currentIndex) {
-                Log.e("resumeTimer", "pageScroll");
                 EventBus.getDefault().post(new ResumeStoryReaderEvent(false));
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -277,7 +293,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
         currentIndex = getCurIndexById(CaseStoryService.getInstance().getCurrentId());
 
-        Log.e("currentIndex", "OnPrevEvent " + currentIndex);
     }
 
     @Override
@@ -290,8 +305,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         EventBus.getDefault().post(new CloseStoryReaderEvent());
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void narrativePageTapEvent(StoryReaderTapEvent event) {
+    @Subscribe
+    public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
             if (event.getLink() == null || event.getLink().isEmpty()) {
                 int real = event.getCoordinate();
@@ -308,7 +323,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void nextStoryPageEvent(OnNextEvent event) {
         if (isDestroyed) return;
-        if (currentIndex < StoryDownloader.getInstance().findItemByStoryId(CaseStoryService.getInstance().getCurrentId()).pages.size() - 1) {
+        if (currentIndex < StoryDownloader.getInstance().findItemByStoryId(CaseStoryService.getInstance().getCurrentId()).slidesCount - 1) {
             currentIndex++;
         }
 
@@ -358,7 +373,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
-        Log.e("loadStory", "SFchangeIndexEvent " + event.getIndex());
         currentIndex = event.getIndex();
     }
 
@@ -392,7 +406,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void changeStoryEvent(ChangeStoryEvent event) {
         CaseStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
         currentIndex = StoryDownloader.getInstance().findItemByStoryId(currentIds.get(event.getIndex())).lastIndex;
-        Log.e("currentIndex", "ChangeStoryEvent " + currentIndex);
         if (isDestroyed) return;
         invMask.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable() {

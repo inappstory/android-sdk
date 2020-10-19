@@ -15,7 +15,6 @@ public class PageTaskLoadedEvent {
     }
 
     public PageTaskLoadedEvent(int id, int index) {
-        Log.e("CacheEvents", "PageTaskLoadedEvent " + id + " " + index);
         this.id = id;
         this.index = index;
     }

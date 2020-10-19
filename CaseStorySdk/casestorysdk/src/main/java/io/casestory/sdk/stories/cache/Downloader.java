@@ -77,6 +77,9 @@ public class Downloader {
         String ctType = response.header("Content-Type");
         boolean isPng = false;
         if (ctType != null && ctType.equals("image/png")) isPng = true;
+        if (response.code() > 350) {
+            throw new RuntimeException();
+        }
         bytes = response.body().bytes();
         File file = downloadFile(bytes, img, ctType);
         return file;

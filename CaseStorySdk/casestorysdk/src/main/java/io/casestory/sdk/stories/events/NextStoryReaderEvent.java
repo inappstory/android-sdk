@@ -10,7 +10,6 @@ public class NextStoryReaderEvent {
 
 
     public NextStoryReaderEvent() {
-        Log.d("Events","nextNarrativeEvent");
     }
 
 

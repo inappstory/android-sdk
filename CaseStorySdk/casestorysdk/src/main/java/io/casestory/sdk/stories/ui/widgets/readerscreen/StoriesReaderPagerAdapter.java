@@ -43,7 +43,6 @@ public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
     public StoriesReaderPagerAdapter(@NonNull FragmentManager fm, int closePosition, boolean closeOnSwipe, List<Integer> ids) {
         super(fm);
         this.storiesIds.clear();
-        EventBus.getDefault().register(this);
         this.storiesIds.addAll(ids);
 
         this.closePosition = closePosition;
@@ -64,18 +63,6 @@ public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
         }
     }
 
-    @Subscribe
-    public void refreshPageEvent(PageRefreshEvent event) {
-        int ind = storiesIds.indexOf(event.getStoryId());
-        EventBus.getDefault().post(new PageByIndexRefreshEvent(event.getStoryId()));
-        if (ind > 0) {
-            EventBus.getDefault().post(new PageByIndexRefreshEvent(storiesIds.get(ind-1)));
-        }
-        if (ind < storiesIds.size() - 1) {
-            EventBus.getDefault().post(new PageByIndexRefreshEvent(storiesIds.get(ind+1)));
-        }
-    }
-
 
     private int closePosition = 0;
 
@@ -92,17 +79,19 @@ public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
     @NonNull
     @Override
     public Fragment getItem(int position) {
-        StoriesReaderPageFragment frag = new StoriesReaderPageFragment();
-        Bundle a = new Bundle();
-        a.putInt("story_id", storiesIds.get(position));
-        a.putInt(CS_CLOSE_POSITION, closePosition);
-        a.putBoolean(CS_CLOSE_ON_SWIPE, closeOnSwipe);
-        a.putBoolean(CS_HAS_FAVORITE, hasFavorite);
-        a.putBoolean(CS_HAS_LIKE, hasLike);
-        a.putBoolean(CS_HAS_SHARE, hasShare);
-        frag.setArguments(a);
-        fragMap.put(position, frag);
-        return frag;
+        if (fragMap.get(position) == null) {
+            StoriesReaderPageFragment frag = new StoriesReaderPageFragment();
+            Bundle a = new Bundle();
+            a.putInt("story_id", storiesIds.get(position));
+            a.putInt(CS_CLOSE_POSITION, closePosition);
+            a.putBoolean(CS_CLOSE_ON_SWIPE, closeOnSwipe);
+            a.putBoolean(CS_HAS_FAVORITE, hasFavorite);
+            a.putBoolean(CS_HAS_LIKE, hasLike);
+            a.putBoolean(CS_HAS_SHARE, hasShare);
+            frag.setArguments(a);
+            fragMap.put(position, frag);
+        }
+        return fragMap.get(position);
     }
 
 

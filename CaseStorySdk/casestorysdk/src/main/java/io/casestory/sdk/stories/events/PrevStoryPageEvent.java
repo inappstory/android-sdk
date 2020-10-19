@@ -14,7 +14,6 @@ public class PrevStoryPageEvent {
 
     public PrevStoryPageEvent(int storyIndex)
     {
-        Log.d("Events", "prevNarrativePageEvent");
         this.storyIndex = storyIndex;
     }
 

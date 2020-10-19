@@ -17,10 +17,6 @@ public class FavoriteImage {
 
     private int id;
 
-    public Bitmap getBitmap() {
-        return bitmap;
-    }
-
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
     }

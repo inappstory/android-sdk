@@ -110,7 +110,7 @@ public class StoriesList extends RecyclerView {
     AppearanceManager appearanceManager;
     OnFavoriteItemClick favoriteItemClick;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe
     public void openStoryByIdEvent(OpenStoryByIdEvent event) {
         StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(), event.getIndex());
     }

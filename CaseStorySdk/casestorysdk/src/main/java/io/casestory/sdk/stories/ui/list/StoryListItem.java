@@ -3,6 +3,7 @@ package io.casestory.sdk.stories.ui.list;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,9 +64,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             source = v.findViewById(R.id.source);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_SP, manager.csListItemTitleSize());
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
             title.setTextColor(manager.csListItemTitleColor());
-            source.setTextSize(TypedValue.COMPLEX_UNIT_SP, manager.csListItemSourceSize());
+            source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
@@ -125,6 +126,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages) != null) return;
         RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
         title.setText("Favorites");
+        if (manager.csCustomFont() != null) {
+            title.setTypeface(manager.csCustomFont());
+        }
         List<FavoriteImage> favImages = CaseStoryService.getInstance().favoriteImages;
         if (favImages.size() > 0) {
             AppCompatImageView image1 = new AppCompatImageView(itemView.getContext());
@@ -216,9 +220,15 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         }
         if (title != null) {
             title.setText(titleText);
+            if (manager.csCustomFont() != null) {
+                title.setTypeface(manager.csCustomFont());
+            }
         }
         if (source != null) {
             source.setText(sourceText);
+            if (manager.csCustomFont() != null) {
+                source.setTypeface(manager.csCustomFont());
+            }
         }
 
         border.setVisibility(isReaded ? View.GONE : View.VISIBLE);

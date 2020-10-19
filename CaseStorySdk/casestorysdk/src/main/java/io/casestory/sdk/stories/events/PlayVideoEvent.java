@@ -11,15 +11,15 @@ public class PlayVideoEvent {
 
     public int index;
 
-    public int getNarrativeId() {
-        return narrativeId;
+    public int getStoryId() {
+        return storyId;
     }
 
-    public int narrativeId;
+    public int storyId;
 
-    public PlayVideoEvent(int narrativeId, int index) {
+    public PlayVideoEvent(int storyId, int index) {
         this.index = index;
-        this.narrativeId = narrativeId;
+        this.storyId = storyId;
     }
 
 }

@@ -56,8 +56,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         // safety check
         if (getDialog() == null)
             return;
-        int dialogWidth = Sizes.dpToPxExt(400);
-        int dialogHeight = Sizes.dpToPxExt(600);
+        int dialogWidth = getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
+        int dialogHeight = getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
         getDialog().getWindow().setLayout(dialogWidth, dialogHeight);
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 

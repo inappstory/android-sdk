@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -36,14 +37,17 @@ import io.casestory.sdk.stories.events.NoConnectionEvent;
 import io.casestory.sdk.stories.events.PageByIdSelectedEvent;
 import io.casestory.sdk.stories.events.PageByIndexRefreshEvent;
 import io.casestory.sdk.stories.events.PageRefreshEvent;
+import io.casestory.sdk.stories.events.PageTaskLoadErrorEvent;
+import io.casestory.sdk.stories.events.PageTaskLoadedEvent;
 import io.casestory.sdk.stories.events.PageTaskToLoadEvent;
 import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryPageEvent;
 import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
 import io.casestory.sdk.stories.events.RestartStoryReaderEvent;
 import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
+import io.casestory.sdk.stories.events.StoriesErrorEvent;
+import io.casestory.sdk.stories.events.StoryCacheLoadedEvent;
 import io.casestory.sdk.stories.events.StoryPageLoadedEvent;
-import io.casestory.sdk.stories.events.StoryTimerReverseEvent;
 import io.casestory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import io.casestory.sdk.stories.serviceevents.LikeDislikeEvent;
 import io.casestory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
@@ -67,8 +71,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     public StoriesWebView storiesWebView;
     public StoriesProgressView storiesProgressView;
-    RelativeLayout refresh;
-    LinearLayout refresh2;
+    RelativeLayout progress;
+    View refresh;
     public AppCompatImageView close;
     public View mask;
     View invMask;
@@ -83,60 +87,34 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         final int curIndex = event.getIndex();
 
         int index = storiesProgressView.current;
-
-        Log.e("timers", "ChangeIndexEventInFragment " + event.getIndex());
         storiesProgressView.setActive(true);
         counter = curIndex;
-       // storiesProgressView.clearAnimation(index);
-       // storiesProgressView.setCurrentCounterAndRestart(curIndex);
+        // storiesProgressView.clearAnimation(index);
+        // storiesProgressView.setCurrentCounterAndRestart(curIndex);
 
         storiesWebView.setCurrentItem(curIndex);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void pageLoadError(PageTaskLoadErrorEvent errorEvent) {
+        if (errorEvent.getId() != storyId) return;
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                refresh.setVisibility(View.VISIBLE);
+                progress.setVisibility(View.GONE);
+            }
+        }, 200);
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void refreshPageEvent(PageByIndexRefreshEvent event) {
         if (event.getStoryId() != storyId) return;
-        refreshFragment();
+        refresh.setVisibility(View.GONE);
+        //   refreshFragment();
     }
 
-
-    public void refreshFragment() {
-        if (CaseStoryService.getInstance().isConnected()) {
-            storiesWebView.setVisibility(View.VISIBLE);
-            mask.setVisibility(View.GONE);
-            refresh.setVisibility(View.GONE);
-            CaseStoryService.getInstance().getFullStoryById(new GetStoryByIdCallback() {
-                @Override
-                public void getStory(Story response) {
-                    if (response.disableClose)
-                        close.setVisibility(View.GONE);
-                    if (!response.hasLike() && like != null && dislike != null) {
-                        like.setVisibility(View.GONE);
-                        dislike.setVisibility(View.GONE);
-                    }
-                    if (!response.hasFavorite() && favorite != null)
-                        favorite.setVisibility(View.GONE);
-                    if (!response.hasShare() && share != null)
-                        share.setVisibility(View.GONE);
-                    if (!response.hasShare() && !response.hasFavorite() && !response.hasLike() && buttonsPanel != null)
-                        buttonsPanel.setVisibility(View.GONE);
-                    storiesProgressView.setStoriesCount(response.pages.size());
-                    storiesProgressView.setStoryDurations(response.durations);
-                    Log.e("loadStory0", "refreshFragment " + response.id + " " + response.lastIndex);
-                    storiesWebView.loadStory(response.id, response.lastIndex);
-                }
-            }, storyId);
-        } else {
-            try {
-                if (getUserVisibleHint()) {
-                    // Toast.makeText(getContext(), getResources().getString(R.string.nar_noInternetError), Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception e) {
-            }
-            mask.setVisibility(View.GONE);
-        }
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void nextStoryPage(NextStoryPageEvent event) {
@@ -156,15 +134,11 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void storyPageLoadedEvent(StoryPageLoadedEvent event) {
         if (this.storyId != event.getStoryId()) return;
-        Log.e("timers", "StoryPageLoadedEvent " + storyId + " " + CaseStoryService.getInstance().getCurrentId());
-
         final int ind = event.index;
-
         CaseStoryService.getInstance().getFullStoryById(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
-               // story.loadedPages.set(ind, true);
-                Log.e("timers", "StoryPageLoadedEvent " + ind + " " + story.lastIndex + " " + storyId + " " + CaseStoryService.getInstance().getCurrentId());
+                Log.e("eventsLoaded", "StoryPageLoadedEvent " + ind + " " +  story.id);
                 if (CaseStoryService.getInstance().getCurrentId() == storyId
                         && story.lastIndex == ind) {
                     storiesProgressView.setActive(true);
@@ -173,6 +147,16 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                     if (CaseStoryService.getInstance().currentEvent != null)
                         CaseStoryService.getInstance().currentEvent.timer = System.currentTimeMillis();
                 }
+            }
+
+            @Override
+            public void loadError(int type) {
+                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.READER));
+            }
+
+            @Override
+            public void getPartialStory(Story story) {
+
             }
         }, storyId);
     }
@@ -210,28 +194,27 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void pageByIdSelected(PageByIdSelectedEvent event) {
-        Log.e("timers", "PageByIdSelectedEvent " + event.getStoryId() + " " + storyId);
         if (event.getStoryId() != storyId) return;
         Handler handler = new Handler(Looper.getMainLooper());
         if (event.isOnlyResume()) {
-            //    if (storiesProgressView != null)
-            //         storiesProgressView.resumeWithoutRestart(false);
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    int prevInd = StoryDownloader.getInstance().getStoryById(storyId).lastIndex;
+                    Story story = StoryDownloader.getInstance().getStoryById(storyId);
+                    int prevInd = story.lastIndex;
 
                     if (storiesProgressView != null) {
+                        if (story.durations != null) {
+                            storiesProgressView.setStoryDurations(story.durations);
+                        }
                         storiesProgressView.setActive(false);
                         storiesProgressView.setCurrentCounter(prevInd);
                         storiesProgressView.pause(false);
-                    //    storiesProgressView.destroy();
                         counter = prevInd;
                     }
                 }
             }, 150);
         } else {
-            //
             if (storiesProgressView != null) {
                 storiesProgressView.setActive(true);
             }
@@ -259,8 +242,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void noConnectionEvent(NoConnectionEvent event) {
-        storiesWebView.setVisibility(View.INVISIBLE);
-        refresh.setVisibility(View.VISIBLE);
+        //storiesWebView.setVisibility(View.INVISIBLE);
+        //refresh.setVisibility(View.VISIBLE);
     }
 
 
@@ -344,18 +327,18 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    refresh.setVisibility(View.GONE);
-                    refresh.setAlpha(1f);
+                    progress.setVisibility(View.GONE);
+                    progress.setAlpha(1f);
                 }
             });
-            refresh.startAnimation(anim);
+            progress.startAnimation(anim);
         } else {
-            refresh.setVisibility(View.VISIBLE);
+            progress.setVisibility(View.VISIBLE);
         }
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(View view, @Nullable final Bundle savedInstanceState) {
         if (view == null) return;
         storiesWebView = view.findViewById(R.id.storiesWebView);
         if (getArguments() == null) return;
@@ -377,6 +360,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             }
         }
         EventBus.getDefault().register(this);
+
         invMask = view.findViewById(R.id.invMask);
         close = (AppCompatImageView) view.findViewById(R.id.close_button);
 
@@ -388,11 +372,10 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         storiesProgressView = (StoriesProgressView) view.findViewById(R.id.stories);
         storiesProgressView.setStoriesListener(this);
         mask = view.findViewById(R.id.blackMask);
-        refresh = view.findViewById(R.id.refresh);
-        refresh.setVisibility(View.GONE);
+        progress = view.findViewById(R.id.progress);
+        refresh = view.findViewById(R.id.refreshButton);
+        progress.setVisibility(View.GONE);
         storyId = getArguments().getInt("story_id");
-
-        Log.e("PageByIdSelectedEvent", "created " + storyId);
         EventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
         if (!Sizes.isTablet() && !CaseStoryManager.getInstance().hasLike() &&
                 !CaseStoryManager.getInstance().hasShare() &&
@@ -447,13 +430,51 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         storiesWebView.setStoryId(storyId);
                         storiesWebView.setIndex(story.lastIndex);
 
-                        storiesProgressView.setStoriesCount(story.pages.size());
+                        storiesProgressView.setStoriesCount(story.slidesCount);
                         storiesProgressView.setStoryDurations(story.durations);
-                        Log.e("loadStory0", "loadStory " + storyId + " " + story.lastIndex);
                         storiesWebView.loadStory(storyId, story.lastIndex);
                     }
                 });
 
+            }
+
+            @Override
+            public void loadError(int type) {
+                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.READER));
+            }
+
+            @Override
+            public void getPartialStory(final Story story) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (story.disableClose)
+                            close.setVisibility(View.GONE);
+                        if (!story.hasLike() && like != null && dislike != null) {
+                            like.setVisibility(View.GONE);
+                            dislike.setVisibility(View.GONE);
+                        }
+                        if (!story.hasFavorite() && favorite != null)
+                            favorite.setVisibility(View.GONE);
+                        if (!story.hasShare() && share != null)
+                            share.setVisibility(View.GONE);
+                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && buttonsPanel != null)
+                            buttonsPanel.setVisibility(View.GONE);
+                        if (like != null) {
+                            like.setActivated(story.liked());
+                        }
+                        if (dislike != null) {
+                            dislike.setActivated(story.disliked());
+                        }
+                        if (favorite != null) {
+                            favorite.setActivated(story.favorite);
+                        }
+                        storiesWebView.setStoryId(storyId);
+                        storiesWebView.setIndex(0);
+                        storiesProgressView.setStoriesCount(story.slidesCount);
+                        storiesWebView.loadStory(storyId, story.lastIndex);
+                    }
+                });
             }
         }, storyId);
         if (like != null) {
@@ -541,11 +562,29 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EventBus.getDefault().post(new PageRefreshEvent(storyId));
+                EventBus.getDefault().post(new PageByIndexRefreshEvent(storyId, storiesWebView.index));
+                EventBus.getDefault().post(new PageRefreshEvent(storyId, storiesWebView.index));
             }
         });
     }
 
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void storyCacheLoaded(StoryCacheLoadedEvent event) {
+        if (event != null) {
+            if (storyId != event.getStoryId()) return;
+            Log.e("eventsLoaded", "StoryCacheLoadedEvent " + StoryDownloader.getInstance().getStoryById(storyId).title + " " + StoryDownloader.getInstance().getStoryById(storyId).durations.get(0));
+            storiesProgressView.setStoryDurations(StoryDownloader.getInstance().getStoryById(storyId).durations);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void pageTaskLoaded(PageTaskLoadedEvent event) {
+        if (event != null) {
+            if (storyId != event.getId()) return;
+            refresh.setVisibility(View.GONE);
+        }
+    }
 
     @Override
     public boolean webViewLoaded(int index) {

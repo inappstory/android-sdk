@@ -37,7 +37,6 @@ public abstract class RetrofitCallback<T> implements Callback<T> {
         if (t instanceof SocketTimeoutException) {
             onTimeout();
         } else if (!(t instanceof SocketException)) {
-            Log.e("sdkfailure", t.getMessage());
             onError(0, t.getMessage());
         }
         releaseUi();

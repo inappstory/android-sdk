@@ -85,7 +85,7 @@ public interface ApiInterface {
     );
 
     @FormUrlEncoded
-    @POST("v1/session/open")
+    @POST("v2/session/open")
     Call<StatisticResponse> statisticsOpen(@Query("expand") String expand,
                                            @Field("tags") String tags,
                                            @Field("features") String features,
@@ -104,10 +104,10 @@ public interface ApiInterface {
                                            @Field("app_build") String appBuild,
                                            @Field("user_id") String userId);
 
-    @POST("v1/session/update")
+    @POST("v2/session/update")
     Call<StatisticResponse> statisticsUpdate(@Body StatisticSendObject request);
 
-    @POST("v1/session/close")
+    @POST("v2/session/close")
     Call<StatisticResponse> statisticsClose(@Body StatisticSendObject request);
 
 }

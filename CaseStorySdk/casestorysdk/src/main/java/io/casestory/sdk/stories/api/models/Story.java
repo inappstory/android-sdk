@@ -95,7 +95,7 @@ public class Story implements Parcelable {
     }
 
     @SerializedName("src_list")
-    private List<ResourceMappingObject> srcList;
+    public List<ResourceMappingObject> srcList;
 
     @SerializedName("like")
     public Integer like;

@@ -13,7 +13,6 @@ public class NextStoryPageEvent {
     }
 
     public NextStoryPageEvent(int storyIndex) {
-        Log.d("Events", "nextNarrativePageEvent");
 
         this.storyIndex = storyIndex;
     }

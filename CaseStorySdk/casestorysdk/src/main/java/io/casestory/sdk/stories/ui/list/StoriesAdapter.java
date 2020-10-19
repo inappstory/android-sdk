@@ -3,6 +3,7 @@ package io.casestory.sdk.stories.ui.list;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,6 +11,7 @@ import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,9 +25,12 @@ import io.casestory.casestorysdk.R;
 import io.casestory.sdk.AppearanceManager;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
+import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
+import io.casestory.sdk.stories.events.NoConnectionEvent;
+import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.ui.reader.StoriesActivity;
 import io.casestory.sdk.stories.ui.reader.StoriesDialogFragment;
 import io.casestory.sdk.stories.utils.Sizes;
@@ -101,6 +106,16 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         }
                     });
                 }
+
+                @Override
+                public void loadError(int type) {
+
+                }
+
+                @Override
+                public void getPartialStory(Story story) {
+
+                }
             }, storiesIds.get(position));
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -113,30 +128,59 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     public void onItemClick(int index) {
+
+        Story current = StoryDownloader.getInstance().getStoryById(storiesIds.get(index));
+        if (current != null) {
+            if (current.deeplink != null) {
+                CaseStoryService.getInstance().addDeeplinkClickStatistic(current.id);
+                if (CaseStoryManager.getInstance().getUrlClickCallback() != null) {
+                    CaseStoryManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
+                } else {
+                    if (!CaseStoryService.getInstance().isConnected()) {
+                        EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
+                        return;
+                    }
+                    try {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse(current.deeplink));
+                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(i);
+                    } catch (Exception e) {
+                    }
+                }
+                return;
+            }
+            if (current.isHideInReader()) {
+                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
+                return;
+            }
+        }
+        ArrayList<Integer> tempStories = new ArrayList();
+        for (Integer storyId : storiesIds) {
+            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            if (story == null || !story.isHideInReader())
+                tempStories.add(storyId);
+        }
         if (Sizes.isTablet()) {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
             bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
             bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-            bundle.putIntegerArrayList("stories_ids", new ArrayList<Integer>() {{
-                addAll(storiesIds);
-            }});
+            bundle.putIntegerArrayList("stories_ids", tempStories);
             settingsDialogFragment.setArguments(bundle);
             settingsDialogFragment.show(
-                    ((AppCompatActivity)context).getSupportFragmentManager(),
+                    ((AppCompatActivity) context).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
             StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                     StoryDownloader.getInstance().getStories().get(index).id);
             Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
-           // intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            // intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
             intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
             intent2.putExtra("index", index);
-            intent2.putIntegerArrayListExtra("stories_ids", new ArrayList<Integer>() {{
-                addAll(storiesIds);
-            }});
+            intent2.putIntegerArrayListExtra("stories_ids", tempStories);
             context.startActivity(intent2);
         }
     }

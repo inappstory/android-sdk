@@ -17,7 +17,6 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,7 +26,6 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,24 +46,25 @@ import io.casestory.sdk.stories.api.networkclient.ApiClient;
 import io.casestory.sdk.stories.api.networkclient.RetrofitCallback;
 import io.casestory.sdk.stories.cache.Downloader;
 import io.casestory.sdk.stories.cache.StoryDownloader;
-import io.casestory.sdk.stories.events.ChangeStoryEvent;
+import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
 import io.casestory.sdk.stories.events.ContentLoadedEvent;
 import io.casestory.sdk.stories.events.ListVisibilityEvent;
 import io.casestory.sdk.stories.events.LoadFavStories;
-import io.casestory.sdk.stories.events.LoadNarrativesOnEmpty;
-import io.casestory.sdk.stories.events.LoadNarrativesOnError;
+import io.casestory.sdk.stories.events.LoadStoriesOnEmpty;
+import io.casestory.sdk.stories.events.LoadStoriesOnError;
 import io.casestory.sdk.stories.events.NextStoryPageEvent;
 import io.casestory.sdk.stories.events.NextStoryReaderEvent;
+import io.casestory.sdk.stories.events.NoConnectionEvent;
 import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
 import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
+import io.casestory.sdk.stories.events.StoryPageOpenEvent;
 import io.casestory.sdk.stories.events.StoryTapEvent;
 import io.casestory.sdk.stories.serviceevents.ContentRenewPriorities;
 import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import io.casestory.sdk.stories.serviceevents.LikeDislikeEvent;
 import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
-import io.casestory.sdk.stories.storieslistenerevents.OnNextEvent;
 import io.casestory.sdk.stories.ui.list.FavoriteImage;
 import io.casestory.sdk.stories.utils.Sizes;
 import okhttp3.ResponseBody;
@@ -93,7 +92,19 @@ public class CaseStoryService extends Service {
     }
 
     void logout() {
+        closeStatisticEvent(null, true);
+        ApiClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
+                statistic)).enqueue(new RetrofitCallback<StatisticResponse>() {
+            @Override
+            public void onSuccess(StatisticResponse response) {
+            }
 
+            @Override
+            public void onError(int code, String message) {
+            }
+        });
+        statistic.clear();
+        statistic = null;
     }
 
     LoadStoriesCallback loadStoriesCallback;
@@ -112,7 +123,7 @@ public class CaseStoryService extends Service {
 
                     @Override
                     public void onError() {
-                        EventBus.getDefault().post(new LoadNarrativesOnError());
+                        EventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
                     }
                 });
                 return;
@@ -121,20 +132,20 @@ public class CaseStoryService extends Service {
                     @Override
                     public void onSuccess() {
                         ApiClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                                getApiKey()).enqueue(reloadCallback);
+                                getApiKey()).enqueue(loadCallback);
                     }
 
                     @Override
                     public void onError() {
-                        EventBus.getDefault().post(new LoadNarrativesOnError());
+                        EventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
                     }
                 });
             } else {
                 ApiClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                        getApiKey()).enqueue(reloadCallback);
+                        getApiKey()).enqueue(loadCallback);
             }
         } else {
-            EventBus.getDefault().post(new LoadNarrativesOnError());
+            EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LOAD_LIST));
         }
     }
 
@@ -146,11 +157,6 @@ public class CaseStoryService extends Service {
         return CaseStoryManager.getInstance().getTestKey();
     }
 
-    @Subscribe
-    public void contentRenewPriorities(ContentRenewPriorities event) {
-        Log.e("ContentRenewPriorities", "ContentRenewPriorities");
-
-    }
 
     Handler timerHandler = new Handler();
     public long timerStart;
@@ -221,7 +227,7 @@ public class CaseStoryService extends Service {
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();
 
-    RetrofitCallback reloadCallback = new RetrofitCallback<List<Story>>() {
+    RetrofitCallback loadCallback = new RetrofitCallback<List<Story>>() {
 
         boolean isRefreshing = false;
 
@@ -229,7 +235,6 @@ public class CaseStoryService extends Service {
         public void onError(int code, String message) {
 
             EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-            EventBus.getDefault().post(new LoadNarrativesOnError());
             super.onError(code, message);
         }
 
@@ -244,12 +249,13 @@ public class CaseStoryService extends Service {
                             isRefreshing = true;
 
                         ApiClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                                getApiKey()).enqueue(reloadCallback);
+                                getApiKey()).enqueue(loadCallback);
                     }
 
                     @Override
                     public void onError() {
-                        EventBus.getDefault().post(new LoadNarrativesOnError());
+
+                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
                     }
                 });
         }
@@ -257,14 +263,12 @@ public class CaseStoryService extends Service {
         @Override
         public void onSuccess(final List<Story> response) {
             if (response == null || response.size() == 0) {
-                EventBus.getDefault().post(new LoadNarrativesOnEmpty());
                 EventBus.getDefault().post(new ContentLoadedEvent(true));
             } else {
                 EventBus.getDefault().post(new ContentLoadedEvent(false));
             }
             StoryDownloader.getInstance().uploadingAdditional(response);
             EventBus.getDefault().post(new ListVisibilityEvent());
-            Log.e("reloadNarratives", "success2");
             List<Story> newStories = new ArrayList<>();
             if (StoryDownloader.getInstance().getStories() != null) {
                 for (Story story : response) {
@@ -412,8 +416,8 @@ public class CaseStoryService extends Service {
 
     public StatisticEvent currentEvent;
 
-    private void addStatisticEvent(int eventType, int narrativeId, int index) {
-        currentEvent = new StatisticEvent(eventType, narrativeId, index);
+    private void addStatisticEvent(int eventType, int storyId, int index) {
+        currentEvent = new StatisticEvent(eventType, storyId, index);
     }
 
     private void addArticleStatisticEvent(int eventType, int articleId) {
@@ -423,11 +427,10 @@ public class CaseStoryService extends Service {
 
     public int eventCount = 0;
 
-    public void addStatisticBlock(int narrativeId, int index) {
+    public void addStatisticBlock(int storyId, int index) {
         //if (currentEvent != null)
-        //Log.e("closeStatistic", "addStatisticBlock");
         closeStatisticEvent();
-        addStatisticEvent(1, narrativeId, index);
+        addStatisticEvent(1, storyId, index);
         eventCount++;
     }
 
@@ -469,7 +472,6 @@ public class CaseStoryService extends Service {
         currentEvent.timer = System.currentTimeMillis();
         pauseTime += System.currentTimeMillis() - startPauseTime;
         startPauseTime = 0;
-        // Log.e("pauseTimer", Long.toString(pauseTime));
     }
 
     public void resumeLocalTimer() {
@@ -483,10 +485,16 @@ public class CaseStoryService extends Service {
 
     public long pauseTime = 0;
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void changeStoryPageEvent(StoryPageOpenEvent event) {
+        closeStatisticEvent(null, false);
+        addStatisticEvent(1, event.storyId, event.index);
+        eventCount++;
+    }
+
     public void pauseLocalTimer() {
         timerHandler.removeCallbacks(timerTask);
         pauseShift = (System.currentTimeMillis() - timerStart);
-        //  Log.e("startPauseTime", Long.toString(startPauseTime));
     }
 
     public void pauseTimer() {
@@ -495,7 +503,6 @@ public class CaseStoryService extends Service {
         closeStatisticEvent(null, true);
         sendStatistic();
         eventCount++;
-        //  Log.e("startPauseTime", Long.toString(startPauseTime));
     }
 
     public void closeStatisticEvent(final Integer time, boolean clear) {
@@ -511,6 +518,9 @@ public class CaseStoryService extends Service {
                 add(currentEvent.index);
                 add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
             }});
+            Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
+                    currentEvent.storyId + " " + currentEvent.index + " " +
+                    Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
             //if (isBackgroundPause)
             //    pauseTimer();
             if (!clear)
@@ -535,7 +545,7 @@ public class CaseStoryService extends Service {
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe
     public void pauseStoryEvent(PauseStoryReaderEvent event) {
         try {
             if (event.isWithBackground()) {
@@ -551,7 +561,7 @@ public class CaseStoryService extends Service {
 
     boolean backPaused = false;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (event.isWithBackground()) {
             isBackgroundPause = false;
@@ -578,7 +588,6 @@ public class CaseStoryService extends Service {
         Context context = CaseStoryManager.getInstance().context;
         openProcess = true;
         String platform = "android";
-        // Log.e("Login3", getInstance().uniqueHash);
         String deviceId = Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);// Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         // deviceId = deviceId + "1";
@@ -673,15 +682,13 @@ public class CaseStoryService extends Service {
         });
     }
 
-    public void closeStatistic(CloseStatisticCallback callback) {
 
-    }
 
     private static final long statisticUpdateInterval = 30000;
 
     private Handler handler = new Handler();
 
-    List<List<Object>> statistic;
+    List<List<Object>> statistic = new ArrayList<>();
 
     public Runnable statisticUpdateThread = new Runnable() {
         @Override
@@ -743,6 +750,7 @@ public class CaseStoryService extends Service {
 
     interface CheckStatisticCallback {
         void openStatistic();
+        void errorStatistic();
     }
 
     public static boolean checkOpenStatistic(final CheckStatisticCallback callback) {
@@ -758,6 +766,7 @@ public class CaseStoryService extends Service {
 
                     @Override
                     public void onError() {
+                        callback.errorStatistic();
                     }
                 });
                 return false;
@@ -770,6 +779,7 @@ public class CaseStoryService extends Service {
 
                     @Override
                     public void onError() {
+                        callback.errorStatistic();
                     }
                 });
                 return false;
@@ -788,11 +798,16 @@ public class CaseStoryService extends Service {
                 return;
             }
         }
-
+        if (1 == 1) return;
         if (checkOpenStatistic(new CheckStatisticCallback() {
             @Override
             public void openStatistic() {
                 getStoryById(storyByIdCallback, id);
+            }
+
+            @Override
+            public void errorStatistic() {
+
             }
         })) {
             ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
@@ -856,16 +871,29 @@ public class CaseStoryService extends Service {
     }
 
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
+        Story partialStory = null;
         for (Story story : StoryDownloader.getInstance().getStories()) {
-            if (story.id == id && story.pages != null) {
-                storyByIdCallback.getStory(story);
-                return;
+            if (story.id == id) {
+                if (story.pages != null) {
+                    storyByIdCallback.getStory(story);
+                    return;
+                } else {
+                    partialStory = story;
+                    storyByIdCallback.getStory(story);
+                    return;
+                }
             }
         }
+        final Story finalPartialStory = partialStory;
+        if (1 == 1) return;
         if (checkOpenStatistic(new CheckStatisticCallback() {
             @Override
             public void openStatistic() {
                 getFullStoryById(storyByIdCallback, id);
+            }
+
+            @Override
+            public void errorStatistic() {
             }
         })) {
             ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
@@ -879,6 +907,14 @@ public class CaseStoryService extends Service {
                     StoryDownloader.getInstance().setStory(response, response.id);
                     storyByIdCallback.getStory(response);
                 }
+
+                @Override
+                public void onError(int code, String message) {
+                    if (finalPartialStory != null) {
+                        storyByIdCallback.getPartialStory(finalPartialStory);
+                    }
+                    storyByIdCallback.loadError(0);
+                }
             });
         }
     }
@@ -888,6 +924,12 @@ public class CaseStoryService extends Service {
             @Override
             public void openStatistic() {
                 getFullStoryByStringId(storyByIdCallback, id);
+            }
+
+            @Override
+            public void errorStatistic() {
+
+                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
             }
         })) {
             ApiClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
@@ -900,6 +942,12 @@ public class CaseStoryService extends Service {
                     }});
                     StoryDownloader.getInstance().setStory(response, response.id);
                     storyByIdCallback.getStory(response);
+                }
+
+                @Override
+                public void onError(int code, String message) {
+
+                    EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                 }
             });
         }

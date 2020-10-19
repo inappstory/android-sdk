@@ -99,7 +99,9 @@ public class StoriesWebView extends WebView {
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
     boolean isLoaded = false;
     public boolean isWebPageLoaded = false;
-    public void loadStory(int id, int index) {
+
+
+    public void loadStory(final int id, final int index) {
         if (loadedId == id && loadedIndex == index) return;
         if (CaseStoryManager.getInstance() == null)
             return;
@@ -111,23 +113,26 @@ public class StoriesWebView extends WebView {
         if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
             return;
         }
-        if (story.pages.size() <= index) return;
+        if (story.slidesCount <= index) return;
         isWebPageLoaded = false;
-        this.storyId = id;
-        this.loadedIndex = index;
-        this.index = index;
-        this.loadedId = id;
+        StoriesWebView.this.storyId = id;
+        StoriesWebView.this.loadedIndex = index;
+        StoriesWebView.this.index = index;
+        StoriesWebView.this.loadedId = id;
         isLoaded = StoryDownloader.getInstance().checkIfPageLoaded(new Pair<>(id, index));
 
         String layout = story.getLayout();
 
-       // EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
+        boolean high = storyId == CaseStoryService.getInstance().getCurrentId();
+        getSettings().setUseWideViewPort(true);
+        getSettings().setRenderPriority(high ? WebSettings.RenderPriority.HIGH : WebSettings.RenderPriority.LOW);
+
+        // EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
         if (!isLoaded) {
             EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
             if (Build.VERSION.SDK_INT >= 19) {
-                setLayerType(View.LAYER_TYPE_NONE, null);
+                setLayerType(View.LAYER_TYPE_HARDWARE, null);
             } else {
-                getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
                 setLayerType(View.LAYER_TYPE_SOFTWARE, null);
             }
             WebPageConverter.replaceEmptyAndLoad("", storyId, index, layout);
@@ -136,6 +141,7 @@ public class StoriesWebView extends WebView {
         } else {
             pageTaskLoaded(null);
         }
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -143,6 +149,9 @@ public class StoriesWebView extends WebView {
         if (event != null) {
             if (storyId != event.getId() || index != event.getIndex()) return;
         }
+        boolean high = storyId == CaseStoryService.getInstance().getCurrentId();
+        getSettings().setUseWideViewPort(true);
+        getSettings().setRenderPriority(high ? WebSettings.RenderPriority.HIGH : WebSettings.RenderPriority.LOW);
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         String layout = story.getLayout();
         List<String> fonturls = new ArrayList<>();
@@ -169,7 +178,7 @@ public class StoriesWebView extends WebView {
                 return;
             } else {
                 if (Build.VERSION.SDK_INT >= 19) {
-                    setLayerType(View.LAYER_TYPE_NONE, null);
+                    setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 } else {
                     getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
                     setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -184,8 +193,6 @@ public class StoriesWebView extends WebView {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void generatedWebPageEvent(GeneratedWebPageEvent event) {
         if (storyId != event.getStoryId() ) return;
-
-        Log.e("JavascriptInterface", "GeneratedWebPageEvent " + storyId + " " + index);
         final String data = event.getWebData();
         loadDataWithBaseURL("", injectUnselectableStyle(data), "text/html; charset=utf-8", "UTF-8", null);
        //
@@ -208,12 +215,10 @@ public class StoriesWebView extends WebView {
     }
 
     public void setCurrentItem(int index, boolean withAnimation) {
-        Log.e("loadStory0", "setCurrentItemWA " + this.storyId + " " + index);
         loadStory(this.storyId, index);
     }
 
     public void setCurrentItem(int index) {
-        Log.e("loadStory0", "setCurrentItemWA " + this.storyId + " " + index);
         loadStory(this.storyId, index);
     }
 
@@ -344,7 +349,7 @@ public class StoriesWebView extends WebView {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         setBackgroundColor(getResources().getColor(R.color.black));
         if (Build.VERSION.SDK_INT >= 19) {
-            setLayerType(View.LAYER_TYPE_NONE, null);
+            setLayerType(View.LAYER_TYPE_HARDWARE, null);
         } else {
             getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -368,14 +373,12 @@ public class StoriesWebView extends WebView {
 
                 if (file.exists()) {
                     try {
-                        Log.e("loadVideoFile", url);
                         Response response = ApiClient.getImageApiOk().newCall(
                                 new Request.Builder().head().url(url).build()).execute();
                         String ctType = response.header("Content-Type");
                         return new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
                     } catch (FileNotFoundException e) {
-                        Log.e("loadVideoFile", e.getMessage());
                         return super.shouldInterceptRequest(view, url);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -401,7 +404,6 @@ public class StoriesWebView extends WebView {
                         return new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
                     } catch (FileNotFoundException e) {
-                        Log.e("loadVideoFile", e.getMessage());
                         return super.shouldInterceptRequest(view, request);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -559,12 +561,10 @@ public class StoriesWebView extends WebView {
 
             EventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
             EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
-            Log.e("JavascriptInterface", "storyLoaded " + storyId + " " + index);
         }
 
         @JavascriptInterface
         public void emptyLoaded() {
-            Log.e("JavascriptInterface", "emptyLoaded " + storyId + " " + index);
         }
 
         @JavascriptInterface
@@ -573,8 +573,6 @@ public class StoriesWebView extends WebView {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
             }
-
-            Log.e("JavascriptInterface", "storyFreezeUI " + storyId + " " + index);
         }
 
 
@@ -657,7 +655,6 @@ public class StoriesWebView extends WebView {
                 StoriesWebView.this.pauseVideo();
                 break;
             case MotionEvent.ACTION_UP:
-                Log.e("resumeTimer", "WVTouch");
                 EventBus.getDefault().post(new ResumeStoryReaderEvent(false));
                 StoriesWebView.this.resumeVideo();
                 break;

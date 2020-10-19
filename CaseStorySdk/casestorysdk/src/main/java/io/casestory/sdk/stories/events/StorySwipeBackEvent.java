@@ -7,14 +7,14 @@ package io.casestory.sdk.stories.events;
 public class StorySwipeBackEvent {
 
 
-    public int getNarrativeId() {
-        return narrativeId;
+    public int getStoryId() {
+        return storyId;
     }
 
-    public int narrativeId;
+    public int storyId;
 
-    public StorySwipeBackEvent(int narrativeId) {
-        this.narrativeId = narrativeId;
+    public StorySwipeBackEvent(int storyId) {
+        this.storyId = storyId;
     }
 
 

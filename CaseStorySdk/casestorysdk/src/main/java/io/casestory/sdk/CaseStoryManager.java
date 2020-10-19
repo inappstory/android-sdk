@@ -34,6 +34,7 @@ import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeUserIdEvent;
 import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
 import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
+import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.ui.reader.StoriesActivity;
 import io.casestory.sdk.stories.ui.reader.StoriesDialogFragment;
 import io.casestory.sdk.stories.utils.KeyValueStorage;
@@ -99,6 +100,7 @@ public class CaseStoryManager {
     public void setTags(ArrayList<String> tags) {
         this.tags = tags;
     }
+
 
     ArrayList<String> tags;
 
@@ -172,7 +174,7 @@ public class CaseStoryManager {
                 builder.sandbox ? TEST_DOMAIN
                         : PRODUCT_DOMAIN,
                 builder.apiKey != null ? builder.apiKey : builder.context
-                        .getResources().getString(R.string.narApiKey),
+                        .getResources().getString(R.string.csApiKey),
                 builder.testKey != null ? builder.testKey : null,
                 (builder.userId != null && !builder.userId.isEmpty()) ? builder.userId :
                         "",
@@ -197,7 +199,7 @@ public class CaseStoryManager {
             EventBus.getDefault().post(new ChangeUserIdEvent());
             StatisticSession.clear();
             ApiClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                    getInstance().statistic)).enqueue(new RetrofitCallback<StatisticResponse>() {
+                    CaseStoryService.getInstance().statistic)).enqueue(new RetrofitCallback<StatisticResponse>() {
                 @Override
                 public void onSuccess(StatisticResponse response) {
                     EventBus.getDefault().post(new ChangeUserIdForListEvent());
@@ -220,12 +222,12 @@ public class CaseStoryManager {
     }
 
 
+
     public void setActionBarColor(int actionBarColor) {
         this.actionBarColor = actionBarColor;
     }
 
     public int actionBarColor = -1;
-    List<List<Object>> statistic;
 
     private void initManager(Context context, String cmsUrl, String apiKey, String testKey, String userId, ArrayList<String> tags,
                              boolean closeOnOverscroll,
@@ -248,9 +250,11 @@ public class CaseStoryManager {
             actionBarColor = context.getResources().getColor(R.color.nar_readerActionBarColor);
         }*/
 //        EventBus.getDefault().register(this);
-        statistic = new ArrayList<>();
         if (INSTANCE != null) {
             destroy();
+        }
+        if (CaseStoryService.getInstance() != null) {
+            CaseStoryService.getInstance().statistic = new ArrayList<>();
         }
         INSTANCE = this;
         ApiSettings
@@ -267,7 +271,6 @@ public class CaseStoryManager {
         if (INSTANCE != null) {
             CaseStoryService.getInstance().logout();
             INSTANCE.context = null;
-            INSTANCE.statistic = null;
             KeyValueStorage.removeString("managerInstance");
             try {
                 // EventBus.getDefault().unregister(INSTANCE);
@@ -311,6 +314,11 @@ public class CaseStoryManager {
             @Override
             public void openStatistic() {
                 showOnboardingStories(tags == null ? getTags() : tags, outerContext, manager);
+            }
+
+            @Override
+            public void errorStatistic() {
+                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
             }
         })) {
             ApiClient.getApi().onboardingStories(StatisticSession.getInstance().id, tags == null ? getTags() : tags,
@@ -356,6 +364,11 @@ public class CaseStoryManager {
                             outerContext.startActivity(intent2);
                         }
                     }
+                }
+
+                @Override
+                public void onError(int code, String message) {
+                    EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
                 }
             });
         }
@@ -414,6 +427,16 @@ public class CaseStoryManager {
                             ((AppCompatActivity) context).getSupportFragmentManager(),
                             "DialogFragment");
                 }
+
+                @Override
+                public void loadError(int type) {
+
+                }
+
+                @Override
+                public void getPartialStory(Story story) {
+
+                }
             }, storyId);
         } else {
             CaseStoryService.getInstance().getFullStoryByStringId(new GetStoryByIdCallback() {
@@ -434,6 +457,16 @@ public class CaseStoryManager {
                         CaseStoryManager.getInstance().getContext().startActivity(intent2);
                     else
                         context.startActivity(intent2);
+                }
+
+                @Override
+                public void loadError(int type) {
+
+                }
+
+                @Override
+                public void getPartialStory(Story story) {
+
                 }
             }, storyId);
         }

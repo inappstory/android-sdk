@@ -4,14 +4,7 @@ package io.casestory.sdk.stories.events;
  * Created by Paperrose on 15.06.2018.
  */
 
-public class StoryPageOpenEvent {
-
-
-    public int getIndex() {
-        return index;
-    }
-
-    public int index;
+public class StoryCacheLoadedEvent {
 
     public int getStoryId() {
         return storyId;
@@ -19,8 +12,7 @@ public class StoryPageOpenEvent {
 
     public int storyId;
 
-    public StoryPageOpenEvent(int storyId, int index) {
-        this.index = index;
+    public StoryCacheLoadedEvent(int storyId) {
         this.storyId = storyId;
     }
 

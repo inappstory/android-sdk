@@ -11,15 +11,15 @@ public class StopVideoEvent {
 
     public int index;
 
-    public int getNarrativeId() {
-        return narrativeId;
+    public int getStoryId() {
+        return storyId;
     }
 
-    public int narrativeId;
+    public int storyId;
 
-    public StopVideoEvent(int narrativeId, int index) {
+    public StopVideoEvent(int storyId, int index) {
         this.index = index;
-        this.narrativeId = narrativeId;
+        this.storyId = storyId;
     }
 
 }
