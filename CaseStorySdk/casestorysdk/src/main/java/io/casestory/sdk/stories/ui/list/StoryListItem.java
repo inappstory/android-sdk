@@ -1,5 +1,6 @@
 package io.casestory.sdk.stories.ui.list;
 
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -49,6 +51,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             return getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages);
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
+        CardView cv = v.findViewById(R.id.inner_cv);
+        cv.setRadius(Sizes.dpToPxExt(16));
+        cv.setBackgroundColor(Color.WHITE);
         title = v.findViewById(R.id.title);
         return v;
     }
@@ -60,6 +65,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             v = getListItem.getView();
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
+            CardView cv = v.findViewById(R.id.item_cv);
+            cv.setCardBackgroundColor(Color.WHITE);
+            cv.setRadius(Sizes.dpToPxExt(16));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             image = v.findViewById(R.id.image);

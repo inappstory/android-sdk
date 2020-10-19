@@ -9,7 +9,6 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/contentContainer"
         android:layout_width="match_parent"
-        app:cardUseCompatPadding="true"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
 
@@ -38,19 +37,13 @@
                 android:layout_marginRight="16dp"
                 android:layout_marginBottom="16dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                app:cardUseCompatPadding="false"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#808080">
+                android:layout_gravity="center">
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/editContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    app:cardElevation="0dp"
-                    app:cardUseCompatPadding="false"
-                    app:cardBackgroundColor="#808080">
+                    android:layout_gravity="center">
 
                     <androidx.appcompat.widget.AppCompatEditText
                         android:layout_width="match_parent"

@@ -115,8 +115,14 @@ public class ContactDialog {
         }
         CardView borderContainer = dialog.findViewById(R.id.borderContainer);
         CardView contentContainer = dialog.findViewById(R.id.contentContainer);
+        contentContainer.setUseCompatPadding(true);
         CardView editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
         CardView editContainer = dialog.findViewById(R.id.editContainer);
+        editBorderContainer.setCardElevation(0f);
+        editContainer.setCardElevation(0f);
+        editBorderContainer.setCardBackgroundColor(activity.getResources().getColor(R.color.cs_half_gray));
+        editContainer.setCardElevation(0f);
+        editContainer.setCardBackgroundColor(activity.getResources().getColor(R.color.cs_half_gray));
         final AppCompatEditText editText = dialog.findViewById(R.id.editText);
         AppCompatTextView text = dialog.findViewById(R.id.text);
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
