@@ -56,7 +56,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
-            cv.setBackgroundColor(Color.WHITE);
+            cv.setBackgroundColor(Color.TRANSPARENT);
             cv.setRadius(Sizes.dpToPxExt(16));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
