@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,7 +21,6 @@ import android.widget.FrameLayout;
 
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
-import androidx.cardview.widget.CardView;
 
 import com.google.gson.Gson;
 
@@ -113,23 +113,22 @@ public class ContactDialog {
             dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
             dialog.getWindow().setDimAmount(0.5f);
         }
-        CardView borderContainer = dialog.findViewById(R.id.borderContainer);
-        CardView contentContainer = dialog.findViewById(R.id.contentContainer);
-        contentContainer.setUseCompatPadding(true);
-        CardView editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
-        CardView editContainer = dialog.findViewById(R.id.editContainer);
-        editBorderContainer.setCardElevation(0f);
-        editContainer.setCardElevation(0f);
-        editBorderContainer.setCardBackgroundColor(activity.getResources().getColor(R.color.cs_half_gray));
-        editContainer.setCardElevation(0f);
-        editContainer.setCardBackgroundColor(activity.getResources().getColor(R.color.cs_half_gray));
+        FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
+        FrameLayout contentContainer = dialog.findViewById(R.id.contentContainer);
+      //  contentContainer.setUseCompatPadding(true);
+        FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
+        FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            editBorderContainer.setElevation(0f);
+            editContainer.setElevation(0f);
+            editContainer.setElevation(0f);
+        }
         final AppCompatEditText editText = dialog.findViewById(R.id.editText);
         AppCompatTextView text = dialog.findViewById(R.id.text);
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
 
-        borderContainer.setRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
-        contentContainer.setRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
+
         text.setText(dialogStructure.text.value);
         text.setTextColor(hex2color(dialogStructure.text.color));
         text.setTextSize((int) (coeff * dialogStructure.text.size));
@@ -137,22 +136,49 @@ public class ContactDialog {
         editText.setTextColor(hex2color(dialogStructure.input.text.color));
         editText.setHintTextColor(hex2color(dialogStructure.input.text.color));
         editText.setTextSize((int) (coeff * dialogStructure.input.text.size));
-        editContainer.setCardBackgroundColor(hex2color(dialogStructure.input.background.color));
-        editBorderContainer.setCardBackgroundColor(hex2color(dialogStructure.input.border.color));
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) editContainer.getLayoutParams();
         lp.setMargins(dialogStructure.input.border.width,
                 dialogStructure.input.border.width,
                 dialogStructure.input.border.width,
                 dialogStructure.input.border.width);
         editContainer.setLayoutParams(lp);
-        editBorderContainer.setRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
-        editContainer.setRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
-        borderContainer.setCardBackgroundColor(hex2color(dialogStructure.border.color));
-        contentContainer.setCardBackgroundColor(hex2color(dialogStructure.background.color));
-        buttonBackground.setBackgroundColor(hex2color(dialogStructure.button.background.color));
         buttonText.setText(dialogStructure.button.text.value);
         buttonText.setTextColor(hex2color(dialogStructure.button.text.color));
         buttonText.setTextSize((int) (coeff * dialogStructure.button.text.size));
+
+        int rad = Sizes.dpToPxExt(dialogStructure.border.radius);
+
+        GradientDrawable buttonBackgroundGradient = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
+                new int[] {hex2color(dialogStructure.button.background.color),hex2color(dialogStructure.button.background.color)});
+        buttonBackgroundGradient.setCornerRadii(new float[]{0, 0, 0, 0, rad, rad, rad, rad});
+
+        buttonBackground.setBackground(buttonBackgroundGradient);
+
+        GradientDrawable editBorderContainerGradient = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
+                new int[] {hex2color(dialogStructure.input.border.color),hex2color(dialogStructure.input.border.color)});
+        editBorderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
+
+        GradientDrawable editContainerGradient = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
+                new int[] {hex2color(dialogStructure.input.background.color),hex2color(dialogStructure.input.background.color)});
+        editContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
+
+        GradientDrawable borderContainerGradient = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
+                new int[] {hex2color(dialogStructure.border.color),hex2color(dialogStructure.border.color)});
+        borderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
+
+        GradientDrawable contentContainerGradient = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
+                new int[] {hex2color(dialogStructure.background.color),hex2color(dialogStructure.background.color)});
+        contentContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
+
+        editBorderContainer.setBackground(editBorderContainerGradient);
+        editContainer.setBackground(editContainerGradient);
+        borderContainer.setBackground(borderContainerGradient);
+        contentContainer.setBackground(contentContainerGradient);
 
         editText.addTextChangedListener(new TextWatcher() {
             int lastSpecialRequestsCursorPosition;

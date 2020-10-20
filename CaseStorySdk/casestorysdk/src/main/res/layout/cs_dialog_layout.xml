@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="275dp"
     android:layout_height="wrap_content"
     android:layout_gravity="center">
 
-    <androidx.cardview.widget.CardView
+    <FrameLayout
         android:id="@+id/contentContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+
         android:layout_gravity="center">
 
         <LinearLayout
@@ -30,7 +31,7 @@
                 android:text="На какой ты стороне?"
                 android:textSize="24dp" />
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:id="@+id/editBorderContainer"
                 android:layout_width="match_parent"
                 android:layout_marginLeft="16dp"
@@ -39,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center">
 
-                <androidx.cardview.widget.CardView
+                <FrameLayout
                     android:id="@+id/editContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -59,8 +60,8 @@
                         android:gravity="center"
                         android:hint="Напишите что-нибудь..."
                         android:maxLines="3" />
-                </androidx.cardview.widget.CardView>
-            </androidx.cardview.widget.CardView>
+                </FrameLayout>
+            </FrameLayout>
 
             <FrameLayout
                 android:id="@+id/buttonBackground"
@@ -85,16 +86,16 @@
             </FrameLayout>
 
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </FrameLayout>
 
-    <androidx.cardview.widget.CardView
+    <FrameLayout
         android:id="@+id/borderContainer"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
 
-    </androidx.cardview.widget.CardView>
+    </FrameLayout>
 
 
-</FrameLayout>
+</RelativeLayout>

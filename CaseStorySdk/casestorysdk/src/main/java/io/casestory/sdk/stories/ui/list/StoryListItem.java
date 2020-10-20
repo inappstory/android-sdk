@@ -2,9 +2,6 @@ package io.casestory.sdk.stories.ui.list;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,25 +9,18 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
 
 import java.util.List;
 
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.AppearanceManager;
 import io.casestory.sdk.CaseStoryService;
+import io.casestory.sdk.imageloader.ImageLoader;
+import io.casestory.sdk.imageloader.RoundedCornerLayout;
 import io.casestory.sdk.stories.ui.views.IGetFavoriteListItem;
 import io.casestory.sdk.stories.ui.views.IStoriesListItem;
 import io.casestory.sdk.stories.utils.Sizes;
@@ -51,7 +41,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             return getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages);
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
-        CardView cv = v.findViewById(R.id.inner_cv);
+        RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
         cv.setRadius(Sizes.dpToPxExt(16));
         cv.setBackgroundColor(Color.WHITE);
         title = v.findViewById(R.id.title);
@@ -65,8 +55,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             v = getListItem.getView();
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
-            CardView cv = v.findViewById(R.id.item_cv);
-            cv.setCardBackgroundColor(Color.WHITE);
+            RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
+            cv.setBackgroundColor(Color.WHITE);
             cv.setRadius(Sizes.dpToPxExt(16));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
@@ -111,23 +101,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
 
     }
 
-    private void setImageWithGlide(AppCompatImageView imageView, String url) {
-        RequestOptions emptyOptions = new RequestOptions().centerCrop();
-        Glide.with(imageView).load(Uri.parse(url)).listener(new RequestListener<Drawable>() {
-            @Override
-            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                return false;
-            }
-
-            @Override
-            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                return false;
-            }
-        })
-                .skipMemoryCache(true)
-                .centerCrop()
-                .apply(emptyOptions)
-                .diskCacheStrategy(DiskCacheStrategy.ALL).into(imageView);
+    private void setImage(AppCompatImageView imageView, String url) {
+        ImageLoader.getInstance().displayImage(url, -1, imageView);
     }
 
     public void bindFavorite() {
@@ -151,7 +126,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 case 1:
                     image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
-                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     break;
                 case 2:
@@ -162,8 +137,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     image2.setLayoutParams(piece2);
 
-                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
-                    setImageWithGlide(image2, favImages.get(1).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImage(image2, favImages.get(1).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     break;
@@ -179,9 +154,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
-                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
-                    setImageWithGlide(image2, favImages.get(1).getImage().get(0).getUrl());
-                    setImageWithGlide(image3, favImages.get(2).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImage(image2, favImages.get(1).getImage().get(0).getUrl());
+                    setImage(image3, favImages.get(2).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     imageViewLayout.addView(image3);
@@ -204,10 +179,10 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
                     image4.setLayoutParams(piece4);
-                    setImageWithGlide(image1, favImages.get(0).getImage().get(0).getUrl());
-                    setImageWithGlide(image2, favImages.get(1).getImage().get(0).getUrl());
-                    setImageWithGlide(image3, favImages.get(2).getImage().get(0).getUrl());
-                    setImageWithGlide(image4, favImages.get(3).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImage(image2, favImages.get(1).getImage().get(0).getUrl());
+                    setImage(image3, favImages.get(2).getImage().get(0).getUrl());
+                    setImage(image4, favImages.get(3).getImage().get(0).getUrl());
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     imageViewLayout.addView(image3);
@@ -242,7 +217,15 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         border.setVisibility(isReaded ? View.GONE : View.VISIBLE);
         if (image != null) {
             if (imageUrl != null) {
-                RequestOptions emptyOptions = new RequestOptions().centerCrop();
+
+
+                // whenever you want to load an image from url
+                // call DisplayImage function
+                // url - image url to load
+                // loader - loader image, will be displayed before getting image
+                // image - ImageView
+                ImageLoader.getInstance().displayImage(imageUrl, 0, image);
+                /*RequestOptions emptyOptions = new RequestOptions().centerCrop();
                 Glide.with(image).load(Uri.parse(imageUrl)).listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
@@ -257,7 +240,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                         .skipMemoryCache(true)
                         .centerCrop()
                         .apply(emptyOptions)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(image);
+                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(image);*/
             } else if (backgroundColor != null) {
                 image.setBackgroundColor(backgroundColor);
             }

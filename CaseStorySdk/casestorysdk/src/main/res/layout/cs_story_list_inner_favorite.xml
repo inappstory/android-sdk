@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:id="@+id/outerLayout"
         android:layout_height="120dp">
-        <androidx.cardview.widget.CardView
+        <io.casestory.sdk.imageloader.RoundedCornerLayout
             android:layout_width="match_parent"
             android:layout_margin="5dp"
             android:id="@+id/inner_cv"
@@ -24,7 +24,7 @@
                     android:layout_height="match_parent"/>
             </RelativeLayout>
 
-        </androidx.cardview.widget.CardView>
+        </io.casestory.sdk.imageloader.RoundedCornerLayout>
 
     </RelativeLayout>
     <androidx.appcompat.widget.AppCompatTextView

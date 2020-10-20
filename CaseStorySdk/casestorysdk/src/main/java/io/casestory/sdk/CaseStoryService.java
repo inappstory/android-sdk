@@ -21,9 +21,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -32,6 +29,7 @@ import java.util.List;
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.imageloader.ImageLoader;
 import io.casestory.sdk.stories.api.models.CacheFontObject;
 import io.casestory.sdk.stories.api.models.StatisticResponse;
 import io.casestory.sdk.stories.api.models.StatisticSendObject;
@@ -301,7 +299,7 @@ public class CaseStoryService extends Service {
                                 if (favoriteImages.size() < 4)
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                             }
-                            for (final FavoriteImage favoriteImage : favoriteImages) {
+                           /* for (final FavoriteImage favoriteImage : favoriteImages) {
                                 final int id = favoriteImage.getId();
                                 Glide.with(getApplicationContext())
                                         .asBitmap()
@@ -320,7 +318,7 @@ public class CaseStoryService extends Service {
 
                                             }
                                         });
-                            }
+                            }*/
                             if (loadStoriesCallback != null) {
                                 List<Integer> ids = new ArrayList<>();
                                 for (Story story : response) {
@@ -966,6 +964,8 @@ public class CaseStoryService extends Service {
     public void onCreate() {
         super.onCreate();
         EventBus.getDefault().register(this);
+
+        ImageLoader imgLoader = new ImageLoader(getApplicationContext());
         statistic = new ArrayList<>();
         INSTANCE = this;
         /*if (Build.VERSION.SDK_INT >= 26) {
