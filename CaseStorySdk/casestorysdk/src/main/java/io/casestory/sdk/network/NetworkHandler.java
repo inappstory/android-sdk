@@ -1,5 +1,7 @@
 package io.casestory.sdk.network;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import java.io.BufferedReader;
@@ -37,7 +39,6 @@ public final class NetworkHandler implements InvocationHandler {
         URL obj = new URL(url + varStr);
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
         connection.setRequestMethod(req.getMethod());
-
         if (req.getHeaders() != null) {
             for (Object key : req.getHeaders().keySet()) {
                 connection.setRequestProperty(key.toString(), req.getHeader(key));
@@ -57,6 +58,8 @@ public final class NetworkHandler implements InvocationHandler {
         }
         int statusCode = connection.getResponseCode();
         Response respObject = null;
+
+        Log.d("CaseStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String inputLine;
@@ -66,6 +69,8 @@ public final class NetworkHandler implements InvocationHandler {
             }
             bufferedReader.close();
 
+
+            Log.d("CaseStory_Network", "Success: " + response.toString());
             respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).body(response.toString()).build();
         } else {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
@@ -75,6 +80,7 @@ public final class NetworkHandler implements InvocationHandler {
                 response.append(inputLine);
             }
             bufferedReader.close();
+            Log.d("CaseStory_Network", "Error: " + response.toString());
             respObject = new Response.Builder().code(statusCode).errorBody(response.toString()).build();
         }
         connection.disconnect();
@@ -155,7 +161,7 @@ public final class NetworkHandler implements InvocationHandler {
             if (annotationM != null && annotationM.length > 0) {
                 Annotation annotation = annotationM[0];
                 if (annotation instanceof Path) {
-                    path.replaceFirst("\\{" +  ((Path) annotation).value()+ "}", args[i].toString());
+                    path = path.replaceFirst("\\{" +  ((Path) annotation).value()+ "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
                     vars.put(((Query) annotation).value(), args[i].toString());
                 } else if (annotation instanceof Field) {
@@ -191,7 +197,7 @@ public final class NetworkHandler implements InvocationHandler {
             if (annotationM != null && annotationM.length > 0) {
                 Annotation annotation = annotationM[0];
                 if (annotation instanceof Path) {
-                    path.replaceFirst("\\{" +  ((Path) annotation).value()+ "}", args[i].toString());
+                    path = path.replaceFirst("\\{" +  ((Path) annotation).value()+ "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
                     vars.put(((Query) annotation).value(), args[i].toString());
                 } else if (annotation instanceof Field) {
