@@ -9,8 +9,6 @@ import android.webkit.WebView;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
-import io.casestory.sdk.stories.api.networkclient.ApiSettings;
-
 public class NetworkClient {
     private static ApiInterface apiInterface;
 

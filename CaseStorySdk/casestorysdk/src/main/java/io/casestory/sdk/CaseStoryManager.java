@@ -30,7 +30,7 @@ import io.casestory.sdk.stories.api.models.StatisticSendObject;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import io.casestory.sdk.stories.api.networkclient.ApiSettings;
+import io.casestory.sdk.network.ApiSettings;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeUserIdEvent;
 import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;

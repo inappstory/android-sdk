@@ -1,4 +1,4 @@
-package io.casestory.sdk.stories.api.networkclient;
+package io.casestory.sdk.network;
 
 /**
  * Класс для задания и хранения настроек по доступу к текущей витрине.
