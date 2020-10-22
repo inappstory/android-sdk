@@ -16,16 +16,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import io.casestory.sdk.stories.api.networkclient.ApiClient;
+import io.casestory.sdk.network.NetworkClient;
+import io.casestory.sdk.network.Request;
+import io.casestory.sdk.network.Response;
 import io.casestory.sdk.stories.utils.KeyValueStorage;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 /**
@@ -58,7 +61,7 @@ public class Downloader {
                                           @NonNull String url,
                                           String type,
                                           Integer sourceId,
-                                          Point size) throws IOException {
+                                          Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
         File img2;
@@ -71,17 +74,12 @@ public class Downloader {
                 return img2;
             }
         }
-        byte[] bytes = null;
-        Response response = ApiClient.getImageApiOk().newCall(
-                new Request.Builder().url(url).build()).execute();
-        String ctType = response.header("Content-Type");
-        boolean isPng = false;
-        if (ctType != null && ctType.equals("image/png")) isPng = true;
-        if (response.code() > 350) {
-            throw new RuntimeException();
+        File file = null;
+        try {
+            file = downloadFile(url, img);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        bytes = response.body().bytes();
-        File file = downloadFile(bytes, img, ctType);
         return file;
     }
 
@@ -92,7 +90,7 @@ public class Downloader {
                                  @NonNull String url,
                                  String type,
                                  Integer sourceId,
-                                 Point size) throws IOException {
+                                 Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
 
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
@@ -106,12 +104,7 @@ public class Downloader {
                 return img2;
             }
         }
-        byte[] bytes = null;
-        Response response = ApiClient.getImageApiOk().newCall(
-                new Request.Builder().url(url).build()).execute();
-        String ctType = response.header("Content-Type");
-        bytes = response.body().bytes();
-        File file = downloadFile(bytes, img, ctType);
+        File file = downloadFile(url, img);
         return file;
     }
 
@@ -121,7 +114,7 @@ public class Downloader {
                                               @NonNull String url,
                                               String type,
                                               Integer sourceId,
-                                              Point size) throws IOException {
+                                              Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
 
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
@@ -137,8 +130,8 @@ public class Downloader {
         }
         byte[] bytes = null;
         //  Log.e("urlCrash", url);
-        bytes = ApiClient.getImageApiOk().newCall(
-                new Request.Builder().url(url).build()).execute().body().bytes();
+        Response response = new Request.Builder().get().url(url).build().execute();
+        bytes = response.body.getBytes();
         File file = saveCompressedImg(bytes, img, size, false);
         return readFile(file);
     }
@@ -207,7 +200,7 @@ public class Downloader {
 
     @NonNull
     @WorkerThread
-    public static File downFile(Context con, String url, String type, Integer id) throws IOException {
+    public static File downFile(Context con, String url, String type, Integer id) throws Exception {
         if (url == null || url.isEmpty()) return null;
         FileCache cache = FileCache.INSTANCE;
         File img = cache.getStoredFile(con, cropUrl(url), type, id, null);
@@ -225,10 +218,8 @@ public class Downloader {
             }
         }
         byte[] bytes = null;
-        okhttp3.Response response;
-        response = ApiClient.getImageApiOk().newCall(
-                new Request.Builder().url(url).build()).execute();
-        bytes = response.body().bytes();
+        Response response = new Request.Builder().get().url(url).build().execute();
+        bytes = response.body.getBytes();
         try {
             img.getParentFile().mkdirs();
             img.createNewFile();
@@ -385,19 +376,40 @@ public class Downloader {
     }
 
 
-    public static File downloadFile(byte[] bytes, File outputFile, String contentType) throws IOException {
-        if (bytes == null) return null;
+    public static File downloadFile(String url, File outputFile) throws Exception {
+
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();
+
+
+        URL urlS = new URL(url);
+        HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
+        urlConnection.setRequestMethod("GET");
+        //urlConnection.setDoOutput(true);
+        urlConnection.connect();
+
+
+        FileOutputStream fileOutput = new FileOutputStream(outputFile);
+        InputStream inputStream = urlConnection.getInputStream();
+
+        String contentType = urlConnection.getHeaderField("Content-Type");
+        if (urlConnection.getResponseCode() > 350) {
+            throw new RuntimeException();
+        }
         if (contentType != null)
             KeyValueStorage.saveString(outputFile.getName(), contentType);
         else
             KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
-        FileOutputStream fos = new FileOutputStream(outputFile);
-        fos.write(bytes);
-        fos.flush();
-        fos.close();
+
+        byte[] buffer = new byte[1024];
+        int bufferLength = 0;
+
+        while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+            fileOutput.write(buffer, 0, bufferLength);
+        }
+        fileOutput.flush();
+        fileOutput.close();
         return outputFile;
 
     }

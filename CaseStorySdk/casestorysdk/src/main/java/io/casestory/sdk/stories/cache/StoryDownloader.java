@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 
+import com.google.gson.Gson;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,17 +33,18 @@ import java.util.concurrent.Future;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.network.NetworkClient;
+import io.casestory.sdk.network.Request;
+import io.casestory.sdk.network.Response;
 import io.casestory.sdk.stories.api.models.ResourceMappingObject;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.OpenStatisticCallback;
-import io.casestory.sdk.stories.api.networkclient.ApiClient;
 import io.casestory.sdk.stories.events.PageTaskLoadErrorEvent;
 import io.casestory.sdk.stories.events.PageTaskLoadedEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.events.StoryCacheLoadedEvent;
 import io.casestory.sdk.stories.utils.Sizes;
-import okhttp3.Request;
 
 import static io.casestory.sdk.CaseStoryService.EXPAND_STRING;
 
@@ -301,12 +304,16 @@ public class StoryDownloader {
             final Callable<Story> _ff = new Callable<Story>() {
                 @Override
                 public Story call() throws Exception {
-                    Story story1 = ApiClient.getApi().getStoryById(Integer.toString(key),
+                    Response response = NetworkClient.getApi().getStoryById(Integer.toString(key),
                             StatisticSession.getInstance().id, 1,
                             CaseStoryManager.getInstance().getApiKey(),
-                            EXPAND_STRING)
-                            .execute().body();
-                    return story1;
+                            EXPAND_STRING).execute();
+                    if (response.body != null) {
+                        Story story1 = new Gson().fromJson(response.body, Story.class);
+                        return story1;
+                    } else {
+                        return null;
+                    }
                 }
             };
             final Future<Story> ff = netExecutor.submit(_ff);
@@ -570,7 +577,7 @@ public class StoryDownloader {
         INSTANCE = null;
     }
 
-    public static void downloadVideoByUrl(final Context context, final String url, final int StoryId, int ind) throws IOException {
+    public static void downloadVideoByUrl(final Context context, final String url, final int StoryId, int ind) throws Exception {
 
         Downloader.downVideo(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
        /* final Future<File> ff = imageExecutor.submit(new Callable<File>() {
@@ -594,7 +601,7 @@ public class StoryDownloader {
 
     }
 
-    public static void downloadImageByUrl(final Context context, final String url, final int StoryId, int ind) throws IOException {
+    public static void downloadImageByUrl(final Context context, final String url, final int StoryId, int ind) throws Exception {
         Downloader.downAndCompressImg(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
     }
 
@@ -625,12 +632,13 @@ public class StoryDownloader {
                         for (int i = 0; i < Math.min(stories.size(), 4); i++) {
                             if (findIndexByStoryId(stories.get(i).id) == -1) continue;
                             if (storyTasks.get(stories.get(i).id) != null) continue;
-                            Story storyResponse = ApiClient.getApi().getStoryById(Integer.toString(
+                            Response resp = NetworkClient.getApi().getStoryById(Integer.toString(
                                     stories.get(i).id),
                                     StatisticSession.getInstance().id, 1,
                                     CaseStoryManager.getInstance().getApiKey(),
                                     EXPAND_STRING)
-                                    .execute().body();
+                                    .execute();
+                            Story storyResponse = new Gson().fromJson(resp.body, Story.class);
 
 
                             stories.set(findIndexByStoryId(storyResponse.id), storyResponse);
@@ -656,6 +664,8 @@ public class StoryDownloader {
                         }
                     }
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -860,7 +870,7 @@ public class StoryDownloader {
     private File downAndCompressImg(Context con,
                                     @NonNull String url,
                                     Integer sourceId,
-                                    Point size) throws IOException {
+                                    Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
 
         File img = cache.getStoredFile(con, cropUrl(url), FileType.STORY_IMAGE, sourceId, null);
@@ -868,8 +878,9 @@ public class StoryDownloader {
             return img;
         }
         byte[] bytes = null;
-        bytes = ApiClient.getImageApiOk().newCall(
-                new Request.Builder().url(url).build()).execute().body().bytes();
+
+        Response response = new Request.Builder().get().url(url).build().execute();
+        bytes = response.body.getBytes();
         File file = saveCompressedImg(bytes, img, size);
         return file;
     }

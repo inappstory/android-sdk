@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -13,23 +12,25 @@ import android.os.Messenger;
 import android.text.TextUtils;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.exceptions.DataException;
+import io.casestory.sdk.network.NetworkCallback;
+import io.casestory.sdk.network.NetworkClient;
 import io.casestory.sdk.stories.api.models.StatisticResponse;
 import io.casestory.sdk.stories.api.models.StatisticSendObject;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import io.casestory.sdk.stories.api.networkclient.ApiClient;
 import io.casestory.sdk.stories.api.networkclient.ApiSettings;
-import io.casestory.sdk.stories.api.networkclient.RetrofitCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeUserIdEvent;
 import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
@@ -42,7 +43,6 @@ import io.casestory.sdk.stories.utils.Sizes;
 
 import static io.casestory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static io.casestory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static io.casestory.sdk.CaseStoryService.EXPAND_STRING;
 import static io.casestory.sdk.CaseStoryService.checkOpenStatistic;
 
 public class CaseStoryManager {
@@ -198,11 +198,16 @@ public class CaseStoryManager {
             this.userId = userId;
             EventBus.getDefault().post(new ChangeUserIdEvent());
             StatisticSession.clear();
-            ApiClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                    CaseStoryService.getInstance().statistic)).enqueue(new RetrofitCallback<StatisticResponse>() {
+            NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
+                    CaseStoryService.getInstance().statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
                 @Override
                 public void onSuccess(StatisticResponse response) {
                     EventBus.getDefault().post(new ChangeUserIdForListEvent());
+                }
+
+                @Override
+                public Type getType() {
+                    return StatisticResponse.class;
                 }
 
                 @Override
@@ -244,7 +249,8 @@ public class CaseStoryManager {
         this.hasShare = hasShare;
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
-        ApiClient.setContext(context);
+       // ApiClient.setContext(context);
+        NetworkClient.setContext(context);
         this.userId = userId;
        /* if (actionBarColor == -1) {
             actionBarColor = context.getResources().getColor(R.color.nar_readerActionBarColor);
@@ -321,8 +327,8 @@ public class CaseStoryManager {
                 EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
             }
         })) {
-            ApiClient.getApi().onboardingStories(StatisticSession.getInstance().id, tags == null ? getTags() : tags,
-                    getApiKey()).enqueue(new RetrofitCallback<List<Story>>() {
+            NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, tags == null ? getTags() : tags,
+                    getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
                 @Override
                 public void onSuccess(List<Story> response) {
                     if (response == null || response.size() == 0) return;
@@ -364,6 +370,11 @@ public class CaseStoryManager {
                             outerContext.startActivity(intent2);
                         }
                     }
+                }
+
+                @Override
+                public Type getType() {
+                    return new TypeToken<List<Story>>() {}.getType();
                 }
 
                 @Override

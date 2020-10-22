@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -18,11 +16,12 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,26 +29,23 @@ import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.imageloader.ImageLoader;
+import io.casestory.sdk.network.NetworkCallback;
+import io.casestory.sdk.network.NetworkClient;
+import io.casestory.sdk.network.Response;
 import io.casestory.sdk.stories.api.models.CacheFontObject;
 import io.casestory.sdk.stories.api.models.StatisticResponse;
 import io.casestory.sdk.stories.api.models.StatisticSendObject;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.StoryLinkObject;
-import io.casestory.sdk.stories.api.models.callbacks.CloseStatisticCallback;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import io.casestory.sdk.stories.api.models.callbacks.OpenStatisticCallback;
-import io.casestory.sdk.stories.api.networkclient.ApiClient;
-import io.casestory.sdk.stories.api.networkclient.RetrofitCallback;
 import io.casestory.sdk.stories.cache.Downloader;
 import io.casestory.sdk.stories.cache.StoryDownloader;
-import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
 import io.casestory.sdk.stories.events.ContentLoadedEvent;
 import io.casestory.sdk.stories.events.ListVisibilityEvent;
 import io.casestory.sdk.stories.events.LoadFavStories;
-import io.casestory.sdk.stories.events.LoadStoriesOnEmpty;
-import io.casestory.sdk.stories.events.LoadStoriesOnError;
 import io.casestory.sdk.stories.events.NextStoryPageEvent;
 import io.casestory.sdk.stories.events.NextStoryReaderEvent;
 import io.casestory.sdk.stories.events.NoConnectionEvent;
@@ -59,14 +55,11 @@ import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.events.StoryPageOpenEvent;
 import io.casestory.sdk.stories.events.StoryReaderTapEvent;
-import io.casestory.sdk.stories.events.StoryTapEvent;
-import io.casestory.sdk.stories.serviceevents.ContentRenewPriorities;
 import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import io.casestory.sdk.stories.serviceevents.LikeDislikeEvent;
 import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import io.casestory.sdk.stories.ui.list.FavoriteImage;
 import io.casestory.sdk.stories.utils.Sizes;
-import okhttp3.ResponseBody;
 
 public class CaseStoryService extends Service {
 
@@ -92,10 +85,15 @@ public class CaseStoryService extends Service {
 
     void logout() {
         closeStatisticEvent(null, true);
-        ApiClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                statistic)).enqueue(new RetrofitCallback<StatisticResponse>() {
+        NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
+                statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
+            }
+
+            @Override
+            public Type getType() {
+                return StatisticResponse.class;
             }
 
             @Override
@@ -130,7 +128,7 @@ public class CaseStoryService extends Service {
                 openStatistic(new OpenStatisticCallback() {
                     @Override
                     public void onSuccess() {
-                        ApiClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
+                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
                                 getApiKey()).enqueue(loadCallback);
                     }
 
@@ -140,7 +138,7 @@ public class CaseStoryService extends Service {
                     }
                 });
             } else {
-                ApiClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
+                NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
                         getApiKey()).enqueue(loadCallback);
             }
         } else {
@@ -227,7 +225,12 @@ public class CaseStoryService extends Service {
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();
 
-    RetrofitCallback loadCallback = new RetrofitCallback<List<Story>>() {
+    NetworkCallback loadCallback = new NetworkCallback<List<Story>>() {
+
+        @Override
+        public Type getType() {
+            return new TypeToken<List<Story>>() {}.getType();
+        }
 
         boolean isRefreshing = false;
 
@@ -248,7 +251,7 @@ public class CaseStoryService extends Service {
                         if (!isRefreshing)
                             isRefreshing = true;
 
-                        ApiClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
+                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
                                 getApiKey()).enqueue(loadCallback);
                     }
 
@@ -285,9 +288,9 @@ public class CaseStoryService extends Service {
                 }
             }
             if (CaseStoryManager.getInstance().hasFavorite) {
-                ApiClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), 1,
+                NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), 1,
                         null, "id, background_color, image",
-                        getApiKey()).enqueue(new RetrofitCallback<List<Story>>() {
+                        getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
                     @Override
                     public void onSuccess(List<Story> response2) {
                         favStories.clear();
@@ -299,26 +302,7 @@ public class CaseStoryService extends Service {
                                 if (favoriteImages.size() < 4)
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                             }
-                           /* for (final FavoriteImage favoriteImage : favoriteImages) {
-                                final int id = favoriteImage.getId();
-                                Glide.with(getApplicationContext())
-                                        .asBitmap()
-                                        .load(favoriteImage.getImage().get(0).getUrl())
-                                        .into(new CustomTarget<Bitmap>() {
-                                            @Override
-                                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                                for (FavoriteImage image : favoriteImages) {
-                                                    if (id == image.getId())
-                                                        image.setBitmap(resource);
-                                                }
-                                            }
 
-                                            @Override
-                                            public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                                            }
-                                        });
-                            }*/
                             if (loadStoriesCallback != null) {
                                 List<Integer> ids = new ArrayList<>();
                                 for (Story story : response) {
@@ -336,6 +320,11 @@ public class CaseStoryService extends Service {
                                 loadStoriesCallback.storiesLoaded(ids);
                             }
                         }
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return new TypeToken<List<Story>>() {}.getType();
                     }
 
                     @Override
@@ -613,7 +602,7 @@ public class CaseStoryService extends Service {
             openProcess = false;
             return;
         }
-        ApiClient.getFastApi().statisticsOpen(
+        NetworkClient.getApi().statisticsOpen(
                 "cache",
                 CaseStoryManager.getInstance().getTagsString(),
                 "animation,data,deeplink",
@@ -631,7 +620,7 @@ public class CaseStoryService extends Service {
                 appVersion,
                 appBuild,
                 CaseStoryManager.getInstance().getUserId()
-        ).enqueue(new RetrofitCallback<StatisticResponse>() {
+        ).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(final StatisticResponse response) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -651,6 +640,11 @@ public class CaseStoryService extends Service {
                     }
                 });
 
+            }
+
+            @Override
+            public Type getType() {
+                return StatisticResponse.class;
             }
 
             @Override
@@ -681,6 +675,7 @@ public class CaseStoryService extends Service {
             }
         });
     }
+
 
 
 
@@ -729,15 +724,21 @@ public class CaseStoryService extends Service {
             return true;
         }
         try {
-            ApiClient.getApi().statisticsUpdate(
+
+            NetworkClient.getApi().statisticsUpdate(
                     new StatisticSendObject(StatisticSession.getInstance().id,
-                            statistic)).enqueue(new RetrofitCallback<StatisticResponse>() {
+                            statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
                 @Override
                 public void onSuccess(StatisticResponse response) {
                     StatisticSession.getInstance();
                     StatisticSession.updateStatistic();
                     if (statistic == null) return;
                     statistic.clear();
+                }
+
+                @Override
+                public Type getType() {
+                    return StatisticResponse.class;
                 }
             });
         } catch (Exception e) {
@@ -810,15 +811,20 @@ public class CaseStoryService extends Service {
 
             }
         })) {
-            ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
+            NetworkClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
                     getApiKey(), EXPAND_STRING
-            ).enqueue(new RetrofitCallback<Story>() {
+            ).enqueue(new NetworkCallback<Story>() {
                 @Override
                 public void onSuccess(final Story response) {
                     StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
                         add(response);
                     }});
                     storyByIdCallback.getStory(response);
+                }
+
+                @Override
+                public Type getType() {
+                    return Story.class;
                 }
             });
         }
@@ -840,15 +846,20 @@ public class CaseStoryService extends Service {
                 val = 1;
             }
         }
-        ApiClient.getFastApi().storyLike(Integer.toString(storyId),
+        NetworkClient.getApi().storyLike(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
                 getApiKey(), val).enqueue(
-                new RetrofitCallback<ResponseBody>() {
+                new NetworkCallback<Response>() {
                     @Override
-                    public void onSuccess(ResponseBody response) {
+                    public void onSuccess(Response response) {
                         if (story != null)
                             story.like = val;
                         EventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
                     }
                 });
     }
@@ -856,15 +867,20 @@ public class CaseStoryService extends Service {
     public void favoriteClick(final int storyId) {
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final boolean val = story.favorite;
-        ApiClient.getFastApi().storyFavorite(Integer.toString(storyId),
+        NetworkClient.getApi().storyFavorite(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
                 getApiKey(), val ? 0 : 1).enqueue(
-                new RetrofitCallback<ResponseBody>() {
+                new NetworkCallback<Response>() {
                     @Override
-                    public void onSuccess(ResponseBody response) {
+                    public void onSuccess(Response response) {
                         if (story != null)
                             story.favorite = !val;
                         EventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
                     }
                 });
 
@@ -896,9 +912,9 @@ public class CaseStoryService extends Service {
             public void errorStatistic() {
             }
         })) {
-            ApiClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
+            NetworkClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
                     getApiKey(), EXPAND_STRING
-            ).enqueue(new RetrofitCallback<Story>() {
+            ).enqueue(new NetworkCallback<Story>() {
                 @Override
                 public void onSuccess(final Story response) {
                     StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
@@ -906,6 +922,11 @@ public class CaseStoryService extends Service {
                     }});
                     StoryDownloader.getInstance().setStory(response, response.id);
                     storyByIdCallback.getStory(response);
+                }
+
+                @Override
+                public Type getType() {
+                    return Story.class;
                 }
 
                 @Override
@@ -932,9 +953,9 @@ public class CaseStoryService extends Service {
                 EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
             }
         })) {
-            ApiClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
+            NetworkClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
                     getApiKey(), EXPAND_STRING
-            ).enqueue(new RetrofitCallback<Story>() {
+            ).enqueue(new NetworkCallback<Story>() {
                 @Override
                 public void onSuccess(final Story response) {
                     StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
@@ -942,6 +963,11 @@ public class CaseStoryService extends Service {
                     }});
                     StoryDownloader.getInstance().setStory(response, response.id);
                     storyByIdCallback.getStory(response);
+                }
+
+                @Override
+                public Type getType() {
+                    return Story.class;
                 }
 
                 @Override

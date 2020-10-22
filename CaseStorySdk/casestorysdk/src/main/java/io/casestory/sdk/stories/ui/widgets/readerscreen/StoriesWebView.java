@@ -1,6 +1,5 @@
 package io.casestory.sdk.stories.ui.widgets.readerscreen;
 
-import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -31,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -42,10 +42,12 @@ import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.network.NetworkCallback;
+import io.casestory.sdk.network.NetworkClient;
+import io.casestory.sdk.network.Request;
+import io.casestory.sdk.network.Response;
 import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
-import io.casestory.sdk.stories.api.networkclient.ApiClient;
-import io.casestory.sdk.stories.api.networkclient.RetrofitCallback;
 import io.casestory.sdk.stories.cache.Downloader;
 import io.casestory.sdk.stories.cache.FileCache;
 import io.casestory.sdk.stories.cache.FileType;
@@ -67,9 +69,6 @@ import io.casestory.sdk.stories.ui.dialog.ContactDialog;
 import io.casestory.sdk.stories.ui.widgets.CoreProgressBar;
 import io.casestory.sdk.stories.utils.KeyValueStorage;
 import io.casestory.sdk.stories.utils.WebPageConverter;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 import static io.casestory.sdk.stories.cache.HtmlParser.fromHtml;
 
@@ -373,15 +372,17 @@ public class StoriesWebView extends WebView {
 
                 if (file.exists()) {
                     try {
-                        Response response = ApiClient.getImageApiOk().newCall(
-                                new Request.Builder().head().url(url).build()).execute();
-                        String ctType = response.header("Content-Type");
+                        Response response = new Request.Builder().head().url(url).build().execute();
+                        String ctType = response.headers.get("Content-Type");
                         return new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
                     } catch (FileNotFoundException e) {
                         return super.shouldInterceptRequest(view, url);
                     } catch (IOException e) {
                         e.printStackTrace();
+                        return super.shouldInterceptRequest(view, url);
+                    } catch (Exception e) {
+
                         return super.shouldInterceptRequest(view, url);
                     }
                 } else
@@ -398,15 +399,16 @@ public class StoriesWebView extends WebView {
 
                 if (file.exists()) {
                     try {
-                        Response response = ApiClient.getImageApiOk().newCall(
-                                new Request.Builder().head().url(request.getUrl().toString()).build()).execute();
-                        String ctType = response.header("Content-Type");
+                        Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
+                        String ctType = response.headers.get("Content-Type");
                         return new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
                     } catch (FileNotFoundException e) {
                         return super.shouldInterceptRequest(view, request);
                     } catch (IOException e) {
                         e.printStackTrace();
+                        return super.shouldInterceptRequest(view, request);
+                    } catch (Exception e) {
                         return super.shouldInterceptRequest(view, request);
                     }
                 } else
@@ -580,11 +582,16 @@ public class StoriesWebView extends WebView {
         public void storySendData(String data) {
 
             Log.d("quiz", "storySendData" + " " + data);
-            ApiClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
-                    .enqueue(new RetrofitCallback<ResponseBody>() {
+            NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
+                    .enqueue(new NetworkCallback<io.casestory.sdk.network.Response>() {
                         @Override
-                        public void onSuccess(ResponseBody response) {
+                        public void onSuccess(io.casestory.sdk.network.Response response) {
 
+                        }
+
+                        @Override
+                        public Type getType() {
+                            return null;
                         }
                     });
         }
@@ -597,11 +604,16 @@ public class StoriesWebView extends WebView {
                     + "__" + CaseStoryManager.getInstance().getUserId(), data);
 
             if (sendToServer) {
-                ApiClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
-                        .enqueue(new RetrofitCallback<ResponseBody>() {
+                NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
+                        .enqueue(new NetworkCallback<Response>() {
                             @Override
-                            public void onSuccess(ResponseBody response) {
+                            public void onSuccess(Response response) {
 
+                            }
+
+                            @Override
+                            public Type getType() {
+                                return null;
                             }
                         });
             }
