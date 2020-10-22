@@ -887,21 +887,21 @@ public class CaseStoryService extends Service {
     }
 
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
-        Story partialStory = null;
+        //Story partialStory = null;
         for (Story story : StoryDownloader.getInstance().getStories()) {
             if (story.id == id) {
                 if (story.pages != null) {
                     storyByIdCallback.getStory(story);
                     return;
                 } else {
-                    partialStory = story;
+                   // partialStory = story;
                     storyByIdCallback.getStory(story);
                     return;
                 }
             }
         }
-        final Story finalPartialStory = partialStory;
-        if (1 == 1) return;
+       /*  final Story finalPartialStory = partialStory;
+       if (1 == 1) return;
         if (checkOpenStatistic(new CheckStatisticCallback() {
             @Override
             public void openStatistic() {
@@ -937,7 +937,7 @@ public class CaseStoryService extends Service {
                     storyByIdCallback.loadError(0);
                 }
             });
-        }
+        }*/
     }
 
     public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback, final String id) {

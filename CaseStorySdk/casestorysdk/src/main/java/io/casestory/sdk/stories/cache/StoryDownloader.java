@@ -84,7 +84,24 @@ public class StoryDownloader {
             if (!this.stories.contains(story))
                 this.stories.add(story);
             else {
-                this.stories.set(this.stories.indexOf(story), story);
+                Story tmp = story;
+                int ind = this.stories.indexOf(story);
+                if (tmp.pages == null & this.stories.get(ind).pages != null) {
+                    tmp.pages = new ArrayList<>();
+                    tmp.pages.addAll(this.stories.get(ind).pages);
+                }
+                if (tmp.durations == null & this.stories.get(ind).durations != null) {
+                    tmp.durations = new ArrayList<>();
+                    tmp.durations.addAll(this.stories.get(ind).durations);
+                }
+                if (tmp.layout == null & this.stories.get(ind).layout != null) {
+                    tmp.layout = this.stories.get(ind).layout;
+                }
+                if (tmp.srcList == null & this.stories.get(ind).srcList != null) {
+                    tmp.srcList = new ArrayList<>();
+                    tmp.srcList.addAll(this.stories.get(ind).srcList);
+                }
+                this.stories.set(ind, tmp);
             }
         }
     }
@@ -113,7 +130,7 @@ public class StoryDownloader {
         cur.layout = story.layout;
         cur.title = story.title;
         cur.srcList = new ArrayList<ResourceMappingObject>() {{
-           addAll(story.getSrcList());
+            addAll(story.getSrcList());
         }};
         cur.durations = new ArrayList<Integer>() {{
             addAll(story.durations);

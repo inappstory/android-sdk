@@ -318,6 +318,10 @@ public class StoriesWebView extends WebView {
 
     public void destroyWebView() {
         final Runtime runtime = Runtime.getRuntime();
+        try {
+            EventBus.getDefault().unregister(this);
+        } catch (Exception e) {
+        }
         final long usedMemInMB=(runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
         final long maxHeapSizeInMB=runtime.maxMemory() / 1048576L;
         final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
