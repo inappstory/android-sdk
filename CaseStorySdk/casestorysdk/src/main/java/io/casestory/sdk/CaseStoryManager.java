@@ -11,11 +11,12 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
-import com.google.gson.reflect.TypeToken;
-
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -374,7 +375,27 @@ public class CaseStoryManager {
 
                 @Override
                 public Type getType() {
-                    return new TypeToken<List<Story>>() {}.getType();
+                   // List<Story> c = new ArrayList<Story>();
+                    ParameterizedType ptype = new ParameterizedType() {
+                        @NonNull
+                        @Override
+                        public Type[] getActualTypeArguments() {
+                            return new Type[]{Story.class};
+                        }
+
+                        @NonNull
+                        @Override
+                        public Type getRawType() {
+                            return List.class;
+                        }
+
+                        @Nullable
+                        @Override
+                        public Type getOwnerType() {
+                            return List.class;
+                        }
+                    };
+                    return ptype;
                 }
 
                 @Override

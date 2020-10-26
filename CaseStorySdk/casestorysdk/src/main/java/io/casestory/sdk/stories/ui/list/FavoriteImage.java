@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import java.util.List;
 
+import io.casestory.sdk.eventbus.Subscription;
 import io.casestory.sdk.stories.api.models.Image;
 
 public class FavoriteImage {
@@ -30,5 +31,24 @@ public class FavoriteImage {
         this.id = id;
         this.image = image;
         this.backgroundColor = backgroundColor;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof FavoriteImage) {
+            FavoriteImage otherSubscription = (FavoriteImage) other;
+            return ((FavoriteImage) other).id == id;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + id;
+        result = 31 * result + id;
+        result = 31 * result + id;
+        return result;
     }
 }

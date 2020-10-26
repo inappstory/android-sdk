@@ -48,6 +48,9 @@ public final class NetworkHandler implements InvocationHandler {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         }
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
+            if (!req.isFormEncoded()) {
+                connection.setRequestProperty("Content-Type", "application/json");
+            }
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
@@ -154,6 +157,7 @@ public final class NetworkHandler implements InvocationHandler {
         String body = "";
         if (headers == null) {
             headers = NetworkClient.getInstance().getHeaders();
+
         }
         for (int i = 0; i < method.getParameterAnnotations().length; i++) {
             if (args[i] == null) continue;
@@ -167,11 +171,16 @@ public final class NetworkHandler implements InvocationHandler {
                 } else if (annotation instanceof Field) {
                     body += "&" + ((Field) annotation).value() + "=" + args[i].toString();
                 } else if (annotation instanceof Body) {
-                    body += (body.isEmpty() ? "" : "\n") + args[i].toString();
+                    try {
+                        String bd = JsonParser.getJson(args[i]);
+                        body += (body.isEmpty() ? "" : "\n") + bd;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
-        if (!body.isEmpty()) {
+        if (!body.isEmpty() && body.startsWith("&")) {
             body = body.substring(1);
         }
         final Request request = (new Request.Builder()).post().isFormEncoded(encoded).headers(headers)
@@ -203,11 +212,15 @@ public final class NetworkHandler implements InvocationHandler {
                 } else if (annotation instanceof Field) {
                     body += "&" + ((Field) annotation).value() + "=" + args[i].toString();
                 } else if (annotation instanceof Body) {
-                    body += (body.isEmpty() ? "" : "\n") + args[i].toString();
+                    try {
+                        body += (body.isEmpty() ? "" : "\n") + JsonParser.getJson(args[i]);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
-        if (!body.isEmpty()) {
+        if (!body.isEmpty() && body.startsWith("&")) {
             body = body.substring(1);
         }
         final Request request = (new Request.Builder()).put().isFormEncoded(encoded).headers(headers)

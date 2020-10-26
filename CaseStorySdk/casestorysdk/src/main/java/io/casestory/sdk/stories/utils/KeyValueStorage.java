@@ -3,12 +3,11 @@ package io.casestory.sdk.stories.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.google.gson.Gson;
-
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
 import io.casestory.sdk.CaseStoryManager;
+import io.casestory.sdk.network.JsonParser;
 
 public class KeyValueStorage {
 
@@ -70,11 +69,13 @@ public class KeyValueStorage {
      */
     public static void saveObject(String key, Object value) {
         if (getDefaultPreferences() == null) return;
-        SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(value);
-        editor.putString(key, jsonString);
-        editor.apply();
+        try {
+            SharedPreferences.Editor editor = getDefaultPreferences().edit();
+            editor.putString(key, JsonParser.getJson(value));
+            editor.apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -82,61 +83,25 @@ public class KeyValueStorage {
      */
     public static <T> T getObject(String key, Class<T> type) {
         if (getDefaultPreferences() == null) return null;
-        Gson gson = new Gson();
         String jsonString = getDefaultPreferences().getString(key, null);
         if (jsonString != null) {
-            return gson.fromJson(jsonString, type);
+            return JsonParser.fromJson(jsonString, type);
         }
         return null;
     }
 
-    /**
-     * Получение json объекта
-     */
-    public static <T> T getObject(String key, Type type) {
-        if (getDefaultPreferences() == null) return null;
-        Gson gson = new Gson();
-        String jsonString = getDefaultPreferences().getString(key, null);
-        if (jsonString != null) {
-            return gson.fromJson(jsonString, type);
-        }
-        return null;
-    }
 
     /**
      * Сохранение json объекта
      */
     public static void saveMap(String key, HashMap value) {
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(value);
-        editor.putString(key, jsonString);
-        editor.apply();
+        try {
+            editor.putString(key, JsonParser.getJson(value));
+            editor.apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * Получение json объекта
-     */
-    public static <T> T getMap(String key, Class<T> type) {
-        if (getDefaultPreferences() == null) return null;
-        Gson gson = new Gson();
-        String jsonString = getDefaultPreferences().getString(key, null);
-        if (jsonString != null) {
-            return gson.fromJson(jsonString, type);
-        }
-        return null;
-    }
-
-    /**
-     * Получение json объекта
-     */
-    public static <T> T getMap(String key, Type type) {
-        if (getDefaultPreferences() == null) return null;
-        Gson gson = new Gson();
-        String jsonString = getDefaultPreferences().getString(key, null);
-        if (jsonString != null) {
-            return gson.fromJson(jsonString, type);
-        }
-        return null;
-    }
 }

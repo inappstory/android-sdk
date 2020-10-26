@@ -6,6 +6,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
@@ -102,6 +103,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     }
 
     private void setImage(AppCompatImageView imageView, String url) {
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         ImageLoader.getInstance().displayImage(url, -1, imageView);
     }
 
@@ -130,9 +132,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     imageViewLayout.addView(image1);
                     break;
                 case 2:
-                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
                             RelativeLayout.LayoutParams.MATCH_PARENT);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     image2.setLayoutParams(piece2);
@@ -143,14 +145,14 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     imageViewLayout.addView(image2);
                     break;
                 case 3:
-                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
-                            Sizes.dpToPxExt(60));
-                    piece3 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
-                            Sizes.dpToPxExt(60));
+                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
+                            Sizes.dpToPxExt(55));
+                    piece3 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
+                            Sizes.dpToPxExt(55));
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
@@ -163,18 +165,18 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     break;
                 default:
 
-                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
-                            Sizes.dpToPxExt(60));
-                    piece3 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
-                            Sizes.dpToPxExt(60));
-                    piece4 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
-                            Sizes.dpToPxExt(60));
+                    piece2 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
+                            Sizes.dpToPxExt(55));
+                    piece3 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
+                            Sizes.dpToPxExt(55));
+                    piece4 = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
+                            Sizes.dpToPxExt(55));
 
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
                     piece4.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     piece4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(60),
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(55),
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);

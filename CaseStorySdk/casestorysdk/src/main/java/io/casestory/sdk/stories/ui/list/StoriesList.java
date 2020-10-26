@@ -97,6 +97,13 @@ public class StoriesList extends RecyclerView {
     }
 
     StoriesAdapter adapter;
+
+    @Override
+    public void setLayoutManager(LayoutManager layoutManager) {
+        this.layoutManager = layoutManager;
+        super.setLayoutManager(layoutManager);
+    }
+
     LayoutManager layoutManager = new LinearLayoutManager(getContext(), HORIZONTAL, false);
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
@@ -165,7 +172,9 @@ public class StoriesList extends RecyclerView {
         boolean isEmpty = favImages.isEmpty();
         Story story = StoryDownloader.getInstance().getStoryById(event.getId());
         if (event.favStatus) {
-            favImages.add(0, new FavoriteImage(Integer.valueOf(event.getId()), story.getImage(), story.getBackgroundColor()));
+            FavoriteImage favoriteImage = new FavoriteImage(Integer.valueOf(event.getId()), story.getImage(), story.getBackgroundColor());
+            if (!favImages.contains(favoriteImage))
+            favImages.add(0, favoriteImage);
         } else {
             for (FavoriteImage favoriteImage : favImages) {
                 if (favoriteImage.getId() == Integer.valueOf(event.getId())) {
@@ -174,7 +183,10 @@ public class StoriesList extends RecyclerView {
                 }
             }
         }
-        if (isEmpty && !favImages.isEmpty()) {
+        if (isFavoriteList) {
+            adapter.hasFavItem = false;
+            adapter.notifyDataSetChanged();
+        } else if (isEmpty && !favImages.isEmpty()) {
             adapter.hasFavItem = (true && CaseStoryManager.getInstance().hasFavorite());
             // adapter.refresh();
             adapter.notifyDataSetChanged();
@@ -208,7 +220,7 @@ public class StoriesList extends RecyclerView {
                         adapter.refresh(storiesIds);
                     }
                 }
-            });
+            }, isFavoriteList);
 
         } else {
             new Handler().postDelayed(new Runnable() {
@@ -221,7 +233,7 @@ public class StoriesList extends RecyclerView {
                             setLayoutManager(layoutManager);
                             setAdapter(adapter);
                         }
-                    });
+                    }, isFavoriteList);
                 }
             }, 1000);
         }

@@ -2,11 +2,12 @@ package io.casestory.sdk.network;
 
 import android.os.AsyncTask;
 
-import com.google.gson.Gson;
-
+import java.lang.reflect.ParameterizedType;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 
@@ -153,11 +154,18 @@ public final class Request<T> {
             protected void onPostExecute(final Response result) {
                 if (result != null) {
                     if (result.body != null) {
-                        Gson gson = new Gson();
+                        //Gson gson = new Gson();
                         if (callback.getType() == null) {
                             callback.onSuccess(result);
                         } else {
-                            callback.onSuccess(gson.fromJson(result.body, callback.getType()));
+                            if (callback.getType() instanceof ParameterizedType) {
+                                ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
+                                Object obj = JsonParser.listFromJson(result.body,
+                                        (Class)(parameterizedType.getActualTypeArguments()[0]));
+                                callback.onSuccess(obj);
+                            } else {
+                                callback.onSuccess(JsonParser.fromJson(result.body, (Class)callback.getType()));
+                            }
                         }
                     } else
                         callback.onFailure(result);

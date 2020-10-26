@@ -22,9 +22,8 @@ import android.widget.FrameLayout;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
 
-import com.google.gson.Gson;
-
 import io.casestory.casestorysdk.R;
+import io.casestory.sdk.network.JsonParser;
 import io.casestory.sdk.stories.utils.Sizes;
 
 public class ContactDialog {
@@ -83,7 +82,7 @@ public class ContactDialog {
 
     public ContactDialog(int storyId, String id, String data,
                          SendListener sendListener, CancelListener cancelListener) {
-        this.dialogStructure = new Gson().fromJson(data, DialogStructure.class);
+        this.dialogStructure = JsonParser.fromJson(data, DialogStructure.class);
         this.id = id;
         this.storyId = storyId;
         this.sendListener = sendListener;

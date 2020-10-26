@@ -1,8 +1,9 @@
 package io.casestory.sdk.stories.api.models;
 
-import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
+
+import io.casestory.sdk.network.SerializedName;
 
 /**
  * Created by paperrose on 21.02.2018.

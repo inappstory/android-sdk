@@ -2,12 +2,16 @@ package io.casestory.sdk.network;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+
+import io.casestory.casestorysdk.BuildConfig;
 
 public class NetworkClient {
     private static ApiInterface apiInterface;
@@ -107,7 +111,21 @@ public class NetworkClient {
     }
 
     public static String getUAString(Context context) {
-        String userAgent = getDefaultUserAgentString(context);
+        String userAgent = "";
+        String agentString = System.getProperty("http.agent");
+        if (agentString != null && !agentString.isEmpty()) {
+            int version = BuildConfig.VERSION_CODE;
+            PackageInfo pInfo = null;
+            try {
+                pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+                version = pInfo.versionCode;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            userAgent = "CaseStorySDK/" + version + " " + System.getProperty("http.agent");
+        } else {
+            userAgent = getDefaultUserAgentString(context);
+        }
         String finalUA = "";
         for (int i = 0; i < userAgent.length(); i++) {
             char c = userAgent.charAt(i);

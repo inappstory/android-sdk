@@ -16,11 +16,10 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,7 @@ import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.Subscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.imageloader.ImageLoader;
+import io.casestory.sdk.network.JsonParser;
 import io.casestory.sdk.network.NetworkCallback;
 import io.casestory.sdk.network.NetworkClient;
 import io.casestory.sdk.network.Response;
@@ -106,7 +106,7 @@ public class CaseStoryService extends Service {
 
     LoadStoriesCallback loadStoriesCallback;
 
-    public void loadStories(final LoadStoriesCallback callback) {
+    public void loadStories(final LoadStoriesCallback callback, final boolean isFavorite) {
         loadStoriesCallback = callback;
         if (isConnected()) {
             if (StatisticSession.getInstance() == null
@@ -115,7 +115,7 @@ public class CaseStoryService extends Service {
                 openStatistic(new OpenStatisticCallback() {
                     @Override
                     public void onSuccess() {
-                        loadStories(loadStoriesCallback);
+                        loadStories(loadStoriesCallback, isFavorite);
                     }
 
                     @Override
@@ -128,8 +128,8 @@ public class CaseStoryService extends Service {
                 openStatistic(new OpenStatisticCallback() {
                     @Override
                     public void onSuccess() {
-                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                                getApiKey()).enqueue(loadCallback);
+                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), isFavorite ? 1 : 0,
+                                getTags(), getTestKey(), null).enqueue(isFavorite ? loadCallbackWithoutFav : loadCallback);
                     }
 
                     @Override
@@ -138,8 +138,8 @@ public class CaseStoryService extends Service {
                     }
                 });
             } else {
-                NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                        getApiKey()).enqueue(loadCallback);
+                NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), isFavorite ? 1 : 0,
+                        getTags(), getTestKey(), null).enqueue(isFavorite ? loadCallbackWithoutFav : loadCallback);
             }
         } else {
             EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LOAD_LIST));
@@ -190,7 +190,7 @@ public class CaseStoryService extends Service {
     @Subscribe
     public void storyPageTapEvent(StoryReaderTapEvent event) {
         if (event.getLink() != null && !event.getLink().isEmpty()) {
-            StoryLinkObject object = new Gson().fromJson(event.getLink(), StoryLinkObject.class);
+            StoryLinkObject object = JsonParser.fromJson(event.getLink(), StoryLinkObject.class);// new Gson().fromJson(event.getLink(), StoryLinkObject.class);
             if (object != null) {
                 switch (object.getLink().getType()) {
                     case "url":
@@ -229,7 +229,26 @@ public class CaseStoryService extends Service {
 
         @Override
         public Type getType() {
-            return new TypeToken<List<Story>>() {}.getType();
+            ParameterizedType ptype = new ParameterizedType() {
+                @NonNull
+                @Override
+                public Type[] getActualTypeArguments() {
+                    return new Type[]{Story.class};
+                }
+
+                @NonNull
+                @Override
+                public Type getRawType() {
+                    return List.class;
+                }
+
+                @Nullable
+                @Override
+                public Type getOwnerType() {
+                    return List.class;
+                }
+            };
+            return ptype;
         }
 
         boolean isRefreshing = false;
@@ -252,7 +271,7 @@ public class CaseStoryService extends Service {
                             isRefreshing = true;
 
                         NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                                getApiKey()).enqueue(loadCallback);
+                                null).enqueue(loadCallback);
                     }
 
                     @Override
@@ -290,7 +309,7 @@ public class CaseStoryService extends Service {
             if (CaseStoryManager.getInstance().hasFavorite) {
                 NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), 1,
                         null, "id, background_color, image",
-                        getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
+                        null).enqueue(new NetworkCallback<List<Story>>() {
                     @Override
                     public void onSuccess(List<Story> response2) {
                         favStories.clear();
@@ -299,8 +318,8 @@ public class CaseStoryService extends Service {
                         EventBus.getDefault().post(new LoadFavStories());
                         if (response2 != null && response2.size() > 0) {
                             for (Story story : response2) {
-                                if (favoriteImages.size() < 4)
-                                    favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
+                                //if (favoriteImages.size() < 4)
+                                favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                             }
 
                             if (loadStoriesCallback != null) {
@@ -324,7 +343,26 @@ public class CaseStoryService extends Service {
 
                     @Override
                     public Type getType() {
-                        return new TypeToken<List<Story>>() {}.getType();
+                        ParameterizedType ptype = new ParameterizedType() {
+                            @NonNull
+                            @Override
+                            public Type[] getActualTypeArguments() {
+                                return new Type[]{Story.class};
+                            }
+
+                            @NonNull
+                            @Override
+                            public Type getRawType() {
+                                return List.class;
+                            }
+
+                            @Nullable
+                            @Override
+                            public Type getOwnerType() {
+                                return List.class;
+                            }
+                        };
+                        return ptype;
                     }
 
                     @Override
@@ -346,6 +384,98 @@ public class CaseStoryService extends Service {
                     }
                     loadStoriesCallback.storiesLoaded(ids);
                 }
+            }
+        }
+    };
+
+
+    NetworkCallback loadCallbackWithoutFav = new NetworkCallback<List<Story>>() {
+
+        @Override
+        public Type getType() {
+            ParameterizedType ptype = new ParameterizedType() {
+                @NonNull
+                @Override
+                public Type[] getActualTypeArguments() {
+                    return new Type[]{Story.class};
+                }
+
+                @NonNull
+                @Override
+                public Type getRawType() {
+                    return List.class;
+                }
+
+                @Nullable
+                @Override
+                public Type getOwnerType() {
+                    return List.class;
+                }
+            };
+            return ptype;
+        }
+
+        boolean isRefreshing = false;
+
+        @Override
+        public void onError(int code, String message) {
+
+            EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            super.onError(code, message);
+        }
+
+        @Override
+        protected void error424(String message) {
+            EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            if (!openProcess)
+                openStatistic(new OpenStatisticCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (!isRefreshing)
+                            isRefreshing = true;
+
+                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
+                                null).enqueue(loadCallbackWithoutFav);
+                    }
+
+                    @Override
+                    public void onError() {
+
+                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                    }
+                });
+        }
+
+        @Override
+        public void onSuccess(final List<Story> response) {
+            if (response == null || response.size() == 0) {
+                EventBus.getDefault().post(new ContentLoadedEvent(true));
+            } else {
+                EventBus.getDefault().post(new ContentLoadedEvent(false));
+            }
+            StoryDownloader.getInstance().uploadingAdditional(response);
+            EventBus.getDefault().post(new ListVisibilityEvent());
+            List<Story> newStories = new ArrayList<>();
+            if (StoryDownloader.getInstance().getStories() != null) {
+                for (Story story : response) {
+                    if (!StoryDownloader.getInstance().getStories().contains(story)) {
+                        newStories.add(story);
+                    }
+                }
+            }
+            if (newStories != null && newStories.size() > 0) {
+                try {
+                    StoryDownloader.getInstance().uploadingAdditional(newStories);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (loadStoriesCallback != null) {
+                List<Integer> ids = new ArrayList<>();
+                for (Story story : response) {
+                    ids.add(story.id);
+                }
+                loadStoriesCallback.storiesLoaded(ids);
             }
         }
     };
@@ -466,7 +596,6 @@ public class CaseStoryService extends Service {
     public void resumeLocalTimer() {
         startTimer(timerDuration - pauseShift);
     }
-
 
 
     public long startPauseTime;
@@ -677,8 +806,6 @@ public class CaseStoryService extends Service {
     }
 
 
-
-
     private static final long statisticUpdateInterval = 30000;
 
     private Handler handler = new Handler();
@@ -751,6 +878,7 @@ public class CaseStoryService extends Service {
 
     interface CheckStatisticCallback {
         void openStatistic();
+
         void errorStatistic();
     }
 
@@ -798,35 +926,6 @@ public class CaseStoryService extends Service {
                 storyByIdCallback.getStory(story);
                 return;
             }
-        }
-        if (1 == 1) return;
-        if (checkOpenStatistic(new CheckStatisticCallback() {
-            @Override
-            public void openStatistic() {
-                getStoryById(storyByIdCallback, id);
-            }
-
-            @Override
-            public void errorStatistic() {
-
-            }
-        })) {
-            NetworkClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
-                    getApiKey(), EXPAND_STRING
-            ).enqueue(new NetworkCallback<Story>() {
-                @Override
-                public void onSuccess(final Story response) {
-                    StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
-                        add(response);
-                    }});
-                    storyByIdCallback.getStory(response);
-                }
-
-                @Override
-                public Type getType() {
-                    return Story.class;
-                }
-            });
         }
     }
 
@@ -894,7 +993,7 @@ public class CaseStoryService extends Service {
                     storyByIdCallback.getStory(story);
                     return;
                 } else {
-                   // partialStory = story;
+                    // partialStory = story;
                     storyByIdCallback.getStory(story);
                     return;
                 }

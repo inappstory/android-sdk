@@ -59,7 +59,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
-        hasFavItem = CaseStoryService.getInstance().favoriteImages.size() > 0;
+        hasFavItem = !isFavoriteList && CaseStoryService.getInstance().favoriteImages.size() > 0;
     }
 
     public void refresh(List<Integer> storiesIds) {

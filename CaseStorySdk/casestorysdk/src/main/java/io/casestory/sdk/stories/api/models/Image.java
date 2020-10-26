@@ -3,9 +3,10 @@ package io.casestory.sdk.stories.api.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
+
+import io.casestory.sdk.network.SerializedName;
 
 public class Image implements Parcelable {
     public static final String TYPE_SMALL = "s";
@@ -60,6 +61,9 @@ public class Image implements Parcelable {
         height = in.readInt();
         expire = in.readInt();
         type = in.readString();
+    }
+
+    public Image() {
     }
 
     @Override

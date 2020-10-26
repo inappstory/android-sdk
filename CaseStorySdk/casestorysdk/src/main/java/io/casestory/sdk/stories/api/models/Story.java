@@ -3,10 +3,12 @@ package io.casestory.sdk.stories.api.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.gson.annotations.SerializedName;
+
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.casestory.sdk.network.SerializedName;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -61,6 +63,7 @@ public class Story implements Parcelable {
     public String source;
 
     public String getBackgroundColor() {
+        if (backgroundColor == null) return "#000000";
         return backgroundColor;
     }
 

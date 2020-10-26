@@ -13,9 +13,6 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-
-import com.google.gson.Gson;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,6 +30,7 @@ import java.util.concurrent.Future;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.network.JsonParser;
 import io.casestory.sdk.network.NetworkClient;
 import io.casestory.sdk.network.Request;
 import io.casestory.sdk.network.Response;
@@ -326,7 +324,7 @@ public class StoryDownloader {
                             CaseStoryManager.getInstance().getApiKey(),
                             EXPAND_STRING).execute();
                     if (response.body != null) {
-                        Story story1 = new Gson().fromJson(response.body, Story.class);
+                        Story story1 = JsonParser.fromJson(response.body, Story.class);
                         return story1;
                     } else {
                         return null;
@@ -655,7 +653,7 @@ public class StoryDownloader {
                                     CaseStoryManager.getInstance().getApiKey(),
                                     EXPAND_STRING)
                                     .execute();
-                            Story storyResponse = new Gson().fromJson(resp.body, Story.class);
+                            Story storyResponse = JsonParser.fromJson(resp.body, Story.class);
 
 
                             stories.set(findIndexByStoryId(storyResponse.id), storyResponse);
