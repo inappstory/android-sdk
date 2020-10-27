@@ -623,69 +623,6 @@ public class StoryDownloader {
     @WorkerThread
     public void startedLoading(final List<Story> stories) {
         if (1 == 1) return;
-        if (StatisticSession.needToUpdate()) {
-            CaseStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
-                @Override
-                public void onSuccess() {
-                    startedLoading(stories);
-                }
-
-                @Override
-                public void onError() {
-
-                }
-            });
-            return;
-        }
-        ExecutorService executorService = startNetExecutor;
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    int currentPriority = 0;
-                    synchronized (storyTasksLock) {
-                        for (int i = 0; i < Math.min(stories.size(), 4); i++) {
-                            if (findIndexByStoryId(stories.get(i).id) == -1) continue;
-                            if (storyTasks.get(stories.get(i).id) != null) continue;
-                            Response resp = NetworkClient.getApi().getStoryById(Integer.toString(
-                                    stories.get(i).id),
-                                    StatisticSession.getInstance().id, 1,
-                                    CaseStoryManager.getInstance().getApiKey(),
-                                    EXPAND_STRING)
-                                    .execute();
-                            Story storyResponse = JsonParser.fromJson(resp.body, Story.class);
-
-
-                            stories.set(findIndexByStoryId(storyResponse.id), storyResponse);
-                            final int it = i;
-                            storyTasks.put(stories.get(i).id, new StoryTask() {{
-                                priority = it;
-                                loadType = 3;
-                            }});
-                        }
-                    }
-                    synchronized (pageTasksLock) {
-                        for (int i = 0; i < Math.min(stories.size(), 4); i++) {
-                            for (int j = 0; j < Math.min(stories.get(i).pages.size(), 2); j++) {
-                                final int cPriority = currentPriority;
-                                StoryPageTask spt = new StoryPageTask();
-                                spt.loadType = 0;
-                                spt.urls = stories.get(i).getSrcListUrls(j, null);
-                                spt.videoUrls = stories.get(i).getSrcListUrls(j, "video");
-                                spt.priority = cPriority;
-                                pageTasks.put(new Pair<>(stories.get(i).id, j), spt);
-                                currentPriority++;
-                            }
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
     }
 
     @WorkerThread

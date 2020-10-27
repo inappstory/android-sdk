@@ -77,8 +77,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     @NonNull
     @Override
     public StoryListItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        int vType = viewType % 10;
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cs_story_list_custom_item, parent, false);
-        return new StoryListItem(v, manager, viewType == 2, viewType == 3);
+        return new StoryListItem(v, manager, vType == 2, vType == 3);
     }
 
     @Override
@@ -164,7 +165,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         if (Sizes.isTablet()) {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
-            bundle.putInt("index", index);
+            bundle.putInt("index", tempStories.indexOf(storiesIds.get(index)));
             bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
             bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
             bundle.putIntegerArrayList("stories_ids", tempStories);
@@ -179,7 +180,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             // intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
             intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-            intent2.putExtra("index", index);
+            intent2.putExtra("index", tempStories.indexOf(storiesIds.get(index)));
             intent2.putIntegerArrayListExtra("stories_ids", tempStories);
             context.startActivity(intent2);
         }
@@ -187,8 +188,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     @Override
     public int getItemViewType(int position) {
-        if (CaseStoryManager.getInstance().hasFavorite() && position == storiesIds.size()) return 3;
-        return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isReaded ? 2 : 1;
+        int pref = position*10;
+        if (CaseStoryManager.getInstance().hasFavorite() && position == storiesIds.size()) return pref + 3;
+        return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isReaded ? (pref + 2) : (pref + 1);
     }
 
     @Override

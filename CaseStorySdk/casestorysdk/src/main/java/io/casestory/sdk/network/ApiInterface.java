@@ -44,6 +44,7 @@ public interface ApiInterface {
                              @Query("expand") String expand
     );
 
+    @FormUrlEncoded
     @PUT("v2/story-data/{id}")
     Request sendStoryData(@Path("id") String id,
                                      @Field("data") String data,

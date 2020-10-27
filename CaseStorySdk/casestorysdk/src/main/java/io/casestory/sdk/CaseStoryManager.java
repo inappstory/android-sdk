@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -36,6 +37,7 @@ import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeUserIdEvent;
 import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
 import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
+import io.casestory.sdk.stories.events.NoConnectionEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.ui.reader.StoriesActivity;
 import io.casestory.sdk.stories.ui.reader.StoriesDialogFragment;
@@ -228,7 +230,6 @@ public class CaseStoryManager {
     }
 
 
-
     public void setActionBarColor(int actionBarColor) {
         this.actionBarColor = actionBarColor;
     }
@@ -250,7 +251,7 @@ public class CaseStoryManager {
         this.hasShare = hasShare;
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
-       // ApiClient.setContext(context);
+        // ApiClient.setContext(context);
         NetworkClient.setContext(context);
         this.userId = userId;
        /* if (actionBarColor == -1) {
@@ -375,7 +376,7 @@ public class CaseStoryManager {
 
                 @Override
                 public Type getType() {
-                   // List<Story> c = new ArrayList<Story>();
+                    // List<Story> c = new ArrayList<Story>();
                     ParameterizedType ptype = new ParameterizedType() {
                         @NonNull
                         @Override
@@ -440,10 +441,38 @@ public class CaseStoryManager {
             }, 1000);
             return;
         }
-        if (Sizes.isTablet() && context != null) {
-            CaseStoryService.getInstance().getFullStoryByStringId(new GetStoryByIdCallback() {
-                @Override
-                public void getStory(Story story) {
+
+        CaseStoryService.getInstance().getFullStoryByStringId(new GetStoryByIdCallback() {
+            @Override
+            public void getStory(Story story) {
+                if (story != null) {
+                    if (story.deeplink != null) {
+                        CaseStoryService.getInstance().addDeeplinkClickStatistic(story.id);
+                        if (CaseStoryManager.getInstance().getUrlClickCallback() != null) {
+                            CaseStoryManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
+                        } else {
+                            if (!CaseStoryService.getInstance().isConnected()) {
+                                EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
+                                return;
+                            }
+                            try {
+                                Intent i = new Intent(Intent.ACTION_VIEW);
+                                i.setData(Uri.parse(story.deeplink));
+                                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                context.startActivity(i);
+                            } catch (Exception e) {
+                            }
+                        }
+                        return;
+                    }
+                    if (story.isHideInReader()) {
+                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
+                        return;
+                    }
+                }
+
+
+                if (Sizes.isTablet() && context != null) {
                     StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                             story.id);
                     DialogFragment settingsDialogFragment = new StoriesDialogFragment();
@@ -458,22 +487,7 @@ public class CaseStoryManager {
                     settingsDialogFragment.show(
                             ((AppCompatActivity) context).getSupportFragmentManager(),
                             "DialogFragment");
-                }
-
-                @Override
-                public void loadError(int type) {
-
-                }
-
-                @Override
-                public void getPartialStory(Story story) {
-
-                }
-            }, storyId);
-        } else {
-            CaseStoryService.getInstance().getFullStoryByStringId(new GetStoryByIdCallback() {
-                @Override
-                public void getStory(Story story) {
+                } else {
                     StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                             story.id);
                     Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
@@ -491,17 +505,19 @@ public class CaseStoryManager {
                         context.startActivity(intent2);
                 }
 
-                @Override
-                public void loadError(int type) {
+            }
 
-                }
+            @Override
+            public void loadError(int type) {
 
-                @Override
-                public void getPartialStory(Story story) {
+            }
 
-                }
-            }, storyId);
-        }
+            @Override
+            public void getPartialStory(Story story) {
+
+            }
+        }, storyId);
+
     }
 
     public static class Builder {

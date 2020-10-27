@@ -213,7 +213,8 @@ public final class NetworkHandler implements InvocationHandler {
                     body += "&" + ((Field) annotation).value() + "=" + args[i].toString();
                 } else if (annotation instanceof Body) {
                     try {
-                        body += (body.isEmpty() ? "" : "\n") + JsonParser.getJson(args[i]);
+                        String bd = JsonParser.getJson(args[i]);
+                        body += (body.isEmpty() ? "" : "\n") + bd;
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

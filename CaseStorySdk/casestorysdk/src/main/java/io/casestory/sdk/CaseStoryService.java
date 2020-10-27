@@ -175,7 +175,17 @@ public class CaseStoryService extends Service {
     };
 
     public void startTimer(long timerDuration) {
-        if (timerDuration <= 0) return;
+        if (timerDuration == 0) {
+            try {
+                timerHandler.removeCallbacks(timerTask);
+            } catch (Exception e) {
+
+            }
+            return;
+        }
+        if (timerDuration < 0) {
+            return;
+        }
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;

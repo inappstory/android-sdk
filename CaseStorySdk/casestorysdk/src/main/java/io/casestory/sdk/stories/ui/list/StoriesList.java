@@ -132,6 +132,7 @@ public class StoriesList extends RecyclerView {
         }
     }
 
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
         StoryDownloader.getInstance().getStoryById(event.getId()).isReaded = true;
@@ -174,7 +175,7 @@ public class StoriesList extends RecyclerView {
         if (event.favStatus) {
             FavoriteImage favoriteImage = new FavoriteImage(Integer.valueOf(event.getId()), story.getImage(), story.getBackgroundColor());
             if (!favImages.contains(favoriteImage))
-            favImages.add(0, favoriteImage);
+                favImages.add(0, favoriteImage);
         } else {
             for (FavoriteImage favoriteImage : favImages) {
                 if (favoriteImage.getId() == Integer.valueOf(event.getId())) {
@@ -185,6 +186,13 @@ public class StoriesList extends RecyclerView {
         }
         if (isFavoriteList) {
             adapter.hasFavItem = false;
+            if (event.favStatus) {
+                if (!adapter.getStoriesIds().contains(event.getId()))
+                    adapter.getStoriesIds().add(event.getId());
+            } else {
+                if (adapter.getStoriesIds().contains(event.getId()))
+                    adapter.getStoriesIds().remove(new Integer(event.getId()));
+            }
             adapter.notifyDataSetChanged();
         } else if (isEmpty && !favImages.isEmpty()) {
             adapter.hasFavItem = (true && CaseStoryManager.getInstance().hasFavorite());
@@ -196,8 +204,8 @@ public class StoriesList extends RecyclerView {
             // adapter.refresh();
         } else {
             adapter.notifyItemChanged(getAdapter().getItemCount() - 1);
-            // adapter.refresh();
         }
+
     }
 
     public void loadStories() throws DataException {
