@@ -135,11 +135,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 CaseStoryService.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CaseStoryManager.getInstance().getUrlClickCallback() != null) {
                     CaseStoryManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
+                    current.isOpened = true;
+                    notifyItemChanged(index);
                 } else {
                     if (!CaseStoryService.getInstance().isConnected()) {
                         EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                         return;
                     }
+                    current.isOpened = true;
+                    notifyItemChanged(index);
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(current.deeplink));

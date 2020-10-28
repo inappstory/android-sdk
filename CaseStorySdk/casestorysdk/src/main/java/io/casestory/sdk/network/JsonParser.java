@@ -133,7 +133,15 @@ public class JsonParser {
     }
 
     public static String getJson(Object instance) throws Exception {
-        return ((JSONObject) getJsonObject(instance)).toString();
+        if (instance instanceof List || instance instanceof ArrayList) {
+            JSONArray arr = new JSONArray();
+            for (int i = 0; i < ((List)instance).size(); i++) {
+                arr.put(getJsonObject(((List)instance).get(i)));
+            }
+            return arr.toString();
+        } else {
+            return ((JSONObject) getJsonObject(instance)).toString();
+        }
     }
 
     private static Object getJsonObject(Object instance) throws Exception {

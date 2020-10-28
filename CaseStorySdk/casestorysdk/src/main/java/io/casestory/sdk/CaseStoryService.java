@@ -849,9 +849,15 @@ public class CaseStoryService extends Service {
             }
         }
         if (sendObject.size() > 2) {
+            try {
+                Log.e("stat", JsonParser.getJson(sendObject));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             statistic.add(sendObject);
             eventCount++;
         }
+
     }
 
     private boolean sendStatistic() {

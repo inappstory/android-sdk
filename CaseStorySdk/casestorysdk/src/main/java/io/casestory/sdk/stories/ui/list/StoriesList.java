@@ -3,6 +3,7 @@ package io.casestory.sdk.stories.ui.list;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -30,6 +31,8 @@ import io.casestory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeStoryEvent;
 import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
+import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
+import io.casestory.sdk.stories.events.OpenStoriesScreenEvent;
 import io.casestory.sdk.stories.events.OpenStoryByIdEvent;
 import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import io.casestory.sdk.stories.utils.Sizes;
@@ -74,25 +77,31 @@ public class StoriesList extends RecyclerView {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                ArrayList<Integer> indexes = new ArrayList<>();
-                if (layoutManager instanceof LinearLayoutManager) {
-                    LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
-                    for (int i = linearLayoutManager.findFirstVisibleItemPosition();
-                         i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
-                        if (adapter != null && adapter.getStoriesIds().size() > i && i >= 0)
-                            indexes.add(adapter.getStoriesIds().get(i));
-                    }
-                } else if (layoutManager instanceof GridLayoutManager) {
-                    GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
-                    for (int i = gridLayoutManager.findFirstVisibleItemPosition();
-                         i <= gridLayoutManager.findLastVisibleItemPosition(); i++) {
-                        if (adapter != null && adapter.getStoriesIds().size() > i && i >= 0)
-                            indexes.add(adapter.getStoriesIds().get(i));
-                    }
-                }
-                CaseStoryService.getInstance().previewStatisticEvent(indexes);
+                if (!readerIsOpened)
+                    sendIndexes();
+
             }
         });
+    }
+
+    public void sendIndexes() {
+        ArrayList<Integer> indexes = new ArrayList<>();
+        if (layoutManager instanceof LinearLayoutManager) {
+            LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
+            for (int i = linearLayoutManager.findFirstVisibleItemPosition();
+                 i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
+                if (adapter != null && adapter.getStoriesIds().size() > i && i >= 0)
+                    indexes.add(adapter.getStoriesIds().get(i));
+            }
+        } else if (layoutManager instanceof GridLayoutManager) {
+            GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+            for (int i = gridLayoutManager.findFirstVisibleItemPosition();
+                 i <= gridLayoutManager.findLastVisibleItemPosition(); i++) {
+                if (adapter != null && adapter.getStoriesIds().size() > i && i >= 0)
+                    indexes.add(adapter.getStoriesIds().get(i));
+            }
+        }
+        CaseStoryService.getInstance().previewStatisticEvent(indexes);
     }
 
     StoriesAdapter adapter;
@@ -115,6 +124,19 @@ public class StoriesList extends RecyclerView {
 
     AppearanceManager appearanceManager;
     OnFavoriteItemClick favoriteItemClick;
+
+    boolean readerIsOpened = false;
+
+    @Subscribe
+    public void openReaderEvent(OpenStoriesScreenEvent event) {
+        readerIsOpened = true;
+    }
+
+    @Subscribe
+    public void openReaderEvent(CloseStoryReaderEvent event) {
+        readerIsOpened = false;
+        sendIndexes();
+    }
 
     @Subscribe
     public void openStoryByIdEvent(OpenStoryByIdEvent event) {

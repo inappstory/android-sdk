@@ -419,6 +419,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }, 600);
 
         EventBus.getDefault().post(new StoryOpenEvent(currentIds.get(event.getIndex())));
+        ArrayList<Integer> lst = new ArrayList<>();
+        lst.add(currentIds.get(event.getIndex()));
+        CaseStoryService.getInstance().previewStatisticEvent(lst);
         getArguments().putInt("index", event.getIndex());
     }
 
