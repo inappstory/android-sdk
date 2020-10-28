@@ -25,8 +25,8 @@ public class Story implements Parcelable {
         return image;
     }
 
-    public boolean isReaded() {
-        return isReaded;
+    public boolean isOpened() {
+        return isOpened;
     }
 
     public List<Integer> getDurations() {
@@ -137,7 +137,7 @@ public class Story implements Parcelable {
     public String deeplink;
 
     @SerializedName("is_opened")
-    public boolean isReaded;
+    public boolean isOpened;
 
     @SerializedName("disable_close")
     public boolean disableClose;
@@ -188,7 +188,7 @@ public class Story implements Parcelable {
         nar.like = like;
         nar.slidesCount = slidesCount;
         nar.titleColor = titleColor;
-        nar.isReaded = isReaded;
+        nar.isOpened = isOpened;
         nar.durations = new ArrayList<>();
         if (durations != null)
             nar.durations.addAll(durations);
@@ -214,7 +214,7 @@ public class Story implements Parcelable {
         like = in.readInt();
         slidesCount = in.readInt();
         titleColor = in.readString();
-        isReaded = (in.readInt() == 1);
+        isOpened = (in.readInt() == 1);
         in.readList(durations, Integer.class.getClassLoader());
         in.readList(pages, String.class.getClassLoader());
         favorite = (in.readInt() == 1);
@@ -234,7 +234,7 @@ public class Story implements Parcelable {
         dest.writeInt(like);
         dest.writeInt(slidesCount);
         dest.writeString(titleColor);
-        dest.writeInt(isReaded ? 1 : 0);
+        dest.writeInt(isOpened ? 1 : 0);
         dest.writeList(durations);
         dest.writeList(pages);
         dest.writeInt(favorite ? 1 : 0);

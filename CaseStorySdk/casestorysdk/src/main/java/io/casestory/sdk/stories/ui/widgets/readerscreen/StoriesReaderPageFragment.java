@@ -271,6 +271,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (storyId == event.getId() && storiesWebView.getCurrentItem() == event.getIndex()) {
             storiesProgressView.setSlideDuration(event.getIndex(), event.getNewDuration());
             storiesProgressView.forceStartProgress();
+            CaseStoryService.getInstance().startTimer(event.getNewDuration());
         }
     }
 

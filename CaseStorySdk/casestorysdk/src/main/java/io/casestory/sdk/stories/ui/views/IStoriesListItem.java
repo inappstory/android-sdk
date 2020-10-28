@@ -7,5 +7,5 @@ public interface IStoriesListItem {
     void setTitle(View itemView, String title);
     void setSource(View itemView, String source);
     void setImage(View itemView, String url, int backgroundColor);
-    void setReaded(View itemView, boolean isReaded);
+    void setOpened(View itemView, boolean isOpened);
 }

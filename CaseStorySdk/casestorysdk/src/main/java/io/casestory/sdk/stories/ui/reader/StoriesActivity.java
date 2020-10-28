@@ -1,5 +1,6 @@
 package io.casestory.sdk.stories.ui.reader;
 
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -28,6 +30,7 @@ import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.CloseStoriesReaderEvent;
 import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
 import io.casestory.sdk.stories.events.OpenStoriesScreenEvent;
+import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.SwipeDownEvent;
 import io.casestory.sdk.stories.events.SwipeLeftEvent;
 import io.casestory.sdk.stories.events.SwipeRightEvent;
@@ -44,6 +47,12 @@ import static io.casestory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 public class StoriesActivity extends AppCompatActivity {
 
     public static long destroyed = 0;
+
+    @Override
+    public void onPause() {
+        Log.e("startTimer", "onPauseA");
+        super.onPause();
+    }
 
     @Override
     public void finish() {
@@ -139,6 +148,14 @@ public class StoriesActivity extends AppCompatActivity {
         if (CaseStoryManager.getInstance() == null) return;
         if (CaseStoryService.getInstance() == null) return;
         super.onCreate(savedInstanceState1);
+
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            EventBus.getDefault().post(new ResumeStoryReaderEvent(true));
+        }
+
         setContentView(R.layout.cs_activity_stories);
         draggableFrame = findViewById(R.id.draggable_frame);
         if (Build.VERSION.SDK_INT >= 21) {

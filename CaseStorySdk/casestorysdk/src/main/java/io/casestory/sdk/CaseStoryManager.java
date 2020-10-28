@@ -305,7 +305,7 @@ public class CaseStoryManager {
 
     public Point coordinates = null;
 
-    public OnboardingLoadedListener popupLoadedListener;
+    public OnboardingLoadedListener onboardLoadedListener;
     public OnboardingLoadedListener singleLoadedListener;
 
     public void showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
@@ -333,7 +333,12 @@ public class CaseStoryManager {
                     getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
                 @Override
                 public void onSuccess(List<Story> response) {
-                    if (response == null || response.size() == 0) return;
+                    if (response == null || response.size() == 0) {
+                        if (onboardLoadedListener != null) {
+                            onboardLoadedListener.onEmpty();
+                        }
+                        return;
+                    }
                     ArrayList<Story> stories = new ArrayList<Story>();
                     ArrayList<Integer> storiesIds = new ArrayList<>();
                     stories.addAll(response);
@@ -372,6 +377,10 @@ public class CaseStoryManager {
                             outerContext.startActivity(intent2);
                         }
                     }
+
+                    if (onboardLoadedListener != null) {
+                        onboardLoadedListener.onLoad();
+                    }
                 }
 
                 @Override
@@ -401,6 +410,10 @@ public class CaseStoryManager {
 
                 @Override
                 public void onError(int code, String message) {
+
+                    if (onboardLoadedListener != null) {
+                        onboardLoadedListener.onError();
+                    }
                     EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
                 }
             });

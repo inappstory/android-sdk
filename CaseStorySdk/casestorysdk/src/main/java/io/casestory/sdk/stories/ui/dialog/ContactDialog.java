@@ -23,50 +23,17 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import io.casestory.casestorysdk.R;
+import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.network.JsonParser;
+import io.casestory.sdk.stories.api.models.dialogstructure.DialogStructure;
+import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
+import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.utils.Sizes;
 
 public class ContactDialog {
 
-    class DialogStructure {
 
-        public BackgroundStructure background;
-        public BorderStructure border;
-        public TextStructure text;
-        public InputStructure input;
-        public ButtonStructure button;
-
-
-        class BackgroundStructure {
-            public String color;
-        }
-
-        class BorderStructure {
-            public int radius;
-            public int width;
-            public String color;
-        }
-
-        class TextStructure {
-            public int size;
-            public String color;
-            public String value;
-            public String placeholder;
-        }
-
-        class InputStructure {
-            public BackgroundStructure background;
-            public BorderStructure border;
-            public TextStructure text;
-        }
-
-        class ButtonStructure {
-            public BackgroundStructure background;
-            public TextStructure text;
-        }
-    }
-
-    DialogStructure dialogStructure;
+    public DialogStructure dialogStructure;
     String id;
     int storyId;
     SendListener sendListener;
@@ -214,6 +181,7 @@ public class ContactDialog {
             }
         });
         dialog.show();
+        EventBus.getDefault().post(new PauseStoryReaderEvent(false));
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
@@ -225,6 +193,7 @@ public class ContactDialog {
                     InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                     //  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, InputMethodManager.HIDE_IMPLICIT_ONLY);
                     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    EventBus.getDefault().post(new ResumeStoryReaderEvent(true));
                 }
 
             }

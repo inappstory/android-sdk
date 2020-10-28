@@ -175,6 +175,7 @@ public class CaseStoryService extends Service {
     };
 
     public void startTimer(long timerDuration) {
+        Log.e("startTimer", timerDuration + "");
         if (timerDuration == 0) {
             try {
                 timerHandler.removeCallbacks(timerTask);
@@ -1067,6 +1068,9 @@ public class CaseStoryService extends Service {
             ).enqueue(new NetworkCallback<Story>() {
                 @Override
                 public void onSuccess(final Story response) {
+                    if (CaseStoryManager.getInstance().singleLoadedListener != null) {
+                        CaseStoryManager.getInstance().singleLoadedListener.onLoad();
+                    }
                     StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
                         add(response);
                     }});
@@ -1081,7 +1085,9 @@ public class CaseStoryService extends Service {
 
                 @Override
                 public void onError(int code, String message) {
-
+                    if (CaseStoryManager.getInstance().singleLoadedListener != null) {
+                        CaseStoryManager.getInstance().singleLoadedListener.onError();
+                    }
                     EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                 }
             });

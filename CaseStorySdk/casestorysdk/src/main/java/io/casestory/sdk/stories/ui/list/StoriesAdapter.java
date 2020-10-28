@@ -7,11 +7,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Parcelable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,7 +36,6 @@ import io.casestory.sdk.stories.utils.Sizes;
 
 import static io.casestory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static io.casestory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static java.security.AccessController.getContext;
 
 public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     public List<Integer> getStoriesIds() {
@@ -95,6 +93,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 }
             });
         } else {
+
             CaseStoryService.getInstance().getStoryById(new GetStoryByIdCallback() {
                 @Override
                 public void getStory(final Story story) {
@@ -103,7 +102,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         public void run() {
                             holder.bind(story.getTitle(), story.getSource(),
                                     (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
-                                    Color.parseColor(story.getBackgroundColor()), story.isReaded || isFavoriteList);
+                                    Color.parseColor(story.getBackgroundColor()), story.isOpened || isFavoriteList);
                         }
                     });
                 }
@@ -190,7 +189,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     public int getItemViewType(int position) {
         int pref = position*10;
         if (CaseStoryManager.getInstance().hasFavorite() && position == storiesIds.size()) return pref + 3;
-        return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isReaded ? (pref + 2) : (pref + 1);
+        return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isOpened ? (pref + 2) : (pref + 1);
     }
 
     @Override

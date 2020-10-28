@@ -513,9 +513,15 @@ public class StoriesWebView extends WebView {
         }
 
         @JavascriptInterface
-        public void storyShowNextSlide(long delay) {
+        public void storyShowNextSlide(final long delay) {
+            Log.e("storyShowNextSlide", delay + "");
             if (delay != 0) {
-                EventBus.getDefault().post(new RestartStoryReaderEvent(StoriesWebView.this.storyId, StoriesWebView.this.index, delay));
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        EventBus.getDefault().post(new RestartStoryReaderEvent(StoriesWebView.this.storyId, StoriesWebView.this.index, delay));
+                    }
+                }, 100);
             } else {
                 EventBus.getDefault().post(new ChangeIndexEvent(StoriesWebView.this.index + 1));
             }

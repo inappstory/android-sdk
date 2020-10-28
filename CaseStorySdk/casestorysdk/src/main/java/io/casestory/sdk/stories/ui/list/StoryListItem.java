@@ -75,13 +75,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
 
     View v0;
 
-    public boolean isReaded;
+    public boolean isOpened;
 
-    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isReaded, boolean isFavorite) {
+    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean isFavorite) {
         super(itemView);
         this.manager = manager;
         this.isFavorite = isFavorite;
-        this.isReaded = isReaded;
+        this.isOpened = isOpened;
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
         vg.removeAllViews();
         getFavoriteListItem = manager.csFavoriteListItemInterface();
@@ -195,12 +195,12 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         }
     }
 
-    public void bind(String titleText, String sourceText, String imageUrl, Integer backgroundColor, boolean isReaded) {
+    public void bind(String titleText, String sourceText, String imageUrl, Integer backgroundColor, boolean isOpened) {
         if (getListItem != null) {
             getListItem.setTitle(itemView, titleText);
             getListItem.setSource(itemView, sourceText);
             getListItem.setImage(itemView, imageUrl, backgroundColor);
-            getListItem.setReaded(itemView, isReaded);
+            getListItem.setOpened(itemView, isOpened);
             return;
         }
         if (title != null) {
@@ -216,7 +216,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
         }
 
-        border.setVisibility(isReaded ? View.GONE : View.VISIBLE);
+        border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
         if (image != null) {
             if (imageUrl != null) {
 

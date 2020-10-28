@@ -5,8 +5,8 @@ import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,7 +31,6 @@ import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeStoryEvent;
 import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
 import io.casestory.sdk.stories.events.OpenStoryByIdEvent;
-import io.casestory.sdk.stories.events.StoryFavEvent;
 import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import io.casestory.sdk.stories.utils.Sizes;
 
@@ -135,7 +134,7 @@ public class StoriesList extends RecyclerView {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
-        StoryDownloader.getInstance().getStoryById(event.getId()).isReaded = true;
+        StoryDownloader.getInstance().getStoryById(event.getId()).isOpened = true;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
             if (adapter.getStoriesIds().get(i) == event.getId()) {
                 adapter.notifyItemChanged(i);

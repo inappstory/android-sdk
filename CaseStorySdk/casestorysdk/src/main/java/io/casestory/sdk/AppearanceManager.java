@@ -52,8 +52,8 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    private boolean csListReadedItemBorderVisibility = false;
-    private int csListReadedItemBorderColor = Color.GRAY;
+    private boolean csListOpenedItemBorderVisibility = false;
+    private int csListOpenedItemBorderColor = Color.GRAY;
 
     public AppearanceManager csListItemTitleVisibility(boolean csListItemTitleVisibility) {
         this.csListItemTitleVisibility = csListItemTitleVisibility;
@@ -100,14 +100,14 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    public AppearanceManager csListItemReadedBorderVisibility(boolean csListReadedItemBorderVisibility) {
-        this.csListReadedItemBorderVisibility = csListReadedItemBorderVisibility;
+    public AppearanceManager csListOpenedItemBorderVisibility(boolean csListOpenedItemBorderVisibility) {
+        this.csListOpenedItemBorderVisibility = csListOpenedItemBorderVisibility;
         return AppearanceManager.this;
     }
 
 
-    public AppearanceManager csListReadedItemBorderColor(int csListReadedItemBorderColor) {
-        this.csListReadedItemBorderColor = csListReadedItemBorderColor;
+    public AppearanceManager csListOpenedItemBorderColor(int csListOpenedItemBorderColor) {
+        this.csListOpenedItemBorderColor = csListOpenedItemBorderColor;
         return AppearanceManager.this;
     }
 
@@ -170,12 +170,12 @@ public class AppearanceManager {
         return csListItemBorderColor;
     }
 
-    public boolean csListReadedItemBorderVisibility() {
-        return csListReadedItemBorderVisibility;
+    public boolean csListOpenedItemBorderVisibility() {
+        return csListOpenedItemBorderVisibility;
     }
 
-    public int csListReadedItemBorderColor() {
-        return csListReadedItemBorderColor;
+    public int csListOpenedItemBorderColor() {
+        return csListOpenedItemBorderColor;
     }
 
     public int csListItemMargin() {

@@ -7,7 +7,6 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -22,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -228,6 +226,8 @@ public class StoryDownloader {
     }
 
     public void addStoryPageTasks(Story story) {
+        Story local = findItemByStoryId(story.id);
+        story.isOpened = local.isOpened;
         stories.set(findIndexByStoryId(story.id), story);
     }
 
@@ -699,7 +699,7 @@ public class StoryDownloader {
                 boolean newNar = true;
                 for (int j = 0; j < this.stories.size(); j++) {
                     if (this.stories.get(j).id == stories.get(i).id) {
-                        this.stories.get(j).isReaded = stories.get(i).isReaded;
+                        this.stories.get(j).isOpened = stories.get(i).isOpened;
                         newNar = false;
                         this.stories.set(j, stories.get(i));
                     }
