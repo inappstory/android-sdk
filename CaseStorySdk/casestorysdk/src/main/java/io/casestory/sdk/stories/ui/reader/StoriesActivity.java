@@ -17,13 +17,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import java.util.ArrayList;
-
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.cache.StoryDownloader;
@@ -129,7 +127,7 @@ public class StoriesActivity extends AppCompatActivity {
         overridePendingTransition(enter, exit);
     }
 
-    @Subscribe
+    @CsSubscribe
     public void widgetTapEvent(WidgetTapEvent event) {
         if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
             // StatusBarController.hideStatusBar(this, true);
@@ -212,7 +210,7 @@ public class StoriesActivity extends AppCompatActivity {
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
         CaseStoryService.getInstance().closeStatisticEvent();
         CaseStoryService.getInstance().setCurrentIndex(0);
@@ -223,7 +221,7 @@ public class StoriesActivity extends AppCompatActivity {
         finish();
     }
 
-    @Subscribe
+    @CsSubscribe
     public void swipeDownEvent(SwipeDownEvent event) {
         if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && CaseStoryManager.getInstance().closeOnSwipe()) {
@@ -232,7 +230,7 @@ public class StoriesActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @CsSubscribe
     public void swipeLeftEvent(SwipeLeftEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
             finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
@@ -240,7 +238,7 @@ public class StoriesActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @CsSubscribe
     public void swipeRightEvent(SwipeRightEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
             finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);

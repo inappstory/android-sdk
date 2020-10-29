@@ -40,7 +40,7 @@ import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.network.NetworkCallback;
 import io.casestory.sdk.network.NetworkClient;
@@ -143,7 +143,7 @@ public class StoriesWebView extends WebView {
 
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskLoadedEvent event) {
         if (event != null) {
             if (storyId != event.getId() || index != event.getIndex()) return;
@@ -189,7 +189,7 @@ public class StoriesWebView extends WebView {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void generatedWebPageEvent(GeneratedWebPageEvent event) {
         if (storyId != event.getStoryId() ) return;
         final String data = event.getWebData();
@@ -224,13 +224,13 @@ public class StoriesWebView extends WebView {
     boolean loadingFinished = true;
     boolean redirect = false;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         if (this.storyId != event.getStoryId()) return;
         setCurrentItem(event.getIndex(), false);
     }
 
-    @Subscribe
+    @CsSubscribe
     public void changeStoryEvent(StoryOpenEvent event) {
         if (event.getStoryId() != storyId)
             stopVideo();
@@ -245,7 +245,7 @@ public class StoriesWebView extends WebView {
         }
     }
 
-    @Subscribe
+    @CsSubscribe
     public void storySwipeBackEvent(StorySwipeBackEvent event) {
         resumeVideo();
     }

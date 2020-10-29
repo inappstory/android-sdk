@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-public @interface Subscribe {
+public @interface CsSubscribe {
     ThreadMode threadMode() default ThreadMode.ASYNC;
 }
 

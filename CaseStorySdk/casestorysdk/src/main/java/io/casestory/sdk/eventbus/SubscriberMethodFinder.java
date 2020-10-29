@@ -79,7 +79,7 @@ public class SubscriberMethodFinder {
             if ((modifiers & Modifier.PUBLIC) != 0 && (modifiers & MODIFIERS_IGNORE) == 0) {
                 Class<?>[] parameterTypes = method.getParameterTypes();
                 if (parameterTypes.length == 1) {
-                    Subscribe subscribeAnnotation = method.getAnnotation(Subscribe.class);
+                    CsSubscribe subscribeAnnotation = method.getAnnotation(CsSubscribe.class);
 
                     if (subscribeAnnotation != null) {
                         Class<?> eventType = parameterTypes[0];
@@ -89,12 +89,12 @@ public class SubscriberMethodFinder {
                             findState.subscriberMethods.add(new SubscriberMethod(method, threadMode, eventType));
                         }
                     }
-                } else if (strictMethodVerification && method.isAnnotationPresent(Subscribe.class)) {
+                } else if (strictMethodVerification && method.isAnnotationPresent(CsSubscribe.class)) {
                     String methodName = method.getDeclaringClass().getName() + "." + method.getName();
                     throw new EventBusException("@Subscribe method " + methodName +
                             "must have exactly 1 parameter but has " + parameterTypes.length);
                 }
-            } else if (strictMethodVerification && method.isAnnotationPresent(Subscribe.class)) {
+            } else if (strictMethodVerification && method.isAnnotationPresent(CsSubscribe.class)) {
                 String methodName = method.getDeclaringClass().getName() + "." + method.getName();
                 throw new EventBusException(methodName +
                         " is a illegal @Subscribe method: must be public, non-static, and non-abstract");

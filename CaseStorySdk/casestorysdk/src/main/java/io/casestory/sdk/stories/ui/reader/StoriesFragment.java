@@ -14,7 +14,6 @@ import android.view.WindowManager;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,7 @@ import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.cache.StoryDownloader;
@@ -39,13 +38,11 @@ import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
 import io.casestory.sdk.stories.events.PrevStoryPageEvent;
 import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
 import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
-import io.casestory.sdk.stories.events.StoriesNextPageEvent;
 import io.casestory.sdk.stories.events.StoryOpenEvent;
 import io.casestory.sdk.stories.events.StoryPageOpenEvent;
 import io.casestory.sdk.stories.events.StoryReaderTapEvent;
 import io.casestory.sdk.stories.events.StoryTimerReverseEvent;
 import io.casestory.sdk.stories.events.StorySwipeBackEvent;
-import io.casestory.sdk.stories.events.StoryTimerSkipEvent;
 import io.casestory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import io.casestory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
@@ -217,7 +214,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
 
-    @Subscribe
+    @CsSubscribe
     public void refreshPageEvent(PageByIndexRefreshEvent event) {
         ArrayList<Integer> adds = new ArrayList<>();
         int position = currentIds.indexOf(event.getStoryId());
@@ -301,12 +298,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         return false;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeUserId(ChangeUserIdEvent event) {
         EventBus.getDefault().post(new CloseStoryReaderEvent());
     }
 
-    @Subscribe
+    @CsSubscribe
     public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
             if (event.getLink() == null || event.getLink().isEmpty()) {
@@ -323,7 +320,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void nextStoryPageEvent(OnNextEvent event) {
         if (isDestroyed) return;
         if (currentIndex < StoryDownloader.getInstance().findItemByStoryId(CaseStoryService.getInstance().getCurrentId()).slidesCount - 1) {
@@ -355,12 +352,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
      *
      * @param event
      */
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void prevStoryPageEvent(StoryTimerReverseEvent event) {
         EventBus.getDefault().post(new OnPrevEvent());
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void setCurrentIndexEvent(ChangeIndexEvent event) {
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
@@ -374,13 +371,13 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     }*/
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
         currentIndex = event.getIndex();
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void onPrev(OnPrevEvent event) {
         if (isDestroyed) return;
 
@@ -405,7 +402,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryEvent(ChangeStoryEvent event) {
         CaseStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
         currentIndex = StoryDownloader.getInstance().findItemByStoryId(currentIds.get(event.getIndex())).lastIndex;
@@ -425,7 +422,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         getArguments().putInt("index", event.getIndex());
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void onNextStory(NextStoryReaderEvent event) {
         if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
             EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() + 1),
@@ -437,7 +434,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void onPrevStory(PrevStoryReaderEvent event) {
         if (storiesViewPager.getCurrentItem() > 0) {
             EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() - 1),

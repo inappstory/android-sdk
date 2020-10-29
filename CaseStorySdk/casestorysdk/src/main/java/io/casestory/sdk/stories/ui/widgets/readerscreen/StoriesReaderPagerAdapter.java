@@ -1,8 +1,6 @@
 package io.casestory.sdk.stories.ui.widgets.readerscreen;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
@@ -15,13 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import io.casestory.sdk.CaseStoryManager;
-import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.eventbus.Subscribe;
-import io.casestory.sdk.stories.cache.StoryDownloader;
-import io.casestory.sdk.stories.events.PageByIndexRefreshEvent;
-import io.casestory.sdk.stories.events.PageRefreshEvent;
-import io.casestory.sdk.stories.events.PageSelectedEvent;
 
 import static io.casestory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static io.casestory.sdk.AppearanceManager.CS_CLOSE_POSITION;

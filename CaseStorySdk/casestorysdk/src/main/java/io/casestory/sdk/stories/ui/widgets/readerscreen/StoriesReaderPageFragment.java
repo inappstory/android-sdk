@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -25,7 +24,7 @@ import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
@@ -80,7 +79,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     View buttonsPanel;
     StoriesReaderPagerAdapter host;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
 
         if (event.getCurItem() != storyId) return;
@@ -95,7 +94,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         storiesWebView.setCurrentItem(curIndex);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void pageLoadError(PageTaskLoadErrorEvent errorEvent) {
         if (errorEvent.getId() != storyId) return;
         new Handler().postDelayed(new Runnable() {
@@ -108,7 +107,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }, 200);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void refreshPageEvent(PageByIndexRefreshEvent event) {
         if (event.getStoryId() != storyId) return;
         refresh.setVisibility(View.GONE);
@@ -116,7 +115,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void nextStoryPage(NextStoryPageEvent event) {
         final int ind = event.getStoryIndex();
         if (ind != storyId) return;
@@ -131,7 +130,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void storyPageLoadedEvent(StoryPageLoadedEvent event) {
         if (this.storyId != event.getStoryId()) return;
         final int ind = event.index;
@@ -161,7 +160,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }, storyId);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void prevStoryPage(PrevStoryPageEvent event) {
         final int ind = event.getStoryIndex();
         if (ind != storyId) return;
@@ -175,7 +174,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (CaseStoryService.getInstance().getCurrentId() != storyId) return;
         final boolean isWithBackground = event.isWithBackground();
@@ -183,7 +182,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void pauseStoryEvent(PauseStoryReaderEvent event) {
         if (CaseStoryService.getInstance().getCurrentId() != storyId) return;
         final boolean isWithBackground = event.isWithBackground();
@@ -192,7 +191,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void pageByIdSelected(PageByIdSelectedEvent event) {
         if (event.getStoryId() != storyId) return;
         Handler handler = new Handler(Looper.getMainLooper());
@@ -228,7 +227,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void prevStoryFragment(PrevStoryFragmentEvent event) {
         if (storyId != event.getId()) return;
         storiesProgressView.same();
@@ -240,14 +239,14 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     public AppCompatImageView favorite;
     public AppCompatImageView share;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void noConnectionEvent(NoConnectionEvent event) {
         //storiesWebView.setVisibility(View.INVISIBLE);
         //refresh.setVisibility(View.VISIBLE);
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void favSuccess(StoryFavoriteEvent event) {
         if (event.getId() != storyId) return;
         if (favorite != null) {
@@ -255,7 +254,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void likeSuccess(LikeDislikeEvent event) {
         if (storyId != event.getId()) return;
         if (like != null) {
@@ -266,7 +265,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void restartEvent(RestartStoryReaderEvent event) {
         if (storyId == event.getId() && storiesWebView.getCurrentItem() == event.getIndex()) {
             storiesProgressView.setSlideDuration(event.getIndex(), event.getNewDuration());
@@ -305,7 +304,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskToLoadEvent event) {
         if (storiesWebView == null || storiesWebView.storyId != event.getId() || storiesWebView.index != event.getIndex())
             return;
@@ -570,7 +569,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void storyCacheLoaded(StoryCacheLoadedEvent event) {
         if (event != null) {
             if (storyId != event.getStoryId()) return;
@@ -579,7 +578,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskLoadedEvent event) {
         if (event != null) {
             if (storyId != event.getId()) return;

@@ -3,10 +3,8 @@ package io.casestory.sdk.stories.ui.list;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -23,7 +21,7 @@ import io.casestory.sdk.AppearanceManager;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.exceptions.DataException;
 import io.casestory.sdk.stories.api.models.Story;
@@ -127,23 +125,23 @@ public class StoriesList extends RecyclerView {
 
     boolean readerIsOpened = false;
 
-    @Subscribe
+    @CsSubscribe
     public void openReaderEvent(OpenStoriesScreenEvent event) {
         readerIsOpened = true;
     }
 
-    @Subscribe
+    @CsSubscribe
     public void openReaderEvent(CloseStoryReaderEvent event) {
         readerIsOpened = false;
         sendIndexes();
     }
 
-    @Subscribe
+    @CsSubscribe
     public void openStoryByIdEvent(OpenStoryByIdEvent event) {
         StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(), event.getIndex());
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeUserId(ChangeUserIdForListEvent event) {
         try {
             adapter = null;
@@ -154,7 +152,7 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
         StoryDownloader.getInstance().getStoryById(event.getId()).isOpened = true;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
@@ -186,7 +184,7 @@ public class StoriesList extends RecyclerView {
 
     boolean hasFavItem;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void favItem(StoryFavoriteEvent event) {
         if (CaseStoryService.getInstance().favoriteImages == null)
             CaseStoryService.getInstance().favoriteImages = new ArrayList<>();

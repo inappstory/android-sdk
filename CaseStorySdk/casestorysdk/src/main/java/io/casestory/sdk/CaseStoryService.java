@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.eventbus.Subscribe;
+import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.imageloader.ImageLoader;
 import io.casestory.sdk.network.JsonParser;
@@ -198,7 +198,7 @@ public class CaseStoryService extends Service {
         timerHandler.post(timerTask);
     }
 
-    @Subscribe
+    @CsSubscribe
     public void storyPageTapEvent(StoryReaderTapEvent event) {
         if (event.getLink() != null && !event.getLink().isEmpty()) {
             StoryLinkObject object = JsonParser.fromJson(event.getLink(), StoryLinkObject.class);// new Gson().fromJson(event.getLink(), StoryLinkObject.class);
@@ -506,14 +506,14 @@ public class CaseStoryService extends Service {
     public long lastTapEventTime = 0;
     public boolean cubeAnimation = false;
 
-    @Subscribe
+    @CsSubscribe
     public void nextStoryEvent(NextStoryReaderEvent event) {
         lastTapEventTime = System.currentTimeMillis() + 100;
         cubeAnimation = true;
     }
 
 
-    @Subscribe
+    @CsSubscribe
     public void prevStoryEvent(PrevStoryReaderEvent event) {
         lastTapEventTime = System.currentTimeMillis() + 100;
         cubeAnimation = true;
@@ -614,7 +614,7 @@ public class CaseStoryService extends Service {
 
     public long pauseTime = 0;
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         closeStatisticEvent(null, false);
         addStatisticEvent(1, event.storyId, event.index);
@@ -660,7 +660,7 @@ public class CaseStoryService extends Service {
     public boolean isBackgroundPause = false;
 
 
-    @Subscribe
+    @CsSubscribe
     public void destroyFragmentEvent(DestroyStoriesFragmentEvent event) {
         currentId = 0;
         currentIndex = 0;
@@ -674,7 +674,7 @@ public class CaseStoryService extends Service {
     }
 
 
-    @Subscribe
+    @CsSubscribe
     public void pauseStoryEvent(PauseStoryReaderEvent event) {
         try {
             if (event.isWithBackground()) {
@@ -690,7 +690,7 @@ public class CaseStoryService extends Service {
 
     boolean backPaused = false;
 
-    @Subscribe
+    @CsSubscribe
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (event.isWithBackground()) {
             isBackgroundPause = false;
