@@ -104,14 +104,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        EventBus.getDefault().register(this);
         if (CaseStoryService.getInstance() == null || CaseStoryManager.getInstance() == null) {
             if (getActivity() != null) getActivity().finish();
             return;
         }
+        if (isDestroyed) return;
+        EventBus.getDefault().register(this);
         configurationChanged = false;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        if (isDestroyed) return;
         storiesViewPager = view.findViewById(R.id.stories);
         storiesViewPager.canUseNotLoaded = getArguments().getBoolean("canUseNotLoaded", false);
         invMask = view.findViewById(R.id.invMask);
@@ -176,7 +176,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Override
     public void onPause() {
-        Log.e("startTimer", "onPause");
         if (!isDestroyed) {
             backPaused = true;
             EventBus.getDefault().post(new PauseStoryReaderEvent(true));
@@ -202,8 +201,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Override
     public void onResume() {
-        backPaused = false;
         if (!isDestroyed) {
+            backPaused = false;
             if (!created)
                 EventBus.getDefault().post(new ResumeStoryReaderEvent(true));
             if (!Sizes.isTablet())
@@ -216,6 +215,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe
     public void refreshPageEvent(PageByIndexRefreshEvent event) {
+        if (isDestroyed) return;
         ArrayList<Integer> adds = new ArrayList<>();
         int position = currentIds.indexOf(event.getStoryId());
         if (currentIds.size() > 1) {
@@ -300,6 +300,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeUserId(ChangeUserIdEvent event) {
+        if (isDestroyed) return;
         EventBus.getDefault().post(new CloseStoryReaderEvent());
     }
 
@@ -354,6 +355,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
      */
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void prevStoryPageEvent(StoryTimerReverseEvent event) {
+        if (isDestroyed) return;
         EventBus.getDefault().post(new OnPrevEvent());
     }
 
@@ -373,6 +375,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
+        if (isDestroyed) return;
         currentIndex = event.getIndex();
     }
 
@@ -404,6 +407,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeStoryEvent(ChangeStoryEvent event) {
+        if (isDestroyed) return;
         CaseStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
         currentIndex = StoryDownloader.getInstance().findItemByStoryId(currentIds.get(event.getIndex())).lastIndex;
         if (isDestroyed) return;
@@ -424,6 +428,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void onNextStory(NextStoryReaderEvent event) {
+        if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
             EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() + 1),
                     storiesViewPager.getCurrentItem() + 1));
@@ -436,6 +441,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void onPrevStory(PrevStoryReaderEvent event) {
+        if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() > 0) {
             EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() - 1),
                     storiesViewPager.getCurrentItem() - 1));
