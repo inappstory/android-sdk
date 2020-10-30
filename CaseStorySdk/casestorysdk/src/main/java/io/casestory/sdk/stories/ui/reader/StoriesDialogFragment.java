@@ -104,6 +104,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         CaseStoryService.getInstance().isBackgroundPause = false;
         for (Story story : StoryDownloader.getInstance().getStories())
             story.lastIndex = 0;
+        EventBus.getDefault().unregister(this);
         dismiss();
     }
 
