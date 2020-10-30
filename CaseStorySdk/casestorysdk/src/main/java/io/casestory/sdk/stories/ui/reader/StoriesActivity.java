@@ -163,6 +163,7 @@ public class StoriesActivity extends AppCompatActivity {
                     if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
                     else animateFirst = false;
                     finishAfterTransition();
+                    EventBus.getDefault().post(new CloseStoryReaderEvent());
                 }
             };
         }
@@ -212,13 +213,17 @@ public class StoriesActivity extends AppCompatActivity {
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
+        cleanReader();
+        finish();
+    }
+
+    public void cleanReader() {
         CaseStoryService.getInstance().closeStatisticEvent();
         CaseStoryService.getInstance().setCurrentIndex(0);
         CaseStoryService.getInstance().setCurrentId(0);
         CaseStoryService.getInstance().isBackgroundPause = false;
         for (Story story : StoryDownloader.getInstance().getStories())
             story.lastIndex = 0;
-        finish();
     }
 
     @CsSubscribe
