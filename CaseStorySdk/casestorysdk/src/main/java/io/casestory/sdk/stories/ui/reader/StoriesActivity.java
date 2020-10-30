@@ -119,7 +119,14 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        finish();
+
+        if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
+        else animateFirst = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAfterTransition();
+        } else {
+            finish();
+        }
     }
 
     public void finishActivityWithCustomAnimation(int enter, int exit) {
@@ -162,7 +169,6 @@ public class StoriesActivity extends AppCompatActivity {
                 public void onDragDismissed() {
                     if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
                     else animateFirst = false;
-                    finishAfterTransition();
                     EventBus.getDefault().post(new CloseStoryReaderEvent());
                 }
             };
@@ -216,7 +222,14 @@ public class StoriesActivity extends AppCompatActivity {
         cleanReader();
         EventBus.getDefault().post(new CloseStoriesReaderEvent());
         EventBus.getDefault().unregister(this);
-        finish();
+
+        if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
+        else animateFirst = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAfterTransition();
+        } else {
+            finish();
+        }
     }
 
     public void cleanReader() {
@@ -232,7 +245,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void swipeDownEvent(SwipeDownEvent event) {
         if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && CaseStoryManager.getInstance().closeOnSwipe()) {
-            finishActivityWithCustomAnimation(0, R.anim.popup_hide);
+            //finishActivityWithCustomAnimation(0, R.anim.popup_hide);
             EventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
@@ -240,7 +253,7 @@ public class StoriesActivity extends AppCompatActivity {
     @CsSubscribe
     public void swipeLeftEvent(SwipeLeftEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
-            finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
+           // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
             EventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
@@ -248,7 +261,7 @@ public class StoriesActivity extends AppCompatActivity {
     @CsSubscribe
     public void swipeRightEvent(SwipeRightEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
-            finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
+          //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
             EventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
