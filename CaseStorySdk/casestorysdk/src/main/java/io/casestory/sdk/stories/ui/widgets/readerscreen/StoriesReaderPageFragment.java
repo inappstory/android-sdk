@@ -542,7 +542,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
                         @Override
                         public Type getType() {
-                            return null;
+                            return ShareObject.class;
                         }
                     });
                 }
