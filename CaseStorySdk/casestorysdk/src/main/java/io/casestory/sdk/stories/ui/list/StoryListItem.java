@@ -108,7 +108,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     }
 
     public void bindFavorite() {
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages) != null) return;
+        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(CaseStoryService.getInstance().favoriteImages) != null) {
+            getFavoriteListItem.bindFavoriteItem(itemView, CaseStoryService.getInstance().favoriteImages);
+        }
         RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
         title.setText("Favorites");
         if (manager.csCustomFont() != null) {

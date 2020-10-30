@@ -199,6 +199,7 @@ public class CaseStoryManager {
     public void setUserId(String userId) throws DataException {
         if (userId.length() < 255) {
             this.userId = userId;
+            CaseStoryService.getInstance().favoriteImages.clear();
             EventBus.getDefault().post(new ChangeUserIdEvent());
             if (StatisticSession.getInstance().id != null) {
                 NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,

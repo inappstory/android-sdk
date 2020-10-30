@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -64,13 +65,27 @@ public class StoriesList extends RecyclerView {
         init(attrs);
     }
 
+    @Override
+    public void onDetachedFromWindow() {
+        EventBus.getDefault().unregister(this);
+        super.onDetachedFromWindow();
+        Log.e("cslistEvent", "detached");
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        EventBus.getDefault().register(this);
+
+        Log.e("cslistEvent", "attached");
+    }
+
     private void init(AttributeSet attributeSet) {
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
             typedArray.recycle();
         }
-        EventBus.getDefault().register(this);
         addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {

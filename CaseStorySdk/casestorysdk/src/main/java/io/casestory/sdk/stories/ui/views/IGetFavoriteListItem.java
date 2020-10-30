@@ -10,4 +10,5 @@ import io.casestory.sdk.stories.ui.views.StoriesListItem;
 
 public interface IGetFavoriteListItem {
     View getFavoriteItem(List<FavoriteImage> favoriteImages);
+    void bindFavoriteItem(View favCell, List<FavoriteImage> favoriteImages);
 }
