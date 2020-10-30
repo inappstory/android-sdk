@@ -290,8 +290,20 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     public void onDestroyView() {
         if (storiesWebView != null)
             storiesWebView.destroyWebView();
-        EventBus.getDefault().unregister(this);
+        try {
+            EventBus.getDefault().unregister(this);
+        } catch (Exception e) {}
         super.onDestroyView();
+    }
+
+
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    public void closeReaderEvent(CloseStoryReaderEvent event) {
+        if (storiesWebView != null)
+            storiesWebView.destroyWebView();
+        try {
+            EventBus.getDefault().unregister(this);
+        } catch (Exception e) {}
     }
 
     @Override
