@@ -78,6 +78,13 @@ public class CaseStoryManager {
     private UrlClickCallback urlClickCallback;
     private AppClickCallback appClickCallback;
 
+
+    public interface ShareCallback {
+        public void onShare(String url, String title, String description);
+    }
+
+    public ShareCallback shareCallback;
+
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         this.urlClickCallback = urlClickCallback;
     }

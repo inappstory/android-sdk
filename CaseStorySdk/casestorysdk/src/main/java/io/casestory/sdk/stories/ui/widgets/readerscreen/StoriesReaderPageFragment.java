@@ -1,5 +1,6 @@
 package io.casestory.sdk.stories.ui.widgets.readerscreen;
 
+import android.content.Intent;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,12 +21,18 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.Fragment;
 
 
+import java.lang.reflect.Type;
+
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.EventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.network.NetworkCallback;
+import io.casestory.sdk.network.NetworkClient;
+import io.casestory.sdk.stories.api.models.ShareObject;
+import io.casestory.sdk.stories.api.models.StatisticSession;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
@@ -515,6 +522,29 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                     EventBus.getDefault().post(new PauseStoryReaderEvent(false));
                     share.setEnabled(false);
                     share.setClickable(false);
+                    NetworkClient.getApi().share(Integer.toString(storyId), StatisticSession.getInstance().id,
+                            CaseStoryManager.getInstance().getApiKey(), null).enqueue(new NetworkCallback<ShareObject>() {
+                        @Override
+                        public void onSuccess(ShareObject response) {
+                            share.setEnabled(true);
+                            if (CaseStoryManager.getInstance().shareCallback != null) {
+                                CaseStoryManager.getInstance().shareCallback.onShare(response.getUrl(), response.getTitle(), response.getDescription());
+                            } else {
+                                Intent sendIntent = new Intent();
+                                sendIntent.setAction(Intent.ACTION_SEND);
+                                sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
+                                sendIntent.putExtra(Intent.EXTRA_TEXT, response.getUrl());
+                                sendIntent.setType("text/plain");
+                                CaseStoryManager.getInstance().getContext().startActivity(sendIntent);
+                            }
+                        }
+
+                        @Override
+                        public Type getType() {
+                            return null;
+                        }
+                    });
                 }
             });
         }

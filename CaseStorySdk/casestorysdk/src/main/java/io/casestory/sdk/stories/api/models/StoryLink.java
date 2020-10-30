@@ -1,15 +1,14 @@
 package io.casestory.sdk.stories.api.models;
 
-public class StoryLinkObject {
+public class StoryLink {
     public String getType() {
         return type;
     }
 
-    public StoryLink getLink() {
-        return link;
+    public String getTarget() {
+        return target;
     }
 
     String type;
-    StoryLink link;
-
+    String target;
 }
