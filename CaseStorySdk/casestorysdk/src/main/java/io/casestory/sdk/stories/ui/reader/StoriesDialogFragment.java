@@ -126,17 +126,20 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         Bundle args = new Bundle();
         args.putBoolean("isDialogFragment", true);
         args.putInt("index", getArguments().getInt("index", 0));
-        args.putInt(CS_CLOSE_POSITION, getArguments().getInt(CS_CLOSE_POSITION, 1));
+        args.putBoolean("canUseNotLoaded", getArguments().getBoolean("canUseNotLoaded", false));
         args.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
         args.putBoolean(CS_CLOSE_ON_SWIPE, getArguments().getBoolean(CS_CLOSE_ON_SWIPE, false));
         args.putBoolean("onboarding", getArguments().getBoolean("onboarding", false));
+        args.putInt(CS_CLOSE_POSITION, getArguments().getInt(CS_CLOSE_POSITION, 1));
+        args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));
+
 
         fragment.setArguments(args);
         FragmentManager fragmentManager = getChildFragmentManager();
-        Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
+        Fragment f = fragmentManager.findFragmentById(R.id.dialog_fragment);
         //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
         FragmentTransaction t = fragmentManager.beginTransaction()
-                .replace(R.id.fragments_layout, fragment);
+                .replace(R.id.dialog_fragment, fragment);
         t.addToBackStack("STORIES_FRAGMENT");
         t.commit();
 

@@ -6,6 +6,8 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
+
+import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 
 /**
@@ -46,7 +48,7 @@ public class Sizes {
 
     public static Point getScreenSize() {
         Context con = CaseStoryManager.getInstance().getContext();
-        if (con == null) return new Point(0,0);
+        if (con == null) return new Point(0, 0);
         WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
@@ -68,7 +70,9 @@ public class Sizes {
     }
 
     public static boolean isTablet() {
-        return false;
+        if (CaseStoryManager.getInstance() != null && CaseStoryManager.getInstance().getContext() != null)
+            return CaseStoryManager.getInstance().getContext().getResources().getBoolean(R.bool.isTablet);
+        else return false;
     }
 
     public static int dpToPxExt(int dp, Context context) {
