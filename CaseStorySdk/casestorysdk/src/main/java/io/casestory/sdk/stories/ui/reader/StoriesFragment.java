@@ -164,7 +164,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             if (CaseStoryService.getInstance() != null) {
                 CaseStoryService.getInstance().currentEvent = null;
                 if (!configurationChanged) {
-                    EventBus.getDefault().post(new DestroyStoriesFragmentEvent());
+                   // EventBus.getDefault().post(new DestroyStoriesFragmentEvent());
                 }
                 configurationChanged = false;
             }
