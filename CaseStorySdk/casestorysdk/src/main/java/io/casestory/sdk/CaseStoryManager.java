@@ -134,7 +134,7 @@ public class CaseStoryManager {
     boolean hasShare = false;
     boolean hasFavorite = false;
 
-    private static final String TEST_DOMAIN = "https://api.casestory.io/";
+    private static final String TEST_DOMAIN = "https://api.test.casestory.io/";
     private static final String PRODUCT_DOMAIN = "https://api.casestory.io/";
 
     public String getApiKey() {
@@ -200,24 +200,26 @@ public class CaseStoryManager {
         if (userId.length() < 255) {
             this.userId = userId;
             EventBus.getDefault().post(new ChangeUserIdEvent());
+            if (StatisticSession.getInstance().id != null) {
+                NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
+                        CaseStoryService.getInstance().statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
+                    @Override
+                    public void onSuccess(StatisticResponse response) {
+                        EventBus.getDefault().post(new ChangeUserIdForListEvent());
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return StatisticResponse.class;
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        EventBus.getDefault().post(new ChangeUserIdForListEvent());
+                    }
+                });
+            }
             StatisticSession.clear();
-            NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                    CaseStoryService.getInstance().statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
-                @Override
-                public void onSuccess(StatisticResponse response) {
-                    EventBus.getDefault().post(new ChangeUserIdForListEvent());
-                }
-
-                @Override
-                public Type getType() {
-                    return StatisticResponse.class;
-                }
-
-                @Override
-                public void onError(int code, String message) {
-                    EventBus.getDefault().post(new ChangeUserIdForListEvent());
-                }
-            });
         } else {
             throw new DataException("'userId' can't be longer than 255 characters", new Throwable("CaseStoryManager data is not valid"));
         }

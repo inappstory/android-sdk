@@ -220,29 +220,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         if (image != null) {
             if (imageUrl != null) {
 
-
-                // whenever you want to load an image from url
-                // call DisplayImage function
-                // url - image url to load
-                // loader - loader image, will be displayed before getting image
-                // image - ImageView
                 ImageLoader.getInstance().displayImage(imageUrl, 0, image);
-                /*RequestOptions emptyOptions = new RequestOptions().centerCrop();
-                Glide.with(image).load(Uri.parse(imageUrl)).listener(new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        return false;
-                    }
 
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        return false;
-                    }
-                })
-                        .skipMemoryCache(true)
-                        .centerCrop()
-                        .apply(emptyOptions)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(image);*/
             } else if (backgroundColor != null) {
                 image.setBackgroundColor(backgroundColor);
             }

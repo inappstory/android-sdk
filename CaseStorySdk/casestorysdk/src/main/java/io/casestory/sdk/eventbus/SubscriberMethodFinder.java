@@ -146,18 +146,14 @@ public class SubscriberMethodFinder {
         }
 
         boolean checkAdd(Method method, Class<?> eventType) {
-            // 2 level check: 1st level with event type only (fast), 2nd level with complete signature when required.
-            // Usually a subscriber doesn't have methods listening to the same event type.
             Object existing = anyMethodByEventType.put(eventType, method);
             if (existing == null) {
                 return true;
             } else {
                 if (existing instanceof Method) {
                     if (!checkAddWithMethodSignature((Method) existing, eventType)) {
-                        // Paranoia check
                         throw new IllegalStateException();
                     }
-                    // Put any non-Method object to "consume" the existing Method
                     anyMethodByEventType.put(eventType, this);
                 }
                 return checkAddWithMethodSignature(method, eventType);
