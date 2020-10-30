@@ -1,5 +1,7 @@
 package io.casestory.sdk.eventbus;
 
+import android.util.Log;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -165,7 +167,7 @@ public class EventBus {
         PostingThreadState postingState = currentPostingThreadState.get();
         List<Object> eventQueue = postingState.eventQueue;
         eventQueue.add(event);
-
+        Log.e("CsEventBus", event.getClass().getName());
         if (!postingState.isPosting) {
             postingState.isMainThread = false;
             postingState.isPosting = true;
