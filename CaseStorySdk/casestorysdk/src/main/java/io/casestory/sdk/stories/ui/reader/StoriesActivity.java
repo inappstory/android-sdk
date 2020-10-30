@@ -214,6 +214,8 @@ public class StoriesActivity extends AppCompatActivity {
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
         cleanReader();
+        EventBus.getDefault().post(new CloseStoriesReaderEvent());
+        EventBus.getDefault().unregister(this);
         finish();
     }
 
@@ -255,8 +257,11 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         StatusBarController.showStatusBar(this);
-        EventBus.getDefault().post(new CloseStoriesReaderEvent());
-        EventBus.getDefault().unregister(this);
+        try {
+            EventBus.getDefault().unregister(this);
+        } catch (Exception e) {
+
+        }
         System.gc();
         super.onDestroy();
     }

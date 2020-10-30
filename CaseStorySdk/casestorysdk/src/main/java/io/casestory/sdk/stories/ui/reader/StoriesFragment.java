@@ -304,6 +304,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         EventBus.getDefault().post(new CloseStoryReaderEvent());
     }
 
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    public void closeReaderEvent(CloseStoryReaderEvent event) {
+        isDestroyed = true;
+        EventBus.getDefault().unregister(this);
+    }
+
     @CsSubscribe
     public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
@@ -410,7 +416,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (isDestroyed) return;
         CaseStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
         currentIndex = StoryDownloader.getInstance().findItemByStoryId(currentIds.get(event.getIndex())).lastIndex;
-        if (isDestroyed) return;
         invMask.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable() {
             @Override
