@@ -27,7 +27,7 @@ import java.util.concurrent.Future;
 
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.network.JsonParser;
 import io.casestory.sdk.network.NetworkClient;
 import io.casestory.sdk.network.Request;
@@ -297,13 +297,13 @@ public class StoryDownloader {
                         @Override
                         public void onError() {
 
-                            EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
+                            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
                             synchronized (getInstance().pageTasksLock) {
                                 getInstance().pageTasks.get(key).loadType = -1;
                                 errorHandler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
-                                        EventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
+                                        CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
                                     }
                                 }, 300);
                             }
@@ -353,7 +353,7 @@ public class StoryDownloader {
 
                         if (story[0] != null) {
                             getInstance().setStory(story[0], story[0].id);
-                            EventBus.getDefault().post(new StoryCacheLoadedEvent(story[0].id));
+                            CsEventBus.getDefault().post(new StoryCacheLoadedEvent(story[0].id));
                             synchronized (getInstance().pageTasksLock) {
                                 Set<Pair<Integer, Integer>> keys = getInstance().pageTasks.keySet();
                                 int sz;
@@ -398,12 +398,12 @@ public class StoryDownloader {
                         handler.postDelayed(queueStoryReadRunnable, 200);
                     } catch (Throwable t) {
 
-                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
                         synchronized (getInstance().storyTasksLock) {
                             errorHandler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    EventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
+                                    CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
                                 }
                             }, 300);
                             getInstance().storyTasks.get(key).loadType = -1;
@@ -441,13 +441,13 @@ public class StoryDownloader {
 
                     @Override
                     public void onError() {
-                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
                         synchronized (getInstance().pageTasksLock) {
                             getInstance().pageTasks.get(key).loadType = -1;
                             errorHandler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    EventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
+                                    CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
                                 }
                             }, 300);
                         }
@@ -483,17 +483,17 @@ public class StoryDownloader {
                         ff.get();
                         synchronized (getInstance().pageTasksLock) {
                             getInstance().pageTasks.get(key).loadType = 2;
-                            EventBus.getDefault().post(new PageTaskLoadedEvent(key.first, key.second));
+                            CsEventBus.getDefault().post(new PageTaskLoadedEvent(key.first, key.second));
                         }
                         handler.postDelayed(queuePageReadRunnable, 200);
                     } catch (Throwable t) {
-                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
                         synchronized (getInstance().pageTasksLock) {
                             getInstance().pageTasks.get(key).loadType = -1;
                             errorHandler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    EventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
+                                    CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
                                 }
                             }, 300);
                         }

@@ -24,7 +24,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.imageloader.ImageLoader;
@@ -120,7 +120,7 @@ public class CaseStoryService extends Service {
 
                     @Override
                     public void onError() {
-                        EventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
                     }
                 });
                 return;
@@ -134,7 +134,7 @@ public class CaseStoryService extends Service {
 
                     @Override
                     public void onError() {
-                        EventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
                     }
                 });
             } else {
@@ -142,7 +142,7 @@ public class CaseStoryService extends Service {
                         getTags(), getTestKey(), null).enqueue(isFavorite ? loadCallbackWithoutFav : loadCallback);
             }
         } else {
-            EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LOAD_LIST));
+            CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LOAD_LIST));
         }
     }
 
@@ -166,7 +166,7 @@ public class CaseStoryService extends Service {
             if (System.currentTimeMillis() - timerStart >= timerDuration) {
                 timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
-                EventBus.getDefault().post(new NextStoryPageEvent(currentId));
+                CsEventBus.getDefault().post(new NextStoryPageEvent(currentId));
                 return;
                 //if (currentIndex == )
             }
@@ -196,6 +196,10 @@ public class CaseStoryService extends Service {
 
         }
         timerHandler.post(timerTask);
+    }
+
+    public void restartTimer() {
+        startTimer(timerDuration);
     }
 
     @CsSubscribe
@@ -267,13 +271,13 @@ public class CaseStoryService extends Service {
         @Override
         public void onError(int code, String message) {
 
-            EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             super.onError(code, message);
         }
 
         @Override
         protected void error424(String message) {
-            EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             if (!openProcess)
                 openStatistic(new OpenStatisticCallback() {
                     @Override
@@ -288,7 +292,7 @@ public class CaseStoryService extends Service {
                     @Override
                     public void onError() {
 
-                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
                     }
                 });
         }
@@ -296,12 +300,12 @@ public class CaseStoryService extends Service {
         @Override
         public void onSuccess(final List<Story> response) {
             if (response == null || response.size() == 0) {
-                EventBus.getDefault().post(new ContentLoadedEvent(true));
+                CsEventBus.getDefault().post(new ContentLoadedEvent(true));
             } else {
-                EventBus.getDefault().post(new ContentLoadedEvent(false));
+                CsEventBus.getDefault().post(new ContentLoadedEvent(false));
             }
             StoryDownloader.getInstance().uploadingAdditional(response);
-            EventBus.getDefault().post(new ListVisibilityEvent());
+            CsEventBus.getDefault().post(new ListVisibilityEvent());
             List<Story> newStories = new ArrayList<>();
             if (StoryDownloader.getInstance().getStories() != null) {
                 for (Story story : response) {
@@ -326,7 +330,7 @@ public class CaseStoryService extends Service {
                         favStories.clear();
                         favStories.addAll(response2);
                         favoriteImages.clear();
-                        EventBus.getDefault().post(new LoadFavStories());
+                        CsEventBus.getDefault().post(new LoadFavStories());
                         if (response2 != null && response2.size() > 0) {
                             for (Story story : response2) {
                                 //if (favoriteImages.size() < 4)
@@ -431,13 +435,13 @@ public class CaseStoryService extends Service {
         @Override
         public void onError(int code, String message) {
 
-            EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             super.onError(code, message);
         }
 
         @Override
         protected void error424(String message) {
-            EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             if (!openProcess)
                 openStatistic(new OpenStatisticCallback() {
                     @Override
@@ -452,7 +456,7 @@ public class CaseStoryService extends Service {
                     @Override
                     public void onError() {
 
-                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
                     }
                 });
         }
@@ -460,12 +464,12 @@ public class CaseStoryService extends Service {
         @Override
         public void onSuccess(final List<Story> response) {
             if (response == null || response.size() == 0) {
-                EventBus.getDefault().post(new ContentLoadedEvent(true));
+                CsEventBus.getDefault().post(new ContentLoadedEvent(true));
             } else {
-                EventBus.getDefault().post(new ContentLoadedEvent(false));
+                CsEventBus.getDefault().post(new ContentLoadedEvent(false));
             }
             StoryDownloader.getInstance().uploadingAdditional(response);
-            EventBus.getDefault().post(new ListVisibilityEvent());
+            CsEventBus.getDefault().post(new ListVisibilityEvent());
             List<Story> newStories = new ArrayList<>();
             if (StoryDownloader.getInstance().getStories() != null) {
                 for (Story story : response) {
@@ -790,7 +794,7 @@ public class CaseStoryService extends Service {
             @Override
             public void onError(int code, String message) {
                 openProcess = false;
-                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 super.onError(code, message);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
@@ -804,7 +808,7 @@ public class CaseStoryService extends Service {
             @Override
             public void onTimeout() {
                 openProcess = false;
-                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -970,7 +974,7 @@ public class CaseStoryService extends Service {
                     public void onSuccess(Response response) {
                         if (story != null)
                             story.like = val;
-                        EventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
+                        CsEventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
                     }
 
                     @Override
@@ -991,7 +995,7 @@ public class CaseStoryService extends Service {
                     public void onSuccess(Response response) {
                         if (story != null)
                             story.favorite = !val;
-                        EventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
+                        CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
                     }
 
                     @Override
@@ -1066,7 +1070,7 @@ public class CaseStoryService extends Service {
             @Override
             public void errorStatistic() {
 
-                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
             }
         })) {
             NetworkClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
@@ -1094,7 +1098,7 @@ public class CaseStoryService extends Service {
                     if (CaseStoryManager.getInstance().singleLoadedListener != null) {
                         CaseStoryManager.getInstance().singleLoadedListener.onError();
                     }
-                    EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
+                    CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                 }
             });
         }
@@ -1110,7 +1114,7 @@ public class CaseStoryService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        EventBus.getDefault().register(this);
+        CsEventBus.getDefault().register(this);
 
         ImageLoader imgLoader = new ImageLoader(getApplicationContext());
         statistic = new ArrayList<>();

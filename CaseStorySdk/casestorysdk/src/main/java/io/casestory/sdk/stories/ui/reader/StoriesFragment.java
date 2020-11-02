@@ -20,7 +20,7 @@ import java.util.List;
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
@@ -44,7 +44,6 @@ import io.casestory.sdk.stories.events.StoryReaderTapEvent;
 import io.casestory.sdk.stories.events.StoryTimerReverseEvent;
 import io.casestory.sdk.stories.events.StorySwipeBackEvent;
 import io.casestory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
-import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import io.casestory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
 import io.casestory.sdk.stories.storieslistenerevents.OnNextEvent;
 import io.casestory.sdk.stories.storieslistenerevents.OnPrevEvent;
@@ -109,7 +108,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             return;
         }
         if (isDestroyed) return;
-        EventBus.getDefault().register(this);
+        CsEventBus.getDefault().register(this);
         configurationChanged = false;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         storiesViewPager = view.findViewById(R.id.stories);
@@ -160,7 +159,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public void onDestroyView() {
         if (!isDestroyed) {
-            EventBus.getDefault().unregister(this);
+            CsEventBus.getDefault().unregister(this);
             if (CaseStoryService.getInstance() != null) {
                 CaseStoryService.getInstance().currentEvent = null;
                 if (!configurationChanged) {
@@ -178,7 +177,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onPause() {
         if (!isDestroyed) {
             backPaused = true;
-            EventBus.getDefault().post(new PauseStoryReaderEvent(true));
+            CsEventBus.getDefault().post(new PauseStoryReaderEvent(true));
         }
         super.onPause();
     }
@@ -204,7 +203,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (!isDestroyed) {
             backPaused = false;
             if (!created)
-                EventBus.getDefault().post(new ResumeStoryReaderEvent(true));
+                CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
             if (!Sizes.isTablet())
                 StatusBarController.hideStatusBar(getActivity(), true);
             created = false;
@@ -253,17 +252,17 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (currentIds != null && currentIds.size() > position) {
             CaseStoryService.getInstance().addStatisticBlock(currentIds.get(position),
                     StoryDownloader.getInstance().findItemByStoryId(currentIds.get(position)).lastIndex);
-            EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(position), position));
+            CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(position), position));
         }
         final int pos = position;
 
-        EventBus.getDefault().post(new PageSelectedEvent(pos));
-        EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos), false));
+        CsEventBus.getDefault().post(new PageSelectedEvent(pos));
+        CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos), false));
         if (pos > 0) {
-            EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos - 1), true));
+            CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos - 1), true));
         }
         if (pos < currentIds.size() - 1) {
-            EventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos + 1), true));
+            CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos + 1), true));
         }
     }
 
@@ -279,11 +278,11 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onPageScrollStateChanged(int state) {
         if (state == ViewPager.SCROLL_STATE_IDLE) {
             if (getCurIndexById(CaseStoryService.getInstance().getCurrentId()) == currentIndex) {
-                EventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+                CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        EventBus.getDefault().post(new StorySwipeBackEvent(CaseStoryService.getInstance().getCurrentId()));
+                        CsEventBus.getDefault().post(new StorySwipeBackEvent(CaseStoryService.getInstance().getCurrentId()));
                     }
                 }, 50);
             }
@@ -301,25 +300,35 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void changeUserId(ChangeUserIdEvent event) {
         if (isDestroyed) return;
-        EventBus.getDefault().post(new CloseStoryReaderEvent());
+        CsEventBus.getDefault().post(new CloseStoryReaderEvent());
     }
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void closeReaderEvent(CloseStoryReaderEvent event) {
         isDestroyed = true;
-        EventBus.getDefault().unregister(this);
+        CsEventBus.getDefault().unregister(this);
     }
 
-    @CsSubscribe
+    @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
+
+            Handler handler = new Handler(Looper.getMainLooper());
+            invMask.setVisibility(View.VISIBLE);
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    invMask.setVisibility(View.GONE);
+                }
+            }, 200);
+
             if (event.getLink() == null || event.getLink().isEmpty()) {
                 int real = event.getCoordinate();
                 int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
                 if (real >= 0.3 * sz && !event.isForbidden()) {
-                    EventBus.getDefault().post(new NextStoryPageEvent(currentIds.get(storiesViewPager.getCurrentItem())));
+                    CsEventBus.getDefault().post(new NextStoryPageEvent(currentIds.get(storiesViewPager.getCurrentItem())));
                 } else if (real < 0.3 * sz) {
-                    EventBus.getDefault().post(new PrevStoryPageEvent(currentIds.get(storiesViewPager.getCurrentItem())));
+                    CsEventBus.getDefault().post(new PrevStoryPageEvent(currentIds.get(storiesViewPager.getCurrentItem())));
                 }
             } else {
 
@@ -334,7 +343,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             currentIndex++;
         }
 
-        EventBus.getDefault().post(new StoryPageOpenEvent(
+        CsEventBus.getDefault().post(new StoryPageOpenEvent(
                 CaseStoryService.getInstance().getCurrentId(),
                 currentIndex
         ));
@@ -343,14 +352,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (st.lastIndex < st.slidesCount) {
             st.lastIndex++;
         }
-        Handler handler = new Handler(Looper.getMainLooper());
-        invMask.setVisibility(View.VISIBLE);
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                invMask.setVisibility(View.GONE);
-            }
-        }, 600);
     }
 
 
@@ -362,7 +363,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void prevStoryPageEvent(StoryTimerReverseEvent event) {
         if (isDestroyed) return;
-        EventBus.getDefault().post(new OnPrevEvent());
+        CsEventBus.getDefault().post(new OnPrevEvent());
     }
 
     @CsSubscribe(threadMode = ThreadMode.MAIN)
@@ -370,7 +371,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
             StoryDownloader.getInstance().findItemByStoryId(currentIds.get(curItem)).lastIndex = event.getIndex();
-            EventBus.getDefault().post(new ChangeIndexEventInFragment(event.getIndex(), currentIds.get(curItem)));
+            CsEventBus.getDefault().post(new ChangeIndexEventInFragment(event.getIndex(), currentIds.get(curItem)));
         }
     }
 
@@ -391,19 +392,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (isDestroyed) return;
 
         Handler handler = new Handler(Looper.getMainLooper());
-        invMask.setVisibility(View.VISIBLE);
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                invMask.setVisibility(View.GONE);
-            }
-        }, 600);
         if (StoryDownloader.getInstance().findItemByStoryId(CaseStoryService.getInstance().getCurrentId()).lastIndex > 0) {
             StoryDownloader.getInstance().findItemByStoryId(CaseStoryService.getInstance().getCurrentId()).lastIndex--;
         }
         if (currentIndex > 0) {
             currentIndex--;
-            EventBus.getDefault().post(new StoryPageOpenEvent(
+            CsEventBus.getDefault().post(new StoryPageOpenEvent(
                     CaseStoryService.getInstance().getCurrentId(),
                     currentIndex
             ));
@@ -424,7 +418,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             }
         }, 600);
 
-        EventBus.getDefault().post(new StoryOpenEvent(currentIds.get(event.getIndex())));
+        CsEventBus.getDefault().post(new StoryOpenEvent(currentIds.get(event.getIndex())));
         ArrayList<Integer> lst = new ArrayList<>();
         lst.add(currentIds.get(event.getIndex()));
         CaseStoryService.getInstance().previewStatisticEvent(lst);
@@ -435,12 +429,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onNextStory(NextStoryReaderEvent event) {
         if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
-            EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() + 1),
+            CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() + 1),
                     storiesViewPager.getCurrentItem() + 1));
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
         } else {
             if (!StoryDownloader.getInstance().findItemByStoryId(currentIds.get(storiesViewPager.getCurrentItem())).disableClose)
-                EventBus.getDefault().post(new CloseStoryReaderEvent(false));
+                CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
 
@@ -448,12 +442,17 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onPrevStory(PrevStoryReaderEvent event) {
         if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() > 0) {
-            EventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() - 1),
+            CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() - 1),
                     storiesViewPager.getCurrentItem() - 1));
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() - 1);
         } else {
-            CaseStoryService.getInstance().cubeAnimation = false;
-            EventBus.getDefault().post(new PrevStoryFragmentEvent(CaseStoryService.getInstance().getCurrentId()));
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    CaseStoryService.getInstance().cubeAnimation = false;
+                }
+            }, 100);
+            CsEventBus.getDefault().post(new PrevStoryFragmentEvent(CaseStoryService.getInstance().getCurrentId()));
         }
     }
 

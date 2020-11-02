@@ -16,7 +16,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
@@ -37,13 +37,13 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.cs_stories_dialog_fragment, null);
-        EventBus.getDefault().register(this);
+        CsEventBus.getDefault().register(this);
         return v;
     }
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
-        EventBus.getDefault().post(new CloseStoriesReaderEvent());
+        CsEventBus.getDefault().post(new CloseStoriesReaderEvent());
         super.onDismiss(dialogInterface);
     }
 
@@ -74,7 +74,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     public void onDestroyView() {
-        EventBus.getDefault().unregister(this);
+        CsEventBus.getDefault().unregister(this);
         StoriesActivity.destroyed = System.currentTimeMillis();
         super.onDestroyView();
     }
@@ -104,7 +104,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         CaseStoryService.getInstance().isBackgroundPause = false;
         for (Story story : StoryDownloader.getInstance().getStories())
             story.lastIndex = 0;
-        EventBus.getDefault().unregister(this);
+        CsEventBus.getDefault().unregister(this);
         dismiss();
     }
 

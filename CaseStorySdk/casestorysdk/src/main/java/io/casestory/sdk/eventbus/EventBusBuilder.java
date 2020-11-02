@@ -41,7 +41,7 @@ public class EventBusBuilder {
         return this;
     }
 
-    public EventBus build() {
-        return new EventBus(this);
+    public CsEventBus build() {
+        return new CsEventBus(this);
     }
 }

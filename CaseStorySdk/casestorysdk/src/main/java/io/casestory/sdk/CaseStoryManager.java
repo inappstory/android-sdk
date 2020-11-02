@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.casestory.casestorysdk.R;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.exceptions.DataException;
 import io.casestory.sdk.network.NetworkCallback;
 import io.casestory.sdk.network.NetworkClient;
@@ -209,13 +209,13 @@ public class CaseStoryManager {
             this.userId = userId;
             if (CaseStoryService.getInstance() != null && CaseStoryService.getInstance().favoriteImages != null)
                 CaseStoryService.getInstance().favoriteImages.clear();
-            EventBus.getDefault().post(new ChangeUserIdEvent());
+            CsEventBus.getDefault().post(new ChangeUserIdEvent());
             if (StatisticSession.getInstance().id != null) {
                 NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
                         CaseStoryService.getInstance().statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
                     @Override
                     public void onSuccess(StatisticResponse response) {
-                        EventBus.getDefault().post(new ChangeUserIdForListEvent());
+                        CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
                     }
 
                     @Override
@@ -225,7 +225,7 @@ public class CaseStoryManager {
 
                     @Override
                     public void onError(int code, String message) {
-                        EventBus.getDefault().post(new ChangeUserIdForListEvent());
+                        CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
                     }
                 });
             }
@@ -338,7 +338,7 @@ public class CaseStoryManager {
 
             @Override
             public void errorStatistic() {
-                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
             }
         })) {
             NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, tags == null ? getTags() : tags,
@@ -426,7 +426,7 @@ public class CaseStoryManager {
                     if (onboardLoadedListener != null) {
                         onboardLoadedListener.onError();
                     }
-                    EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                    CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
                 }
             });
         }
@@ -438,7 +438,7 @@ public class CaseStoryManager {
 
     public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
         if (StoriesActivity.destroyed == -1) {
-            EventBus.getDefault().post(new CloseStoryReaderEvent());
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent());
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -477,7 +477,7 @@ public class CaseStoryManager {
                             CaseStoryManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
                         } else {
                             if (!CaseStoryService.getInstance().isConnected()) {
-                                EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
+                                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                                 return;
                             }
                             try {
@@ -491,7 +491,7 @@ public class CaseStoryManager {
                         return;
                     }
                     if (story.isHideInReader()) {
-                        EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                         return;
                     }
                 }

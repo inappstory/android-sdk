@@ -1,10 +1,10 @@
 package io.casestory.sdk.eventbus;
 
 public class AsyncManager implements Runnable {
-    private final EventBus eventBus;
+    private final CsEventBus eventBus;
     private final PostQueue queue;
 
-    AsyncManager(EventBus eventBus) {
+    AsyncManager(CsEventBus eventBus) {
         this.eventBus = eventBus;
         queue = new PostQueue();
     }

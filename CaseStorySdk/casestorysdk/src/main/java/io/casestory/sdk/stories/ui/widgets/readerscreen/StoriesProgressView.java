@@ -2,7 +2,6 @@ package io.casestory.sdk.stories.ui.widgets.readerscreen;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -16,13 +15,6 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.stories.cache.StoryDownloader;
-import io.casestory.sdk.stories.events.NextStoryReaderEvent;
-import io.casestory.sdk.stories.events.PrevStoryReaderEvent;
-import io.casestory.sdk.stories.storieslistenerevents.OnCompleteEvent;
-import io.casestory.sdk.stories.storieslistenerevents.OnNextEvent;
-import io.casestory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import io.casestory.sdk.stories.utils.Sizes;
 
 public class StoriesProgressView extends LinearLayout {

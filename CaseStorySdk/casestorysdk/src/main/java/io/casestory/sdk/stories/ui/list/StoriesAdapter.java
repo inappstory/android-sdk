@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,7 @@ import io.casestory.casestorysdk.R;
 import io.casestory.sdk.AppearanceManager;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
@@ -139,7 +138,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                     notifyItemChanged(index);
                 } else {
                     if (!CaseStoryService.getInstance().isConnected()) {
-                        EventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
+                        CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                         return;
                     }
                     current.isOpened = true;
@@ -155,7 +154,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 return;
             }
             if (current.isHideInReader()) {
-                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                 return;
             }
         }

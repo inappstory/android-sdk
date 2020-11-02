@@ -20,7 +20,7 @@ import androidx.fragment.app.FragmentTransaction;
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
@@ -158,7 +158,7 @@ public class StoriesActivity extends AppCompatActivity {
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            EventBus.getDefault().post(new ResumeStoryReaderEvent(true));
+            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
         }
 
         setContentView(R.layout.cs_activity_stories);
@@ -169,7 +169,7 @@ public class StoriesActivity extends AppCompatActivity {
                 public void onDragDismissed() {
                     if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
                     else animateFirst = false;
-                    EventBus.getDefault().post(new CloseStoryReaderEvent());
+                    CsEventBus.getDefault().post(new CloseStoryReaderEvent());
                 }
             };
         }
@@ -185,8 +185,8 @@ public class StoriesActivity extends AppCompatActivity {
         }
         StoriesFragment storiesFragment;
 
-        EventBus.getDefault().register(StoriesActivity.this);
-        EventBus.getDefault().post(new OpenStoriesScreenEvent());
+        CsEventBus.getDefault().register(StoriesActivity.this);
+        CsEventBus.getDefault().post(new OpenStoriesScreenEvent());
         if (savedInstanceState == null) {
             //overridePendingTransition(R.anim.alpha_fade_in, R.anim.alpha_fade_out);
             storiesFragment = new StoriesFragment();
@@ -220,8 +220,8 @@ public class StoriesActivity extends AppCompatActivity {
     @CsSubscribe(threadMode = ThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
         cleanReader();
-        EventBus.getDefault().post(new CloseStoriesReaderEvent());
-        EventBus.getDefault().unregister(this);
+        CsEventBus.getDefault().post(new CloseStoriesReaderEvent());
+        CsEventBus.getDefault().unregister(this);
 
         if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
@@ -246,7 +246,7 @@ public class StoriesActivity extends AppCompatActivity {
         if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && CaseStoryManager.getInstance().closeOnSwipe()) {
             //finishActivityWithCustomAnimation(0, R.anim.popup_hide);
-            EventBus.getDefault().post(new CloseStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
 
@@ -254,7 +254,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void swipeLeftEvent(SwipeLeftEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
            // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
-            EventBus.getDefault().post(new CloseStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
 
@@ -262,7 +262,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void swipeRightEvent(SwipeRightEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
           //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
-            EventBus.getDefault().post(new CloseStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
         }
     }
 
@@ -271,7 +271,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void onDestroy() {
         StatusBarController.showStatusBar(this);
         try {
-            EventBus.getDefault().unregister(this);
+            CsEventBus.getDefault().unregister(this);
         } catch (Exception e) {
 
         }

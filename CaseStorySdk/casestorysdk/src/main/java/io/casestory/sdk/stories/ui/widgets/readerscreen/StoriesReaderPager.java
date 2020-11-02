@@ -3,7 +3,6 @@ package io.casestory.sdk.stories.ui.widgets.readerscreen;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
@@ -11,8 +10,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.stories.api.models.Story;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StorySwipeBackEvent;
@@ -99,9 +97,9 @@ public class StoriesReaderPager extends ViewPager {
             return false;
         }
 
-        if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 700) {
+        /*if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 100) {
             return false;
-        }
+        }*/
         long pressEndTime;
         float pressedEndX = 0f;
         float pressedEndY = 0f;
@@ -112,7 +110,7 @@ public class StoriesReaderPager extends ViewPager {
             pressStartTime = System.currentTimeMillis();
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
-            EventBus.getDefault().post(new WidgetTapEvent());
+            CsEventBus.getDefault().post(new WidgetTapEvent());
         } else if (!(motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL)) {
             pressEndTime = System.currentTimeMillis() - pressStartTime;
             pressedEndX = motionEvent.getX() - pressedX;
@@ -125,11 +123,11 @@ public class StoriesReaderPager extends ViewPager {
             distanceY = pressedEndY > 400;
             if (pressedEndY > 0) {
             }
-            EventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-            EventBus.getDefault().post(new StorySwipeBackEvent(CaseStoryService.getInstance().getCurrentId()));
+            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new StorySwipeBackEvent(CaseStoryService.getInstance().getCurrentId()));
             if (distanceY) {
                 if (!StoryDownloader.getInstance().getStoryById(CaseStoryService.getInstance().getCurrentId()).disableClose) {
-                    EventBus.getDefault().post(new SwipeDownEvent());
+                    CsEventBus.getDefault().post(new SwipeDownEvent());
                     return true;
                 }
             }
@@ -137,7 +135,7 @@ public class StoriesReaderPager extends ViewPager {
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX > 300) {
                 if (!StoryDownloader.getInstance().getStoryById(CaseStoryService.getInstance().getCurrentId()).disableClose) {
-                    EventBus.getDefault().post(new SwipeRightEvent());
+                    CsEventBus.getDefault().post(new SwipeRightEvent());
                     return true;
                 }
             }
@@ -146,7 +144,7 @@ public class StoriesReaderPager extends ViewPager {
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX < -300) {
                 if (!StoryDownloader.getInstance().getStoryById(CaseStoryService.getInstance().getCurrentId()).disableClose) {
-                    EventBus.getDefault().post(new SwipeLeftEvent());
+                    CsEventBus.getDefault().post(new SwipeLeftEvent());
                     return true;
                 }
             }

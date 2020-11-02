@@ -21,7 +21,7 @@ import io.casestory.casestorysdk.R;
 import io.casestory.sdk.AppearanceManager;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.exceptions.DataException;
@@ -67,7 +67,7 @@ public class StoriesList extends RecyclerView {
 
     @Override
     public void onDetachedFromWindow() {
-        EventBus.getDefault().unregister(this);
+        CsEventBus.getDefault().unregister(this);
         super.onDetachedFromWindow();
         Log.e("cslistEvent", "detached");
     }
@@ -75,7 +75,7 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        EventBus.getDefault().register(this);
+        CsEventBus.getDefault().register(this);
 
         Log.e("cslistEvent", "attached");
     }

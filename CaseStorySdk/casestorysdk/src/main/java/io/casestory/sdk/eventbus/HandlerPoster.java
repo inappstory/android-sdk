@@ -9,10 +9,10 @@ public class HandlerPoster extends Handler implements Poster {
 
     private final PostQueue queue;
     private final int maxMillisInsideHandleMessage;
-    private final EventBus eventBus;
+    private final CsEventBus eventBus;
     private boolean handlerActive;
 
-    protected HandlerPoster(EventBus eventBus, Looper looper, int maxMillisInsideHandleMessage) {
+    protected HandlerPoster(CsEventBus eventBus, Looper looper, int maxMillisInsideHandleMessage) {
         super(looper);
         this.eventBus = eventBus;
         this.maxMillisInsideHandleMessage = maxMillisInsideHandleMessage;

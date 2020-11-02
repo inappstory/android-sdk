@@ -6,7 +6,7 @@ public interface MainThreadSupport {
 
     boolean isMainThread();
 
-    Poster createPoster(EventBus eventBus);
+    Poster createPoster(CsEventBus eventBus);
 
     class AndroidHandlerMainThreadSupport implements MainThreadSupport {
 
@@ -22,7 +22,7 @@ public interface MainThreadSupport {
         }
 
         @Override
-        public Poster createPoster(EventBus eventBus) {
+        public Poster createPoster(CsEventBus eventBus) {
             return new HandlerPoster(eventBus, looper, 10);
         }
     }

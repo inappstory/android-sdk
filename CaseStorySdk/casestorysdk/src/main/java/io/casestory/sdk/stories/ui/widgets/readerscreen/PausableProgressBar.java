@@ -2,7 +2,6 @@ package io.casestory.sdk.stories.ui.widgets.readerscreen;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -16,9 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import io.casestory.casestorysdk.R;
-import io.casestory.sdk.eventbus.EventBus;
-import io.casestory.sdk.stories.events.NextStoryReaderEvent;
-import io.casestory.sdk.stories.events.StoriesNextPageEvent;
 
 final class PausableProgressBar extends FrameLayout {
 

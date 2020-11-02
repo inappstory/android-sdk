@@ -26,7 +26,7 @@ import java.lang.reflect.Type;
 import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.ThreadMode;
 import io.casestory.sdk.network.NetworkCallback;
@@ -130,10 +130,10 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         //storiesProgressView.skip();
 
         if (story.lastIndex == story.slidesCount - 1) {
-            EventBus.getDefault().post(new NextStoryReaderEvent());
+            CsEventBus.getDefault().post(new NextStoryReaderEvent());
         } else {
             storiesProgressView.setMax(story.lastIndex);
-            EventBus.getDefault().post(new OnNextEvent());
+            CsEventBus.getDefault().post(new OnNextEvent());
         }
     }
 
@@ -157,7 +157,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
             @Override
             public void loadError(int type) {
-                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.READER));
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.READER));
             }
 
             @Override
@@ -173,10 +173,10 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (ind != storyId) return;
         int lind = StoryDownloader.getInstance().getStoryById(storyId).lastIndex;
         if (lind > 0) {
-            EventBus.getDefault().post(new OnPrevEvent());
+            CsEventBus.getDefault().post(new OnPrevEvent());
             storiesProgressView.clearAnimation(lind);
         } else {
-            EventBus.getDefault().post(new PrevStoryReaderEvent());
+            CsEventBus.getDefault().post(new PrevStoryReaderEvent());
         }
     }
 
@@ -239,6 +239,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (storyId != event.getId()) return;
         storiesProgressView.same();
         storiesWebView.restartVideo();
+        CaseStoryService.getInstance().restartTimer();
     }
 
     public AppCompatImageView like;
@@ -298,7 +299,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (storiesWebView != null)
             storiesWebView.destroyWebView();
         try {
-            EventBus.getDefault().unregister(this);
+            CsEventBus.getDefault().unregister(this);
         } catch (Exception e) {}
         super.onDestroyView();
     }
@@ -309,7 +310,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (storiesWebView != null)
             storiesWebView.destroyWebView();
         try {
-            EventBus.getDefault().unregister(this);
+            CsEventBus.getDefault().unregister(this);
         } catch (Exception e) {}
     }
 
@@ -378,7 +379,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 }
             }
         }
-        EventBus.getDefault().register(this);
+        CsEventBus.getDefault().register(this);
 
         invMask = view.findViewById(R.id.invMask);
         close = (AppCompatImageView) view.findViewById(R.id.close_button);
@@ -395,7 +396,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         refresh = view.findViewById(R.id.refreshButton);
         progress.setVisibility(View.GONE);
         storyId = getArguments().getInt("story_id");
-        EventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
+        CsEventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
         if (!Sizes.isTablet() && !CaseStoryManager.getInstance().hasLike() &&
                 !CaseStoryManager.getInstance().hasShare() &&
                 !CaseStoryManager.getInstance().hasFavorite()) {
@@ -459,7 +460,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
             @Override
             public void loadError(int type) {
-                EventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.READER));
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.READER));
             }
 
             @Override
@@ -519,7 +520,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             share.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    EventBus.getDefault().post(new PauseStoryReaderEvent(false));
+                    CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
                     share.setEnabled(false);
                     share.setClickable(false);
                     NetworkClient.getApi().share(Integer.toString(storyId), StatisticSession.getInstance().id,
@@ -595,7 +596,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             close.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    EventBus.getDefault().post(new CloseStoryReaderEvent(false));
+                    CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
                 }
             });
 
@@ -604,8 +605,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EventBus.getDefault().post(new PageByIndexRefreshEvent(storyId, storiesWebView.index));
-                EventBus.getDefault().post(new PageRefreshEvent(storyId, storiesWebView.index));
+                CsEventBus.getDefault().post(new PageByIndexRefreshEvent(storyId, storiesWebView.index));
+                CsEventBus.getDefault().post(new PageRefreshEvent(storyId, storiesWebView.index));
             }
         });
     }

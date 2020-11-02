@@ -1,9 +1,7 @@
 package io.casestory.sdk.stories.utils;
 
 import android.content.Context;
-import android.os.Handler;
 import android.util.Base64;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,10 +10,9 @@ import java.io.IOException;
 import java.util.List;
 
 import io.casestory.sdk.CaseStoryManager;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.stories.cache.FileCache;
 import io.casestory.sdk.stories.cache.FileType;
-import io.casestory.sdk.stories.cache.HtmlParser;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 
@@ -55,7 +52,7 @@ public class WebPageConverter {
         String webData = layout
                 .replace("//_ratio = 0.66666666666,", "")
                 .replace("{{%content}}", innerWebData);
-        EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
+        CsEventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
         return;
     }
 
@@ -70,7 +67,7 @@ public class WebPageConverter {
         String webData = layout
                 .replace("//_ratio = 0.66666666666,", "")
                 .replace("{{%content}}", innerWebData);
-        EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
+        CsEventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
         return;
     }
 
@@ -79,7 +76,7 @@ public class WebPageConverter {
                 .replace("//_ratio = 0.66666666666,", "")
                 .replace("{{%content}}", innerWebData)
                 .replace("window.Android.storyLoaded", "window.Android.emptyLoaded");
-        EventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
+        CsEventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
         return;
     }
 

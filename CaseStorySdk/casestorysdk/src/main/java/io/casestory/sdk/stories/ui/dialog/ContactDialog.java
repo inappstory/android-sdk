@@ -23,7 +23,7 @@ import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import io.casestory.casestorysdk.R;
-import io.casestory.sdk.eventbus.EventBus;
+import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.network.JsonParser;
 import io.casestory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import io.casestory.sdk.stories.events.PauseStoryReaderEvent;
@@ -181,7 +181,7 @@ public class ContactDialog {
             }
         });
         dialog.show();
-        EventBus.getDefault().post(new PauseStoryReaderEvent(false));
+        CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
@@ -193,7 +193,7 @@ public class ContactDialog {
                     InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                     //  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, InputMethodManager.HIDE_IMPLICIT_ONLY);
                     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                    EventBus.getDefault().post(new ResumeStoryReaderEvent(true));
+                    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
                 }
 
             }
