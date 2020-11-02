@@ -497,6 +497,8 @@ public class StoriesWebView extends WebView {
            /* if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 700) {
                 return;
             }*/
+
+            Log.e("JSEvent", "storyClick");
             CaseStoryService.getInstance().lastTapEventTime = System.currentTimeMillis();
             if (payload == null || payload.isEmpty() || payload.equals("test")) {
                 if (CaseStoryService.getInstance().isConnected()) {
@@ -506,7 +508,7 @@ public class StoriesWebView extends WebView {
                 }
             } else if (payload.equals("forbidden")) {
                 if (CaseStoryService.getInstance().isConnected()) {
-                  //  EventBus.getDefault().post(new StoryReaderTapEvent((int) coordinate1, true));
+                    CsEventBus.getDefault().post(new StoryReaderTapEvent((int) coordinate1, true));
                 } else {
                     CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
                 }
@@ -592,6 +594,7 @@ public class StoriesWebView extends WebView {
         @JavascriptInterface
         public void storyFreezeUI() {
             touchSlider = true;
+            Log.e("JSEvent", "storyFreezeUI");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
             }

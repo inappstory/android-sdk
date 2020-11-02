@@ -180,6 +180,9 @@ public class CaseStoryService extends Service {
         if (timerDuration == 0) {
             try {
                 timerHandler.removeCallbacks(timerTask);
+                this.timerDuration = timerDuration;
+                if (clearDuration)
+                    this.totalTimerDuration = timerDuration;
             } catch (Exception e) {
 
             }
@@ -191,8 +194,6 @@ public class CaseStoryService extends Service {
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;
-        if (clearDuration)
-            this.totalTimerDuration = timerDuration;
         try {
             timerHandler.removeCallbacks(timerTask);
         } catch (Exception e) {
@@ -202,7 +203,6 @@ public class CaseStoryService extends Service {
     }
 
     public void restartTimer() {
-        Log.e("startTimer", "restartTimer");
         startTimer(totalTimerDuration, true);
     }
 
