@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="csApiKey">ImsXI54EwNNho8nvV9TIIWgOYZc9sKOQ</string><!--kiozk-->
+    <!--<string name="csApiKey">Hzg9wMZ0IF41xUjozrEZ4nYZ6BTf0hFA</string>--><!--test-->
     <bool name="isTablet">false</bool>
     <!-- < <string name="csApiKey">BHZsOnyoz1oF7b46lNlbBqV5ZskZsx5P</string> --><!--Pashas-->
 </resources>

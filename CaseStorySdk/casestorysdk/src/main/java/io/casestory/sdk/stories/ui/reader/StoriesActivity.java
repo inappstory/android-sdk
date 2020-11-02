@@ -48,7 +48,6 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void onPause() {
-        Log.e("startTimer", "onPauseA");
         super.onPause();
     }
 

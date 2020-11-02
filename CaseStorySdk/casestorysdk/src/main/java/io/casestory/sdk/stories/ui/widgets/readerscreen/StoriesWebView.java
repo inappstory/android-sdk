@@ -108,11 +108,22 @@ public class StoriesWebView extends WebView {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
-        Story story = StoryDownloader.getInstance().getStoryById(id);
-        if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
-            return;
-        }
-        if (story.slidesCount <= index) return;
+       new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Story story = StoryDownloader.getInstance().getStoryById(id);
+                if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
+                    return;
+                }
+                if (story.slidesCount <= index) return;
+                loadStoryInner(id, index, story);
+            }
+        }).start();
+
+
+    }
+
+    private void loadStoryInner(final int id, final int index, Story story) {
         isWebPageLoaded = false;
         StoriesWebView.this.storyId = id;
         StoriesWebView.this.loadedIndex = index;
@@ -122,9 +133,6 @@ public class StoriesWebView extends WebView {
 
         String layout = story.getLayout();
 
-        boolean high = storyId == CaseStoryService.getInstance().getCurrentId();
-        getSettings().setUseWideViewPort(true);
-        getSettings().setRenderPriority(high ? WebSettings.RenderPriority.HIGH : WebSettings.RenderPriority.LOW);
 
         // EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
         if (!isLoaded) {
@@ -140,7 +148,6 @@ public class StoriesWebView extends WebView {
         } else {
             pageTaskLoaded(null);
         }
-
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -148,9 +155,6 @@ public class StoriesWebView extends WebView {
         if (event != null) {
             if (storyId != event.getId() || index != event.getIndex()) return;
         }
-        boolean high = storyId == CaseStoryService.getInstance().getCurrentId();
-        getSettings().setUseWideViewPort(true);
-        getSettings().setRenderPriority(high ? WebSettings.RenderPriority.HIGH : WebSettings.RenderPriority.LOW);
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         String layout = story.getLayout();
         List<String> fonturls = new ArrayList<>();
@@ -191,10 +195,14 @@ public class StoriesWebView extends WebView {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void generatedWebPageEvent(GeneratedWebPageEvent event) {
-        if (storyId != event.getStoryId() ) return;
+        if (storyId != event.getStoryId()) return;
+        boolean high = storyId == CaseStoryService.getInstance().getCurrentId();
+        //getSettings().setUseWideViewPort(true);
+        getSettings().setRenderPriority(high ? WebSettings.RenderPriority.HIGH : WebSettings.RenderPriority.LOW);
+
         final String data = event.getWebData();
         loadDataWithBaseURL("", injectUnselectableStyle(data), "text/html; charset=utf-8", "UTF-8", null);
-       //
+
     }
 
     public static String injectUnselectableStyle(String html) {
@@ -230,11 +238,12 @@ public class StoriesWebView extends WebView {
         setCurrentItem(event.getIndex(), false);
     }
 
-    @CsSubscribe
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(StoryOpenEvent event) {
-        if (event.getStoryId() != storyId)
+        if (event.getStoryId() != storyId) {
             stopVideo();
-        else {
+        } else {
+
             playVideo();
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -346,6 +355,7 @@ public class StoriesWebView extends WebView {
 
 
     private void init() {
+
         loadedIndex = -1;
         loadedId = -1;
         CsEventBus.getDefault().register(this);

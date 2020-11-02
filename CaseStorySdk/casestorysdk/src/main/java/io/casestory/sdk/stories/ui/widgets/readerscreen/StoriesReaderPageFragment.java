@@ -144,12 +144,11 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         CaseStoryService.getInstance().getFullStoryById(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
-                Log.e("eventsLoaded", "StoryPageLoadedEvent " + ind + " " +  story.id);
                 if (CaseStoryService.getInstance().getCurrentId() == storyId
                         && story.lastIndex == ind) {
                     storiesProgressView.setActive(true);
                     storiesProgressView.startProgress(ind);
-                    CaseStoryService.getInstance().startTimer(story.getDurations().get(ind));
+                    CaseStoryService.getInstance().startTimer(story.getDurations().get(ind), true);
                     if (CaseStoryService.getInstance().currentEvent != null)
                         CaseStoryService.getInstance().currentEvent.timer = System.currentTimeMillis();
                 }
@@ -219,7 +218,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         counter = prevInd;
                     }
                 }
-            }, 150);
+            }, 100);
         } else {
             if (storiesProgressView != null) {
                 storiesProgressView.setActive(true);
@@ -228,7 +227,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             counter = story.lastIndex;
             CaseStoryService.getInstance().setCurrentIndex(counter);
             if (storiesWebView != null && storiesWebView.isWebPageLoaded) {
-                CaseStoryService.getInstance().startTimer(story.getDurations().get(counter));
+                CaseStoryService.getInstance().startTimer(story.getDurations().get(counter), true);
                 storiesProgressView.setCurrentCounter(counter);
             }
         }
@@ -278,7 +277,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (storyId == event.getId() && storiesWebView.getCurrentItem() == event.getIndex()) {
             storiesProgressView.setSlideDuration(event.getIndex(), event.getNewDuration());
             storiesProgressView.forceStartProgress();
-            CaseStoryService.getInstance().startTimer(event.getNewDuration());
+            CaseStoryService.getInstance().startTimer(event.getNewDuration(), true);
         }
     }
 
@@ -528,6 +527,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         @Override
                         public void onSuccess(ShareObject response) {
                             share.setEnabled(true);
+                            share.setClickable(true);
                             if (CaseStoryManager.getInstance().shareCallback != null) {
                                 CaseStoryManager.getInstance().shareCallback.onShare(response.getUrl(), response.getTitle(), response.getDescription());
                             } else {

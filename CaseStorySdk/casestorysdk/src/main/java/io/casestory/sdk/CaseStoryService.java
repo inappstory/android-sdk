@@ -158,6 +158,7 @@ public class CaseStoryService extends Service {
     Handler timerHandler = new Handler();
     public long timerStart;
     public long timerDuration;
+    public long totalTimerDuration;
     public long pauseShift;
 
     Runnable timerTask = new Runnable() {
@@ -174,7 +175,7 @@ public class CaseStoryService extends Service {
         }
     };
 
-    public void startTimer(long timerDuration) {
+    public void startTimer(long timerDuration, boolean clearDuration) {
         Log.e("startTimer", timerDuration + "");
         if (timerDuration == 0) {
             try {
@@ -190,6 +191,8 @@ public class CaseStoryService extends Service {
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;
+        if (clearDuration)
+            this.totalTimerDuration = timerDuration;
         try {
             timerHandler.removeCallbacks(timerTask);
         } catch (Exception e) {
@@ -199,7 +202,8 @@ public class CaseStoryService extends Service {
     }
 
     public void restartTimer() {
-        startTimer(timerDuration);
+        Log.e("startTimer", "restartTimer");
+        startTimer(totalTimerDuration, true);
     }
 
     @CsSubscribe
@@ -601,6 +605,7 @@ public class CaseStoryService extends Service {
     }
 
     public void resumeTimer() {
+        Log.e("startTimer", "resumeTimer");
         resumeLocalTimer();
         currentEvent.eventType = 1;
         currentEvent.timer = System.currentTimeMillis();
@@ -609,7 +614,7 @@ public class CaseStoryService extends Service {
     }
 
     public void resumeLocalTimer() {
-        startTimer(timerDuration - pauseShift);
+        startTimer(timerDuration - pauseShift, false);
     }
 
 

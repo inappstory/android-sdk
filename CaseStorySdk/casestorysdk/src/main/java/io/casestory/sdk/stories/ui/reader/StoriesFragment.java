@@ -231,39 +231,47 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
     @Override
-    public void onPageSelected(int position) {
+    public void onPageSelected(int pos0) {
         if (isDestroyed) return;
-        ArrayList<Integer> adds = new ArrayList<>();
-        if (currentIds.size() > 1) {
-            if (position == 0) {
-                adds.add(currentIds.get(position + 1));
-            } else if (position == currentIds.size() - 1) {
-                adds.add(currentIds.get(position - 1));
-            } else {
-                adds.add(currentIds.get(position + 1));
-                adds.add(currentIds.get(position - 1));
-            }
-        }
-        StoryDownloader.getInstance().addStoryTask(currentIds.get(position), adds);
+        final int position = pos0;
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<Integer> adds = new ArrayList<>();
+                if (currentIds.size() > 1) {
+                    if (position == 0) {
+                        adds.add(currentIds.get(position + 1));
+                    } else if (position == currentIds.size() - 1) {
+                        adds.add(currentIds.get(position - 1));
+                    } else {
+                        adds.add(currentIds.get(position + 1));
+                        adds.add(currentIds.get(position - 1));
+                    }
+                }
+                StoryDownloader.getInstance().addStoryTask(currentIds.get(position), adds);
 
-        if (currentIds != null && currentIds.size() > position) {
-            CaseStoryService.getInstance().addStatisticBlock(currentIds.get(position),
-                    StoryDownloader.getInstance().findItemByStoryId(currentIds.get(position)).lastIndex);
-            CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(position), position));
-        }
-        final int pos = position;
 
-        CsEventBus.getDefault().post(new PageSelectedEvent(pos));
-        CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos), false));
-        if (pos > 0) {
-            CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos - 1), true));
-        }
-        if (pos < currentIds.size() - 1) {
-            CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos + 1), true));
-        }
+                if (currentIds != null && currentIds.size() > position) {
+                    CaseStoryService.getInstance().addStatisticBlock(currentIds.get(position),
+                            StoryDownloader.getInstance().findItemByStoryId(currentIds.get(position)).lastIndex);
+                    CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(position), position));
+                }
+                final int pos = position;
+
+                CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos), false));
+                if (pos > 0) {
+
+                    CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos - 1), true));
+                }
+                if (pos < currentIds.size() - 1) {
+                    CsEventBus.getDefault().post(new PageByIdSelectedEvent(currentIds.get(pos + 1), true));
+                }
+            }
+        }).start();
+
     }
 
 
