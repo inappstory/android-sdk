@@ -1,6 +1,6 @@
 package io.casestory.sdk.eventbus;
 
-public enum ThreadMode {
+public enum CsThreadMode {
     MAIN,
     ASYNC
 }

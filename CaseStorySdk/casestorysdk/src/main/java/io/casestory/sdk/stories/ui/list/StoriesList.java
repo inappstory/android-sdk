@@ -23,7 +23,7 @@ import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
-import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.eventbus.CsThreadMode;
 import io.casestory.sdk.exceptions.DataException;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -156,7 +156,7 @@ public class StoriesList extends RecyclerView {
         StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(), event.getIndex());
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeUserId(ChangeUserIdForListEvent event) {
         try {
             adapter = null;
@@ -167,7 +167,7 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
         StoryDownloader.getInstance().getStoryById(event.getId()).isOpened = true;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
@@ -199,7 +199,7 @@ public class StoriesList extends RecyclerView {
 
     boolean hasFavItem;
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void favItem(StoryFavoriteEvent event) {
         if (CaseStoryService.getInstance().favoriteImages == null)
             CaseStoryService.getInstance().favoriteImages = new ArrayList<>();

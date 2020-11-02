@@ -18,7 +18,7 @@ import io.casestory.casestorysdk.R;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
-import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.eventbus.CsThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeStoryEvent;
@@ -96,7 +96,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         return false;
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
         CaseStoryService.getInstance().closeStatisticEvent();
         CaseStoryService.getInstance().setCurrentIndex(0);
@@ -110,7 +110,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
 
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(ChangeStoryEvent event) {
         getArguments().putInt("index", event.getIndex());
     }

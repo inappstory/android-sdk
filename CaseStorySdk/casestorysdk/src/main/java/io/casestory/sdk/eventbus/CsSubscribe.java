@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface CsSubscribe {
-    ThreadMode threadMode() default ThreadMode.ASYNC;
+    CsThreadMode threadMode() default CsThreadMode.ASYNC;
 }
 

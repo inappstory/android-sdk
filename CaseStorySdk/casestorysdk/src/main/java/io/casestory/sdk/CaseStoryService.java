@@ -26,7 +26,7 @@ import java.util.List;
 
 import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
-import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.eventbus.CsThreadMode;
 import io.casestory.sdk.imageloader.ImageLoader;
 import io.casestory.sdk.network.JsonParser;
 import io.casestory.sdk.network.NetworkCallback;
@@ -618,7 +618,7 @@ public class CaseStoryService extends Service {
 
     public long pauseTime = 0;
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         closeStatisticEvent(null, false);
         addStatisticEvent(1, event.storyId, event.index);

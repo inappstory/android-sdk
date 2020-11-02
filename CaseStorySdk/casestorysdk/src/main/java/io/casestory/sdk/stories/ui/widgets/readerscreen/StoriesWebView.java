@@ -41,7 +41,7 @@ import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
-import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.eventbus.CsThreadMode;
 import io.casestory.sdk.network.NetworkCallback;
 import io.casestory.sdk.network.NetworkClient;
 import io.casestory.sdk.network.Request;
@@ -143,7 +143,7 @@ public class StoriesWebView extends WebView {
 
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskLoadedEvent event) {
         if (event != null) {
             if (storyId != event.getId() || index != event.getIndex()) return;
@@ -189,7 +189,7 @@ public class StoriesWebView extends WebView {
         }
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void generatedWebPageEvent(GeneratedWebPageEvent event) {
         if (storyId != event.getStoryId() ) return;
         final String data = event.getWebData();
@@ -224,7 +224,7 @@ public class StoriesWebView extends WebView {
     boolean loadingFinished = true;
     boolean redirect = false;
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         if (this.storyId != event.getStoryId()) return;
         setCurrentItem(event.getIndex(), false);

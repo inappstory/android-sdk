@@ -22,7 +22,7 @@ import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
-import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.eventbus.CsThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.CloseStoriesReaderEvent;
@@ -217,7 +217,7 @@ public class StoriesActivity extends AppCompatActivity {
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
         cleanReader();
         CsEventBus.getDefault().post(new CloseStoriesReaderEvent());

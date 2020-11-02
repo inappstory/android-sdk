@@ -22,7 +22,7 @@ import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
-import io.casestory.sdk.eventbus.ThreadMode;
+import io.casestory.sdk.eventbus.CsThreadMode;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeIndexEvent;
@@ -297,19 +297,19 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         return false;
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeUserId(ChangeUserIdEvent event) {
         if (isDestroyed) return;
         CsEventBus.getDefault().post(new CloseStoryReaderEvent());
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeReaderEvent(CloseStoryReaderEvent event) {
         isDestroyed = true;
         CsEventBus.getDefault().unregister(this);
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
 
@@ -336,7 +336,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void nextStoryPageEvent(OnNextEvent event) {
         if (isDestroyed) return;
         if (currentIndex < StoryDownloader.getInstance().findItemByStoryId(CaseStoryService.getInstance().getCurrentId()).slidesCount - 1) {
@@ -360,13 +360,13 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
      *
      * @param event
      */
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void prevStoryPageEvent(StoryTimerReverseEvent event) {
         if (isDestroyed) return;
         CsEventBus.getDefault().post(new OnPrevEvent());
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void setCurrentIndexEvent(ChangeIndexEvent event) {
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
@@ -380,14 +380,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     }*/
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
         if (isDestroyed) return;
         currentIndex = event.getIndex();
     }
 
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void onPrev(OnPrevEvent event) {
         if (isDestroyed) return;
 
@@ -405,7 +405,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(ChangeStoryEvent event) {
         if (isDestroyed) return;
         CaseStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
@@ -425,7 +425,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         getArguments().putInt("index", event.getIndex());
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void onNextStory(NextStoryReaderEvent event) {
         if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
@@ -438,7 +438,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    @CsSubscribe(threadMode = ThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void onPrevStory(PrevStoryReaderEvent event) {
         if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() > 0) {

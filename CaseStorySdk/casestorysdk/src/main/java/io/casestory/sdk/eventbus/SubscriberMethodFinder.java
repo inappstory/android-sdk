@@ -85,7 +85,7 @@ public class SubscriberMethodFinder {
                         Class<?> eventType = parameterTypes[0];
                         if (findState.checkAdd(method, eventType)) {
 
-                            ThreadMode threadMode = subscribeAnnotation.threadMode();
+                            CsThreadMode threadMode = subscribeAnnotation.threadMode();
                             findState.subscriberMethods.add(new SubscriberMethod(method, threadMode, eventType));
                         }
                     }
