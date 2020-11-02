@@ -78,6 +78,9 @@ public class CaseStoryManager {
     private UrlClickCallback urlClickCallback;
     private AppClickCallback appClickCallback;
 
+    public static void closeStoryReader() {
+        CsEventBus.getDefault().post(new CloseStoryReaderEvent());
+    }
 
     public interface ShareCallback {
         public void onShare(String url, String title, String description);
