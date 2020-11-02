@@ -222,7 +222,7 @@ public class StoriesList extends RecyclerView {
             adapter.hasFavItem = false;
             if (event.favStatus) {
                 if (!adapter.getStoriesIds().contains(event.getId()))
-                    adapter.getStoriesIds().add(event.getId());
+                    adapter.getStoriesIds().add(0, event.getId());
             } else {
                 if (adapter.getStoriesIds().contains(event.getId()))
                     adapter.getStoriesIds().remove(new Integer(event.getId()));
