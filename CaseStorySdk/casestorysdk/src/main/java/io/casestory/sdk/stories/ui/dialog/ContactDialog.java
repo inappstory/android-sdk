@@ -73,7 +73,7 @@ public class ContactDialog {
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         if (!Sizes.isTablet()) {
             dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
-            dialog.getWindow().setDimAmount(0.0f);
+            dialog.getWindow().setDimAmount(0.05f);
         }
         if (Build.VERSION.SDK_INT < 21) {
             dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);

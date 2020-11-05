@@ -114,6 +114,29 @@ public class CaseStoryManager {
         this.tags = tags;
     }
 
+    public void addTags(ArrayList<String> newTags) {
+        if (newTags == null || newTags.isEmpty()) return;
+        if (tags == null) tags = new ArrayList<>();
+        for (String tag : newTags) {
+            addTag(tag);
+        }
+    }
+
+    public void removeTags(ArrayList<String> newTags) {
+        if (tags == null || newTags == null || newTags.isEmpty()) return;
+        for (String tag : newTags) {
+            removeTag(tag);
+        }
+    }
+
+    private void addTag(String tag) {
+        if (!tags.contains(tag)) tags.add(tag);
+    }
+
+    private void removeTag(String tag) {
+        if (tags.contains(tag)) tags.remove(tag);
+    }
+
 
     ArrayList<String> tags;
 
