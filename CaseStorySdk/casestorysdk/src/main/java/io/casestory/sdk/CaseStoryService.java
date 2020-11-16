@@ -805,8 +805,9 @@ public class CaseStoryService extends Service {
                         }
                         //getInstance().share = response.share;
                         response.session.save();
-                        if (callback != null)
-                            callback.onSuccess();
+                        for (OpenStatisticCallback localCallback : callbacks)
+                            localCallback.onSuccess();
+                        callbacks.clear();
                         getInstance().handler.postDelayed(getInstance().statisticUpdateThread, statisticUpdateInterval);
                         if (response.cachedFonts != null) {
                             for (CacheFontObject cacheFontObject : response.cachedFonts) {
@@ -833,8 +834,9 @@ public class CaseStoryService extends Service {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        if (callback != null)
-                            callback.onError();
+                        for (OpenStatisticCallback localCallback : callbacks)
+                            localCallback.onError();
+                        callbacks.clear();
                     }
                 });
             }
@@ -848,8 +850,9 @@ public class CaseStoryService extends Service {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        if (callback != null)
-                            callback.onError();
+                        for (OpenStatisticCallback localCallback : callbacks)
+                            localCallback.onError();
+                        callbacks.clear();
                     }
                 });
             }
