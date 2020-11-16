@@ -730,10 +730,23 @@ public class CaseStoryService extends Service {
         }
     }
 
+
+    public static Object openProcessLock = new Object();
+    public static ArrayList<OpenStatisticCallback> callbacks = new ArrayList<>();
+
     public void openStatistic(final OpenStatisticCallback callback) {
-        if (openProcess) return;
+        synchronized (openProcessLock) {
+            if (openProcess) {
+                callbacks.add(callback);
+                return;
+            }
+        }
+        synchronized (openProcessLock) {
+            callbacks.clear();
+            openProcess = true;
+            callbacks.add(callback);
+        }
         Context context = CaseStoryManager.getInstance().context;
-        openProcess = true;
         String platform = "android";
         String deviceId = Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);// Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -757,7 +770,9 @@ public class CaseStoryService extends Service {
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
         if (!isConnected()) {
-            openProcess = false;
+            synchronized (openProcessLock) {
+                openProcess = false;
+            }
             return;
         }
         NetworkClient.getApi().statisticsOpen(
@@ -784,7 +799,10 @@ public class CaseStoryService extends Service {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        openProcess = false;
+
+                        synchronized (openProcessLock) {
+                            openProcess = false;
+                        }
                         //getInstance().share = response.share;
                         response.session.save();
                         if (callback != null)
@@ -807,7 +825,9 @@ public class CaseStoryService extends Service {
 
             @Override
             public void onError(int code, String message) {
-                openProcess = false;
+                synchronized (openProcessLock) {
+                    openProcess = false;
+                }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 super.onError(code, message);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -821,7 +841,9 @@ public class CaseStoryService extends Service {
 
             @Override
             public void onTimeout() {
-                openProcess = false;
+                synchronized (openProcessLock) {
+                    openProcess = false;
+                }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
