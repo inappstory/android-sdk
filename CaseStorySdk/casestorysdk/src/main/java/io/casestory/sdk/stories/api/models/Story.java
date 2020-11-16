@@ -56,6 +56,8 @@ public class Story implements Parcelable {
 
     public String title;
 
+    public String tags;
+
     public String getSource() {
         return source;
     }
@@ -178,23 +180,23 @@ public class Story implements Parcelable {
     }
 
     public Story getSimpleCopy() {
-        Story nar = new Story();
-        nar.id = id;
-        nar.lastIndex = lastIndex;
-        nar.title = title;
-        nar.source = source;
-        nar.backgroundColor = backgroundColor;
-        nar.image = image;
-        nar.like = like;
-        nar.slidesCount = slidesCount;
-        nar.titleColor = titleColor;
-        nar.isOpened = isOpened;
-        nar.durations = new ArrayList<>();
+        Story story = new Story();
+        story.id = id;
+        story.lastIndex = lastIndex;
+        story.title = title;
+        story.source = source;
+        story.backgroundColor = backgroundColor;
+        story.image = image;
+        story.like = like;
+        story.slidesCount = slidesCount;
+        story.titleColor = titleColor;
+        story.isOpened = isOpened;
+        story.durations = new ArrayList<>();
         if (durations != null)
-            nar.durations.addAll(durations);
-        nar.favorite = favorite;
+            story.durations.addAll(durations);
+        story.favorite = favorite;
         //nar.pages = pages;
-        return nar;
+        return story;
     }
 
     public Story(Parcel in) {

@@ -39,6 +39,8 @@ import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
 import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
 import io.casestory.sdk.stories.events.NoConnectionEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
+import io.casestory.sdk.stories.outerevents.CloseStory;
+import io.casestory.sdk.stories.outerevents.ShowStory;
 import io.casestory.sdk.stories.ui.reader.StoriesActivity;
 import io.casestory.sdk.stories.ui.reader.StoriesDialogFragment;
 import io.casestory.sdk.stories.utils.KeyValueStorage;
@@ -79,7 +81,7 @@ public class CaseStoryManager {
     private AppClickCallback appClickCallback;
 
     public static void closeStoryReader() {
-        CsEventBus.getDefault().post(new CloseStoryReaderEvent());
+        CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
     }
 
     public interface ShareCallback {
@@ -203,9 +205,11 @@ public class CaseStoryManager {
     };
 
 
-    private CaseStoryManager(Builder builder) {
-
+    private CaseStoryManager(Builder builder) throws DataException {
         KeyValueStorage.setContext(builder.context);
+        if (builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
+            throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
+        }
         initManager(builder.context,
                 builder.sandbox ? TEST_DOMAIN
                         : PRODUCT_DOMAIN,
@@ -390,6 +394,7 @@ public class CaseStoryManager {
                         DialogFragment settingsDialogFragment = new StoriesDialogFragment();
                         Bundle bundle = new Bundle();
                         bundle.putInt("index", 0);
+                        bundle.putInt("source", ShowStory.ONBOARDING);
                         bundle.putIntegerArrayList("stories_ids", storiesIds);
                         if (manager != null) {
                             bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
@@ -402,7 +407,7 @@ public class CaseStoryManager {
                     } else {
                         Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
                         intent2.putExtra("index", 0);
-                        intent2.putExtra("isOnboarding", true);
+                        intent2.putExtra("source", ShowStory.ONBOARDING);
                         intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
                         if (manager != null) {
                             intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
@@ -464,7 +469,7 @@ public class CaseStoryManager {
 
     public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
         if (StoriesActivity.destroyed == -1) {
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent());
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -529,6 +534,7 @@ public class CaseStoryManager {
                     DialogFragment settingsDialogFragment = new StoriesDialogFragment();
                     Bundle bundle = new Bundle();
                     bundle.putInt("index", 0);
+                    bundle.putInt("source", ShowStory.SINGLE);
                     if (manager != null)
                         bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
                     ArrayList<Integer> stIds = new ArrayList<>();
@@ -545,6 +551,7 @@ public class CaseStoryManager {
                     if (context == null)
                         intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent2.putExtra("index", 0);
+                    intent2.putExtra("source", ShowStory.SINGLE);
                     if (manager != null)
                         intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
                     ArrayList<Integer> stIds = new ArrayList<>();

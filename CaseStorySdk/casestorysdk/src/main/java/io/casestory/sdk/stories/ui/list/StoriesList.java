@@ -33,6 +33,7 @@ import io.casestory.sdk.stories.events.ChangeUserIdForListEvent;
 import io.casestory.sdk.stories.events.CloseStoryReaderEvent;
 import io.casestory.sdk.stories.events.OpenStoriesScreenEvent;
 import io.casestory.sdk.stories.events.OpenStoryByIdEvent;
+import io.casestory.sdk.stories.outerevents.StoriesLoaded;
 import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import io.casestory.sdk.stories.utils.Sizes;
 
@@ -244,6 +245,9 @@ public class StoriesList extends RecyclerView {
 
     public void loadStories() throws DataException {
         if (appearanceManager == null) {
+            appearanceManager = AppearanceManager.getInstance();
+        }
+        if (appearanceManager == null) {
             throw new DataException("Need to set an AppearanceManager", new Throwable("StoriesList data is not valid"));
         }
         if (CaseStoryManager.getInstance().getUserId() == null) {
@@ -254,6 +258,7 @@ public class StoriesList extends RecyclerView {
             CaseStoryService.getInstance().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
+                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
                         setLayoutManager(layoutManager);
@@ -271,6 +276,7 @@ public class StoriesList extends RecyclerView {
                     CaseStoryService.getInstance().loadStories(new LoadStoriesCallback() {
                         @Override
                         public void storiesLoaded(List<Integer> storiesIds) {
+                            CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                             adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
                             setLayoutManager(layoutManager);
                             setAdapter(adapter);

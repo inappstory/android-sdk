@@ -3,7 +3,12 @@ package io.casestory.sdk.exceptions;
 public class DataException extends Exception {
     @Override
     public String getMessage() {
-        return message;
+        return cause + " (" + message + ")";
+    }
+
+    @Override
+    public void printStackTrace() {
+
     }
 
     @Override

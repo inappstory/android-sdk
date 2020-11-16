@@ -11,8 +11,19 @@ public class CloseStoryReaderEvent {
 
     boolean isOnboardingEvent;
 
+    public int getAction() {
+        return action;
+    }
+
+    int action;
+
     public CloseStoryReaderEvent() {
 
+    }
+
+
+    public CloseStoryReaderEvent(int action) {
+        this.action = action;
     }
 
     public CloseStoryReaderEvent(boolean isOnboardingEvent) {

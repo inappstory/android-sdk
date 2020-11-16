@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 
 import io.casestory.sdk.stories.ui.views.IGetFavoriteListItem;
+import io.casestory.sdk.stories.ui.views.ILoaderView;
 import io.casestory.sdk.stories.ui.views.IStoriesListItem;
 import io.casestory.sdk.stories.utils.Sizes;
 
@@ -28,24 +29,47 @@ public class AppearanceManager {
 
     private boolean csListItemTitleVisibility = true;
     private int csListItemTitleSize = -1;
-    private int csListItemTitleColor = Color.BLACK;
+    private int csListItemTitleColor = Color.WHITE;
 
     private boolean csListItemSourceVisibility = false;
     private int csListItemSourceSize = -1;
-    private int csListItemSourceColor = Color.BLACK;
+    private int csListItemSourceColor = Color.WHITE;
+
+    private Integer csListItemWidth;
+    private Integer csListItemHeight;
 
     private boolean csListItemBorderVisibility = true;
-    private int csListItemBorderSize = Sizes.dpToPxExt(1);
     private int csListItemBorderColor = Color.BLACK;
 
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
+    private ILoaderView csLoaderView;
+
+    private static AppearanceManager mainInstance;
+
+    public static AppearanceManager getInstance() {
+        return mainInstance;
+    }
+
+    public static void setInstance(AppearanceManager manager) {
+        mainInstance = manager;
+    }
 
     public Typeface csCustomFont() {
         return csCustomFont;
     }
 
     Typeface csCustomFont;
+
+    public AppearanceManager csListItemHeight(Integer csListItemHeight) {
+        this.csListItemHeight = csListItemHeight;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csListItemWidth(Integer csListItemWidth) {
+        this.csListItemWidth = csListItemWidth;
+        return AppearanceManager.this;
+    }
 
     public AppearanceManager csCustomFont(Typeface csCustomFont) {
         this.csCustomFont = csCustomFont;
@@ -64,6 +88,8 @@ public class AppearanceManager {
         this.csListItemTitleSize = csListItemTitleSize;
         return AppearanceManager.this;
     }
+
+
 
     public AppearanceManager csListItemTitleColor(int csListItemTitleColor) {
         this.csListItemTitleColor = csListItemTitleColor;
@@ -145,6 +171,14 @@ public class AppearanceManager {
         return csListItemTitleColor;
     }
 
+    public Integer csListItemHeight() {
+        return csListItemHeight;
+    }
+
+    public Integer csListItemWidth() {
+        return csListItemWidth;
+    }
+
     public boolean csListItemSourceVisibility() {
         return csListItemSourceVisibility;
     }
@@ -208,6 +242,17 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+
+
+    public AppearanceManager csLoaderView(ILoaderView csLoaderView) {
+        this.csLoaderView = csLoaderView;
+        return AppearanceManager.this;
+    }
+
+    public ILoaderView csLoaderView() {
+        return csLoaderView;
+    }
+
     public IStoriesListItem csListItemInterface() {
         return csListItemInterface;
     }
@@ -216,4 +261,18 @@ public class AppearanceManager {
         this.csListItemInterface = csListItemInterface;
         return AppearanceManager.this;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

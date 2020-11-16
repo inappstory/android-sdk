@@ -52,7 +52,7 @@ public class WebPageConverter {
         String webData = layout
                 .replace("//_ratio = 0.66666666666,", "")
                 .replace("{{%content}}", innerWebData);
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
+        CsEventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
         return;
     }
 
@@ -67,7 +67,7 @@ public class WebPageConverter {
         String webData = layout
                 .replace("//_ratio = 0.66666666666,", "")
                 .replace("{{%content}}", innerWebData);
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
+        CsEventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
         return;
     }
 
@@ -76,7 +76,7 @@ public class WebPageConverter {
                 .replace("//_ratio = 0.66666666666,", "")
                 .replace("{{%content}}", innerWebData)
                 .replace("window.Android.storyLoaded", "window.Android.emptyLoaded");
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
+        CsEventBus.getDefault().post(new GeneratedWebPageEvent(webData, storyId));
         return;
     }
 

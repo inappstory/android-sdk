@@ -10,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
@@ -39,23 +41,22 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     private List<ElasticDragDismissCallback> callbacks;
 
-    public ElasticDragDismissFrameLayout(Context context) {
-        this(context, null, 0, 0);
+    public ElasticDragDismissFrameLayout(@NonNull Context context) {
+        super(context);
+        init(null);
     }
 
-    public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs) {
-        this(context, attrs, 0, 0);
+    public ElasticDragDismissFrameLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init(attrs);
     }
 
-    public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs,
-                                         int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
+    public ElasticDragDismissFrameLayout(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(attrs);
     }
 
-    public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs,
-                                         int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-
+    public void init(AttributeSet attrs) {
         final TypedArray a = getContext().obtainStyledAttributes(
                 attrs, R.styleable.ElasticDragDismissFrameLayout, 0, 0);
 
@@ -76,6 +77,15 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
                     dragElacticity);
         }
         a.recycle();
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs,
+                                         int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+
+        init(attrs);
     }
 
     public static abstract class ElasticDragDismissCallback {

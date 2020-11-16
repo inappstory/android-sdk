@@ -29,6 +29,7 @@ import io.casestory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.NoConnectionEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
+import io.casestory.sdk.stories.outerevents.ShowStory;
 import io.casestory.sdk.stories.ui.reader.StoriesActivity;
 import io.casestory.sdk.stories.ui.reader.StoriesDialogFragment;
 import io.casestory.sdk.stories.utils.Sizes;
@@ -99,9 +100,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            holder.bind(story.getTitle(), story.getSource(),
+                            holder.bind(story.getTitle(),
+                                    story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
+                                    story.getSource(),
                                     (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
-                                    Color.parseColor(story.getBackgroundColor()), story.isOpened || isFavoriteList);
+                                    Color.parseColor(story.getBackgroundColor()),
+                                    story.isOpened || isFavoriteList);
                         }
                     });
                 }
@@ -168,6 +172,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", tempStories.indexOf(storiesIds.get(index)));
+            bundle.putInt("source", isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
             bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
             bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
             bundle.putIntegerArrayList("stories_ids", tempStories);
@@ -179,6 +184,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                     StoryDownloader.getInstance().getStories().get(index).id);
             Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
+
+            intent2.putExtra("source", isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
             // intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
             intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());

@@ -1,7 +1,9 @@
 package io.casestory.sdk.stories.ui.widgets.readerscreen;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
@@ -24,6 +27,7 @@ import androidx.fragment.app.Fragment;
 import java.lang.reflect.Type;
 
 import io.casestory.casestorysdk.R;
+import io.casestory.sdk.AppearanceManager;
 import io.casestory.sdk.CaseStoryManager;
 import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.CsEventBus;
@@ -54,6 +58,8 @@ import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.events.StoryCacheLoadedEvent;
 import io.casestory.sdk.stories.events.StoryPageLoadedEvent;
+import io.casestory.sdk.stories.outerevents.ClickOnShareStory;
+import io.casestory.sdk.stories.outerevents.CloseStory;
 import io.casestory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import io.casestory.sdk.stories.serviceevents.LikeDislikeEvent;
 import io.casestory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
@@ -84,7 +90,6 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     View invMask;
     public int storyId;
     View buttonsPanel;
-    StoriesReaderPagerAdapter host;
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
@@ -281,6 +286,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
+
     public int counter = 0;
 
     @Override
@@ -299,7 +305,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             storiesWebView.destroyWebView();
         try {
             CsEventBus.getDefault().unregister(this);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         super.onDestroyView();
     }
 
@@ -310,7 +317,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             storiesWebView.destroyWebView();
         try {
             CsEventBus.getDefault().unregister(this);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
 
     @Override
@@ -356,6 +364,23 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
+    private View getLoader() {
+        View v = null;
+        RelativeLayout.LayoutParams relativeParams;
+        if (AppearanceManager.getInstance() != null && AppearanceManager.getInstance().csLoaderView() != null) {
+            v = AppearanceManager.getInstance().csLoaderView().getView();
+        } else {
+            v = new ProgressBar(getContext()) {{
+                setIndeterminate(true);
+                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            }};
+        }
+        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        v.setLayoutParams(relativeParams);
+        return v;
+    }
+
     @Override
     public void onViewCreated(View view, @Nullable final Bundle savedInstanceState) {
         if (view == null) return;
@@ -391,6 +416,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         storiesProgressView = (StoriesProgressView) view.findViewById(R.id.stories);
         storiesProgressView.setStoriesListener(this);
         mask = view.findViewById(R.id.blackMask);
+        ((ViewGroup) mask).addView(getLoader());
         progress = view.findViewById(R.id.progress);
         refresh = view.findViewById(R.id.refreshButton);
         progress.setVisibility(View.GONE);
@@ -496,12 +522,27 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 });
             }
         }, storyId);
+
         if (like != null) {
             like.setVisibility(getArguments().getBoolean(CS_HAS_LIKE, true) ? View.VISIBLE : View.GONE);
             like.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CaseStoryService.getInstance().likeDislikeClick(false, storyId);
+                    like.setEnabled(false);
+                    like.setClickable(false);
+                    CaseStoryService.getInstance().likeDislikeClick(false, storyId, new CaseStoryService.LikeDislikeCallback() {
+                        @Override
+                        public void onSuccess() {
+                            like.setEnabled(true);
+                            like.setClickable(true);
+                        }
+
+                        @Override
+                        public void onError() {
+                            like.setEnabled(true);
+                            like.setClickable(true);
+                        }
+                    });
                 }
             });
         }
@@ -510,7 +551,21 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             dislike.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CaseStoryService.getInstance().likeDislikeClick(true, storyId);
+                    dislike.setEnabled(false);
+                    dislike.setClickable(false);
+                    CaseStoryService.getInstance().likeDislikeClick(true, storyId, new CaseStoryService.LikeDislikeCallback() {
+                        @Override
+                        public void onSuccess() {
+                            dislike.setEnabled(true);
+                            dislike.setClickable(true);
+                        }
+
+                        @Override
+                        public void onError() {
+                            dislike.setEnabled(true);
+                            dislike.setClickable(true);
+                        }
+                    });
                 }
             });
         }
@@ -519,6 +574,9 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             share.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Story story = StoryDownloader.getInstance().getStoryById(storyId);
+                    CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
+                            story.tags, story.slidesCount, story.lastIndex));
                     CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
                     share.setEnabled(false);
                     share.setClickable(false);
@@ -542,6 +600,13 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         }
 
                         @Override
+                        public void onError(int code, String message) {
+                            super.onError(code, message);
+                            share.setEnabled(true);
+                            share.setClickable(true);
+                        }
+
+                        @Override
                         public Type getType() {
                             return ShareObject.class;
                         }
@@ -554,7 +619,22 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             favorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CaseStoryService.getInstance().favoriteClick(storyId);
+
+                    favorite.setEnabled(false);
+                    favorite.setClickable(false);
+                    CaseStoryService.getInstance().favoriteClick(storyId, new CaseStoryService.LikeDislikeCallback() {
+                        @Override
+                        public void onSuccess() {
+                            favorite.setEnabled(true);
+                            favorite.setClickable(true);
+                        }
+
+                        @Override
+                        public void onError() {
+                            favorite.setEnabled(true);
+                            favorite.setClickable(true);
+                        }
+                    });
                 }
             });
         }
@@ -596,7 +676,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             close.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
+                    CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CLICK));
                 }
             });
 

@@ -55,6 +55,10 @@ import io.casestory.sdk.stories.events.ResumeStoryReaderEvent;
 import io.casestory.sdk.stories.events.StoriesErrorEvent;
 import io.casestory.sdk.stories.events.StoryPageOpenEvent;
 import io.casestory.sdk.stories.events.StoryReaderTapEvent;
+import io.casestory.sdk.stories.outerevents.ClickOnButton;
+import io.casestory.sdk.stories.outerevents.DislikeStory;
+import io.casestory.sdk.stories.outerevents.FavoriteStory;
+import io.casestory.sdk.stories.outerevents.LikeStory;
 import io.casestory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import io.casestory.sdk.stories.serviceevents.LikeDislikeEvent;
 import io.casestory.sdk.stories.serviceevents.StoryFavoriteEvent;
@@ -213,6 +217,11 @@ public class CaseStoryService extends Service {
             if (object != null) {
                 switch (object.getLink().getType()) {
                     case "url":
+                        Story story = StoryDownloader.getInstance().getStoryById(currentId);
+                        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
+                                story.tags, story.slidesCount, story.lastIndex,
+                                object.getLink().getTarget()));
+
                         addLinkOpenStatistic();
                         if (CaseStoryManager.getInstance().getUrlClickCallback() != null) {
                             CaseStoryManager.getInstance().getUrlClickCallback().onUrlClick(
@@ -955,22 +964,38 @@ public class CaseStoryService extends Service {
         }
     }
 
-    public void likeDislikeClick(boolean isDislike, final int storyId) {
+    public interface LikeDislikeCallback {
+        void onSuccess();
+        void onError();
+    }
+
+    public void likeDislikeClick(boolean isDislike, final int storyId,
+                                 final LikeDislikeCallback callback) {
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final int val;
         if (isDislike) {
             if (story.disliked()) {
+                CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, false));
                 val = 0;
             } else {
+                CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, true));
                 val = -1;
             }
         } else {
             if (story.liked()) {
+                CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, false));
                 val = 0;
             } else {
+                CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, true));
                 val = 1;
             }
         }
+
+
         NetworkClient.getApi().storyLike(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
                 getApiKey(), val).enqueue(
@@ -979,7 +1004,15 @@ public class CaseStoryService extends Service {
                     public void onSuccess(Response response) {
                         if (story != null)
                             story.like = val;
+                        callback.onSuccess();
                         CsEventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
+                    }
+
+
+                    @Override
+                    public void onError(int code, String message) {
+                        super.onError(code, message);
+                        callback.onError();
                     }
 
                     @Override
@@ -989,9 +1022,12 @@ public class CaseStoryService extends Service {
                 });
     }
 
-    public void favoriteClick(final int storyId) {
+    public void favoriteClick(final int storyId, final LikeDislikeCallback callback) {
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final boolean val = story.favorite;
+
+        CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
+                story.tags, story.slidesCount, story.lastIndex, story.favorite));
         NetworkClient.getApi().storyFavorite(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
                 getApiKey(), val ? 0 : 1).enqueue(
@@ -1000,7 +1036,14 @@ public class CaseStoryService extends Service {
                     public void onSuccess(Response response) {
                         if (story != null)
                             story.favorite = !val;
+                        callback.onSuccess();
                         CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        super.onError(code, message);
+                        callback.onError();
                     }
 
                     @Override
@@ -1012,57 +1055,17 @@ public class CaseStoryService extends Service {
     }
 
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
-        //Story partialStory = null;
         for (Story story : StoryDownloader.getInstance().getStories()) {
             if (story.id == id) {
                 if (story.pages != null) {
                     storyByIdCallback.getStory(story);
                     return;
                 } else {
-                    // partialStory = story;
                     storyByIdCallback.getStory(story);
                     return;
                 }
             }
         }
-       /*  final Story finalPartialStory = partialStory;
-       if (1 == 1) return;
-        if (checkOpenStatistic(new CheckStatisticCallback() {
-            @Override
-            public void openStatistic() {
-                getFullStoryById(storyByIdCallback, id);
-            }
-
-            @Override
-            public void errorStatistic() {
-            }
-        })) {
-            NetworkClient.getApi().getStoryById(Integer.toString(id), StatisticSession.getInstance().id, 1,
-                    getApiKey(), EXPAND_STRING
-            ).enqueue(new NetworkCallback<Story>() {
-                @Override
-                public void onSuccess(final Story response) {
-                    StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
-                        add(response);
-                    }});
-                    StoryDownloader.getInstance().setStory(response, response.id);
-                    storyByIdCallback.getStory(response);
-                }
-
-                @Override
-                public Type getType() {
-                    return Story.class;
-                }
-
-                @Override
-                public void onError(int code, String message) {
-                    if (finalPartialStory != null) {
-                        storyByIdCallback.getPartialStory(finalPartialStory);
-                    }
-                    storyByIdCallback.loadError(0);
-                }
-            });
-        }*/
     }
 
     public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback, final String id) {

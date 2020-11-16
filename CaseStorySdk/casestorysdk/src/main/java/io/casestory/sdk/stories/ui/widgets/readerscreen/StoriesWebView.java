@@ -64,6 +64,8 @@ import io.casestory.sdk.stories.events.StoryPageLoadedEvent;
 import io.casestory.sdk.stories.events.StoryPageOpenEvent;
 import io.casestory.sdk.stories.events.StoryReaderTapEvent;
 import io.casestory.sdk.stories.events.StorySwipeBackEvent;
+import io.casestory.sdk.stories.outerevents.ClickOnButton;
+import io.casestory.sdk.stories.outerevents.ShowSlide;
 import io.casestory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 import io.casestory.sdk.stories.ui.dialog.ContactDialog;
 import io.casestory.sdk.stories.ui.widgets.CoreProgressBar;
@@ -131,20 +133,24 @@ public class StoriesWebView extends WebView {
         StoriesWebView.this.loadedId = id;
         isLoaded = StoryDownloader.getInstance().checkIfPageLoaded(new Pair<>(id, index));
 
-        final String layout = story.getLayout();
+        String layout = story.getLayout();
 
 
         // EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
-
         if (!isLoaded) {
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
-            if (Build.VERSION.SDK_INT >= 19) {
-                setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            } else {
-                setLayerType(View.LAYER_TYPE_NONE, null);
-            }
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (Build.VERSION.SDK_INT >= 19) {
+                        setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                    } else {
+                        setLayerType(View.LAYER_TYPE_NONE, null);
+                    }
+                }
+            });
 
-            //WebPageConverter.replaceEmptyAndLoad("", storyId, index, layout);
+            WebPageConverter.replaceEmptyAndLoad("", storyId, index, layout);
 
             return;
         } else {
@@ -152,14 +158,11 @@ public class StoriesWebView extends WebView {
         }
     }
 
-    boolean emptyLoaded = false;
-
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskLoadedEvent event) {
         if (event != null) {
             if (storyId != event.getId() || index != event.getIndex()) return;
         }
-        Log.e("LoadHtml", "PageTaskLoadedEvent");
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         String layout = story.getLayout();
         List<String> fonturls = new ArrayList<>();
@@ -179,48 +182,42 @@ public class StoriesWebView extends WebView {
         String innerWebData = story.pages.get(index);
         innerWebText = innerWebData;
         if (CaseStoryService.getInstance().isConnected()) {
-            if (innerWebData.contains("<video")) {
-                isVideo = true;
-                setLayerType(View.LAYER_TYPE_HARDWARE, null);
-                WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
-                return;
-            } else {
-                if (Build.VERSION.SDK_INT >= 19) {
-                    setLayerType(View.LAYER_TYPE_HARDWARE, null);
-                } else {
-                    getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-                    setLayerType(View.LAYER_TYPE_NONE, null);
-                }
-                WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, index, layout);
+            final String finalLayout = layout;
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (innerWebText.contains("<video")) {
+                        isVideo = true;
+                        setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                        WebPageConverter.replaceVideoAndLoad(innerWebText, storyId, index, finalLayout);
+                        return;
+                    } else {
+                        if (Build.VERSION.SDK_INT >= 19) {
+                            setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                        } else {
+                            getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+                            setLayerType(View.LAYER_TYPE_NONE, null);
+                        }
+                        WebPageConverter.replaceImagesAndLoad(innerWebText, storyId, index, finalLayout);
 
-                return;
-            }
+                        return;
+                    }
+                }
+            });
+
         }
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void generatedWebPageEvent(final GeneratedWebPageEvent event) {
+    public void generatedWebPageEvent(GeneratedWebPageEvent event) {
         if (storyId != event.getStoryId()) return;
         boolean high = storyId == CaseStoryService.getInstance().getCurrentId();
         //getSettings().setUseWideViewPort(true);
         getSettings().setRenderPriority(high ? WebSettings.RenderPriority.HIGH : WebSettings.RenderPriority.LOW);
+
         final String data = event.getWebData();
-        if (!emptyLoaded) {
+        loadDataWithBaseURL("", injectUnselectableStyle(data), "text/html; charset=utf-8", "UTF-8", null);
 
-            Log.e("LoadHtml", "first");
-            emptyLoaded = true;
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    String s0 = injectUnselectableStyle(event.getLayout());
-                    loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
-                }
-            });
-        } else {
-
-            Log.e("LoadHtml", "next");
-            replaceHtml(data);
-        }
     }
 
     public static String injectUnselectableStyle(String html) {
@@ -296,15 +293,6 @@ public class StoriesWebView extends WebView {
         loadUrl("javascript:(function(){story_slide_start();})()");
     }
 
-    public void replaceHtml(String page) {
-        // if (!isVideo) return;
-        String c = "javascript:(function(){show_slide(\"" + page
-                .replaceAll("\"", "\\\\\"")
-                .replaceAll("\n", " ")
-                .replaceAll("\r", " ")+ "\");})()";
-        loadUrl(c);
-    }
-
     public void pauseVideo() {
         // if (!isVideo) return;
         loadUrl("javascript:(function(){story_slide_pause();})()");
@@ -364,7 +352,6 @@ public class StoriesWebView extends WebView {
         Log.e("destroyWebView", "destroyWebView" + usedMemInMB + " " + availHeapSizeInMB);
         loadedIndex = -1;
         loadedId = -1;
-        emptyLoaded = false;
         removeAllViews();
         clearHistory();
         clearCache(true);
@@ -522,6 +509,10 @@ public class StoriesWebView extends WebView {
          */
         @JavascriptInterface
         public void storyClick(String payload) {
+           /* if (System.currentTimeMillis() - CaseStoryService.getInstance().lastTapEventTime < 700) {
+                return;
+            }*/
+
             Log.e("JSEvent", "storyClick");
             CaseStoryService.getInstance().lastTapEventTime = System.currentTimeMillis();
             if (payload == null || payload.isEmpty() || payload.equals("test")) {
@@ -544,7 +535,7 @@ public class StoriesWebView extends WebView {
         @JavascriptInterface
         public void storyShowSlide(int index) {
             if (StoriesWebView.this.index != index) {
-                CsEventBus.getDefault().post(new ChangeIndexEvent(index));
+                // EventBus.getDefault().post(new ChangeIndexEvent(index));
             }
         }
 
@@ -606,7 +597,9 @@ public class StoriesWebView extends WebView {
                     }
                 }, 200);
             }
-
+            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+                    story.tags, story.slidesCount, index));
             CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
         }

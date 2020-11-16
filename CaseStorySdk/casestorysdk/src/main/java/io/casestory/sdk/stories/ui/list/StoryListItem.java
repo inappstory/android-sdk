@@ -113,10 +113,22 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             return;
         }
         RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
+        boolean lpC = false;
+        if (manager.csListItemHeight() != null) {
+            itemView.findViewById(R.id.outerLayout).getLayoutParams().height = manager.csListItemHeight();
+            lpC = true;
+        }
+        if (manager.csListItemWidth() != null) {
+            itemView.findViewById(R.id.outerLayout).getLayoutParams().width = manager.csListItemWidth();
+            lpC = true;
+        }
+        if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
+
         title.setText("Favorites");
         if (manager.csCustomFont() != null) {
             title.setTypeface(manager.csCustomFont());
         }
+        title.setTextColor(manager.csListItemTitleColor());
         List<FavoriteImage> favImages = CaseStoryService.getInstance().favoriteImages;
         if (favImages.size() > 0) {
             AppCompatImageView image1 = new AppCompatImageView(itemView.getContext());
@@ -198,16 +210,32 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         }
     }
 
-    public void bind(String titleText, String sourceText, String imageUrl, Integer backgroundColor, boolean isOpened) {
+    public void bind(String titleText, Integer titleColor, String sourceText, String imageUrl, Integer backgroundColor, boolean isOpened) {
         if (getListItem != null) {
-            getListItem.setTitle(itemView, titleText);
+            getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setSource(itemView, sourceText);
             getListItem.setImage(itemView, imageUrl, backgroundColor);
             getListItem.setOpened(itemView, isOpened);
             return;
         }
+
+        boolean lpC = false;
+        if (manager.csListItemHeight() != null) {
+            itemView.findViewById(R.id.container).getLayoutParams().height = manager.csListItemHeight();
+            lpC = true;
+        }
+        if (manager.csListItemWidth() != null) {
+            itemView.findViewById(R.id.container).getLayoutParams().width = manager.csListItemWidth();
+            lpC = true;
+        }
+        if (lpC) itemView.findViewById(R.id.container).requestLayout();
         if (title != null) {
             title.setText(titleText);
+            if (titleColor != null) {
+                title.setTextColor(titleColor);
+            } else {
+                title.setTextColor(manager.csListItemTitleColor());
+            }
             if (manager.csCustomFont() != null) {
                 title.setTypeface(manager.csCustomFont());
             }

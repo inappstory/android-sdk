@@ -23,6 +23,7 @@ import io.casestory.sdk.CaseStoryService;
 import io.casestory.sdk.eventbus.CsEventBus;
 import io.casestory.sdk.eventbus.CsSubscribe;
 import io.casestory.sdk.eventbus.CsThreadMode;
+import io.casestory.sdk.eventbus.EventBusBuilder;
 import io.casestory.sdk.stories.api.models.Story;
 import io.casestory.sdk.stories.cache.StoryDownloader;
 import io.casestory.sdk.stories.events.ChangeIndexEvent;
@@ -43,6 +44,8 @@ import io.casestory.sdk.stories.events.StoryPageOpenEvent;
 import io.casestory.sdk.stories.events.StoryReaderTapEvent;
 import io.casestory.sdk.stories.events.StoryTimerReverseEvent;
 import io.casestory.sdk.stories.events.StorySwipeBackEvent;
+import io.casestory.sdk.stories.outerevents.CloseStory;
+import io.casestory.sdk.stories.outerevents.ShowStory;
 import io.casestory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import io.casestory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
 import io.casestory.sdk.stories.storieslistenerevents.OnNextEvent;
@@ -163,7 +166,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             if (CaseStoryService.getInstance() != null) {
                 CaseStoryService.getInstance().currentEvent = null;
                 if (!configurationChanged) {
-                   // EventBus.getDefault().post(new DestroyStoriesFragmentEvent());
+                    // EventBus.getDefault().post(new DestroyStoriesFragmentEvent());
                 }
                 configurationChanged = false;
             }
@@ -237,6 +240,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
+        Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(position));
+        if (story != null)
+            CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags, story.slidesCount, getArguments().getInt("source")));
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -308,7 +314,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeUserId(ChangeUserIdEvent event) {
         if (isDestroyed) return;
-        CsEventBus.getDefault().post(new CloseStoryReaderEvent());
+        CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -442,7 +448,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
         } else {
             if (!StoryDownloader.getInstance().findItemByStoryId(currentIds.get(storiesViewPager.getCurrentItem())).disableClose)
-                CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
+                CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
         }
     }
 

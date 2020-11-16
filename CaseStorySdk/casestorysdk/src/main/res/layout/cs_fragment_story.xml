@@ -78,15 +78,7 @@
                 android:elevation="8dp"
                 android:visibility="visible">
 
-                <ProgressBar
-                    android:id="@+id/progress_bar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:indeterminate="true"
-                    android:indeterminateTint="#FFF"
-                    android:indeterminateTintMode="src_in"
-                    android:layout_centerInParent="true"
-                    android:visibility="visible"/>
+
 
 
             </RelativeLayout>

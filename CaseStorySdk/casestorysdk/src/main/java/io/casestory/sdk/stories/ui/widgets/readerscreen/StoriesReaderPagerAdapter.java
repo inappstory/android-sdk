@@ -82,6 +82,7 @@ public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
             frag.setArguments(a);
             fragMap.put(position, frag);
         }
+
         return fragMap.get(position);
     }
 

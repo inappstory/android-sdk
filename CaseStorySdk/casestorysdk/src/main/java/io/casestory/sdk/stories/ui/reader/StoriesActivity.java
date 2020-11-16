@@ -33,6 +33,7 @@ import io.casestory.sdk.stories.events.SwipeDownEvent;
 import io.casestory.sdk.stories.events.SwipeLeftEvent;
 import io.casestory.sdk.stories.events.SwipeRightEvent;
 import io.casestory.sdk.stories.events.WidgetTapEvent;
+import io.casestory.sdk.stories.outerevents.CloseStory;
 import io.casestory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import io.casestory.sdk.stories.utils.Sizes;
 import io.casestory.sdk.stories.utils.StatusBarController;
@@ -148,7 +149,9 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         destroyed = -1;
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
         if (CaseStoryManager.getInstance() == null) return;
         if (CaseStoryService.getInstance() == null) return;
         super.onCreate(savedInstanceState1);
@@ -168,7 +171,7 @@ public class StoriesActivity extends AppCompatActivity {
                 public void onDragDismissed() {
                     if (CaseStoryManager.getInstance().coordinates != null) animateFirst = true;
                     else animateFirst = false;
-                    CsEventBus.getDefault().post(new CloseStoryReaderEvent());
+                    CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
                 }
             };
         }
@@ -191,6 +194,7 @@ public class StoriesActivity extends AppCompatActivity {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
+                bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putBoolean("canUseNotLoaded", getIntent().getBooleanExtra("canUseNotLoaded", false));
                 bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
@@ -218,6 +222,12 @@ public class StoriesActivity extends AppCompatActivity {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
+
+        Story story = StoryDownloader.getInstance().getStoryById(CaseStoryService.getInstance().getCurrentId());
+        CsEventBus.getDefault().post(new CloseStory(story.id,
+                story.title, story.tags, story.slidesCount,
+                story.lastIndex, event.getAction(),
+                getIntent().getIntExtra("source", 0)));
         cleanReader();
         CsEventBus.getDefault().post(new CloseStoriesReaderEvent());
         CsEventBus.getDefault().unregister(this);
@@ -245,7 +255,7 @@ public class StoriesActivity extends AppCompatActivity {
         if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && CaseStoryManager.getInstance().closeOnSwipe()) {
             //finishActivityWithCustomAnimation(0, R.anim.popup_hide);
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }
 
@@ -253,7 +263,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void swipeLeftEvent(SwipeLeftEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
            // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }
 
@@ -261,7 +271,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void swipeRightEvent(SwipeRightEvent event) {
         if (CaseStoryManager.getInstance().closeOnOverscroll()) {
           //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }
 
