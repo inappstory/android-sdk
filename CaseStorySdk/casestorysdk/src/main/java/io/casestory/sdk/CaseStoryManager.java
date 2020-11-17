@@ -503,7 +503,8 @@ public class CaseStoryManager {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
-                    callback.onShow();
+                    if (callback != null)
+                        callback.onShow();
                     if (story.deeplink != null) {
                         CaseStoryService.getInstance().addDeeplinkClickStatistic(story.id);
                         if (CaseStoryManager.getInstance().getUrlClickCallback() != null) {
@@ -564,14 +565,16 @@ public class CaseStoryManager {
                             context.startActivity(intent2);
                     }
                 } else {
-                    callback.onError();
+                    if (callback != null)
+                        callback.onError();
                     return;
                 }
             }
 
             @Override
             public void loadError(int type) {
-                callback.onError();
+                if (callback != null)
+                    callback.onError();
             }
 
             @Override

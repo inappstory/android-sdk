@@ -1,10 +1,17 @@
 package io.casestory.sdk.stories.serviceevents;
 
 public class GeneratedWebPageEvent {
-    public GeneratedWebPageEvent(String webData, int storyId) {
+    public GeneratedWebPageEvent(String webData, String layout, int storyId) {
         this.webData = webData;
+        this.layout = layout;
         this.storyId = storyId;
     }
+
+    public String getLayout() {
+        return layout;
+    }
+
+    String layout;
 
     public int getStoryId() {
         return storyId;
