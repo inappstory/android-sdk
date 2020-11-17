@@ -467,13 +467,14 @@ public class CaseStoryManager {
         showOnboardingStories(getTags(), context, manager);
     }
 
-    public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
+
+    public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
         if (StoriesActivity.destroyed == -1) {
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStory(storyId, context, manager);
+                    showStory(storyId, context, manager, callback);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
@@ -482,7 +483,7 @@ public class CaseStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStory(storyId, context, manager);
+                    showStory(storyId, context, manager, callback);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
@@ -492,7 +493,7 @@ public class CaseStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStory(storyId, context, manager);
+                    showStory(storyId, context, manager, callback);
                 }
             }, 1000);
             return;
@@ -502,6 +503,7 @@ public class CaseStoryManager {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
+                    callback.onShow();
                     if (story.deeplink != null) {
                         CaseStoryService.getInstance().addDeeplinkClickStatistic(story.id);
                         if (CaseStoryManager.getInstance().getUrlClickCallback() != null) {
@@ -525,49 +527,51 @@ public class CaseStoryManager {
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                         return;
                     }
-                }
 
 
-                if (Sizes.isTablet() && context != null) {
-                    StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                            story.id);
-                    DialogFragment settingsDialogFragment = new StoriesDialogFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putInt("index", 0);
-                    bundle.putInt("source", ShowStory.SINGLE);
-                    if (manager != null)
-                        bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
-                    ArrayList<Integer> stIds = new ArrayList<>();
-                    stIds.add(story.id);
-                    bundle.putIntegerArrayList("stories_ids", stIds);
-                    settingsDialogFragment.setArguments(bundle);
-                    settingsDialogFragment.show(
-                            ((AppCompatActivity) context).getSupportFragmentManager(),
-                            "DialogFragment");
+                    if (Sizes.isTablet() && context != null) {
+                        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
+                                story.id);
+                        DialogFragment settingsDialogFragment = new StoriesDialogFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("index", 0);
+                        bundle.putInt("source", ShowStory.SINGLE);
+                        if (manager != null)
+                            bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
+                        ArrayList<Integer> stIds = new ArrayList<>();
+                        stIds.add(story.id);
+                        bundle.putIntegerArrayList("stories_ids", stIds);
+                        settingsDialogFragment.setArguments(bundle);
+                        settingsDialogFragment.show(
+                                ((AppCompatActivity) context).getSupportFragmentManager(),
+                                "DialogFragment");
+                    } else {
+                        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
+                                story.id);
+                        Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
+                        if (context == null)
+                            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent2.putExtra("index", 0);
+                        intent2.putExtra("source", ShowStory.SINGLE);
+                        if (manager != null)
+                            intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
+                        ArrayList<Integer> stIds = new ArrayList<>();
+                        stIds.add(story.id);
+                        intent2.putIntegerArrayListExtra("stories_ids", stIds);
+                        if (context == null)
+                            CaseStoryManager.getInstance().getContext().startActivity(intent2);
+                        else
+                            context.startActivity(intent2);
+                    }
                 } else {
-                    StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                            story.id);
-                    Intent intent2 = new Intent(CaseStoryManager.getInstance().getContext(), StoriesActivity.class);
-                    if (context == null)
-                        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent2.putExtra("index", 0);
-                    intent2.putExtra("source", ShowStory.SINGLE);
-                    if (manager != null)
-                        intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
-                    ArrayList<Integer> stIds = new ArrayList<>();
-                    stIds.add(story.id);
-                    intent2.putIntegerArrayListExtra("stories_ids", stIds);
-                    if (context == null)
-                        CaseStoryManager.getInstance().getContext().startActivity(intent2);
-                    else
-                        context.startActivity(intent2);
+                    callback.onError();
+                    return;
                 }
-
             }
 
             @Override
             public void loadError(int type) {
-
+                callback.onError();
             }
 
             @Override
@@ -575,7 +579,10 @@ public class CaseStoryManager {
 
             }
         }, storyId);
+    }
 
+    public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
+        showStory(storyId, context, manager, null);
     }
 
     public static class Builder {

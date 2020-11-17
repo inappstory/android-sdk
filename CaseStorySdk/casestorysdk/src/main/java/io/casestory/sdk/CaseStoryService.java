@@ -800,14 +800,15 @@ public class CaseStoryService extends Service {
                     @Override
                     public void run() {
 
+                        response.session.save();
                         synchronized (openProcessLock) {
                             openProcess = false;
+                            for (OpenStatisticCallback localCallback : callbacks)
+                                localCallback.onSuccess();
+                            callbacks.clear();
                         }
                         //getInstance().share = response.share;
-                        response.session.save();
-                        for (OpenStatisticCallback localCallback : callbacks)
-                            localCallback.onSuccess();
-                        callbacks.clear();
+
                         getInstance().handler.postDelayed(getInstance().statisticUpdateThread, statisticUpdateInterval);
                         if (response.cachedFonts != null) {
                             for (CacheFontObject cacheFontObject : response.cachedFonts) {
@@ -828,33 +829,35 @@ public class CaseStoryService extends Service {
             public void onError(int code, String message) {
                 synchronized (openProcessLock) {
                     openProcess = false;
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (OpenStatisticCallback localCallback : callbacks)
+                                localCallback.onError();
+                            callbacks.clear();
+                        }
+                    });
                 }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 super.onError(code, message);
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (OpenStatisticCallback localCallback : callbacks)
-                            localCallback.onError();
-                        callbacks.clear();
-                    }
-                });
+
             }
 
             @Override
             public void onTimeout() {
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 synchronized (openProcessLock) {
                     openProcess = false;
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            for (OpenStatisticCallback localCallback : callbacks)
+                                localCallback.onError();
+                            callbacks.clear();
+                        }
+                    });
                 }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (OpenStatisticCallback localCallback : callbacks)
-                            localCallback.onError();
-                        callbacks.clear();
-                    }
-                });
+
             }
         });
     }
