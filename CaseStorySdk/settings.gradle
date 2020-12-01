@@ -1,3 +1,3 @@
-rootProject.name='CaseStorySdk'
-//include ':app'
-include ':casestorysdk'
+rootProject.name='InAppStorySdk'
+include ':app'
+include ':inappstorysdk'
