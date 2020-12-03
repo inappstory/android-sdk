@@ -28,7 +28,12 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
 
 public class ContactDialog {
 
@@ -89,7 +94,12 @@ public class ContactDialog {
             editContainer.setElevation(0f);
             editContainer.setElevation(0f);
         }
-        final AppCompatEditText editText = dialog.findViewById(R.id.editText);
+        final TextMultiInput editText = dialog.findViewById(R.id.editText);
+        String type = dialogStructure.input.type;
+        int inttype = TEXT;
+        if (type.equals("email")) inttype = MAIL;
+        if (type.equals("tel")) inttype = PHONE;
+        editText.init(inttype);
         AppCompatTextView text = dialog.findViewById(R.id.text);
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
@@ -145,14 +155,16 @@ public class ContactDialog {
         editContainer.setBackground(editContainerGradient);
         borderContainer.setBackground(borderContainerGradient);
         contentContainer.setBackground(contentContainerGradient);
-
-        editText.addTextChangedListener(new TextWatcher() {
+        if (inttype == PHONE) {
+            editText.getDivider().setBackgroundColor(hex2color(dialogStructure.background.color));
+        }
+        editText.getMainText().addTextChangedListener(new TextWatcher() {
             int lastSpecialRequestsCursorPosition;
             String specialRequests;
 
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                lastSpecialRequestsCursorPosition = editText.getSelectionStart();
+                lastSpecialRequestsCursorPosition = editText.getMainText().getSelectionStart();
             }
 
             @Override
@@ -169,15 +181,15 @@ public class ContactDialog {
                     buttonBackground.setVisibility(View.VISIBLE);
                 }
 
-                editText.removeTextChangedListener(this);
+                editText.getMainText().removeTextChangedListener(this);
 
-                if (editText.getLineCount() > 3) {
-                    editText.setText(specialRequests);
-                    editText.setSelection(lastSpecialRequestsCursorPosition);
+                if (editText.getMainText().getLineCount() > 3) {
+                    editText.getMainText().setText(specialRequests);
+                    editText.getMainText().setSelection(lastSpecialRequestsCursorPosition);
                 } else
-                    specialRequests = editText.getText().toString();
+                    specialRequests = editText.getMainText().getText().toString();
 
-                editText.addTextChangedListener(this);
+                editText.getMainText().addTextChangedListener(this);
             }
         });
         dialog.show();
@@ -217,7 +229,7 @@ public class ContactDialog {
             @Override
             public void onClick(View view) {
                 dialog.dismiss();
-                sendListener.onSend(id, editText.getEditableText().toString());
+                sendListener.onSend(id, editText.getText());
             }
         });
         if (!Sizes.isTablet()) {

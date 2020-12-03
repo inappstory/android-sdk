@@ -7,6 +7,4 @@ public class DialogStructure {
     public TextStructure text;
     public InputStructure input;
     public ButtonStructure button;
-
-
 }

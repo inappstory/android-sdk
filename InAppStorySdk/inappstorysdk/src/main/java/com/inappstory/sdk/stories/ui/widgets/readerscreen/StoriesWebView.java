@@ -109,18 +109,17 @@ public class StoriesWebView extends WebView {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
-        new Thread(new Runnable() {
+        final Story story = StoryDownloader.getInstance().getStoryById(id);
+        if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
+            return;
+        }
+        if (story.slidesCount <= index) return;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                Story story = StoryDownloader.getInstance().getStoryById(id);
-                if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
-                    return;
-                }
-                if (story.slidesCount <= index) return;
                 loadStoryInner(id, index, story);
             }
-        }).start();
-
+        });
 
     }
 
@@ -149,6 +148,7 @@ public class StoriesWebView extends WebView {
 
             return;
         } else {
+
             pageTaskLoaded(null);
         }
     }
