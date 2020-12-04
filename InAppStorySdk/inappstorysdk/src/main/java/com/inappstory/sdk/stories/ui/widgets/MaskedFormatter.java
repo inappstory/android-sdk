@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class MaskedFormatter {
 
     // Potential values in mask.
-    private static final char DIGIT_KEY = '_';
+    private static final char DIGIT_KEY = '-';
     private static final char LITERAL_KEY = '\'';
     private static final char UPPERCASE_KEY = 'U';
     private static final char LOWERCASE_KEY = 'L';

@@ -90,6 +90,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     View invMask;
     public int storyId;
     View buttonsPanel;
+    View blackBottom;
+    View blackTop;
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
@@ -388,21 +390,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (getArguments() == null) return;
         if (InAppStoryService.getInstance() == null) return;
         if (storiesWebView == null) return;
-        if (Build.VERSION.SDK_INT >= 28) {
-            if (getActivity() != null && getActivity().getWindow() != null &&
-                    getActivity().getWindow().getDecorView() != null &&
-                    getActivity().getWindow().getDecorView().getRootWindowInsets() != null) {
-                DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                if (cutout != null) {
-                    View view1 = view.findViewById(R.id.progress_view_sdk);
-                    if (view1 != null) {
-                        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) view1.getLayoutParams();
-                        lp.topMargin += cutout.getSafeInsetTop();
-                        view1.setLayoutParams(lp);
-                    }
-                }
-            }
-        }
+
         CsEventBus.getDefault().register(this);
 
         invMask = view.findViewById(R.id.invMask);
@@ -413,6 +401,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         favorite = view.findViewById(R.id.favoriteButton);
         share = view.findViewById(R.id.shareButton);
         buttonsPanel = view.findViewById(R.id.buttonsPanel);
+        blackBottom = view.findViewById(R.id.blackBottom);
+        blackTop = view.findViewById(R.id.blackTop);
         storiesProgressView = (StoriesProgressView) view.findViewById(R.id.stories);
         storiesProgressView.setStoriesListener(this);
         mask = view.findViewById(R.id.blackMask);
@@ -422,28 +412,42 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         progress.setVisibility(View.GONE);
         storyId = getArguments().getInt("story_id");
         CsEventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
-        if (!Sizes.isTablet() && !InAppStoryManager.getInstance().hasLike() &&
-                !InAppStoryManager.getInstance().hasShare() &&
-                !InAppStoryManager.getInstance().hasFavorite()) {
-            View blackBottom = view.findViewById(R.id.blackBottom);
+        boolean hasPanel = (getArguments().getBoolean(CS_HAS_LIKE, false) ||
+                getArguments().getBoolean(CS_HAS_FAVORITE, false) ||
+                getArguments().getBoolean(CS_HAS_SHARE, false));
+        if (buttonsPanel != null) {
+            buttonsPanel.setVisibility(hasPanel ?
+                            View.VISIBLE :
+                            View.GONE);
+        }
+        if (!Sizes.isTablet()) {
             if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize();
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
                 float sn = 1.85f;
                 if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn);
+                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+                } else {
+                    if (Build.VERSION.SDK_INT >= 28) {
+                        if (getActivity() != null && getActivity().getWindow() != null &&
+                                getActivity().getWindow().getDecorView() != null &&
+                                getActivity().getWindow().getDecorView().getRootWindowInsets() != null) {
+                            DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                            if (cutout != null) {
+                                View view1 = view.findViewById(R.id.progress_view_sdk);
+                                if (view1 != null) {
+                                    RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
+                                    lp1.topMargin += cutout.getSafeInsetTop();
+                                    view1.setLayoutParams(lp1);
+                                }
+                            }
+                        }
+                    }
                 }
                 blackBottom.setLayoutParams(lp);
+                blackTop.setLayoutParams(lp);
             }
-        }
-        if (buttonsPanel != null) {
-            buttonsPanel.setVisibility(
-                    (getArguments().getBoolean(CS_HAS_LIKE, false) ||
-                            getArguments().getBoolean(CS_HAS_FAVORITE, false) ||
-                            getArguments().getBoolean(CS_HAS_SHARE, false)) ?
-                            View.VISIBLE :
-                            View.GONE);
         }
         InAppStoryService.getInstance().getFullStoryById(new GetStoryByIdCallback() {
             @Override
@@ -461,8 +465,10 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                             favorite.setVisibility(View.GONE);
                         if (!story.hasShare() && share != null)
                             share.setVisibility(View.GONE);
-                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && buttonsPanel != null)
+                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && buttonsPanel != null) {
                             buttonsPanel.setVisibility(View.GONE);
+
+                        }
                         if (like != null) {
                             like.setActivated(story.liked());
                         }
@@ -471,6 +477,20 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         }
                         if (favorite != null) {
                             favorite.setActivated(story.favorite);
+                        }
+                        if (!Sizes.isTablet()) {
+                            if (blackBottom != null) {
+                                Point screenSize = Sizes.getScreenSize();
+                                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                                float realProps = screenSize.y / ((float) screenSize.x);
+                                float sn = 1.85f;
+                                if (realProps > sn) {
+                                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+                                }
+                                blackBottom.setLayoutParams(lp);
+                                blackTop.setLayoutParams(lp);
+
+                            }
                         }
                         storiesWebView.setStoryId(storyId);
                         storiesWebView.setIndex(story.lastIndex);
@@ -503,8 +523,23 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                             favorite.setVisibility(View.GONE);
                         if (!story.hasShare() && share != null)
                             share.setVisibility(View.GONE);
-                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && buttonsPanel != null)
+                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && buttonsPanel != null) {
                             buttonsPanel.setVisibility(View.GONE);
+
+                        }
+                        if (!Sizes.isTablet()) {
+                            if (blackBottom != null) {
+                                Point screenSize = Sizes.getScreenSize();
+                                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                                float realProps = screenSize.y / ((float) screenSize.x);
+                                float sn = 1.85f;
+                                if (realProps > sn) {
+                                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+                                }
+                                blackBottom.setLayoutParams(lp);
+                                blackTop.setLayoutParams(lp);
+                            }
+                        }
                         if (like != null) {
                             like.setActivated(story.liked());
                         }

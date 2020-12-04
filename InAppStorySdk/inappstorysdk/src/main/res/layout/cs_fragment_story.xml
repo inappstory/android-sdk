@@ -1,164 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <View
+            android:id="@+id/blackTop"
             android:layout_width="match_parent"
-            android:id="@+id/buttonsPanel"
-            android:elevation="9dp"
-            android:layout_alignParentBottom="true"
-            android:background="#000000"
-            android:orientation="horizontal"
-            android:layout_height="60dp">
-            <androidx.appcompat.widget.AppCompatImageView
-                android:layout_width="30dp"
-                android:layout_marginLeft="18dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:layout_height="30dp"
-                app:tint="@color/white"
-                android:tintMode="src_atop"
-                app:srcCompat="@drawable/ic_stories_status_like"
-                android:id="@+id/likeButton" />
-            <androidx.appcompat.widget.AppCompatImageView
-                android:layout_width="30dp"
-                android:layout_marginLeft="18dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:layout_height="30dp"
-                app:tint="@color/white"
-                android:tintMode="src_atop"
-                app:srcCompat="@drawable/ic_stories_status_dislike"
-                android:id="@+id/dislikeButton" />
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/favoriteButton"
-                app:tint="@color/white"
-                android:tintMode="src_atop"
-                app:srcCompat="@drawable/ic_stories_status_favorite"
-                android:layout_width="30dp"
-                android:layout_marginLeft="18dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:layout_height="30dp"/>
-            <View
-                android:layout_width="match_parent"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"/>
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/shareButton"
-                android:tintMode="src_atop"
-                app:srcCompat="@drawable/ic_share_status"
-                android:layout_width="30dp"
-                android:layout_marginRight="18dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:layout_height="30dp"/>
-        </LinearLayout>
+            android:layout_height="1px"
+            android:background="#000000" />
+
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_centerInParent="true"
-            android:orientation="vertical"
-            android:elevation="7dp"
-            android:clickable="false"
-            android:visibility="visible"
-            android:id="@+id/progress"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
             <RelativeLayout
-                android:id="@+id/blackMask"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="false"
-                android:elevation="8dp"
-                android:visibility="visible">
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/buttonsPanel"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_alignParentBottom="true"
+                    android:background="#000000"
+                    android:elevation="9dp"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/likeButton"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="18dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:tintMode="src_atop"
+                        app:srcCompat="@drawable/ic_stories_status_like"
+                        app:tint="@color/white" />
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/dislikeButton"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="18dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:tintMode="src_atop"
+                        app:srcCompat="@drawable/ic_stories_status_dislike"
+                        app:tint="@color/white" />
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/favoriteButton"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="18dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="15dp"
+                        android:tintMode="src_atop"
+                        app:srcCompat="@drawable/ic_stories_status_favorite"
+                        app:tint="@color/white" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/shareButton"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginRight="18dp"
+                        android:layout_marginBottom="15dp"
+                        android:tintMode="src_atop"
+                        app:srcCompat="@drawable/ic_share_status" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/progress"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:clickable="false"
+                    android:elevation="7dp"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <RelativeLayout
+                        android:id="@+id/blackMask"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="false"
+                        android:elevation="8dp"
+                        android:visibility="visible">
 
 
+                    </RelativeLayout>
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_above="@id/buttonsPanel"
+                    android:elevation="4dp"
+                    android:orientation="vertical">
 
 
+                    <com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesWebView
+                        android:id="@+id/storiesWebView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:scrollbars="none" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/story_gradient"
+                    android:clickable="false"
+                    android:elevation="9dp" />
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:id="@+id/progress_view_sdk"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:elevation="20dp"
+                android:minHeight="40dp"
+                android:orientation="horizontal">
+
+                <com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesProgressView
+                    android:id="@+id/stories"
+                    android:layout_width="match_parent"
+                    android:layout_height="3dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:elevation="10dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/close_button"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@null"
+                    android:elevation="10dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:tint="@color/white"
+                    android:tintMode="src_atop"
+                    app:srcCompat="@drawable/cs_reader_close" />
             </RelativeLayout>
         </RelativeLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_above="@id/buttonsPanel"
-            android:elevation="4dp"
-            android:layout_height="match_parent">
 
-            <com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesWebView
-                android:id="@+id/storiesWebView"
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scrollbars="none" />
-            <View
-                android:id="@+id/blackBottom"
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="#000000" />
-        </LinearLayout>
         <View
+            android:id="@+id/blackBottom"
             android:layout_width="match_parent"
-            android:background="@drawable/story_gradient"
-            android:clickable="false"
-            android:elevation="9dp"
-            android:layout_height="match_parent"/>
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:id="@+id/progress_view_sdk"
-        android:elevation="20dp"
-        android:minHeight="40dp"
-        android:layout_height="wrap_content">
-
-        <com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesProgressView
-            android:id="@+id/stories"
-            android:paddingLeft="8dp"
-            android:elevation="10dp"
-            android:paddingRight="8dp"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="3dp"
-            android:layout_gravity="center_vertical" />
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/close_button"
-            android:layout_width="40dp"
-            android:elevation="10dp"
-            android:layout_height="40dp"
-            android:background="@null"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:tint="@color/white"
-            android:tintMode="src_atop"
-            app:srcCompat="@drawable/cs_reader_close" />
-    </RelativeLayout>
-
-
+            android:layout_height="1px"
+            android:background="#000000" />
+    </LinearLayout>
 
 
     <ImageView
-        android:layout_width="32dp"
-        android:scaleType="fitCenter"
-        android:elevation="18dp"
         android:id="@+id/refreshButton"
-        android:layout_centerInParent="true"
-        android:visibility="gone"
+        android:layout_width="32dp"
         android:layout_height="32dp"
-        android:src="@drawable/ic_refresh"/>
+        android:layout_centerInParent="true"
+        android:elevation="18dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_refresh"
+        android:visibility="gone" />
 
     <View
-        android:layout_width="match_parent"
-        android:clickable="false"
-        android:visibility="gone"
         android:id="@+id/blurBackground"
-        android:layout_height="match_parent"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:visibility="gone" />
 </RelativeLayout>
 

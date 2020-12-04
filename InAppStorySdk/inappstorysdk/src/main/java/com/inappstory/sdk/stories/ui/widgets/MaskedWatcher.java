@@ -8,9 +8,11 @@ import java.util.regex.Pattern;
 
 public class MaskedWatcher implements TextWatcher {
 
-    private String mMask;
+    public String mMask = "";
     public String prefix = "";
     String mResult = "";
+
+    public boolean active = true;
 
     public MaskedWatcher(String mask, String prefix) {
         mMask = mask;
@@ -19,7 +21,7 @@ public class MaskedWatcher implements TextWatcher {
 
     @Override
     public void afterTextChanged(Editable s) {
-
+        if (!active) return;
         String mask = mMask;
         String value = s.toString();
 
@@ -49,21 +51,21 @@ public class MaskedWatcher implements TextWatcher {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+               // e.printStackTrace();
             }
             boolean reset = false;
             for (int i = 0; i < value.length(); i++) {
                 char c = value.charAt(i);
                 char m = mMask.charAt(i);
-                if (m == '_' && !Character.isDigit(c)) {
+                if (m == '-' && !Character.isDigit(c)) {
                     reset = true;
                 }
-                if (m != '_' && m != c) {
+                if (m != '-' && m != c) {
                     reset = true;
                 }
             }
             mResult = value;
-           /* if (!prefix.isEmpty() && !value.startsWith(prefix)) {
+            if (!prefix.isEmpty() && !value.startsWith(prefix)) {
                 String cleanString;
                 String deletedPrefix = prefix.substring(0, prefix.length() - 1);
                 if (value.startsWith(deletedPrefix)) {
@@ -72,7 +74,7 @@ public class MaskedWatcher implements TextWatcher {
                     cleanString = value.replaceAll(Pattern.quote(prefix), "");
                 }
                 value = (prefix + cleanString);
-            }*/
+            }
             s.replace(0, s.length(), reset ? lastString : value);
 
 

@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -84,10 +85,10 @@ public class ContactDialog {
             dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
             dialog.getWindow().setDimAmount(0.5f);
         }
-        FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
+        final FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
         FrameLayout contentContainer = dialog.findViewById(R.id.contentContainer);
       //  contentContainer.setUseCompatPadding(true);
-        FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
+        final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             editBorderContainer.setElevation(0f);
@@ -113,10 +114,11 @@ public class ContactDialog {
         editText.setHintTextColor(hex2color(dialogStructure.input.text.color));
         editText.setTextSize((int) (coeff * dialogStructure.input.text.size));
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) editContainer.getLayoutParams();
-        lp.setMargins(dialogStructure.input.border.width,
-                dialogStructure.input.border.width,
-                dialogStructure.input.border.width,
-                dialogStructure.input.border.width);
+        int borderWidth = Sizes.dpToPxExt(dialogStructure.input.border.width);
+        lp.setMargins(borderWidth,
+                borderWidth,
+                borderWidth,
+                borderWidth);
         editContainer.setLayoutParams(lp);
         buttonText.setText(dialogStructure.button.text.value);
         buttonText.setTextColor(hex2color(dialogStructure.button.text.color));
@@ -133,15 +135,22 @@ public class ContactDialog {
 
         GradientDrawable editBorderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[] {hex2color(dialogStructure.input.border.color),hex2color(dialogStructure.input.border.color)});
+                new int[] {hex2color(dialogStructure.input.border.color),
+                        hex2color(dialogStructure.input.border.color)});
         editBorderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
+
+        final GradientDrawable editBorderContainerErrorGradient = new GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
+                new int[] {Color.RED,
+                        Color.RED});
+        editBorderContainerErrorGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
 
         GradientDrawable editContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[] {hex2color(dialogStructure.input.background.color),hex2color(dialogStructure.input.background.color)});
         editContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
 
-        GradientDrawable borderContainerGradient = new GradientDrawable(
+        final GradientDrawable borderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[] {hex2color(dialogStructure.border.color),hex2color(dialogStructure.border.color)});
         borderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
@@ -158,6 +167,25 @@ public class ContactDialog {
         if (inttype == PHONE) {
             editText.getDivider().setBackgroundColor(hex2color(dialogStructure.background.color));
         }
+        if (inttype == PHONE) {
+            editText.getCountryCodeText().addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    editBorderContainer.setBackground(borderContainerGradient);
+                    editText.setTextColor(hex2color(dialogStructure.input.text.color));
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+
+                }
+            });
+        }
         editText.getMainText().addTextChangedListener(new TextWatcher() {
             int lastSpecialRequestsCursorPosition;
             String specialRequests;
@@ -169,7 +197,8 @@ public class ContactDialog {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+                editBorderContainer.setBackground(borderContainerGradient);
+                editText.setTextColor(hex2color(dialogStructure.input.text.color));
             }
 
             @Override
@@ -225,11 +254,18 @@ public class ContactDialog {
                 cancelListener.onCancel(id);
             }
         });
+        final int finalInttype = inttype;
         buttonBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog.dismiss();
-                sendListener.onSend(id, editText.getText());
+                if (validate(finalInttype, editText.getMainText().getText().toString(),
+                        editText.getMaskLength())) {
+                    dialog.dismiss();
+                    sendListener.onSend(id, editText.getText());
+                } else {
+                    editBorderContainer.setBackground(editBorderContainerErrorGradient);
+                    editText.setTextColor(Color.RED);
+                }
             }
         });
         if (!Sizes.isTablet()) {
@@ -242,5 +278,19 @@ public class ContactDialog {
                 }
             }, 200);
         }
+    }
+
+    boolean validate(int type, String value, int length) {
+        if (type == PHONE) {
+            return value.length() == length;
+        } else if (type == MAIL) {
+            return isValidEmail(value);
+        } else {
+            return true;
+        }
+    }
+
+    public final static boolean isValidEmail(CharSequence target) {
+        return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
     }
 }

@@ -102,9 +102,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
 
     }
 
-    private void setImage(AppCompatImageView imageView, String url) {
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        ImageLoader.getInstance().displayImage(url, -1, imageView);
+    private void setImage(AppCompatImageView imageView, FavoriteImage image) {
+        if (image.getImage() != null) {
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            ImageLoader.getInstance().displayImage(image.getImage().get(0).getUrl(), -1, imageView);
+        } else {
+            imageView.setBackgroundColor(Color.parseColor(image.backgroundColor));
+        }
     }
 
     public void bindFavorite() {
@@ -143,7 +147,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 case 1:
                     image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
-                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0));
                     imageViewLayout.addView(image1);
                     break;
                 case 2:
@@ -154,8 +158,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     image2.setLayoutParams(piece2);
 
-                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
-                    setImage(image2, favImages.get(1).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0));
+                    setImage(image2, favImages.get(1));
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     break;
@@ -171,9 +175,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
-                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
-                    setImage(image2, favImages.get(1).getImage().get(0).getUrl());
-                    setImage(image3, favImages.get(2).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0));
+                    setImage(image2, favImages.get(1));
+                    setImage(image3, favImages.get(2));
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     imageViewLayout.addView(image3);
@@ -196,10 +200,10 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
                     image4.setLayoutParams(piece4);
-                    setImage(image1, favImages.get(0).getImage().get(0).getUrl());
-                    setImage(image2, favImages.get(1).getImage().get(0).getUrl());
-                    setImage(image3, favImages.get(2).getImage().get(0).getUrl());
-                    setImage(image4, favImages.get(3).getImage().get(0).getUrl());
+                    setImage(image1, favImages.get(0));
+                    setImage(image2, favImages.get(1));
+                    setImage(image3, favImages.get(2));
+                    setImage(image4, favImages.get(3));
                     imageViewLayout.addView(image1);
                     imageViewLayout.addView(image2);
                     imageViewLayout.addView(image3);

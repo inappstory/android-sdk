@@ -566,6 +566,7 @@ public class StoriesWebView extends WebView {
 
         @JavascriptInterface
         public void storyShowTextInput(String id, String data) {
+
             ContactDialog alert = new ContactDialog(storyId, id, data,
                     new ContactDialog.SendListener() {
                         @Override

@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -12,6 +13,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
@@ -25,10 +27,19 @@ public class TextMultiInput extends LinearLayout {
         super(context);
     }
 
+    public int getMaskLength() {
+        if (watcher != null) {
+            return watcher.mMask.length();
+        }
+        return 0;
+    }
 
     public void setHint(String hint) {
         getMainText().setHint(hint);
+        baseHint = hint;
     }
+
+    private String baseHint = "";
 
     public void setTextColor(int textColor) {
         getMainText().setTextColor(textColor);
@@ -39,7 +50,7 @@ public class TextMultiInput extends LinearLayout {
 
     public String getText() {
         if (inputType == PHONE) {
-            return getCountryCodeText().getEditableText().toString() +
+            return getCountryCodeText().getEditableText().toString() + " " +
                     getMainText().getEditableText().toString();
         } else {
             return getMainText().getEditableText().toString();
@@ -56,7 +67,7 @@ public class TextMultiInput extends LinearLayout {
         getMainText().setTextSize(size);
     }
 
-    public static final String PHONE_CODE_MASK = "+____";
+    public static final String PHONE_CODE_MASK = "+----";
 
     public AppCompatEditText getMainText() {
         return mainText;
@@ -89,9 +100,14 @@ public class TextMultiInput extends LinearLayout {
         switch (inputType) {
             case MAIL:
                 mainText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                mainText.setGravity(Gravity.CENTER);
+                lp.setMargins(Sizes.dpToPxExt(4), 0, Sizes.dpToPxExt(4), 0);
                 break;
             case TEXT:
-                mainText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                mainText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                mainText.setSingleLine(false);
+                mainText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+                lp.setMargins(Sizes.dpToPxExt(4), 0, Sizes.dpToPxExt(4), 0);
                 break;
             case PHONE:
                 lp.setMargins(Sizes.dpToPxExt(4), 0, 0, 0);
@@ -117,24 +133,54 @@ public class TextMultiInput extends LinearLayout {
 
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        String mask = PhoneFormats.getMaskByCode(s.toString());
                         try {
+                            watcher.active = false;
                             mainText.removeTextChangedListener(watcher);
+                            watcher = null;
                         } catch (Exception e) {
-
+                            e.printStackTrace();
                         }
+                        final CharSequence fs = s;
+                        String mask = PhoneFormats.getMaskByCode(fs.toString());
                         if (mask != null) {
+                            mainText.setHint("");
+                            String text = mainText.getText().toString();
+                            mainText.setText("");
                             watcher = new MaskedWatcher(mask, "");
                             mainText.addTextChangedListener(watcher);
                             mainText.setHint(mask);
+
+
+                            text = text.replaceAll(" ", "");
+                            mainText.setText(text);
+                            watcher.afterTextChanged(mainText.getEditableText());
                         } else {
-                            mainText.setHint("");
+                            if (countryCodeText.getText().length() == 1) {
+                                mainText.setHint(baseHint);
+                            } else {
+                                mainText.setHint("");
+                            }
                         }
+
                     }
 
                     @Override
                     public void afterTextChanged(Editable s) {
 
+                    }
+                });
+                countryCodeText.setOnFocusChangeListener(new OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View view1, boolean b) {
+                        if (countryCodeText.getText().toString().length() < 1) {
+                            countryCodeText.setText("+");
+                            countryCodeText.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    countryCodeText.setSelection(1);
+                                }
+                            });
+                        }
                     }
                 });
                 mainText.setInputType(InputType.TYPE_CLASS_PHONE);
