@@ -7,14 +7,13 @@
     <application
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
-        android:allowBackup="true"
-        android:usesCleartextTraffic="true"
         android:largeHeap="true">
 
         <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent" />
+        <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
     </application>
 
 </manifest>

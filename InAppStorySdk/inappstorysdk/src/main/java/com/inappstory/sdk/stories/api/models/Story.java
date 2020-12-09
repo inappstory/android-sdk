@@ -192,8 +192,10 @@ public class Story implements Parcelable {
         story.titleColor = titleColor;
         story.isOpened = isOpened;
         story.durations = new ArrayList<>();
-        if (durations != null)
+        if (durations != null) {
             story.durations.addAll(durations);
+            story.slidesCount = durations.size();
+        }
         story.favorite = favorite;
         //nar.pages = pages;
         return story;
@@ -218,6 +220,9 @@ public class Story implements Parcelable {
         titleColor = in.readString();
         isOpened = (in.readInt() == 1);
         in.readList(durations, Integer.class.getClassLoader());
+        if (durations != null || !durations.isEmpty()) {
+            slidesCount = durations.size();
+        }
         in.readList(pages, String.class.getClassLoader());
         favorite = (in.readInt() == 1);
         layout = in.readString();
@@ -234,7 +239,7 @@ public class Story implements Parcelable {
         dest.writeString(backgroundColor);
         dest.writeTypedList(image);
         dest.writeInt(like);
-        dest.writeInt(slidesCount);
+        dest.writeInt((durations != null && !durations.isEmpty()) ? durations.size() : slidesCount);
         dest.writeString(titleColor);
         dest.writeInt(isOpened ? 1 : 0);
         dest.writeList(durations);

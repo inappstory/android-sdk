@@ -55,6 +55,7 @@ import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
@@ -135,7 +136,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (ind != storyId) return;
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         //storiesProgressView.skip();
-
+        if (story.durations != null && !story.durations.isEmpty()) story.slidesCount = story.durations.size();
         if (story.lastIndex == story.slidesCount - 1) {
             CsEventBus.getDefault().post(new NextStoryReaderEvent());
         } else {
@@ -428,6 +429,21 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 float sn = 1.85f;
                 if (realProps > sn) {
                     lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+                    if (Build.VERSION.SDK_INT >= 28) {
+                        if (getActivity() != null && getActivity().getWindow() != null &&
+                                getActivity().getWindow().getDecorView() != null &&
+                                getActivity().getWindow().getDecorView().getRootWindowInsets() != null) {
+                            DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                            if (cutout != null) {
+                                View view1 = view.findViewById(R.id.progress_view_sdk);
+                                if (view1 != null) {
+                                    RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
+                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop() - lp.height, 0);
+                                    view1.setLayoutParams(lp1);
+                                }
+                            }
+                        }
+                    }
                 } else {
                     if (Build.VERSION.SDK_INT >= 28) {
                         if (getActivity() != null && getActivity().getWindow() != null &&
@@ -494,7 +510,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         }
                         storiesWebView.setStoryId(storyId);
                         storiesWebView.setIndex(story.lastIndex);
-
+                        if (story.durations != null && !story.durations.isEmpty()) story.slidesCount = story.durations.size();
                         storiesProgressView.setStoriesCount(story.slidesCount);
                         storiesProgressView.setStoryDurations(story.durations);
                         storiesWebView.loadStory(storyId, story.lastIndex);
@@ -551,6 +567,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         }
                         storiesWebView.setStoryId(storyId);
                         storiesWebView.setIndex(0);
+
+                        if (story.durations != null && !story.durations.isEmpty()) story.slidesCount = story.durations.size();
                         storiesProgressView.setStoriesCount(story.slidesCount);
                         storiesWebView.loadStory(storyId, story.lastIndex);
                     }
@@ -622,15 +640,16 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                             share.setEnabled(true);
                             share.setClickable(true);
                             if (InAppStoryManager.getInstance().shareCallback != null) {
-                                InAppStoryManager.getInstance().shareCallback.onShare(response.getUrl(), response.getTitle(), response.getDescription());
+                                InAppStoryManager.getInstance().shareCallback.onShare(response.getUrl(), response.getTitle(), response.getDescription(), Integer.toString(storyId));
                             } else {
                                 Intent sendIntent = new Intent();
                                 sendIntent.setAction(Intent.ACTION_SEND);
-                                sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
                                 sendIntent.putExtra(Intent.EXTRA_TEXT, response.getUrl());
                                 sendIntent.setType("text/plain");
-                                InAppStoryManager.getInstance().getContext().startActivity(sendIntent);
+                                Intent finalIntent = Intent.createChooser(sendIntent, null);
+                                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
                             }
                         }
 

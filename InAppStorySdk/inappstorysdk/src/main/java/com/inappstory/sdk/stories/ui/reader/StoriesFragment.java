@@ -37,6 +37,7 @@ import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
@@ -208,6 +209,15 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             if (!Sizes.isTablet())
                 StatusBarController.hideStatusBar(getActivity(), true);
             created = false;
+            InAppStoryManager.getInstance().setTempShareStoryId(0);
+            InAppStoryManager.getInstance().setTempShareId(null);
+            if (InAppStoryManager.getInstance().getOldTempShareId() != null) {
+                CsEventBus.getDefault().post(new ShareCompleteEvent(
+                        InAppStoryManager.getInstance().getOldTempShareStoryId(),
+                        InAppStoryManager.getInstance().getOldTempShareId(), true));
+            }
+            InAppStoryManager.getInstance().setOldTempShareStoryId(0);
+            InAppStoryManager.getInstance().setOldTempShareId(null);
         }
         super.onResume();
     }
@@ -353,7 +363,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void nextStoryPageEvent(OnNextEvent event) {
         if (isDestroyed) return;
-        if (currentIndex < StoryDownloader.getInstance().findItemByStoryId(InAppStoryService.getInstance().getCurrentId()).slidesCount - 1) {
+        Story st = StoryDownloader.getInstance().findItemByStoryId(InAppStoryService.getInstance().getCurrentId());
+        if (st.durations != null && !st.durations.isEmpty()) st.slidesCount = st.durations.size();
+        if (currentIndex < st.slidesCount - 1) {
             currentIndex++;
         }
 
@@ -362,7 +374,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 currentIndex
         ));
 
-        Story st = StoryDownloader.getInstance().findItemByStoryId(InAppStoryService.getInstance().getCurrentId());
         if (st.lastIndex < st.slidesCount) {
             st.lastIndex++;
         }

@@ -737,14 +737,16 @@ public class InAppStoryService extends Service {
     public void openStatistic(final OpenStatisticCallback callback) {
         synchronized (openProcessLock) {
             if (openProcess) {
-                callbacks.add(callback);
+                if (callback != null)
+                    callbacks.add(callback);
                 return;
             }
         }
         synchronized (openProcessLock) {
             callbacks.clear();
             openProcess = true;
-            callbacks.add(callback);
+            if (callback != null)
+                callbacks.add(callback);
         }
         Context context = InAppStoryManager.getInstance().context;
         String platform = "android";
@@ -804,7 +806,8 @@ public class InAppStoryService extends Service {
                         synchronized (openProcessLock) {
                             openProcess = false;
                             for (OpenStatisticCallback localCallback : callbacks)
-                                localCallback.onSuccess();
+                                if (localCallback != null)
+                                    localCallback.onSuccess();
                             callbacks.clear();
                         }
                         //getInstance().share = response.share;
@@ -833,7 +836,8 @@ public class InAppStoryService extends Service {
                         @Override
                         public void run() {
                             for (OpenStatisticCallback localCallback : callbacks)
-                                localCallback.onError();
+                                if (localCallback != null)
+                                    localCallback.onError();
                             callbacks.clear();
                         }
                     });
@@ -852,7 +856,8 @@ public class InAppStoryService extends Service {
                         @Override
                         public void run() {
                             for (OpenStatisticCallback localCallback : callbacks)
-                                localCallback.onError();
+                                if (localCallback != null)
+                                    localCallback.onError();
                             callbacks.clear();
                         }
                     });
@@ -993,6 +998,7 @@ public class InAppStoryService extends Service {
 
     public interface LikeDislikeCallback {
         void onSuccess();
+
         void onError();
     }
 

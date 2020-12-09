@@ -2,7 +2,9 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -42,10 +44,12 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -59,6 +63,7 @@ import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
@@ -69,8 +74,10 @@ import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
 /**
@@ -299,11 +306,31 @@ public class StoriesWebView extends WebView {
 
     public void replaceHtml(String page) {
         // if (!isVideo) return;
-        String c = "javascript:(function(){show_slide(\"" + page
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            evaluateJavascript("(function(){show_slide(\"" + oldEscape(page)+ "\");})()", null);
+        } else {
+            loadUrl("javascript:(function(){show_slide(\"" + oldEscape(page)+ "\");})()");
+        }
+    }
+
+    private String oldEscape(String raw) {
+        String escaped = raw
                 .replaceAll("\"", "\\\\\"")
                 .replaceAll("\n", " ")
-                .replaceAll("\r", " ")+ "\");})()";
-        loadUrl(c);
+                .replaceAll("\r", " ");
+        return escaped;
+    }
+
+    private String escape(String raw) {
+        String escaped = raw;
+        escaped = escaped.replaceAll("\"", "\\\"");
+        escaped = escaped.replaceAll("\b", "\\b");
+        escaped = escaped.replaceAll("\f", "\\f");
+        escaped = escaped.replaceAll("\n", "\\n");
+        escaped = escaped.replaceAll("\r", "\\r");
+        escaped = escaped.replaceAll("\t", "\\t");
+        // TODO: escape other non-printing characters using uXXXX notation
+        return escaped;
     }
 
     public void pauseVideo() {
@@ -329,6 +356,7 @@ public class StoriesWebView extends WebView {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                Log.e("replaceHtml", url);
                 StoriesWebView.super.loadUrl(url);
             }
         });
@@ -506,6 +534,12 @@ public class StoriesWebView extends WebView {
         return type;
     }
 
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void shareComplete(ShareCompleteEvent event) {
+        if (storyId != event.storyId) return;
+        loadUrl("javascript:(function(){share_complete(\"" + event.getId() + "\", " + event.isSuccess() + ");})()");
+    }
+
     public class WebAppInterface {
         Context mContext;
         int lindex;
@@ -617,6 +651,37 @@ public class StoriesWebView extends WebView {
 
         @JavascriptInterface
         public void emptyLoaded() {
+        }
+
+        @JavascriptInterface
+        public void share(String id, String data) {
+            ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
+            if (InAppStoryManager.getInstance().shareCallback != null) {
+                InAppStoryManager.getInstance().shareCallback.onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
+            } else {
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObj.getTitle());
+                sendIntent.putExtra(Intent.EXTRA_TEXT, shareObj.getUrl());
+                sendIntent.setType("text/plain");
+                PendingIntent pi = PendingIntent.getBroadcast(getContext(), 989,
+                        new Intent(getContext(), StoryShareBroadcastReceiver.class),
+                        FLAG_UPDATE_CURRENT);
+                Intent finalIntent = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
+                    finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    InAppStoryManager.getInstance().setTempShareId(id);
+                    InAppStoryManager.getInstance().setTempShareStoryId(storyId);
+                    InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
+                } else {
+                    finalIntent = Intent.createChooser(sendIntent, null);
+                    finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
+                    InAppStoryManager.getInstance().setOldTempShareId(id);
+                    InAppStoryManager.getInstance().setOldTempShareStoryId(storyId);
+                }
+            }
         }
 
         @JavascriptInterface

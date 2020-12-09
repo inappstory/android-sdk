@@ -57,10 +57,10 @@ public class MaskedWatcher implements TextWatcher {
             for (int i = 0; i < value.length(); i++) {
                 char c = value.charAt(i);
                 char m = mMask.charAt(i);
-                if (m == '-' && !Character.isDigit(c)) {
+                if (m == '−' && !Character.isDigit(c)) {
                     reset = true;
                 }
-                if (m != '-' && m != c) {
+                if (m != '−' && m != c) {
                     reset = true;
                 }
             }

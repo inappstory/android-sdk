@@ -32,9 +32,11 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
+import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
 
 public class ContactDialog {
 
@@ -70,6 +72,7 @@ public class ContactDialog {
 
 
     private int flags = 0;
+
     public void showDialog(final Activity activity) {
         final Dialog dialog = new Dialog(activity, R.style.DialogTheme);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -77,7 +80,7 @@ public class ContactDialog {
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.cs_dialog_layout);
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        if (!Sizes.isTablet()) {
+        if (!isTablet()) {
             dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
             dialog.getWindow().setDimAmount(0.05f);
         }
@@ -87,7 +90,7 @@ public class ContactDialog {
         }
         final FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
         FrameLayout contentContainer = dialog.findViewById(R.id.contentContainer);
-      //  contentContainer.setUseCompatPadding(true);
+        //  contentContainer.setUseCompatPadding(true);
         final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -104,8 +107,17 @@ public class ContactDialog {
         AppCompatTextView text = dialog.findViewById(R.id.text);
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
-
-
+        int fullWidth;
+        int fullHeight;
+        if (isTablet()) {
+            fullWidth = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
+            fullHeight = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
+        } else {
+            fullWidth = Sizes.getScreenSize().x;
+            fullHeight = Sizes.getScreenSize().y;
+        }
+        final int dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
+        int dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);
         text.setText(dialogStructure.text.value);
         text.setTextColor(hex2color(dialogStructure.text.color));
         text.setTextSize((int) (coeff * dialogStructure.text.size));
@@ -128,36 +140,36 @@ public class ContactDialog {
 
         GradientDrawable buttonBackgroundGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[] {hex2color(dialogStructure.button.background.color),hex2color(dialogStructure.button.background.color)});
+                new int[]{hex2color(dialogStructure.button.background.color), hex2color(dialogStructure.button.background.color)});
         buttonBackgroundGradient.setCornerRadii(new float[]{0, 0, 0, 0, rad, rad, rad, rad});
 
         buttonBackground.setBackground(buttonBackgroundGradient);
 
-        GradientDrawable editBorderContainerGradient = new GradientDrawable(
+        final GradientDrawable editBorderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[] {hex2color(dialogStructure.input.border.color),
+                new int[]{hex2color(dialogStructure.input.border.color),
                         hex2color(dialogStructure.input.border.color)});
         editBorderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
 
         final GradientDrawable editBorderContainerErrorGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[] {Color.RED,
+                new int[]{Color.RED,
                         Color.RED});
         editBorderContainerErrorGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
 
         GradientDrawable editContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[] {hex2color(dialogStructure.input.background.color),hex2color(dialogStructure.input.background.color)});
+                new int[]{hex2color(dialogStructure.input.background.color), hex2color(dialogStructure.input.background.color)});
         editContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
 
         final GradientDrawable borderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[] {hex2color(dialogStructure.border.color),hex2color(dialogStructure.border.color)});
+                new int[]{hex2color(dialogStructure.border.color), hex2color(dialogStructure.border.color)});
         borderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
 
         GradientDrawable contentContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[] {hex2color(dialogStructure.background.color),hex2color(dialogStructure.background.color)});
+                new int[]{hex2color(dialogStructure.background.color), hex2color(dialogStructure.background.color)});
         contentContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
 
         editBorderContainer.setBackground(editBorderContainerGradient);
@@ -176,7 +188,7 @@ public class ContactDialog {
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    editBorderContainer.setBackground(borderContainerGradient);
+                    editBorderContainer.setBackground(editBorderContainerGradient);
                     editText.setTextColor(hex2color(dialogStructure.input.text.color));
                 }
 
@@ -197,7 +209,7 @@ public class ContactDialog {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                editBorderContainer.setBackground(borderContainerGradient);
+                editBorderContainer.setBackground(editBorderContainerGradient);
                 editText.setTextColor(hex2color(dialogStructure.input.text.color));
             }
 
@@ -221,21 +233,29 @@ public class ContactDialog {
                 editText.getMainText().addTextChangedListener(this);
             }
         });
+        dialog.getWindow().setLayout(dialogWidth, WRAP_CONTENT);
         dialog.show();
         CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+        final AppCompatEditText et;
+        if (inttype == PHONE) {
+            et = editText.getCountryCodeText();
+        } else {
+            et = editText.getMainText();
+        }
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                editText.clearFocus();
 
                 View view = activity.getCurrentFocus();
+                editText.clearFocus();
                 if (view != null) {
                     Log.d("closeKeyboard", "close");
+
                     InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    //  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
                     CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
                 }
+
 
             }
         });
@@ -243,7 +263,7 @@ public class ContactDialog {
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                    activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 }
             }, 100);
         }
@@ -268,13 +288,14 @@ public class ContactDialog {
                 }
             }
         });
-        if (!Sizes.isTablet()) {
+
+        if (!isTablet()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    editText.requestFocus();
+                    et.requestFocus();
                     InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+                    imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
                 }
             }, 200);
         }
@@ -282,7 +303,13 @@ public class ContactDialog {
 
     boolean validate(int type, String value, int length) {
         if (type == PHONE) {
-            return value.length() == length;
+            if (length > 0)
+                return value.length() == length;
+            else {
+                if (value != null && value.length() >= 5 && value.length() <= 30)
+                    return true;
+                return false;
+            }
         } else if (type == MAIL) {
             return isValidEmail(value);
         } else {

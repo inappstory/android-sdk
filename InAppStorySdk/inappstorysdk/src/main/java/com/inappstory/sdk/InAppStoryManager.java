@@ -60,6 +60,46 @@ public class InAppStoryManager {
 
     Context context;
 
+    public void setTempShareId(String tempShareId) {
+        this.tempShareId = tempShareId;
+    }
+
+    public void setTempShareStoryId(int tempShareStoryId) {
+        this.tempShareStoryId = tempShareStoryId;
+    }
+
+    public int getTempShareStoryId() {
+        return tempShareStoryId;
+    }
+
+    public String getTempShareId() {
+        return tempShareId;
+    }
+
+    int tempShareStoryId;
+
+    String tempShareId;
+
+    public void setOldTempShareId(String tempShareId) {
+        this.oldTempShareId = tempShareId;
+    }
+
+    public void setOldTempShareStoryId(int tempShareStoryId) {
+        this.oldTempShareStoryId = tempShareStoryId;
+    }
+
+    public int getOldTempShareStoryId() {
+        return oldTempShareStoryId;
+    }
+
+    public String getOldTempShareId() {
+        return oldTempShareId;
+    }
+
+    int oldTempShareStoryId;
+
+    String oldTempShareId;
+
     public ArrayList<String> getTags() {
         return tags;
     }
@@ -85,7 +125,7 @@ public class InAppStoryManager {
     }
 
     public interface ShareCallback {
-        public void onShare(String url, String title, String description);
+        void onShare(String url, String title, String description, String id);
     }
 
     public ShareCallback shareCallback;
