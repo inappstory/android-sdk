@@ -223,8 +223,8 @@
 2) `IGetFavoriteListItem csFavoriteListItemInterface`, используется для полной кастомизации элемента favorite в списке.
 
     public interface IGetFavoriteListItem {
-        View getFavoriteItem(List<FavoriteImage> favoriteImages);
-        void bindFavoriteItem(View favCell, List<FavoriteImage> favoriteImages);
+        View getFavoriteItem(List<FavoriteImage> favoriteImages, int count);
+        void bindFavoriteItem(View favCell, List<FavoriteImage> favoriteImages, int count);
     }
 
 Класс FavoriteImage содержит следующие геттеры:
@@ -238,14 +238,14 @@
     appearanceManager
         .csFavoriteListItemInterface(new IGetFavoriteListItem() {
                     @Override
-                    public View getFavoriteItem(List<FavoriteImage> favImages) {
+                    public View getFavoriteItem(List<FavoriteImage> favImages, int count) {
                         View v = LayoutInflater.from(MainActivity.this).inflate(R.layout.custom_story_list_item_favorite, null, false);
-                        bindFavoriteItem(v, favImages);
+                        bindFavoriteItem(v, favImages, count);
                         return v;
                     }
 
                     @Override
-                    public void bindFavoriteItem(View v, List<FavoriteImage> favImages) {
+                    public void bindFavoriteItem(View v, List<FavoriteImage> favImages, int count) {
                         AppCompatTextView title = v.findViewById(R.id.title);
                         title.setText("My favorites");
                         RelativeLayout container = v.findViewById(R.id.container);
@@ -462,7 +462,7 @@
 
     InAppStoryManager.getInstance().shareCallback = new InAppStoryManager.ShareCallback() {
             @Override
-            public void onShare(String url, String title, String description) {
+            public void onShare(String url, String title, String description, String shareId) {
                 doAction(url, title, description);
             }
         };
