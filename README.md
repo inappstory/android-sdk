@@ -222,11 +222,11 @@
     
 2) `IGetFavoriteListItem csFavoriteListItemInterface`, используется для полной кастомизации элемента favorite в списке.
 
-    public interface IGetFavoriteListItem {
-        View getFavoriteItem(List<FavoriteImage> favoriteImages, int count);
-        void bindFavoriteItem(View favCell, List<FavoriteImage> favoriteImages, int count);
-    }
-
+        public interface IGetFavoriteListItem {
+            View getFavoriteItem(List<FavoriteImage> favoriteImages, int count);
+            void bindFavoriteItem(View favCell, List<FavoriteImage> favoriteImages, int count);
+        }
+    
 Класс FavoriteImage содержит следующие геттеры:
 
     int getId() // идентификатор story
@@ -272,9 +272,9 @@
 
 3) `ILoaderView iLoaderView` - используется для подстановки собственного лоадера вместо дефолтного
 
-    public interface ILoaderView {
-        View getView();
-    }
+        public interface ILoaderView {
+            View getView();
+        }
 
 Этот интерфейс необходимо задавать для глобального AppearanceManager.
 Пример использования:
