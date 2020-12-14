@@ -294,27 +294,28 @@ public class StoryDownloader {
             if (StatisticSession.needToUpdate()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
-                    InAppStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
-                        @Override
-                        public void onSuccess() {
-                            isRefreshing = false;
-                        }
-
-                        @Override
-                        public void onError() {
-
-                            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
-                            synchronized (getInstance().pageTasksLock) {
-                                getInstance().pageTasks.get(key).loadType = -1;
-                                errorHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
-                                    }
-                                }, 300);
+                    if (InAppStoryService.getInstance() != null)
+                        InAppStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
+                            @Override
+                            public void onSuccess() {
+                                isRefreshing = false;
                             }
-                        }
-                    });
+
+                            @Override
+                            public void onError() {
+
+                                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
+                                synchronized (getInstance().pageTasksLock) {
+                                    getInstance().pageTasks.get(key).loadType = -1;
+                                    errorHandler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
+                                        }
+                                    }, 300);
+                                }
+                            }
+                        });
                 }
                 handler.postDelayed(queueStoryReadRunnable, 100);
                 return;
@@ -439,26 +440,27 @@ public class StoryDownloader {
             if (StatisticSession.needToUpdate()) {
                 if (!isRefreshing)
                     isRefreshing = true;
-                InAppStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        isRefreshing = false;
-                    }
-
-                    @Override
-                    public void onError() {
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
-                        synchronized (getInstance().pageTasksLock) {
-                            getInstance().pageTasks.get(key).loadType = -1;
-                            errorHandler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
-                                }
-                            }, 300);
+                if (InAppStoryService.getInstance() != null)
+                    InAppStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
+                        @Override
+                        public void onSuccess() {
+                            isRefreshing = false;
                         }
-                    }
-                });
+
+                        @Override
+                        public void onError() {
+                            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
+                            synchronized (getInstance().pageTasksLock) {
+                                getInstance().pageTasks.get(key).loadType = -1;
+                                errorHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
+                                    }
+                                }, 300);
+                            }
+                        }
+                    });
                 handler.postDelayed(queueStoryReadRunnable, 100);
                 return;
             }

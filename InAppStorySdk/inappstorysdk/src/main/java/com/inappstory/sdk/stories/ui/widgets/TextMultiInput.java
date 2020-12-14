@@ -7,7 +7,11 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.method.DigitsKeyListener;
 import android.util.AttributeSet;
 import android.util.Size;
 import android.util.TypedValue;
@@ -50,8 +54,9 @@ public class TextMultiInput extends LinearLayout {
 
     public void setTextColor(int textColor) {
         getMainText().setTextColor(textColor);
-        if (inputType == PHONE)
+        if (inputType == PHONE) {
             getCountryCodeText().setTextColor(textColor);
+        }
     }
 
 
@@ -103,6 +108,36 @@ public class TextMultiInput extends LinearLayout {
     public int inputType;
     String mask;
 
+    InputFilter filter = new InputFilter() {
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            boolean keepOriginal = true;
+            StringBuilder sb = new StringBuilder(end - start);
+            for (int i = start; i < end; i++) {
+                char c = source.charAt(i);
+                if (isCharAllowed(c)) // put your condition here
+                    sb.append(c);
+                else
+                    keepOriginal = false;
+            }
+            if (keepOriginal)
+                return null;
+            else {
+                if (source instanceof Spanned) {
+                    SpannableString sp = new SpannableString(sb);
+                    TextUtils.copySpansFrom((Spanned) source, start, sb.length(), null, sp, 0);
+                    return sp;
+                } else {
+                    return sb;
+                }
+            }
+        }
+
+        private boolean isCharAllowed(char c) {
+            return Character.isDigit(c);
+        }
+    };
+
     public void init(int inputType) {
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
@@ -137,7 +172,6 @@ public class TextMultiInput extends LinearLayout {
                 countryCodeText = new AppCompatEditText(getContext());
                 LayoutParams lp2 = new LayoutParams(Sizes.dpToPxExt(60),
                         ViewGroup.LayoutParams.WRAP_CONTENT);
-                lp2.setMargins(0, 0, Sizes.dpToPxExt(4), 0);
                 divider = new View(getContext());
                 divider.setLayoutParams(new ViewGroup.LayoutParams(Sizes.dpToPxExt(1),
                         Sizes.dpToPxExt(30)));
@@ -146,10 +180,11 @@ public class TextMultiInput extends LinearLayout {
                 RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
                 phoneNumberHint = new AppCompatEditText(getContext());
+
+                lp2.setMargins(0, 0, Sizes.dpToPxExt(4), 0);
                 countryCodeText.setLayoutParams(lp2);
                 countryCodeText.setBackground(null);
-                countryCodeText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
-                countryCodeText.setInputType(InputType.TYPE_CLASS_PHONE);
+                countryCodeText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(4)});
                 countryCodeText.setInputType(InputType.TYPE_CLASS_PHONE);
 
                 countryCodeText.setGravity(Gravity.CENTER);
@@ -173,6 +208,8 @@ public class TextMultiInput extends LinearLayout {
                         final CharSequence fs = s;
                         mask = PhoneFormats.getMaskByCode(fs.toString());
                         if (mask != null) {
+                            mainText.setFilters(new InputFilter[]{});
+                           // mainText.setKeyListener(null);
                             mainText.setHint("");
                             String text = mainText.getText().toString();
                             mainText.setText("");
@@ -187,6 +224,8 @@ public class TextMultiInput extends LinearLayout {
 
                             mainText.setInputType(InputType.TYPE_CLASS_PHONE);
                         } else {
+                            mainText.setFilters(new InputFilter[]{filter});
+                           // mainText.setKeyListener(new CustomDigitsKeyListener());
                             String text = mainText.getText().toString();
                             text = text.replaceAll(" ", "");
                             mainText.setText(text);
@@ -201,7 +240,9 @@ public class TextMultiInput extends LinearLayout {
                                 mainText.setHint("");
                             }
 
-                            mainText.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            mainText.setInputType(InputType.TYPE_CLASS_PHONE);
+
+                            //  ;
                         }
 
                     }
@@ -257,7 +298,7 @@ public class TextMultiInput extends LinearLayout {
                 phoneNumberHint.setBackground(null);
                 phoneNumberHint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                   // mainText.setElevation(8);
+                    // mainText.setElevation(8);
                 }
                 mainText.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                 phoneNumberHint.setClickable(false);
@@ -274,6 +315,20 @@ public class TextMultiInput extends LinearLayout {
                 addView(divider);
                 addView(rl);
                 break;
+        }
+    }
+
+    public class CustomDigitsKeyListener extends DigitsKeyListener {
+        public CustomDigitsKeyListener() {
+            super(false, false);
+        }
+
+        public CustomDigitsKeyListener(boolean sign, boolean decimal) {
+            super(sign, decimal);
+        }
+
+        public int getInputType() {
+            return InputType.TYPE_CLASS_PHONE;
         }
     }
 

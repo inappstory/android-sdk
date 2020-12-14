@@ -57,7 +57,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
-        hasFavItem = !isFavoriteList && InAppStoryService.getInstance().favoriteImages.size() > 0;
+        hasFavItem = !isFavoriteList && InAppStoryService.getInstance() != null && InAppStoryService.getInstance().favoriteImages.size() > 0;
     }
 
     public void refresh(List<Integer> storiesIds) {
@@ -93,33 +93,33 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 }
             });
         } else {
+            if (InAppStoryService.getInstance() != null)
+                InAppStoryService.getInstance().getStoryById(new GetStoryByIdCallback() {
+                    @Override
+                    public void getStory(final Story story) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                holder.bind(story.getTitle(),
+                                        story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
+                                        story.getSource(),
+                                        (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
+                                        Color.parseColor(story.getBackgroundColor()),
+                                        story.isOpened || isFavoriteList);
+                            }
+                        });
+                    }
 
-            InAppStoryService.getInstance().getStoryById(new GetStoryByIdCallback() {
-                @Override
-                public void getStory(final Story story) {
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            holder.bind(story.getTitle(),
-                                    story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
-                                    story.getSource(),
-                                    (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
-                                    Color.parseColor(story.getBackgroundColor()),
-                                    story.isOpened || isFavoriteList);
-                        }
-                    });
-                }
+                    @Override
+                    public void loadError(int type) {
 
-                @Override
-                public void loadError(int type) {
+                    }
 
-                }
+                    @Override
+                    public void getPartialStory(Story story) {
 
-                @Override
-                public void getPartialStory(Story story) {
-
-                }
-            }, storiesIds.get(position));
+                    }
+                }, storiesIds.get(position));
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -131,7 +131,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     public void onItemClick(int index) {
-
+        if (InAppStoryService.getInstance() == null) return;
         Story current = StoryDownloader.getInstance().getStoryById(storiesIds.get(index));
         if (current != null) {
             if (current.deeplink != null) {
@@ -197,8 +197,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     @Override
     public int getItemViewType(int position) {
-        int pref = position*10;
-        if (InAppStoryManager.getInstance().hasFavorite() && position == storiesIds.size()) return pref + 3;
+        int pref = position * 10;
+        if (InAppStoryManager.getInstance().hasFavorite() && position == storiesIds.size())
+            return pref + 3;
         return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isOpened ? (pref + 2) : (pref + 1);
     }
 

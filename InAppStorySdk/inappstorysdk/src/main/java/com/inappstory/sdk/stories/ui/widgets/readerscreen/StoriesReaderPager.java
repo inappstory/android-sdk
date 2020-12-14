@@ -11,6 +11,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
@@ -141,8 +142,9 @@ public class StoriesReaderPager extends ViewPager {
             if (getCurrentItem() == getAdapter().getCount() - 1 &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX < -300) {
-                if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) == null) return true;
-                if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
+                Story st = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
+                if (st == null) return true;
+                if (!st.disableClose) {
                     CsEventBus.getDefault().post(new SwipeLeftEvent());
                     return true;
                 }

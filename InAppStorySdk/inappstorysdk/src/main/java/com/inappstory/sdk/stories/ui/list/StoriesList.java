@@ -115,7 +115,8 @@ public class StoriesList extends RecyclerView {
                     indexes.add(adapter.getStoriesIds().get(i));
             }
         }
-        InAppStoryService.getInstance().previewStatisticEvent(indexes);
+        if (InAppStoryService.getInstance() != null)
+            InAppStoryService.getInstance().previewStatisticEvent(indexes);
     }
 
     StoriesAdapter adapter;
@@ -202,6 +203,7 @@ public class StoriesList extends RecyclerView {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void favItem(StoryFavoriteEvent event) {
+        if (InAppStoryService.getInstance() == null) return;
         if (InAppStoryService.getInstance().favoriteImages == null)
             InAppStoryService.getInstance().favoriteImages = new ArrayList<>();
         List<FavoriteImage> favImages = InAppStoryService.getInstance().favoriteImages;
@@ -273,15 +275,16 @@ public class StoriesList extends RecyclerView {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    InAppStoryService.getInstance().loadStories(new LoadStoriesCallback() {
-                        @Override
-                        public void storiesLoaded(List<Integer> storiesIds) {
-                            CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                            adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
-                            setLayoutManager(layoutManager);
-                            setAdapter(adapter);
-                        }
-                    }, isFavoriteList);
+                    if (InAppStoryService.getInstance() != null)
+                        InAppStoryService.getInstance().loadStories(new LoadStoriesCallback() {
+                            @Override
+                            public void storiesLoaded(List<Integer> storiesIds) {
+                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                                adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
+                                setLayoutManager(layoutManager);
+                                setAdapter(adapter);
+                            }
+                        }, isFavoriteList);
                 }
             }, 1000);
         }

@@ -6,11 +6,13 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -246,6 +248,7 @@ public class InAppStoryManager {
 
 
     private InAppStoryManager(Builder builder) throws DataException {
+
         KeyValueStorage.setContext(builder.context);
         if (builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
             throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
@@ -269,15 +272,30 @@ public class InAppStoryManager {
             context.unbindService(mConnection);
             mBound = false;
         }
-        intent = new Intent(context, InAppStoryService.class);
-        context.startService(intent);
+        try {
+            intent = new Intent(context, InAppStoryService.class);
+            context.startService(intent);
+        } catch (IllegalStateException e) {
+          /*  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        InAppStoryService.getInstance().startForegr();
+                    }
+                }, 2000);
+            } else {
+
+            }*/
+        }
     }
 
     public void setUserId(String userId) throws DataException {
+        if (InAppStoryService.getInstance() == null) return;
         if (userId.length() < 255) {
             if (this.userId.equals(userId)) return;
             this.userId = userId;
-            if (InAppStoryService.getInstance() != null && InAppStoryService.getInstance().favoriteImages != null)
+            if (InAppStoryService.getInstance().favoriteImages != null)
                 InAppStoryService.getInstance().favoriteImages.clear();
             CsEventBus.getDefault().post(new ChangeUserIdEvent());
             if (StatisticSession.getInstance().id != null) {
@@ -359,7 +377,8 @@ public class InAppStoryManager {
 
     public static void destroy() {
         if (INSTANCE != null) {
-            InAppStoryService.getInstance().logout();
+            if (InAppStoryService.getInstance() != null)
+                InAppStoryService.getInstance().logout();
             INSTANCE.context = null;
             KeyValueStorage.removeString("managerInstance");
             try {

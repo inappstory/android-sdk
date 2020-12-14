@@ -221,7 +221,7 @@ public class StoriesActivity extends AppCompatActivity {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
-
+        if (InAppStoryService.getInstance() == null) return;
         Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
         CsEventBus.getDefault().post(new CloseStory(story.id,
                 story.title, story.tags, story.slidesCount,
@@ -241,6 +241,7 @@ public class StoriesActivity extends AppCompatActivity {
     }
 
     public void cleanReader() {
+        if (InAppStoryService.getInstance() == null) return;
         InAppStoryService.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);

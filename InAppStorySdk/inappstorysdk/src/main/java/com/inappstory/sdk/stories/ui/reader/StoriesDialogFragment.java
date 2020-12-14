@@ -98,6 +98,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
+        if (InAppStoryService.getInstance() == null) return;
         InAppStoryService.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);

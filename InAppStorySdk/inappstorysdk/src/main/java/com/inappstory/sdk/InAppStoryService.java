@@ -1,5 +1,8 @@
 package com.inappstory.sdk;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +21,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -540,6 +544,12 @@ public class InAppStoryService extends Service {
         closeStatisticEvent(null, false);
     }
 
+    @Override
+    public void onDestroy() {
+        Log.e("InAppService", "destroy");
+        super.onDestroy();
+    }
+
     public class StatisticEvent {
         public int eventType;
         public int storyId;
@@ -811,8 +821,8 @@ public class InAppStoryService extends Service {
                             callbacks.clear();
                         }
                         //getInstance().share = response.share;
-
-                        getInstance().handler.postDelayed(getInstance().statisticUpdateThread, statisticUpdateInterval);
+                        if (handler != null)
+                            handler.postDelayed(getInstance().statisticUpdateThread, statisticUpdateInterval);
                         if (response.cachedFonts != null) {
                             for (CacheFontObject cacheFontObject : response.cachedFonts) {
                                 Downloader.downFontFile(InAppStoryManager.getInstance().context, cacheFontObject.url);
@@ -1160,7 +1170,11 @@ public class InAppStoryService extends Service {
         ImageLoader imgLoader = new ImageLoader(getApplicationContext());
         statistic = new ArrayList<>();
         INSTANCE = this;
-        /*if (Build.VERSION.SDK_INT >= 26) {
+        /**/
+    }
+
+    public void startForegr() {
+        if (Build.VERSION.SDK_INT >= 26) {
             final NotificationManager manager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
             channel.setDescription("Stories service");
@@ -1182,7 +1196,7 @@ public class InAppStoryService extends Service {
                     manager.cancel(NOTIFICATION_ID);
                 }
             }, 200);
-        }*/
+        }
     }
 
     public void onStart(Intent intent, int startId) {
