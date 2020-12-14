@@ -202,7 +202,7 @@ public class StoriesProgressView extends LinearLayout {
         if (isComplete) {
             return;
         }
-        if (progressBars == null || current < progressBars.size()) return;
+        if (progressBars == null || current >= progressBars.size()) return;
         same = true;
         PausableProgressBar p = progressBars.get(current);
         p.setMin();

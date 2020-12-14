@@ -522,6 +522,7 @@ public class StoriesWebView extends WebView {
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
+        //getSettings().setMediaPlaybackRequiresUserGesture(false);
         addJavascriptInterface(new WebAppInterface(getContext(), index), "Android");
     }
 
