@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -411,6 +412,7 @@ public class InAppStoryManager {
 
     public void showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.getInstance() == null) {
+            Log.d("ShowStories", "Onboarding service is null");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -419,6 +421,31 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
+        if (StoriesActivity.destroyed == -1) {
+
+            Log.d("ShowStories", "Onboarding readerOpened");
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showOnboardingStories(tags, outerContext, manager);
+                    StoriesActivity.destroyed = 0;
+                }
+            }, 350);
+            return;
+        } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
+            Log.d("ShowStories", "Onboarding openedPause");
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showOnboardingStories(tags, outerContext, manager);
+                    StoriesActivity.destroyed = 0;
+                }
+            }, 350);
+            return;
+        }
+
+        Log.d("ShowStories", "Onboarding statisticClosed");
         if (checkOpenStatistic(new InAppStoryService.CheckStatisticCallback() {
             @Override
             public void openStatistic() {
@@ -430,6 +457,7 @@ public class InAppStoryManager {
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
             }
         })) {
+            Log.d("ShowStories", "Onboarding statisticOpened");
             NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, tags == null ? getTags() : tags,
                     getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
                 @Override
@@ -528,8 +556,21 @@ public class InAppStoryManager {
 
 
     public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
+
+        if (InAppStoryService.getInstance() == null) {
+            Log.d("ShowStories", "Onboarding service is null");
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showStory(storyId, context, manager, callback);
+                }
+            }, 1000);
+            return;
+        }
         if (StoriesActivity.destroyed == -1) {
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+
+            Log.d("ShowStories", "Onboarding readerOpened");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -539,6 +580,7 @@ public class InAppStoryManager {
             }, 350);
             return;
         } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
+            Log.d("ShowStories", "Onboarding openedPause");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -548,16 +590,8 @@ public class InAppStoryManager {
             }, 350);
             return;
         }
-        if (InAppStoryService.getInstance() == null) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStory(storyId, context, manager, callback);
-                }
-            }, 1000);
-            return;
-        }
 
+        Log.d("ShowStories", "Onboarding statisticClosed");
         InAppStoryService.getInstance().getFullStoryByStringId(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
@@ -589,6 +623,7 @@ public class InAppStoryManager {
                     }
 
 
+                    Log.d("ShowStories", "Onboarding statisticOpened");
                     if (Sizes.isTablet() && context != null) {
                         StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                                 story.id);

@@ -221,12 +221,14 @@ public class StoriesActivity extends AppCompatActivity {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
-        if (InAppStoryService.getInstance() == null) return;
-        Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
-        CsEventBus.getDefault().post(new CloseStory(story.id,
-                story.title, story.tags, story.slidesCount,
-                story.lastIndex, event.getAction(),
-                getIntent().getIntExtra("source", 0)));
+        if (InAppStoryService.getInstance() != null) {
+            Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
+
+            CsEventBus.getDefault().post(new CloseStory(story.id,
+                    story.title, story.tags, story.slidesCount,
+                    story.lastIndex, event.getAction(),
+                    getIntent().getIntExtra("source", 0)));
+        }
         cleanReader();
         CsEventBus.getDefault().post(new CloseStoriesReaderEvent());
         CsEventBus.getDefault().unregister(this);
