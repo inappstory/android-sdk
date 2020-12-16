@@ -51,6 +51,8 @@ public class StoriesActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    public boolean isFakeActivity = false;
+
     @Override
     public void finish() {
         if (animateFirst) {
@@ -79,40 +81,44 @@ public class StoriesActivity extends AppCompatActivity {
 
 
     public void loadAnim() {
-        float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
-        float y = draggableFrame.getY();
-        AnimationSet animationSet = new AnimationSet(true);
-        Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
-        anim.setDuration(200);
-        animationSet.addAnimation(anim);
-        if (InAppStoryManager.getInstance().coordinates != null) {
-            Animation anim2 = new TranslateAnimation(draggableFrame.getX(), InAppStoryManager.getInstance().coordinates.x - Sizes.getScreenSize().x/2,
-                    0f, InAppStoryManager.getInstance().coordinates.y - draggableFrame.getY());
-            anim2.setDuration(200);
-            animationSet.addAnimation(anim2);
+        try {
+            float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
+            float y = draggableFrame.getY();
+            AnimationSet animationSet = new AnimationSet(true);
+            Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
+            anim.setDuration(200);
+            animationSet.addAnimation(anim);
+            if (InAppStoryManager.getInstance().coordinates != null) {
+                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), InAppStoryManager.getInstance().coordinates.x - Sizes.getScreenSize().x / 2,
+                        0f, InAppStoryManager.getInstance().coordinates.y - draggableFrame.getY());
+                anim2.setDuration(200);
+                animationSet.addAnimation(anim2);
 
+            }
+            animationSet.setAnimationListener(new Animation.AnimationListener() {
+
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    draggableFrame.setVisibility(View.GONE);
+                    StoriesActivity.super.finish();
+                }
+            });
+            draggableFrame.startAnimation(animationSet);
+        } catch (Exception e) {
+            finishActivityWithoutAnimation();
         }
-        animationSet.setAnimationListener(new Animation.AnimationListener() {
-
-            @Override
-            public void onAnimationStart(Animation animation) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                draggableFrame.setVisibility(View.GONE);
-                StoriesActivity.super.finish();
-            }
-        });
-        draggableFrame.startAnimation(animationSet);
 
     }
 
@@ -133,6 +139,11 @@ public class StoriesActivity extends AppCompatActivity {
         overridePendingTransition(enter, exit);
     }
 
+    public void finishActivityWithoutAnimation() {
+        super.finish();
+        overridePendingTransition(0, 0);
+    }
+
     @CsSubscribe
     public void widgetTapEvent(WidgetTapEvent event) {
         if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
@@ -147,6 +158,12 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
+        if (destroyed == -1) {
+            isFakeActivity = true;
+            super.onCreate(savedInstanceState1);
+            finishActivityWithoutAnimation();
+            return;
+        }
         destroyed = -1;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -264,7 +281,7 @@ public class StoriesActivity extends AppCompatActivity {
     @CsSubscribe
     public void swipeLeftEvent(SwipeLeftEvent event) {
         if (InAppStoryManager.getInstance().closeOnOverscroll()) {
-           // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
+            // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }
@@ -272,7 +289,7 @@ public class StoriesActivity extends AppCompatActivity {
     @CsSubscribe
     public void swipeRightEvent(SwipeRightEvent event) {
         if (InAppStoryManager.getInstance().closeOnOverscroll()) {
-          //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
+            //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }
@@ -281,6 +298,9 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         StatusBarController.showStatusBar(this);
+        if (InAppStoryService.getInstance() != null) {
+            InAppStoryService.getInstance().sendStatistic();
+        }
         try {
             CsEventBus.getDefault().unregister(this);
         } catch (Exception e) {
@@ -288,5 +308,7 @@ public class StoriesActivity extends AppCompatActivity {
         }
         System.gc();
         super.onDestroy();
+        if (!isFakeActivity)
+            destroyed = 0;
     }
 }

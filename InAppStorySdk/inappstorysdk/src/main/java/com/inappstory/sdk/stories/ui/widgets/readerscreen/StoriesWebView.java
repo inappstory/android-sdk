@@ -193,6 +193,7 @@ public class StoriesWebView extends WebView {
                 WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
                 return;
             } else {
+                isVideo = false;
                 if (Build.VERSION.SDK_INT >= 19) {
                     setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 } else {
@@ -241,6 +242,7 @@ public class StoriesWebView extends WebView {
                         "-ms-user-select: none;" +
                         "user-select: none;" +
                         "} </style>");
+        //.replaceAll("muted", "");
     }
 
     public int getCurrentItem() {
@@ -282,6 +284,7 @@ public class StoriesWebView extends WebView {
 
     @CsSubscribe
     public void storySwipeBackEvent(StorySwipeBackEvent event) {
+        if (event.getStoryId() == storyId)
         resumeVideo();
     }
 
@@ -299,10 +302,6 @@ public class StoriesWebView extends WebView {
         // }
     }
 
-    public void playVideo() {
-        // if (!isVideo) return;
-        loadUrl("javascript:(function(){story_slide_start();})()");
-    }
 
     public void replaceHtml(String page) {
         // if (!isVideo) return;
@@ -318,6 +317,7 @@ public class StoriesWebView extends WebView {
                 .replaceAll("\"", "\\\\\"")
                 .replaceAll("\n", " ")
                 .replaceAll("\r", " ");
+        //.replaceAll("muted", "");
         return escaped;
     }
 
@@ -335,19 +335,29 @@ public class StoriesWebView extends WebView {
 
     public void pauseVideo() {
         // if (!isVideo) return;
+        Log.e("playVideo", storyId + " pause");
         loadUrl("javascript:(function(){story_slide_pause();})()");
+    }
+
+
+    public void playVideo() {
+        // if (!isVideo) return;
+        Log.e("playVideo", storyId + " play");
+        loadUrl("javascript:(function(){story_slide_start();})()");
     }
 
     public void stopVideo() {
         // if (!isVideo) return;
         //loadUrl("javascript:(function(){window.Android.defaultTap('test');})()");
+        Log.e("playVideo", storyId + " stop");
         loadUrl("javascript:(function(){story_slide_stop();})()");
 
     }
 
     public void resumeVideo() {
-        //  if (!isVideo) return;
 
+
+        Log.e("playVideo", storyId + " resume");
         loadUrl("javascript:(function(){story_slide_resume();})()");
     }
 
@@ -522,7 +532,8 @@ public class StoriesWebView extends WebView {
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
-        //getSettings().setMediaPlaybackRequiresUserGesture(false);
+       // getSettings().setMediaPlaybackRequiresUserGesture(false);
+       // getSettings().setPluginState(WebSettings.PluginState.ON);
         addJavascriptInterface(new WebAppInterface(getContext(), index), "Android");
     }
 

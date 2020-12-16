@@ -668,7 +668,7 @@ public class InAppStoryService extends Service {
 
             //if (isBackgroundPause)
             //    resumeTimer();
-            statistic.add(new ArrayList<Object>() {{
+            putStatistic(new ArrayList<Object>() {{
                 add(currentEvent.eventType);
                 add(eventCount);
                 add(currentEvent.storyId);
@@ -882,6 +882,12 @@ public class InAppStoryService extends Service {
 
     private Handler handler = new Handler();
 
+    public void putStatistic(List<Object> e) {
+        if (statistic != null) {
+            statistic.add(e);
+        }
+    }
+
     List<List<Object>> statistic = new ArrayList<>();
 
     public Runnable statisticUpdateThread = new Runnable() {
@@ -915,13 +921,13 @@ public class InAppStoryService extends Service {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            statistic.add(sendObject);
+            putStatistic(sendObject);
             eventCount++;
         }
 
     }
 
-    private boolean sendStatistic() {
+    public boolean sendStatistic() {
         if (!isConnected()) return true;
         if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
             return false;

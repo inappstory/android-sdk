@@ -75,6 +75,9 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     public void onDestroyView() {
         CsEventBus.getDefault().unregister(this);
+        if (InAppStoryService.getInstance() != null) {
+            InAppStoryService.getInstance().sendStatistic();
+        }
         StoriesActivity.destroyed = System.currentTimeMillis();
         super.onDestroyView();
     }
