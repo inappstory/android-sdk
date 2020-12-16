@@ -558,7 +558,7 @@ public class InAppStoryManager {
     public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
 
         if (InAppStoryService.getInstance() == null) {
-            Log.d("ShowStories", "Onboarding service is null");
+            Log.d("ShowStories", "Single service is null");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -570,7 +570,7 @@ public class InAppStoryManager {
         if (StoriesActivity.destroyed == -1) {
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
 
-            Log.d("ShowStories", "Onboarding readerOpened");
+            Log.d("ShowStories", "Single readerOpened");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -580,7 +580,7 @@ public class InAppStoryManager {
             }, 350);
             return;
         } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
-            Log.d("ShowStories", "Onboarding openedPause");
+            Log.d("ShowStories", "Single openedPause");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -591,7 +591,7 @@ public class InAppStoryManager {
             return;
         }
 
-        Log.d("ShowStories", "Onboarding statisticClosed");
+        Log.d("ShowStories", "Single statisticClosed");
         InAppStoryService.getInstance().getFullStoryByStringId(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
@@ -623,7 +623,7 @@ public class InAppStoryManager {
                     }
 
 
-                    Log.d("ShowStories", "Onboarding statisticOpened");
+                    Log.d("ShowStories", "Single statisticOpened");
                     if (Sizes.isTablet() && context != null) {
                         StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                                 story.id);
