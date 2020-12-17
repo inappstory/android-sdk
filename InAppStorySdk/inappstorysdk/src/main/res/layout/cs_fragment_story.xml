@@ -41,9 +41,7 @@
                         android:layout_marginLeft="18dp"
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="15dp"
-                        android:tintMode="src_atop"
-                        app:srcCompat="@drawable/ic_stories_status_like"
-                        app:tint="@color/white" />
+                        app:srcCompat="@drawable/ic_stories_status_like" />
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/dislikeButton"
@@ -52,9 +50,7 @@
                         android:layout_marginLeft="18dp"
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="15dp"
-                        android:tintMode="src_atop"
-                        app:srcCompat="@drawable/ic_stories_status_dislike"
-                        app:tint="@color/white" />
+                        app:srcCompat="@drawable/ic_stories_status_dislike"/>
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/favoriteButton"
@@ -63,9 +59,7 @@
                         android:layout_marginLeft="18dp"
                         android:layout_marginTop="15dp"
                         android:layout_marginBottom="15dp"
-                        android:tintMode="src_atop"
-                        app:srcCompat="@drawable/ic_stories_status_favorite"
-                        app:tint="@color/white" />
+                        app:srcCompat="@drawable/ic_stories_status_favorite" />
 
                     <View
                         android:layout_width="match_parent"
@@ -79,7 +73,6 @@
                         android:layout_marginTop="15dp"
                         android:layout_marginRight="18dp"
                         android:layout_marginBottom="15dp"
-                        android:tintMode="src_atop"
                         app:srcCompat="@drawable/ic_share_status" />
                 </LinearLayout>
 
@@ -156,9 +149,7 @@
                     android:elevation="10dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
-                    android:tint="@color/white"
-                    android:tintMode="src_atop"
-                    app:srcCompat="@drawable/cs_reader_close" />
+                    app:srcCompat="@drawable/ic_stories_close" />
             </RelativeLayout>
         </RelativeLayout>
 

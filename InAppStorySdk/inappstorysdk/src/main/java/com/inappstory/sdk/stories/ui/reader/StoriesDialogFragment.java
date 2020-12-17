@@ -22,7 +22,6 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
-import com.inappstory.sdk.stories.events.CloseStoriesReaderEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 
@@ -43,7 +42,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
-        CsEventBus.getDefault().post(new CloseStoriesReaderEvent());
         super.onDismiss(dialogInterface);
     }
 

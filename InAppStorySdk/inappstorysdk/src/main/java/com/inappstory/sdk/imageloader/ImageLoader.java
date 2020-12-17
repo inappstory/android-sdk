@@ -43,7 +43,7 @@ public class ImageLoader {
         loader = this;
     }
 
-    int stub_id = R.drawable.ic_close;
+    int stub_id = R.drawable.ic_stories_close;
 
     public void displayImage(String url, int loader, ImageView imageView) {
         try {

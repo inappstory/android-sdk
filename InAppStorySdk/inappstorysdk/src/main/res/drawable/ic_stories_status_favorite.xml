@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:state_activated="true" android:state_enabled="true" android:drawable="@drawable/ic_bookmark_black_24dp" />
-    <item android:state_activated="false" android:state_enabled="true" android:drawable="@drawable/ic_bookmark_outline_black_24dp" />
-    <item android:state_activated="true" android:state_enabled="false" android:drawable="@drawable/ic_bookmark_gray_24dp" />
-    <item android:state_activated="false" android:state_enabled="false" android:drawable="@drawable/ic_bookmark_outline_gray_24dp" />
+    <item android:state_activated="true" android:state_enabled="true" android:drawable="@drawable/cs_bookmark" />
+    <item android:state_activated="false" android:state_enabled="true" android:drawable="@drawable/cs_bookmark_outline" />
+    <item android:state_activated="true" android:state_enabled="false" android:drawable="@drawable/cs_bookmark_disabled" />
+    <item android:state_activated="false" android:state_enabled="false" android:drawable="@drawable/cs_bookmark_outline_disabled" />
 </selector>

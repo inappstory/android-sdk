@@ -24,7 +24,6 @@ import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
-import com.inappstory.sdk.stories.events.CloseStoriesReaderEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
@@ -247,7 +246,6 @@ public class StoriesActivity extends AppCompatActivity {
                     getIntent().getIntExtra("source", 0)));
         }
         cleanReader();
-        CsEventBus.getDefault().post(new CloseStoriesReaderEvent());
         CsEventBus.getDefault().unregister(this);
 
         if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
