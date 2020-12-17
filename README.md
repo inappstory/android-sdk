@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:0.1.10'
+    implementation 'com.github.inappstory:android-sdk:0.1.11'
 
 Также для корректной работы в dependencies нужно добавить библиотеку GSON:
 
@@ -126,7 +126,6 @@
 В случае, если метод для списка не задан, то будут использоваться настройки из глобального AppearanceManager. Если не задан и он, то будет выброшен DataException.
 
 Сам AppearanceManager содержит следующие параметры (и соответствующие им сеттеры)
-
 
     Integer csListItemWidth - ширина ячейки списка в пикселях (по умолчанию - null).
 
@@ -388,6 +387,11 @@
 
 2)`NoConnectionEvent` - при попытке загрузить без интернета. Имеет метод getType для получения типа ошибки.
 
+Помимо этого есть событие на закрытие ридера `CloseStoryReaderEvent`, которое можно вызывать через 
+
+    CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
+    
+
 ##### Onboarding сториз и одиночные сториз
 
 Библиотека поддерживает работу с onboarding сториз. 
@@ -449,6 +453,7 @@
                 Toast.makeText(context, link, Toast.LENGTH_LONG).show();
             }
         });
+Если нужно закрывать ридер при срабатывании обработчика, то необходимо в `onUrlClick` добавить вызов события `CloseStoryReaderEvent`
 
 В SDK заложен дефолтный обработчик ссылок.
     
@@ -466,6 +471,8 @@
                 doAction(url, title, description);
             }
         };
+        
+
 
 FAQ
 1) Изменение формы ячейки: прямоугольник, круг
@@ -481,7 +488,9 @@ FAQ
 В глобальном AppearanceManager используется кастомизация через csLoaderView.
 
 5) Задание обработчика для кнопок
-Используем метод `InAppStoryManager.getInstance().setUrlClickCallback(InAppStoryManager.UrlClickCallback callback)`.
+Используем метод `InAppStoryManager.getInstance().setUrlClickCallback(InAppStoryManager.UrlClickCallback callback)`. Также в callback возможно необходимо будет добавить закрытие ридера через
+
+    CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM)).
 
 6) Смена аккаунта в приложении
 Используем метод `InAppStoryManager.getInstance().setUserId(String userId)`.
