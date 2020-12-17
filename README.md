@@ -299,7 +299,7 @@
 
 ##### Иконки
 
-Библиотека использует 6 кнопок с иконками: refresh, close, like, dislike, share и favorite Для кнопок refresh и close используются файлы `ic_refresh.xml`, `ic_close.xml`. Иконки могут быть заданы как в векторном виде (для устройств от 5.0 и выше), так и в виде png/webp файлов для основных разрешений (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi).
+Библиотека использует 6 кнопок с иконками: refresh, close, like, dislike, share и favorite Для кнопок refresh и close используются файлы `ic_refresh.xml`, `ic_stories_close.xml`. Иконки могут быть заданы как в векторном виде (для устройств от 5.0 и выше), так и в виде png/webp файлов для основных разрешений (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi).
 Кнопоки like, dislike, share и favorite заданы файлами 
 `ic_stories_status_like.xml`, `ic_stories_status_dislike.xml`, `ic_share_status.xml` и `ic_stories_status_favorite.xml`.
 Разметка like, dislike и favorite представлена в виде selector. Для отображения статуса используется state_activated (true/false).
