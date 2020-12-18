@@ -210,7 +210,7 @@
 
                         @Override
                         public void setImage(View itemView, String url, int backgroundColor) {
-                            //В случае, если есть сториз без изображений и с изображением, то, возможно потребуется предварительная очистка imageView с помощью setImageResource(0)
+                            //В случае, если есть сториз без изображений и с изображением, возможно потребуется предварительная очистка imageView с помощью setImageResource(0)
                             itemView.findViewById(R.id.image).setBackgroundColor(Color.RED);
                         }
 
