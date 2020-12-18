@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:0.1.12'
+    implementation 'com.github.inappstory:android-sdk:0.1.13'
 
 Также для корректной работы в dependencies нужно добавить библиотеку GSON:
 
@@ -210,6 +210,7 @@
 
                         @Override
                         public void setImage(View itemView, String url, int backgroundColor) {
+                            //В случае, если есть сториз без изображений и с изображением, то, возможно потребуется предварительная очистка imageView с помощью setImageResource(0)
                             itemView.findViewById(R.id.image).setBackgroundColor(Color.RED);
                         }
 
