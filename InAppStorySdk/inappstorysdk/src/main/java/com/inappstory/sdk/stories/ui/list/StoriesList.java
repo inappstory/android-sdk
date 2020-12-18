@@ -171,7 +171,9 @@ public class StoriesList extends RecyclerView {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
-        StoryDownloader.getInstance().getStoryById(event.getId()).isOpened = true;
+        Story st = StoryDownloader.getInstance().getStoryById(event.getId());
+        st.isOpened = true;
+        st.saveStoryOpened();
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
             if (adapter.getStoriesIds().get(i) == event.getId()) {
                 adapter.notifyItemChanged(i);

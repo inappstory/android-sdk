@@ -26,7 +26,9 @@ import androidx.core.app.NotificationCompat;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
@@ -66,6 +68,7 @@ import com.inappstory.sdk.stories.outerevents.LikeStory;
 import com.inappstory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import com.inappstory.sdk.stories.serviceevents.LikeDislikeEvent;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -321,6 +324,16 @@ public class InAppStoryService extends Service {
             } else {
                 CsEventBus.getDefault().post(new ContentLoadedEvent(false));
             }
+            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+            if (opens == null) opens = new HashSet<>();
+            for (Story story : response) {
+                if (story.isOpened) {
+                    opens.add(Integer.toString(story.id));
+                } else if (opens.contains(Integer.toString(story.id))) {
+                    story.isOpened = true;
+                }
+            }
+            SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
             StoryDownloader.getInstance().uploadingAdditional(response);
             CsEventBus.getDefault().post(new ListVisibilityEvent());
             List<Story> newStories = new ArrayList<>();
@@ -349,11 +362,14 @@ public class InAppStoryService extends Service {
                         favoriteImages.clear();
                         CsEventBus.getDefault().post(new LoadFavStories());
                         if (response2 != null && response2.size() > 0) {
+                            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                            if (opens == null) opens = new HashSet<>();
                             for (Story story : response2) {
                                 //if (favoriteImages.size() < 4)
                                 favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
+                                opens.add(Integer.toString(story.id));
                             }
-
+                            SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
                             if (loadStoriesCallback != null) {
                                 List<Integer> ids = new ArrayList<>();
                                 for (Story story : response) {

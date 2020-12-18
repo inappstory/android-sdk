@@ -259,10 +259,10 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
         if (image != null) {
             if (imageUrl != null) {
-
+              //  image.setImageResource(0);
                 ImageLoader.getInstance().displayImage(imageUrl, 0, image);
-
             } else if (backgroundColor != null) {
+                image.setImageResource(0);
                 image.setBackgroundColor(backgroundColor);
             }
         }

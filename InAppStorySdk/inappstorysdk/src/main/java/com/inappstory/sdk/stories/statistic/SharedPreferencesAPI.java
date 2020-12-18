@@ -14,6 +14,8 @@ public class SharedPreferencesAPI {
 
     private static final String SHARED_PREFERENCES_DEFAULT = "default_n";
 
+
+
     public static SharedPreferences getDefaultPreferences() {
         if (context == null) return null;
         return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);

@@ -6,9 +6,13 @@ import android.os.Parcelable;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -143,6 +147,14 @@ public class Story implements Parcelable {
 
     @SerializedName("disable_close")
     public boolean disableClose;
+
+
+    public void saveStoryOpened() {
+        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        if (opens == null) opens = new HashSet<>();
+        opens.add(Integer.toString(id));
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+    }
 
     public Boolean hasLike() {
         return hasLike != null ? hasLike : true;

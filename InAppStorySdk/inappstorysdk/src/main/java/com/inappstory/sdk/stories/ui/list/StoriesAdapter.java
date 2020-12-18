@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -139,6 +140,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
                     InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
+                    current.saveStoryOpened();
                     notifyItemChanged(index);
                 } else {
                     if (!InAppStoryService.getInstance().isConnected()) {
@@ -146,6 +148,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         return;
                     }
                     current.isOpened = true;
+                    current.saveStoryOpened();
                     notifyItemChanged(index);
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);

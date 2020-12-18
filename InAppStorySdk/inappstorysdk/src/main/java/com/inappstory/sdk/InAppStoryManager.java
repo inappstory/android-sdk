@@ -44,6 +44,7 @@ import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -251,6 +252,7 @@ public class InAppStoryManager {
     private InAppStoryManager(Builder builder) throws DataException {
 
         KeyValueStorage.setContext(builder.context);
+        SharedPreferencesAPI.setContext(builder.context);
         if (builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
             throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
         }
@@ -295,6 +297,7 @@ public class InAppStoryManager {
         if (InAppStoryService.getInstance() == null) return;
         if (userId.length() < 255) {
             if (this.userId.equals(userId)) return;
+            localOpensKey = null;
             this.userId = userId;
             if (InAppStoryService.getInstance().favoriteImages != null)
                 InAppStoryService.getInstance().favoriteImages.clear();
@@ -392,6 +395,14 @@ public class InAppStoryManager {
         StoryDownloader.destroy();
     }
 
+    private String localOpensKey;
+
+    public String getLocalOpensKey() {
+        if (localOpensKey == null && userId != null) {
+            localOpensKey = "opened" + userId;
+        }
+        return localOpensKey;
+    }
 
     public static InAppStoryManager getInstance() {
         return INSTANCE;
