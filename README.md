@@ -226,6 +226,8 @@
             void bindFavoriteItem(View favCell, List<FavoriteImage> favoriteImages, int count);
         }
     
+`View favCell` в методе `bindFavoriteItem` - RelativeLayout, который в себе содержит ту View, которую возвращает метод `getFavoriteItem`. В случае, если необходимо обращаться непосредтвенно ко внутренней View - предварительно у нее необходимо задать id или обращаться как `favCell.getChildAt(0)`.
+
 Класс FavoriteImage содержит следующие геттеры:
 
     int getId() // идентификатор story
