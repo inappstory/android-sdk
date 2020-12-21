@@ -468,8 +468,12 @@ public class InAppStoryManager {
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
             }
         })) {
+            String localTags = null;
+            if (tags != null) {
+                localTags = TextUtils.join(",", tags);
+            }
             Log.d("ShowStories", "Onboarding statisticOpened");
-            NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, tags == null ? getTags() : tags,
+            NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, localTags == null ? getTagsString() : localTags,
                     getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
                 @Override
                 public void onSuccess(List<Story> response) {
@@ -811,7 +815,7 @@ public class InAppStoryManager {
 
         public Builder tags(String... tags) {
             Builder.this.tags = new ArrayList<>();
-            for (int i = 1; i < tags.length; i++) {
+            for (int i = 0; i < tags.length; i++) {
                 Builder.this.tags.add(tags[i]);
             }
             return Builder.this;

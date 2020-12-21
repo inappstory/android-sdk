@@ -33,7 +33,7 @@ public interface ApiInterface {
 
     @GET("v2/story-onboarding")
     Request onboardingStories(@Query("session_id") String sessionId,
-                                        @Query("tags") List<String> tags,
+                                        @Query("tags") String tags,
                                         @Query("token") String token);
 
     @GET("v2/story/{id}")
