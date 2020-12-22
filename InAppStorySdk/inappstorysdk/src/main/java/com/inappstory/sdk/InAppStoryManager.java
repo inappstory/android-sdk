@@ -225,6 +225,11 @@ public class InAppStoryManager {
     }
 
     String API_KEY = "";
+
+    public void setTestKey(String testKey) {
+        this.TEST_KEY = testKey;
+    }
+
     String TEST_KEY = null;
 
     Intent intent;
@@ -372,7 +377,6 @@ public class InAppStoryManager {
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
-                .cmsId("1")
                 .cmsKey(this.API_KEY)
                 .setWebUrl(cmsUrl)
                 .cmsUrl(cmsUrl);
@@ -383,6 +387,7 @@ public class InAppStoryManager {
         if (INSTANCE != null) {
             if (InAppStoryService.getInstance() != null)
                 InAppStoryService.getInstance().logout();
+            StatisticSession.clear();
             INSTANCE.context = null;
             KeyValueStorage.removeString("managerInstance");
             try {

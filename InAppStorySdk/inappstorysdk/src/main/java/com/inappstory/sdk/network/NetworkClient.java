@@ -80,6 +80,11 @@ public class NetworkClient {
         appContext = context;
     }
 
+    public static void clear() {
+        instance = null;
+        apiInterface = null;
+    }
+
     public static ApiInterface getApi() {
         if (instance == null) {
             new NetworkClient.Builder()

@@ -58,11 +58,15 @@ public class ApiSettings {
     }
 
     public ApiSettings cmsUrl(String cmsUrl) {
+        if (ApiSettings.this.cmsUrl != null && cmsUrl != null && !ApiSettings.this.cmsUrl.equals(cmsUrl))
+            NetworkClient.clear();
         ApiSettings.this.cmsUrl = cmsUrl;
         return ApiSettings.this;
     }
 
     public ApiSettings cmsKey(String cmsKey) {
+        if (ApiSettings.this.cmsKey != null && cmsKey != null && !ApiSettings.this.cmsKey.equals(cmsKey))
+            NetworkClient.clear();
         ApiSettings.this.cmsKey = cmsKey;
         return ApiSettings.this;
     }

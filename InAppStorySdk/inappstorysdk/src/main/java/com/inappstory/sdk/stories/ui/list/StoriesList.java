@@ -269,6 +269,7 @@ public class StoriesList extends RecyclerView {
                         setAdapter(adapter);
                     } else {
                         adapter.refresh(storiesIds);
+                        adapter.notifyDataSetChanged();
                     }
                 }
             }, isFavoriteList);

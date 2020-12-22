@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.outerevents.ClickOnStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
@@ -171,6 +172,13 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
+        if (current != null)
+            CsEventBus.getDefault().post(new ClickOnStory(current.id, current.title, current.tags, current.slidesCount,
+                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+        else {
+            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), null, null, 0,
+                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+        }
         if (Sizes.isTablet()) {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
@@ -203,7 +211,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         int pref = position * 10;
         if (InAppStoryManager.getInstance().hasFavorite() && position == storiesIds.size())
             return pref + 3;
-        return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isOpened ? (pref + 2) : (pref + 1);
+        try {
+            return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isOpened ? (pref + 2) : (pref + 1);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @Override
