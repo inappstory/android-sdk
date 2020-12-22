@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:0.1.13'
+    implementation 'com.github.inappstory:android-sdk:0.1.14'
 
 Также для корректной работы в dependencies нужно добавить библиотеку GSON:
 
@@ -109,6 +109,9 @@
 Они позволяет менять/добавлять/удалять теги без пересоздания InAppStoryManager.
 
 Если приложение поддерживает несколько аккаунтов, то можно реализовать смену идентификатора пользователя. Для того, чтобы сменить уже заданный идентификатор, необходимо сначала вызвать функцию `InAppStoryService.getInstance().setUserId(userId)`
+
+Для изменения параметров `sandbox` и `apiKey` потребуется переинициализация `InAppStoryManager` (см пример инициализации). При этом старая будет очищена.
+Для изменения параметра testKey можно использовать метод `InAppStoryManager.getInstance().setTestKey(String testKey)`.
 
 ### Параметры
 
