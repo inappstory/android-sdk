@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -200,7 +201,7 @@ public class StoriesActivity extends AppCompatActivity {
             finish();
             return;
         }
-        StoriesFragment storiesFragment;
+        final StoriesFragment storiesFragment;
 
         CsEventBus.getDefault().register(StoriesActivity.this);
         CsEventBus.getDefault().post(new OpenStoriesScreenEvent());
@@ -224,13 +225,19 @@ public class StoriesActivity extends AppCompatActivity {
             storiesFragment = (StoriesFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
-        //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
-        FragmentTransaction t = fragmentManager.beginTransaction()
-                .replace(R.id.fragments_layout, storiesFragment);
-        t.addToBackStack("STORIES_FRAGMENT");
-        t.commit();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
+                //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
+                FragmentTransaction t = fragmentManager.beginTransaction()
+                        .replace(R.id.fragments_layout, storiesFragment);
+                t.addToBackStack("STORIES_FRAGMENT");
+                t.commit();
+            }
+        }, 300);
 
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
