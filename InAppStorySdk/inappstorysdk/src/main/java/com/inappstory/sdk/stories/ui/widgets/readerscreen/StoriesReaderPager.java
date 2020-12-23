@@ -13,6 +13,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
@@ -105,6 +106,7 @@ public class StoriesReaderPager extends ViewPager {
         boolean distanceY = false;
         boolean time = false;
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+           // CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             pressStartTime = System.currentTimeMillis();
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
@@ -121,7 +123,7 @@ public class StoriesReaderPager extends ViewPager {
             distanceY = pressedEndY > 400;
             if (pressedEndY > 0) {
             }
-            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+          //  CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
             CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
             if (distanceY) {
                 if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
@@ -169,5 +171,16 @@ public class StoriesReaderPager extends ViewPager {
         }
         boolean c = super.onInterceptTouchEvent(motionEvent);
         return c;
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+            CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+        }
+        return super.onTouchEvent(motionEvent);
     }
 }

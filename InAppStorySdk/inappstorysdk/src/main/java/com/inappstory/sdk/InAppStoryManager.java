@@ -423,6 +423,8 @@ public class InAppStoryManager {
 
     public Point coordinates = null;
 
+    public boolean soundOn = false;
+
     public OnboardingLoadedListener onboardLoadedListener;
     public OnboardingLoadedListener singleLoadedListener;
 

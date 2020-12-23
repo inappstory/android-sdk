@@ -59,6 +59,15 @@
                     android:layout_alignParentBottom="true"
                     android:layout_margin="8dp"
                     android:layout_height="wrap_content" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="24dp"
+                    android:id="@+id/hasAudio"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"
+                    android:elevation="9dp"
+                    android:src="@drawable/ic_sound_cell"
+                    android:layout_height="24dp"/>
             </RelativeLayout>
 
         </com.inappstory.sdk.imageloader.RoundedCornerLayout>

@@ -56,6 +56,7 @@ import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
+import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
@@ -75,6 +76,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_SOUND;
 import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 
@@ -136,7 +138,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (ind != storyId) return;
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         //storiesProgressView.skip();
-        if (story.durations != null && !story.durations.isEmpty()) story.slidesCount = story.durations.size();
+        if (story.durations != null && !story.durations.isEmpty())
+            story.slidesCount = story.durations.size();
         if (story.lastIndex == story.slidesCount - 1) {
             CsEventBus.getDefault().post(new NextStoryReaderEvent());
         } else {
@@ -250,6 +253,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     }
 
     public AppCompatImageView like;
+    public AppCompatImageView sound;
     public AppCompatImageView dislike;
     public AppCompatImageView favorite;
     public AppCompatImageView share;
@@ -335,6 +339,11 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void changeSoundStatus(SoundOnOffEvent event) {
+        if (sound != null) sound.setActivated(InAppStoryManager.getInstance().soundOn);
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskToLoadEvent event) {
         if (storiesWebView == null || storiesWebView.storyId != event.getId() || storiesWebView.index != event.getIndex())
             return;
@@ -400,6 +409,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         like = view.findViewById(R.id.likeButton);
         dislike = view.findViewById(R.id.dislikeButton);
         favorite = view.findViewById(R.id.favoriteButton);
+        sound = view.findViewById(R.id.soundButton);
         share = view.findViewById(R.id.shareButton);
         buttonsPanel = view.findViewById(R.id.buttonsPanel);
         blackBottom = view.findViewById(R.id.blackBottom);
@@ -415,11 +425,23 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         CsEventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
         boolean hasPanel = (getArguments().getBoolean(CS_HAS_LIKE, false) ||
                 getArguments().getBoolean(CS_HAS_FAVORITE, false) ||
-                getArguments().getBoolean(CS_HAS_SHARE, false));
+                getArguments().getBoolean(CS_HAS_SHARE, false) ||
+                getArguments().getBoolean(CS_HAS_SOUND, false));
         if (buttonsPanel != null) {
             buttonsPanel.setVisibility(hasPanel ?
-                            View.VISIBLE :
-                            View.GONE);
+                    View.VISIBLE :
+                    View.GONE);
+        }
+        if (sound != null) {
+            sound.setVisibility(getArguments().getBoolean(CS_HAS_SOUND, false) ? View.VISIBLE : View.GONE);
+            sound.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
+                    CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryManager.getInstance().soundOn, storyId));
+                }
+            });
+            sound.setActivated(InAppStoryManager.getInstance().soundOn);
         }
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
@@ -481,7 +503,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                             favorite.setVisibility(View.GONE);
                         if (!story.hasShare() && share != null)
                             share.setVisibility(View.GONE);
-                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && buttonsPanel != null) {
+
+                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && !story.hasAudio() && buttonsPanel != null) {
                             buttonsPanel.setVisibility(View.GONE);
 
                         }
@@ -493,6 +516,14 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         }
                         if (favorite != null) {
                             favorite.setActivated(story.favorite);
+                        }
+                        if (sound != null) {
+                            if (story.hasAudio()) {
+                                sound.setVisibility(View.VISIBLE);
+                            } else {
+                                sound.setVisibility(View.GONE);
+                            }
+                            sound.setActivated(InAppStoryManager.getInstance().soundOn);
                         }
                         if (!Sizes.isTablet()) {
                             if (blackBottom != null) {
@@ -510,7 +541,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         }
                         storiesWebView.setStoryId(storyId);
                         storiesWebView.setIndex(story.lastIndex);
-                        if (story.durations != null && !story.durations.isEmpty()) story.slidesCount = story.durations.size();
+                        if (story.durations != null && !story.durations.isEmpty())
+                            story.slidesCount = story.durations.size();
                         storiesProgressView.setStoriesCount(story.slidesCount);
                         storiesProgressView.setStoryDurations(story.durations);
                         storiesWebView.loadStory(storyId, story.lastIndex);
@@ -539,7 +571,14 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                             favorite.setVisibility(View.GONE);
                         if (!story.hasShare() && share != null)
                             share.setVisibility(View.GONE);
-                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && buttonsPanel != null) {
+                        if (sound != null) {
+                            if (story.hasAudio()) {
+                                sound.setVisibility(View.VISIBLE);
+                            } else {
+                                sound.setVisibility(View.GONE);
+                            }
+                        }
+                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && !story.hasAudio() && buttonsPanel != null) {
                             buttonsPanel.setVisibility(View.GONE);
 
                         }
@@ -565,10 +604,14 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                         if (favorite != null) {
                             favorite.setActivated(story.favorite);
                         }
+                        if (sound != null) {
+                            sound.setActivated(InAppStoryManager.getInstance().soundOn);
+                        }
                         storiesWebView.setStoryId(storyId);
                         storiesWebView.setIndex(0);
 
-                        if (story.durations != null && !story.durations.isEmpty()) story.slidesCount = story.durations.size();
+                        if (story.durations != null && !story.durations.isEmpty())
+                            story.slidesCount = story.durations.size();
                         storiesProgressView.setStoriesCount(story.slidesCount);
                         storiesWebView.loadStory(storyId, story.lastIndex);
                     }

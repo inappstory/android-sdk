@@ -56,6 +56,7 @@ public final class NetworkHandler implements InvocationHandler {
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
 
             Log.d("InAppStory_Network", connection.getURL().toString() + " \nBody: " + req.getBody());
+
             outStreamWriter.write(req.getBody());
             outStreamWriter.flush();
             outStreamWriter.close();

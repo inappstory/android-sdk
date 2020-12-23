@@ -107,7 +107,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                                         story.getSource(),
                                         (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
                                         Color.parseColor(story.getBackgroundColor()),
-                                        story.isOpened || isFavoriteList);
+                                        story.isOpened || isFavoriteList, story.hasAudio());
                             }
                         });
                     }

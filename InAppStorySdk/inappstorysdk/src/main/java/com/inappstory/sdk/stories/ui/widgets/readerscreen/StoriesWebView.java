@@ -64,6 +64,7 @@ import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
+import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
@@ -335,21 +336,26 @@ public class StoriesWebView extends WebView {
 
     public void pauseVideo() {
         // if (!isVideo) return;
-        Log.e("playVideo", storyId + " pause");
+        //Log.e("playVideo", storyId + " pause");
         loadUrl("javascript:(function(){story_slide_pause();})()");
     }
 
 
     public void playVideo() {
         // if (!isVideo) return;
-        Log.e("playVideo", storyId + " play");
-        loadUrl("javascript:(function(){story_slide_start();})()");
+        //Log.e("playVideo", storyId + " play");
+        boolean withSound = InAppStoryManager.getInstance().soundOn;
+        if (withSound) {
+            loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
+        } else {
+            loadUrl("javascript:(function(){story_slide_start('{\"muted\": true}');})()");
+        }
     }
 
     public void stopVideo() {
         // if (!isVideo) return;
         //loadUrl("javascript:(function(){window.Android.defaultTap('test');})()");
-        Log.e("playVideo", storyId + " stop");
+        //Log.e("playVideo", storyId + " stop");
         loadUrl("javascript:(function(){story_slide_stop();})()");
 
     }
@@ -357,7 +363,7 @@ public class StoriesWebView extends WebView {
     public void resumeVideo() {
 
 
-        Log.e("playVideo", storyId + " resume");
+       // Log.e("playVideo", storyId + " resume");
         loadUrl("javascript:(function(){story_slide_resume();})()");
     }
 
@@ -366,10 +372,19 @@ public class StoriesWebView extends WebView {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                Log.e("replaceHtml", url);
+                //Log.e("replaceHtml", url);
                 StoriesWebView.super.loadUrl(url);
             }
         });
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void changeSoundStatus(SoundOnOffEvent event) {
+        if (InAppStoryManager.getInstance().soundOn) {
+            loadUrl("javascript:(function(){story_slide_enable_audio();})()");
+        } else {
+            loadUrl("javascript:(function(){story_slide_disable_audio();})()");
+        }
     }
 
     public void cancelDialog(String id) {

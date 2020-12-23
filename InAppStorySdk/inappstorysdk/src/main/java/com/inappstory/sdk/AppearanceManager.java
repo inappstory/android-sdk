@@ -14,6 +14,7 @@ public class AppearanceManager {
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
     public static final String CS_HAS_LIKE = "hasLike";
     public static final String CS_HAS_FAVORITE = "hasFavorite";
+    public static final String CS_HAS_SOUND = "hasSound";
     public static final String CS_HAS_SHARE = "hasShare";
     public static final String CS_CLOSE_ON_SWIPE = "closeOnSwipe";
     public static final String CS_READER_OPEN_ANIM = "readerOpenAnimation";

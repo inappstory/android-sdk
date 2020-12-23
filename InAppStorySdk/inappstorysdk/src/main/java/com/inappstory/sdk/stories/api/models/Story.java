@@ -168,8 +168,15 @@ public class Story implements Parcelable {
         return hasShare != null ? hasShare : true;
     }
 
+    public Boolean hasAudio() {
+        return hasAudio != null ? hasAudio : false;
+    }
+
     @SerializedName("like_functional")
     private Boolean hasLike = true;
+
+    @SerializedName("has_audio")
+    private Boolean hasAudio = false;
 
     @SerializedName("favorite_functional")
     private Boolean hasFavorite = true;
@@ -200,6 +207,7 @@ public class Story implements Parcelable {
         story.backgroundColor = backgroundColor;
         story.image = image;
         story.like = like;
+        story.hasAudio = hasAudio;
         story.slidesCount = slidesCount;
         story.titleColor = titleColor;
         story.isOpened = isOpened;

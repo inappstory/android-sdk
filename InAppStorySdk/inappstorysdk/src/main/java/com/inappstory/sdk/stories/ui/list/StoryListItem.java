@@ -31,6 +31,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     AppCompatTextView title;
     AppCompatTextView source;
     AppCompatImageView image;
+    AppCompatImageView hasAudioIcon;
     View border;
     AppearanceManager manager;
     boolean isFavorite;
@@ -63,6 +64,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             cv.setRadius(Sizes.dpToPxExt(16));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
+            hasAudioIcon = v.findViewById(R.id.hasAudio);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
             title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
@@ -219,10 +221,17 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         }
     }
 
-    public void bind(String titleText, Integer titleColor, String sourceText, String imageUrl, Integer backgroundColor, boolean isOpened) {
+    public void bind(String titleText,
+                     Integer titleColor,
+                     String sourceText,
+                     String imageUrl,
+                     Integer backgroundColor,
+                     boolean isOpened,
+                     boolean hasAudio) {
         if (getListItem != null) {
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setSource(itemView, sourceText);
+            getListItem.setHasAudio(itemView, hasAudio);
             getListItem.setImage(itemView, imageUrl, backgroundColor);
             getListItem.setOpened(itemView, isOpened);
             return;
@@ -255,6 +264,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 source.setTypeface(manager.csCustomFont());
             }
         }
+
+        hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
 
         border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
         if (image != null) {
