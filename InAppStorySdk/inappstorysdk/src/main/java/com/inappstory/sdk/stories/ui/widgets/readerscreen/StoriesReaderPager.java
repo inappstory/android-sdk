@@ -124,7 +124,6 @@ public class StoriesReaderPager extends ViewPager {
             if (pressedEndY > 0) {
             }
           //  CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-            CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
             if (distanceY) {
                 if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
                     CsEventBus.getDefault().post(new SwipeDownEvent());
@@ -180,6 +179,7 @@ public class StoriesReaderPager extends ViewPager {
             CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
         }
         return super.onTouchEvent(motionEvent);
     }

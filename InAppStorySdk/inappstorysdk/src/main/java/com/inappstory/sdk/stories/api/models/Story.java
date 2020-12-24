@@ -173,16 +173,16 @@ public class Story implements Parcelable {
     }
 
     @SerializedName("like_functional")
-    private Boolean hasLike = true;
+    private Boolean hasLike;
 
     @SerializedName("has_audio")
-    private Boolean hasAudio = false;
+    private Boolean hasAudio;
 
     @SerializedName("favorite_functional")
-    private Boolean hasFavorite = true;
+    private Boolean hasFavorite;
 
     @SerializedName("share_functional")
-    private Boolean hasShare = true;
+    private Boolean hasShare;
 
     @SerializedName("slides_duration")
     public List<Integer> durations;

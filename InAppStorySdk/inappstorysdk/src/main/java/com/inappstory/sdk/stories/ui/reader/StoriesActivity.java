@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
 import com.inappstory.sdk.stories.events.SwipeLeftEvent;
 import com.inappstory.sdk.stories.events.SwipeRightEvent;
@@ -189,6 +190,13 @@ public class StoriesActivity extends AppCompatActivity {
                     else animateFirst = false;
                     CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
                 }
+
+                @Override
+                public void onDragDropped() {
+                    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+                    CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
+                }
+
             };
         }
         draggableFrame.addListener(chromeFader);

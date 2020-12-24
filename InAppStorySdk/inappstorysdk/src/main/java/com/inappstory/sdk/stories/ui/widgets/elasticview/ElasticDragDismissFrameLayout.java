@@ -108,6 +108,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
          * Called when dragging is released and has exceeded the threshold dismiss distance.
          */
         void onDragDismissed() { }
+        void onDragDropped() { }
 
     }
 
@@ -160,6 +161,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             }
             totalDrag = 0;
             draggingDown = draggingUp = false;
+            dispatchDropCallback();
             dispatchDragCallback(0f, 0f, 0f, 0f);
         }
     }
@@ -252,6 +254,15 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         }
     }
 
+    private void dispatchDropCallback() {
+        if (callbacks != null && !callbacks.isEmpty()) {
+            for (ElasticDragDismissCallback callback : callbacks) {
+                callback.onDragDropped();
+            }
+        }
+    }
+
+
     /**
      * An {@link ElasticDragDismissCallback} which fades system chrome (i.e. status bar and
      * navigation bar) whilst elastic drags are performed and
@@ -297,6 +308,11 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         public void onDragDismissed() {
             activity.finishAfterTransition();
+        }
+
+
+        public void onDragDropped() {
+
         }
     }
 

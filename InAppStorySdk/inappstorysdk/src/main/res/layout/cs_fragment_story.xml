@@ -29,6 +29,7 @@
                     android:id="@+id/buttonsPanel"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
+                    android:visibility="gone"
                     android:layout_alignParentBottom="true"
                     android:background="#000000"
                     android:elevation="9dp"

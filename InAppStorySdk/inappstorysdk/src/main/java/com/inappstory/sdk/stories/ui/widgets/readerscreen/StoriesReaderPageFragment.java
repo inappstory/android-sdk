@@ -427,11 +427,11 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 getArguments().getBoolean(CS_HAS_FAVORITE, false) ||
                 getArguments().getBoolean(CS_HAS_SHARE, false) ||
                 getArguments().getBoolean(CS_HAS_SOUND, false));
-        if (buttonsPanel != null) {
+   /*     if (buttonsPanel != null) {
             buttonsPanel.setVisibility(hasPanel ?
                     View.VISIBLE :
                     View.GONE);
-        }
+        }*/
         if (sound != null) {
             sound.setVisibility(getArguments().getBoolean(CS_HAS_SOUND, false) ? View.VISIBLE : View.GONE);
             sound.setOnClickListener(new View.OnClickListener() {
@@ -503,11 +503,12 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                             favorite.setVisibility(View.GONE);
                         if (!story.hasShare() && share != null)
                             share.setVisibility(View.GONE);
-
-                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && !story.hasAudio() && buttonsPanel != null) {
-                            buttonsPanel.setVisibility(View.GONE);
-
-                        }
+                        if (buttonsPanel != null)
+                            if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && !story.hasAudio()) {
+                                buttonsPanel.setVisibility(View.GONE);
+                            } else {
+                                buttonsPanel.setVisibility(View.VISIBLE);
+                            }
                         if (like != null) {
                             like.setActivated(story.liked());
                         }
@@ -578,10 +579,12 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                                 sound.setVisibility(View.GONE);
                             }
                         }
-                        if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && !story.hasAudio() && buttonsPanel != null) {
-                            buttonsPanel.setVisibility(View.GONE);
-
-                        }
+                        if (buttonsPanel != null)
+                            if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && !story.hasAudio()) {
+                                buttonsPanel.setVisibility(View.GONE);
+                            } else {
+                                buttonsPanel.setVisibility(View.VISIBLE);
+                            }
                         if (!Sizes.isTablet()) {
                             if (blackBottom != null) {
                                 Point screenSize = Sizes.getScreenSize();
