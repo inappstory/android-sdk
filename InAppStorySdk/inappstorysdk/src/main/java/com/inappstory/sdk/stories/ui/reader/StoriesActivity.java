@@ -57,6 +57,25 @@ public class StoriesActivity extends AppCompatActivity {
     public boolean isFakeActivity = false;
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        if (isFinishing()) {
+            StatusBarController.showStatusBar(this);
+            if (InAppStoryService.getInstance() != null) {
+                InAppStoryService.getInstance().sendStatistic();
+            }
+            try {
+                CsEventBus.getDefault().unregister(this);
+            } catch (Exception e) {
+
+            }
+            if (!isFakeActivity)
+                destroyed = 0;
+            System.gc();
+        }
+    }
+
+    @Override
     public void finish() {
         if (animateFirst) {
             animateFirst = false;
@@ -330,18 +349,7 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         Log.e("StoriesActivity", "destroy");
-        StatusBarController.showStatusBar(this);
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().sendStatistic();
-        }
-        try {
-            CsEventBus.getDefault().unregister(this);
-        } catch (Exception e) {
 
-        }
-        if (!isFakeActivity)
-            destroyed = 0;
-        System.gc();
         super.onDestroy();
     }
 }
