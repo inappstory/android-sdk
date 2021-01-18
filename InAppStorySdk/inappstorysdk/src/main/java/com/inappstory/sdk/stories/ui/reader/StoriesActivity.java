@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -34,6 +35,7 @@ import com.inappstory.sdk.stories.events.SwipeLeftEvent;
 import com.inappstory.sdk.stories.events.SwipeRightEvent;
 import com.inappstory.sdk.stories.events.WidgetTapEvent;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
@@ -159,12 +161,16 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
+
+        Log.e("StoriesActivity", "create");
         if (destroyed == -1) {
+            Log.e("StoriesActivity", "create fake");
             isFakeActivity = true;
             super.onCreate(savedInstanceState1);
             finishActivityWithoutAnimation();
             return;
         }
+        Log.e("StoriesActivity", "create real");
         destroyed = -1;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -259,6 +265,19 @@ public class StoriesActivity extends AppCompatActivity {
                     story.title, story.tags, story.slidesCount,
                     story.lastIndex, event.getAction(),
                     getIntent().getIntExtra("source", 0)));
+            String cause = StatisticSendManager.AUTO;
+            switch (event.getAction()) {
+                case CloseStory.CLICK:
+                    cause = StatisticSendManager.CLICK;
+                    break;
+                case CloseStory.CUSTOM:
+                    cause = StatisticSendManager.CUSTOM;
+                    break;
+                case CloseStory.SWIPE:
+                    cause = StatisticSendManager.SWIPE;
+                    break;
+            }
+            StatisticSendManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
         }
         cleanReader();
         CsEventBus.getDefault().unregister(this);
@@ -310,6 +329,7 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
+        Log.e("StoriesActivity", "destroy");
         StatusBarController.showStatusBar(this);
         if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().sendStatistic();
@@ -319,9 +339,9 @@ public class StoriesActivity extends AppCompatActivity {
         } catch (Exception e) {
 
         }
-        System.gc();
-        super.onDestroy();
         if (!isFakeActivity)
             destroyed = 0;
+        System.gc();
+        super.onDestroy();
     }
 }

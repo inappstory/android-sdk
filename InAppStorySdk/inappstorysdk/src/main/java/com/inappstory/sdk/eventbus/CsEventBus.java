@@ -169,11 +169,7 @@ public class CsEventBus {
         PostingThreadState postingState = currentPostingThreadState.get();
         List<Object> eventQueue = postingState.eventQueue;
         eventQueue.add(event);
-        try {
-            Log.e("CsEventBus", event.getClass().getSimpleName() + " " + JsonParser.getJson(event));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
         if (!postingState.isPosting) {
             postingState.isMainThread = false;
             postingState.isPosting = true;

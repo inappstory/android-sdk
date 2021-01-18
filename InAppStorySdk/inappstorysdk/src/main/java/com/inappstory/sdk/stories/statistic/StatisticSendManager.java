@@ -1,25 +1,30 @@
 package com.inappstory.sdk.stories.statistic;
 
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.DisplayMetrics;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.StatisticTask;
+import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import static com.inappstory.sdk.InAppStoryService.EXPAND_STRING;
 
 public class StatisticSendManager {
     private static StatisticSendManager INSTANCE;
@@ -27,20 +32,36 @@ public class StatisticSendManager {
     private static final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
+    public static final String NEXT = "next";
+    public static final String PREV = "prev";
+    public static final String ONBOARDING = "onboarding";
+    public static final String LIST = "list";
+    public static final String DIRECT = "direct";
+    public static final String FAVORITE = "favorite";
+
+
+    public static final String AUTO = "auto-close";
+    public static final String CLICK = "button-close";
+    public static final String SWIPE = "swipe-close";
+    public static final String CUSTOM = "custom-close";
+
     private Object statisticTasksLock = new Object();
 
     private ArrayList<StatisticTask> tasks = new ArrayList<>();
 
     public void addTask(StatisticTask task) {
+        if (1 == 1) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
         }
     }
 
-    private static void saveTasksSP() {
+    public static void saveTasksSP() {
         try {
-            SharedPreferencesAPI.saveString(TASKS_KEY, JsonParser.getJson(getInstance().tasks));
+            ArrayList<StatisticTask> ltasks = new ArrayList<>();
+            ltasks.addAll(getInstance().tasks);
+            SharedPreferencesAPI.saveString(TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -66,6 +87,34 @@ public class StatisticSendManager {
     private static Handler handler = new Handler();
     private static HandlerThread thread;
 
+    @CsSubscribe
+    public void pauseStoryEvent(PauseStoryReaderEvent event) {
+        try {
+            if (event.isWithBackground()) {
+                isBackgroundPause = true;
+                pauseTimer = System.currentTimeMillis();
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    long pauseTimer = -1;
+    boolean isBackgroundPause = false;
+
+    boolean backPaused = false;
+
+    @CsSubscribe
+    public void resumeStoryEvent(ResumeStoryReaderEvent event) {
+        if (event.isWithBackground()) {
+            if (isBackgroundPause) {
+                pauseTime += (System.currentTimeMillis() - pauseTimer);
+            }
+            isBackgroundPause = false;
+        }
+    }
+
+
     public StatisticSendManager() {
         thread = new HandlerThread("StatisticSendManagerThread" + System.currentTimeMillis());
         thread.start();
@@ -82,12 +131,14 @@ public class StatisticSendManager {
     private static Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getInstance().tasks.size() == 0 || InAppStoryService.getInstance() == null
+            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.getInstance() == null
                     || !InAppStoryService.getInstance().isConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
+                return;
             }
             StatisticTask task;
             synchronized (getInstance().statisticTasksLock) {
+
                 task = getInstance().tasks.get(0);
                 getInstance().tasks.remove(0);
                 saveTasksSP();
@@ -98,15 +149,183 @@ public class StatisticSendManager {
         }
     };
 
-    private static void sendTask(StatisticTask task) {
+
+    public ArrayList<Integer> viewed = new ArrayList<>();
+
+    public void sendViewStory(final int i, final String w) {
+        if (!viewed.contains(i)) {
+            StatisticTask task = new StatisticTask();
+            task.event = "story-view";
+            task.storyId = i;
+            task.whence = w;
+            generateBase(task);
+            addTask(task);
+            viewed.add(i);
+        }
+    }
+
+    public void sendOpenStory(final int i, final String w) {
+        currentTime = System.currentTimeMillis();
+        pauseTime = 0;
+        StatisticTask task = new StatisticTask();
+        task.event = "story-open";
+        task.storyId = i;
+        task.whence = w;
+        generateBase(task);
+        addTask(task);
+    }
+
+    public void generateBase(StatisticTask task) {
+        Context context = InAppStoryManager.getInstance().getContext();
+        task.app = new PhoneAppData();
+        task.app.platform = "android";
+        // String deviceId = Settings.Secure.getString(context.getContentResolver(),
+        //         Settings.Secure.ANDROID_ID);// Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        task.app.model = Build.MODEL;
+        task.app.manufacturer = Build.MANUFACTURER;
+        task.app.brand = Build.BRAND;
+        task.app.screenWidth = Sizes.getScreenSize().x;
+        task.app.screenHeight = Sizes.getScreenSize().y;
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        task.app.screenDpi = (int) metrics.density * 160;
+        task.app.osVersion = Build.VERSION.CODENAME;
+        task.app.osSdkVersion = Build.VERSION.SDK_INT;
+        task.app.appPackageId = context.getPackageName();
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        task.app.appVersion = (pInfo != null ? pInfo.versionName : "");
+        task.app.appBuild = (pInfo != null ? pInfo.versionCode : 1);
+        task.userId = InAppStoryManager.getInstance().getUserId();
+        task.timestamp = System.currentTimeMillis() / 1000;
+    }
+
+    public void sendReadStory(final int i) {
+        StatisticTask task = new StatisticTask();
+        task.event = "story-read";
+        task.storyId = i;
+
+        generateBase(task);
+        addTask(task);
+
+    }
+
+    public void sendCloseStory(final int i, final String c, final Integer si, final Integer st) {
+
+        StatisticTask task = new StatisticTask();
+        task.event = "story-close";
+        task.storyId = i;
+        task.cause = c;
+        task.slideIndex = si;
+        task.slideTotal = st;
+        task.durationMs = currentTime - pauseTime;
+
+        generateBase(task);
+        addTask(task);
+        pauseTime = 0;
+    }
+
+    public void sendCloseStory(final int i, final String c, final Integer si, final Integer st, final Long t) {
+
+        StatisticTask task = new StatisticTask();
+
+        task.event = "story-close";
+        task.storyId = i;
+        task.cause = c;
+        task.slideIndex = si;
+        task.slideTotal = st;
+        task.durationMs = t;
+
+        generateBase(task);
+        addTask(task);
+
+    }
+
+    public void sendClickLink(int storyId) {
+        StatisticTask task = new StatisticTask();
+        task.event = "story-w-link";
+
+        generateBase(task);
+        addTask(task);
+    }
+
+    public void sendLikeStory(final int i) {
+        StatisticTask task = new StatisticTask();
+        task.event = "story-like";
+
+        generateBase(task);
+        addTask(task);
+
+    }
+
+    public void sendDislikeStory(final int i) {
+
+        StatisticTask task = new StatisticTask();
+        task.event = "story-dislike";
+        task.storyId = i;
+
+        generateBase(task);
+        addTask(task);
+
+    }
+
+    public void sendFavoriteStory(final int i) {
+        StatisticTask task = new StatisticTask();
+        task.event = "story-favorite";
+        task.storyId = i;
+
+        generateBase(task);
+        addTask(task);
+    }
+
+    public long currentTime = -1;
+    public long pauseTime = 0;
+
+
+    public void sendViewSlide(final int i, final int si, final Long t) {
+        StatisticTask task = new StatisticTask();
+        task.event = "story-slide";
+        task.storyId = i;
+        task.slideIndex = si;
+        task.spendMs = t;
+
+        generateBase(task);
+        addTask(task);
+
+    }
+
+    public void sendShareStory(final int i) {
+        StatisticTask task = new StatisticTask();
+
+        task.event = "story-share";
+        task.storyId = i;
+
+        generateBase(task);
+        addTask(task);
+
+    }
+
+    private static void sendTask(final StatisticTask task) {
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    Response response = NetworkClient.getApi().getStoryById("",
-                            StatisticSession.getInstance().id, 1,
-                            InAppStoryManager.getInstance().getApiKey(),
-                            EXPAND_STRING).execute();
+                    Response response = NetworkClient.getApi().sendBaseStat(
+                            task.event,
+                            task.sessionId,
+                            task.userId,
+                            task.timestamp,
+                            task.storyId,
+                            task.whence,
+                            task.cause,
+                            task.slideIndex,
+                            task.slideTotal,
+                            task.durationMs,
+                            task.spendMs).execute();
 
                     //change request here
 

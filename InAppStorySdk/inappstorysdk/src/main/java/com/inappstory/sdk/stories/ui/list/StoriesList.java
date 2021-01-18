@@ -35,6 +35,7 @@ import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.OpenStoryByIdEvent;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesList extends RecyclerView {
@@ -117,6 +118,12 @@ public class StoriesList extends RecyclerView {
         }
         if (InAppStoryService.getInstance() != null)
             InAppStoryService.getInstance().previewStatisticEvent(indexes);
+        if (StatisticSendManager.getInstance() != null) {
+            for (int i = 0; i < indexes.size(); i++) {
+                StatisticSendManager.getInstance().sendViewStory(indexes.get(i),
+                        isFavoriteList ? StatisticSendManager.FAVORITE : StatisticSendManager.LIST);
+            }
+        }
     }
 
     StoriesAdapter adapter;

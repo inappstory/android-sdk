@@ -28,7 +28,7 @@ public class SubscriberMethodFinder {
         subscriberMethods = findUsingReflection(subscriberClass);
         if (subscriberMethods.isEmpty()) {
             throw new EventBusException("Subscriber " + subscriberClass
-                    + " and its super classes have no public methods with the @Subscribe annotation");
+                    + " and its super classes have no public methods with the @CsSubscribe annotation");
         } else {
             METHOD_CACHE.put(subscriberClass, subscriberMethods);
             return subscriberMethods;
@@ -91,13 +91,13 @@ public class SubscriberMethodFinder {
                     }
                 } else if (strictMethodVerification && method.isAnnotationPresent(CsSubscribe.class)) {
                     String methodName = method.getDeclaringClass().getName() + "." + method.getName();
-                    throw new EventBusException("@Subscribe method " + methodName +
+                    throw new EventBusException("@CsSubscribe method " + methodName +
                             "must have exactly 1 parameter but has " + parameterTypes.length);
                 }
             } else if (strictMethodVerification && method.isAnnotationPresent(CsSubscribe.class)) {
                 String methodName = method.getDeclaringClass().getName() + "." + method.getName();
                 throw new EventBusException(methodName +
-                        " is a illegal @Subscribe method: must be public, non-static, and non-abstract");
+                        " is a illegal @CsSubscribe method: must be public, non-static, and non-abstract");
             }
         }
     }

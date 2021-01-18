@@ -68,16 +68,51 @@ public class Story implements Parcelable {
 
     public String source;
 
-    public String getBackgroundColor() {
-        if (backgroundColor == null) return "#000000";
-        return backgroundColor;
-    }
 
     @SerializedName("background_color")
     public String backgroundColor;
 
     @SerializedName("image")
     public List<Image> image;
+
+
+
+
+    @SerializedName("src_list")
+    public List<ResourceMappingObject> srcList;
+
+    @SerializedName("like")
+    public Integer like;
+
+    @SerializedName("slides_count")
+    public int slidesCount;
+
+
+    @SerializedName("favorite")
+    public boolean favorite;
+
+
+
+    @SerializedName("hide_in_reader")
+    public Boolean hideInReader;
+
+    public String getDeeplink() {
+        return deeplink;
+    }
+
+    @SerializedName("deeplink")
+    public String deeplink;
+
+    @SerializedName("is_opened")
+    public boolean isOpened;
+
+    @SerializedName("disable_close")
+    public boolean disableClose;
+
+    public String getBackgroundColor() {
+        if (backgroundColor == null) return "#000000";
+        return backgroundColor;
+    }
 
     public List<ResourceMappingObject> getSrcList() {
         if (srcList == null) srcList = new ArrayList<>();
@@ -103,18 +138,6 @@ public class Story implements Parcelable {
         return res;
     }
 
-    @SerializedName("src_list")
-    public List<ResourceMappingObject> srcList;
-
-    @SerializedName("like")
-    public Integer like;
-
-    @SerializedName("slides_count")
-    public int slidesCount;
-
-
-    @SerializedName("favorite")
-    public boolean favorite;
 
     public int getLike() {
         return like != null ? like : 0;
@@ -128,33 +151,11 @@ public class Story implements Parcelable {
         return getLike() == -1;
     }
 
-    @SerializedName("hide_in_reader")
-    public Boolean hideInReader;
-
     public boolean isHideInReader() {
         return hideInReader != null && hideInReader;
     }
 
-    public String getDeeplink() {
-        return deeplink;
-    }
 
-    @SerializedName("deeplink")
-    public String deeplink;
-
-    @SerializedName("is_opened")
-    public boolean isOpened;
-
-    @SerializedName("disable_close")
-    public boolean disableClose;
-
-
-    public void saveStoryOpened() {
-        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-        if (opens == null) opens = new HashSet<>();
-        opens.add(Integer.toString(id));
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
-    }
 
     public Boolean hasLike() {
         return hasLike != null ? hasLike : true;
@@ -172,6 +173,12 @@ public class Story implements Parcelable {
         return hasAudio != null ? hasAudio : false;
     }
 
+    public void saveStoryOpened() {
+        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        if (opens == null) opens = new HashSet<>();
+        opens.add(Integer.toString(id));
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+    }
     @SerializedName("like_functional")
     private Boolean hasLike;
 

@@ -5,7 +5,8 @@ package com.inappstory.sdk.stories.events;
  */
 
 public class StoryPageOpenEvent {
-
+    public boolean isNext;
+    public boolean isPrev;
 
     public int getIndex() {
         return index;

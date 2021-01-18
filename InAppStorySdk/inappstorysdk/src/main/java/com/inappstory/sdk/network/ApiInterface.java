@@ -1,8 +1,6 @@
 package com.inappstory.sdk.network;
 
 
-import java.util.List;
-
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 /**
@@ -43,6 +41,26 @@ public interface ApiInterface {
                          @Query("token") String token,
                          @Query("expand") String expand
     );
+
+    @GET("stat/{event_name}")
+    Request sendBaseStat(@Path("event_name") String eventName,
+                         @Query("session_id") String sessionId,
+                         @Query("user_id") String userId,
+                         @Query("timestamp") Long timestamp,
+                         @Query("story_id") Integer storyId,
+                         @Query("whence") String whence,
+                         @Query("cause") String cause,
+                         @Query("slide_index") Integer slideIndex,
+                         @Query("slide_total") Integer slideTotal,
+                         @Query("duration_ms") Long durationMs,
+                         @Query("spend_ms") Long spendMs);
+
+
+    @GET("stat/{event_name}")
+    Request sendWidgetStat(@Path("event_name") String eventName,
+                         @Query("session_id") String sessionId,
+                         @Query("user_id") String userId,
+                         @Query("timestamp") Long timestamp);
 
     @FormUrlEncoded
     @PUT("v2/story-data/{id}")

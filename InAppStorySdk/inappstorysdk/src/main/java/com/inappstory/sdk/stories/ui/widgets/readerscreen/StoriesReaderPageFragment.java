@@ -66,6 +66,7 @@ import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import com.inappstory.sdk.stories.serviceevents.LikeDislikeEvent;
 import com.inappstory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -142,6 +143,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             story.slidesCount = story.durations.size();
         if (story.lastIndex == story.slidesCount - 1) {
             CsEventBus.getDefault().post(new NextStoryReaderEvent());
+
         } else {
             storiesProgressView.setMax(story.lastIndex);
             CsEventBus.getDefault().post(new OnNextEvent());
@@ -674,6 +676,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 @Override
                 public void onClick(View v) {
                     Story story = StoryDownloader.getInstance().getStoryById(storyId);
+                    StatisticSendManager.getInstance().sendShareStory(story.id);
                     CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                             story.tags, story.slidesCount, story.lastIndex));
                     CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));

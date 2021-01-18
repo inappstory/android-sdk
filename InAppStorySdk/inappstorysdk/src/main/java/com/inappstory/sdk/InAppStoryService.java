@@ -69,6 +69,7 @@ import com.inappstory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import com.inappstory.sdk.stories.serviceevents.LikeDislikeEvent;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -691,6 +692,10 @@ public class InAppStoryService extends Service {
                 add(currentEvent.index);
                 add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
             }});
+            if (currentEvent.eventType == 1) {
+                StatisticSendManager.getInstance().sendViewSlide(currentEvent.storyId, currentEvent.index,
+                        Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
+            }
             Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
                     currentEvent.storyId + " " + currentEvent.index + " " +
                     Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
@@ -932,11 +937,6 @@ public class InAppStoryService extends Service {
             }
         }
         if (sendObject.size() > 2) {
-            try {
-                Log.e("stat", JsonParser.getJson(sendObject));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             putStatistic(sendObject);
             eventCount++;
         }
@@ -1042,20 +1042,24 @@ public class InAppStoryService extends Service {
             if (story.disliked()) {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
+                StatisticSendManager.getInstance().sendDislikeStory(story.id);
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, true));
+                StatisticSendManager.getInstance().sendDislikeStory(story.id);
                 val = -1;
             }
         } else {
             if (story.liked()) {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
+                StatisticSendManager.getInstance().sendLikeStory(story.id);
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, true));
+                StatisticSendManager.getInstance().sendLikeStory(story.id);
                 val = 1;
             }
         }
@@ -1090,7 +1094,7 @@ public class InAppStoryService extends Service {
     public void favoriteClick(final int storyId, final LikeDislikeCallback callback) {
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final boolean val = story.favorite;
-
+        StatisticSendManager.getInstance().sendFavoriteStory(story.id);
         CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex, story.favorite));
         NetworkClient.getApi().storyFavorite(Integer.toString(storyId),

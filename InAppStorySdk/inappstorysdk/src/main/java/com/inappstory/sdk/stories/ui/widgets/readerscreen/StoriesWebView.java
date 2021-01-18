@@ -190,6 +190,7 @@ public class StoriesWebView extends WebView {
         if (InAppStoryService.getInstance().isConnected()) {
             if (innerWebData.contains("<video")) {
                 isVideo = true;
+                getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
                 setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
                 return;
@@ -213,7 +214,7 @@ public class StoriesWebView extends WebView {
         if (storyId != event.getStoryId()) return;
         boolean high = storyId == InAppStoryService.getInstance().getCurrentId();
         //getSettings().setUseWideViewPort(true);
-        getSettings().setRenderPriority(high ? WebSettings.RenderPriority.HIGH : WebSettings.RenderPriority.LOW);
+        getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         final String data = event.getWebData();
         if (!emptyLoaded) {
 

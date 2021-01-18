@@ -47,6 +47,7 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import com.inappstory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
+import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesProgressView;
@@ -242,13 +243,45 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         StoryDownloader.getInstance().reloadPage(event.getStoryId(), event.getIndex(), adds);
     }
 
+    int lastPos = -1;
+
     @Override
     public void onPageSelected(int pos0) {
         if (isDestroyed) return;
         final int position = pos0;
+        if (lastPos < pos0 && lastPos > -1) {
+            Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(lastPos));
+            StatisticSendManager.getInstance().sendCloseStory(story.id, StatisticSendManager.NEXT, story.lastIndex, story.slidesCount);
+            StatisticSendManager.getInstance().sendViewStory(currentIds.get(pos0), StatisticSendManager.NEXT);
+            StatisticSendManager.getInstance().sendOpenStory(currentIds.get(pos0), StatisticSendManager.NEXT);
+        } else if (lastPos > pos0 && lastPos > -1) {
+            Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(lastPos));
+            StatisticSendManager.getInstance().sendCloseStory(story.id, StatisticSendManager.PREV, story.lastIndex, story.slidesCount);
+            StatisticSendManager.getInstance().sendViewStory(currentIds.get(pos0), StatisticSendManager.PREV);
+            StatisticSendManager.getInstance().sendOpenStory(currentIds.get(pos0), StatisticSendManager.PREV);
+        } else if (lastPos == -1) {
+            String whence = StatisticSendManager.DIRECT;
+            switch (getArguments().getInt("source", 0)) {
+                case 1:
+                    whence = StatisticSendManager.ONBOARDING;
+                    break;
+                case 2:
+                    whence = StatisticSendManager.LIST;
+                    break;
+                case 3:
+                    whence = StatisticSendManager.FAVORITE;
+                    break;
+                default:
+                    break;
+            }
+            StatisticSendManager.getInstance().sendViewStory(currentIds.get(pos0), whence);
+            StatisticSendManager.getInstance().sendOpenStory(currentIds.get(pos0), whence);
+        }
+        lastPos = pos0;
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
+
         Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(position));
         if (story != null)
             CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags, story.slidesCount, getArguments().getInt("source")));
@@ -376,7 +409,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         CsEventBus.getDefault().post(new StoryPageOpenEvent(
                 InAppStoryService.getInstance().getCurrentId(),
                 currentIndex
-        ));
+        ) {{
+            isNext = true;
+        }});
 
         if (st.lastIndex < st.slidesCount) {
             st.lastIndex++;
@@ -430,7 +465,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             CsEventBus.getDefault().post(new StoryPageOpenEvent(
                     InAppStoryService.getInstance().getCurrentId(),
                     currentIndex
-            ));
+            ) {{
+                isPrev = true;
+            }});
         }
 
     }
@@ -460,6 +497,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onNextStory(NextStoryReaderEvent event) {
         if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
+
+            Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(storiesViewPager.getCurrentItem()));
+            StatisticSendManager.getInstance().sendCloseStory(story.id, StatisticSendManager.PREV, story.lastIndex, story.slidesCount);
+            StatisticSendManager.getInstance().sendViewStory(
+                    currentIds.get(storiesViewPager.getCurrentItem() + 1), StatisticSendManager.NEXT);
+            StatisticSendManager.getInstance().sendOpenStory(
+                    currentIds.get(storiesViewPager.getCurrentItem() + 1), StatisticSendManager.NEXT);
+
             CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() + 1),
                     storiesViewPager.getCurrentItem() + 1));
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
@@ -474,6 +519,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (isDestroyed) return;
         if (InAppStoryService.getInstance() == null) return;
         if (storiesViewPager.getCurrentItem() > 0) {
+
+            Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(storiesViewPager.getCurrentItem()));
+            StatisticSendManager.getInstance().sendCloseStory(story.id, StatisticSendManager.PREV, story.lastIndex, story.slidesCount);
+            StatisticSendManager.getInstance().sendViewStory(
+                    currentIds.get(storiesViewPager.getCurrentItem() - 1), StatisticSendManager.PREV);
+            StatisticSendManager.getInstance().sendOpenStory(
+                    currentIds.get(storiesViewPager.getCurrentItem() - 1), StatisticSendManager.PREV);
+
             CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() - 1),
                     storiesViewPager.getCurrentItem() - 1));
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() - 1);
