@@ -52,13 +52,6 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
-    }
-
-    public boolean isFakeActivity = false;
-
-    @Override
-    protected void onStop() {
-        super.onStop();
         if (isFinishing()) {
             StatusBarController.showStatusBar(this);
             if (InAppStoryService.getInstance() != null) {
@@ -72,7 +65,17 @@ public class StoriesActivity extends AppCompatActivity {
             if (!isFakeActivity)
                 destroyed = 0;
             System.gc();
+
+            Log.e("StoriesActivity", "destroy from pause");
         }
+    }
+
+    public boolean isFakeActivity = false;
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
     }
 
     @Override
