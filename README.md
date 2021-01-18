@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:0.1.14'
+    implementation 'com.github.inappstory:android-sdk:0.1.15'
 
 Также для корректной работы в dependencies нужно добавить библиотеку GSON:
 
