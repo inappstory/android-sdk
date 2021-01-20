@@ -57,10 +57,24 @@ public interface ApiInterface {
 
 
     @GET("stat/{event_name}")
-    Request sendWidgetStat(@Path("event_name") String eventName,
-                         @Query("session_id") String sessionId,
-                         @Query("user_id") String userId,
-                         @Query("timestamp") Long timestamp);
+    Request sendStat(@Path("event_name") String eventName,
+                           @Query("session_id") String sessionId,
+                           @Query("user_id") String userId,
+                           @Query("timestamp") Long timestamp,
+                           @Query("story_id") String storyId,
+                           @Query("whence") String whence,
+                           @Query("cause") String cause,
+                           @Query("slide_index") Integer slideIndex,
+                           @Query("slide_total") Integer slideTotal,
+                           @Query("duration_ms") Long durationMs,
+                           @Query("widget_id") String widgetId,
+                           @Query("widget_label") String widgetLabel,
+                           @Query("widget_value") String widgetValue,
+                           @Query("widget_answer") Integer widgetAnswer,
+                           @Query("widget_answer_label") String widgetAnswerLabel,
+                           @Query("widget_answer_score") Integer widgetAnswerScore,
+                           @Query("layout_index") Integer layoutIndex);
+
 
     @FormUrlEncoded
     @PUT("v2/story-data/{id}")

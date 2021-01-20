@@ -15,6 +15,7 @@ import com.inappstory.sdk.BuildConfig;
 
 public class NetworkClient {
     private static ApiInterface apiInterface;
+    private static ApiInterface statApiInterface;
 
     private Context context;
 
@@ -35,12 +36,12 @@ public class NetworkClient {
     private HashMap<String, String> headers;
 
     private static NetworkClient instance;
+    private static NetworkClient statinstance;
 
     public NetworkClient(Context context, String baseUrl, HashMap<String, String> headers) {
         this.context = context;
         this.baseUrl = baseUrl;
         this.headers = headers;
-        instance = this;
     }
 
     public static class Builder {
@@ -70,7 +71,7 @@ public class NetworkClient {
     }
 
     public static NetworkClient getInstance() {
-        if (instance == null) new NetworkClient.Builder().build();
+        if (instance == null) instance = new NetworkClient.Builder().build();
         return instance;
     }
 
@@ -82,12 +83,13 @@ public class NetworkClient {
 
     public static void clear() {
         instance = null;
+        statinstance = null;
         apiInterface = null;
     }
 
     public static ApiInterface getApi() {
         if (instance == null) {
-            new NetworkClient.Builder()
+            instance = new NetworkClient.Builder()
                     .context(appContext)
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
                     .addHeader("Accept", "application/json")
@@ -95,9 +97,23 @@ public class NetworkClient {
                     .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getCmsKey()).build();
         }
         if (apiInterface == null) {
-            apiInterface = NetworkHandler.implement(ApiInterface.class);
+            apiInterface = NetworkHandler.implement(ApiInterface.class, instance);
         }
         return apiInterface;
+    }
+
+    public static ApiInterface getStatApi() {
+        if (statinstance == null) {
+            statinstance = new NetworkClient.Builder()
+                    .context(appContext)
+                    .baseUrl(ApiSettings.getInstance().getCmsUrl())
+                    .addHeader("Accept", "application/json")
+                    .addHeader("User-Agent", getUAString(appContext)).build();
+        }
+        if (statApiInterface == null) {
+            statApiInterface = NetworkHandler.implement(ApiInterface.class, statinstance);
+        }
+        return statApiInterface;
     }
 
 

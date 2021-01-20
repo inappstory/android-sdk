@@ -66,7 +66,6 @@ public class StoriesActivity extends AppCompatActivity {
                 destroyed = 0;
             System.gc();
 
-            Log.e("StoriesActivity", "destroy from pause");
         }
     }
 

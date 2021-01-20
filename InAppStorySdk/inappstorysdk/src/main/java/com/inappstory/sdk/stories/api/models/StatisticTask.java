@@ -1,38 +1,42 @@
 package com.inappstory.sdk.stories.api.models;
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.provider.Settings;
-import android.util.DisplayMetrics;
-
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.SerializedName;
 import com.inappstory.sdk.stories.statistic.PhoneAppData;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StatisticTask {
     public String event;
     public PhoneAppData app;
+    @SerializedName("ts")
     public Long timestamp;
-    @SerializedName("user_id")
+    @SerializedName("u")
     public String userId;
-    @SerializedName("session_id")
+    @SerializedName("s")
     public String sessionId;
 
-    @SerializedName("story_id")
-    public Integer storyId;
-    @SerializedName("whence")
+    @SerializedName("i")
+    public String storyId;
+    @SerializedName("w")
     public String whence;
-    @SerializedName("cause")
+    @SerializedName("c")
     public String cause;
-    @SerializedName("slide_index")
+    @SerializedName("si")
     public Integer slideIndex;
-    @SerializedName("slide_total")
+    @SerializedName("st")
     public Integer slideTotal;
-    @SerializedName("duration_ms")
+    @SerializedName("d")
     public Long durationMs;
-    @SerializedName("spend_ms")
-    public Long spendMs;
+    @SerializedName("wi")
+    public String widgetId;
+    @SerializedName("wl")
+    public String widgetLabel;
+    @SerializedName("wv")
+    public String widgetValue;
+    @SerializedName("wa")
+    public Integer widgetAnswer;
+    @SerializedName("wal")
+    public String widgetAnswerLabel;
+    @SerializedName("was")
+    public Integer widgetAnswerScore;
+    @SerializedName("li")
+    public Integer layoutIndex;
 }

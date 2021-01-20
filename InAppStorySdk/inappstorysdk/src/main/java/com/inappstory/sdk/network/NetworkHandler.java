@@ -106,6 +106,7 @@ public final class NetworkHandler implements InvocationHandler {
 
     @Override
     public Request invoke(Object proxy, Method method, Object[] args) {
+        if (networkClient == null) networkClient = NetworkClient.getInstance();
         GET get = method.getAnnotation(GET.class);
         POST post = method.getAnnotation(POST.class);
         PUT put = method.getAnnotation(PUT.class);
@@ -193,6 +194,7 @@ public final class NetworkHandler implements InvocationHandler {
         return request;
     }
 
+    public NetworkClient networkClient;
 
     private Request putRequest(PUT ev, Method method, Object[] args) {
 
@@ -201,7 +203,7 @@ public final class NetworkHandler implements InvocationHandler {
         String path = ev.value();
         String body = "";
         if (headers == null) {
-            headers = NetworkClient.getInstance().getHeaders();
+            headers = networkClient.getHeaders();
         }
         for (int i = 0; i < method.getParameterAnnotations().length; i++) {
             if (args[i] == null) continue;
@@ -250,11 +252,13 @@ public final class NetworkHandler implements InvocationHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T implement(Class int3rface) {
+    public static <T> T implement(Class int3rface, NetworkClient client) {
+        NetworkHandler handler = new NetworkHandler();
+        handler.networkClient = client;
         return (T) Proxy.newProxyInstance(
                 int3rface.getClassLoader(),
                 new Class[]{int3rface},
-                new NetworkHandler()
+                handler
         );
     }
 }

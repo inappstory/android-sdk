@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -490,6 +491,7 @@ public class StoryDownloader {
                     try {
                         ff.get();
                         synchronized (getInstance().pageTasksLock) {
+                            Log.e("PageTaskToLoadEvent", "loaded " + key.first + " " + key.second);
                             getInstance().pageTasks.get(key).loadType = 2;
                             CsEventBus.getDefault().post(new PageTaskLoadedEvent(key.first, key.second));
                         }

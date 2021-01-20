@@ -347,6 +347,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskToLoadEvent event) {
+        Log.e("PageTaskToLoadEvent", event.getId() + " " + event.getIndex() + " " + storiesWebView.storyId + " " + storiesWebView.index);
         if (storiesWebView == null || storiesWebView.storyId != event.getId() || storiesWebView.index != event.getIndex())
             return;
         if (event.isLoaded()) {
@@ -374,7 +375,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             });
             progress.startAnimation(anim);
         } else {
-            progress.setVisibility(View.VISIBLE);
+            progress.setAlpha(1f);
+            //progress.setVisibility(View.VISIBLE);
         }
     }
 
@@ -422,7 +424,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         ((ViewGroup) mask).addView(getLoader());
         progress = view.findViewById(R.id.progress);
         refresh = view.findViewById(R.id.refreshButton);
-        progress.setVisibility(View.GONE);
+        progress.setVisibility(View.VISIBLE);
         storyId = getArguments().getInt("story_id");
         CsEventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
         boolean hasPanel = (getArguments().getBoolean(CS_HAS_LIKE, false) ||
@@ -676,7 +678,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 @Override
                 public void onClick(View v) {
                     Story story = StoryDownloader.getInstance().getStoryById(storyId);
-                    StatisticSendManager.getInstance().sendShareStory(story.id);
+                    StatisticSendManager.getInstance().sendShareStory(story.id, story.lastIndex);
                     CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                             story.tags, story.slidesCount, story.lastIndex));
                     CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));

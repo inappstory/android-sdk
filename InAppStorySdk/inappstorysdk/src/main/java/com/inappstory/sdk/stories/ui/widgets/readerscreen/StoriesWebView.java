@@ -72,6 +72,7 @@ import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
+import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -117,6 +118,7 @@ public class StoriesWebView extends WebView {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
+        Log.e("PageTaskToLoadEvent", "loadStory " + id + " " + index);
         final Story story = StoryDownloader.getInstance().getStoryById(id);
         if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
             return;
@@ -132,6 +134,7 @@ public class StoriesWebView extends WebView {
     }
 
     private void loadStoryInner(final int id, final int index, Story story) {
+        Log.e("PageTaskToLoadEvent", "loadStoryInner " + id + " " + index);
         isWebPageLoaded = false;
         StoriesWebView.this.storyId = id;
         StoriesWebView.this.loadedIndex = index;
@@ -141,6 +144,7 @@ public class StoriesWebView extends WebView {
 
         final String layout = story.getLayout();
 
+        Log.e("PageTaskToLoadEvent", "" + isLoaded + " " + index + " " + id);
 
         // EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
 
@@ -675,6 +679,11 @@ public class StoriesWebView extends WebView {
                     story.tags, story.slidesCount, index));
             CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
+        }
+
+        @JavascriptInterface
+        public void storyStatisticEvent(String name, String data) {
+            StatisticSendManager.getInstance().sendWidgetStoryEvent(name, data);
         }
 
         @JavascriptInterface

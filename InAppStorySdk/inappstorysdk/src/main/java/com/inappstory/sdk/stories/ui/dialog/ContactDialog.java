@@ -27,6 +27,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
+import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
@@ -115,6 +116,11 @@ public class ContactDialog {
         } else {
             fullWidth = Sizes.getScreenSize().x;
             fullHeight = Sizes.getScreenSize().y;
+        }
+        if (dialogStructure.size == null) {
+            dialogStructure.size = new SizeStructure();
+            dialogStructure.size.width = 95;
+            dialogStructure.size.height = 40;
         }
         final int dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
         int dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);

@@ -1042,24 +1042,24 @@ public class InAppStoryService extends Service {
             if (story.disliked()) {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
-                StatisticSendManager.getInstance().sendDislikeStory(story.id);
+                StatisticSendManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, true));
-                StatisticSendManager.getInstance().sendDislikeStory(story.id);
+                StatisticSendManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
                 val = -1;
             }
         } else {
             if (story.liked()) {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
-                StatisticSendManager.getInstance().sendLikeStory(story.id);
+                StatisticSendManager.getInstance().sendLikeStory(story.id, story.lastIndex);
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, true));
-                StatisticSendManager.getInstance().sendLikeStory(story.id);
+                StatisticSendManager.getInstance().sendLikeStory(story.id, story.lastIndex);
                 val = 1;
             }
         }
@@ -1094,7 +1094,7 @@ public class InAppStoryService extends Service {
     public void favoriteClick(final int storyId, final LikeDislikeCallback callback) {
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final boolean val = story.favorite;
-        StatisticSendManager.getInstance().sendFavoriteStory(story.id);
+        StatisticSendManager.getInstance().sendFavoriteStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex, story.favorite));
         NetworkClient.getApi().storyFavorite(Integer.toString(storyId),
