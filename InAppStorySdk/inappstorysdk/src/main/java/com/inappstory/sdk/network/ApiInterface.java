@@ -44,36 +44,36 @@ public interface ApiInterface {
 
     @GET("stat/{event_name}")
     Request sendBaseStat(@Path("event_name") String eventName,
-                         @Query("session_id") String sessionId,
-                         @Query("user_id") String userId,
-                         @Query("timestamp") Long timestamp,
-                         @Query("story_id") Integer storyId,
-                         @Query("whence") String whence,
-                         @Query("cause") String cause,
-                         @Query("slide_index") Integer slideIndex,
-                         @Query("slide_total") Integer slideTotal,
-                         @Query("duration_ms") Long durationMs,
+                         @Query("s") String sessionId,
+                         @Query("u") String userId,
+                         @Query("ts") Long timestamp,
+                         @Query("i") Integer storyId,
+                         @Query("w") String whence,
+                         @Query("c") String cause,
+                         @Query("si") Integer slideIndex,
+                         @Query("st") Integer slideTotal,
+                         @Query("d") Long durationMs,
                          @Query("spend_ms") Long spendMs);
 
 
     @GET("stat/{event_name}")
     Request sendStat(@Path("event_name") String eventName,
-                           @Query("session_id") String sessionId,
-                           @Query("user_id") String userId,
-                           @Query("timestamp") Long timestamp,
-                           @Query("story_id") String storyId,
-                           @Query("whence") String whence,
-                           @Query("cause") String cause,
-                           @Query("slide_index") Integer slideIndex,
-                           @Query("slide_total") Integer slideTotal,
-                           @Query("duration_ms") Long durationMs,
-                           @Query("widget_id") String widgetId,
-                           @Query("widget_label") String widgetLabel,
-                           @Query("widget_value") String widgetValue,
-                           @Query("widget_answer") Integer widgetAnswer,
-                           @Query("widget_answer_label") String widgetAnswerLabel,
-                           @Query("widget_answer_score") Integer widgetAnswerScore,
-                           @Query("layout_index") Integer layoutIndex);
+                           @Query("s") String sessionId,
+                           @Query("u") String userId,
+                           @Query("ts") Long timestamp,
+                           @Query("i") String storyId,
+                           @Query("w") String whence,
+                           @Query("c") String cause,
+                           @Query("si") Integer slideIndex,
+                           @Query("st") Integer slideTotal,
+                           @Query("d") Long durationMs,
+                           @Query("wi") String widgetId,
+                           @Query("wl") String widgetLabel,
+                           @Query("wv") String widgetValue,
+                           @Query("wa") Integer widgetAnswer,
+                           @Query("wal") String widgetAnswerLabel,
+                           @Query("was") Integer widgetAnswerScore,
+                           @Query("li") Integer layoutIndex);
 
 
     @FormUrlEncoded

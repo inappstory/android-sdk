@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
+import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
@@ -212,6 +213,13 @@ public class StoriesActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 21) {
             chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
                 @Override
+                public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
+                    super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
+                    Log.e("dragDrop", "pause");
+                 //   CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+                }
+
+                @Override
                 public void onDragDismissed() {
                     if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
                     else animateFirst = false;
@@ -220,8 +228,9 @@ public class StoriesActivity extends AppCompatActivity {
 
                 @Override
                 public void onDragDropped() {
-                    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-                    CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
+                    Log.e("dragDrop", "resume");
+                //    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+                 //   CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
                 }
 
             };

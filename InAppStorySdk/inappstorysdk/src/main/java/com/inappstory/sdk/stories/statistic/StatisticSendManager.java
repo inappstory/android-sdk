@@ -345,6 +345,7 @@ public class StatisticSendManager {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
+                    if (!InAppStoryManager.getInstance().sendStatistic) return true;
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,
                             task.sessionId,

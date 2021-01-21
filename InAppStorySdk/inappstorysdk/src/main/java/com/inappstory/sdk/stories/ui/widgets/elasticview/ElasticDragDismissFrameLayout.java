@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -17,7 +18,12 @@ import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 
 /**
  * A {@link FrameLayout} which responds to nested scrolls to create drag-dismissable layouts.
@@ -134,6 +140,14 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override public boolean onInterceptTouchEvent(MotionEvent ev) {
         mLastActionEvent = ev.getAction();
+
+        if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
+            CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+        } else if (mLastActionEvent == MotionEvent.ACTION_UP || mLastActionEvent == MotionEvent.ACTION_CANCEL) {
+            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+            CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
+        }
+        Log.e("elasticEvent", mLastActionEvent + "");
         return super.onInterceptTouchEvent(ev);
     }
 
@@ -150,6 +164,10 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
                 setScaleX(1f);
                 setScaleY(1f);
             } else {
+                if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
+                    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+                    CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
+                }
                 animate()
                     .translationY(0f)
                     .scaleX(1f)
@@ -161,8 +179,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             }
             totalDrag = 0;
             draggingDown = draggingUp = false;
-            dispatchDropCallback();
             dispatchDragCallback(0f, 0f, 0f, 0f);
+            dispatchDropCallback();
         }
     }
 

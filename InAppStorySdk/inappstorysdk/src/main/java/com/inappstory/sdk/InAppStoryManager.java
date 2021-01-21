@@ -274,7 +274,8 @@ public class InAppStoryManager {
                 builder.closeOnSwipe,
                 builder.hasFavorite,
                 builder.hasLike,
-                builder.hasShare);
+                builder.hasShare,
+                builder.sendStatistic);
 
         if (intent != null) {
             context.unbindService(mConnection);
@@ -309,7 +310,7 @@ public class InAppStoryManager {
             CsEventBus.getDefault().post(new ChangeUserIdEvent());
             if (StatisticSession.getInstance().id != null) {
                 NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                        InAppStoryService.getInstance().statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
+                        sendStatistic ? InAppStoryService.getInstance().statistic : new ArrayList<List<Object>>())).enqueue(new NetworkCallback<StatisticResponse>() {
                     @Override
                     public void onSuccess(StatisticResponse response) {
                         CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
@@ -345,14 +346,18 @@ public class InAppStoryManager {
 
     public int actionBarColor = -1;
 
+    public boolean sendStatistic;
+
     private void initManager(Context context, String cmsUrl, String apiKey, String testKey, String userId, ArrayList<String> tags,
                              boolean closeOnOverscroll,
                              boolean closeOnSwipe,
                              boolean hasFavorite,
                              boolean hasLike,
-                             boolean hasShare) {
+                             boolean hasShare,
+                             boolean sendStatistic) {
         this.context = context;
         this.tags = tags;
+        this.sendStatistic = sendStatistic;
         this.closeOnOverscroll = closeOnOverscroll;
         this.closeOnSwipe = closeOnSwipe;
         this.hasFavorite = hasFavorite;
@@ -752,6 +757,7 @@ public class InAppStoryManager {
         boolean closeOnOverscroll = true;
         boolean closeOnSwipe = true;
         boolean hasLike = false;
+        boolean sendStatistic = true;
         boolean hasFavorite = false;
         boolean hasShare = false;
         String userId;
@@ -798,6 +804,11 @@ public class InAppStoryManager {
 
         public Builder hasLike(boolean hasLike) {
             Builder.this.hasLike = hasLike;
+            return Builder.this;
+        }
+
+        public Builder sendStatistic(boolean hasLike) {
+            Builder.this.sendStatistic = sendStatistic;
             return Builder.this;
         }
 

@@ -291,7 +291,7 @@ public class StoriesWebView extends WebView {
     @CsSubscribe
     public void storySwipeBackEvent(StorySwipeBackEvent event) {
         if (event.getStoryId() == storyId)
-        resumeVideo();
+            resumeVideo();
     }
 
 
@@ -312,9 +312,9 @@ public class StoriesWebView extends WebView {
     public void replaceHtml(String page) {
         // if (!isVideo) return;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            evaluateJavascript("(function(){show_slide(\"" + oldEscape(page)+ "\");})()", null);
+            evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
         } else {
-            loadUrl("javascript:(function(){show_slide(\"" + oldEscape(page)+ "\");})()");
+            loadUrl("javascript:(function(){show_slide(\"" + oldEscape(page) + "\");})()");
         }
     }
 
@@ -368,7 +368,7 @@ public class StoriesWebView extends WebView {
     public void resumeVideo() {
 
 
-       // Log.e("playVideo", storyId + " resume");
+        // Log.e("playVideo", storyId + " resume");
         loadUrl("javascript:(function(){story_slide_resume();})()");
     }
 
@@ -552,8 +552,8 @@ public class StoriesWebView extends WebView {
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
-       // getSettings().setMediaPlaybackRequiresUserGesture(false);
-       // getSettings().setPluginState(WebSettings.PluginState.ON);
+        // getSettings().setMediaPlaybackRequiresUserGesture(false);
+        // getSettings().setPluginState(WebSettings.PluginState.ON);
         addJavascriptInterface(new WebAppInterface(getContext(), index), "Android");
     }
 
@@ -806,6 +806,18 @@ public class StoriesWebView extends WebView {
     private float pressedY;
 
 
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void pauseStoryEvent(PauseStoryReaderEvent event) {
+        if (storyId == InAppStoryService.getInstance().getCurrentId())
+            pauseVideo();
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void pauseStoryEvent(ResumeStoryReaderEvent event) {
+        if (storyId == InAppStoryService.getInstance().getCurrentId())
+            resumeVideo();
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         float pressedEndY = 0f;
@@ -816,12 +828,12 @@ public class StoriesWebView extends WebView {
             case MotionEvent.ACTION_DOWN:
                 pressedY = motionEvent.getY();
                 coordinate1 = motionEvent.getX();
-                CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
-                StoriesWebView.this.pauseVideo();
+              //  CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+                //StoriesWebView.this.pauseVideo();
                 break;
             case MotionEvent.ACTION_UP:
-                CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-                StoriesWebView.this.resumeVideo();
+               // CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+               // StoriesWebView.this.resumeVideo();
                 break;
             case MotionEvent.ACTION_CANCEL:
                 break;
@@ -829,6 +841,7 @@ public class StoriesWebView extends WebView {
         boolean c = super.dispatchTouchEvent(motionEvent);
         return c;
     }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {

@@ -134,7 +134,7 @@ public final class NetworkHandler implements InvocationHandler {
         HashMap<String, String> vars = new HashMap<>();
         String path = ev.value();
         if (headers == null) {
-            headers = NetworkClient.getInstance().getHeaders();
+            headers = networkClient.getHeaders();
         }
         for (int i = 0; i < method.getParameterAnnotations().length; i++) {
             if (args[i] == null) continue;
@@ -160,8 +160,7 @@ public final class NetworkHandler implements InvocationHandler {
         String path = ev.value();
         String body = "";
         if (headers == null) {
-            headers = NetworkClient.getInstance().getHeaders();
-
+            headers = networkClient.getHeaders();
         }
         for (int i = 0; i < method.getParameterAnnotations().length; i++) {
             if (args[i] == null) continue;

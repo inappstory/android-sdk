@@ -98,7 +98,7 @@ public class InAppStoryService extends Service {
     void logout() {
         closeStatisticEvent(null, true);
         NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
+                InAppStoryManager.getInstance().sendStatistic ? statistic : new ArrayList<List<Object>>())).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
             }
@@ -650,6 +650,7 @@ public class InAppStoryService extends Service {
     }
 
     public void resumeLocalTimer() {
+        Log.e("dragDrop", System.currentTimeMillis() + " " + timerDuration + " " + pauseShift);
         startTimer(timerDuration - pauseShift, false);
     }
 
@@ -667,7 +668,12 @@ public class InAppStoryService extends Service {
     }
 
     public void pauseLocalTimer() {
-        timerHandler.removeCallbacks(timerTask);
+        try {
+            timerHandler.removeCallbacks(timerTask);
+        } catch (Exception e) {
+
+        }
+        Log.e("dragDrop", System.currentTimeMillis() + " " + timerStart);
         pauseShift = (System.currentTimeMillis() - timerStart);
     }
 
@@ -948,6 +954,13 @@ public class InAppStoryService extends Service {
         if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
             return false;
         if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
+            return true;
+        }
+        if (!InAppStoryManager.getInstance().sendStatistic) {
+            StatisticSession.getInstance();
+            StatisticSession.updateStatistic();
+            if (statistic != null)
+                statistic.clear();
             return true;
         }
         try {

@@ -175,12 +175,7 @@ public class StoriesReaderPager extends ViewPager {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
-            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-            CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
-        }
+
         return super.onTouchEvent(motionEvent);
     }
 }

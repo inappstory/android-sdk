@@ -107,7 +107,6 @@ public class NetworkClient {
             statinstance = new NetworkClient.Builder()
                     .context(appContext)
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
-                    .addHeader("Accept", "application/json")
                     .addHeader("User-Agent", getUAString(appContext)).build();
         }
         if (statApiInterface == null) {

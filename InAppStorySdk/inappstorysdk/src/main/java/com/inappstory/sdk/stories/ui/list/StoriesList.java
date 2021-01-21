@@ -119,10 +119,8 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryService.getInstance() != null)
             InAppStoryService.getInstance().previewStatisticEvent(indexes);
         if (StatisticSendManager.getInstance() != null) {
-            for (int i = 0; i < indexes.size(); i++) {
-                StatisticSendManager.getInstance().sendViewStory(indexes.get(i),
-                        isFavoriteList ? StatisticSendManager.FAVORITE : StatisticSendManager.LIST);
-            }
+            StatisticSendManager.getInstance().sendViewStory(indexes,
+                    isFavoriteList ? StatisticSendManager.FAVORITE : StatisticSendManager.LIST);
         }
     }
 
