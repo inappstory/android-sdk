@@ -97,7 +97,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             v0 = getDefaultCell();
             vg.addView(v0);
         }
-        if (manager.csListItemMargin() > 0) {
+        if (manager.csListItemMargin() >= 0) {
             RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
             lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin() / 2), Sizes.dpToPxExt(2),
                     Sizes.dpToPxExt(manager.csListItemMargin()), Sizes.dpToPxExt(2));
