@@ -407,7 +407,8 @@ public class InAppStoryManager {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
         this.tags = tags;
-        setPlaceholders(placeholders);
+        if (placeholders != null)
+            setPlaceholders(placeholders);
         this.sendStatistic = sendStatistic;
         this.closeOnOverscroll = closeOnOverscroll;
         this.closeOnSwipe = closeOnSwipe;
