@@ -23,7 +23,9 @@ import androidx.fragment.app.DialogFragment;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -184,7 +186,47 @@ public class InAppStoryManager {
     }
 
 
+    public void setPlaceholder(String key, String value) {
+        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+        if (placeholders == null) placeholders = new HashMap<>();
+        String inKey = "%" + key + "%";
+        if (value == null) {
+            if (defaultPlaceholders.containsKey(inKey)) {
+                placeholders.put(inKey, defaultPlaceholders.get(inKey));
+            } else {
+                placeholders.remove(inKey);
+            }
+        } else {
+            placeholders.put(inKey, value);
+        }
+    }
+
+    public void setPlaceholders(Map<String, String> placeholders) {
+        for (String placeholderKey : placeholders.keySet()) {
+            setPlaceholder(placeholderKey, placeholders.get(placeholderKey));
+        }
+    }
+
     ArrayList<String> tags;
+
+    public Map<String, String> getPlaceholders() {
+
+        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+        if (placeholders == null) placeholders = new HashMap<>();
+        return placeholders;
+    }
+
+    Map<String, String> placeholders = new HashMap<>();
+
+    public Map<String, String> getDefaultPlaceholders() {
+
+        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+        if (placeholders == null) placeholders = new HashMap<>();
+        return defaultPlaceholders;
+    }
+
+    Map<String, String> defaultPlaceholders = new HashMap<>();
+
 
     public boolean closeOnOverscroll() {
         return closeOnOverscroll;
@@ -270,6 +312,7 @@ public class InAppStoryManager {
                 (builder.userId != null && !builder.userId.isEmpty()) ? builder.userId :
                         "",
                 builder.tags != null ? builder.tags : null,
+                builder.placeholders != null ? builder.placeholders : null,
                 builder.closeOnOverscroll,
                 builder.closeOnSwipe,
                 builder.hasFavorite,
@@ -348,7 +391,13 @@ public class InAppStoryManager {
 
     public boolean sendStatistic;
 
-    private void initManager(Context context, String cmsUrl, String apiKey, String testKey, String userId, ArrayList<String> tags,
+    private void initManager(Context context,
+                             String cmsUrl,
+                             String apiKey,
+                             String testKey,
+                             String userId,
+                             ArrayList<String> tags,
+                             Map<String, String> placeholders,
                              boolean closeOnOverscroll,
                              boolean closeOnSwipe,
                              boolean hasFavorite,
@@ -356,7 +405,9 @@ public class InAppStoryManager {
                              boolean hasShare,
                              boolean sendStatistic) {
         this.context = context;
+        soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
         this.tags = tags;
+        setPlaceholders(placeholders);
         this.sendStatistic = sendStatistic;
         this.closeOnOverscroll = closeOnOverscroll;
         this.closeOnSwipe = closeOnSwipe;
@@ -753,6 +804,10 @@ public class InAppStoryManager {
             return tags;
         }
 
+        public Map<String, String> placeholders() {
+            return placeholders;
+        }
+
         boolean sandbox = true;
         boolean closeOnOverscroll = true;
         boolean closeOnSwipe = true;
@@ -764,6 +819,7 @@ public class InAppStoryManager {
         String apiKey;
         String testKey;
         ArrayList<String> tags;
+        Map<String, String> placeholders;
 
         public Builder() {
         }
@@ -807,7 +863,7 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
-        public Builder sendStatistic(boolean hasLike) {
+        public Builder sendStatistic(boolean sendStatistic) {
             Builder.this.sendStatistic = sendStatistic;
             return Builder.this;
         }
@@ -841,6 +897,11 @@ public class InAppStoryManager {
 
         public Builder tags(ArrayList<String> tags) {
             Builder.this.tags = tags;
+            return Builder.this;
+        }
+
+        public Builder placeholders(Map<String, String> placeholders) {
+            Builder.this.placeholders = placeholders;
             return Builder.this;
         }
 

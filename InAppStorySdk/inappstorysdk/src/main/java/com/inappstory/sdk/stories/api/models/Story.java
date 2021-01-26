@@ -22,7 +22,13 @@ public class Story implements Parcelable {
     public int id;
 
     public String getTitle() {
-        return title;
+        String tmp = "" + title;
+        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
+            if (tmp.contains(key)) {
+                tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+            }
+        }
+        return tmp;
     }
 
     public List<Image> getImage() {
@@ -63,7 +69,14 @@ public class Story implements Parcelable {
     public String tags;
 
     public String getSource() {
-        return source;
+        String tmp = "" + source;
+        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
+            if (tmp.contains(key)) {
+                tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+            }
+        }
+        return tmp;
+      //  return source;
     }
 
     public String source;

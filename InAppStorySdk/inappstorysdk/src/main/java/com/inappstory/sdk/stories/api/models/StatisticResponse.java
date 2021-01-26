@@ -20,4 +20,7 @@ public class StatisticResponse {
 
     @SerializedName("cache")
     public List<CacheFontObject> cachedFonts;
+
+    @SerializedName("placeholders")
+    public List<StoryPlaceholder> placeholders;
 }

@@ -44,6 +44,7 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
+import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenStatisticCallback;
@@ -817,7 +818,7 @@ public class InAppStoryService extends Service {
         NetworkClient.getApi().statisticsOpen(
                 "cache",
                 InAppStoryManager.getInstance().getTagsString(),
-                "animation,data,deeplink",
+                "animation,data,deeplink,placeholder",
                 platform,
                 deviceId,
                 model,
@@ -840,6 +841,17 @@ public class InAppStoryService extends Service {
                     public void run() {
 
                         response.session.save();
+                        if (response.placeholders != null && !response.placeholders.isEmpty()) {
+                            for (StoryPlaceholder placeholder : response.placeholders) {
+                                String key = "%" + placeholder.name + "%";
+                                InAppStoryManager.getInstance().defaultPlaceholders.put(key,
+                                        placeholder.defaultVal);
+                                if (!InAppStoryManager.getInstance().placeholders.containsKey(key)) {
+                                    InAppStoryManager.getInstance().placeholders.put(key,
+                                            placeholder.defaultVal);
+                                }
+                            }
+                        }
                         synchronized (openProcessLock) {
                             openProcess = false;
                             for (OpenStatisticCallback localCallback : callbacks)

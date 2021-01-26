@@ -219,7 +219,15 @@ public class StoriesWebView extends WebView {
         boolean high = storyId == InAppStoryService.getInstance().getCurrentId();
         //getSettings().setUseWideViewPort(true);
         getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-        final String data = event.getWebData();
+        String tmpData = event.getWebData();
+        String tmpLayout = event.getLayout();
+        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
+            tmpData = tmpData.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+            tmpLayout = tmpLayout.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+        }
+        final String data = tmpData;
+        final String lt = tmpLayout;
+
         if (!emptyLoaded) {
 
             Log.e("LoadHtml", "first");
@@ -227,7 +235,7 @@ public class StoriesWebView extends WebView {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    String s0 = injectUnselectableStyle(event.getLayout());
+                    String s0 = injectUnselectableStyle(lt);
                     loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
                 }
             });
@@ -735,6 +743,7 @@ public class StoriesWebView extends WebView {
         public void storySendData(String data) {
 
             Log.d("quiz", "storySendData" + " " + data);
+            if (!InAppStoryManager.getInstance().sendStatistic) return;
             NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                     .enqueue(new NetworkCallback<com.inappstory.sdk.network.Response>() {
                         @Override
