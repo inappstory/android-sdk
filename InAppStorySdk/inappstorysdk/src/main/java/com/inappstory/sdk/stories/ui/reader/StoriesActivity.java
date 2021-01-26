@@ -49,6 +49,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 public class StoriesActivity extends AppCompatActivity {
 
     public static long destroyed = 0;
+    public boolean pauseDestroyed = false;
 
     @Override
     public void onPause() {
@@ -66,7 +67,7 @@ public class StoriesActivity extends AppCompatActivity {
             if (!isFakeActivity)
                 destroyed = 0;
             System.gc();
-
+            pauseDestroyed = true;
         }
     }
 
@@ -360,7 +361,21 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         Log.e("StoriesActivity", "destroy");
+        if (!pauseDestroyed) {
+            StatusBarController.showStatusBar(this);
+            if (InAppStoryService.getInstance() != null) {
+                InAppStoryService.getInstance().sendStatistic();
+            }
+            try {
+                CsEventBus.getDefault().unregister(this);
+            } catch (Exception e) {
 
+            }
+            if (!isFakeActivity)
+                destroyed = 0;
+            System.gc();
+            pauseDestroyed = true;
+        }
         super.onDestroy();
     }
 }
