@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:0.1.16'
+    implementation 'com.github.inappstory:android-sdk:0.1.17'
 
 Также для корректной работы в dependencies нужно добавить библиотеку GSON:
 
@@ -188,6 +188,7 @@
         void setSource(View itemView, String source); // itemView - текущая ячейка, в необходимой View используем источник story.
         void setImage(View itemView, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем обложку story или цвет фона в случае ее отсутствия.
         void setReaded(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если она прочитана.
+        void setHasAudio(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если у данной сториз есть аудио внутри.
     }
 
 В случае задания данного интерфейса другие параметры, влияющие на внешний вид ячейки списка не используются (будут игнорироваться)
@@ -219,6 +220,11 @@
 
                         @Override
                         public void setReaded(View itemView, boolean isReaded) {
+
+                        }
+
+                        @Override
+                        public void setHasAudio(View itemView, boolean hasAudio) {
 
                         }
                     });
@@ -345,6 +351,11 @@
 Для отправки событий в SDK используется метод post(Event event). Например:
 
     CsEventBus.getDefault().post(new MessageEvent("Hello everyone!"));
+    
+На данный момент в SDK можно отправить 2 события
+
+    CloseStoryReaderEvent - используется для закрытия ридера сториз (например при перегрузке клика на кнопки, шаринг и прочее)
+    SoundOnOffEvent - вызывается после изменения флага включений/выключения звука (InAppStoryManager.getInstance().soundOn). В случае, если ридер закрыт, вызывать событие не требуется.
 
 Ниже перечислены 10 событий, на которые можно подписаться:
 
@@ -397,6 +408,9 @@
 
     CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
     
+##### Работа со звуком
+
+За включение/выключение воспроизведения звука в сториз отвечает флаг `InAppStoryManager.getInstance().soundOn` (true - звук включен, false - выключен). Значение флага по умолчанию прописано в файле `constants.xml` в переменной `defaultMuted` (по умолчанию true - звук выключен) и может быть перегружено. Необходимо учитывать, что значение `soundOn` выставляется как `!soundMuted` (то есть по умолчанию будет false). В случае изменения значения при открытом ридере необходимо так же отправить событие `SoundOnOffEvent`. Если ридер закрыт - отправка события не требуется.
 
 ##### Onboarding сториз и одиночные сториз
 
