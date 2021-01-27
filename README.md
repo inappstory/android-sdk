@@ -410,7 +410,16 @@
     
 ##### Работа со звуком
 
-За включение/выключение воспроизведения звука в сториз отвечает флаг `InAppStoryManager.getInstance().soundOn` (true - звук включен, false - выключен). Значение флага по умолчанию прописано в файле `constants.xml` в переменной `defaultMuted` (по умолчанию true - звук выключен) и может быть перегружено. Необходимо учитывать, что значение `soundOn` выставляется как `!soundMuted` (то есть по умолчанию будет false). В случае изменения значения при открытом ридере необходимо так же отправить событие `SoundOnOffEvent`. Если ридер закрыт - отправка события не требуется.
+За включение/выключение воспроизведения звука в сториз отвечает флаг `InAppStoryManager.getInstance().soundOn` (true - звук включен, false - выключен). Значение флага по умолчанию прописано в файле `constants.xml` в переменной `defaultMuted` (по умолчанию true - звук выключен) и может быть перегружено. Необходимо учитывать, что значение `soundOn` выставляется как `!soundMuted` (то есть по умолчанию будет false). 
+Также флаг `InAppStoryManager.getInstance().soundOn` является публичным, потому можно (например после инициализации InAppStoryManager) задать его значение напрямую, например:
+
+    InAppStoryManager.getInstance().soundOn = true;
+
+В случае изменения значения при открытом ридере необходимо так же отправить событие `SoundOnOffEvent`. 
+
+    CsEventBus.getDefault().post(new SoundOnOffEvent());    
+
+Если ридер закрыт - отправка события не требуется.
 
 ##### Onboarding сториз и одиночные сториз
 
@@ -539,3 +548,15 @@ FAQ
 
 13) Шаринг
 При инициализации `InAppStoryManager.Builder()` используем свойство `hasShare(true)`. Так же возможна кастомизация обработчика `InAppStoryManager.getInstance().shareCallback`.
+
+14) Включение/выключение звука по умолчанию
+В файле `constants.xml` в переменной `defaultMuted` задачем значение. Если true, то по умолчанию звук будет выключен, если false - включен.
+
+15) Включение/выключение звука в runtime
+Меняем значение флага `InAppStoryManager.getInstance().soundOn`. Например:
+    
+    InAppStoryManager.getInstance().soundOn = true;
+
+В случае изменения значения при открытом ридере необходимо так же отправить событие `SoundOnOffEvent`. 
+
+    CsEventBus.getDefault().post(new SoundOnOffEvent()); 
