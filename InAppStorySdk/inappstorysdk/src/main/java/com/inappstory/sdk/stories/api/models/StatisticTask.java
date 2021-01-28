@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
 import com.inappstory.sdk.network.SerializedName;
-import com.inappstory.sdk.stories.statistic.PhoneAppData;
 
 public class StatisticTask {
     public String event;

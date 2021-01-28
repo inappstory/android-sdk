@@ -202,6 +202,7 @@ public class InAppStoryManager {
     }
 
     public void setPlaceholders(Map<String, String> placeholders) {
+
         for (String placeholderKey : placeholders.keySet()) {
             setPlaceholder(placeholderKey, placeholders.get(placeholderKey));
         }

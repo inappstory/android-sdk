@@ -1,13 +1,8 @@
-package com.inappstory.sdk.stories.statistic;
+package com.inappstory.sdk.stories.api.models;
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -15,11 +10,9 @@ import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
-import com.inappstory.sdk.stories.api.models.StatisticTask;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -28,8 +21,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class StatisticSendManager {
-    private static StatisticSendManager INSTANCE;
+public class StatisticManager {
+    private static StatisticManager INSTANCE;
 
     private static final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
@@ -69,9 +62,9 @@ public class StatisticSendManager {
         }
     }
 
-    public static StatisticSendManager getInstance() {
+    public static StatisticManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new StatisticSendManager();
+            INSTANCE = new StatisticManager();
         }
         return INSTANCE;
     }
@@ -117,8 +110,8 @@ public class StatisticSendManager {
     }
 
 
-    public StatisticSendManager() {
-        thread = new HandlerThread("StatisticSendManagerThread" + System.currentTimeMillis());
+    public StatisticManager() {
+        thread = new HandlerThread("SSMThread" + System.currentTimeMillis());
         thread.start();
         handler = new Handler(thread.getLooper());
         String tasksJson = SharedPreferencesAPI.getString(TASKS_KEY);
@@ -198,7 +191,7 @@ public class StatisticSendManager {
     }
 
     public void generateBase(StatisticTask task) {
-       //Context context = InAppStoryManager.getInstance().getContext();
+        //Context context = InAppStoryManager.getInstance().getContext();
      /*   task.app = new PhoneAppData();
         task.app.platform = "android";
         // String deviceId = Settings.Secure.getString(context.getContentResolver(),
@@ -245,7 +238,7 @@ public class StatisticSendManager {
         task.cause = c;
         task.slideIndex = si;
         task.slideTotal = st;
-        task.durationMs = currentTime - pauseTime;
+        task.durationMs = System.currentTimeMillis() - currentTime - pauseTime;
 
         generateBase(task);
         addTask(task);

@@ -2,5 +2,5 @@
 <resources>
     <string name="csApiKey"></string>
     <bool name="isTablet">false</bool>
-    <bool name="defaultMuted">false</bool>
+    <bool name="defaultMuted">true</bool>
 </resources>

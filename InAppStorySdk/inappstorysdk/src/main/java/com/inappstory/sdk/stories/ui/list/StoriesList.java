@@ -25,6 +25,7 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
@@ -35,7 +36,6 @@ import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.OpenStoryByIdEvent;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
-import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesList extends RecyclerView {
@@ -118,9 +118,13 @@ public class StoriesList extends RecyclerView {
         }
         if (InAppStoryService.getInstance() != null)
             InAppStoryService.getInstance().previewStatisticEvent(indexes);
-        if (StatisticSendManager.getInstance() != null) {
-            StatisticSendManager.getInstance().sendViewStory(indexes,
-                    isFavoriteList ? StatisticSendManager.FAVORITE : StatisticSendManager.LIST);
+        try {
+            if (StatisticManager.getInstance() != null) {
+                StatisticManager.getInstance().sendViewStory(indexes,
+                        isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST);
+            }
+        } catch (Exception e) {
+
         }
     }
 

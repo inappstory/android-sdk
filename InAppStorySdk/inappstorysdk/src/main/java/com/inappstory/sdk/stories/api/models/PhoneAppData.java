@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.statistic;
+package com.inappstory.sdk.stories.api.models;
 
 import com.inappstory.sdk.network.SerializedName;
 

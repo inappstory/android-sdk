@@ -24,19 +24,17 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
 import com.inappstory.sdk.stories.events.SwipeLeftEvent;
 import com.inappstory.sdk.stories.events.SwipeRightEvent;
 import com.inappstory.sdk.stories.events.WidgetTapEvent;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
@@ -296,19 +294,19 @@ public class StoriesActivity extends AppCompatActivity {
                     story.title, story.tags, story.slidesCount,
                     story.lastIndex, event.getAction(),
                     getIntent().getIntExtra("source", 0)));
-            String cause = StatisticSendManager.AUTO;
+            String cause = StatisticManager.AUTO;
             switch (event.getAction()) {
                 case CloseStory.CLICK:
-                    cause = StatisticSendManager.CLICK;
+                    cause = StatisticManager.CLICK;
                     break;
                 case CloseStory.CUSTOM:
-                    cause = StatisticSendManager.CUSTOM;
+                    cause = StatisticManager.CUSTOM;
                     break;
                 case CloseStory.SWIPE:
-                    cause = StatisticSendManager.SWIPE;
+                    cause = StatisticManager.SWIPE;
                     break;
             }
-            StatisticSendManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
+            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
         }
         cleanReader();
         CsEventBus.getDefault().unregister(this);

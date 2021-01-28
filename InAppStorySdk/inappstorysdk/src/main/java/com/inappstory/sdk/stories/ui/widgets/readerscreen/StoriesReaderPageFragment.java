@@ -36,6 +36,7 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.ShareObject;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
@@ -55,7 +56,6 @@ import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
@@ -66,7 +66,6 @@ import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import com.inappstory.sdk.stories.serviceevents.LikeDislikeEvent;
 import com.inappstory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
-import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -678,7 +677,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 @Override
                 public void onClick(View v) {
                     Story story = StoryDownloader.getInstance().getStoryById(storyId);
-                    StatisticSendManager.getInstance().sendShareStory(story.id, story.lastIndex);
+                    StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
                     CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                             story.tags, story.slidesCount, story.lastIndex));
                     CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));

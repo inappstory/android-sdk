@@ -50,6 +50,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -72,7 +73,6 @@ import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
-import com.inappstory.sdk.stories.statistic.StatisticSendManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -691,7 +691,7 @@ public class StoriesWebView extends WebView {
 
         @JavascriptInterface
         public void storyStatisticEvent(String name, String data) {
-            StatisticSendManager.getInstance().sendWidgetStoryEvent(name, data);
+            StatisticManager.getInstance().sendWidgetStoryEvent(name, data);
         }
 
         @JavascriptInterface
