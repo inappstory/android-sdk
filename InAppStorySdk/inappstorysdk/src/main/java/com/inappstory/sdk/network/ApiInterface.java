@@ -58,22 +58,23 @@ public interface ApiInterface {
 
     @GET("stat/{event_name}")
     Request sendStat(@Path("event_name") String eventName,
-                           @Query("s") String sessionId,
-                           @Query("u") String userId,
-                           @Query("ts") Long timestamp,
-                           @Query("i") String storyId,
-                           @Query("w") String whence,
-                           @Query("c") String cause,
-                           @Query("si") Integer slideIndex,
-                           @Query("st") Integer slideTotal,
-                           @Query("d") Long durationMs,
-                           @Query("wi") String widgetId,
-                           @Query("wl") String widgetLabel,
-                           @Query("wv") String widgetValue,
-                           @Query("wa") Integer widgetAnswer,
-                           @Query("wal") String widgetAnswerLabel,
-                           @Query("was") Integer widgetAnswerScore,
-                           @Query("li") Integer layoutIndex);
+                     @Query("s") String sessionId,
+                     @Query("u") String userId,
+                     @Query("ts") Long timestamp,
+                     @Query("i") String storyId,
+                     @Query("w") String whence,
+                     @Query("c") String cause,
+                     @Query("si") Integer slideIndex,
+                     @Query("st") Integer slideTotal,
+                     @Query("d") Long durationMs,
+                     @Query("wi") String widgetId,
+                     @Query("wl") String widgetLabel,
+                     @Query("wv") String widgetValue,
+                     @Query("wa") Integer widgetAnswer,
+                     @Query("wal") String widgetAnswerLabel,
+                     @Query("was") Integer widgetAnswerScore,
+                     @Query("li") Integer layoutIndex,
+                     @Query("t") String t);
 
 
     @FormUrlEncoded

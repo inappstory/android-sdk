@@ -1,11 +1,14 @@
 package com.inappstory.sdk.stories.api.models;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -14,7 +17,15 @@ import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -28,6 +39,7 @@ public class StatisticManager {
     private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
     public static final String NEXT = "next";
+    public static final String APPCLOSE = "app-close";
     public static final String PREV = "prev";
     public static final String ONBOARDING = "onboarding";
     public static final String LIST = "list";
@@ -43,20 +55,46 @@ public class StatisticManager {
     private Object statisticTasksLock = new Object();
 
     private ArrayList<StatisticTask> tasks = new ArrayList<>();
+    private ArrayList<StatisticTask> faketasks = new ArrayList<>();
 
     public void addTask(StatisticTask task) {
-        if (1 == 1) return;
+         if (1 == 1) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
         }
+
+        Log.e("taskName", task.event);
+    }
+
+
+    public void addFakeTask(StatisticTask task) {
+        if (1 == 1) return;
+        synchronized (statisticTasksLock) {
+            faketasks.add(task);
+            saveFakeTasksSP();
+        }
+
+        Log.e("taskName", task.event);
     }
 
     public static void saveTasksSP() {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
             ltasks.addAll(getInstance().tasks);
+            // Log.e("saveTask", JsonParser.getJson(ltasks));
             SharedPreferencesAPI.saveString(TASKS_KEY, JsonParser.getJson(ltasks));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveFakeTasksSP() {
+        try {
+            ArrayList<StatisticTask> ltasks = new ArrayList<>();
+            ltasks.addAll(getInstance().faketasks);
+            // Log.e("saveTask", JsonParser.getJson(ltasks));
+            SharedPreferencesAPI.saveString(FAKE_TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,25 +103,31 @@ public class StatisticManager {
     public static StatisticManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new StatisticManager();
+            if (1 == 1) return INSTANCE;
+            INSTANCE.init();
         }
         return INSTANCE;
     }
 
     public static final String TASKS_KEY = "statisticTasks";
+    public static final String FAKE_TASKS_KEY = "fakeStatisticTasks";
 
     public void cleanTasks() {
         synchronized (statisticTasksLock) {
             tasks.clear();
             SharedPreferencesAPI.remove(TASKS_KEY);
+            faketasks.clear();
+            SharedPreferencesAPI.remove(FAKE_TASKS_KEY);
         }
     }
 
 
-    private static Handler handler = new Handler();
-    private static HandlerThread thread;
+    private Handler handler = new Handler();
+    private HandlerThread thread;
 
     @CsSubscribe
     public void pauseStoryEvent(PauseStoryReaderEvent event) {
+        if (INSTANCE != this) return;
         try {
             if (event.isWithBackground()) {
                 isBackgroundPause = true;
@@ -101,29 +145,57 @@ public class StatisticManager {
 
     @CsSubscribe
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
+        if (INSTANCE != this) return;
         if (event.isWithBackground()) {
+            Log.e("pauseEv", (System.currentTimeMillis() - pauseTimer) + "");
             if (isBackgroundPause) {
                 pauseTime += (System.currentTimeMillis() - pauseTimer);
             }
             isBackgroundPause = false;
+        } else {
+            Log.e("pauseEv", "miss");
         }
     }
 
 
-    public StatisticManager() {
+    public void init() {
         thread = new HandlerThread("SSMThread" + System.currentTimeMillis());
         thread.start();
         handler = new Handler(thread.getLooper());
+        InAppStoryService.getInstance().match = "";
         String tasksJson = SharedPreferencesAPI.getString(TASKS_KEY);
-        if (tasksJson != null) {
-            tasks = JsonParser.listFromJson(tasksJson, StatisticTask.class);
-        } else {
-            tasks = new ArrayList<>();
+        String fakeTasksJson = SharedPreferencesAPI.getString(FAKE_TASKS_KEY);
+        CsEventBus.getDefault().register(this);
+        synchronized (statisticTasksLock) {
+            if (tasksJson != null) {
+                tasks = JsonParser.listFromJson(tasksJson, StatisticTask.class);
+            } else {
+                tasks = new ArrayList<>();
+            }
+            if (fakeTasksJson != null) {
+                tasks.addAll(JsonParser.listFromJson(fakeTasksJson, StatisticTask.class));
+            }
+            for (StatisticTask task : tasks) {
+                task.isFake = false;
+            }
+
+            SharedPreferencesAPI.remove(FAKE_TASKS_KEY);
         }
         handler.postDelayed(queueTasksRunnable, 100);
     }
 
-    private static Runnable queueTasksRunnable = new Runnable() {
+    public StatisticManager() {
+
+    }
+
+    public void cleanFakeEvents() {
+        synchronized (statisticTasksLock) {
+            faketasks.clear();
+            SharedPreferencesAPI.remove(FAKE_TASKS_KEY);
+        }
+    }
+
+    private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
             if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.getInstance() == null
@@ -133,7 +205,6 @@ public class StatisticManager {
             }
             StatisticTask task;
             synchronized (getInstance().statisticTasksLock) {
-
                 task = getInstance().tasks.get(0);
                 getInstance().tasks.remove(0);
                 saveTasksSP();
@@ -179,8 +250,11 @@ public class StatisticManager {
         }
     }
 
+    HashMap<Integer, Long> cTimes;
+
     public void sendOpenStory(final int i, final String w) {
-        currentTime = System.currentTimeMillis();
+        if (cTimes == null) cTimes = new HashMap<>();
+        cTimes.put(i, System.currentTimeMillis());
         pauseTime = 0;
         StatisticTask task = new StatisticTask();
         task.event = prefix + "open";
@@ -231,35 +305,73 @@ public class StatisticManager {
     }
 
     public void sendCloseStory(final int i, final String c, final Integer si, final Integer st) {
-
+        InAppStoryService.getInstance().sendCurrentState();
+        if (cTimes == null) cTimes = new HashMap<>();
+        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
         StatisticTask task = new StatisticTask();
         task.event = prefix + "close";
         task.storyId = Integer.toString(i);
         task.cause = c;
         task.slideIndex = si;
         task.slideTotal = st;
-        task.durationMs = System.currentTimeMillis() - currentTime - pauseTime;
-
+        task.durationMs = System.currentTimeMillis() - tm - pauseTime;
         generateBase(task);
         addTask(task);
         pauseTime = 0;
     }
 
     public void sendCloseStory(final int i, final String c, final Integer si, final Integer st, final Long t) {
-
+        InAppStoryService.getInstance().sendCurrentState();
+        if (cTimes == null) cTimes = new HashMap<>();
+        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
         StatisticTask task = new StatisticTask();
-
         task.event = prefix + "close";
         task.storyId = Integer.toString(i);
         task.cause = c;
         task.slideIndex = si;
         task.slideTotal = st;
-        task.durationMs = t;
+        task.durationMs = System.currentTimeMillis() - tm - t;
+        generateBase(task);
+        addTask(task);
+        pauseTime = 0;
 
+    }
+
+    public void addFakeEvents(final int i, final Integer si, final Integer st, final Long slideD) {
+        StatisticTask task = new StatisticTask();
+        task.event = prefix + "slide";
+        task.storyId = Integer.toString(i);
+        task.slideIndex = si;
+        task.durationMs = slideD;
+        task.isFake = true;
+        generateBase(task);
+        addFakeTask(task);
+
+        if (cTimes == null) cTimes = new HashMap<>();
+        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
+        StatisticTask task2 = new StatisticTask();
+        task2.event = prefix + "close";
+        task2.storyId = Integer.toString(i);
+        task2.cause = StatisticManager.APPCLOSE;
+        task2.slideIndex = si;
+        task2.isFake = true;
+        task2.slideTotal = st;
+        task2.durationMs = System.currentTimeMillis() - tm - pauseTime;
+        generateBase(task2);
+        addFakeTask(task2);
+    }
+
+    public void sendDeeplinkStory(final int i, String link) {
+
+        StatisticTask task = new StatisticTask();
+        task.event = prefix + "link";
+        task.storyId = Integer.toString(i);
+        task.target = link;
         generateBase(task);
         addTask(task);
 
     }
+
 
     public void sendClickLink(int storyId) {
         StatisticTask task = new StatisticTask();
@@ -304,12 +416,14 @@ public class StatisticManager {
 
 
     public void sendViewSlide(final int i, final int si, final Long t) {
+        if (t <= 0) return;
         StatisticTask task = new StatisticTask();
         task.event = prefix + "slide";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
         task.durationMs = t;
         generateBase(task);
+        InAppStoryService.getInstance().match += "slide " + "viewSlide" + si + " " + i;
         addTask(task);
 
     }
@@ -333,12 +447,15 @@ public class StatisticManager {
     }
 
 
-    private static void sendTask(final StatisticTask task) {
+    private void sendTask(final StatisticTask task) {
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
                     if (!InAppStoryManager.getInstance().sendStatistic) return true;
+                    if (task.event.equals("slide")) {
+                        InAppStoryService.getInstance().match += task.event + " " + task.storyId + " " + task.slideIndex + " " + task.durationMs + " " + task.timestamp + "\n";
+                    }
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,
                             task.sessionId,
@@ -356,7 +473,8 @@ public class StatisticManager {
                             task.widgetAnswer,
                             task.widgetAnswerLabel,
                             task.widgetAnswerScore,
-                            task.layoutIndex).execute();
+                            task.layoutIndex,
+                            task.target).execute();
                     if (response.code > 199 && response.code < 210) {
                         return true;
                     } else {

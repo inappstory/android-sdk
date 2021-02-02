@@ -49,6 +49,8 @@ public class StoriesActivity extends AppCompatActivity {
     public static long destroyed = 0;
     public boolean pauseDestroyed = false;
 
+
+
     @Override
     public void onPause() {
         super.onPause();

@@ -1,7 +1,9 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -230,6 +232,8 @@ final class PausableProgressBar extends FrameLayout {
         private long totalPausedSystemTime = 0;
         private boolean pausedInBackground = false;
 
+        long checkAfterBGPause = 0;
+
         @Override
         public boolean getTransformation(long currentTime, Transformation outTransformation, float scale) {
             if (mResumed) {
@@ -240,6 +244,7 @@ final class PausableProgressBar extends FrameLayout {
                 pausedSystemTime = 0;
                 resumedSystemTime = 0;
             }
+            checkAfterBGPause = currentTime;
             mResumed = false;
             if (mPaused && mElapsedAtPause == 0) {
                 mElapsedAtPause = currentTime - getStartTime();
@@ -247,8 +252,13 @@ final class PausableProgressBar extends FrameLayout {
             if (mPaused) {
                 setStartTime(currentTime - mElapsedAtPause);
             }
-            if (mPausedSystem && mSystemElapsedAtPause == 0) {
-                mSystemElapsedAtPause = currentTime - getStartTime();
+
+            if (mPausedSystem) {
+                if (mSystemElapsedAtPause == 0) {
+                    Log.e("resumePB", "getTransformation");
+                    checkAfterBGPause = -1;
+                    mSystemElapsedAtPause = currentTime - getStartTime();
+                }
             }
             if (mPausedSystem) {
                 setStartTime(currentTime - mSystemElapsedAtPause);
@@ -286,6 +296,16 @@ final class PausableProgressBar extends FrameLayout {
             //  mElapsedAtPause = 0;
             mSystemElapsedAtPause = 0;
             mPausedSystem = true;
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (checkAfterBGPause != -1) {
+                        Log.e("resumePB", "pauseWithBackground");
+                        mSystemElapsedAtPause = checkAfterBGPause - getStartTime();
+                        setStartTime(checkAfterBGPause - mSystemElapsedAtPause);
+                    }
+                }
+            }, 100);
         }
 
         void resumeWithBackground() {

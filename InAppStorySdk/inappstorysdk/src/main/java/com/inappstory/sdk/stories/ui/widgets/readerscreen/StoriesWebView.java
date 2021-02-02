@@ -765,6 +765,7 @@ public class StoriesWebView extends WebView {
             KeyValueStorage.saveString("story" + storyId
                     + "__" + InAppStoryManager.getInstance().getUserId(), data);
 
+            if (!InAppStoryManager.getInstance().sendStatistic) return;
             if (sendToServer) {
                 NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                         .enqueue(new NetworkCallback<Response>() {

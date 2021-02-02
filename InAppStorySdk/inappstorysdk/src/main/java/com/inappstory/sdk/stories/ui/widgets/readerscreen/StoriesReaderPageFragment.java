@@ -140,6 +140,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         //storiesProgressView.skip();
         if (story.durations != null && !story.durations.isEmpty())
             story.slidesCount = story.durations.size();
+
+        InAppStoryService.getInstance().sendCurrentState();
         if (story.lastIndex == story.slidesCount - 1) {
             CsEventBus.getDefault().post(new NextStoryReaderEvent());
 
@@ -185,6 +187,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         int lind = StoryDownloader.getInstance().getStoryById(storyId).lastIndex;
         if (lind > 0) {
             CsEventBus.getDefault().post(new OnPrevEvent());
+            InAppStoryService.getInstance().sendCurrentState();
             storiesProgressView.clearAnimation(lind);
         } else {
             CsEventBus.getDefault().post(new PrevStoryReaderEvent());
@@ -250,7 +253,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (storyId != event.getId()) return;
         storiesProgressView.same();
         storiesWebView.restartVideo();
-        InAppStoryService.getInstance().restartTimer();
+        Story story = StoryDownloader.getInstance().getStoryById(storyId);
+        InAppStoryService.getInstance().restartTimer(story.getDurations().get(0));
     }
 
     public AppCompatImageView like;

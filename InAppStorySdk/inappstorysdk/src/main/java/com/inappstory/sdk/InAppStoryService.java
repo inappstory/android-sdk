@@ -23,6 +23,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -39,10 +41,12 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
+import com.inappstory.sdk.stories.api.models.CurrentState;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.StatisticTask;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
@@ -51,6 +55,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenStatisticCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.events.AppKillEvent;
 import com.inappstory.sdk.stories.events.ContentLoadedEvent;
 import com.inappstory.sdk.stories.events.ListVisibilityEvent;
 import com.inappstory.sdk.stories.events.LoadFavStories;
@@ -215,8 +220,8 @@ public class InAppStoryService extends Service {
         timerHandler.post(timerTask);
     }
 
-    public void restartTimer() {
-        startTimer(totalTimerDuration, true);
+    public void restartTimer(long duration) {
+        startTimer(duration, true);
     }
 
     @CsSubscribe
@@ -643,10 +648,13 @@ public class InAppStoryService extends Service {
 
     public void resumeTimer() {
         Log.e("startTimer", "resumeTimer");
+        StatisticManager.getInstance().cleanFakeEvents();
         resumeLocalTimer();
+        if (currentEvent == null) return;
         currentEvent.eventType = 1;
         currentEvent.timer = System.currentTimeMillis();
         pauseTime += System.currentTimeMillis() - startPauseTime;
+        currentState.storyPause = pauseTime;
         startPauseTime = 0;
     }
 
@@ -655,6 +663,17 @@ public class InAppStoryService extends Service {
         startTimer(timerDuration - pauseShift, false);
     }
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+       /* Log.e("onTaskRemoved", ""+currentId);
+        if (currentId != 0) {
+            Story story = StoryDownloader.getInstance().getStoryById(currentId);
+            pauseTime += System.currentTimeMillis() - startPauseTime;
+            currentState.storyPause = pauseTime;
+            Log.e("pauseTime", "" + pauseTime);
+            StatisticManager.getInstance().sendCloseStory(story.id, StatisticManager.APPCLOSE, story.lastIndex, story.slidesCount, pauseTime);
+        }*/
+    }
 
     public long startPauseTime;
 
@@ -666,6 +685,8 @@ public class InAppStoryService extends Service {
         closeStatisticEvent(null, false);
         addStatisticEvent(1, event.storyId, event.index);
         eventCount++;
+        createCurrentState(event.storyId, event.index);
+
     }
 
     public void pauseLocalTimer() {
@@ -679,6 +700,9 @@ public class InAppStoryService extends Service {
     }
 
     public void pauseTimer() {
+        Story story = StoryDownloader.getInstance().getStoryById(currentId);
+
+        StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.slidesCount, System.currentTimeMillis() - currentState.startTime);
         pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
         closeStatisticEvent(null, true);
@@ -699,10 +723,6 @@ public class InAppStoryService extends Service {
                 add(currentEvent.index);
                 add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
             }});
-            if (currentEvent.eventType == 1) {
-                StatisticManager.getInstance().sendViewSlide(currentEvent.storyId, currentEvent.index,
-                        Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
-            }
             Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
                     currentEvent.storyId + " " + currentEvent.index + " " +
                     Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
@@ -710,6 +730,39 @@ public class InAppStoryService extends Service {
             //    pauseTimer();
             if (!clear)
                 currentEvent = null;
+        }
+    }
+
+    public CurrentState currentState;
+
+    public static Object csLock = new Object();
+
+    public void sendCurrentState() {
+        synchronized (csLock) {
+            if (currentState != null) {
+                InAppStoryService.getInstance().match += "sendCurrentState " + csLock.toString() + "\n";
+                StatisticManager.getInstance().sendViewSlide(currentState.storyId, currentState.slideIndex, System.currentTimeMillis() - currentState.startTime - currentState.storyPause);
+            }
+            currentState = null;
+        }
+    }
+
+    public String match = "";
+
+    public void createCurrentState(final int stId, final int ind) {
+        synchronized (csLock) {
+           /* if (currentState != null) {
+                InAppStoryService.getInstance().match += "createCurrentState " + csLock.toString() + "\n";
+                StatisticManager.getInstance().sendViewSlide(currentState.storyId, currentState.slideIndex, System.currentTimeMillis() - currentState.startTime - currentState.storyPause);
+                currentState = null;
+            }*/
+
+            pauseTime = 0;
+            currentState = new CurrentState() {{
+                storyId = stId;
+                slideIndex = ind;
+                startTime = System.currentTimeMillis();
+            }};
         }
     }
 
@@ -1067,7 +1120,7 @@ public class InAppStoryService extends Service {
             if (story.disliked()) {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
-              //  StatisticSendManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
+                //  StatisticSendManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
@@ -1079,7 +1132,7 @@ public class InAppStoryService extends Service {
             if (story.liked()) {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
-              //  StatisticSendManager.getInstance().sendLikeStory(story.id, story.lastIndex);
+                //  StatisticSendManager.getInstance().sendLikeStory(story.id, story.lastIndex);
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
@@ -1214,15 +1267,34 @@ public class InAppStoryService extends Service {
         return InAppStoryManager.getInstance().getApiKey();
     }
 
+
+    private static final String CRASH_KEY = "CRASH_KEY";
+
+    public class TryMe implements Thread.UncaughtExceptionHandler {
+
+        Thread.UncaughtExceptionHandler oldHandler;
+
+        public TryMe() {
+            oldHandler = Thread.getDefaultUncaughtExceptionHandler(); // сохраним ранее установленный обработчик
+        }
+
+        @Override
+        public void uncaughtException(Thread thread, final Throwable throwable) {
+            SharedPreferencesAPI.saveString(CRASH_KEY, throwable.getCause().toString() + "\n" + throwable.getMessage());
+            System.exit(0);
+        }
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
         CsEventBus.getDefault().register(this);
 
+        Thread.setDefaultUncaughtExceptionHandler(new TryMe());
         ImageLoader imgLoader = new ImageLoader(getApplicationContext());
         statistic = new ArrayList<>();
         INSTANCE = this;
-        /**/
+
     }
 
     public void startForegr() {

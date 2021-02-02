@@ -32,6 +32,7 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
@@ -680,6 +681,8 @@ public class InAppStoryManager {
                         callback.onShow();
                     if (story.deeplink != null) {
                         InAppStoryService.getInstance().addDeeplinkClickStatistic(story.id);
+
+                        StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink);
                         if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
                             InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
                         } else {

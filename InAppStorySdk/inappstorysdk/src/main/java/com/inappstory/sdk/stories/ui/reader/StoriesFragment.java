@@ -26,6 +26,7 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.events.AppKillEvent;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdEvent;
@@ -251,15 +252,23 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         final int position = pos0;
         if (lastPos < pos0 && lastPos > -1) {
             Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(lastPos));
+            Story story2 = StoryDownloader.getInstance().getStoryById(currentIds.get(pos0));
+            InAppStoryService.getInstance().sendCurrentState();
             StatisticManager.getInstance().sendCloseStory(story.id, StatisticManager.NEXT, story.lastIndex, story.slidesCount);
             StatisticManager.getInstance().sendViewStory(currentIds.get(pos0), StatisticManager.NEXT);
             StatisticManager.getInstance().sendOpenStory(currentIds.get(pos0), StatisticManager.NEXT);
+            InAppStoryService.getInstance().createCurrentState(story2.id, story2.lastIndex);
         } else if (lastPos > pos0 && lastPos > -1) {
             Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(lastPos));
+            Story story2 = StoryDownloader.getInstance().getStoryById(currentIds.get(pos0));
+            InAppStoryService.getInstance().sendCurrentState();
             StatisticManager.getInstance().sendCloseStory(story.id, StatisticManager.PREV, story.lastIndex, story.slidesCount);
             StatisticManager.getInstance().sendViewStory(currentIds.get(pos0), StatisticManager.PREV);
             StatisticManager.getInstance().sendOpenStory(currentIds.get(pos0), StatisticManager.PREV);
+            InAppStoryService.getInstance().createCurrentState(story2.id, story2.lastIndex);
         } else if (lastPos == -1) {
+            Story story2 = StoryDownloader.getInstance().getStoryById(currentIds.get(pos0));
+            InAppStoryService.getInstance().sendCurrentState();
             String whence = StatisticManager.DIRECT;
             switch (getArguments().getInt("source", 0)) {
                 case 1:
@@ -276,6 +285,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             }
             StatisticManager.getInstance().sendViewStory(currentIds.get(pos0), whence);
             StatisticManager.getInstance().sendOpenStory(currentIds.get(pos0), whence);
+            InAppStoryService.getInstance().createCurrentState(story2.id, story2.lastIndex);
         }
         lastPos = pos0;
         if (getArguments() != null) {
@@ -449,6 +459,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
         if (isDestroyed) return;
         currentIndex = event.getIndex();
+
     }
 
 
@@ -495,17 +506,22 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void appKillEvent(AppKillEvent event) {
+        Log.e("app_kill", "appKill");
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void onNextStory(NextStoryReaderEvent event) {
         if (isDestroyed) return;
         if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
 
             Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(storiesViewPager.getCurrentItem()));
-            StatisticManager.getInstance().sendCloseStory(story.id, StatisticManager.PREV, story.lastIndex, story.slidesCount);
+        /*    StatisticManager.getInstance().sendCloseStory(story.id, StatisticManager.PREV, story.lastIndex, story.slidesCount);
             StatisticManager.getInstance().sendViewStory(
                     currentIds.get(storiesViewPager.getCurrentItem() + 1), StatisticManager.NEXT);
             StatisticManager.getInstance().sendOpenStory(
                     currentIds.get(storiesViewPager.getCurrentItem() + 1), StatisticManager.NEXT);
-
+*/
             CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() + 1),
                     storiesViewPager.getCurrentItem() + 1));
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
@@ -521,13 +537,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (InAppStoryService.getInstance() == null) return;
         if (storiesViewPager.getCurrentItem() > 0) {
 
+            InAppStoryService.getInstance().sendCurrentState();
             Story story = StoryDownloader.getInstance().getStoryById(currentIds.get(storiesViewPager.getCurrentItem()));
-            StatisticManager.getInstance().sendCloseStory(story.id, StatisticManager.PREV, story.lastIndex, story.slidesCount);
+          /*  StatisticManager.getInstance().sendCloseStory(story.id, StatisticManager.PREV, story.lastIndex, story.slidesCount);
             StatisticManager.getInstance().sendViewStory(
                     currentIds.get(storiesViewPager.getCurrentItem() - 1), StatisticManager.PREV);
             StatisticManager.getInstance().sendOpenStory(
                     currentIds.get(storiesViewPager.getCurrentItem() - 1), StatisticManager.PREV);
-
+*/
             CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(storiesViewPager.getCurrentItem() - 1),
                     storiesViewPager.getCurrentItem() - 1));
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() - 1);

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.network;
 
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,12 +9,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +148,15 @@ public final class NetworkHandler implements InvocationHandler {
                 if (annotation instanceof Path) {
                     path = path.replaceFirst("\\{" +  ((Path) annotation).value()+ "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
-                    vars.put(((Query) annotation).value(), args[i].toString());
+                    String val = args[i].toString();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        try {
+                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    vars.put(((Query) annotation).value(), val);
                 }
             }
         }
@@ -170,9 +182,25 @@ public final class NetworkHandler implements InvocationHandler {
                 if (annotation instanceof Path) {
                     path = path.replaceFirst("\\{" +  ((Path) annotation).value()+ "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
-                    vars.put(((Query) annotation).value(), args[i].toString());
+                    String val = args[i].toString();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        try {
+                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    vars.put(((Query) annotation).value(), val);
                 } else if (annotation instanceof Field) {
-                    body += "&" + ((Field) annotation).value() + "=" + args[i].toString();
+                    String val = args[i].toString();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        try {
+                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    body += "&" + ((Field) annotation).value() + "=" + val;
                 } else if (annotation instanceof Body) {
                     try {
                         String bd = JsonParser.getJson(args[i]);

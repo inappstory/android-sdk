@@ -33,6 +33,9 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
@@ -222,11 +225,13 @@ public class ContactDialog {
             @Override
             public void afterTextChanged(Editable editable) {
                 String str = editable.toString();
-                if (str.isEmpty()) {
-                    buttonBackground.setVisibility(View.GONE);
-                } else {
-                    buttonBackground.setVisibility(View.VISIBLE);
-                }
+                try {
+                    if (str.isEmpty()) {
+                        buttonBackground.setVisibility(View.GONE);
+                    } else {
+                        buttonBackground.setVisibility(View.VISIBLE);
+                    }
+                } catch (Exception e) {}
 
                 editText.getMainText().removeTextChangedListener(this);
 
@@ -287,7 +292,9 @@ public class ContactDialog {
                 if (validate(finalInttype, editText.getMainText().getText().toString(),
                         editText.getMaskLength())) {
                     dialog.dismiss();
-                    sendListener.onSend(id, editText.getText());
+                    String val = editText.getText().replaceAll("\"", "\\\\\"");
+                    //URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
+                    sendListener.onSend(id, val);
                 } else {
                     editBorderContainer.setBackground(editBorderContainerErrorGradient);
                     editText.setTextColor(Color.RED);

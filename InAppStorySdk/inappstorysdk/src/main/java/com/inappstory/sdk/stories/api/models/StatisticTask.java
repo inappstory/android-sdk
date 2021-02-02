@@ -11,11 +11,13 @@ public class StatisticTask {
     public String userId;
     @SerializedName("s")
     public String sessionId;
-
+    public boolean isFake;
     @SerializedName("i")
     public String storyId;
     @SerializedName("w")
     public String whence;
+    @SerializedName("t")
+    public String target;
     @SerializedName("c")
     public String cause;
     @SerializedName("si")

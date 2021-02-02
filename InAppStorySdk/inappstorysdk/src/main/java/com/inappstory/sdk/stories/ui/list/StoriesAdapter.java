@@ -24,6 +24,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
@@ -137,6 +138,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         Story current = StoryDownloader.getInstance().getStoryById(storiesIds.get(index));
         if (current != null) {
             if (current.deeplink != null) {
+                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
                 InAppStoryService.getInstance().addDeeplinkClickStatistic(current.id);
                 if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
                     InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
