@@ -82,7 +82,17 @@ public class Downloader {
     }
 
 
-    @NonNull
+    public static File getTestVideo(Context con,
+                                 @NonNull String url,
+                                 String type,
+                                 Integer sourceId,
+                                 Point size) throws Exception {
+        FileCache cache = FileCache.INSTANCE;
+
+        File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
+        return img;
+    }
+        @NonNull
     @WorkerThread
     public static File downVideo(Context con,
                                  @NonNull String url,
@@ -399,6 +409,37 @@ public class Downloader {
             KeyValueStorage.saveString(outputFile.getName(), contentType);
         else
             KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
+
+        byte[] buffer = new byte[1024];
+        int bufferLength = 0;
+
+        while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+            fileOutput.write(buffer, 0, bufferLength);
+        }
+        fileOutput.flush();
+        fileOutput.close();
+        return outputFile;
+
+    }
+
+
+    public static File downloadVideoFile(String url, File outputFile) throws Exception {
+        if (!outputFile.exists())
+            outputFile.createNewFile();
+
+
+        URL urlS = new URL(url);
+        HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
+        urlConnection.setRequestMethod("GET");
+        //urlConnection.setDoOutput(true);
+        urlConnection.connect();
+
+
+        FileOutputStream fileOutput = new FileOutputStream(outputFile);
+        InputStream inputStream = urlConnection.getInputStream();
+        if (urlConnection.getResponseCode() > 350) {
+            throw new RuntimeException();
+        }
 
         byte[] buffer = new byte[1024];
         int bufferLength = 0;

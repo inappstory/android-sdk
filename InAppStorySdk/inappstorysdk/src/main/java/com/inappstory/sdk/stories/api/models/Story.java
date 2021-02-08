@@ -59,6 +59,15 @@ public class Story implements Parcelable {
     @SerializedName("title_color")
     public String titleColor;
 
+
+    @SerializedName("video")
+    public String videoUrl;
+
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
     /**
      * Последний открытый слайд
      */

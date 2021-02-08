@@ -32,6 +32,7 @@ public final class NetworkHandler implements InvocationHandler {
 
     public static Response doRequest(Request req)
             throws Exception {
+        Log.d("InAppStory_Network", "start " + req.getUrl());
         String url = req.getUrl();
         String varStr = "";
         if (req.getVars() != null && req.getVars().keySet().size() > 0) {
@@ -151,7 +152,7 @@ public final class NetworkHandler implements InvocationHandler {
                     String val = args[i].toString();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                         try {
-                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
+                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.name());
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
@@ -185,8 +186,8 @@ public final class NetworkHandler implements InvocationHandler {
                     String val = args[i].toString();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                         try {
-                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
-                        } catch (UnsupportedEncodingException e) {
+                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.name());
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
@@ -195,8 +196,8 @@ public final class NetworkHandler implements InvocationHandler {
                     String val = args[i].toString();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                         try {
-                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
-                        } catch (UnsupportedEncodingException e) {
+                            val = URLEncoder.encode(val, StandardCharsets.UTF_8.name());
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }

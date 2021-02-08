@@ -340,6 +340,9 @@ public class InAppStoryService extends Service {
                     story.isOpened = true;
                 }
             }
+           /* if (response != null && response.size() > 1) {
+                response.get(1).videoUrl = "https://my-files.su/Save/w2o6jw/small.webm";
+            }*/
             SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
             StoryDownloader.getInstance().uploadingAdditional(response);
             CsEventBus.getDefault().post(new ListVisibilityEvent());

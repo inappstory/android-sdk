@@ -97,6 +97,7 @@ public class StoriesList extends RecyclerView {
 
             }
         });
+        //getRecycledViewPool().setMaxRecycledViews(6, 0);
     }
 
     public void sendIndexes() {

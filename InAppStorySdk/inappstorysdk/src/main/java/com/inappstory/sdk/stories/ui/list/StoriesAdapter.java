@@ -80,7 +80,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     public StoryListItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         int vType = viewType % 10;
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cs_story_list_custom_item, parent, false);
-        return new StoryListItem(v, manager, vType == 2, vType == 3);
+        return new StoryListItem(v, manager, (vType % 5) == 2, vType == 3, vType > 5);
     }
 
     @Override
@@ -108,7 +108,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                                         story.getSource(),
                                         (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
                                         Color.parseColor(story.getBackgroundColor()),
-                                        story.isOpened || isFavoriteList, story.hasAudio());
+                                        story.isOpened || isFavoriteList, story.hasAudio(),
+                                        story.getVideoUrl());
                             }
                         });
                     }
@@ -214,7 +215,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         if (InAppStoryManager.getInstance().hasFavorite() && position == storiesIds.size())
             return pref + 3;
         try {
-            return StoryDownloader.getInstance().getStoryById(storiesIds.get(position)).isOpened ? (pref + 2) : (pref + 1);
+            Story story = StoryDownloader.getInstance().getStoryById(storiesIds.get(position));
+            if (story.getVideoUrl() != null) pref += 5;
+            return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {
             return 0;
         }

@@ -425,6 +425,28 @@ public class StoryDownloader {
         }
     };
 
+    public static void downloadTestVideo(final String url) {
+        ExecutorService executorService = runnableExecutor;
+        final Callable _ff = new Callable() {
+            @Override
+            public Object call() throws Exception {
+                downloadVideoByUrl(getInstance().context, url, -293, -1);
+                return null;
+            }
+        };
+        final Future<Story> ff = imageExecutor.submit(_ff);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ff.get();
+                } catch (Throwable t) {
+
+                }
+            }
+        });
+    }
+
     private static Runnable queuePageReadRunnable = new Runnable() {
         boolean isRefreshing = false;
 
@@ -602,9 +624,9 @@ public class StoryDownloader {
         INSTANCE = null;
     }
 
-    public static void downloadVideoByUrl(final Context context, final String url, final int StoryId, int ind) throws Exception {
+    public static void downloadVideoByUrl(final Context context, final String url, final int storyId, int ind) throws Exception {
 
-        Downloader.downVideo(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
+        Downloader.downVideo(context, url, FileType.STORY_IMAGE, storyId, Sizes.getScreenSize());
        /* final Future<File> ff = imageExecutor.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {

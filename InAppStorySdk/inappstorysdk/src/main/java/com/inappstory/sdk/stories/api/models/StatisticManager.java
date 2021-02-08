@@ -58,7 +58,7 @@ public class StatisticManager {
     private ArrayList<StatisticTask> faketasks = new ArrayList<>();
 
     public void addTask(StatisticTask task) {
-         if (1 == 1) return;
+   //      if (1 == 1) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -69,7 +69,7 @@ public class StatisticManager {
 
 
     public void addFakeTask(StatisticTask task) {
-        if (1 == 1) return;
+       // if (1 == 1) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -103,7 +103,7 @@ public class StatisticManager {
     public static StatisticManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new StatisticManager();
-            if (1 == 1) return INSTANCE;
+           // if (1 == 1) return INSTANCE;
             INSTANCE.init();
         }
         return INSTANCE;
