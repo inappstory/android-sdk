@@ -570,7 +570,7 @@ public class InAppStoryManager {
                         }
                         settingsDialogFragment.setArguments(bundle);
                         settingsDialogFragment.show(
-                                ((AppCompatActivity) context).getSupportFragmentManager(),
+                                ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                                 "DialogFragment");
                     } else {
                         Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(), StoriesActivity.class);
