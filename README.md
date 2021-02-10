@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:0.1.17'
+    implementation 'com.github.inappstory:android-sdk:0.1.18'
 
 Также для корректной работы в dependencies нужно добавить библиотеку GSON:
 
@@ -184,11 +184,13 @@
 
     interface IStoriesListItem {
         View getView(); // здесь необходимо передать View - внешний вид ячейки.
+        View getVideoView(); // здесь необходимо передать View - внешний вид ячейки на случай, если в ячейках используется видео на обложке.
         void setTitle(View itemView, String title, Integer titleColor); // itemView - текущая ячейка, в необходимой View используем заголовок story. Параметр titleColor может быть null.
         void setSource(View itemView, String source); // itemView - текущая ячейка, в необходимой View используем источник story.
         void setImage(View itemView, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем обложку story или цвет фона в случае ее отсутствия.
         void setReaded(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если она прочитана.
         void setHasAudio(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если у данной сториз есть аудио внутри.
+        void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем видеообложку story (videoUrl), постер видео (url) или цвет фона в случае его отсутствия. Для работы с ячейками видео рекомендуется использовать класс из библиотеки VideoPlayer в качестве контейнера для отображения видео и метод loadVideo(String videoUrl) для запуска. Данный класс предусматривает кэширование видеообложек.
     }
 
 В случае задания данного интерфейса другие параметры, влияющие на внешний вид ячейки списка не используются (будут игнорироваться)
@@ -200,6 +202,12 @@
                         public View getView() {
                             return LayoutInflater.from(MainActivity.this)
                                     .inflate(R.layout.custom_story_list_item, null, false);
+                        }
+                        
+                        @Override
+                        public View getVideoView() {
+                            return LayoutInflater.from(MainActivity.this)
+                                    .inflate(R.layout.custom_story_list_video_item, null, false);
                         }
 
                         @Override
@@ -215,7 +223,13 @@
                         @Override
                         public void setImage(View itemView, String url, int backgroundColor) {
                             //В случае, если есть сториз без изображений и с изображением, возможно потребуется предварительная очистка imageView с помощью setImageResource(0)
-                            itemView.findViewById(R.id.image).setBackgroundColor(Color.RED);
+                            itemView.findViewById(R.id.image).setBackgroundColor(backgroundColor);
+                        }
+
+                        @Override
+                        public void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor) {
+                            itemView.findViewById(R.id.image).setBackgroundColor(backgroundColor);
+                            ((VideoPlayer)itemView.findViewById(R.id.video)).loadVideo(videoUrl);
                         }
 
                         @Override
