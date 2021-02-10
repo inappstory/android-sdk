@@ -27,6 +27,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -470,7 +471,6 @@ public class StoriesWebView extends WebView {
 
         setWebViewClient(new WebViewClient() {
 
-
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
@@ -479,10 +479,12 @@ public class StoriesWebView extends WebView {
                 FileCache cache = FileCache.INSTANCE;
                 File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
 
+                Log.e("storyLoaded", url + " " + storyId + " " + index);
                 if (file.exists()) {
                     try {
                         Response response = new Request.Builder().head().url(url).build().execute();
                         String ctType = response.headers.get("Content-Type");
+                        Log.e("storyLoaded", ctType + " " + storyId + " " + index);
                         return new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
                     } catch (FileNotFoundException e) {
@@ -497,6 +499,8 @@ public class StoriesWebView extends WebView {
                 } else
                     return super.shouldInterceptRequest(view, url);
             }
+
+
 
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
@@ -669,6 +673,7 @@ public class StoriesWebView extends WebView {
 
         @JavascriptInterface
         public void storyLoaded() {
+            Log.e("storyLoaded", storyId + " " + index);
             isWebPageLoaded = true;
             if (InAppStoryService.getInstance() == null) return;
             if (InAppStoryService.getInstance().getCurrentId() != storyId) {

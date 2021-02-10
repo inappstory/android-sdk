@@ -104,7 +104,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                     isMpPrepared = true;
                     mp.setLooping(true);
 
-                    Log.e("video_sizes", mp.getVideoWidth() + " " + mp.getVideoHeight() + " " + getWidth() + " " + getHeight());
+                    //Log.e("video_sizes", mp.getVideoWidth() + " " + mp.getVideoHeight() + " " + getWidth() + " " + getHeight());
                     updateTextureViewSize(getWidth(), getHeight(), mp.getVideoWidth(), mp.getVideoHeight());
                     mp.setVolume(0, 0);
                     mp.start();

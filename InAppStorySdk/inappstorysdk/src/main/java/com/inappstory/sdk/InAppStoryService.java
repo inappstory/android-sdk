@@ -874,7 +874,7 @@ public class InAppStoryService extends Service {
         NetworkClient.getApi().statisticsOpen(
                 "cache",
                 InAppStoryManager.getInstance().getTagsString(),
-                "animation,data,deeplink,placeholder",
+                "animation,data,deeplink,placeholder,webp",
                 platform,
                 deviceId,
                 model,

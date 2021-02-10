@@ -60,12 +60,12 @@ public class Story implements Parcelable {
     public String titleColor;
 
 
-    @SerializedName("video")
-    public String videoUrl;
+    @SerializedName("video_cover")
+    public List<Image> videoUrl;
 
 
     public String getVideoUrl() {
-        return videoUrl;
+        return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
     }
 
     /**
