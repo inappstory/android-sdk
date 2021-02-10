@@ -60,8 +60,9 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-
+        if (this.surface != null) this.surface.release();
         if (mp != null) {
+           // this.surface.release();
             mp.stop();
             mp.reset();
             mp.release();
@@ -75,14 +76,18 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
     }
 
+    File file = null;
+
     public void prepareVideo(SurfaceTexture t) {
 
         this.surface = new Surface(t);
-        mp = new MediaPlayer();
+        if (mp == null)
+            mp = new MediaPlayer();
         mp.setSurface(this.surface);
 
         try {
-            File file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_IMAGE, COVER_VIDEO_FOLDER_ID, Sizes.getScreenSize());
+            if (file == null)
+                file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_IMAGE, COVER_VIDEO_FOLDER_ID, Sizes.getScreenSize());
             if (file.exists()) {
                 mp.setDataSource(file.getAbsolutePath());
             } else {
