@@ -5,13 +5,10 @@ import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.widget.FrameLayout;
 
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileType;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
@@ -20,21 +17,15 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import java.io.File;
 import java.io.IOException;
 
+import static com.inappstory.sdk.stories.cache.StoryDownloader.COVER_VIDEO_FOLDER_ID;
+
 public class VideoPlayer extends TextureView implements TextureView.SurfaceTextureListener {
-
-    private static String TAG = "VideoPlayer";
-
-    /**
-     * This flag determines that if current VideoPlayer object is first item of the list if it is first item of list
-     */
-    boolean isFirstListItem;
 
     boolean isLoaded;
     boolean isMpPrepared;
     String url;
     MediaPlayer mp;
     Surface surface;
-    SurfaceTexture s;
 
     public VideoPlayer(Context context) {
         super(context);
@@ -91,20 +82,18 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         mp.setSurface(this.surface);
 
         try {
-            File file = Downloader.getTestVideo(getContext(), url, FileType.STORY_IMAGE, -293, Sizes.getScreenSize());
+            File file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_IMAGE, COVER_VIDEO_FOLDER_ID, Sizes.getScreenSize());
             if (file.exists()) {
                 mp.setDataSource(file.getAbsolutePath());
             } else {
                 mp.setDataSource(url);
-                StoryDownloader.downloadTestVideo(url);
+                StoryDownloader.downloadCoverVideo(url);
             }
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
                     isMpPrepared = true;
                     mp.setLooping(true);
-
-                    //Log.e("video_sizes", mp.getVideoWidth() + " " + mp.getVideoHeight() + " " + getWidth() + " " + getHeight());
                     updateTextureViewSize(getWidth(), getHeight(), mp.getVideoWidth(), mp.getVideoHeight());
                     mp.setVolume(0, 0);
                     mp.start();
@@ -127,20 +116,15 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     private void updateTextureViewSize(float viewWidth, float viewHeight, float mVideoWidth, float mVideoHeight) {
         float scaleX = 1.0f;
         float scaleY = 1.0f;
+        float coeff1 = viewWidth / viewHeight;
+        float coeff2 = mVideoWidth / mVideoHeight;
 
-        if (mVideoWidth > viewWidth && mVideoHeight > viewHeight) {
-            scaleX = mVideoWidth / viewWidth;
-            scaleY = mVideoHeight / viewHeight;
-        } else if (mVideoWidth < viewWidth && mVideoHeight < viewHeight) {
-            scaleY = viewWidth / mVideoWidth;
-            scaleX = viewHeight / mVideoHeight;
-        } else if (viewWidth > mVideoWidth) {
-            scaleY = (viewWidth / mVideoWidth) / (viewHeight / mVideoHeight);
-        } else if (viewHeight > mVideoHeight) {
-            scaleX = (viewHeight / mVideoHeight) / (viewWidth / mVideoWidth);
+        if (mVideoWidth / viewWidth > mVideoHeight / viewHeight) {
+            scaleX = coeff2 / coeff1;
+        } else {
+            scaleY = coeff1 / coeff2;
         }
 
-        // Calculate pivot points, in our case crop from center
         float pivotPointX = viewWidth / 2;
         float pivotPointY = viewHeight / 2;
 

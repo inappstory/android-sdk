@@ -425,12 +425,14 @@ public class StoryDownloader {
         }
     };
 
-    public static void downloadTestVideo(final String url) {
+    public static final int COVER_VIDEO_FOLDER_ID = -9999;
+
+    public static void downloadCoverVideo(final String url) {
         ExecutorService executorService = runnableExecutor;
         final Callable _ff = new Callable() {
             @Override
             public Object call() throws Exception {
-                downloadVideoByUrl(getInstance().context, url, -293, -1);
+                downloadVideoByUrl(getInstance().context, url, COVER_VIDEO_FOLDER_ID, -1);
                 return null;
             }
         };

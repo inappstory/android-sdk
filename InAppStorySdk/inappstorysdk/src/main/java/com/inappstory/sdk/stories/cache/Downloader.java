@@ -82,11 +82,11 @@ public class Downloader {
     }
 
 
-    public static File getTestVideo(Context con,
-                                 @NonNull String url,
-                                 String type,
-                                 Integer sourceId,
-                                 Point size) throws Exception {
+    public static File getCoverVideo(Context con,
+                                     @NonNull String url,
+                                     String type,
+                                     Integer sourceId,
+                                     Point size) {
         FileCache cache = FileCache.INSTANCE;
 
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);

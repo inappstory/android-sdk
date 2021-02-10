@@ -64,8 +64,10 @@ public class StoriesActivity extends AppCompatActivity {
             } catch (Exception e) {
 
             }
-            if (!isFakeActivity)
+            if (!isFakeActivity) {
                 destroyed = 0;
+                cleanReader();
+            }
             System.gc();
             pauseDestroyed = true;
         }
@@ -186,6 +188,7 @@ public class StoriesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState1) {
 
         Log.e("StoriesActivity", "create");
+        cleaned = false;
         if (destroyed == -1) {
             Log.e("StoriesActivity", "create fake");
             isFakeActivity = true;
@@ -322,14 +325,18 @@ public class StoriesActivity extends AppCompatActivity {
         }
     }
 
+    boolean cleaned = false;
+
     public void cleanReader() {
         if (InAppStoryService.getInstance() == null) return;
+        if (cleaned) return;
         InAppStoryService.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
         for (Story story : StoryDownloader.getInstance().getStories())
             story.lastIndex = 0;
+        cleaned = true;
     }
 
     @CsSubscribe
@@ -371,8 +378,10 @@ public class StoriesActivity extends AppCompatActivity {
             } catch (Exception e) {
 
             }
-            if (!isFakeActivity)
+            if (!isFakeActivity) {
                 destroyed = 0;
+                cleanReader();
+            }
             System.gc();
             pauseDestroyed = true;
         }

@@ -29,6 +29,9 @@
                     android:id="@+id/image"
                     android:scaleType="centerCrop"
                     android:layout_height="match_parent" />
+
+
+
                 <com.inappstory.sdk.stories.ui.video.VideoPlayer
                     android:layout_width="match_parent"
                     android:id="@+id/video"
@@ -38,7 +41,16 @@
                     android:elevation="8dp"
                     android:layout_height="match_parent"
                     android:background="@drawable/story_gradient_black" />
-
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="24dp"
+                    android:layout_margin="8dp"
+                    android:id="@+id/hasAudio"
+                    android:layout_alignParentRight="true"
+                    android:visibility="gone"
+                    android:alpha="0.6"
+                    android:elevation="9dp"
+                    android:src="@drawable/ic_sound_cell"
+                    android:layout_height="24dp"/>
                 <androidx.appcompat.widget.AppCompatTextView
                     android:ellipsize="end"
                     android:id="@+id/title"
@@ -64,14 +76,6 @@
                     android:layout_margin="8dp"
                     android:layout_height="wrap_content" />
 
-                <androidx.appcompat.widget.AppCompatImageView
-                    android:layout_width="24dp"
-                    android:id="@+id/hasAudio"
-                    android:layout_centerInParent="true"
-                    android:visibility="gone"
-                    android:elevation="9dp"
-                    android:src="@drawable/ic_sound_cell"
-                    android:layout_height="24dp"/>
             </RelativeLayout>
 
         </com.inappstory.sdk.imageloader.RoundedCornerLayout>
