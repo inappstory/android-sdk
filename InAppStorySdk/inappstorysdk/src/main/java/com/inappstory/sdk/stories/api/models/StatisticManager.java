@@ -49,6 +49,7 @@ public class StatisticManager {
 
     public static final String AUTO = "auto-close";
     public static final String CLICK = "button-close";
+    public static final String BACK = "back";
     public static final String SWIPE = "swipe-close";
     public static final String CUSTOM = "custom-close";
 

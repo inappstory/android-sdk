@@ -155,6 +155,18 @@ public class StoriesActivity extends AppCompatActivity {
 
         if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
+
+        if (InAppStoryService.getInstance() != null) {
+            Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
+
+            CsEventBus.getDefault().post(new CloseStory(story.id,
+                    story.title, story.tags, story.slidesCount,
+                    story.lastIndex, CloseStory.CUSTOM,
+                    getIntent().getIntExtra("source", 0)));
+            String cause = StatisticManager.BACK;
+            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             finishAfterTransition();
         } else {

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:background="#000000"
+    android:layout_height="60dp">
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/likeButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="18dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        app:srcCompat="@drawable/ic_stories_status_like" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/dislikeButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="18dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        app:srcCompat="@drawable/ic_stories_status_dislike"/>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/favoriteButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="18dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        app:srcCompat="@drawable/ic_stories_status_favorite" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/soundButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="18dp"
+        android:layout_marginBottom="15dp"
+        app:srcCompat="@drawable/ic_stories_status_sound" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/shareButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="18dp"
+        android:layout_marginBottom="15dp"
+        app:srcCompat="@drawable/ic_share_status" />
+
+</LinearLayout>

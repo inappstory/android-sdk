@@ -569,7 +569,7 @@ public class StoriesWebView extends WebView {
         addJavascriptInterface(new WebAppInterface(getContext(), index), "Android");
     }
 
-    public static String getMimeType(String url) {
+    /*public static String getMimeType(String url) {
         String type = null;
         String extension = MimeTypeMap.getFileExtensionFromUrl(url);
         if (extension != null) {
@@ -577,7 +577,7 @@ public class StoriesWebView extends WebView {
         }
         return type;
     }
-
+*/
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void shareComplete(ShareCompleteEvent event) {
         if (storyId != event.storyId) return;

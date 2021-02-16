@@ -19,11 +19,14 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.StatusBarController;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
@@ -42,7 +45,38 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
+        if (InAppStoryService.getInstance() != null) {
+            InAppStoryService.getInstance().sendStatistic();
+            Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
+
+            CsEventBus.getDefault().post(new CloseStory(story.id,
+                    story.title, story.tags, story.slidesCount,
+                    story.lastIndex, CloseStory.CLICK,
+                    getArguments().getInt("source", 0)));
+            String cause = StatisticManager.CLICK;
+            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
+        }
+        try {
+            CsEventBus.getDefault().unregister(this);
+        } catch (Exception e) {
+
+        }
+        cleanReader();
         super.onDismiss(dialogInterface);
+    }
+
+    boolean cleaned = false;
+
+    public void cleanReader() {
+        if (InAppStoryService.getInstance() == null) return;
+        if (cleaned) return;
+        InAppStoryService.getInstance().closeStatisticEvent();
+        InAppStoryService.getInstance().setCurrentIndex(0);
+        InAppStoryService.getInstance().setCurrentId(0);
+        InAppStoryService.getInstance().isBackgroundPause = false;
+        for (Story story : StoryDownloader.getInstance().getStories())
+            story.lastIndex = 0;
+        cleaned = true;
     }
 
     @Override
@@ -99,14 +133,14 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
-        if (InAppStoryService.getInstance() == null) return;
+       /* if (InAppStoryService.getInstance() == null) return;
         InAppStoryService.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
         for (Story story : StoryDownloader.getInstance().getStories())
             story.lastIndex = 0;
-        CsEventBus.getDefault().unregister(this);
+        CsEventBus.getDefault().unregister(this);*/
         dismiss();
     }
 
@@ -123,6 +157,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         super.onViewCreated(view, savedInstanceState);
         StoriesFragment fragment = new StoriesFragment();
 
+        cleaned = false;
         StoriesActivity.destroyed = -1;
         fragment = new StoriesFragment();
 
