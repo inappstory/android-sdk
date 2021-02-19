@@ -119,6 +119,8 @@ public class StoriesWebView extends WebView {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
+        videoIsLoaded = false;
+        pausedBeforeLoaded = false;
         Log.e("PageTaskToLoadEvent", "loadStory " + id + " " + index);
         final Story story = StoryDownloader.getInstance().getStoryById(id);
         if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
@@ -136,6 +138,7 @@ public class StoriesWebView extends WebView {
 
     private void loadStoryInner(final int id, final int index, Story story) {
         Log.e("PageTaskToLoadEvent", "loadStoryInner " + id + " " + index);
+        totalLoaded = true;
         isWebPageLoaded = false;
         StoriesWebView.this.storyId = id;
         StoriesWebView.this.loadedIndex = index;
@@ -156,10 +159,6 @@ public class StoriesWebView extends WebView {
             } else {
                 setLayerType(View.LAYER_TYPE_NONE, null);
             }
-
-            //WebPageConverter.replaceEmptyAndLoad("", storyId, index, layout);
-
-            return;
         } else {
 
             pageTaskLoaded(null);
@@ -198,7 +197,6 @@ public class StoriesWebView extends WebView {
                 getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
                 setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
-                return;
             } else {
                 isVideo = false;
                 if (Build.VERSION.SDK_INT >= 19) {
@@ -208,8 +206,6 @@ public class StoriesWebView extends WebView {
                     setLayerType(View.LAYER_TYPE_NONE, null);
                 }
                 WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, index, layout);
-
-                return;
             }
         }
     }
@@ -286,7 +282,6 @@ public class StoriesWebView extends WebView {
         if (event.getStoryId() != storyId) {
             stopVideo();
         } else {
-
             playVideo();
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -350,15 +345,19 @@ public class StoriesWebView extends WebView {
 
     public void pauseVideo() {
         // if (!isVideo) return;
-        //Log.e("playVideo", storyId + " pause");
+        // Log.e("playVideo", storyId + " pause");
         loadUrl("javascript:(function(){story_slide_pause();})()");
+        pausedBeforeLoaded = !videoIsLoaded;
     }
 
 
+    boolean pausedBeforeLoaded = false;
+
     public void playVideo() {
         // if (!isVideo) return;
-        //Log.e("playVideo", storyId + " play");
+        // Log.e("playVideo", storyId + " play");
         boolean withSound = InAppStoryManager.getInstance().soundOn;
+
         if (withSound) {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
         } else {
@@ -369,7 +368,7 @@ public class StoriesWebView extends WebView {
     public void stopVideo() {
         // if (!isVideo) return;
         //loadUrl("javascript:(function(){window.Android.defaultTap('test');})()");
-        //Log.e("playVideo", storyId + " stop");
+        // Log.e("playVideo", storyId + " stop");
         loadUrl("javascript:(function(){story_slide_stop();})()");
 
     }
@@ -378,7 +377,8 @@ public class StoriesWebView extends WebView {
 
 
         // Log.e("playVideo", storyId + " resume");
-        loadUrl("javascript:(function(){story_slide_resume();})()");
+        if (!pausedBeforeLoaded)
+            loadUrl("javascript:(function(){story_slide_resume();})()");
     }
 
     @Override
@@ -449,6 +449,7 @@ public class StoriesWebView extends WebView {
         this.progressBar = progressBar;
     }
 
+    boolean videoIsLoaded = false;
 
     private void init() {
 
@@ -479,14 +480,15 @@ public class StoriesWebView extends WebView {
                 FileCache cache = FileCache.INSTANCE;
                 File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
 
-                Log.e("storyLoaded", url + " " + storyId + " " + index);
                 if (file.exists()) {
+
                     try {
                         Response response = new Request.Builder().head().url(url).build().execute();
                         String ctType = response.headers.get("Content-Type");
                         Log.e("storyLoaded", ctType + " " + storyId + " " + index);
-                        return new WebResourceResponse(ctType, "BINARY",
+                        WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
+                        return resp;
                     } catch (FileNotFoundException e) {
                         return super.shouldInterceptRequest(view, url);
                     } catch (IOException e) {
@@ -496,10 +498,12 @@ public class StoriesWebView extends WebView {
 
                         return super.shouldInterceptRequest(view, url);
                     }
-                } else
-                    return super.shouldInterceptRequest(view, url);
-            }
+                } else {
 
+                    //Log.e("playVideo", storyId + " video loaded");
+                    return super.shouldInterceptRequest(view, url);
+                }
+            }
 
 
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -514,8 +518,10 @@ public class StoriesWebView extends WebView {
                     try {
                         Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
                         String ctType = response.headers.get("Content-Type");
-                        return new WebResourceResponse(ctType, "BINARY",
+                        WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
+                        // Log.e("playVideo", storyId + " video loaded");
+                        return resp;
                     } catch (FileNotFoundException e) {
                         return super.shouldInterceptRequest(view, request);
                     } catch (IOException e) {
@@ -524,13 +530,17 @@ public class StoriesWebView extends WebView {
                     } catch (Exception e) {
                         return super.shouldInterceptRequest(view, request);
                     }
-                } else
+                } else {
+                    // Log.e("playVideo", storyId + " video loaded");
                     return super.shouldInterceptRequest(view, request);
+                }
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
-
+                videoIsLoaded = true;
+                /*if (isVideo)
+                    storyLoadedEvent();*/
             }
         });
         setWebChromeClient(new WebChromeClient() {
@@ -551,6 +561,9 @@ public class StoriesWebView extends WebView {
             public void onProgressChanged(WebView view, int newProgress) {
                 if (progressBar != null)
                     progressBar.setProgress(newProgress);
+                if (newProgress == 100) {
+                    Log.e("playVideo", storyId + " video is loaded");
+                }
             }
 
             @Override
@@ -578,6 +591,32 @@ public class StoriesWebView extends WebView {
         return type;
     }
 */
+    Object lock = new Object();
+
+    public boolean totalLoaded = false;
+
+    void storyLoadedEvent() {
+        //if (totalLoaded || (isVideo && (!videoIsLoaded || !isWebPageLoaded))) return;
+        //totalLoaded = true;
+        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.getInstance().getCurrentId() != storyId) {
+            stopVideo();
+        } else {
+            playVideo();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    resumeVideo();
+                }
+            }, 200);
+        }
+        Story story = StoryDownloader.getInstance().getStoryById(storyId);
+        CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+                story.tags, story.slidesCount, index));
+        CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
+        CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
+    }
+
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void shareComplete(ShareCompleteEvent event) {
         if (storyId != event.storyId) return;
@@ -675,23 +714,7 @@ public class StoriesWebView extends WebView {
         public void storyLoaded() {
             Log.e("storyLoaded", storyId + " " + index);
             isWebPageLoaded = true;
-            if (InAppStoryService.getInstance() == null) return;
-            if (InAppStoryService.getInstance().getCurrentId() != storyId) {
-                stopVideo();
-            } else {
-                playVideo();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        resumeVideo();
-                    }
-                }, 200);
-            }
-            Story story = StoryDownloader.getInstance().getStoryById(storyId);
-            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-                    story.tags, story.slidesCount, index));
-            CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
-            CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
+            storyLoadedEvent();
         }
 
         @JavascriptInterface
@@ -828,9 +851,12 @@ public class StoriesWebView extends WebView {
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pauseStoryEvent(ResumeStoryReaderEvent event) {
+    public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (storyId == InAppStoryService.getInstance().getCurrentId())
-            resumeVideo();
+            if (pausedBeforeLoaded)
+                playVideo();
+            else
+                resumeVideo();
     }
 
     @Override
@@ -843,12 +869,12 @@ public class StoriesWebView extends WebView {
             case MotionEvent.ACTION_DOWN:
                 pressedY = motionEvent.getY();
                 coordinate1 = motionEvent.getX();
-              //  CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+                //  CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
                 //StoriesWebView.this.pauseVideo();
                 break;
             case MotionEvent.ACTION_UP:
-               // CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-               // StoriesWebView.this.resumeVideo();
+                // CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+                // StoriesWebView.this.resumeVideo();
                 break;
             case MotionEvent.ACTION_CANCEL:
                 break;

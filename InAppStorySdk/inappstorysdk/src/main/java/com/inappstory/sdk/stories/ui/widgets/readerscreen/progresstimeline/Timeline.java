@@ -19,6 +19,12 @@ public class Timeline extends LinearLayout {
         init();
     }
 
+    public TimelineManager getManager() {
+        return timelineManager;
+    }
+
+    TimelineManager timelineManager;
+
     int slidesCount = -1;
 
     public Timeline(Context context, @Nullable AttributeSet attrs) {
@@ -49,9 +55,11 @@ public class Timeline extends LinearLayout {
     private void init() {
         setOrientation(LinearLayout.HORIZONTAL);
         bindViews();
+        timelineManager = new TimelineManager();
+        timelineManager.setTimeline(this);
     }
 
-    public void setSlidesCount(int slidesCount) {
+    void setSlidesCount(int slidesCount) {
         this.slidesCount = slidesCount;
         bindViews();
     }

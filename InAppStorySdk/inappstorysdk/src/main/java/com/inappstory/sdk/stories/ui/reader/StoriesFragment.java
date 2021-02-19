@@ -62,7 +62,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 
-public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener, StoriesProgressView.StoriesListener {
+public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
 
     public StoriesFragment() {
         super();
@@ -559,9 +559,4 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-
-    @Override
-    public boolean webViewLoaded(int index) {
-        return false;
-    }
 }

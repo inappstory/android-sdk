@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebSettings;
@@ -156,7 +157,39 @@ public class SimpleStoriesWebView extends WebView {
         destroyDrawingCache();
     }
 
+    boolean notFirstLoading = false;
 
+    public void loadWebData(String outerLayout, String outerData) {
+        getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+        String tmpData = outerData;
+        String tmpLayout = outerLayout;
+        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
+            tmpData = tmpData.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+            tmpLayout = tmpLayout.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+        }
+        final String data = tmpData;
+        final String lt = tmpLayout;
+        if (!notFirstLoading) {
+
+            Log.e("LoadHtml", "first");
+            notFirstLoading = true;
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    String s0 = injectUnselectableStyle(lt);
+                    loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
+                }
+            });
+        } else {
+            replaceHtml(data);
+        }
+    }
+
+    public StoriesWebViewManager getManager() {
+        return manager;
+    }
+
+    StoriesWebViewManager manager;
 
     private void init() {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -175,6 +208,9 @@ public class SimpleStoriesWebView extends WebView {
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
+
+        manager = new StoriesWebViewManager();
+        manager.setStoriesWebView(this);
     }
 
 

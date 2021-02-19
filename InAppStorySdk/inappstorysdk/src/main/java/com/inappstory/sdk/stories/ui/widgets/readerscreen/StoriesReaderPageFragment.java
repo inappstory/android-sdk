@@ -82,19 +82,19 @@ import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 
 public class StoriesReaderPageFragment extends Fragment implements StoriesProgressView.StoriesListener {
 
-    public boolean visible = false;
+    boolean visible = false;
 
-    public StoriesWebView storiesWebView;
-    public StoriesProgressView storiesProgressView;
+    StoriesWebView storiesWebView;
+    StoriesProgressView storiesProgressView;
     RelativeLayout progress;
-    View refresh;
-    public AppCompatImageView close;
-    public View mask;
+    View mask;
     View invMask;
-    public int storyId;
+    int storyId;
     View buttonsPanel;
     View blackBottom;
     View blackTop;
+    View refresh;
+    AppCompatImageView close;
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
@@ -413,14 +413,14 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         invMask = view.findViewById(R.id.invMask);
         close = (AppCompatImageView) view.findViewById(R.id.close_button);
 
+        blackBottom = view.findViewById(R.id.blackBottom);
+        blackTop = view.findViewById(R.id.blackTop);
         like = view.findViewById(R.id.likeButton);
         dislike = view.findViewById(R.id.dislikeButton);
         favorite = view.findViewById(R.id.favoriteButton);
         sound = view.findViewById(R.id.soundButton);
         share = view.findViewById(R.id.shareButton);
         buttonsPanel = view.findViewById(R.id.buttonsPanel);
-        blackBottom = view.findViewById(R.id.blackBottom);
-        blackTop = view.findViewById(R.id.blackTop);
         storiesProgressView = (StoriesProgressView) view.findViewById(R.id.stories);
         storiesProgressView.setStoriesListener(this);
         mask = view.findViewById(R.id.blackMask);

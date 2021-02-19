@@ -2,19 +2,25 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
 import android.os.Build;
 
+import java.util.List;
+
 public class TimelineManager {
     public void setTimeline(Timeline timeline) {
         this.timeline = timeline;
     }
 
-    public static TimelineManager INSTANCE = new TimelineManager();
-
-    public static TimelineManager getInstance() {
-        if (INSTANCE == null) INSTANCE = new TimelineManager();
-        return INSTANCE;
+    public void setStoryDurations(List<Integer> durations) {
+        if (durations == null) return;
+        for (int i = 0; i < timeline.progressBars.size(); i++) {
+            timeline.progressBars.get(i).setDuration(durations.get(i)*1L);
+        }
     }
 
     Timeline timeline;
+
+    public void setSlidesCount(int slidesCount) {
+        timeline.setSlidesCount(slidesCount);
+    }
 
     public void start(int ind) {
         if (ind < 0) return;
@@ -22,7 +28,7 @@ public class TimelineManager {
         for (int i = 0; i < ind; i++) {
             timeline.progressBars.get(i).setMax();
         }
-        for (int i = ind+1; i < timeline.slidesCount; i++) {
+        for (int i = ind + 1; i < timeline.slidesCount; i++) {
             timeline.progressBars.get(i).clear();
         }
         timeline.progressBars.get(ind).setMin();
@@ -56,10 +62,10 @@ public class TimelineManager {
     }
 
     public void next() {
-        start(timeline.activeInd+1);
+        start(timeline.activeInd + 1);
     }
 
     public void prev() {
-        start(timeline.activeInd-1);
+        start(timeline.activeInd - 1);
     }
 }

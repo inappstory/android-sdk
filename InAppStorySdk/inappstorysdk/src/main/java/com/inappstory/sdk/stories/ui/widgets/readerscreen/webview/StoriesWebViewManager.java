@@ -12,10 +12,13 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.util.Pair;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -34,6 +37,7 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileCache;
 import com.inappstory.sdk.stories.cache.FileType;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
@@ -48,23 +52,118 @@ import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
+import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
 public class StoriesWebViewManager {
-    int index;
+    int index = -1;
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public void setStoryId(int storyId) {
+        this.storyId = storyId;
+    }
+
     int storyId;
+    boolean slideInCache = false;
 
     public float getClickCoordinate() {
         return storiesWebView.coordinate1;
     }
 
+
+    public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
+
+    public void storyLoaded(int oId, int oInd) {
+        if (storyId != oId || index != oInd) return;
+        Story story = StoryDownloader.getInstance().getStoryById(storyId);
+        innerLoad(story);
+    }
+
+    void innerLoad(Story story) {
+        String layout = getLayoutWithFonts(story.getLayout());
+        String innerWebData = story.pages.get(index);
+        if (InAppStoryService.getInstance().isConnected()) {
+            setWebViewSettings(innerWebData, layout);
+        }
+    }
+
+    public void loadStory(final int id, final int index) {
+        if (this.index == index) return;
+        if (InAppStoryManager.getInstance() == null)
+            return;
+        if (!InAppStoryService.getInstance().isConnected()) {
+            CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
+            return;
+        }
+        final Story story = StoryDownloader.getInstance().getStoryById(id);
+        if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
+            return;
+        }
+        if (story.slidesCount <= index) return;
+        storyId = id;
+        this.index = index;
+        slideInCache = StoryDownloader.getInstance().checkIfPageLoaded(new Pair<>(id, index));
+        if (!slideInCache) {
+            CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
+        } else {
+            innerLoad(story);
+        }
+    }
+
+    void setWebViewSettings(String innerWebData, String layout) {
+        if (innerWebData.contains("<video")) {
+            isVideo = true;
+            storiesWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
+        } else {
+            isVideo = false;
+            if (Build.VERSION.SDK_INT >= 19) {
+                storiesWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            } else {
+                storiesWebView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+                storiesWebView.setLayerType(View.LAYER_TYPE_NONE, null);
+            }
+            WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, index, layout);
+        }
+    }
+
+    String getLayoutWithFonts(String layout) {
+        List<String> fonturls = new ArrayList<>();
+
+        Matcher urlMatcher = FONT_SRC.matcher(layout);
+        while (urlMatcher.find()) {
+            if (urlMatcher.groupCount() == 1) {
+                fonturls.add(fromHtml(urlMatcher.group(1)).toString());
+            }
+        }
+        for (String fonturl : fonturls) {
+            String fileLink = Downloader.getFontFile(storiesWebView.getContext(), fonturl);
+            if (fileLink != null)
+                layout = layout.replaceFirst(fonturl, "file://" + fileLink);
+        }
+        return layout;
+    }
+
+    boolean isVideo = false;
+
+    void loadStoryInner(final int id, final int index, Story story) {
+
+    }
 
     public void setStoriesWebView(SimpleStoriesWebView storiesWebView) {
         this.storiesWebView = storiesWebView;
@@ -97,7 +196,6 @@ public class StoriesWebViewManager {
                     } else
                         return super.shouldInterceptRequest(view, url);
                 }
-
 
 
                 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -164,6 +262,7 @@ public class StoriesWebViewManager {
 
 
     private CoreProgressBar progressBar;
+
     public void setProgressBar(CoreProgressBar progressBar) {
         this.progressBar = progressBar;
     }
@@ -194,20 +293,20 @@ public class StoriesWebViewManager {
                         });
                     }
                 });
-        alert.showDialog((Activity)storiesWebView.getContext());
+        alert.showDialog((Activity) storiesWebView.getContext());
     }
 
     public void storyClick(String payload) {
         InAppStoryService.getInstance().lastTapEventTime = System.currentTimeMillis();
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
             if (InAppStoryService.getInstance().isConnected()) {
-                CsEventBus.getDefault().post(new StoryReaderTapEvent((int)getClickCoordinate()));
+                CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate()));
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else if (payload.equals("forbidden")) {
             if (InAppStoryService.getInstance().isConnected()) {
-                CsEventBus.getDefault().post(new StoryReaderTapEvent((int)getClickCoordinate(), true));
+                CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate(), true));
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
@@ -312,15 +411,27 @@ public class StoriesWebViewManager {
                 });
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pauseStoryEvent(PauseStoryReaderEvent event) {
-        if (storyId == InAppStoryService.getInstance().getCurrentId())
-            storiesWebView.pauseVideo();
+    public void stopVideo() {
+        storiesWebView.stopVideo();
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pauseStoryEvent(ResumeStoryReaderEvent event) {
-        if (storyId == InAppStoryService.getInstance().getCurrentId())
-            storiesWebView.resumeVideo();
+    public void playVideo() {
+        storiesWebView.playVideo();
+    }
+
+    public void pauseVideo() {
+        storiesWebView.pauseVideo();
+    }
+
+    public void resumeVideo() {
+        storiesWebView.resumeVideo();
+    }
+
+    public void pauseStory() {
+        pauseVideo();
+    }
+
+    public void resumeStory() {
+        resumeVideo();
     }
 }
