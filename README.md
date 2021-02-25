@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:0.1.18'
+    implementation 'com.github.inappstory:android-sdk:0.1.19'
 
 Также для корректной работы в dependencies нужно добавить библиотеку GSON:
 
@@ -169,6 +169,8 @@
     int csStoryReaderAnimation - анимация перелистывания stories в ридере
     ANIMATION_DEPTH = 1;
     ANIMATION_CUBE = 2;
+   
+    boolean csIsDraggable - флаг, отвечающий за возможность закрытия ридера сториз по drag'n'drop. По умолчанию функционал включен и значение флага - true. Данный флаг задается     только для глобального AppearanceManager.
 
 Пример задания параметров выглядит следующим образом
 
@@ -421,6 +423,12 @@
 Помимо этого есть событие на закрытие ридера `CloseStoryReaderEvent`, которое можно вызывать через 
 
     CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
+    
+Помимо этого для работы с онбордингами и одиночными сториз добавлены события:
+1) `OnboardingLoad` - отправляется при подгрузке списка онбордингов. Содержит метод getCount, который возвращает количество онбординг сториз и isEmpty - флаг того, пустой списко вернулся по запросу или нет.
+2) `OnboardingLoadError` - отправляется при подгрузке списка онбордингов в случае возникновения какой-то ошибки. 
+3) `SingleLoad` - отправляется при загрузке единичной сториз по id (методом `InAppStoryManager.getInstance().showStory`). 
+4) `SingleLoadError` - отправляется при загрузке единичной сториз по id в случае возникновения какой-то ошибки. 
     
 ##### Работа со звуком
 
