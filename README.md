@@ -540,7 +540,7 @@ FAQ
 При инициализации `InAppStoryManager.Builder()` используем свойство `hasFavorite(true)`. В случае кастомизации внешнего вида ячеек списка через `IStoriesListItem csListItemInterface`, необходимо также кастомизировать внешний вид ячейки для избранного с помощью интерфейса `IGetFavoriteListItem csFavoriteListItemInterface`. Помимо этого для взаимодействия с ячейкой избранного добавляем обработчик `storiesList.setOnFavoriteItemClick(StoriesList.OnFavoriteItemClick callback)`. При отображении списка избранных в xml-разметку со списком необходимо добавить аттрибут `cs_listIsFavorite`.
 
 10) Открытие сториз из push-уведомления
-В функции-обработчике push-уведомления добавляем вызов единичной сториз с помощью функции `InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback)`.
+В функции-обработчике push-уведомления добавляем вызов единичной сториз с помощью функции `InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager)`.
 
 11) Онбоардинг
 Используем вызов `InAppStoryManager.getInstance().showOnboardingStories(List<String> tags, Context context, AppearanceManager manager)`.
