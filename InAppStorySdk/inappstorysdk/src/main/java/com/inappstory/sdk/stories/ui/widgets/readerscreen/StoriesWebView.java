@@ -377,8 +377,8 @@ public class StoriesWebView extends WebView {
 
 
         // Log.e("playVideo", storyId + " resume");
-        if (!pausedBeforeLoaded)
-            loadUrl("javascript:(function(){story_slide_resume();})()");
+        //if (!pausedBeforeLoaded)
+        loadUrl("javascript:(function(){story_slide_resume();})()");
     }
 
     @Override
@@ -538,7 +538,7 @@ public class StoriesWebView extends WebView {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                videoIsLoaded = true;
+                // videoIsLoaded = true;
                 /*if (isVideo)
                     storyLoadedEvent();*/
             }

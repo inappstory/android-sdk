@@ -72,6 +72,8 @@ import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.DislikeStory;
 import com.inappstory.sdk.stories.outerevents.FavoriteStory;
 import com.inappstory.sdk.stories.outerevents.LikeStory;
+import com.inappstory.sdk.stories.outerevents.SingleLoad;
+import com.inappstory.sdk.stories.outerevents.SingleLoadError;
 import com.inappstory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import com.inappstory.sdk.stories.serviceevents.LikeDislikeEvent;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
@@ -1237,6 +1239,7 @@ public class InAppStoryService extends Service {
             ).enqueue(new NetworkCallback<Story>() {
                 @Override
                 public void onSuccess(final Story response) {
+                    CsEventBus.getDefault().post(new SingleLoad());
                     if (InAppStoryManager.getInstance().singleLoadedListener != null) {
                         InAppStoryManager.getInstance().singleLoadedListener.onLoad();
                     }
@@ -1257,6 +1260,7 @@ public class InAppStoryService extends Service {
                     if (InAppStoryManager.getInstance().singleLoadedListener != null) {
                         InAppStoryManager.getInstance().singleLoadedListener.onError();
                     }
+                    CsEventBus.getDefault().post(new SingleLoadError());
                     CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                 }
             });

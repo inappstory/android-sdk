@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -48,7 +49,6 @@ public class StoriesActivity extends AppCompatActivity {
 
     public static long destroyed = 0;
     public boolean pauseDestroyed = false;
-
 
 
     @Override
@@ -199,16 +199,13 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
 
-        Log.e("StoriesActivity", "create");
         cleaned = false;
         if (destroyed == -1) {
-            Log.e("StoriesActivity", "create fake");
             isFakeActivity = true;
             super.onCreate(savedInstanceState1);
             finishActivityWithoutAnimation();
             return;
         }
-        Log.e("StoriesActivity", "create real");
         destroyed = -1;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -223,16 +220,19 @@ public class StoriesActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
         }
-
-        setContentView(R.layout.cs_activity_stories);
+        if (AppearanceManager.getInstance() != null) {
+            setContentView(AppearanceManager.getInstance().csIsDraggable() ?
+                    R.layout.cs_activity_stories_draggable : R.layout.cs_activity_stories);
+        } else {
+            setContentView(R.layout.cs_activity_stories_draggable);
+        }
         draggableFrame = findViewById(R.id.draggable_frame);
+        //scrollView = findViewById(R.id.scrollContainer);
         if (Build.VERSION.SDK_INT >= 21) {
             chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
                 @Override
                 public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
                     super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
-                    Log.e("dragDrop", "pause");
-                 //   CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
                 }
 
                 @Override
@@ -244,9 +244,6 @@ public class StoriesActivity extends AppCompatActivity {
 
                 @Override
                 public void onDragDropped() {
-                    Log.e("dragDrop", "resume");
-                //    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-                 //   CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
                 }
 
             };
@@ -379,7 +376,6 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        Log.e("StoriesActivity", "destroy");
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
             if (InAppStoryService.getInstance() != null) {

@@ -233,6 +233,16 @@ public class AppearanceManager {
     private boolean csShowStatusBar = false;
     private int csClosePosition = TOP_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
     private int csStoryReaderAnimation = ANIMATION_CUBE;
+    private boolean csIsDraggable = true;
+
+    public boolean csIsDraggable() {
+        return csIsDraggable;
+    }
+
+    public void csIsDraggable(boolean csIsDraggable) {
+        this.csIsDraggable = csIsDraggable;
+    }
+
 
     public IGetFavoriteListItem csFavoriteListItemInterface() {
         return csFavoriteListItemInterface;

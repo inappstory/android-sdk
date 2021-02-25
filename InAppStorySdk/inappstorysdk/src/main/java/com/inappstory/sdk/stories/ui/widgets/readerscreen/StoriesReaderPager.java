@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
@@ -37,15 +38,10 @@ public class StoriesReaderPager extends ViewPager {
 
     @Override
     protected int getChildDrawingOrder(int childCount, int i) {
-        switch (i) {
-            case 0:
-                return 0;
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-        }
-        return super.getChildDrawingOrder(childCount, i);
+        int res = super.getChildDrawingOrder(childCount, i);
+        Log.e("getChildDrawingOrder", (childCount - res - 1) + " " + i + " " + res);
+        return childCount - res - 1;
+        //return res;
     }
 
     private long pressStartTime;
@@ -106,7 +102,7 @@ public class StoriesReaderPager extends ViewPager {
         boolean distanceY = false;
         boolean time = false;
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-           // CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+            // CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             pressStartTime = System.currentTimeMillis();
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
@@ -123,7 +119,7 @@ public class StoriesReaderPager extends ViewPager {
             distanceY = pressedEndY > 400;
             if (pressedEndY > 0) {
             }
-          //  CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+            //  CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
             if (distanceY) {
                 if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
                     CsEventBus.getDefault().post(new SwipeDownEvent());
@@ -133,7 +129,8 @@ public class StoriesReaderPager extends ViewPager {
             if (getCurrentItem() == 0 &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX > 300) {
-                if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) == null) return true;
+                if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) == null)
+                    return true;
                 if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
                     CsEventBus.getDefault().post(new SwipeRightEvent());
                     return true;
@@ -153,6 +150,7 @@ public class StoriesReaderPager extends ViewPager {
         }
         if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
             if (pressedEndX * pressedEndX < pressedEndY * pressedEndY && (float) Math.sqrt(pressedEndY * pressedEndY) > 20) {
+                Log.e("nestedScroll", "premove false");
                 return false;
             }
             if (distance && !(
@@ -163,12 +161,15 @@ public class StoriesReaderPager extends ViewPager {
                     !(getCurrentItem() == getAdapter().getCount() - 1 &&
                             pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                             pressedEndX < 0)) {
+                Log.e("nestedScroll", "premove true");
                 return true;
             } else {
+                Log.e("nestedScroll", "premove false");
                 return false;
             }
         }
         boolean c = super.onInterceptTouchEvent(motionEvent);
+        Log.e("nestedScroll", "premove val " + c);
         return c;
     }
 
