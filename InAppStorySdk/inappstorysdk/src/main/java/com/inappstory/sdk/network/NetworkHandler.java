@@ -85,6 +85,7 @@ public final class NetworkHandler implements InvocationHandler {
         return respObject;
     }
 
+    //Test
     public static String getResponseFromStream(InputStream inputStream) throws Exception {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String inputLine;
@@ -136,7 +137,8 @@ public final class NetworkHandler implements InvocationHandler {
      */
     HashMap<String, String> headers;
 
-    private String encode(String var) {
+    //Test
+    public String encode(String var) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             try {
                 return URLEncoder.encode(var, StandardCharsets.UTF_8.name());
@@ -146,30 +148,9 @@ public final class NetworkHandler implements InvocationHandler {
         return var;
     }
 
- /*   private Request getRequest(GET ev, Method method, Object[] args) {
-        HashMap<String, String> vars = new HashMap<>();
-        String path = ev.value();
-        if (headers == null) {
-            headers = networkClient.getHeaders();
-        }
-        for (int i = 0; i < method.getParameterAnnotations().length; i++) {
-            if (args[i] == null) continue;
-            Annotation[] annotationM = method.getParameterAnnotations()[i];
-            if (annotationM != null && annotationM.length > 0) {
-                Annotation annotation = annotationM[0];
-                if (annotation instanceof Path) {
-                    path = path.replaceFirst("\\{" + ((Path) annotation).value() + "\\}", args[i].toString());
-                } else if (annotation instanceof Query) {
-                    vars.put(((Query) annotation).value(), encode(args[i].toString()));
-                }
-            }
-        }
-        final Request request = (new Request.Builder()).get().headers(headers).url(NetworkClient.getInstance().getBaseUrl() + path).vars(vars).build();
-        return request;
-    }
-*/
 
-    private Request generateRequest(String path, Method method, Object[] args, Request.Builder builder) {
+    //Test
+    public Request generateRequest(String path, Method method, Object[] args, Request.Builder builder) {
 
         //
         HashMap<String, String> vars = new HashMap<>();
@@ -211,60 +192,13 @@ public final class NetworkHandler implements InvocationHandler {
 
     public NetworkClient networkClient;
 
-    /*private Request putRequest(PUT ev, Method method, Object[] args) {
 
-        boolean encoded = (method.getAnnotation(FormUrlEncoded.class) != null);
-        HashMap<String, String> vars = new HashMap<>();
-        String path = ev.value();
-        String body = "";
-        if (headers == null) {
-            headers = networkClient.getHeaders();
-        }
-        for (int i = 0; i < method.getParameterAnnotations().length; i++) {
-            if (args[i] == null) continue;
-            Annotation[] annotationM = method.getParameterAnnotations()[i];
-            if (annotationM != null && annotationM.length > 0) {
-                Annotation annotation = annotationM[0];
-                if (annotation instanceof Path) {
-                    path = path.replaceFirst("\\{" + ((Path) annotation).value() + "\\}", args[i].toString());
-                } else if (annotation instanceof Query) {
-                    vars.put(((Query) annotation).value(), encode(args[i].toString()));
-                } else if (annotation instanceof Field) {
-                    body += "&" + ((Field) annotation).value() + "=" + encode(args[i].toString());
-                } else if (annotation instanceof Body) {
-                    try {
-                        String bd = JsonParser.getJson(args[i]);
-                        body += (body.isEmpty() ? "" : "\n") + bd;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        if (!body.isEmpty() && body.startsWith("&")) {
-            body = body.substring(1);
-        }
-        final Request request = (new Request.Builder()).put().isFormEncoded(encoded).headers(headers)
-                .url(NetworkClient.getInstance().getBaseUrl() + path)
-                .vars(vars)
-                .body(body).build();
-        return request;
-    }
-*/
 
     public static final String POST = "POST";
     public static final String GET = "GET";
     public static final String HEAD = "HEAD";
     public static final String PUT = "PUT";
 
-
-    private boolean isNumber(Class<?> klass) {
-        return klass.isAssignableFrom(Number.class) || klass == int.class || klass == long.class;
-    }
-
-    private void thr(Method method) {
-        throw new IllegalArgumentException(method.getName() + " method's parameter is not String (for label) or int / long (for value)");
-    }
 
     @SuppressWarnings("unchecked")
     public static <T> T implement(Class int3rface, NetworkClient client) {

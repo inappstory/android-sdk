@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="StoriesSDKAppTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="StoriesSDKAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowDisablePreview">true</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode">
             shortEdges <!-- default, shortEdges, never -->
         </item>
@@ -27,7 +28,7 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
-    <style name="DialogTheme" parent="Theme.AppCompat.Dialog">
+    <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowSoftInputMode">adjustResize|stateAlwaysHidden</item>
     </style>
 

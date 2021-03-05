@@ -7,6 +7,7 @@
     <application
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
+        android:forceDarkAllowed="true"
         android:largeHeap="true">
 
         <activity

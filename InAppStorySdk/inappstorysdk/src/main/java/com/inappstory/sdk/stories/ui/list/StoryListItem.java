@@ -65,6 +65,18 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             v = getListItem.getView();
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
+            if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
+                    && manager.csListItemInterface().getVideoView() == null)) {
+                boolean lpC = false;
+                if (manager.csListItemHeight() != null) {
+                    v.findViewById(R.id.container).getLayoutParams().height = manager.csListItemHeight();
+                    lpC = true;
+                }
+                if (manager.csListItemWidth() != null) {
+                    v.findViewById(R.id.container).getLayoutParams().width = manager.csListItemWidth();
+                    lpC = true;
+                }
+            }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
             cv.setRadius(Sizes.dpToPxExt(16));
@@ -89,6 +101,18 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             v = (getListItem.getVideoView() != null ? getListItem.getVideoView() : getListItem.getView());
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_video_inner_item, null, false);
+            if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
+                    && manager.csListItemInterface().getVideoView() == null)) {
+                boolean lpC = false;
+                if (manager.csListItemHeight() != null) {
+                    v.findViewById(R.id.container).getLayoutParams().height = manager.csListItemHeight();
+                    lpC = true;
+                }
+                if (manager.csListItemWidth() != null) {
+                    v.findViewById(R.id.container).getLayoutParams().width = manager.csListItemWidth();
+                    lpC = true;
+                }
+            }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
             cv.setRadius(Sizes.dpToPxExt(16));
@@ -280,16 +304,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             return;
         }
 
-        boolean lpC = false;
-        if (manager.csListItemHeight() != null) {
-            itemView.findViewById(R.id.container).getLayoutParams().height = manager.csListItemHeight();
-            lpC = true;
-        }
-        if (manager.csListItemWidth() != null) {
-            itemView.findViewById(R.id.container).getLayoutParams().width = manager.csListItemWidth();
-            lpC = true;
-        }
-        if (lpC) itemView.findViewById(R.id.container).requestLayout();
+
         if (title != null) {
             title.setText(titleText);
             if (titleColor != null) {

@@ -34,6 +34,7 @@ import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.OpenStoryByIdEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -117,8 +118,8 @@ public class StoriesList extends RecyclerView {
                     indexes.add(adapter.getStoriesIds().get(i));
             }
         }
-        if (InAppStoryService.getInstance() != null)
-            InAppStoryService.getInstance().previewStatisticEvent(indexes);
+
+        OldStatisticManager.getInstance().previewStatisticEvent(indexes);
         try {
             if (StatisticManager.getInstance() != null) {
                 StatisticManager.getInstance().sendViewStory(indexes,

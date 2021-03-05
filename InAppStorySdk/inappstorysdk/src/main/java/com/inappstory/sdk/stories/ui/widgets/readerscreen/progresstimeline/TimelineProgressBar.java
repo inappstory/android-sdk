@@ -26,7 +26,8 @@ public class TimelineProgressBar extends FrameLayout {
 
     public void setDuration(Long duration) {
         this.duration = duration;
-        animation = ValueAnimator.ofFloat(1f/duration, 1f);
+        animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
+        animation.setDuration(getDuration());
         animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -44,7 +45,7 @@ public class TimelineProgressBar extends FrameLayout {
     ValueAnimator animation;
 
     public Long getDuration() {
-        if (duration == null) return 1000L;
+        if (duration == null || duration == 0) return 1000L;
         return duration;
     }
 
@@ -82,10 +83,14 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void setProgress(float progress) {
-        if (progress <= 0) {
+        if (duration == 0) {
             clear();
         } else {
-            progressForeground.setScaleX(progress);
+            if (progress <= 0) {
+                clear();
+            } else {
+                progressForeground.setScaleX(progress);
+            }
         }
 
     }
@@ -94,6 +99,7 @@ public class TimelineProgressBar extends FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.cs_progress_bar, this);
         progressForeground = findViewById(R.id.progress_foreground);
         progressBackground = findViewById(R.id.progress_background);
+        progressForeground.setPivotX(-progressForeground.getWidth()/2);
         animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
         animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override

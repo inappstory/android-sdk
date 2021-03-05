@@ -10,6 +10,7 @@ import java.util.Map;
 public class MemoryCache {
     private Map<String, SoftReference<Bitmap>> cache= Collections.synchronizedMap(new HashMap<String, SoftReference<Bitmap>>());
 
+    //Test
     public Bitmap get(String id){
         if(!cache.containsKey(id))
             return null;
@@ -17,6 +18,7 @@ public class MemoryCache {
         return ref.get();
     }
 
+    //Test
     public void put(String id, Bitmap bitmap){
         cache.put(id, new SoftReference<Bitmap>(bitmap));
     }

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
 import android.os.Build;
+import android.util.Log;
 
 import java.util.List;
 
@@ -23,6 +24,11 @@ public class TimelineManager {
     }
 
     public void start(int ind) {
+        timeline.setActive(ind);
+        timeline.curAnimation.start();
+    }
+
+    public void setCurrentSlide(int ind) {
         if (ind < 0) return;
         if (ind > timeline.slidesCount) return;
         for (int i = 0; i < ind; i++) {
@@ -32,8 +38,7 @@ public class TimelineManager {
             timeline.progressBars.get(i).clear();
         }
         timeline.progressBars.get(ind).setMin();
-        timeline.setActive(ind);
-        timeline.curAnimation.start();
+        //timeline.setActive(ind);
     }
 
     public void stop() {
@@ -47,6 +52,7 @@ public class TimelineManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             timeline.curAnimation.pause();
         } else {
+            Log.e("animationDur", timeline.curAnimation.getDuration() + " resume");
             mAnimationTime = timeline.curAnimation.getCurrentPlayTime();
             timeline.curAnimation.cancel();
         }

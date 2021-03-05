@@ -64,12 +64,33 @@ public class Timeline extends LinearLayout {
         bindViews();
     }
 
+    public void setCurrentSlide(int ind) {
+
+    }
+
     ValueAnimator curAnimation;
     int activeInd = 0;
 
+    public void forceStartProgress() {
+        try {
+            getManager().start(activeInd);
+        } catch (Exception e) {
+        }
+    }
+
+    int current = 0;
+
     public void setActive(int ind) {
-        curAnimation = progressBars.get(ind).animation;
-        activeInd = ind;
+        if (curAnimation != null) curAnimation.cancel();
+        if (ind >= 0) {
+            curAnimation = progressBars.get(ind).animation;
+            activeInd = ind;
+        }
+        timelineManager.setCurrentSlide(activeInd);
+    }
+
+    public void setSlideDuration(int index, long duration) {
+        progressBars.get(index).setDuration(duration);
     }
 
     List<TimelineProgressBar> progressBars = new ArrayList<>();

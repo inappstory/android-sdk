@@ -7,7 +7,6 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -36,11 +35,12 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenStatisticCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.events.PageTaskLoadErrorEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
+import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import static com.inappstory.sdk.InAppStoryService.EXPAND_STRING;
@@ -49,9 +49,9 @@ public class StoryDownloader {
     private static StoryDownloader INSTANCE;
 
 
-    private Object storyTasksLock = new Object();
+    private final Object storyTasksLock = new Object();
 
-    private Object pageTasksLock = new Object();
+    private final Object pageTasksLock = new Object();
 
     private static final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private static final ExecutorService startNetExecutor = Executors.newFixedThreadPool(1);
@@ -171,8 +171,10 @@ public class StoryDownloader {
 
     }
 
+    //Test
     public void reloadPage(int storyId, int index, ArrayList<Integer> addIds) {
         synchronized (storyTasksLock) {
+            if (storyTasks == null) storyTasks = new HashMap<>();
             if (storyTasks.get(storyId) == null || storyTasks.get(storyId).loadType == -1) {
                 addStoryTask(storyId, addIds);
                 return;
@@ -181,6 +183,7 @@ public class StoryDownloader {
 
         Pair<Integer, Integer> key = new Pair<>(storyId, index);
         synchronized (pageTasksLock) {
+            if (pageTasks == null) pageTasks = new HashMap<>();
             if (pageTasks.get(key) != null && pageTasks.get(key).loadType == -1) {
                 pageTasks.get(key).priority = 0;
                 pageTasks.get(key).loadType = 0;
@@ -188,9 +191,11 @@ public class StoryDownloader {
         }
     }
 
+    //Test
     public void addStoryTask(int storyId, ArrayList<Integer> addIds) {
         synchronized (storyTasksLock) {
 
+            if (storyTasks == null) storyTasks = new HashMap<>();
             currentId = storyId;
             for (Integer storyTaskKey : storyTasks.keySet()) {
                 storyTasks.get(storyTaskKey).priority += (1 + addIds.size());
@@ -238,11 +243,12 @@ public class StoryDownloader {
         stories.set(findIndexByStoryId(story.id), story);
     }
 
-    private Pair<Integer, Integer> getMaxPriorityPageTaskKey() {
+    //Test
+    public Pair<Integer, Integer> getMaxPriorityPageTaskKey() {
         Pair<Integer, Integer> keyRes = null;
         int priority = 100000;
         synchronized (pageTasksLock) {
-            if (pageTasks.size() == 0) return null;
+            if (pageTasks == null || pageTasks.size() == 0) return null;
             Set<Pair<Integer, Integer>> keys = pageTasks.keySet();
             for (Pair<Integer, Integer> key : keys) {
                 if (pageTasks.get(key).loadType != 0) continue;
@@ -255,11 +261,12 @@ public class StoryDownloader {
         }
     }
 
-    private Integer getMaxPriorityStoryTaskKey() {
+    //Test
+    public Integer getMaxPriorityStoryTaskKey() {
         Integer keyRes = null;
         int priority = 100000;
         synchronized (storyTasksLock) {
-            if (storyTasks.size() == 0) return null;
+            if (storyTasks == null || storyTasks.size() == 0) return null;
             Set<Integer> keys = storyTasks.keySet();
             for (Integer key : keys) {
                 if (storyTasks.get(key).loadType != 1 && storyTasks.get(key).loadType != 4)
@@ -285,7 +292,6 @@ public class StoryDownloader {
                 return;
             }
             synchronized (getInstance().storyTasksLock) {
-
                 if (getInstance().storyTasks.get(key).loadType == 4) {
                     getInstance().storyTasks.get(key).loadType = 5;
                 } else if (getInstance().storyTasks.get(key).loadType == 1) {
@@ -295,8 +301,8 @@ public class StoryDownloader {
             if (StatisticSession.needToUpdate()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
-                    if (InAppStoryService.getInstance() != null)
-                        InAppStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
+                    if (SessionManager.getInstance() != null)
+                        SessionManager.getInstance().openSession(new OpenSessionCallback() {
                             @Override
                             public void onSuccess() {
                                 isRefreshing = false;
@@ -463,29 +469,30 @@ public class StoryDownloader {
             }
 
             if (StatisticSession.needToUpdate()) {
-                if (!isRefreshing)
+                if (!isRefreshing) {
                     isRefreshing = true;
-                if (InAppStoryService.getInstance() != null)
-                    InAppStoryService.getInstance().openStatistic(new OpenStatisticCallback() {
-                        @Override
-                        public void onSuccess() {
-                            isRefreshing = false;
-                        }
-
-                        @Override
-                        public void onError() {
-                            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
-                            synchronized (getInstance().pageTasksLock) {
-                                getInstance().pageTasks.get(key).loadType = -1;
-                                errorHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
-                                    }
-                                }, 300);
+                    if (SessionManager.getInstance() != null)
+                        SessionManager.getInstance().openSession(new OpenSessionCallback() {
+                            @Override
+                            public void onSuccess() {
+                                isRefreshing = false;
                             }
-                        }
-                    });
+
+                            @Override
+                            public void onError() {
+                                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
+                                synchronized (getInstance().pageTasksLock) {
+                                    getInstance().pageTasks.get(key).loadType = -1;
+                                    errorHandler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key.first, key.second));
+                                        }
+                                    }, 300);
+                                }
+                            }
+                        });
+                }
                 handler.postDelayed(queueStoryReadRunnable, 100);
                 return;
             }
@@ -515,7 +522,6 @@ public class StoryDownloader {
                     try {
                         ff.get();
                         synchronized (getInstance().pageTasksLock) {
-                            Log.e("PageTaskToLoadEvent", "loaded " + key.first + " " + key.second);
                             getInstance().pageTasks.get(key).loadType = 2;
                             CsEventBus.getDefault().post(new PageTaskLoadedEvent(key.first, key.second));
                         }
@@ -654,10 +660,6 @@ public class StoryDownloader {
         Downloader.downAndCompressImg(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
     }
 
-    @WorkerThread
-    public void startedLoading(final List<Story> stories) {
-        if (1 == 1) return;
-    }
 
     @WorkerThread
     public void uploadingAdditional(final List<Story> newStories) {
@@ -674,18 +676,13 @@ public class StoryDownloader {
             }
         }
         synchronized (pageTasksLock) {
-            if (pageTasks.isEmpty()) {
-                sync = sync && true;
-            } else {
-                if (sync) {
-                    for (Pair<Integer, Integer> pair : pageTasks.keySet()) {
-                        if (pageTasks.get(pair).loadType <= 1) sync = false;
-                    }
+            if (!pageTasks.isEmpty() && sync) {
+                for (Pair<Integer, Integer> pair : pageTasks.keySet()) {
+                    if (pageTasks.get(pair).loadType <= 1) sync = false;
                 }
             }
         }
         if (sync) {
-            startedLoading(newStories);
             return;
         }
         loadStories(stories, 0);
@@ -716,7 +713,7 @@ public class StoryDownloader {
             }
         }
         if (sync) {
-            startedLoading(newStories);
+            //startedLoading(newStories);
             return;
         }
         loadStories(stories, 0);

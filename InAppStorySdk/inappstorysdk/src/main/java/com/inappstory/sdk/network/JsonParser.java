@@ -38,7 +38,7 @@ public class JsonParser {
                 field.set(res, new Double(jsonObject.getDouble(name)));
             } else if (field.getType().equals(String.class)) {
                 field.set(res, jsonObject.getString(name));
-            } else if (field.getType().equals(List.class)) {
+            } else if (field.getType().equals(List.class) || field.getType().equals(ArrayList.class)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
                 Class ptype;
                 ArrayList<Object> arrayList = new ArrayList<>();
@@ -104,7 +104,16 @@ public class JsonParser {
             Object object = jsonT.nextValue();
             if (object != null && object instanceof JSONArray) {
                 for (int i = 0; i < ((JSONArray) object).length(); i++) {
-                    res.add(fromJson(((JSONObject) ((JSONArray) object).get(i)), typeOfT));
+                    Object obj = ((JSONArray) object).get(i);
+                    if (typeOfT.isPrimitive() || typeOfT.equals(Integer.class)
+                            || typeOfT.equals(Boolean.class) || typeOfT.equals(Character.class)
+                            || typeOfT.equals(Short.class) || typeOfT.equals(Long.class)
+                            || typeOfT.equals(Byte.class) || typeOfT.equals(Float.class)
+                            || typeOfT.equals(Double.class) || typeOfT.equals(String.class)) {
+                        res.add((T)obj);
+                    } else {
+                        res.add(fromJson((JSONObject)obj, typeOfT));
+                    }
                 }
             } else {
                 throw new Exception();
@@ -125,6 +134,12 @@ public class JsonParser {
             } else if (object != null && object instanceof JSONObject) {
                 JSONObject jsonObject = new JSONObject(json);
                 res = fromJson(jsonObject, typeOfT);
+            } else if (typeOfT.isPrimitive() || typeOfT.equals(Integer.class)
+                    || typeOfT.equals(Boolean.class) || typeOfT.equals(Character.class)
+                    || typeOfT.equals(Short.class) || typeOfT.equals(Long.class)
+                    || typeOfT.equals(Byte.class) || typeOfT.equals(Float.class)
+                    || typeOfT.equals(Double.class) || typeOfT.equals(String.class)) {
+                return (T)object;
             }
         } catch (Exception e) {
             e.printStackTrace();

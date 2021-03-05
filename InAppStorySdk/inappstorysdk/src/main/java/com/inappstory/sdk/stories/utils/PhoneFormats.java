@@ -597,6 +597,8 @@ public class PhoneFormats {
             "−−−− −−−−"
     };
 
+
+    //Test
     public static String getMaskByCode(String code) {
         if (code == null || code.isEmpty() || code.equals("+")) return null;
         for (int i = 0; i < codes.length; i++) {

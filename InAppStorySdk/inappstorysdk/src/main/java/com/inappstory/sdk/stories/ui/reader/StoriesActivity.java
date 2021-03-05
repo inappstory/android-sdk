@@ -35,6 +35,7 @@ import com.inappstory.sdk.stories.events.SwipeDownEvent;
 import com.inappstory.sdk.stories.events.SwipeLeftEvent;
 import com.inappstory.sdk.stories.events.SwipeRightEvent;
 import com.inappstory.sdk.stories.events.WidgetTapEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -56,9 +57,8 @@ public class StoriesActivity extends AppCompatActivity {
         super.onPause();
         if (isFinishing()) {
             StatusBarController.showStatusBar(this);
-            if (InAppStoryService.getInstance() != null) {
-                InAppStoryService.getInstance().sendStatistic();
-            }
+
+            OldStatisticManager.getInstance().sendStatistic();
             try {
                 CsEventBus.getDefault().unregister(this);
             } catch (Exception e) {
@@ -264,6 +264,7 @@ public class StoriesActivity extends AppCompatActivity {
         CsEventBus.getDefault().post(new OpenStoriesScreenEvent());
         if (savedInstanceState == null) {
             //overridePendingTransition(R.anim.alpha_fade_in, R.anim.alpha_fade_out);
+            //Log.e("stories_indexes", getIntent().getIntegerArrayListExtra("stories_ids").toString());
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
@@ -339,7 +340,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void cleanReader() {
         if (InAppStoryService.getInstance() == null) return;
         if (cleaned) return;
-        InAppStoryService.getInstance().closeStatisticEvent();
+        OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
@@ -378,9 +379,8 @@ public class StoriesActivity extends AppCompatActivity {
     public void onDestroy() {
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
-            if (InAppStoryService.getInstance() != null) {
-                InAppStoryService.getInstance().sendStatistic();
-            }
+
+            OldStatisticManager.getInstance().sendStatistic();
             try {
                 CsEventBus.getDefault().unregister(this);
             } catch (Exception e) {

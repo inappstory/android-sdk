@@ -23,8 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -46,16 +44,14 @@ import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
-import com.inappstory.sdk.stories.api.models.StatisticTask;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenStatisticCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
-import com.inappstory.sdk.stories.events.AppKillEvent;
 import com.inappstory.sdk.stories.events.ContentLoadedEvent;
 import com.inappstory.sdk.stories.events.ListVisibilityEvent;
 import com.inappstory.sdk.stories.events.LoadFavStories;
@@ -68,6 +64,7 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.DislikeStory;
 import com.inappstory.sdk.stories.outerevents.FavoriteStory;
@@ -79,6 +76,7 @@ import com.inappstory.sdk.stories.serviceevents.LikeDislikeEvent;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class InAppStoryService extends Service {
@@ -104,9 +102,9 @@ public class InAppStoryService extends Service {
     }
 
     void logout() {
-        closeStatisticEvent(null, true);
+        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                InAppStoryManager.getInstance().sendStatistic ? statistic : new ArrayList<List<Object>>())).enqueue(new NetworkCallback<StatisticResponse>() {
+                InAppStoryManager.getInstance().sendStatistic ? OldStatisticManager.getInstance().statistic : new ArrayList<List<Object>>())).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
             }
@@ -120,8 +118,8 @@ public class InAppStoryService extends Service {
             public void onError(int code, String message) {
             }
         });
-        statistic.clear();
-        statistic = null;
+        OldStatisticManager.getInstance().statistic.clear();
+        OldStatisticManager.getInstance().statistic = null;
     }
 
     LoadStoriesCallback loadStoriesCallback;
@@ -129,38 +127,18 @@ public class InAppStoryService extends Service {
     public void loadStories(final LoadStoriesCallback callback, final boolean isFavorite) {
         loadStoriesCallback = callback;
         if (isConnected()) {
-            if (StatisticSession.getInstance() == null
-                    || StatisticSession.getInstance().id == null
-                    || StatisticSession.getInstance().id.isEmpty()) {
-                openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        loadStories(loadStoriesCallback, isFavorite);
-                    }
+            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                @Override
+                public void onSuccess() {
+                    NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), isFavorite ? 1 : 0,
+                            getTags(), getTestKey(), null).enqueue(isFavorite ? loadCallbackWithoutFav : loadCallback);
+                }
 
-                    @Override
-                    public void onError() {
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
-                    }
-                });
-                return;
-            } else if (StatisticSession.needToUpdate()) {
-                openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), isFavorite ? 1 : 0,
-                                getTags(), getTestKey(), null).enqueue(isFavorite ? loadCallbackWithoutFav : loadCallback);
-                    }
-
-                    @Override
-                    public void onError() {
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
-                    }
-                });
-            } else {
-                NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTestKey(), isFavorite ? 1 : 0,
-                        getTags(), getTestKey(), null).enqueue(isFavorite ? loadCallbackWithoutFav : loadCallback);
-            }
+                @Override
+                public void onError() {
+                    CsEventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
+                }
+            });
         } else {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LOAD_LIST));
         }
@@ -238,7 +216,7 @@ public class InAppStoryService extends Service {
                                 story.tags, story.slidesCount, story.lastIndex,
                                 object.getLink().getTarget()));
 
-                        addLinkOpenStatistic();
+                        OldStatisticManager.getInstance().addLinkOpenStatistic();
                         if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
                             InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(
                                     object.getLink().getTarget()
@@ -268,6 +246,19 @@ public class InAppStoryService extends Service {
 
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();
+
+    void setLocalsOpened(List<Story> response) {
+        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        if (opens == null) opens = new HashSet<>();
+        for (Story story : response) {
+            if (story.isOpened) {
+                opens.add(Integer.toString(story.id));
+            } else if (opens.contains(Integer.toString(story.id))) {
+                story.isOpened = true;
+            }
+        }
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+    }
 
     NetworkCallback loadCallback = new NetworkCallback<List<Story>>() {
 
@@ -307,23 +298,23 @@ public class InAppStoryService extends Service {
         @Override
         protected void error424(String message) {
             CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-            if (!openProcess)
-                openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        if (!isRefreshing)
-                            isRefreshing = true;
+            SessionManager.getInstance().openSession(new OpenSessionCallback() {
+                @Override
+                public void onSuccess() {
+                    if (!isRefreshing)
+                        isRefreshing = true;
 
-                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                                null).enqueue(loadCallback);
-                    }
+                    NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
+                            null).enqueue(loadCallback);
+                }
 
-                    @Override
-                    public void onError() {
+                @Override
+                public void onError() {
 
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-                    }
-                });
+                    CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                }
+            });
+
         }
 
         @Override
@@ -333,19 +324,7 @@ public class InAppStoryService extends Service {
             } else {
                 CsEventBus.getDefault().post(new ContentLoadedEvent(false));
             }
-            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-            if (opens == null) opens = new HashSet<>();
-            for (Story story : response) {
-                if (story.isOpened) {
-                    opens.add(Integer.toString(story.id));
-                } else if (opens.contains(Integer.toString(story.id))) {
-                    story.isOpened = true;
-                }
-            }
-           /* if (response != null && response.size() > 1) {
-                response.get(1).videoUrl = "https://my-files.su/Save/w2o6jw/small.webm";
-            }*/
-            SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+            setLocalsOpened(response);
             StoryDownloader.getInstance().uploadingAdditional(response);
             CsEventBus.getDefault().post(new ListVisibilityEvent());
             List<Story> newStories = new ArrayList<>();
@@ -487,23 +466,23 @@ public class InAppStoryService extends Service {
         @Override
         protected void error424(String message) {
             CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-            if (!openProcess)
-                openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        if (!isRefreshing)
-                            isRefreshing = true;
+            SessionManager.getInstance().openSession(new OpenSessionCallback() {
+                @Override
+                public void onSuccess() {
+                    if (!isRefreshing)
+                        isRefreshing = true;
 
-                        NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
-                                null).enqueue(loadCallbackWithoutFav);
-                    }
+                    NetworkClient.getApi().getStories(StatisticSession.getInstance().id, getTags(), getTestKey(),
+                            null).enqueue(loadCallbackWithoutFav);
+                }
 
-                    @Override
-                    public void onError() {
+                @Override
+                public void onError() {
 
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-                    }
-                });
+                    CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                }
+            });
+
         }
 
         @Override
@@ -568,9 +547,6 @@ public class InAppStoryService extends Service {
         cubeAnimation = true;
     }
 
-    public void closeStatisticEvent() {
-        closeStatisticEvent(null, false);
-    }
 
     @Override
     public void onDestroy() {
@@ -578,7 +554,7 @@ public class InAppStoryService extends Service {
         super.onDestroy();
     }
 
-    public class StatisticEvent {
+   /* public class StatisticEvent {
         public int eventType;
         public int storyId;
         public int index;
@@ -603,6 +579,10 @@ public class InAppStoryService extends Service {
 
     private void addStatisticEvent(int eventType, int storyId, int index) {
         currentEvent = new StatisticEvent(eventType, storyId, index);
+    }
+
+    public void closeStatisticEvent() {
+        closeStatisticEvent(null, false);
     }
 
     private void addArticleStatisticEvent(int eventType, int articleId) {
@@ -635,6 +615,23 @@ public class InAppStoryService extends Service {
         currentEvent.eventType = 2;
     }
 
+    public void closeStatisticEvent(final Integer time, boolean clear) {
+        if (currentEvent != null) {
+            putStatistic(new ArrayList<Object>() {{
+                add(currentEvent.eventType);
+                add(eventCount);
+                add(currentEvent.storyId);
+                add(currentEvent.index);
+                add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
+            }});
+            Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
+                    currentEvent.storyId + " " + currentEvent.index + " " +
+                    Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
+            if (!clear)
+                currentEvent = null;
+        }
+    }
+
     public void addDeeplinkClickStatistic(int id) {
         closeStatisticEvent();
         eventCount++;
@@ -649,17 +646,17 @@ public class InAppStoryService extends Service {
         closeStatisticEvent();
         eventCount++;
         addStatisticEvent(1, currentId, currentIndex);
-    }
+    }*/
 
     public void resumeTimer() {
         Log.e("startTimer", "resumeTimer");
         StatisticManager.getInstance().cleanFakeEvents();
         resumeLocalTimer();
-        if (currentEvent == null) return;
-        currentEvent.eventType = 1;
-        currentEvent.timer = System.currentTimeMillis();
+        if (OldStatisticManager.getInstance().currentEvent == null) return;
+        OldStatisticManager.getInstance().currentEvent.eventType = 1;
+        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
         pauseTime += System.currentTimeMillis() - startPauseTime;
-        currentState.storyPause = pauseTime;
+        StatisticManager.getInstance().currentState.storyPause = pauseTime;
         startPauseTime = 0;
     }
 
@@ -687,11 +684,8 @@ public class InAppStoryService extends Service {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
-        closeStatisticEvent(null, false);
-        addStatisticEvent(1, event.storyId, event.index);
-        eventCount++;
-        createCurrentState(event.storyId, event.index);
-
+        OldStatisticManager.getInstance().addStatisticBlock(event.storyId, event.index);
+        StatisticManager.getInstance().createCurrentState(event.storyId, event.index);
     }
 
     public void pauseLocalTimer() {
@@ -700,76 +694,25 @@ public class InAppStoryService extends Service {
         } catch (Exception e) {
 
         }
-        Log.e("dragDrop", System.currentTimeMillis() + " " + timerStart);
         pauseShift = (System.currentTimeMillis() - timerStart);
     }
+
+
+
+
 
     public void pauseTimer() {
         Story story = StoryDownloader.getInstance().getStoryById(currentId);
 
-        StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.slidesCount, System.currentTimeMillis() - currentState.startTime);
+        StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.slidesCount);
         pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
-        closeStatisticEvent(null, true);
-        sendStatistic();
-        eventCount++;
+        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
+        OldStatisticManager.getInstance().sendStatistic();
+        OldStatisticManager.getInstance().eventCount++;
     }
 
-    public void closeStatisticEvent(final Integer time, boolean clear) {
-        if (currentEvent != null) {
 
-
-            //if (isBackgroundPause)
-            //    resumeTimer();
-            putStatistic(new ArrayList<Object>() {{
-                add(currentEvent.eventType);
-                add(eventCount);
-                add(currentEvent.storyId);
-                add(currentEvent.index);
-                add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
-            }});
-            Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
-                    currentEvent.storyId + " " + currentEvent.index + " " +
-                    Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
-            //if (isBackgroundPause)
-            //    pauseTimer();
-            if (!clear)
-                currentEvent = null;
-        }
-    }
-
-    public CurrentState currentState;
-
-    public static Object csLock = new Object();
-
-    public void sendCurrentState() {
-        synchronized (csLock) {
-            if (currentState != null) {
-                InAppStoryService.getInstance().match += "sendCurrentState " + csLock.toString() + "\n";
-                StatisticManager.getInstance().sendViewSlide(currentState.storyId, currentState.slideIndex, System.currentTimeMillis() - currentState.startTime - currentState.storyPause);
-            }
-            currentState = null;
-        }
-    }
-
-    public String match = "";
-
-    public void createCurrentState(final int stId, final int ind) {
-        synchronized (csLock) {
-           /* if (currentState != null) {
-                InAppStoryService.getInstance().match += "createCurrentState " + csLock.toString() + "\n";
-                StatisticManager.getInstance().sendViewSlide(currentState.storyId, currentState.slideIndex, System.currentTimeMillis() - currentState.startTime - currentState.storyPause);
-                currentState = null;
-            }*/
-
-            pauseTime = 0;
-            currentState = new CurrentState() {{
-                storyId = stId;
-                slideIndex = ind;
-                startTime = System.currentTimeMillis();
-            }};
-        }
-    }
 
     public boolean isBackgroundPause = false;
 
@@ -826,160 +769,38 @@ public class InAppStoryService extends Service {
         }
     }
 
-
-    public static Object openProcessLock = new Object();
-    public static ArrayList<OpenStatisticCallback> callbacks = new ArrayList<>();
-
-    public void openStatistic(final OpenStatisticCallback callback) {
-        synchronized (openProcessLock) {
-            if (openProcess) {
-                if (callback != null)
-                    callbacks.add(callback);
-                return;
+    public void saveSesstionPlaceholders(List<StoryPlaceholder> placeholders) {
+        if (placeholders == null) return;
+        for (StoryPlaceholder placeholder : placeholders) {
+            String key = "%" + placeholder.name + "%";
+            InAppStoryManager.getInstance().defaultPlaceholders.put(key,
+                    placeholder.defaultVal);
+            if (!InAppStoryManager.getInstance().placeholders.containsKey(key)) {
+                InAppStoryManager.getInstance().placeholders.put(key,
+                        placeholder.defaultVal);
             }
         }
-        synchronized (openProcessLock) {
-            callbacks.clear();
-            openProcess = true;
-            if (callback != null)
-                callbacks.add(callback);
-        }
-        Context context = InAppStoryManager.getInstance().context;
-        String platform = "android";
-        String deviceId = Settings.Secure.getString(context.getContentResolver(),
-                Settings.Secure.ANDROID_ID);// Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        // deviceId = deviceId + "1";
-        String model = Build.MODEL;
-        String manufacturer = Build.MANUFACTURER;
-        String brand = Build.BRAND;
-        String screenWidth = Integer.toString(Sizes.getScreenSize().x);
-        String screenHeight = Integer.toString(Sizes.getScreenSize().y);
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        String screenDpi = Float.toString(metrics.density * 160f);
-        String osVersion = Build.VERSION.CODENAME;
-        String osSdkVersion = Integer.toString(Build.VERSION.SDK_INT);
-        String appPackageId = context.getPackageName();
-        PackageInfo pInfo = null;
-        try {
-            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        String appVersion = (pInfo != null ? pInfo.versionName : "");
-        String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
-        if (!isConnected()) {
-            synchronized (openProcessLock) {
-                openProcess = false;
-            }
-            return;
-        }
-        NetworkClient.getApi().statisticsOpen(
-                "cache",
-                InAppStoryManager.getInstance().getTagsString(),
-                "animation,data,deeplink,placeholder,webp",
-                platform,
-                deviceId,
-                model,
-                manufacturer,
-                brand,
-                screenWidth,
-                screenHeight,
-                screenDpi,
-                osVersion,
-                osSdkVersion,
-                appPackageId,
-                appVersion,
-                appBuild,
-                InAppStoryManager.getInstance().getUserId()
-        ).enqueue(new NetworkCallback<StatisticResponse>() {
-            @Override
-            public void onSuccess(final StatisticResponse response) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        response.session.save();
-                        if (response.placeholders != null && !response.placeholders.isEmpty()) {
-                            for (StoryPlaceholder placeholder : response.placeholders) {
-                                String key = "%" + placeholder.name + "%";
-                                InAppStoryManager.getInstance().defaultPlaceholders.put(key,
-                                        placeholder.defaultVal);
-                                if (!InAppStoryManager.getInstance().placeholders.containsKey(key)) {
-                                    InAppStoryManager.getInstance().placeholders.put(key,
-                                            placeholder.defaultVal);
-                                }
-                            }
-                        }
-                        synchronized (openProcessLock) {
-                            openProcess = false;
-                            for (OpenStatisticCallback localCallback : callbacks)
-                                if (localCallback != null)
-                                    localCallback.onSuccess();
-                            callbacks.clear();
-                        }
-                        //getInstance().share = response.share;
-                        if (handler != null)
-                            handler.postDelayed(getInstance().statisticUpdateThread, statisticUpdateInterval);
-                        if (response.cachedFonts != null) {
-                            for (CacheFontObject cacheFontObject : response.cachedFonts) {
-                                Downloader.downFontFile(InAppStoryManager.getInstance().context, cacheFontObject.url);
-                            }
-                        }
-                    }
-                });
-
-            }
-
-            @Override
-            public Type getType() {
-                return StatisticResponse.class;
-            }
-
-            @Override
-            public void onError(int code, String message) {
-                synchronized (openProcessLock) {
-                    openProcess = false;
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (OpenStatisticCallback localCallback : callbacks)
-                                if (localCallback != null)
-                                    localCallback.onError();
-                            callbacks.clear();
-                        }
-                    });
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
-                super.onError(code, message);
-
-            }
-
-            @Override
-            public void onTimeout() {
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
-                synchronized (openProcessLock) {
-                    openProcess = false;
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (OpenStatisticCallback localCallback : callbacks)
-                                if (localCallback != null)
-                                    localCallback.onError();
-                            callbacks.clear();
-                        }
-                    });
-                }
-
-            }
-        });
     }
 
+    public void downloadFonts(List<CacheFontObject> cachedFonts) {
+        if (cachedFonts != null) {
+            for (CacheFontObject cacheFontObject : cachedFonts) {
+                Downloader.downFontFile(InAppStoryManager.getInstance().context, cacheFontObject.url);
+            }
+        }
+    }
+
+    public void runStatisticThread() {
+
+        if (handler != null)
+            handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread, statisticUpdateInterval);
+    }
 
     private static final long statisticUpdateInterval = 30000;
 
     private Handler handler = new Handler();
 
-    public void putStatistic(List<Object> e) {
+  /*  public void putStatistic(List<Object> e) {
         if (statistic != null) {
             statistic.add(e);
         }
@@ -994,13 +815,13 @@ public class InAppStoryService extends Service {
                 handler.removeCallbacks(statisticUpdateThread);
                 return;
             }
-            if (sendStatistic()) {
+            if (OldStatisticManager.getInstance().sendStatistic()) {
                 handler.postDelayed(statisticUpdateThread, statisticUpdateInterval);
             }
         }
     };
-
-    public void previewStatisticEvent(ArrayList<Integer> vals) {
+*/
+    /*public void previewStatisticEvent(ArrayList<Integer> vals) {
         ArrayList<Object> sendObject = new ArrayList<Object>() {{
             add(5);
             add(eventCount);
@@ -1021,7 +842,7 @@ public class InAppStoryService extends Service {
 
     public boolean sendStatistic() {
         if (!isConnected()) return true;
-        if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
+        if (StatisticSession.needToUpdate())
             return false;
         if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
             return true;
@@ -1055,52 +876,9 @@ public class InAppStoryService extends Service {
         return true;
     }
 
+*/
 
-    public static boolean openProcess = false;
 
-    interface CheckStatisticCallback {
-        void openStatistic();
-
-        void errorStatistic();
-    }
-
-    public static boolean checkOpenStatistic(final CheckStatisticCallback callback) {
-        if (getInstance().isConnected()) {
-            if (StatisticSession.getInstance() == null
-                    || StatisticSession.getInstance().id == null
-                    || StatisticSession.getInstance().id.isEmpty()) {
-                getInstance().openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        callback.openStatistic();
-                    }
-
-                    @Override
-                    public void onError() {
-                        callback.errorStatistic();
-                    }
-                });
-                return false;
-            } else if (StatisticSession.needToUpdate()) {
-                getInstance().openStatistic(new OpenStatisticCallback() {
-                    @Override
-                    public void onSuccess() {
-                        callback.openStatistic();
-                    }
-
-                    @Override
-                    public void onError() {
-                        callback.errorStatistic();
-                    }
-                });
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return true;
-        }
-    }
 
     public void getStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
         for (Story story : StoryDownloader.getInstance().getStories()) {
@@ -1222,49 +1000,48 @@ public class InAppStoryService extends Service {
     }
 
     public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback, final String id) {
-        if (checkOpenStatistic(new CheckStatisticCallback() {
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void openStatistic() {
-                getFullStoryByStringId(storyByIdCallback, id);
+            public void onSuccess() {
+
+                NetworkClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
+                        getApiKey(), EXPAND_STRING
+                ).enqueue(new NetworkCallback<Story>() {
+                    @Override
+                    public void onSuccess(final Story response) {
+                        CsEventBus.getDefault().post(new SingleLoad());
+                        if (InAppStoryManager.getInstance().singleLoadedListener != null) {
+                            InAppStoryManager.getInstance().singleLoadedListener.onLoad();
+                        }
+                        StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
+                            add(response);
+                        }});
+                        StoryDownloader.getInstance().setStory(response, response.id);
+                        storyByIdCallback.getStory(response);
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return Story.class;
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        if (InAppStoryManager.getInstance().singleLoadedListener != null) {
+                            InAppStoryManager.getInstance().singleLoadedListener.onError();
+                        }
+                        CsEventBus.getDefault().post(new SingleLoadError());
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
+                    }
+                });
             }
 
             @Override
-            public void errorStatistic() {
-
+            public void onError() {
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
             }
-        })) {
-            NetworkClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
-                    getApiKey(), EXPAND_STRING
-            ).enqueue(new NetworkCallback<Story>() {
-                @Override
-                public void onSuccess(final Story response) {
-                    CsEventBus.getDefault().post(new SingleLoad());
-                    if (InAppStoryManager.getInstance().singleLoadedListener != null) {
-                        InAppStoryManager.getInstance().singleLoadedListener.onLoad();
-                    }
-                    StoryDownloader.getInstance().uploadingAdditional(new ArrayList<Story>() {{
-                        add(response);
-                    }});
-                    StoryDownloader.getInstance().setStory(response, response.id);
-                    storyByIdCallback.getStory(response);
-                }
 
-                @Override
-                public Type getType() {
-                    return Story.class;
-                }
-
-                @Override
-                public void onError(int code, String message) {
-                    if (InAppStoryManager.getInstance().singleLoadedListener != null) {
-                        InAppStoryManager.getInstance().singleLoadedListener.onError();
-                    }
-                    CsEventBus.getDefault().post(new SingleLoadError());
-                    CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
-                }
-            });
-        }
+        });
     }
 
 
@@ -1299,7 +1076,7 @@ public class InAppStoryService extends Service {
 
         Thread.setDefaultUncaughtExceptionHandler(new TryMe());
         ImageLoader imgLoader = new ImageLoader(getApplicationContext());
-        statistic = new ArrayList<>();
+        OldStatisticManager.getInstance().statistic = new ArrayList<>();
         INSTANCE = this;
 
     }

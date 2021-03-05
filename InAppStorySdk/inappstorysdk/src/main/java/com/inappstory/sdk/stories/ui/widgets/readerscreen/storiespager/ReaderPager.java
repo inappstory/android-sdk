@@ -34,15 +34,8 @@ public class ReaderPager extends ViewPager {
 
     @Override
     protected int getChildDrawingOrder(int childCount, int i) {
-        switch (i) {
-            case 0:
-                return 0;
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-        }
-        return super.getChildDrawingOrder(childCount, i);
+        int res = super.getChildDrawingOrder(childCount, i);
+        return childCount - res - 1;
     }
 
     private long pressStartTime;

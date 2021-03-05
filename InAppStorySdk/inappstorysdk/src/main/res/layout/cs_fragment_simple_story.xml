@@ -44,7 +44,7 @@
                     android:clickable="false"
                     android:elevation="7dp"
                     android:orientation="vertical"
-                    android:visibility="visible">
+                    android:visibility="gone">
 
                     <RelativeLayout
                         android:id="@+id/blackMask"

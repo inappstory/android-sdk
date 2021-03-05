@@ -27,7 +27,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
+
 import androidx.annotation.RequiresApi;
+import androidx.webkit.WebViewFeature;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -81,6 +83,7 @@ import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static android.webkit.WebSettings.FORCE_DARK_ON;
 import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
 /**
@@ -457,6 +460,10 @@ public class StoriesWebView extends WebView {
         loadedId = -1;
         CsEventBus.getDefault().register(this);
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+
+        if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            getSettings().setForceDark(FORCE_DARK_ON);
+        }
         setBackgroundColor(getResources().getColor(R.color.black));
         if (Build.VERSION.SDK_INT >= 19) {
             setLayerType(View.LAYER_TYPE_HARDWARE, null);

@@ -6,14 +6,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -39,12 +35,14 @@ import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeUserIdEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
@@ -53,11 +51,11 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static com.inappstory.sdk.InAppStoryService.checkOpenStatistic;
 
 public class InAppStoryManager {
 
@@ -113,7 +111,7 @@ public class InAppStoryManager {
         return tags;
     }
 
-
+    //Test
     public void clearCache() {
         StoryDownloader.clearCache();
     }
@@ -155,16 +153,18 @@ public class InAppStoryManager {
         return appClickCallback;
     }
 
-
-    String getTagsString() {
+    //Test
+    public String getTagsString() {
         if (tags == null) return null;
         return TextUtils.join(",", tags);
     }
 
+    //Test
     public void setTags(ArrayList<String> tags) {
         this.tags = tags;
     }
 
+    //Test
     public void addTags(ArrayList<String> newTags) {
         if (newTags == null || newTags.isEmpty()) return;
         if (tags == null) tags = new ArrayList<>();
@@ -173,6 +173,7 @@ public class InAppStoryManager {
         }
     }
 
+    //Test
     public void removeTags(ArrayList<String> newTags) {
         if (tags == null || newTags == null || newTags.isEmpty()) return;
         for (String tag : newTags) {
@@ -346,6 +347,7 @@ public class InAppStoryManager {
         }
     }
 
+    //Test
     public void setUserId(String userId) throws DataException {
         if (InAppStoryService.getInstance() == null) return;
         if (userId.length() < 255) {
@@ -357,7 +359,7 @@ public class InAppStoryManager {
             CsEventBus.getDefault().post(new ChangeUserIdEvent());
             if (StatisticSession.getInstance().id != null) {
                 NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                        sendStatistic ? InAppStoryService.getInstance().statistic : new ArrayList<List<Object>>())).enqueue(new NetworkCallback<StatisticResponse>() {
+                        sendStatistic ? OldStatisticManager.getInstance().statistic : new ArrayList<List<Object>>())).enqueue(new NetworkCallback<StatisticResponse>() {
                     @Override
                     public void onSuccess(StatisticResponse response) {
                         CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
@@ -431,9 +433,8 @@ public class InAppStoryManager {
         if (INSTANCE != null) {
             destroy();
         }
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().statistic = new ArrayList<>();
-        }
+
+        OldStatisticManager.getInstance().statistic = new ArrayList<>();
         INSTANCE = this;
         ApiSettings
                 .getInstance()
@@ -489,6 +490,60 @@ public class InAppStoryManager {
     public OnboardingLoadedListener onboardLoadedListener;
     public OnboardingLoadedListener singleLoadedListener;
 
+    private void showLoadedOnboardings(List<Story> response, final Context outerContext, final AppearanceManager manager) {
+        if (response == null || response.size() == 0) {
+            CsEventBus.getDefault().post(new OnboardingLoad(0));
+            if (onboardLoadedListener != null) {
+                onboardLoadedListener.onEmpty();
+            }
+            return;
+        }
+        ArrayList<Story> stories = new ArrayList<Story>();
+        ArrayList<Integer> storiesIds = new ArrayList<>();
+        stories.addAll(response);
+        for (Story story : response) {
+            storiesIds.add(story.id);
+        }
+        StoryDownloader.getInstance().uploadingAdditional(stories);
+        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
+                storiesIds.get(0));
+        if (Sizes.isTablet() && outerContext != null) {
+            DialogFragment settingsDialogFragment = new StoriesDialogFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt("index", 0);
+            bundle.putInt("source", ShowStory.ONBOARDING);
+            bundle.putIntegerArrayList("stories_ids", storiesIds);
+            if (manager != null) {
+                bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
+                bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
+            }
+            settingsDialogFragment.setArguments(bundle);
+            settingsDialogFragment.show(
+                    ((AppCompatActivity) outerContext).getSupportFragmentManager(),
+                    "DialogFragment");
+        } else {
+            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(), StoriesActivity.class);
+            intent2.putExtra("index", 0);
+            intent2.putExtra("source", ShowStory.ONBOARDING);
+            intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
+            if (manager != null) {
+                intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
+                intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
+            }
+            if (outerContext == null) {
+                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                InAppStoryManager.getInstance().getContext().startActivity(intent2);
+            } else {
+                outerContext.startActivity(intent2);
+            }
+        }
+
+        CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
+        if (onboardLoadedListener != null) {
+            onboardLoadedListener.onLoad();
+        }
+    }
+
     public void showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.getInstance() == null) {
             new Handler().postDelayed(new Runnable() {
@@ -521,114 +576,65 @@ public class InAppStoryManager {
             return;
         }
 
-        if (checkOpenStatistic(new InAppStoryService.CheckStatisticCallback() {
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void openStatistic() {
-                showOnboardingStories(tags == null ? getTags() : tags, outerContext, manager);
+            public void onSuccess() {
+                String localTags = null;
+                if (tags != null) {
+                    localTags = TextUtils.join(",", tags);
+                } else if (getTags() != null) {
+                    localTags = TextUtils.join(",", getTags());
+                }
+                NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, localTags == null ? getTagsString() : localTags,
+                        getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
+                    @Override
+                    public void onSuccess(List<Story> response) {
+                        showLoadedOnboardings(response, outerContext, manager);
+                    }
+
+                    @Override
+                    public Type getType() {
+                        // List<Story> c = new ArrayList<Story>();
+                        ParameterizedType ptype = new ParameterizedType() {
+                            @NonNull
+                            @Override
+                            public Type[] getActualTypeArguments() {
+                                return new Type[]{Story.class};
+                            }
+
+                            @NonNull
+                            @Override
+                            public Type getRawType() {
+                                return List.class;
+                            }
+
+                            @Nullable
+                            @Override
+                            public Type getOwnerType() {
+                                return List.class;
+                            }
+                        };
+                        return ptype;
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+
+                        CsEventBus.getDefault().post(new OnboardingLoadError());
+                        if (onboardLoadedListener != null) {
+                            onboardLoadedListener.onError();
+                        }
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                    }
+                });
             }
 
             @Override
-            public void errorStatistic() {
+            public void onError() {
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
             }
-        })) {
-            String localTags = null;
-            if (tags != null) {
-                localTags = TextUtils.join(",", tags);
-            }
-            NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, localTags == null ? getTagsString() : localTags,
-                    getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
-                @Override
-                public void onSuccess(List<Story> response) {
-                    if (response == null || response.size() == 0) {
-                        CsEventBus.getDefault().post(new OnboardingLoad(0));
-                        if (onboardLoadedListener != null) {
-                            onboardLoadedListener.onEmpty();
-                        }
-                        return;
-                    }
-                    ArrayList<Story> stories = new ArrayList<Story>();
-                    ArrayList<Integer> storiesIds = new ArrayList<>();
-                    stories.addAll(response);
-                    for (Story story : response) {
-                        storiesIds.add(story.id);
-                    }
-                    StoryDownloader.getInstance().uploadingAdditional(stories);
-                    StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                            storiesIds.get(0));
-                    if (Sizes.isTablet() && outerContext != null) {
-                        DialogFragment settingsDialogFragment = new StoriesDialogFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("index", 0);
-                        bundle.putInt("source", ShowStory.ONBOARDING);
-                        bundle.putIntegerArrayList("stories_ids", storiesIds);
-                        if (manager != null) {
-                            bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
-                            bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-                        }
-                        settingsDialogFragment.setArguments(bundle);
-                        settingsDialogFragment.show(
-                                ((AppCompatActivity) outerContext).getSupportFragmentManager(),
-                                "DialogFragment");
-                    } else {
-                        Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(), StoriesActivity.class);
-                        intent2.putExtra("index", 0);
-                        intent2.putExtra("source", ShowStory.ONBOARDING);
-                        intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
-                        if (manager != null) {
-                            intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
-                            intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-                        }
-                        if (outerContext == null) {
-                            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            InAppStoryManager.getInstance().getContext().startActivity(intent2);
-                        } else {
-                            outerContext.startActivity(intent2);
-                        }
-                    }
 
-                    CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
-                    if (onboardLoadedListener != null) {
-                        onboardLoadedListener.onLoad();
-                    }
-                }
-
-                @Override
-                public Type getType() {
-                    // List<Story> c = new ArrayList<Story>();
-                    ParameterizedType ptype = new ParameterizedType() {
-                        @NonNull
-                        @Override
-                        public Type[] getActualTypeArguments() {
-                            return new Type[]{Story.class};
-                        }
-
-                        @NonNull
-                        @Override
-                        public Type getRawType() {
-                            return List.class;
-                        }
-
-                        @Nullable
-                        @Override
-                        public Type getOwnerType() {
-                            return List.class;
-                        }
-                    };
-                    return ptype;
-                }
-
-                @Override
-                public void onError(int code, String message) {
-
-                    CsEventBus.getDefault().post(new OnboardingLoadError());
-                    if (onboardLoadedListener != null) {
-                        onboardLoadedListener.onError();
-                    }
-                    CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
-                }
-            });
-        }
+        });
     }
 
     public void showOnboardingStories(Context context, final AppearanceManager manager) {
@@ -676,7 +682,7 @@ public class InAppStoryManager {
                     if (callback != null)
                         callback.onShow();
                     if (story.deeplink != null) {
-                        InAppStoryService.getInstance().addDeeplinkClickStatistic(story.id);
+                        OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
 
                         StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink);
                         if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {

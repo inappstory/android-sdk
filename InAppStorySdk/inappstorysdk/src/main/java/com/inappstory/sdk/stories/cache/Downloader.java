@@ -92,7 +92,8 @@ public class Downloader {
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
         return img;
     }
-        @NonNull
+
+    @NonNull
     @WorkerThread
     public static File downVideo(Context con,
                                  @NonNull String url,

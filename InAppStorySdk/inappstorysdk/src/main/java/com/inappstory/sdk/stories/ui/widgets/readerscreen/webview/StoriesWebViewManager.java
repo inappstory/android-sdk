@@ -50,6 +50,7 @@ import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesWebView;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
@@ -70,6 +71,9 @@ import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 public class StoriesWebViewManager {
     int index = -1;
 
+    public int loadedIndex = -1;
+    public int loadedId = -1;
+
     public void setIndex(int index) {
         this.index = index;
     }
@@ -88,8 +92,13 @@ public class StoriesWebViewManager {
 
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
 
+    boolean lock = true;
+
     public void storyLoaded(int oId, int oInd) {
         if (storyId != oId || index != oInd) return;
+        this.index = oInd;
+        loadedIndex = oInd;
+        loadedId = oId;
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         innerLoad(story);
     }
@@ -103,7 +112,7 @@ public class StoriesWebViewManager {
     }
 
     public void loadStory(final int id, final int index) {
-        if (this.index == index) return;
+        if (loadedId == id && loadedIndex == index) return;
         if (InAppStoryManager.getInstance() == null)
             return;
         if (!InAppStoryService.getInstance().isConnected()) {
@@ -117,9 +126,11 @@ public class StoriesWebViewManager {
         if (story.slidesCount <= index) return;
         storyId = id;
         this.index = index;
+        loadedIndex = index;
+        loadedId = id;
         slideInCache = StoryDownloader.getInstance().checkIfPageLoaded(new Pair<>(id, index));
         if (!slideInCache) {
-            CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
+            CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false)); //animation
         } else {
             innerLoad(story);
         }

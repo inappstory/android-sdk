@@ -130,6 +130,7 @@ public class NetworkClient {
         }
     }
 
+    //Test
     public static String getUAString(Context context) {
         String userAgent = "";
         String agentString = System.getProperty("http.agent");
@@ -157,7 +158,8 @@ public class NetworkClient {
         return finalUA;
     }
 
-    private static String getDefaultUserStringOld(Context context) {
+    //Test
+    public static String getDefaultUserStringOld(Context context) {
         try {
             Constructor<WebSettings> constructor = WebSettings.class.getDeclaredConstructor(Context.class, WebView.class);
             constructor.setAccessible(true);

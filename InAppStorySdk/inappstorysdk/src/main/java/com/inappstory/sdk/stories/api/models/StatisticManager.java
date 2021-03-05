@@ -163,7 +163,6 @@ public class StatisticManager {
         thread = new HandlerThread("SSMThread" + System.currentTimeMillis());
         thread.start();
         handler = new Handler(thread.getLooper());
-        InAppStoryService.getInstance().match = "";
         String tasksJson = SharedPreferencesAPI.getString(TASKS_KEY);
         String fakeTasksJson = SharedPreferencesAPI.getString(FAKE_TASKS_KEY);
         CsEventBus.getDefault().register(this);
@@ -306,7 +305,7 @@ public class StatisticManager {
     }
 
     public void sendCloseStory(final int i, final String c, final Integer si, final Integer st) {
-        InAppStoryService.getInstance().sendCurrentState();
+        sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
         Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
         StatisticTask task = new StatisticTask();
@@ -321,8 +320,33 @@ public class StatisticManager {
         pauseTime = 0;
     }
 
+    public CurrentState currentState;
+
+    static Object csLock = new Object();
+
+    public void sendCurrentState() {
+        synchronized (csLock) {
+            if (currentState != null) {
+                sendViewSlide(currentState.storyId, currentState.slideIndex, System.currentTimeMillis() - currentState.startTime - currentState.storyPause);
+            }
+            currentState = null;
+        }
+    }
+
+    public void createCurrentState(final int stId, final int ind) {
+        synchronized (csLock) {
+            pauseTime = 0;
+            currentState = new CurrentState() {{
+                storyId = stId;
+                slideIndex = ind;
+                startTime = System.currentTimeMillis();
+            }};
+        }
+    }
+
+
     public void sendCloseStory(final int i, final String c, final Integer si, final Integer st, final Long t) {
-        InAppStoryService.getInstance().sendCurrentState();
+        sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
         Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
         StatisticTask task = new StatisticTask();
@@ -338,12 +362,12 @@ public class StatisticManager {
 
     }
 
-    public void addFakeEvents(final int i, final Integer si, final Integer st, final Long slideD) {
+    public void addFakeEvents(final int i, final Integer si, final Integer st) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "slide";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
-        task.durationMs = slideD;
+        task.durationMs = System.currentTimeMillis() - currentState.startTime;
         task.isFake = true;
         generateBase(task);
         addFakeTask(task);
@@ -424,7 +448,6 @@ public class StatisticManager {
         task.slideIndex = si;
         task.durationMs = t;
         generateBase(task);
-        InAppStoryService.getInstance().match += "slide " + "viewSlide" + si + " " + i;
         addTask(task);
 
     }
@@ -454,9 +477,6 @@ public class StatisticManager {
                 @Override
                 public Boolean call() throws Exception {
                     if (!InAppStoryManager.getInstance().sendStatistic) return true;
-                    if (task.event.equals("slide")) {
-                        InAppStoryService.getInstance().match += task.event + " " + task.storyId + " " + task.slideIndex + " " + task.durationMs + " " + task.timestamp + "\n";
-                    }
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,
                             task.sessionId,
@@ -507,4 +527,6 @@ public class StatisticManager {
             handler.postDelayed(queueTasksRunnable, 100);
         }
     }
+
+
 }

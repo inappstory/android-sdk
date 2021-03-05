@@ -60,6 +60,7 @@ import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.ClickOnShareStory;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
@@ -141,7 +142,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (story.durations != null && !story.durations.isEmpty())
             story.slidesCount = story.durations.size();
 
-        InAppStoryService.getInstance().sendCurrentState();
+        StatisticManager.getInstance().sendCurrentState();
         if (story.lastIndex == story.slidesCount - 1) {
             CsEventBus.getDefault().post(new NextStoryReaderEvent());
 
@@ -163,8 +164,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                     storiesProgressView.setActive(true);
                     storiesProgressView.startProgress(ind);
                     InAppStoryService.getInstance().startTimer(story.getDurations().get(ind), true);
-                    if (InAppStoryService.getInstance().currentEvent != null)
-                        InAppStoryService.getInstance().currentEvent.timer = System.currentTimeMillis();
+                    if (OldStatisticManager.getInstance().currentEvent != null)
+                        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
                 }
             }
 
@@ -187,7 +188,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         int lind = StoryDownloader.getInstance().getStoryById(storyId).lastIndex;
         if (lind > 0) {
             CsEventBus.getDefault().post(new OnPrevEvent());
-            InAppStoryService.getInstance().sendCurrentState();
+            StatisticManager.getInstance().sendCurrentState();
             storiesProgressView.clearAnimation(lind);
         } else {
             CsEventBus.getDefault().post(new PrevStoryReaderEvent());

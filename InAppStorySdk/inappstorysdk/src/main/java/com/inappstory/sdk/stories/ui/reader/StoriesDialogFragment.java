@@ -24,6 +24,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.StatusBarController;
@@ -46,7 +47,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().sendStatistic();
+            OldStatisticManager.getInstance().sendStatistic();
             Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
@@ -70,7 +71,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void cleanReader() {
         if (InAppStoryService.getInstance() == null) return;
         if (cleaned) return;
-        InAppStoryService.getInstance().closeStatisticEvent();
+        OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
@@ -107,9 +108,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     public void onDestroyView() {
         CsEventBus.getDefault().unregister(this);
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().sendStatistic();
-        }
+
+        OldStatisticManager.getInstance().sendStatistic();
         StoriesActivity.destroyed = System.currentTimeMillis();
         super.onDestroyView();
     }

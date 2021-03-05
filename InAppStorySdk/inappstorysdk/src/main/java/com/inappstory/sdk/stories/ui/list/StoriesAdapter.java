@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.ClickOnStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -103,7 +104,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                holder.bind(story.getTitle(),
+                                holder.bind(story.id + " " + story.getTitle(),
                                         story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                                         story.getSource(),
                                         (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
@@ -140,7 +141,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         if (current != null) {
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
-                InAppStoryService.getInstance().addDeeplinkClickStatistic(current.id);
+                OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
                     InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
