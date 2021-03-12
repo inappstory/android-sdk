@@ -89,8 +89,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             if (file == null)
                 file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_IMAGE, COVER_VIDEO_FOLDER_ID, Sizes.getScreenSize());
             if (file.exists()) {
-              //  mp.setDataSource(file.getAbsolutePath());
-                mp.setDataSource(url);
+                mp.setDataSource(file.getAbsolutePath());
             } else {
                 mp.setDataSource(url);
                 StoryDownloader.downloadCoverVideo(url);
