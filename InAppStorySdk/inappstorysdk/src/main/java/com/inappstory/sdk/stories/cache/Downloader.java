@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.FileLock;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -400,10 +401,12 @@ public class Downloader {
 
 
         FileOutputStream fileOutput = new FileOutputStream(outputFile);
+        FileLock lock = fileOutput.getChannel().lock();
         InputStream inputStream = urlConnection.getInputStream();
 
         String contentType = urlConnection.getHeaderField("Content-Type");
         if (urlConnection.getResponseCode() > 350) {
+            lock.release();
             throw new RuntimeException();
         }
         if (contentType != null)
@@ -419,6 +422,7 @@ public class Downloader {
         }
         fileOutput.flush();
         fileOutput.close();
+        lock.release();
         return outputFile;
 
     }

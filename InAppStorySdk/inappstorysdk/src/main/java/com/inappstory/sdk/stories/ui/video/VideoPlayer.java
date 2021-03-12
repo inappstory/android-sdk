@@ -62,7 +62,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         if (this.surface != null) this.surface.release();
         if (mp != null) {
-           // this.surface.release();
+            // this.surface.release();
             mp.stop();
             mp.reset();
             mp.release();
@@ -89,7 +89,12 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             if (file == null)
                 file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_IMAGE, COVER_VIDEO_FOLDER_ID, Sizes.getScreenSize());
             if (file.exists()) {
-                mp.setDataSource(file.getAbsolutePath());
+                boolean fileIsNotLocked = file.renameTo(file);
+                if (file.length() > 10 && fileIsNotLocked) {
+                    mp.setDataSource(file.getAbsolutePath());
+                } else {
+                    mp.setDataSource(url);
+                }
             } else {
                 mp.setDataSource(url);
                 StoryDownloader.downloadCoverVideo(url);
