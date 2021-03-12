@@ -15,6 +15,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -38,7 +39,7 @@ public class SessionManager {
     }
 
     public boolean checkOpenStatistic(final OpenSessionCallback callback) {
-        if (InAppStoryService.getInstance().isConnected()) {
+        if (InAppStoryService.isConnected()) {
             if (StatisticSession.needToUpdate()) {
                 openSession(callback);
                 return false;
@@ -74,6 +75,9 @@ public class SessionManager {
             }
         });
     }
+
+    private static final String FEATURES =
+            "animation,data,deeplink,placeholder,webp,resetTimers";
 
     public void openSession(final OpenSessionCallback callback) {
         synchronized (openProcessLock) {
@@ -112,7 +116,7 @@ public class SessionManager {
         }
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
-        if (!InAppStoryService.getInstance().isConnected()) {
+        if (!InAppStoryService.isConnected()) {
             synchronized (openProcessLock) {
                 openProcess = false;
             }
@@ -120,8 +124,7 @@ public class SessionManager {
         }
         NetworkClient.getApi().statisticsOpen(
                 "cache",
-                InAppStoryManager.getInstance().getTagsString(),
-                "animation,data,deeplink,placeholder,webp",
+                InAppStoryManager.getInstance().getTagsString(), FEATURES,
                 platform,
                 deviceId,
                 model,
@@ -140,6 +143,14 @@ public class SessionManager {
             @Override
             public void onSuccess(StatisticResponse response) {
                 openStatisticSuccess(response);
+                CachedSessionData cachedSessionData = new CachedSessionData();
+                cachedSessionData.userId = InAppStoryManager.getInstance().getUserId();
+                cachedSessionData.placeholders = response.placeholders;
+                cachedSessionData.sessionId = response.session.id;
+                cachedSessionData.testKey = InAppStoryManager.getInstance().getTestKey();
+                cachedSessionData.token = InAppStoryManager.getInstance().getApiKey();
+                cachedSessionData.tags = InAppStoryManager.getInstance().getTagsString();
+                CachedSessionData.setInstance(cachedSessionData);
             }
 
             @Override

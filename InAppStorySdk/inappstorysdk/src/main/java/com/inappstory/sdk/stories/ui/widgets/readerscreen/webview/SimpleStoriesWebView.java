@@ -245,7 +245,7 @@ public class SimpleStoriesWebView extends WebView {
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         if (InAppStoryService.getInstance().cubeAnimation) return false;
-        if (!InAppStoryService.getInstance().isConnected()) return true;
+        if (!InAppStoryService.isConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();

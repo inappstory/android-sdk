@@ -25,6 +25,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -61,6 +62,7 @@ import com.inappstory.sdk.stories.cache.FileCache;
 import com.inappstory.sdk.stories.cache.FileType;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
+import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
@@ -83,6 +85,7 @@ import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static android.webkit.WebSettings.FORCE_DARK_OFF;
 import static android.webkit.WebSettings.FORCE_DARK_ON;
 import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
@@ -118,7 +121,7 @@ public class StoriesWebView extends WebView {
         if (loadedId == id && loadedIndex == index) return;
         if (InAppStoryManager.getInstance() == null)
             return;
-        if (!InAppStoryService.getInstance().isConnected()) {
+        if (!InAppStoryService.isConnected()) {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
@@ -194,7 +197,7 @@ public class StoriesWebView extends WebView {
 
         String innerWebData = story.pages.get(index);
         innerWebText = innerWebData;
-        if (InAppStoryService.getInstance().isConnected()) {
+        if (InAppStoryService.isConnected()) {
             if (innerWebData.contains("<video")) {
                 isVideo = true;
                 getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
@@ -371,7 +374,8 @@ public class StoriesWebView extends WebView {
     public void stopVideo() {
         // if (!isVideo) return;
         //loadUrl("javascript:(function(){window.Android.defaultTap('test');})()");
-        // Log.e("playVideo", storyId + " stop");
+        Log.e("stopVideo", storyId + " " + StoriesWebView.this.index);
+        //CsEventBus.getDefault().post(new ClearDurationEvent(StoriesWebView.this.storyId, StoriesWebView.this.index));
         loadUrl("javascript:(function(){story_slide_stop();})()");
 
     }
@@ -460,9 +464,8 @@ public class StoriesWebView extends WebView {
         loadedId = -1;
         CsEventBus.getDefault().register(this);
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-
         if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-            getSettings().setForceDark(FORCE_DARK_ON);
+            getSettings().setForceDark(FORCE_DARK_OFF);
         }
         setBackgroundColor(getResources().getColor(R.color.black));
         if (Build.VERSION.SDK_INT >= 19) {
@@ -650,13 +653,13 @@ public class StoriesWebView extends WebView {
             Log.e("JSEvent", "storyClick");
             InAppStoryService.getInstance().lastTapEventTime = System.currentTimeMillis();
             if (payload == null || payload.isEmpty() || payload.equals("test")) {
-                if (InAppStoryService.getInstance().isConnected()) {
+                if (InAppStoryService.isConnected()) {
                     CsEventBus.getDefault().post(new StoryReaderTapEvent((int) coordinate1));
                 } else {
                     CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
                 }
             } else if (payload.equals("forbidden")) {
-                if (InAppStoryService.getInstance().isConnected()) {
+                if (InAppStoryService.isConnected()) {
                     CsEventBus.getDefault().post(new StoryReaderTapEvent((int) coordinate1, true));
                 } else {
                     CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
@@ -687,6 +690,12 @@ public class StoriesWebView extends WebView {
                 CsEventBus.getDefault().post(new ChangeIndexEvent(StoriesWebView.this.index + 1));
             }
         }
+
+        @JavascriptInterface
+        public void resetTimers() {
+            CsEventBus.getDefault().post(new ClearDurationEvent(StoriesWebView.this.storyId, index));
+        }
+
 
         @JavascriptInterface
         public void storyShowTextInput(String id, String data) {
@@ -871,7 +880,7 @@ public class StoriesWebView extends WebView {
         float pressedEndY = 0f;
         if (InAppStoryService.getInstance().cubeAnimation) return false;
         boolean distanceY = false;
-        if (!InAppStoryService.getInstance().isConnected()) return true;
+        if (!InAppStoryService.isConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 pressedY = motionEvent.getY();

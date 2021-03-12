@@ -45,6 +45,7 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private ILoaderView csLoaderView;
+    private static WidgetAppearance csWidgetAppearance;
 
     private static AppearanceManager mainInstance;
 
@@ -56,11 +57,23 @@ public class AppearanceManager {
         mainInstance = manager;
     }
 
+
     public Typeface csCustomFont() {
         return csCustomFont;
     }
 
     Typeface csCustomFont;
+
+    public static WidgetAppearance csWidgetAppearance() {
+        if (csWidgetAppearance == null) csWidgetAppearance = new WidgetAppearance();
+        return csWidgetAppearance;
+    }
+
+    public static void csWidgetAppearance(Integer color, Integer corners) {
+        csWidgetAppearance();
+        csWidgetAppearance.textColor = color;
+        csWidgetAppearance.corners = corners;
+    }
 
     public AppearanceManager csListItemHeight(Integer csListItemHeight) {
         this.csListItemHeight = csListItemHeight;

@@ -199,7 +199,7 @@ public class StatisticManager {
         @Override
         public void run() {
             if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.getInstance() == null
-                    || !InAppStoryService.getInstance().isConnected()) {
+                    || !InAppStoryService.isConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
             }
@@ -265,30 +265,6 @@ public class StatisticManager {
     }
 
     public void generateBase(StatisticTask task) {
-        //Context context = InAppStoryManager.getInstance().getContext();
-     /*   task.app = new PhoneAppData();
-        task.app.platform = "android";
-        // String deviceId = Settings.Secure.getString(context.getContentResolver(),
-        //         Settings.Secure.ANDROID_ID);// Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        task.app.model = Build.MODEL;
-        task.app.manufacturer = Build.MANUFACTURER;
-        task.app.brand = Build.BRAND;
-        task.app.screenWidth = Sizes.getScreenSize().x;
-        task.app.screenHeight = Sizes.getScreenSize().y;
-        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        task.app.screenDpi = (int) metrics.density * 160;
-        task.app.osVersion = Build.VERSION.CODENAME;
-        task.app.osSdkVersion = Build.VERSION.SDK_INT;
-        task.app.appPackageId = context.getPackageName();
-        PackageInfo pInfo = null;
-        try {
-            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        task.app.appVersion = (pInfo != null ? pInfo.versionName : "");
-        task.app.appBuild = (pInfo != null ? pInfo.versionCode : 1);*/
         task.sessionId = StatisticSession.getInstance().id;
         task.userId = InAppStoryManager.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;

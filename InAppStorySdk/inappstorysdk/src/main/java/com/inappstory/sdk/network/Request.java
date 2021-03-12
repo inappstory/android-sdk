@@ -120,6 +120,7 @@ public final class Request<T> {
             return this;
         }
 
+        //Test
         public Request build() {
             if (url == null) throw new IllegalStateException("url == null");
             return new Request(this);

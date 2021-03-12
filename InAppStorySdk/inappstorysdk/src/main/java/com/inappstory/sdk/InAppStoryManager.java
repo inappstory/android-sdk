@@ -61,6 +61,10 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
+    public static void setInstance(InAppStoryManager manager) {
+        INSTANCE = manager;
+    }
+
     public Context getContext() {
         return context;
     }
@@ -300,6 +304,9 @@ public class InAppStoryManager {
         }
     };
 
+    public InAppStoryManager() {
+
+    }
 
     private InAppStoryManager(Builder builder) throws DataException {
 
@@ -688,7 +695,7 @@ public class InAppStoryManager {
                         if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
                             InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
                         } else {
-                            if (!InAppStoryService.getInstance().isConnected()) {
+                            if (!InAppStoryService.isConnected()) {
                                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                                 return;
                             }

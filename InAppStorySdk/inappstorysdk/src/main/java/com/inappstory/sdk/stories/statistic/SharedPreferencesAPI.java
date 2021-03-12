@@ -12,6 +12,10 @@ public class SharedPreferencesAPI {
 
     private static Context context;
 
+    public static boolean hasContext() {
+        return context != null;
+    }
+
     private static final String SHARED_PREFERENCES_DEFAULT = "default_n";
 
 

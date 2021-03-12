@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,6 +126,8 @@ public class JsonParser {
     }
 
     public static <T> T fromJson(String json, Class<T> typeOfT) {
+        if (json == null) return null;
+        if (typeOfT == null) return null;
         T res = null;
         try {
             JSONTokener jsonT = new JSONTokener(json);
@@ -171,6 +174,7 @@ public class JsonParser {
         }
         JSONObject object = new JSONObject();
         for (Field field : instance.getClass().getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) continue;
             field.setAccessible(true);
             String name = field.getName();
             if (field.getAnnotation(SerializedName.class) != null) {

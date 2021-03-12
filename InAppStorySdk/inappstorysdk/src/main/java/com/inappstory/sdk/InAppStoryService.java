@@ -758,7 +758,8 @@ public class InAppStoryService extends Service {
     }
 
 
-    public boolean isConnected() {
+    public static boolean isConnected() {
+        if (InAppStoryManager.getInstance() == null) return false;
         if (InAppStoryManager.getInstance().context == null) return false;
         try {
             ConnectivityManager cm = (ConnectivityManager) InAppStoryManager.getInstance().context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -1072,6 +1073,7 @@ public class InAppStoryService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e("ias_network", "onCreate");
         CsEventBus.getDefault().register(this);
 
         Thread.setDefaultUncaughtExceptionHandler(new TryMe());
@@ -1119,6 +1121,8 @@ public class InAppStoryService extends Service {
 
     @Override
     public int onStartCommand(Intent startIntent, int flags, int startId) {
+
+        Log.e("ias_network", "onStartCommand");
         INSTANCE = this;
         return START_STICKY;
     }

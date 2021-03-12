@@ -28,7 +28,7 @@ public final class NetworkHandler implements InvocationHandler {
      * Трекер аналитики
      */
 
-    private NetworkHandler() {
+    public NetworkHandler() {
     }
 
     static URL getURL(Request req) throws Exception {
@@ -115,13 +115,13 @@ public final class NetworkHandler implements InvocationHandler {
         POST post = method.getAnnotation(POST.class);
         PUT put = method.getAnnotation(PUT.class);
         if (get != null) {
-            return generateRequest(get.value(), method, args, (new Request.Builder()).get());
+            return generateRequest(get.value(), method.getParameterAnnotations(), args, (new Request.Builder()).get());
         } else {
             boolean encoded = (method.getAnnotation(FormUrlEncoded.class) != null);
             if (post != null) {
-                return generateRequest(post.value(), method, args, (new Request.Builder()).post().isFormEncoded(encoded));
+                return generateRequest(post.value(), method.getParameterAnnotations(), args, (new Request.Builder()).post().isFormEncoded(encoded));
             } else if (put != null) {
-                return generateRequest(put.value(), method, args, (new Request.Builder()).put().isFormEncoded(encoded));
+                return generateRequest(put.value(), method.getParameterAnnotations(), args, (new Request.Builder()).put().isFormEncoded(encoded));
             } else {
                 throw new IllegalStateException("Don't know what to do.");
             }
@@ -150,8 +150,8 @@ public final class NetworkHandler implements InvocationHandler {
 
 
     //Test
-    public Request generateRequest(String path, Method method, Object[] args, Request.Builder builder) {
-
+    public Request generateRequest(String path, Annotation[][] parameterAnnotations, Object[] args, Request.Builder builder) {
+        if (networkClient == null) networkClient = NetworkClient.getInstance();
         //
         HashMap<String, String> vars = new HashMap<>();
        // String path = ev.value();
@@ -159,9 +159,9 @@ public final class NetworkHandler implements InvocationHandler {
         if (headers == null) {
             headers = networkClient.getHeaders();
         }
-        for (int i = 0; i < method.getParameterAnnotations().length; i++) {
+        for (int i = 0; i < parameterAnnotations.length; i++) {
             if (args[i] == null) continue;
-            Annotation[] annotationM = method.getParameterAnnotations()[i];
+            Annotation[] annotationM = parameterAnnotations[i];
             if (annotationM != null && annotationM.length > 0) {
                 Annotation annotation = annotationM[0];
                 if (annotation instanceof Path) {
@@ -184,7 +184,8 @@ public final class NetworkHandler implements InvocationHandler {
             body = body.substring(1);
         }
         final Request request = builder.headers(headers)
-                .url(NetworkClient.getInstance().getBaseUrl() + path)
+                .url(NetworkClient.getInstance().getBaseUrl() != null ?
+                        NetworkClient.getInstance().getBaseUrl() + path : path)
                 .vars(vars)
                 .body(body).build();
         return request;

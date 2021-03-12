@@ -9,14 +9,14 @@ import com.inappstory.sdk.network.SerializedName;
 
 public class ResourceMappingObject {
     @SerializedName("url")
-    String url;
+    public String url;
     @SerializedName("key")
-    String key;
+    public String key;
     @SerializedName("type")
-    String type;
+    public String type;
 
     @SerializedName("slide_index")
-    Integer index;
+    public Integer index;
 
     public String getType() {
         return type;
@@ -30,5 +30,17 @@ public class ResourceMappingObject {
 
     public String getKey() {
         return key;
+    }
+
+    @Override
+    public int hashCode() {
+        int res = 0;
+        if (url != null) {
+            res += url.hashCode();
+        }
+        if (key != null) {
+            res += key.hashCode();
+        }
+        return res;
     }
 }

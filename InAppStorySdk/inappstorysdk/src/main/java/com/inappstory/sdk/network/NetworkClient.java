@@ -75,6 +75,10 @@ public class NetworkClient {
         return instance;
     }
 
+    public static Context getAppContext() {
+        return appContext;
+    }
+
     private static Context appContext;
 
     public static void setContext(Context context) {

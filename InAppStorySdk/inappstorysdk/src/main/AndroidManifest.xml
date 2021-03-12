@@ -1,20 +1,38 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.inappstory.sdk" >
+    package="com.inappstory.sdk">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
-        android:supportsRtl="true"
-        android:hardwareAccelerated="true"
         android:forceDarkAllowed="true"
-        android:largeHeap="true">
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
+        android:supportsRtl="true">
 
         <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent" />
+
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
+        <receiver
+            android:name=".listwidget.MyWidget"
+            android:icon="@android:drawable/star_big_on"
+            android:label="IAS Widget Test">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="ias.UPDATE_WIDGETS"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/cs_widget_sl_metadata"></meta-data>
+        </receiver>
+
+        <service
+            android:name=".listwidget.GridWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 
 </manifest>

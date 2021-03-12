@@ -27,6 +27,7 @@ public class SubscriberMethodFinder {
 
         subscriberMethods = findUsingReflection(subscriberClass);
         if (subscriberMethods.isEmpty()) {
+
             throw new EventBusException("Subscriber " + subscriberClass
                     + " and its super classes have no public methods with the @CsSubscribe annotation");
         } else {

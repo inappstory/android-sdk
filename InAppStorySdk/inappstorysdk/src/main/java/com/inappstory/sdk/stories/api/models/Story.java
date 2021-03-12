@@ -22,7 +22,7 @@ public class Story implements Parcelable {
     public int id;
 
     public String getTitle() {
-        String tmp = "" + title;
+        String tmp = title != null ? title : "";
         for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
             if (tmp.contains(key)) {
                 tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
@@ -78,7 +78,7 @@ public class Story implements Parcelable {
     public String tags;
 
     public String getSource() {
-        String tmp = "" + source;
+        String tmp = source != null ? source : "";
         for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
             if (tmp.contains(key)) {
                 tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
@@ -202,16 +202,16 @@ public class Story implements Parcelable {
         SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
     }
     @SerializedName("like_functional")
-    private Boolean hasLike;
+    public Boolean hasLike;
 
     @SerializedName("has_audio")
-    private Boolean hasAudio;
+    public Boolean hasAudio;
 
     @SerializedName("favorite_functional")
-    private Boolean hasFavorite;
+    public Boolean hasFavorite;
 
     @SerializedName("share_functional")
-    private Boolean hasShare;
+    public Boolean hasShare;
 
     @SerializedName("slides_duration")
     public List<Integer> durations;

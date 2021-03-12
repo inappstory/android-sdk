@@ -41,6 +41,7 @@ import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.NextStoryPageEvent;
 import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
@@ -296,6 +297,16 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             storiesProgressView.setSlideDuration(event.getIndex(), event.getNewDuration());
             storiesProgressView.forceStartProgress();
             InAppStoryService.getInstance().startTimer(event.getNewDuration(), true);
+        }
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void clearDurationEvent(ClearDurationEvent event) {
+        if (storyId == event.getId()) {
+            Story story = StoryDownloader.getInstance().getStoryById(event.getId());
+            for (int i = 0; i < story.getDurations().size(); i++) {
+                storiesProgressView.setSlideDuration(i, story.getDurations().get(i));
+            }
         }
     }
 

@@ -106,7 +106,7 @@ public class StoriesWebViewManager {
     void innerLoad(Story story) {
         String layout = getLayoutWithFonts(story.getLayout());
         String innerWebData = story.pages.get(index);
-        if (InAppStoryService.getInstance().isConnected()) {
+        if (InAppStoryService.isConnected()) {
             setWebViewSettings(innerWebData, layout);
         }
     }
@@ -115,7 +115,7 @@ public class StoriesWebViewManager {
         if (loadedId == id && loadedIndex == index) return;
         if (InAppStoryManager.getInstance() == null)
             return;
-        if (!InAppStoryService.getInstance().isConnected()) {
+        if (!InAppStoryService.isConnected()) {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
@@ -310,13 +310,13 @@ public class StoriesWebViewManager {
     public void storyClick(String payload) {
         InAppStoryService.getInstance().lastTapEventTime = System.currentTimeMillis();
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
-            if (InAppStoryService.getInstance().isConnected()) {
+            if (InAppStoryService.isConnected()) {
                 CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate()));
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else if (payload.equals("forbidden")) {
-            if (InAppStoryService.getInstance().isConnected()) {
+            if (InAppStoryService.isConnected()) {
                 CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate(), true));
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
