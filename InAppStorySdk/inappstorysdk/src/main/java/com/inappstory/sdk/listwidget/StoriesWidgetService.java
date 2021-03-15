@@ -96,7 +96,7 @@ public class StoriesWidgetService extends RemoteViewsService {
             loadAuth(context, widgetClass);
             return;
         }
-        if (InAppStoryManager.getInstance() == null) {
+        /*if (InAppStoryManager.getInstance() == null) {
             try {
                 new InAppStoryManager.Builder()
                         .userId(cachedSessionData.userId)
@@ -109,7 +109,7 @@ public class StoriesWidgetService extends RemoteViewsService {
             } catch (DataException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         if (NetworkClient.getAppContext() == null) {
             NetworkClient.setContext(context);
         }
