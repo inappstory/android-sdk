@@ -25,6 +25,7 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -37,6 +38,7 @@ import com.inappstory.sdk.stories.events.OpenStoryByIdEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesList extends RecyclerView {

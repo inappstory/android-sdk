@@ -17,21 +17,9 @@
             android:theme="@style/Theme.Transparent" />
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
-        <receiver
-            android:name=".listwidget.MyWidget"
-            android:icon="@android:drawable/star_big_on"
-            android:label="IAS Widget Test">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="ias.UPDATE_WIDGETS"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/cs_widget_sl_metadata"></meta-data>
-        </receiver>
 
         <service
-            android:name=".listwidget.GridWidgetService"
+            android:name=".listwidget.StoriesWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 

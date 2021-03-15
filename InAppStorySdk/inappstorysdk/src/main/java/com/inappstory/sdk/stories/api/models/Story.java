@@ -23,6 +23,7 @@ public class Story implements Parcelable {
 
     public String getTitle() {
         String tmp = title != null ? title : "";
+        if (InAppStoryManager.getInstance() == null) return title;
         for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
             if (tmp.contains(key)) {
                 tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
@@ -79,6 +80,7 @@ public class Story implements Parcelable {
 
     public String getSource() {
         String tmp = source != null ? source : "";
+        if (InAppStoryManager.getInstance() == null) return source;
         for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
             if (tmp.contains(key)) {
                 tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));

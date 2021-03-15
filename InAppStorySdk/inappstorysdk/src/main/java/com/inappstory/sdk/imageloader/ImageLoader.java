@@ -2,7 +2,6 @@ package com.inappstory.sdk.imageloader;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -15,7 +14,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.media.ThumbnailUtils;
-import android.os.Handler;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
@@ -34,9 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.listwidget.MyWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class ImageLoader {

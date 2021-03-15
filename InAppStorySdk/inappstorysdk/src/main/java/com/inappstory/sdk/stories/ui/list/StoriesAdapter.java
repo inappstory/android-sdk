@@ -104,7 +104,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                holder.bind(story.id + " " + story.getTitle(),
+                                holder.bind(story.getTitle(),
                                         story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                                         story.getSource(),
                                         (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,

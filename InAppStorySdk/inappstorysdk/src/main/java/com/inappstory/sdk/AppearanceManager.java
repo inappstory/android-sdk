@@ -47,6 +47,7 @@ public class AppearanceManager {
     private ILoaderView csLoaderView;
     private static WidgetAppearance csWidgetAppearance;
 
+
     private static AppearanceManager mainInstance;
 
     public static AppearanceManager getInstance() {
@@ -69,8 +70,9 @@ public class AppearanceManager {
         return csWidgetAppearance;
     }
 
-    public static void csWidgetAppearance(Integer color, Integer corners) {
+    public static void csWidgetAppearance(Class widgetClass, Integer color, Integer corners) {
         csWidgetAppearance();
+        csWidgetAppearance.widgetClass = widgetClass;
         csWidgetAppearance.textColor = color;
         csWidgetAppearance.corners = corners;
     }

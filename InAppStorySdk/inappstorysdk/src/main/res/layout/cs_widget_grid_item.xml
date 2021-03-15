@@ -8,12 +8,14 @@
     <RelativeLayout
         android:id="@+id/container"
         android:layout_width="70dp"
+        android:clickable="true"
         android:layout_height="90dp">
 
         <ImageView
             android:id="@+id/image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clickable="false"
             android:gravity="center"
             android:scaleType="fitCenter" />
      <!--   <LinearLayout
@@ -24,6 +26,7 @@
             android:id="@+id/title"
             android:layout_width="70dp"
             android:padding="8dp"
+            android:clickable="false"
             android:textSize="11sp"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

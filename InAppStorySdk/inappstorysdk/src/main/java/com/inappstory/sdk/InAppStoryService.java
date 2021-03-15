@@ -34,6 +34,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.listwidget.ListLoadedEvent;
+import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -319,9 +321,27 @@ public class InAppStoryService extends Service {
 
         @Override
         public void onSuccess(final List<Story> response) {
+            try {
+                SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(response));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            CsEventBus.getDefault().post(new ListLoadedEvent());
             if (response == null || response.size() == 0) {
+                if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().widgetClass != null) {
+                    StoriesWidgetService.loadEmpty(getApplicationContext(), AppearanceManager.csWidgetAppearance().widgetClass);
+                }
                 CsEventBus.getDefault().post(new ContentLoadedEvent(true));
             } else {
+                if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().widgetClass != null) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            StoriesWidgetService.loadSuccess(getApplicationContext(), AppearanceManager.csWidgetAppearance().widgetClass);
+                        }
+                    }, 2000);
+                }
+
                 CsEventBus.getDefault().post(new ContentLoadedEvent(false));
             }
             setLocalsOpened(response);

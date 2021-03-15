@@ -15,4 +15,10 @@ public class WidgetAppearance {
 
     Integer textColor;
     Integer corners;
+
+    public Class getWidgetClass() {
+        return widgetClass;
+    }
+
+    Class widgetClass;
 }
