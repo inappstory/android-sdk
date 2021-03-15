@@ -357,6 +357,7 @@ public class InAppStoryManager {
     //Test
     public void setUserId(String userId) throws DataException {
         if (InAppStoryService.getInstance() == null) return;
+        if (userId == null) throw new DataException("'userId' can't be null, you can set '' instead", new Throwable("InAppStoryManager data is not valid"));
         if (userId.length() < 255) {
             if (this.userId.equals(userId)) return;
             localOpensKey = null;
