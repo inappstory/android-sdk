@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.FileLock;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +43,7 @@ public class ImageLoader {
     MemoryCache memoryCache2 = new MemoryCache();
     FileCache fileCache;
     private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
-    private Map<RemoteViews, String> remoteViews = Collections.synchronizedMap(new WeakHashMap<RemoteViews, String>());
+    private Map<RemoteViews, String> remoteViews = Collections.synchronizedMap(new HashMap<RemoteViews, String>());
     ExecutorService executorService;
 
     static ImageLoader loader = null;
@@ -83,7 +85,10 @@ public class ImageLoader {
                 rv.setImageViewBitmap(id, bitmap);
                 //imageView.setImageBitmap(bitmap);
             else {
-                queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
+                bitmap = getWidgetBitmap(url, cornerRadius, true, ratio, null);
+                memoryCache2.put(url,bitmap);
+                rv.setImageViewBitmap(id, bitmap);
+               // queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
                 //  imageView.setImageResource(loader);
             }
         } catch (Exception e) {
@@ -230,6 +235,8 @@ public class ImageLoader {
         //from web
         try {
             Bitmap bitmap = null;
+
+
             URL imageUrl = new URL(url);
             HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
             conn.setConnectTimeout(30000);
@@ -252,6 +259,7 @@ public class ImageLoader {
             addDarkGradient(bitmap);
             if (pixels != null)
                 bitmap = getRoundedCornerBitmap(bitmap, pixels);
+            is.close();
             return bitmap;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -308,6 +316,29 @@ public class ImageLoader {
         } catch (FileNotFoundException e) {
         }
         return null;
+    }
+
+    private Bitmap decodeStream(InputStream stream) {
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(stream, null, o);
+
+        //Find the correct scale value. It should be the power of 2.
+        final int REQUIRED_SIZE = Sizes.dpToPxExt(800);
+        int width_tmp = o.outWidth, height_tmp = o.outHeight;
+        int scale = 1;
+        while (true) {
+            if (width_tmp / 2 < REQUIRED_SIZE || height_tmp / 2 < REQUIRED_SIZE)
+                break;
+            width_tmp /= 2;
+            height_tmp /= 2;
+            scale *= 2;
+        }
+
+        //decode with inSampleSize
+        BitmapFactory.Options o2 = new BitmapFactory.Options();
+        o2.inSampleSize = scale;
+        return BitmapFactory.decodeStream(stream, null, o2);
     }
 
     //Task for the queue
