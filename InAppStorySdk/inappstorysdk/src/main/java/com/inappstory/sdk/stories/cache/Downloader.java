@@ -421,8 +421,11 @@ public class Downloader {
             fileOutput.write(buffer, 0, bufferLength);
         }
         fileOutput.flush();
+        try {
+            lock.release();
+        } catch (Exception e) {
+        }
         fileOutput.close();
-        lock.release();
         return outputFile;
 
     }
