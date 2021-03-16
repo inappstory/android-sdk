@@ -464,12 +464,9 @@ public class StoriesWebView extends WebView {
         loadedId = -1;
         CsEventBus.getDefault().register(this);
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        try {
-            if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                getSettings().setForceDark(FORCE_DARK_OFF);
-            }
-        } catch (Exception e) {
-
+        if (Build.VERSION.SDK_INT >= 29 &&
+                WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            getSettings().setForceDark(FORCE_DARK_OFF);
         }
         setBackgroundColor(getResources().getColor(R.color.black));
         if (Build.VERSION.SDK_INT >= 19) {
