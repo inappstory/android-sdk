@@ -195,6 +195,25 @@ public class ImageLoader {
 
     public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color) {
         if (url == null && color == null) return null;
+        String spixels;
+        String sratio;
+        if (pixels == null) {
+            spixels = memoryCache2.getSettings("pixels");
+            if (spixels != null) {
+                pixels = Integer.parseInt(spixels);
+            }
+        } else {
+            memoryCache2.putSettings("pixels", Integer.toString(pixels));
+        }
+        if (ratio == null) {
+            sratio = memoryCache2.getSettings("ratio");
+            if (sratio != null) {
+                ratio = Float.parseFloat(sratio);
+            }
+        } else {
+            memoryCache2.putSettings("ratio", Float.toString(ratio));
+        }
+
         if (url == null) {
             Bitmap bmp = Bitmap.createBitmap(400, 400, Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(bmp);

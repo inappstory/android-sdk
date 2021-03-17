@@ -107,11 +107,13 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
         if (mWidgetItems.get(position).getImage() != null) {
             ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
                     R.id.image, AppearanceManager.getInstance().csWidgetAppearance().getCorners(),
-                    (1f * container.getLayoutParams().height) / container.getLayoutParams().width);
+                    (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
+                    (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
         } else {
             ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
                     R.id.image, AppearanceManager.getInstance().csWidgetAppearance().getCorners(),
-                    (1f * container.getLayoutParams().height) / container.getLayoutParams().width);
+                    (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
+                            (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
         }
         Intent clickIntent = new Intent();
         clickIntent.putExtra(StoriesWidgetService.POSITION, position);
