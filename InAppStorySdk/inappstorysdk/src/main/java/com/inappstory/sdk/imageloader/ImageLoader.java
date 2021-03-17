@@ -282,8 +282,6 @@ public class ImageLoader {
                 b = getRoundedCornerBitmap(b, pixels);
             return b;
         }
-        if (1 == 1) return null;
-        //from web
         try {
             Bitmap bitmap = null;
 
