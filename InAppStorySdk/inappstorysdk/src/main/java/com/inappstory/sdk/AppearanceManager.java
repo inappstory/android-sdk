@@ -70,11 +70,12 @@ public class AppearanceManager {
         return csWidgetAppearance;
     }
 
-    public static void csWidgetAppearance(Class widgetClass, Integer color, Integer corners) {
+    public static void csWidgetAppearance(Class widgetClass, Integer color, Integer corners, Float ratio) {
         csWidgetAppearance();
         csWidgetAppearance.widgetClass = widgetClass;
         csWidgetAppearance.textColor = color;
         csWidgetAppearance.corners = corners;
+        csWidgetAppearance.ratio = ratio;
     }
 
     public AppearanceManager csListItemHeight(Integer csListItemHeight) {

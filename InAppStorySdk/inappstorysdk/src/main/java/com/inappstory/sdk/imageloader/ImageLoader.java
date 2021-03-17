@@ -250,10 +250,8 @@ public class ImageLoader {
             Canvas canvas = new Canvas(bmp);
             canvas.drawColor(Color.parseColor(color));
             if (getThumbnail) {
-                if (ratio != null && ratio > 1) {
-                    bmp = ThumbnailUtils.extractThumbnail(bmp, 300, (int) (ratio * 300));
-                } else if (ratio != null && ratio > 0 && ratio < 1) {
-                    bmp = ThumbnailUtils.extractThumbnail(bmp, (int) (300 / ratio), 300);
+                if (ratio != null && ratio > 0) {
+                    bmp = ThumbnailUtils.extractThumbnail(bmp, (int)(ratio*300), 300);
                 } else {
                     bmp = ThumbnailUtils.extractThumbnail(bmp, 300, 300);
                 }
@@ -269,10 +267,8 @@ public class ImageLoader {
         Bitmap b = decodeFile(f);
         if (b != null) {
             if (getThumbnail) {
-                if (ratio != null && ratio > 1) {
-                    b = ThumbnailUtils.extractThumbnail(b, 300, (int) (ratio * 300));
-                } else if (ratio != null && ratio > 0 && ratio < 1) {
-                    b = ThumbnailUtils.extractThumbnail(b, (int) (300 / ratio), 300);
+                if (ratio != null && ratio > 0) {
+                    b = ThumbnailUtils.extractThumbnail(b, (int)(ratio*300), 300);
                 } else {
                     b = ThumbnailUtils.extractThumbnail(b, 300, 300);
                 }
@@ -298,10 +294,8 @@ public class ImageLoader {
             is.close();
             bitmap = decodeFile(f);
             if (getThumbnail) {
-                if (ratio != null && ratio > 1) {
-                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, 300, (int) (ratio * 300));
-                } else if (ratio != null && ratio > 0 && ratio < 1) {
-                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int) (300 / ratio), 300);
+                if (ratio != null && ratio > 0) {
+                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int)(ratio*300), 300);
                 } else {
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, 300, 300);
                 }

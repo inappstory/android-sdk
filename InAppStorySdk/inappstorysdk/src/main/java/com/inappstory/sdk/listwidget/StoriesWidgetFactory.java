@@ -109,7 +109,6 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public RemoteViews getViewAt(int position) {
-        Log.e("MyWidget", "getViewAt " + position);
         if (ImageLoader.getInstance() == null) {
             new ImageLoader(mContext);
         }
@@ -125,8 +124,7 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
             if (mWidgetItems.get(position).getImage() != null) {
                 ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
                         R.id.image, AppearanceManager.csWidgetAppearance().getCorners(),
-                        (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
-                                (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
+                        AppearanceManager.csWidgetAppearance().getRatio());
              /*   if (bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()) == null ||
                         bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()).get() == null) {
 
@@ -143,8 +141,7 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
             } else {
                 ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
                         R.id.image, AppearanceManager.csWidgetAppearance().getCorners(),
-                        (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
-                                (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
+                        AppearanceManager.csWidgetAppearance().getRatio());
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -16,6 +16,13 @@ public class WidgetAppearance {
     Integer textColor;
     Integer corners;
 
+    public Float getRatio() {
+        if (ratio == null || ratio <= 0) return 1f;
+        return ratio;
+    }
+
+    Float ratio;
+
     public Class getWidgetClass() {
         return widgetClass;
     }
