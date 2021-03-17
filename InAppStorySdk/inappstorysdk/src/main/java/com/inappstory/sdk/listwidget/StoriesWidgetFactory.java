@@ -3,6 +3,7 @@ package com.inappstory.sdk.listwidget;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -27,6 +28,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -36,9 +38,11 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.lang.ref.SoftReference;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
@@ -47,6 +51,7 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
     private int mAppWidgetId;
 
     public StoriesWidgetFactory(Context context, Intent intent) {
+        Log.e("MyWidget", "StoriesWidgetFactory");
         mContext = context;
         mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
@@ -65,6 +70,7 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
     }
 
     void setStories() {
+        Log.e("MyWidget", "factory setStories");
         if (!SharedPreferencesAPI.hasContext()) {
             SharedPreferencesAPI.setContext(mContext);
         }
@@ -76,16 +82,19 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
     @Override
     public void onCreate() {
 
+        Log.e("MyWidget", "factory create");
     }
 
     @Override
     public void onDataSetChanged() {
-        // TODO Auto-generated method stub
+
+        Log.e("MyWidget", "factory onDataSetChanged");
 
     }
 
     @Override
     public void onDestroy() {
+        Log.e("MyWidget", "factory destroy");
         //  mWidgetItems.clear();
 
     }
@@ -96,24 +105,49 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
         return mWidgetItems.size();
     }
 
+    HashMap<String, SoftReference<Bitmap>> bmps = new HashMap<>();
+
     @Override
     public RemoteViews getViewAt(int position) {
+        Log.e("MyWidget", "getViewAt " + position);
+        if (ImageLoader.getInstance() == null) {
+            new ImageLoader(mContext);
+        }
+        if (bmps == null) bmps = new HashMap<>();
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.cs_widget_grid_item);
         rv.setTextViewText(R.id.title, mWidgetItems.get(position).getTitle());
-        rv.setTextColor(R.id.title, AppearanceManager.getInstance().csWidgetAppearance().getTextColor());
+        rv.setTextColor(R.id.title, AppearanceManager.csWidgetAppearance().getTextColor());
         View view = View.inflate(mContext, R.layout.cs_widget_grid_item, null);
         View container = view.findViewById(R.id.container);
+        Log.e("MyWidget", container.getLayoutParams() + "");
+        try {
 
-        if (mWidgetItems.get(position).getImage() != null) {
-            ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
-                    R.id.image, AppearanceManager.getInstance().csWidgetAppearance().getCorners(),
-                    (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
-                    (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
-        } else {
-            ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
-                    R.id.image, AppearanceManager.getInstance().csWidgetAppearance().getCorners(),
-                    (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
-                            (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
+            if (mWidgetItems.get(position).getImage() != null) {
+                ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
+                        R.id.image, AppearanceManager.csWidgetAppearance().getCorners(),
+                        (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
+                                (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
+             /*   if (bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()) == null ||
+                        bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()).get() == null) {
+
+                    bmps.put(mWidgetItems.get(position).getImage().get(0).getUrl(),
+                            new SoftReference<Bitmap>(ImageLoader.getInstance().getRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0,
+                                    AppearanceManager.csWidgetAppearance().getCorners(),
+                                    (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
+                                            (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null))));
+
+                } else {
+                    rv.setImageViewBitmap(R.id.image, bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()).get());
+                }*/
+
+            } else {
+                ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
+                        R.id.image, AppearanceManager.csWidgetAppearance().getCorners(),
+                        (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
+                                (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         Intent clickIntent = new Intent();
         clickIntent.putExtra(StoriesWidgetService.POSITION, position);
@@ -125,20 +159,20 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public RemoteViews getLoadingView() {
-        // TODO Auto-generated method stub
+        Log.e("MyWidget", "getLoadingView");
         return null;
     }
 
 
     @Override
     public int getViewTypeCount() {
-        // TODO Auto-generated method stub
+        Log.e("MyWidget", "getViewTypeCount");
         return mWidgetItems.size();
     }
 
     @Override
     public long getItemId(int position) {
-        // TODO Auto-generated method stub
+        Log.e("MyWidget", "getItemId " + position);
         return position;
     }
 

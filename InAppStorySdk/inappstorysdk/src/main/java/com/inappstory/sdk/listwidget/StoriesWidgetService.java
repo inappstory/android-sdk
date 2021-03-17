@@ -7,6 +7,7 @@ import android.net.NetworkInfo;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.RemoteViewsService;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,7 +27,11 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 public class StoriesWidgetService extends RemoteViewsService {
 
@@ -35,6 +40,7 @@ public class StoriesWidgetService extends RemoteViewsService {
     }
 
     public static void loadData(Context context) throws DataException {
+        Log.e("MyWidget", "loadData");
         if (AppearanceManager.csWidgetAppearance() == null || AppearanceManager.csWidgetAppearance().getWidgetClass() == null)
             throw new DataException("'widgetClass' must not be null", new Throwable("Widget data is not valid"));
         if (isConnected(context)) {
@@ -118,13 +124,16 @@ public class StoriesWidgetService extends RemoteViewsService {
                 cachedSessionData.tags, null, null).enqueue(new NetworkCallback<List<Story>>() {
             @Override
             public void onSuccess(List<Story> response) {
-                Log.e("MyWidget", "requestSuccess");
                 if (response.size() > 0) {
                     if (!SharedPreferencesAPI.hasContext()) {
                         SharedPreferencesAPI.setContext(context);
                     }
+                    ArrayList<Story> stories = new ArrayList<>();
+                    for (int i = 0; i < Math.min(response.size(), 4); i++) {
+                        stories.add(response.get(i));
+                    }
                     try {
-                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(response));
+                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -132,14 +141,22 @@ public class StoriesWidgetService extends RemoteViewsService {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            Log.e("MyWidget", "requestSuccessLoad");
                             loadSuccess(context, widgetClass);
                         }
-                    }, 3000);
+                    }, 500);
                 } else {
+                    Log.e("MyWidget", "requestSuccessEmpty");
                     loadEmpty(context, widgetClass);
                 }
 
             }
+
+            @Override
+            public void onError(int code, String message) {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            }
+
 
             @Override
             public Type getType() {

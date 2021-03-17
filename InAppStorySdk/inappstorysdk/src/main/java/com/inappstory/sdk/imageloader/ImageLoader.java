@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.media.ThumbnailUtils;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -45,6 +47,7 @@ public class ImageLoader {
     private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     private Map<RemoteViews, String> remoteViews = Collections.synchronizedMap(new HashMap<RemoteViews, String>());
     ExecutorService executorService;
+    ExecutorService widgetImageExecutorService;
 
     static ImageLoader loader = null;
 
@@ -54,7 +57,9 @@ public class ImageLoader {
 
     public ImageLoader(Context context) {
         fileCache = new FileCache(context);
-        executorService = Executors.newFixedThreadPool(5);
+        memoryCache2 = new MemoryCache();
+        executorService = Executors.newFixedThreadPool(1);
+        widgetImageExecutorService = Executors.newFixedThreadPool(1);
         loader = this;
     }
 
@@ -76,24 +81,48 @@ public class ImageLoader {
         }
     }
 
-    public void displayRemoteImage(String url, int loader, RemoteViews rv, int id, int cornerRadius, Float ratio) {
+    public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio) {
         try {
             stub_id = loader;
-           // remoteViews.put(rv, url);
-            Bitmap bitmap = memoryCache2.get(url);
-            if (bitmap != null)
-                rv.setImageViewBitmap(id, bitmap);
+            // remoteViews.put(rv, url);
+            if (memoryCache2 == null) memoryCache2 = new MemoryCache();
+            final Bitmap[] bitmap = {memoryCache2.get(url)};
+            Log.e("MyWidget", url + " " + cornerRadius + " " + ratio);
+            if (bitmap[0] != null)
+                rv.setImageViewBitmap(id, bitmap[0]);
                 //imageView.setImageBitmap(bitmap);
             else {
-                bitmap = getWidgetBitmap(url, cornerRadius, true, ratio, null);
-                memoryCache2.put(url, bitmap);
-                rv.setImageViewBitmap(id, bitmap);
+                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null);
+                memoryCache2.put(url, bitmap[0]);
+                rv.setImageViewBitmap(id, bitmap[0]);
                 // queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
                 //  imageView.setImageResource(loader);
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
+    }
+
+    public Bitmap getRemoteImage(final String url, int loader, final Integer cornerRadius, final Float ratio) {
+        try {
+            stub_id = loader;
+            // remoteViews.put(rv, url);
+            if (memoryCache2 == null) memoryCache2 = new MemoryCache();
+            final Bitmap[] bitmap = {memoryCache2.get(url)};
+            Log.e("MyWidget", url + " " + cornerRadius + " " + ratio);
+            if (bitmap[0] != null)
+                return bitmap[0];
+                //imageView.setImageBitmap(bitmap);
+            else {
+                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null);
+                return bitmap[0];
+                // queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
+                //  imageView.setImageResource(loader);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static String ColorToHex(int color) {
@@ -123,10 +152,10 @@ public class ImageLoader {
     }
 
 
-    public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, int cornerRadius, Float ratio) {
+    public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio) {
         try {
             stub_id = loader;
-           // remoteViews.put(rv, color);
+            // remoteViews.put(rv, color);
             Bitmap bitmap = memoryCache2.get(color);
             if (bitmap != null)
                 rv.setImageViewBitmap(id, bitmap);
@@ -185,6 +214,8 @@ public class ImageLoader {
             OutputStream os = new FileOutputStream(f);
             Utils.CopyStream(is, os);
             os.close();
+            is.close();
+            conn.disconnect();
             bitmap = decodeFile(f);
             return bitmap;
         } catch (Exception ex) {
@@ -251,7 +282,7 @@ public class ImageLoader {
                 b = getRoundedCornerBitmap(b, pixels);
             return b;
         }
-
+        if (1 == 1) return null;
         //from web
         try {
             Bitmap bitmap = null;
@@ -316,7 +347,6 @@ public class ImageLoader {
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(new FileInputStream(f), null, o);
-
             //Find the correct scale value. It should be the power of 2.
             final int REQUIRED_SIZE = Sizes.dpToPxExt(800);
             int width_tmp = o.outWidth, height_tmp = o.outHeight;
@@ -332,8 +362,14 @@ public class ImageLoader {
             //decode with inSampleSize
             BitmapFactory.Options o2 = new BitmapFactory.Options();
             o2.inSampleSize = scale;
-            return BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
+            FileInputStream fileInputStream = new FileInputStream(f);
+                    Bitmap bitmap =  BitmapFactory.decodeStream(fileInputStream, null, o2);
+            fileInputStream.close();
+            return bitmap;
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -493,6 +529,10 @@ public class ImageLoader {
         memoryCache.clear();
         memoryCache2.clear();
         fileCache.clear();
+    }
+
+    public void clearWidgetCache() {
+        memoryCache2.clear();
     }
 
 }

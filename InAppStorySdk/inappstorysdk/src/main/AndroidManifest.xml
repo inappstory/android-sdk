@@ -18,9 +18,6 @@
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
 
-        <service
-            android:name=".listwidget.StoriesWidgetService"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 
 </manifest>

@@ -321,8 +321,12 @@ public class InAppStoryService extends Service {
 
         @Override
         public void onSuccess(final List<Story> response) {
+            ArrayList<Story> stories = new ArrayList<>();
+            for (int i = 0; i < Math.min(response.size(), 4); i++) {
+                stories.add(response.get(i));
+            }
             try {
-                SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(response));
+                SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
             } catch (Exception e) {
                 e.printStackTrace();
             }
