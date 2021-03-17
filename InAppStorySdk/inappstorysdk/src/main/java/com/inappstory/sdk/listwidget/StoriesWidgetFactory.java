@@ -75,11 +75,6 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public void onCreate() {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
     }
 

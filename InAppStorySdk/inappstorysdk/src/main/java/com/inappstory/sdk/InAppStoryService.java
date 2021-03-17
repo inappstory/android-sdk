@@ -339,7 +339,7 @@ public class InAppStoryService extends Service {
                         public void run() {
                             StoriesWidgetService.loadSuccess(getApplicationContext(), AppearanceManager.csWidgetAppearance().widgetClass);
                         }
-                    }, 2000);
+                    }, 500);
                 }
 
                 CsEventBus.getDefault().post(new ContentLoadedEvent(false));

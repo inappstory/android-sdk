@@ -79,16 +79,16 @@ public class ImageLoader {
     public void displayRemoteImage(String url, int loader, RemoteViews rv, int id, int cornerRadius, Float ratio) {
         try {
             stub_id = loader;
-            remoteViews.put(rv, url);
+           // remoteViews.put(rv, url);
             Bitmap bitmap = memoryCache2.get(url);
             if (bitmap != null)
                 rv.setImageViewBitmap(id, bitmap);
                 //imageView.setImageBitmap(bitmap);
             else {
                 bitmap = getWidgetBitmap(url, cornerRadius, true, ratio, null);
-                memoryCache2.put(url,bitmap);
+                memoryCache2.put(url, bitmap);
                 rv.setImageViewBitmap(id, bitmap);
-               // queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
+                // queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
                 //  imageView.setImageResource(loader);
             }
         } catch (Exception e) {
@@ -126,14 +126,15 @@ public class ImageLoader {
     public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, int cornerRadius, Float ratio) {
         try {
             stub_id = loader;
-            remoteViews.put(rv, color);
+           // remoteViews.put(rv, color);
             Bitmap bitmap = memoryCache2.get(color);
             if (bitmap != null)
                 rv.setImageViewBitmap(id, bitmap);
                 //imageView.setImageBitmap(bitmap);
             else {
-                queueRemoteImage(null, rv, id, cornerRadius, ratio, color);
-                //  imageView.setImageResource(loader);
+                bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color);
+                memoryCache2.put(color, bitmap);
+                rv.setImageViewBitmap(id, bitmap);
             }
         } catch (Exception e) {
 
@@ -154,12 +155,12 @@ public class ImageLoader {
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setShader(createShader(bitmap.getWidth(), bitmap.getHeight()));
-        canvas.drawRect(0,0, bitmap.getWidth(), bitmap.getHeight(), paint);
+        canvas.drawRect(0, 0, bitmap.getWidth(), bitmap.getHeight(), paint);
     }
 
     private Shader createShader(int x1, int y1) {
         LinearGradient shader = new LinearGradient(0, 0, 0, y1,
-                new int[] { Color.TRANSPARENT, Color.parseColor("#AA000000")}, null,
+                new int[]{Color.TRANSPARENT, Color.parseColor("#AA000000")}, null,
                 Shader.TileMode.REPEAT);
         return shader;
     }
@@ -246,6 +247,7 @@ public class ImageLoader {
             OutputStream os = new FileOutputStream(f);
             Utils.CopyStream(is, os);
             os.close();
+            is.close();
             bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 1) {
@@ -259,7 +261,6 @@ public class ImageLoader {
             addDarkGradient(bitmap);
             if (pixels != null)
                 bitmap = getRoundedCornerBitmap(bitmap, pixels);
-            is.close();
             return bitmap;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -401,16 +402,8 @@ public class ImageLoader {
 
         @Override
         public void run() {
-            if (remoteImageViewReused(photoToLoad))
-                return;
+
             Bitmap bmp = getWidgetBitmap(photoToLoad.url, photoToLoad.cornerRadius, true, photoToLoad.ratio, photoToLoad.color);
-            if (photoToLoad.url != null)
-                memoryCache2.put(photoToLoad.url, bmp);
-            else if (photoToLoad.color != null) {
-                memoryCache2.put(photoToLoad.color, bmp);
-            }
-            if (remoteImageViewReused(photoToLoad))
-                return;
             photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bmp);
            /* RemoteBitmapDisplayer bd = new RemoteBitmapDisplayer(bmp, photoToLoad);
             Activity a = (Activity) photoToLoad.imageView.getContext();
@@ -468,8 +461,7 @@ public class ImageLoader {
         }
 
         public void run() {
-            if (remoteImageViewReused(photoToLoad))
-                return;
+
             if (bitmap != null)
                 photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bitmap);
             //photoToLoad.imageView.setImageBitmap(bitmap);
