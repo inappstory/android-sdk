@@ -2,6 +2,8 @@ package com.inappstory.sdk;
 
 import android.graphics.Color;
 
+import com.inappstory.sdk.network.Ignore;
+
 public class WidgetAppearance {
     public Integer getTextColor() {
         if (textColor == null) return Color.WHITE;
@@ -27,5 +29,6 @@ public class WidgetAppearance {
         return widgetClass;
     }
 
+    @Ignore
     Class widgetClass;
 }

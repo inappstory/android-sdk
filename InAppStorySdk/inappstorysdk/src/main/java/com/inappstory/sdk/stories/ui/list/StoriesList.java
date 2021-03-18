@@ -6,6 +6,8 @@ import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -61,9 +63,12 @@ public class StoriesList extends RecyclerView {
         init(attrs);
     }
 
+    StoryTouchListener storyTouchListener = null;
+
     public interface OnFavoriteItemClick {
         void onClick();
     }
+
 
     public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -100,6 +105,9 @@ public class StoriesList extends RecyclerView {
 
             }
         });
+        addOnItemTouchListener(
+                new RecyclerTouchListener(
+                        getContext()));
         //getRecycledViewPool().setMaxRecycledViews(6, 0);
     }
 
@@ -178,6 +186,59 @@ public class StoriesList extends RecyclerView {
             loadStories();
         } catch (DataException e) {
             e.printStackTrace();
+        }
+    }
+
+    public Object touchLock = new Object();
+
+    public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
+        private GestureDetector gestureDetector;
+        private StoryTouchListener touchListener;
+        View lastChild = null;
+
+        public RecyclerTouchListener(Context context) {
+            gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+
+            });
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            View child = rv.findChildViewUnder(e.getX(), e.getY());
+            if (appearanceManager == null) {
+                appearanceManager = AppearanceManager.getInstance();
+            }
+            if (touchListener == null)
+                touchListener = appearanceManager.csStoryTouchListener();
+            if (touchListener != null) {
+                if (child != null && e.getAction() == MotionEvent.ACTION_DOWN) {
+                    touchListener.touchDown(child, rv.getChildPosition(child));
+                    lastChild = child;
+                } else if (lastChild != null && (e.getAction() == MotionEvent.ACTION_CANCEL ||
+                        e.getAction() == MotionEvent.ACTION_UP)) {
+                    touchListener.touchUp(lastChild, rv.getChildPosition(lastChild));
+                } else if (e.getAction() == MotionEvent.ACTION_MOVE && lastChild != null) {
+                    if (child == null || child != lastChild) {
+                        touchListener.touchUp(lastChild, rv.getChildPosition(lastChild));
+                        lastChild = null;
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
         }
     }
 

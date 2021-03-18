@@ -3,6 +3,9 @@ package com.inappstory.sdk;
 import android.graphics.Color;
 import android.graphics.Typeface;
 
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
@@ -45,6 +48,7 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private ILoaderView csLoaderView;
+    private StoryTouchListener storyTouchListener;
     private static WidgetAppearance csWidgetAppearance;
 
 
@@ -76,12 +80,28 @@ public class AppearanceManager {
         csWidgetAppearance.textColor = color;
         csWidgetAppearance.corners = corners;
         csWidgetAppearance.ratio = ratio;
+        try {
+            SharedPreferencesAPI.saveString("lastWidgetAppearance", JsonParser.getJson(csWidgetAppearance));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public AppearanceManager csListItemHeight(Integer csListItemHeight) {
         this.csListItemHeight = csListItemHeight;
         return AppearanceManager.this;
     }
+
+    public AppearanceManager csStoryTouchListener(StoryTouchListener storyTouchListener) {
+        this.storyTouchListener = storyTouchListener;
+        return AppearanceManager.this;
+    }
+    public StoryTouchListener csStoryTouchListener() {
+        return this.storyTouchListener;
+    }
+
+
+
 
     public AppearanceManager csListItemWidth(Integer csListItemWidth) {
         this.csListItemWidth = csListItemWidth;

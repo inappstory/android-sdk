@@ -20,6 +20,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.WidgetAppearance;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.exceptions.DataException;
@@ -115,7 +116,14 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
         if (bmps == null) bmps = new HashMap<>();
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.cs_widget_grid_item);
         rv.setTextViewText(R.id.title, mWidgetItems.get(position).getTitle());
-        rv.setTextColor(R.id.title, AppearanceManager.csWidgetAppearance().getTextColor());
+        WidgetAppearance widgetAppearance = AppearanceManager.csWidgetAppearance();
+        if (widgetAppearance.getWidgetClass() == null) {
+            widgetAppearance = JsonParser.fromJson(
+                    SharedPreferencesAPI.getString("lastWidgetAppearance"), WidgetAppearance.class);
+            if (widgetAppearance == null)
+                widgetAppearance = AppearanceManager.csWidgetAppearance();
+        }
+        rv.setTextColor(R.id.title, widgetAppearance.getTextColor());
         View view = View.inflate(mContext, R.layout.cs_widget_grid_item, null);
         View container = view.findViewById(R.id.container);
         Log.e("MyWidget", container.getLayoutParams() + "");
@@ -123,8 +131,8 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
             if (mWidgetItems.get(position).getImage() != null) {
                 ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
-                        R.id.image, AppearanceManager.csWidgetAppearance().getCorners(),
-                        AppearanceManager.csWidgetAppearance().getRatio());
+                        R.id.image, widgetAppearance.getCorners(),
+                        widgetAppearance.getRatio());
              /*   if (bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()) == null ||
                         bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()).get() == null) {
 
@@ -140,8 +148,8 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
             } else {
                 ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
-                        R.id.image, AppearanceManager.csWidgetAppearance().getCorners(),
-                        AppearanceManager.csWidgetAppearance().getRatio());
+                        R.id.image, widgetAppearance.getCorners(),
+                        widgetAppearance.getRatio());
             }
         } catch (Exception e) {
             e.printStackTrace();

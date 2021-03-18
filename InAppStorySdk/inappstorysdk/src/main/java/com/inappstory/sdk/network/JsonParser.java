@@ -15,18 +15,22 @@ public class JsonParser {
     private static <T> T fromJson(JSONObject jsonObject, Class<T> typeOfT) throws Exception {
         T res = typeOfT.newInstance();
         for (Field field : typeOfT.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) continue;
             field.setAccessible(true);
+            if (field.getAnnotation(Ignore.class) != null)
+                continue;
             String name = field.getName();
             if (field.getAnnotation(SerializedName.class) != null) {
                 name = field.getAnnotation(SerializedName.class).value();
             }
-            if (!jsonObject.has(name) || jsonObject.get(name) == null || jsonObject.get(name).toString().equals("null")) continue;
+            if (!jsonObject.has(name) || jsonObject.get(name) == null || jsonObject.get(name).toString().equals("null"))
+                continue;
             if (field.getType().equals(Integer.TYPE) || field.getType().equals(Integer.class)) {
                 field.set(res, new Integer(jsonObject.getInt(name)));
             } else if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class)) {
                 field.set(res, new Long(jsonObject.getLong(name)));
             } else if (field.getType().equals(Character.TYPE) || field.getType().equals(Character.class)) {
-                field.set(res, new Character((char)jsonObject.getInt(name)));
+                field.set(res, new Character((char) jsonObject.getInt(name)));
             } else if (field.getType().equals(Boolean.TYPE) || field.getType().equals(Boolean.class)) {
                 field.set(res, new Boolean(jsonObject.getBoolean(name)));
             } else if (field.getType().equals(Byte.TYPE) || field.getType().equals(Byte.class)) {
@@ -111,9 +115,9 @@ public class JsonParser {
                             || typeOfT.equals(Short.class) || typeOfT.equals(Long.class)
                             || typeOfT.equals(Byte.class) || typeOfT.equals(Float.class)
                             || typeOfT.equals(Double.class) || typeOfT.equals(String.class)) {
-                        res.add((T)obj);
+                        res.add((T) obj);
                     } else {
-                        res.add(fromJson((JSONObject)obj, typeOfT));
+                        res.add(fromJson((JSONObject) obj, typeOfT));
                     }
                 }
             } else {
@@ -142,7 +146,7 @@ public class JsonParser {
                     || typeOfT.equals(Short.class) || typeOfT.equals(Long.class)
                     || typeOfT.equals(Byte.class) || typeOfT.equals(Float.class)
                     || typeOfT.equals(Double.class) || typeOfT.equals(String.class)) {
-                return (T)object;
+                return (T) object;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,8 +157,8 @@ public class JsonParser {
     public static String getJson(Object instance) throws Exception {
         if (instance instanceof List || instance instanceof ArrayList) {
             JSONArray arr = new JSONArray();
-            for (int i = 0; i < ((List)instance).size(); i++) {
-                arr.put(getJsonObject(((List)instance).get(i)));
+            for (int i = 0; i < ((List) instance).size(); i++) {
+                arr.put(getJsonObject(((List) instance).get(i)));
             }
             return arr.toString();
         } else {
@@ -177,6 +181,9 @@ public class JsonParser {
             if (Modifier.isStatic(field.getModifiers())) continue;
             field.setAccessible(true);
             String name = field.getName();
+            if (field.getAnnotation(Ignore.class) != null) {
+                continue;
+            }
             if (field.getAnnotation(SerializedName.class) != null) {
                 name = field.getAnnotation(SerializedName.class).value();
             }
