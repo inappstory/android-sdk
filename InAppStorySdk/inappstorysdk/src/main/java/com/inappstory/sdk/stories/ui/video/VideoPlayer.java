@@ -36,7 +36,9 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     }
 
     public void loadVideo(String path) {
-
+        if (this.url == null || !this.url.equals(path)) {
+            file = null;
+        }
         this.url = path;
         isLoaded = true;
 
@@ -66,7 +68,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             mp.stop();
             mp.reset();
             mp.release();
-            file = null;
             mp = null;
         }
 
@@ -81,7 +82,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             mp.stop();
             mp.reset();
             mp.release();
-            file = null;
             mp = null;
         }
     }
