@@ -26,7 +26,7 @@ public class ApiSettings {
     private String cacheDirPath;
     private String cmsId;
     private String cmsKey;
-    private String cmsUrl = "";
+    private String cmsUrl;
 
 
     public String getWebUrl() {

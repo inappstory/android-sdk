@@ -66,10 +66,24 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             mp.stop();
             mp.reset();
             mp.release();
+            file = null;
             mp = null;
         }
 
         return false;
+    }
+
+    public void release() {
+        if (mp != null) {
+            // this.surface.release();
+            //surface.release();
+
+            mp.stop();
+            mp.reset();
+            mp.release();
+            file = null;
+            mp = null;
+        }
     }
 
     @Override
@@ -79,7 +93,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     File file = null;
 
     public void prepareVideo(SurfaceTexture t) {
-
         this.surface = new Surface(t);
         if (mp == null)
             mp = new MediaPlayer();

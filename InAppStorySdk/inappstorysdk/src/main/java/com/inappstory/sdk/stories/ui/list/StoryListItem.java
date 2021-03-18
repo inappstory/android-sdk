@@ -348,9 +348,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 }
             }
             if (video != null) {
+                video.release();
                 video.loadVideo(videoUrl);
             }
         } else {
+            if (video != null) {
+                video.release();
+            }
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
