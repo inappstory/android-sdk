@@ -1,6 +1,7 @@
 package com.inappstory.sdk.network;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.lang.reflect.ParameterizedType;
 import java.net.SocketException;
@@ -133,6 +134,7 @@ public final class Request<T> {
     }
 
     public void enqueue(final Callback callback) {
+        Log.e("MyWidget", "enqueue");
         new AsyncTask<Void, String, Response>() {
             @Override
             protected Response doInBackground(Void... voids) {
@@ -140,10 +142,13 @@ public final class Request<T> {
                 try {
                     s = NetworkHandler.doRequest(Request.this);
                 } catch (SocketTimeoutException e) {
+                    e.printStackTrace();
                     s = new Response.Builder().code(-1).errorBody(e.getMessage()).build();
                 } catch (SocketException e) {
+                    e.printStackTrace();
                     s = new Response.Builder().code(-2).errorBody(e.getMessage()).build();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     s = new Response.Builder().code(-3).errorBody(e.getMessage()).build();
                 }
                 return s;
