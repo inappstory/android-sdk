@@ -118,6 +118,9 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
         rv.setTextViewText(R.id.title, mWidgetItems.get(position).getTitle());
         WidgetAppearance widgetAppearance = AppearanceManager.csWidgetAppearance();
         if (widgetAppearance.getWidgetClass() == null) {
+            if (!SharedPreferencesAPI.hasContext()) {
+                SharedPreferencesAPI.setContext(mContext);
+            }
             widgetAppearance = JsonParser.fromJson(
                     SharedPreferencesAPI.getString("lastWidgetAppearance"), WidgetAppearance.class);
             if (widgetAppearance == null)

@@ -6,6 +6,22 @@ public class BaseOuterEvent {
     String tags;
     int slidesCount;
 
+    public int getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public int getSlidesCount() {
+        return slidesCount;
+    }
+
     public BaseOuterEvent(int id, String title, String tags, int slidesCount) {
         this.id = id;
         this.title = title;

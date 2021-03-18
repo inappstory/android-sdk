@@ -1,6 +1,10 @@
 package com.inappstory.sdk.stories.outerevents;
 
 public class ClickOnStory extends BaseOuterEvent {
+    public int getSource() {
+        return source;
+    }
+
     int source;
 
     public static final int LIST = 2;
