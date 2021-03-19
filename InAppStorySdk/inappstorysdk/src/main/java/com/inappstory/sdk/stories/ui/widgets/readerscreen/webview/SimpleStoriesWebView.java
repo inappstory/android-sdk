@@ -154,7 +154,7 @@ public class SimpleStoriesWebView extends WebView {
         loadUrl("about:blank");
         manager.loadedId = -1;
         manager.loadedIndex = -1;
-        onPause();
+      //  onPause();
         removeAllViews();
         destroyDrawingCache();
     }

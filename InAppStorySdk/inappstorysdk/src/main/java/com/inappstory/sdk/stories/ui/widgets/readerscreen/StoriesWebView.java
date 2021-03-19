@@ -445,7 +445,7 @@ public class StoriesWebView extends WebView {
         clearCache(true);
         loadUrl("about:blank");
 
-        onPause();
+        //onPause();
         removeAllViews();
         destroyDrawingCache();
         //  pauseTimers();
