@@ -205,12 +205,16 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         List<FavoriteImage> favImages = InAppStoryService.getInstance().favoriteImages;
         int halfHeight = Sizes.dpToPxExt(55);
         int halfWidth = Sizes.dpToPxExt(55);
+        int height = Sizes.dpToPxExt(110);
+        int width = Sizes.dpToPxExt(110);
         if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
                 && manager.csListItemInterface().getVideoView() == null)) {
             if (manager.csListItemHeight() != null) {
+                height = manager.csListItemHeight() - Sizes.dpToPxExt(10);
                 halfHeight = manager.csListItemHeight() / 2 - Sizes.dpToPxExt(5);
             }
             if (manager.csListItemWidth() != null) {
+                width = manager.csListItemWidth() - Sizes.dpToPxExt(10);
                 halfWidth = manager.csListItemWidth() / 2 - Sizes.dpToPxExt(5);
             }
         }
@@ -233,7 +237,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 case 2:
                     piece2 = new RelativeLayout.LayoutParams(halfWidth,
                             RelativeLayout.LayoutParams.MATCH_PARENT);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(halfWidth,
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width-halfWidth,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     image2.setLayoutParams(piece2);
@@ -245,13 +249,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     break;
                 case 3:
                     piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
+                            height - halfHeight);
                     piece3 = new RelativeLayout.LayoutParams(halfWidth,
                             halfHeight);
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(halfWidth,
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
@@ -265,8 +269,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 default:
 
                     piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
-                    piece3 = new RelativeLayout.LayoutParams(halfWidth,
+                            height - halfHeight);
+                    piece3 = new RelativeLayout.LayoutParams(width - halfWidth,
                             halfHeight);
                     piece4 = new RelativeLayout.LayoutParams(halfWidth,
                             halfHeight);
@@ -275,8 +279,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
                     piece4.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     piece4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight));
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
+                            height - halfHeight));
                     image2.setLayoutParams(piece2);
                     image3.setLayoutParams(piece3);
                     image4.setLayoutParams(piece4);

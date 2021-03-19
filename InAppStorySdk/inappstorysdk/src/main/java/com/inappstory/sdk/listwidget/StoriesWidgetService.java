@@ -3,7 +3,10 @@ package com.inappstory.sdk.listwidget;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.RemoteViewsService;
@@ -52,9 +55,20 @@ public class StoriesWidgetService extends RemoteViewsService {
 
     static boolean isConnected(Context context) {
         try {
-            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo info = cm.getActiveNetworkInfo();
-            return (info != null && info.isConnected());
+            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Network nw = connectivityManager.getActiveNetwork();
+                if (nw == null) return false;
+                NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(nw);
+                return actNw != null && (
+                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
+                                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH));
+            } else {
+                NetworkInfo nwInfo = connectivityManager.getActiveNetworkInfo();
+                return nwInfo != null && nwInfo.isConnected();
+            }
         } catch (Exception e) {
             return true;
         }
