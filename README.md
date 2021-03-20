@@ -19,9 +19,10 @@
 
     implementation 'com.github.inappstory:android-sdk:0.1.19'
 
-Также для корректной работы в dependencies нужно добавить библиотеку GSON:
+Также для корректной работы в dependencies нужно добавить :
 
-    implementation 'com.google.code.gson:gson:2.8.6'    
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.webkit:webkit:1.4.0'  
 
 ##### Дополнительные ограничения
 
@@ -157,6 +158,7 @@
     int csListReadedItemBorderColor - цвет рамки для прочитанной ячейки.
 
     int csListItemMargin - отступ между ячейками.
+    
 
     boolean csShowStatusBar - отображаем ли статусбар при открытии ридера.
 
@@ -181,7 +183,7 @@
         .csListItemTitleColor(Color.BLUE)
         .csListItemTitleSize(Sizes.dpToPxExt(20))
 
-Также помимо этого в AppearanceManager есть 3 интерфейса: 
+Также помимо этого в AppearanceManager есть 4 интерфейса: 
 1) `IStoriesListItem csListItemInterface`, используется для полной кастомизации элементов списка
 
     interface IStoriesListItem {
@@ -301,6 +303,14 @@
 
         public interface ILoaderView {
             View getView();
+        }
+        
+4) `StoryTouchListener csStoryTouchListener` - используется для добавления обработки клика на ячейки списков сториз (например, для анимации)
+
+        public interface StoryTouchListener {
+            void touchDown(View view, int position); //View - ячейка списка, position - позиция в списке
+
+            void touchUp(View view, int position);
         }
 
 Этот интерфейс необходимо задавать для глобального AppearanceManager.
