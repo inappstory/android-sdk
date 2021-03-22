@@ -256,6 +256,7 @@ public class StoriesList extends RecyclerView {
         }
         if (layoutManager instanceof LinearLayoutManager) {
             final int ind = adapter.getIndexById(event.getId());
+            if (ind == -1) return;
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
 
             if (ind >= 0) {

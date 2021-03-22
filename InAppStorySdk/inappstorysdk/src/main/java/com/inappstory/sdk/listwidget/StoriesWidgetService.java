@@ -18,9 +18,11 @@ import androidx.annotation.Nullable;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.WidgetAppearance;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -42,10 +44,24 @@ public class StoriesWidgetService extends RemoteViewsService {
         return INSTANCE;
     }
 
-    public static void loadData(Context context) throws DataException {
-        Log.e("MyWidget", "loadData");
+
+    private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
+    private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
+
+    public static void loadData(@NonNull Context context) throws DataException {
         if (AppearanceManager.csWidgetAppearance() == null || AppearanceManager.csWidgetAppearance().getWidgetClass() == null)
             throw new DataException("'widgetClass' must not be null", new Throwable("Widget data is not valid"));
+        if (ApiSettings.getInstance().getCmsUrl() == null) {
+            ApiSettings
+                    .getInstance()
+                    .cacheDirPath(context.getCacheDir().getAbsolutePath())
+                    .cmsKey(context.getResources().getString(R.string.csApiKey))
+                    .setWebUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
+                            "https://api.test.inappstory.com/" : "https://api.inappstory.com/")
+                    .cmsUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
+                            "https://api.test.inappstory.com/" : "https://api.inappstory.com/");
+        }
+
         if (isConnected(context)) {
             loadList(context, AppearanceManager.csWidgetAppearance().getWidgetClass());
         } else {

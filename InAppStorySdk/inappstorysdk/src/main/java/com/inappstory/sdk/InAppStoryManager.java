@@ -498,7 +498,7 @@ public class InAppStoryManager {
     public OnboardingLoadedListener onboardLoadedListener;
     public OnboardingLoadedListener singleLoadedListener;
 
-    private void showLoadedOnboardings(List<Story> response, final Context outerContext, final AppearanceManager manager) {
+    private void showLoadedOnboardings(List<Story> response, Context outerContext, final AppearanceManager manager) {
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0));
             if (onboardLoadedListener != null) {
@@ -515,7 +515,7 @@ public class InAppStoryManager {
         StoryDownloader.getInstance().uploadingAdditional(stories);
         StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                 storiesIds.get(0));
-        if (Sizes.isTablet() && outerContext != null) {
+        if (Sizes.isTablet() && outerContext != null && outerContext instanceof AppCompatActivity) {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", 0);

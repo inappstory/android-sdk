@@ -529,8 +529,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                     storiesViewPager.getCurrentItem() + 1));
             storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
         } else {
-            if (!StoryDownloader.getInstance().findItemByStoryId(currentIds.get(storiesViewPager.getCurrentItem())).disableClose)
-                CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+            // if (!StoryDownloader.getInstance().findItemByStoryId(currentIds.get(storiesViewPager.getCurrentItem())).disableClose)
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
         }
     }
 

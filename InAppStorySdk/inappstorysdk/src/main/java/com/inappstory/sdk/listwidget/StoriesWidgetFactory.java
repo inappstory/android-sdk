@@ -114,8 +114,16 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
             new ImageLoader(mContext);
         }
         if (bmps == null) bmps = new HashMap<>();
+        View view = View.inflate(mContext, R.layout.cs_widget_grid_item, null);
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.cs_widget_grid_item);
         rv.setTextViewText(R.id.title, mWidgetItems.get(position).getTitle());
+        View container = view.findViewById(R.id.container);
+        View title = view.findViewById(R.id.title);
+        View image = view.findViewById(R.id.image);
+        Float containerRatio = null;
+        if (container != null)
+            containerRatio = container.getLayoutParams() != null && container.getLayoutParams().width > 0 ?
+                    container.getLayoutParams().width / (1f * container.getLayoutParams().height) : null;
         WidgetAppearance widgetAppearance = AppearanceManager.csWidgetAppearance();
         if (widgetAppearance.getWidgetClass() == null) {
             if (!SharedPreferencesAPI.hasContext()) {
@@ -123,44 +131,39 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
             }
             widgetAppearance = JsonParser.fromJson(
                     SharedPreferencesAPI.getString("lastWidgetAppearance"), WidgetAppearance.class);
-            if (widgetAppearance == null)
+            if (widgetAppearance == null) {
                 widgetAppearance = AppearanceManager.csWidgetAppearance();
-        }
-        rv.setTextColor(R.id.title, widgetAppearance.getTextColor());
-        View view = View.inflate(mContext, R.layout.cs_widget_grid_item, null);
-        View container = view.findViewById(R.id.container);
-        Log.e("MyWidget", container.getLayoutParams() + "");
-        try {
-
-            if (mWidgetItems.get(position).getImage() != null) {
-                ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
-                        R.id.image, widgetAppearance.getCorners(),
-                        widgetAppearance.getRatio());
-             /*   if (bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()) == null ||
-                        bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()).get() == null) {
-
-                    bmps.put(mWidgetItems.get(position).getImage().get(0).getUrl(),
-                            new SoftReference<Bitmap>(ImageLoader.getInstance().getRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0,
-                                    AppearanceManager.csWidgetAppearance().getCorners(),
-                                    (container.getLayoutParams() != null && container.getLayoutParams().width != 0 ?
-                                            (1f * container.getLayoutParams().height) / container.getLayoutParams().width : null))));
-
-                } else {
-                    rv.setImageViewBitmap(R.id.image, bmps.get(mWidgetItems.get(position).getImage().get(0).getUrl()).get());
-                }*/
-
-            } else {
-                ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
-                        R.id.image, widgetAppearance.getCorners(),
-                        widgetAppearance.getRatio());
+            } else if (widgetAppearance.getRatio() == null ||
+                    (containerRatio != null && containerRatio != widgetAppearance.getRatio())) {
+                widgetAppearance.setRatio(containerRatio);
+                widgetAppearance.save();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+        if (title != null && widgetAppearance.getTextColor() != null)
+            rv.setTextColor(R.id.title, widgetAppearance.getTextColor());
+        if (image != null)
+            try {
+
+                if (mWidgetItems.get(position).getImage() != null) {
+                    ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
+                            R.id.image, widgetAppearance.getCorners(),
+                            containerRatio != null ?
+                                    containerRatio : widgetAppearance.getRatio());
+                } else {
+                    ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
+                            R.id.image, widgetAppearance.getCorners(),
+                            containerRatio != null ?
+                                    containerRatio : widgetAppearance.getRatio());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         Intent clickIntent = new Intent();
         clickIntent.putExtra(StoriesWidgetService.POSITION, position);
         clickIntent.putExtra(StoriesWidgetService.ID, mWidgetItems.get(position).id);
-        rv.setOnClickFillInIntent(R.id.container, clickIntent);
+        if (container != null)
+            rv.setOnClickFillInIntent(R.id.container, clickIntent);
         return rv;
     }
 

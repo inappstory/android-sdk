@@ -210,9 +210,16 @@ public class StoriesActivity extends AppCompatActivity {
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        if (InAppStoryManager.getInstance() == null) return;
-        if (InAppStoryService.getInstance() == null) return;
+
         super.onCreate(savedInstanceState1);
+        if (InAppStoryManager.getInstance() == null) {
+            finishActivityWithoutAnimation();
+            return;
+        }
+        if (InAppStoryService.getInstance() == null) {
+            finishActivityWithoutAnimation();
+            return;
+        }
 
         View view = getCurrentFocus();
         if (view != null) {
@@ -353,8 +360,8 @@ public class StoriesActivity extends AppCompatActivity {
     public void swipeDownEvent(SwipeDownEvent event) {
         if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && InAppStoryManager.getInstance().closeOnSwipe()) {
-            //finishActivityWithCustomAnimation(0, R.anim.popup_hide);
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
+            if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
+                CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }
 

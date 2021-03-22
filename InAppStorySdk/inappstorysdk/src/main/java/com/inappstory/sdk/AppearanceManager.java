@@ -1,7 +1,10 @@
 package com.inappstory.sdk;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+
+import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -74,17 +77,16 @@ public class AppearanceManager {
         return csWidgetAppearance;
     }
 
-    public static void csWidgetAppearance(Class widgetClass, Integer color, Integer corners, Float ratio) {
+    public static void csWidgetAppearance(@NonNull Context context,
+                                          @NonNull Class widgetClass,
+                                          Integer corners,
+                                          Boolean sandbox) {
         csWidgetAppearance();
         csWidgetAppearance.widgetClass = widgetClass;
-        csWidgetAppearance.textColor = color;
         csWidgetAppearance.corners = corners;
-        csWidgetAppearance.ratio = ratio;
-        try {
-            SharedPreferencesAPI.saveString("lastWidgetAppearance", JsonParser.getJson(csWidgetAppearance));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        csWidgetAppearance.context = context;
+        csWidgetAppearance.sandbox = sandbox;
+        csWidgetAppearance.save();
     }
 
     public AppearanceManager csListItemHeight(Integer csListItemHeight) {
