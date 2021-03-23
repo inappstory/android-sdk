@@ -513,7 +513,180 @@
             }
         };
         
+##### Виджет
 
+При создании виджета есть возможность добавления списка сториз. При этом будут отображены первые 4 элемента списка.
+Для этого необходимо задать свойства списка с помощью метода: 
+
+    AppearanceManager.csWidgetAppearance(Context context, //контекст, лучше всего передавать контекст виджета, обязательный параметр 
+                                        Class widgetClass //класс виджета (WidgetName.class), обязательный параметр 
+                                        Integer itemCornerRadius, //радиус углов ячеек списка, опционально 
+                                        Boolean sandbox) //тестовый или продуктовый сервер для подключения, опционально
+
+Список представляет из себя GridView, поэтому при разметке виджета необходимо добавить соответствующий элемент, например
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+        ...
+        <GridView
+            android:id="@+id/storiesGrid"
+            android:layout_width="320dp"
+            android:layout_height="90dp"
+            android:layout_margin="8dp"
+            android:horizontalSpacing="6dp"
+            android:numColumns="4"
+            android:verticalSpacing="6dp" />
+        ...
+    </LinearLayout>
+
+В файле манифеста виджет необходимо задать фильтр на события
+
+    <receiver
+        android:name=".MyWidget"
+        android:label="MyWidget">
+        <intent-filter>
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            <action android:name="ias_w.UPDATE_WIDGETS"/> //приходит, когда возникает необходимость подгрузить список с сервера
+            <action android:name="ias_w.UPDATE_SUCCESS_WIDGETS"/> //приходит в случае успешного получения непустого списка сториз с сервера
+            <action android:name="ias_w.UPDATE_NO_CONNECTION"/> //приходит в случае если при попытке получить список с сервера не удалось соединиться с интернетом
+            <action android:name="ias_w.UPDATE_EMPTY_WIDGETS"/> //приходит в случае получения пустого списка сториз с сервера
+            <action android:name="ias_w.UPDATE_AUTH"/> //приходит в случае если пользователь не авторизован в InAppStorySDK
+            <action android:name="ias_w.CLICK_ITEM"/> //приходит при нажатии на элемент списка сториз виджета
+        </intent-filter>
+        <meta-data
+            android:name="android.appwidget.provider"
+            android:resource="@xml/widget_metadata"/>                 
+    </receiver>
+
+Соответствующие событиям константы заданы следующим образом:
+
+    public static final String UPDATE = "ias_w.UPDATE_WIDGETS";
+    public static final String CLICK_ITEM = "ias_w.CLICK_ITEM";
+    public static final String POSITION = "item_position";
+    public static final String ID = "item_id";
+    public static final String UPDATE_SUCCESS = "ias_w.UPDATE_SUCCESS_WIDGETS";
+    public static final String UPDATE_EMPTY = "ias_w.UPDATE_EMPTY_WIDGETS";
+    public static final String UPDATE_NO_CONNECTION = "ias_w.UPDATE_NO_CONNECTION";
+    public static final String UPDATE_AUTH = "ias_w.UPDATE_AUTH";
+
+Таким образом в методе onReceive виджета можно подписаться на них, например
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equalsIgnoreCase(UPDATE_SUCCESS)) {
+            createSuccessData(context);
+        } else if (intent.getAction().equalsIgnoreCase(UPDATE)) {
+            try {
+                StoriesWidgetService.loadData(context);
+            } catch (DataException e) {
+                e.printStackTrace();
+            }
+        } else if (intent.getAction().equalsIgnoreCase(UPDATE_EMPTY)) {
+            createEmptyWidget();
+        } else if (intent.getAction().equalsIgnoreCase(UPDATE_AUTH)) {
+            createAuthWidget();
+        } else if (intent.getAction().equalsIgnoreCase(UPDATE_NO_CONNECTION)) {
+            createNoConnectionWidget();
+        } else if (intent.getAction().equalsIgnoreCase(CLICK_ITEM)) {
+            int itemId = intent.getIntExtra(StoriesWidgetService.ID, -1);
+            int itemPos = intent.getIntExtra(StoriesWidgetService.POSITION, -1);
+            if (itemPos != -1) {
+                Toast.makeText(context, "Clicked on item " + itemPos + ", id " + itemId,
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+        super.onReceive(context, intent);
+    }
+
+Пример функции createSuccessData():
+
+    void createSuccessData(final Context context) {
+        ComponentName thisAppWidget = new ComponentName(
+                context.getPackageName(), getClass().getName());
+        final AppWidgetManager appWidgetManager = AppWidgetManager
+                .getInstance(context);
+        final int appWidgetIds[] = appWidgetManager.getAppWidgetIds(thisAppWidget);
+        for (int i = 0; i < appWidgetIds.length; ++i) {
+
+            Intent intent = new Intent(context, StoriesWidgetService.class);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetIds[i]);
+
+            RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.cs_widget_stories_list);
+
+            intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+            rv.setRemoteAdapter(appWidgetIds[i], R.id.storiesGrid, intent);
+            setClick(rv, context, appWidgetIds[i]);
+            appWidgetManager.updateAppWidget(appWidgetIds[i], rv);
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds[i], R.id.storiesGrid);
+        }
+    }
+
+    void setClick(RemoteViews rv, Context context, int appWidgetId) {
+        Intent listClickIntent = new Intent(context, IASWidget.class);
+        listClickIntent.setAction(CLICK_ITEM);
+        PendingIntent listClickPIntent = PendingIntent.getBroadcast(context, 0,
+                listClickIntent, 0);
+        rv.setPendingIntentTemplate(R.id.storiesGrid, listClickPIntent);
+    }
+
+Метод `StoriesWidgetService.loadData(Context context)` используется непосредственно для загрузки списка. Его можно вызывать, например из метода onUpdate или onEnabled виджета. Например:
+
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager,
+                         int[] appWidgetIds) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    StoriesWidgetService.loadData(context);
+                } catch (DataException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 500);
+        updateData(appWidgetManager, context, appWidgetIds);
+        super.onUpdate(context, appWidgetManager, appWidgetIds);
+    }
+
+По умолчанию ячейки списка виджета квадратные, 70x70. Она задана в файле `cs_widget_grid_item.xml`. Для изменения необходимо перегрузить данный файл, сохранив при этом идентификаторы и тип элеметов container, title, image. Элемент container задает пропорции ячеек, поэтому размеры ячейки необходимо определять в нем. Разметка ячейки выглядит следующим образом:
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/container"
+            android:layout_width="70dp"
+            android:clickable="true"
+            android:layout_height="70dp">
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:gravity="center"
+                android:scaleType="fitCenter" />
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:maxWidth="55dp"
+                android:clickable="false"
+                android:padding="8dp"
+                android:textSize="10sp"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_alignParentBottom="true"
+                android:maxLines="3"
+                android:textColor="@color/white" />
+        </RelativeLayout>
+    </FrameLayout>
 
 FAQ
 1) Изменение формы ячейки: прямоугольник, круг
