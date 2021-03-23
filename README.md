@@ -625,7 +625,7 @@
     }
 
     void setClick(RemoteViews rv, Context context, int appWidgetId) {
-        Intent listClickIntent = new Intent(context, IASWidget.class);
+        Intent listClickIntent = new Intent(context, MyWidget.class);
         listClickIntent.setAction(CLICK_ITEM);
         PendingIntent listClickPIntent = PendingIntent.getBroadcast(context, 0,
                 listClickIntent, 0);
