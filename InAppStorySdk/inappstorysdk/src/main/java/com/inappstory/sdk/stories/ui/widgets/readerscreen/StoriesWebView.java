@@ -489,7 +489,7 @@ public class StoriesWebView extends WebView {
                 String img = url;
                 Context con = InAppStoryManager.getInstance().getContext();
                 FileCache cache = FileCache.INSTANCE;
-                File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
+                File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, Integer.toString(storyId), null);
 
                 if (file.exists()) {
 
@@ -523,7 +523,7 @@ public class StoriesWebView extends WebView {
                 String img = request.getUrl().toString();
                 Context con = InAppStoryManager.getInstance().getContext();
                 FileCache cache = FileCache.INSTANCE;
-                File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
+                File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, Integer.toString(storyId), null);
 
                 if (file.exists()) {
                     try {

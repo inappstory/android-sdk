@@ -64,7 +64,7 @@ public class ButtonsPanel extends LinearLayout {
 
     ButtonsPanelManager manager;
 
-    void init() {
+    public void init() {
         inflate(getContext(), R.layout.cs_buttons_panel, this);
         manager = new ButtonsPanelManager();
         like = findViewById(R.id.likeButton);
@@ -111,7 +111,7 @@ public class ButtonsPanel extends LinearLayout {
         }
     }
 
-    void likeClick() {
+    public void likeClick() {
         like.setEnabled(false);
         like.setClickable(false);
         manager.likeClick(new ButtonClickCallback() {
@@ -131,7 +131,7 @@ public class ButtonsPanel extends LinearLayout {
         });
     }
 
-    void dislikeClick() {
+    public void dislikeClick() {
         dislike.setEnabled(false);
         dislike.setClickable(false);
         manager.dislikeClick(new ButtonClickCallback() {
@@ -151,7 +151,7 @@ public class ButtonsPanel extends LinearLayout {
         });
     }
 
-    void favoriteClick() {
+    public void favoriteClick() {
         favorite.setEnabled(false);
         favorite.setClickable(false);
         manager.favoriteClick(new ButtonClickCallback() {
@@ -170,7 +170,7 @@ public class ButtonsPanel extends LinearLayout {
         });
     }
 
-    void soundClick() {
+    public void soundClick() {
         sound.setEnabled(false);
         sound.setClickable(false);
         manager.soundClick(new ButtonClickCallback() {
@@ -189,7 +189,7 @@ public class ButtonsPanel extends LinearLayout {
         });
     }
 
-    void shareClick() {
+    public void shareClick() {
         share.setEnabled(false);
         share.setClickable(false);
         manager.shareClick(new ButtonClickCallback() {

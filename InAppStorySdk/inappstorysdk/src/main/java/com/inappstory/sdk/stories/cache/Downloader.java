@@ -59,7 +59,7 @@ public class Downloader {
     public static File downAndCompressImg(Context con,
                                           @NonNull String url,
                                           String type,
-                                          Integer sourceId,
+                                          String sourceId,
                                           Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
@@ -86,7 +86,7 @@ public class Downloader {
     public static File getCoverVideo(Context con,
                                      @NonNull String url,
                                      String type,
-                                     Integer sourceId,
+                                     String sourceId,
                                      Point size) {
         FileCache cache = FileCache.INSTANCE;
 
@@ -99,7 +99,7 @@ public class Downloader {
     public static File downVideo(Context con,
                                  @NonNull String url,
                                  String type,
-                                 Integer sourceId,
+                                 String sourceId,
                                  Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
 
@@ -118,12 +118,13 @@ public class Downloader {
         return file;
     }
 
+
     @NonNull
     @WorkerThread
     public static byte[] downAndCompressBytes(Context con,
                                               @NonNull String url,
                                               String type,
-                                              Integer sourceId,
+                                              String sourceId,
                                               Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
 
@@ -198,6 +199,7 @@ public class Downloader {
         });
     }
 
+
     public static String getFontFile(Context con, String url) {
         if (url == null || url.isEmpty()) return null;
         FileCache cache = FileCache.INSTANCE;
@@ -210,18 +212,18 @@ public class Downloader {
 
     @NonNull
     @WorkerThread
-    public static File downFile(Context con, String url, String type, Integer id) throws Exception {
+    public static File downFile(Context con, String url, String type, String id, String ext) throws Exception {
         if (url == null || url.isEmpty()) return null;
         FileCache cache = FileCache.INSTANCE;
-        File img = cache.getStoredFile(con, cropUrl(url), type, id, null);
+        File img = cache.getStoredFile(con, cropUrl(url), type, id, ext);
         File img2;
         if (img.exists()) {
             return img;
         } else {
-            img2 = cache.getStoredFile(con, cropUrl(url), FileType.TEMP_FILE, null, null);
+            img2 = cache.getStoredFile(con, cropUrl(url), FileType.TEMP_FILE, null, ext);
             if (img2.exists()) {
                 if (type != FileType.TEMP_FILE) {
-                    cache.moveFileToStorage(con, cropUrl(url), type, id, null);
+                    cache.moveFileToStorage(con, cropUrl(url), type, id, ext);
                 }
 
                 return img2;
@@ -254,6 +256,12 @@ public class Downloader {
             }
         }
         return null;
+    }
+
+    @NonNull
+    @WorkerThread
+    public static File downFile(Context con, String url, String type, String id) throws Exception {
+        return downFile(con, url, type, id, null);
     }
 
     /**

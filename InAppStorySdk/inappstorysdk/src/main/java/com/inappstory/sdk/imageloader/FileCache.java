@@ -8,9 +8,9 @@ public class FileCache {
 
     private File cacheDir;
 
-    public FileCache(Context context) {
-        //Find the dir to save cached images
 
+    public FileCache(Context context) {
+        if (context == null) return;
         cacheDir = context.getCacheDir();
         if (cacheDir!= null && !cacheDir.exists())
             cacheDir.mkdirs();
@@ -25,6 +25,7 @@ public class FileCache {
     }
 
     public void clear() {
+        if (cacheDir == null) return;
         File[] files = cacheDir.listFiles();
         if (files == null)
             return;

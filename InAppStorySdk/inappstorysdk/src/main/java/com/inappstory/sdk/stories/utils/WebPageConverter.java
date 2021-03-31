@@ -26,7 +26,7 @@ public class WebPageConverter {
             String imgKey = imgKeys.get(i);
             Context con = InAppStoryManager.getInstance().getContext();
             FileCache cache = FileCache.INSTANCE;
-            File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
+            File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, Integer.toString(storyId), null);
             if (file.exists()) {
                 exists = true;
                 FileInputStream fis = null;
@@ -72,7 +72,7 @@ public class WebPageConverter {
             String imgKey = imgKeys.get(i);
             Context con = InAppStoryManager.getInstance().getContext();
             FileCache cache = FileCache.INSTANCE;
-            File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, storyId, null);
+            File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, Integer.toString(storyId), null);
             if (file.exists()) {
                 exists = true;
                 FileInputStream fis = null;

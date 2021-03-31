@@ -177,10 +177,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 tempStories.add(storyId);
         }
         if (current != null)
-            CsEventBus.getDefault().post(new ClickOnStory(current.id, current.title, current.tags, current.slidesCount,
+            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.slidesCount,
                     isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
         else {
-            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), null, null, 0,
+            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null, null, 0,
                     isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
         }
         if (Sizes.isTablet()) {

@@ -103,54 +103,6 @@ public class ImageLoader {
         }
     }
 
-    public Bitmap getRemoteImage(final String url, int loader, final Integer cornerRadius, final Float ratio) {
-        try {
-            stub_id = loader;
-            // remoteViews.put(rv, url);
-            if (memoryCache2 == null) memoryCache2 = new MemoryCache();
-            final Bitmap[] bitmap = {memoryCache2.get(url)};
-            Log.e("MyWidget", url + " " + cornerRadius + " " + ratio);
-            if (bitmap[0] != null)
-                return bitmap[0];
-                //imageView.setImageBitmap(bitmap);
-            else {
-                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null);
-                return bitmap[0];
-                // queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
-                //  imageView.setImageResource(loader);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static String ColorToHex(int color) {
-        int alpha = android.graphics.Color.alpha(color);
-        int blue = android.graphics.Color.blue(color);
-        int green = android.graphics.Color.green(color);
-        int red = android.graphics.Color.red(color);
-
-        String alphaHex = To00Hex(alpha);
-        String blueHex = To00Hex(blue);
-        String greenHex = To00Hex(green);
-        String redHex = To00Hex(red);
-
-        // hexBinary value: aabbggrr
-        StringBuilder str = new StringBuilder("#");
-        str.append(alphaHex);
-        str.append(blueHex);
-        str.append(greenHex);
-        str.append(redHex);
-
-        return str.toString();
-    }
-
-    private static String To00Hex(int value) {
-        String hex = "00".concat(Integer.toHexString(value));
-        return hex.substring(hex.length() - 2, hex.length());
-    }
-
 
     public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio) {
         try {
@@ -181,6 +133,7 @@ public class ImageLoader {
     }
 
     public void addDarkGradient(Bitmap bitmap) {
+        if (bitmap == null) return;
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setShader(createShader(bitmap.getWidth(), bitmap.getHeight()));
@@ -459,24 +412,13 @@ public class ImageLoader {
     }
 
 
-    boolean imageViewReused(PhotoToLoad photoToLoad) {
+    public boolean imageViewReused(PhotoToLoad photoToLoad) {
         String tag = imageViews.get(photoToLoad.imageView);
         if (tag == null || !tag.equals(photoToLoad.url))
             return true;
         return false;
     }
 
-    boolean remoteImageViewReused(RemoteImageToLoad photoToLoad) {
-        String tag = remoteViews.get(photoToLoad.imageView);
-        if (photoToLoad.url != null) {
-            if (tag == null || !tag.equals(photoToLoad.url))
-                return true;
-        } else if (photoToLoad.color != null) {
-            if (tag == null || !tag.equals(photoToLoad.color))
-                return true;
-        }
-        return false;
-    }
 
     //Used to display bitmap in the UI thread
     class BitmapDisplayer implements Runnable {

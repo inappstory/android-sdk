@@ -16,6 +16,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent" />
 
+        <activity
+            android:name=".game.reader.GameActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Transparent" />
+
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
 
     </application>

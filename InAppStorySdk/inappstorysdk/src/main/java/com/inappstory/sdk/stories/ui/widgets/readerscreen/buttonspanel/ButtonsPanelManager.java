@@ -31,7 +31,8 @@ public class ButtonsPanelManager {
 
     int storyId;
 
-    void likeClick(final ButtonClickCallback callback) {
+    public void likeClick(final ButtonClickCallback callback) {
+        if (InAppStoryManager.isNull()) return;
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final int val;
         if (story.liked()) {
@@ -52,7 +53,8 @@ public class ButtonsPanelManager {
                     public void onSuccess(Response response) {
                         if (story != null)
                             story.like = val;
-                        callback.onSuccess(val);
+                        if (callback != null)
+                            callback.onSuccess(val);
                         CsEventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
                     }
 
@@ -60,7 +62,8 @@ public class ButtonsPanelManager {
                     @Override
                     public void onError(int code, String message) {
                         super.onError(code, message);
-                        callback.onError();
+                        if (callback != null)
+                            callback.onError();
                     }
 
                     @Override
@@ -70,7 +73,8 @@ public class ButtonsPanelManager {
                 });
     }
 
-    void dislikeClick(final ButtonClickCallback callback) {
+    public void dislikeClick(final ButtonClickCallback callback) {
+        if (InAppStoryManager.isNull()) return;
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final int val;
         if (story.disliked()) {
@@ -91,7 +95,8 @@ public class ButtonsPanelManager {
                     public void onSuccess(Response response) {
                         if (story != null)
                             story.like = val;
-                        callback.onSuccess(val);
+                        if (callback != null)
+                            callback.onSuccess(val);
                         CsEventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
                     }
 
@@ -99,7 +104,8 @@ public class ButtonsPanelManager {
                     @Override
                     public void onError(int code, String message) {
                         super.onError(code, message);
-                        callback.onError();
+                        if (callback != null)
+                            callback.onError();
                     }
 
                     @Override
@@ -109,7 +115,8 @@ public class ButtonsPanelManager {
                 });
     }
 
-    void favoriteClick(final ButtonClickCallback callback) {
+    public void favoriteClick(final ButtonClickCallback callback) {
+        if (InAppStoryManager.isNull()) return;
         final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
         final boolean val = story.favorite;
         if (!story.favorite)
@@ -124,14 +131,16 @@ public class ButtonsPanelManager {
                     public void onSuccess(Response response) {
                         if (story != null)
                             story.favorite = !val;
-                        callback.onSuccess(val ? 1 : 0);
+                        if (callback != null)
+                            callback.onSuccess(val ? 1 : 0);
                         CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
                     }
 
                     @Override
                     public void onError(int code, String message) {
                         super.onError(code, message);
-                        callback.onError();
+                        if (callback != null)
+                            callback.onError();
                     }
 
                     @Override
@@ -141,13 +150,16 @@ public class ButtonsPanelManager {
                 });
     }
 
-    void soundClick(ButtonClickCallback callback) {
+    public void soundClick(ButtonClickCallback callback) {
+        if (InAppStoryManager.isNull()) return;
         InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
         CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryManager.getInstance().soundOn, storyId));
-        callback.onSuccess(InAppStoryManager.getInstance().soundOn ? 1 : 0);
+        if (callback != null)
+            callback.onSuccess(InAppStoryManager.getInstance().soundOn ? 1 : 0);
     }
 
-    void shareClick(final ButtonClickCallback callback) {
+    public void shareClick(final ButtonClickCallback callback) {
+        if (InAppStoryManager.isNull()) return;
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
@@ -157,7 +169,8 @@ public class ButtonsPanelManager {
                 InAppStoryManager.getInstance().getApiKey(), null).enqueue(new NetworkCallback<ShareObject>() {
             @Override
             public void onSuccess(ShareObject response) {
-                callback.onSuccess(0);
+                if (callback != null)
+                    callback.onSuccess(0);
                 if (InAppStoryManager.getInstance().shareCallback != null) {
                     InAppStoryManager.getInstance().shareCallback.onShare(response.getUrl(), response.getTitle(), response.getDescription(), Integer.toString(storyId));
                 } else {
@@ -175,7 +188,8 @@ public class ButtonsPanelManager {
             @Override
             public void onError(int code, String message) {
                 super.onError(code, message);
-                callback.onError();
+                if (callback != null)
+                    callback.onError();
             }
 
             @Override

@@ -28,6 +28,10 @@ public class Image implements Parcelable {
         return height;
     }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     @SerializedName("url")
     private String url;
 

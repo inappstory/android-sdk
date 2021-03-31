@@ -196,12 +196,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             lpC = true;
         }
         if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
-
-        title.setText("Favorites");
-        if (manager.csCustomFont() != null) {
-            title.setTypeface(manager.csCustomFont());
+        if (title != null) {
+            title.setText("Favorites");
+            if (manager.csCustomFont() != null) {
+                title.setTypeface(manager.csCustomFont());
+            }
+            title.setTextColor(manager.csListItemTitleColor());
         }
-        title.setTextColor(manager.csListItemTitleColor());
         List<FavoriteImage> favImages = InAppStoryService.getInstance().favoriteImages;
         int halfHeight = Sizes.dpToPxExt(55);
         int halfWidth = Sizes.dpToPxExt(55);
@@ -218,7 +219,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 halfWidth = manager.csListItemWidth() / 2 - Sizes.dpToPxExt(5);
             }
         }
-        if (favImages.size() > 0) {
+        if (favImages.size() > 0 && imageViewLayout != null) {
             AppCompatImageView image1 = new AppCompatImageView(itemView.getContext());
             AppCompatImageView image2 = new AppCompatImageView(itemView.getContext());
             AppCompatImageView image3 = new AppCompatImageView(itemView.getContext());
@@ -237,7 +238,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 case 2:
                     piece2 = new RelativeLayout.LayoutParams(halfWidth,
                             RelativeLayout.LayoutParams.MATCH_PARENT);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width-halfWidth,
+                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
                     piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
                     image2.setLayoutParams(piece2);
@@ -337,10 +338,10 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 source.setTypeface(manager.csCustomFont());
             }
         }
-
-        hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
-
-        border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
+        if (hasAudioIcon != null)
+            hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
+        if (border != null)
+            border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
         if (videoUrl != null) {
             if (image != null) {
                 if (imageUrl != null) {

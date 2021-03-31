@@ -52,7 +52,6 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
     private int mAppWidgetId;
 
     public StoriesWidgetFactory(Context context, Intent intent) {
-        Log.e("MyWidget", "StoriesWidgetFactory");
         mContext = context;
         mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
@@ -65,13 +64,10 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @CsSubscribe
     public void refreshData(ListLoadedEvent event) {
-        Log.e("MyWidget", "ListLoadedEvent");
         setStories();
-
     }
 
-    void setStories() {
-        Log.e("MyWidget", "factory setStories");
+    public void setStories() {
         if (!SharedPreferencesAPI.hasContext()) {
             SharedPreferencesAPI.setContext(mContext);
         }
@@ -83,20 +79,16 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
     @Override
     public void onCreate() {
 
-        Log.e("MyWidget", "factory create");
     }
 
     @Override
     public void onDataSetChanged() {
 
-        Log.e("MyWidget", "factory onDataSetChanged");
 
     }
 
     @Override
     public void onDestroy() {
-        Log.e("MyWidget", "factory destroy");
-        //  mWidgetItems.clear();
 
     }
 

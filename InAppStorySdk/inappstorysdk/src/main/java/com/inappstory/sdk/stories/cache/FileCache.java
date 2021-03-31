@@ -32,7 +32,7 @@ public enum FileCache {
      * файла по {@param type}, {@param id} и {@param uri}
      */
 
-    public File moveFileToStorage(Context context, String uri, String type, Integer id, String ext) {
+    public File moveFileToStorage(Context context, String uri, String type, String id, String ext) {
         File outFile = getStoredFile(context, uri, type, id, ext);
         outFile.getParentFile().mkdirs();
         File file = getStoredFile(context, uri, FileType.TEMP_FILE, null, ext);
@@ -44,7 +44,7 @@ public enum FileCache {
     }
 
 
-    public File saveFile(Context context, String uri, Integer id, String type, byte[] bytes, String ext) {
+    public File saveFile(Context context, String uri, String id, String type, byte[] bytes, String ext) {
 
         FileOutputStream fout = null;
         File img = getStoredFile(context, uri, type, id, ext);
@@ -82,7 +82,7 @@ public enum FileCache {
      * @param id      - id записи
      */
 
-    public void deleteStorageFile(Context context, String uri, String type, Integer id, String ext) {
+    public void deleteStorageFile(Context context, String uri, String type, String id, String ext) {
         File file = getStoredFile(context, uri, type, id, ext);
         if (file.exists()) {
             file.delete();
@@ -194,7 +194,7 @@ public enum FileCache {
      * @return сохранен ли файл в систему
      */
 
-    public boolean inStorage(Context context, String uri, String type, Integer id) {
+    public boolean inStorage(Context context, String uri, String type, String id) {
         return getStoredFile(context, uri, type, id, null).exists();
     }
 
@@ -268,7 +268,7 @@ public enum FileCache {
      * @return возвращаем ссылку на локальный файл
      */
 
-    public File getStoredFile(Context context, String uri1, String type, Integer id, String ext) {
+    public File getStoredFile(Context context, String uri1, String type, String id, String ext) {
         String uri = Downloader.cropUrl(uri1);
         switch (type) {
             case FileType.STORY_IMAGE:
@@ -308,7 +308,7 @@ public enum FileCache {
         }
     }
 
-    private File getSavedStoryImage(Context context, String uri1, int StoryId, String ext) {
+    private File getSavedStoryImage(Context context, String uri1, String storyId, String ext) {
         String uri = Downloader.cropUrl(uri1);
         String fName = hashed.get(uri);
         if (fName == null) {
@@ -319,9 +319,9 @@ public enum FileCache {
         if (ext != null) {
             fName += "." + ext;
         } else {
-            fName = getFileNameWithoutExt(context, fName, new File(dir.getAbsolutePath() + File.separator + "Stories" + File.separator + "Story_" + StoryId));
+            fName = getFileNameWithoutExt(context, fName, new File(dir.getAbsolutePath() + File.separator + "Stories" + File.separator + "Story_" + storyId));
         }
-        fName = File.separator + "Stories" + File.separator + "Story_" + StoryId + File.separator + fName;
+        fName = File.separator + "Stories" + File.separator + "Story_" + storyId + File.separator + fName;
 
         return new File(dir, fName);
     }

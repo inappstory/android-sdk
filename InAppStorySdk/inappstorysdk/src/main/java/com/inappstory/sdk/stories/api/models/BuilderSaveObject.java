@@ -22,6 +22,6 @@ public class BuilderSaveObject {
         }
 
         public void save() {
-            KeyValueStorage.saveObject("managerInstance", BuilderSaveObject.this);
+         //   KeyValueStorage.saveObject("managerInstance", BuilderSaveObject.this);
         }
     }

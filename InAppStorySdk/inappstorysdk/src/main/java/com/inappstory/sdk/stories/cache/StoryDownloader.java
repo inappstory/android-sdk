@@ -431,7 +431,7 @@ public class StoryDownloader {
         }
     };
 
-    public static final int COVER_VIDEO_FOLDER_ID = -9999;
+    public static final String COVER_VIDEO_FOLDER_ID = "-9999";
 
     public static void downloadCoverVideo(final String url) {
         ExecutorService executorService = runnableExecutor;
@@ -503,13 +503,14 @@ public class StoryDownloader {
                 @Override
                 public Object call() throws Exception {
                     synchronized (getInstance().pageTasksLock) {
+                        final String storyId = key.first != null ? Integer.toString(key.first) : null;
                         for (int i = 0; i < getInstance().pageTasks.get(key).urls.size(); i++) {
                             String url = getInstance().pageTasks.get(key).urls.get(i);
-                            downloadImageByUrl(getInstance().context, url, key.first, key.second);
+                            downloadImageByUrl(getInstance().context, url, storyId, key.second);
                         }
 
                         for (String url : getInstance().pageTasks.get(key).videoUrls) {
-                            downloadVideoByUrl(getInstance().context, url, key.first, key.second);
+                            downloadVideoByUrl(getInstance().context, url, storyId, key.second);
                         }
                         return null;
                     }
@@ -567,8 +568,8 @@ public class StoryDownloader {
 
     }
 
-    private static Handler handler = new Handler();
-    private static Handler errorHandler = new Handler();
+    private static Handler handler;
+    private static Handler errorHandler;
 
 
     public int findIndexByStoryId(int id) {
@@ -600,6 +601,7 @@ public class StoryDownloader {
 
     public static StoryDownloader getInstance() {
         if (INSTANCE == null) {
+            if (InAppStoryManager.getInstance() == null) return null;
             INSTANCE = new StoryDownloader(InAppStoryManager.getInstance().getContext());
         }
         return INSTANCE;
@@ -614,6 +616,7 @@ public class StoryDownloader {
         thread = new HandlerThread("StoryContentDownloaderThread" + System.currentTimeMillis());
         thread.start();
         handler = new Handler(thread.getLooper());
+        errorHandler = new Handler(thread.getLooper());
         handler.postDelayed(queueStoryReadRunnable, 100);
         handler.postDelayed(queuePageReadRunnable, 100);
     }
@@ -621,8 +624,10 @@ public class StoryDownloader {
     private static HandlerThread thread;
 
     public static void destroy() {
-        handler.removeCallbacks(queueStoryReadRunnable);
-        handler.removeCallbacks(queuePageReadRunnable);
+        if (handler != null) {
+            handler.removeCallbacks(queueStoryReadRunnable);
+            handler.removeCallbacks(queuePageReadRunnable);
+        }
         if (thread != null)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 thread.quitSafely();
@@ -632,7 +637,7 @@ public class StoryDownloader {
         INSTANCE = null;
     }
 
-    public static void downloadVideoByUrl(final Context context, final String url, final int storyId, int ind) throws Exception {
+    public static void downloadVideoByUrl(final Context context, final String url, final String storyId, int ind) throws Exception {
 
         Downloader.downVideo(context, url, FileType.STORY_IMAGE, storyId, Sizes.getScreenSize());
        /* final Future<File> ff = imageExecutor.submit(new Callable<File>() {
@@ -656,8 +661,8 @@ public class StoryDownloader {
 
     }
 
-    public static void downloadImageByUrl(final Context context, final String url, final int StoryId, int ind) throws Exception {
-        Downloader.downAndCompressImg(context, url, FileType.STORY_IMAGE, StoryId, Sizes.getScreenSize());
+    public static void downloadImageByUrl(final Context context, final String url, final String storyId, int ind) throws Exception {
+        Downloader.downAndCompressImg(context, url, FileType.STORY_IMAGE, storyId, Sizes.getScreenSize());
     }
 
 
@@ -833,7 +838,7 @@ public class StoryDownloader {
      *
      */
     @WorkerThread
-    private void downloadImages(Context context, String content, Integer storyId, Point size) throws IOException, InterruptedException {
+    private void downloadImages(Context context, String content, String storyId, Point size) throws IOException, InterruptedException {
         for (String url : HtmlParser.getSrcUrls(content)) {
             try {
                 downAndCompressImg(context, url, storyId, size);
@@ -852,7 +857,7 @@ public class StoryDownloader {
     @WorkerThread
     private File downAndCompressImg(Context con,
                                     @NonNull String url,
-                                    Integer sourceId,
+                                    String sourceId,
                                     Point size) throws Exception {
         FileCache cache = FileCache.INSTANCE;
 

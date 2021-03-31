@@ -153,11 +153,11 @@ public class OldStatisticManager {
 
     public StatisticEvent currentEvent;
 
-    private void addStatisticEvent(int eventType, int storyId, int index) {
+    public void addStatisticEvent(int eventType, int storyId, int index) {
         currentEvent = new StatisticEvent(eventType, storyId, index);
     }
 
-    private void addArticleStatisticEvent(int eventType, int articleId) {
+    public void addArticleStatisticEvent(int eventType, int articleId) {
         currentEvent = new StatisticEvent(eventType, articleEventCount, articleId, articleTimer);
     }
 
@@ -203,7 +203,8 @@ public class OldStatisticManager {
 
     public void addArticleOpenStatistic(int eventType, int articleId) {
         articleEventCount = eventCount;
-        currentEvent.eventType = 2;
+        if (currentEvent != null)
+            currentEvent.eventType = 2;
         closeStatisticEvent();
         eventCount++;
         articleTimer = System.currentTimeMillis();
@@ -211,7 +212,8 @@ public class OldStatisticManager {
     }
 
     public void addLinkOpenStatistic() {
-        currentEvent.eventType = 2;
+        if (currentEvent != null)
+            currentEvent.eventType = 2;
     }
 
     public void addDeeplinkClickStatistic(int id) {

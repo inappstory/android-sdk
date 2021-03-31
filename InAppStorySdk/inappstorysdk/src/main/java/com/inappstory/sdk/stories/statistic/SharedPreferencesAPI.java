@@ -29,6 +29,7 @@ public class SharedPreferencesAPI {
      * Сохранение строки
      */
     public static void saveString(String key, String value) {
+        if (context == null) return;
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
         editor.putString(key, value);
         editor.apply();
@@ -47,6 +48,7 @@ public class SharedPreferencesAPI {
      * Получение строки
      */
     public static void removeString(String key) {
+        if (context == null) return;
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
         editor.remove(key);
         editor.apply();
@@ -64,6 +66,7 @@ public class SharedPreferencesAPI {
      * Сохранение массива строк
      */
     public static void saveStringSet(String key, Set<String> value) {
+        if (context == null) return;
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
         editor.putStringSet(key, value);
         editor.apply();
@@ -83,6 +86,7 @@ public class SharedPreferencesAPI {
      * Сохранение boolean значения
      */
     public static void saveBoolean(String key, boolean value) {
+        if (context == null) return;
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
         editor.putBoolean(key, value);
         editor.apply();
@@ -92,6 +96,7 @@ public class SharedPreferencesAPI {
      * Сохранение числового значения
      */
     public static void saveInt(String key, int value) {
+        if (context == null) return;
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
         editor.putInt(key, value);
         editor.apply();
@@ -102,6 +107,7 @@ public class SharedPreferencesAPI {
      * Удаление значения по ключу
      */
     public static void remove(String key) {
+        if (context == null) return;
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
         editor.remove(key);
         editor.apply();

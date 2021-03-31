@@ -20,8 +20,10 @@ public class KeyValueStorage {
     private static final String SHARED_PREFERENCES_DEFAULT = "default_n";
 
     public static SharedPreferences getDefaultPreferences() {
-        if (context == null)
+        if (context == null) {
+            if (InAppStoryManager.getInstance() == null) return null;
             context = InAppStoryManager.getInstance().getContext();
+        }
         if (context == null) return null;
         return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
     }

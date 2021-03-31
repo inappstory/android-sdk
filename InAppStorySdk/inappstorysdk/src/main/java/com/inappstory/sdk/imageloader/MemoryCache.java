@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MemoryCache {
-    private Map<String, SoftReference<Bitmap>> cache = Collections.synchronizedMap(new HashMap<String, SoftReference<Bitmap>>());
-    private Map<String, String> cacheSettings = Collections.synchronizedMap(new HashMap<String, String>());
+    public Map<String, SoftReference<Bitmap>> cache = Collections.synchronizedMap(new HashMap<String, SoftReference<Bitmap>>());
+    public Map<String, String> cacheSettings = Collections.synchronizedMap(new HashMap<String, String>());
 
     //Test
     public Bitmap get(String id){

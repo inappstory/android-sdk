@@ -61,6 +61,10 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
+    public static boolean isNull() {
+        return INSTANCE == null;
+    }
+
     public static void setInstance(InAppStoryManager manager) {
         INSTANCE = manager;
     }

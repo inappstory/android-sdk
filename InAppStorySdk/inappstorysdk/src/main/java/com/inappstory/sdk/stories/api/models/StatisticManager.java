@@ -55,11 +55,19 @@ public class StatisticManager {
 
     private Object statisticTasksLock = new Object();
 
+    public ArrayList<StatisticTask> getTasks() {
+        return tasks;
+    }
+
+    public ArrayList<StatisticTask> getFaketasks() {
+        return faketasks;
+    }
+
     private ArrayList<StatisticTask> tasks = new ArrayList<>();
     private ArrayList<StatisticTask> faketasks = new ArrayList<>();
 
     public void addTask(StatisticTask task) {
-   //      if (1 == 1) return;
+        //      if (1 == 1) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -70,7 +78,7 @@ public class StatisticManager {
 
 
     public void addFakeTask(StatisticTask task) {
-       // if (1 == 1) return;
+        // if (1 == 1) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -104,7 +112,7 @@ public class StatisticManager {
     public static StatisticManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new StatisticManager();
-           // if (1 == 1) return INSTANCE;
+            // if (1 == 1) return INSTANCE;
             INSTANCE.init();
         }
         return INSTANCE;
@@ -266,7 +274,8 @@ public class StatisticManager {
 
     public void generateBase(StatisticTask task) {
         task.sessionId = StatisticSession.getInstance().id;
-        task.userId = InAppStoryManager.getInstance().getUserId();
+        if (InAppStoryManager.getInstance() != null)
+            task.userId = InAppStoryManager.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 
@@ -343,7 +352,7 @@ public class StatisticManager {
         task.event = prefix + "slide";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
-        task.durationMs = System.currentTimeMillis() - currentState.startTime;
+        task.durationMs = System.currentTimeMillis() - (currentState != null ? currentState.startTime : 0);
         task.isFake = true;
         generateBase(task);
         addFakeTask(task);
@@ -440,6 +449,13 @@ public class StatisticManager {
 
 
     public void sendWidgetStoryEvent(final String name, final String data) {
+        StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
+        task.event = name;
+        generateBase(task);
+        addTask(task);
+    }
+
+    public void sendGameEvent(final String name, final String data) {
         StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
         task.event = name;
         generateBase(task);
