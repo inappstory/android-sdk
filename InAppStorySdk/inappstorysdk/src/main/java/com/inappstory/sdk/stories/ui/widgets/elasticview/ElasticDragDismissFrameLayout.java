@@ -121,16 +121,17 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-            return true;
+        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)
+            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
+                return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        // if we're in a drag gesture and the user reverses up the we should take those events
-        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-            return;
+        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)
+            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
+                return;
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
             dragScale(dy);
             consumed[1] = dy;
@@ -140,8 +141,9 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-            return;
+        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)        
+            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
+                return;
         dragScale(dyUnconsumed);
     }
 
@@ -161,7 +163,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onStopNestedScroll(View child) {
         if (Math.abs(totalDrag) >= dragDismissDistance &&
-                !StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
+            (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null &&
+            !StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)) {
             dispatchDismissCallback();
         } else { // settle back to natural position
             if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
