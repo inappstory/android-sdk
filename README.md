@@ -194,7 +194,7 @@
         void setImage(View itemView, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем обложку story или цвет фона в случае ее отсутствия.
         void setReaded(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если она прочитана.
         void setHasAudio(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если у данной сториз есть аудио внутри.
-        void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем видеообложку story (videoUrl), постер видео (url) или цвет фона в случае его отсутствия. Для работы с ячейками видео рекомендуется использовать класс из библиотеки VideoPlayer в качестве контейнера для отображения видео и метод loadVideo(String videoUrl) для запуска. Данный класс предусматривает кэширование видеообложек.
+        void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем видеообложку story (videoUrl), постер видео (url) или цвет фона в случае его отсутствия. Для работы с ячейками видео рекомендуется использовать класс из библиотеки VideoPlayer в качестве контейнера для отображения видео и метод loadVideo(String videoUrl) для запуска. Данный класс предусматривает кэширование видеообложек. Класс VideoPlayer наследуется от TextureView
     }
 
 В случае задания данного интерфейса другие параметры, влияющие на внешний вид ячейки списка не используются (будут игнорироваться)
