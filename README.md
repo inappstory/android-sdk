@@ -28,6 +28,14 @@
 
 Если в проекте используется proguard-обфускация кода, то в файле `proguard-rules.pro` необходимо прописать:
 
+    -keepattributes *Annotation*
+    
+    -keepclassmembers class * {
+        @com.inappstory.sdk.eventbus.CsSubscribe <methods>;
+    }
+    
+    -keep enum com.inappstory.sdk.eventbus.CsThreadMode { *; }
+
     keepclassmembers class fqcn.of.javascript.interface.for.webview {
         public *;
     }
