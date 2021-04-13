@@ -183,18 +183,18 @@
         .csListItemTitleColor(Color.BLUE)
         .csListItemTitleSize(Sizes.dpToPxExt(20))
 
-Также помимо этого в AppearanceManager есть 4 интерфейса: 
-1) `IStoriesListItem csListItemInterface`, используется для полной кастомизации элементов списка
+Также помимо этого в AppearanceManager есть 4 интерфейса.
+`IStoriesListItem csListItemInterface`, используется для полной кастомизации элементов списка.
 
     interface IStoriesListItem {
         View getView(); // здесь необходимо передать View - внешний вид ячейки.
         View getVideoView(); // здесь необходимо передать View - внешний вид ячейки на случай, если в ячейках используется видео на обложке.
-        void setTitle(View itemView, String title, Integer titleColor); // itemView - текущая ячейка, в необходимой View используем заголовок story. Параметр titleColor может быть null.
+        void setTitle(View itemView, String title, Integer titleColor); // itemView - текущая ячейка, в необходимой View используем заголовок story. Параметр titleColor может              быть null.
         void setSource(View itemView, String source); // itemView - текущая ячейка, в необходимой View используем источник story.
-        void setImage(View itemView, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем обложку story или цвет фона в случае ее отсутствия.
+        void setImage(View itemView, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем обложку story или цвет фона в случае ее                  отсутствия.
         void setReaded(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если она прочитана.
         void setHasAudio(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если у данной сториз есть аудио внутри.
-        void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем видеообложку story (videoUrl), постер видео (url) или цвет фона в случае его отсутствия. Для работы с ячейками видео рекомендуется использовать класс из библиотеки VideoPlayer в качестве контейнера для отображения видео и метод loadVideo(String videoUrl) для запуска. Данный класс предусматривает кэширование видеообложек.
+        void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем видеообложку story                   (videoUrl), постер видео (url) или цвет фона в случае его отсутствия. Для работы с ячейками видео рекомендуется использовать класс из библиотеки VideoPlayer в качестве            контейнера для отображения видео и метод loadVideo(String videoUrl) для запуска. Данный класс предусматривает кэширование видеообложек.
     }
 
 В случае задания данного интерфейса другие параметры, влияющие на внешний вид ячейки списка не используются (будут игнорироваться)
@@ -247,7 +247,7 @@
                         }
                     });
     
-2) `IGetFavoriteListItem csFavoriteListItemInterface`, используется для полной кастомизации элемента favorite в списке.
+`IGetFavoriteListItem csFavoriteListItemInterface`, используется для полной кастомизации элемента favorite в списке.
 
         public interface IGetFavoriteListItem {
             View getFavoriteItem(List<FavoriteImage> favoriteImages, int count);
@@ -299,19 +299,19 @@
                 }
     });
 
-3) `ILoaderView iLoaderView` - используется для подстановки собственного лоадера вместо дефолтного
+`ILoaderView iLoaderView` - используется для подстановки собственного лоадера вместо дефолтного
 
         public interface ILoaderView {
             View getView();
         }
         
-4) `StoryTouchListener csStoryTouchListener` - используется для добавления обработки клика на ячейки списков сториз (например, для анимации)
+`StoryTouchListener csStoryTouchListener` - используется для добавления обработки клика на ячейки списков сториз (например, для анимации)
 
-        public interface StoryTouchListener {
-            void touchDown(View view, int position); //View - ячейка списка, position - позиция в списке
+    public interface StoryTouchListener {
+        void touchDown(View view, int position); //View - ячейка списка, position - позиция в списке
 
-            void touchUp(View view, int position);
-        }
+        void touchUp(View view, int position);
+    }
 
 Этот интерфейс необходимо задавать для глобального AppearanceManager.
 Пример использования:
@@ -435,10 +435,10 @@
     CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
     
 Помимо этого для работы с онбордингами и одиночными сториз добавлены события:
-1) `OnboardingLoad` - отправляется при подгрузке списка онбордингов. Содержит метод getCount, который возвращает количество онбординг сториз и isEmpty - флаг того, пустой списко вернулся по запросу или нет.
-2) `OnboardingLoadError` - отправляется при подгрузке списка онбордингов в случае возникновения какой-то ошибки. 
-3) `SingleLoad` - отправляется при загрузке единичной сториз по id (методом `InAppStoryManager.getInstance().showStory`). 
-4) `SingleLoadError` - отправляется при загрузке единичной сториз по id в случае возникновения какой-то ошибки. 
+`OnboardingLoad` - отправляется при подгрузке списка онбордингов. Содержит метод getCount, который возвращает количество онбординг сториз и isEmpty - флаг того, пустой списко вернулся по запросу или нет.
+`OnboardingLoadError` - отправляется при подгрузке списка онбордингов в случае возникновения какой-то ошибки. 
+`SingleLoad` - отправляется при загрузке единичной сториз по id (методом `InAppStoryManager.getInstance().showStory`). 
+`SingleLoadError` - отправляется при загрузке единичной сториз по id в случае возникновения какой-то ошибки. 
     
 ##### Работа со звуком
 
