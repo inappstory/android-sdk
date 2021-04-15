@@ -1,6 +1,11 @@
 package com.inappstory.sdk.stories.api.models;
 
 public class StoryLink {
+    public StoryLink(String type, String target) {
+        this.type = type;
+        this.target = target;
+    }
+
     public String getType() {
         return type;
     }

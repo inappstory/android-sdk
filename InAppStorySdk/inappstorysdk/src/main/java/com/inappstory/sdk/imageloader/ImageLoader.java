@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 
 
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class ImageLoader {
@@ -70,9 +71,9 @@ public class ImageLoader {
             stub_id = loader;
             imageViews.put(imageView, url);
             Bitmap bitmap = memoryCache.get(url);
-            if (bitmap != null)
+            if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
-            else {
+            } else {
                 queuePhoto(url, imageView);
                 //  imageView.setImageResource(loader);
             }
@@ -204,7 +205,7 @@ public class ImageLoader {
             canvas.drawColor(Color.parseColor(color));
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
-                    bmp = ThumbnailUtils.extractThumbnail(bmp, (int)(ratio*300), 300);
+                    bmp = ThumbnailUtils.extractThumbnail(bmp, (int) (ratio * 300), 300);
                 } else {
                     bmp = ThumbnailUtils.extractThumbnail(bmp, 300, 300);
                 }
@@ -221,7 +222,7 @@ public class ImageLoader {
         if (b != null) {
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
-                    b = ThumbnailUtils.extractThumbnail(b, (int)(ratio*300), 300);
+                    b = ThumbnailUtils.extractThumbnail(b, (int) (ratio * 300), 300);
                 } else {
                     b = ThumbnailUtils.extractThumbnail(b, 300, 300);
                 }
@@ -248,7 +249,7 @@ public class ImageLoader {
             bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
-                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int)(ratio*300), 300);
+                    bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int) (ratio * 300), 300);
                 } else {
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, 300, 300);
                 }
@@ -308,7 +309,7 @@ public class ImageLoader {
             BitmapFactory.Options o2 = new BitmapFactory.Options();
             o2.inSampleSize = scale;
             FileInputStream fileInputStream = new FileInputStream(f);
-                    Bitmap bitmap =  BitmapFactory.decodeStream(fileInputStream, null, o2);
+            Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream, null, o2);
             fileInputStream.close();
             return bitmap;
         } catch (FileNotFoundException e) {
@@ -433,8 +434,12 @@ public class ImageLoader {
         public void run() {
             if (imageViewReused(photoToLoad))
                 return;
-            if (bitmap != null)
+            if (bitmap != null) {
                 photoToLoad.imageView.setImageBitmap(bitmap);
+                if (photoToLoad.imageView instanceof GeneratedImageView) {
+                    ((GeneratedImageView)photoToLoad.imageView).onLoaded();
+                }
+            }
            /* else
                 photoToLoad.imageView.setImageResource(stub_id);*/
         }

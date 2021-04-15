@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -31,6 +33,7 @@ import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.NextStoryPageEvent;
 import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
 import com.inappstory.sdk.stories.events.PageByIdSelectedEvent;
@@ -61,9 +64,11 @@ import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
+import static android.app.Activity.RESULT_OK;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
 
@@ -105,7 +110,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     List<Integer> currentIds = new ArrayList<>();
 
 
-    StoriesReaderPager storiesViewPager;
+    ReaderPager storiesViewPager;
     View invMask;
 
     @Override
@@ -131,8 +136,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             if (getActivity() != null) getActivity().finish();
             return;
         }
-        StoriesReaderPagerAdapter outerViewPagerAdapter =
-                new StoriesReaderPagerAdapter(
+        ReaderPagerAdapter outerViewPagerAdapter =
+                new ReaderPagerAdapter(
                         getChildFragmentManager(),
                         closePosition,
                         getArguments().getBoolean(CS_CLOSE_ON_SWIPE, false), currentIds);
@@ -248,6 +253,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
     int lastPos = -1;
+
+
 
     @Override
     public void onPageSelected(int pos0) {

@@ -48,21 +48,50 @@ public class FileLoader {
         });
     }
 
-    public static void downloadAndUnzip(final Context context, final String url, final GameLoadCallback callback) {
+    public static void deleteFolderRecursive(File fileOrDirectory, boolean deleteRoot) {
 
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteFolderRecursive(child, true);
+            }
+        }
+        if (deleteRoot) {
+            try {
+                fileOrDirectory.delete();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public static void downloadAndUnzip(final Context context, final String url, final String pathName, final GameLoadCallback callback) {
         final Future<File> ff = runnableExecutor.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
                 int count;
                 URL uri = new URL(url);
-                File file = new File(context.getFilesDir() + "/zip/" + url.hashCode() + ".zip");
-                if (file.exists()) return file;
+                File file = new File(context.getFilesDir() + "/zip/" + pathName + "/"+ url.hashCode() + ".zip");
+
+                //TODO remove after tests
+                if (file.exists()) {
+                    File parentFolder = file.getParentFile();
+                    if (parentFolder != null && parentFolder.exists()) {
+                        deleteFolderRecursive(parentFolder, true);
+                    }
+                }
+
+                if (file.exists())
+                    return file;
                 try {
                     file.mkdirs();
                 } catch (Exception e) {
 
                 }
                 if (file.exists()) file.delete();
+                File parentFolder = file.getParentFile();
+                if (parentFolder != null && parentFolder.exists()) {
+                    deleteFolderRecursive(parentFolder, false);
+                }
                 URLConnection connection = uri.openConnection();
                 connection.connect();
                 InputStream input = new BufferedInputStream(uri.openStream(),

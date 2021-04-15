@@ -482,6 +482,8 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                                     lp1.topMargin += Math.max(cutout.getSafeInsetTop() - lp.height, 0);
                                     view1.setLayoutParams(lp1);
                                 }
+                            } else {
+
                             }
                         }
                     }
@@ -509,6 +511,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         InAppStoryService.getInstance().getFullStoryById(new GetStoryByIdCallback() {
             @Override
             public void getStory(final Story story) {
+                if (story == null) return;
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -578,6 +581,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
             @Override
             public void getPartialStory(final Story story) {
+                if (story == null) return;
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {

@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.inappstory.sdk.imageloader.MemoryCache;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -393,6 +394,17 @@ public class Downloader {
         return img;
     }
 
+    static MemoryCache bitmapCache = new MemoryCache();
+
+    public static void putBitmap(String url, Bitmap bitmap) {
+        if (bitmapCache == null) bitmapCache = new MemoryCache();
+        bitmapCache.put(url, bitmap);
+    }
+
+    public static Bitmap getBitmap(String url) {
+        if (bitmapCache == null) bitmapCache = new MemoryCache();
+        return bitmapCache.get(url);
+    }
 
     public static File downloadFile(String url, File outputFile) throws Exception {
 

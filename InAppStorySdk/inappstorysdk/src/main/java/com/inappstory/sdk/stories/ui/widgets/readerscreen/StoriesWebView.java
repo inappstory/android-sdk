@@ -30,6 +30,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.webkit.WebViewFeature;
 
 import java.io.File;
@@ -48,6 +49,9 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
+import com.inappstory.sdk.game.loader.FileLoader;
+import com.inappstory.sdk.game.loader.GameLoadCallback;
+import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -63,6 +67,7 @@ import com.inappstory.sdk.stories.cache.FileType;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
@@ -87,6 +92,7 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.webkit.WebSettings.FORCE_DARK_OFF;
 import static android.webkit.WebSettings.FORCE_DARK_ON;
+import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
 /**
@@ -380,6 +386,15 @@ public class StoriesWebView extends WebView {
 
     }
 
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void gameComplete(GameCompleteEvent event) {
+        if (storyId != event.getStoryId() || index != event.getSlideIndex()) return;
+        if (event.getData() != null)
+            loadUrl("javascript:game_complete(\"" + event.getData() + "\")");
+        else
+            loadUrl("javascript:game_complete()");
+    }
+
     public void resumeVideo() {
 
 
@@ -668,6 +683,28 @@ public class StoriesWebView extends WebView {
             } else {
                 CsEventBus.getDefault().post(new StoryReaderTapEvent(payload));
             }
+        }
+
+        @JavascriptInterface
+        public void openGameReader(String gameUrl, String preloadPath, String gameConfig) {
+            Intent intent2 = new Intent(getContext(), GameActivity.class);
+            intent2.putExtra("gameUrl", gameUrl);
+            intent2.putExtra("storyId", Integer.toString(storyId));
+            intent2.putExtra("slideIndex", Integer.toString(index));
+            intent2.putExtra("gameConfig", gameConfig);
+            intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
+            ((Activity) getContext()).startActivityForResult(intent2, GAME_READER_REQUEST);
+        }
+
+
+        @JavascriptInterface
+        public void openGameReader(String gameUrl, String preloadPath) {
+            Intent intent2 = new Intent(getContext(), GameActivity.class);
+            intent2.putExtra("gameUrl", gameUrl);
+            intent2.putExtra("storyId", Integer.toString(storyId));
+            intent2.putExtra("slideIndex", Integer.toString(index));
+            intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
+            ((Activity) getContext()).startActivityForResult(intent2, GAME_READER_REQUEST);
         }
 
         @JavascriptInterface

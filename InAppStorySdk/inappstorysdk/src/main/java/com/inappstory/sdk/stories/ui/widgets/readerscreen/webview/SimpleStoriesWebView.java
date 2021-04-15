@@ -1,6 +1,10 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,21 +12,37 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.ConsoleMessage;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.network.Request;
+import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Created by Paperrose on 07.06.2018.
  */
 
-public class SimpleStoriesWebView extends WebView {
+public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
-    public static String injectUnselectableStyle(String html) {
+    private static String injectUnselectableStyle(String html) {
         return html.replace("<head>",
                 "<head><style>*{" +
                         "-webkit-touch-callout: none;" +
@@ -50,7 +70,7 @@ public class SimpleStoriesWebView extends WebView {
     }
 
 
-    public void replaceHtml(String page) {
+    private void replaceHtml(String page) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
         } else {
@@ -139,7 +159,7 @@ public class SimpleStoriesWebView extends WebView {
     String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
 
 
-    public void destroyWebView() {
+    public void destroyView() {
         final Runtime runtime = Runtime.getRuntime();
         try {
             CsEventBus.getDefault().unregister(this);
@@ -157,6 +177,11 @@ public class SimpleStoriesWebView extends WebView {
       //  onPause();
         removeAllViews();
         destroyDrawingCache();
+    }
+
+    @Override
+    public float getCoordinate() {
+        return coordinate1;
     }
 
     boolean notFirstLoading = false;
@@ -187,11 +212,11 @@ public class SimpleStoriesWebView extends WebView {
         }
     }
 
-    public StoriesWebViewManager getManager() {
+    public StoriesViewManager getManager() {
         return manager;
     }
 
-    StoriesWebViewManager manager;
+    StoriesViewManager manager;
 
     private void init() {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -211,8 +236,8 @@ public class SimpleStoriesWebView extends WebView {
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
 
-        manager = new StoriesWebViewManager();
-        manager.setStoriesWebView(this);
+        manager = new StoriesViewManager();
+        manager.setStoriesView(this);
     }
 
 
@@ -239,6 +264,103 @@ public class SimpleStoriesWebView extends WebView {
         touchSlider = true;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
+        }
+    }
+
+    @Override
+    public void setStoriesView(SimpleStoriesView storiesView) {
+
+    }
+
+    @Override
+    public void checkIfClientIsSet() {
+
+        if (!clientIsSet) {
+            addJavascriptInterface(new WebAppInterface(getContext(),
+                    getManager()), "Android");
+            setWebViewClient(new WebViewClient() {
+
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                    String img = url;
+                    File file = getManager().getCurrentFile(img);
+                    if (file.exists()) {
+                        try {
+                            Response response = new Request.Builder().head().url(url).build().execute();
+                            String ctType = response.headers.get("Content-Type");
+                            return new WebResourceResponse(ctType, "BINARY",
+                                    new FileInputStream(file));
+                        } catch (FileNotFoundException e) {
+                            return super.shouldInterceptRequest(view, url);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return super.shouldInterceptRequest(view, url);
+                        } catch (Exception e) {
+
+                            return super.shouldInterceptRequest(view, url);
+                        }
+                    } else
+                        return super.shouldInterceptRequest(view, url);
+                }
+
+
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                    String img = request.getUrl().toString();
+                    File file = getManager().getCurrentFile(img);
+                    if (file.exists()) {
+                        try {
+                            Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
+                            String ctType = response.headers.get("Content-Type");
+                            return new WebResourceResponse(ctType, "BINARY",
+                                    new FileInputStream(file));
+                        } catch (FileNotFoundException e) {
+                            return super.shouldInterceptRequest(view, request);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return super.shouldInterceptRequest(view, request);
+                        } catch (Exception e) {
+                            return super.shouldInterceptRequest(view, request);
+                        }
+                    } else
+                        return super.shouldInterceptRequest(view, request);
+                }
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+
+                }
+            });
+            setWebChromeClient(new WebChromeClient() {
+                @Nullable
+                @Override
+                public Bitmap getDefaultVideoPoster() {
+                    if (super.getDefaultVideoPoster() == null) {
+                        Bitmap bmp = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
+                        Canvas canvas = new Canvas(bmp);
+                        canvas.drawColor(Color.BLACK);
+                        return bmp;
+                    } else {
+                        return super.getDefaultVideoPoster();
+                    }
+                }
+
+                @Override
+                public void onProgressChanged(WebView view, int newProgress) {
+                    if (getManager().getProgressBar() != null)
+                        getManager().getProgressBar().setProgress(newProgress);
+                }
+
+                @Override
+                public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                    Log.d("MyApplication", consoleMessage.message() + " -- From line "
+                            + consoleMessage.lineNumber() + " of "
+                            + consoleMessage.sourceId());
+                    return super.onConsoleMessage(consoleMessage);
+                }
+            });
+
         }
     }
 

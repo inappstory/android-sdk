@@ -50,6 +50,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
+import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -60,6 +61,8 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
+
+    public static boolean testGenerated = false;
 
     public static boolean isNull() {
         return INSTANCE == null;
@@ -534,7 +537,9 @@ public class InAppStoryManager {
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
-            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(), StoriesActivity.class);
+            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(),
+                    (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
+                    StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", 0);
             intent2.putExtra("source", ShowStory.ONBOARDING);
             intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
@@ -739,7 +744,9 @@ public class InAppStoryManager {
                     } else {
                         StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                                 story.id);
-                        Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(), StoriesActivity.class);
+                        Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(),
+                                (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
+                                        StoriesActivity.class : StoriesFixedActivity.class);
                         if (context == null)
                             intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent2.putExtra("index", 0);

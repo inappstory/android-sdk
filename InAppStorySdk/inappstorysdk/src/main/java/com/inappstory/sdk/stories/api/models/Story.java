@@ -12,6 +12,7 @@ import java.util.Set;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 /**
@@ -30,6 +31,12 @@ public class Story implements Parcelable {
             }
         }
         return tmp;
+    }
+
+    public boolean checkIfEmpty() {
+        boolean res = (getLayout() == null || pages == null || pages.isEmpty());
+        res = res && (slidesStructure == null || slidesStructure.isEmpty());
+        return res;
     }
 
     public List<Image> getImage() {
@@ -220,6 +227,9 @@ public class Story implements Parcelable {
 
     @SerializedName("slides_html")
     public List<String> pages;
+
+    @SerializedName("slides_structure")
+    public List<SlideStructure> slidesStructure;
 
     public List<Boolean> loadedPages = new ArrayList<>();
 

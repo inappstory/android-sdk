@@ -109,13 +109,17 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
          * @param rawOffsetPixels     The raw distance the user has dragged
          */
         void onDrag(float elasticOffset, float elasticOffsetPixels,
-                    float rawOffset, float rawOffsetPixels) { }
+                    float rawOffset, float rawOffsetPixels) {
+        }
 
         /**
          * Called when dragging is released and has exceeded the threshold dismiss distance.
          */
-        void onDragDismissed() { }
-        void onDragDropped() { }
+        void onDragDismissed() {
+        }
+
+        void onDragDropped() {
+        }
 
     }
 
@@ -131,8 +135,9 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         // if we're in a drag gesture and the user reverses up the we should take those events
         if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)
+
             if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-            return;
+                return;
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
             dragScale(dy);
             consumed[1] = dy;
@@ -143,12 +148,14 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
         if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)
+
             if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
                 return;
         dragScale(dyUnconsumed);
     }
 
-    @Override public boolean onInterceptTouchEvent(MotionEvent ev) {
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
         mLastActionEvent = ev.getAction();
 
         if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
@@ -181,13 +188,13 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
                     CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
                 }
                 animate()
-                    .translationY(0f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(200L)
-                    .setInterpolator(AnimUtils.getFastOutSlowInInterpolator(getContext()))
-                    .setListener(null)
-                    .start();
+                        .translationY(0f)
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(200L)
+                        .setInterpolator(AnimUtils.getFastOutSlowInInterpolator(getContext()))
+                        .setListener(null)
+                        .start();
             }
             totalDrag = 0;
             draggingDown = draggingUp = false;

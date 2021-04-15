@@ -115,8 +115,8 @@ public class ReaderPager extends ViewPager {
             }
             //  CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
             if (distanceY) {
-                if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null && 
-                        !StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
+                if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null
+                        && !StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
                     CsEventBus.getDefault().post(new SwipeDownEvent());
                     return true;
                 }

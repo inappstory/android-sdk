@@ -1,18 +1,21 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -29,6 +32,7 @@ import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
@@ -45,6 +49,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesActivity extends AppCompatActivity {
 
@@ -80,6 +85,7 @@ public class StoriesActivity extends AppCompatActivity {
         super.onStop();
 
     }
+
 
     @Override
     public void finish() {
@@ -141,6 +147,7 @@ public class StoriesActivity extends AppCompatActivity {
                 public void onAnimationEnd(Animation animation) {
                     draggableFrame.setVisibility(View.GONE);
                     StoriesActivity.super.finish();
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 }
             });
             draggableFrame.startAnimation(animationSet);
@@ -151,8 +158,20 @@ public class StoriesActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
+            CsEventBus.getDefault().post(new GameCompleteEvent(
+                    data.getStringExtra("data"),
+                    Integer.parseInt(data.getStringExtra("storyId")),
+                    data.getIntExtra("slideIndex", 0)));
+        }
+    }
+
+    @Override
     public void onBackPressed() {
 
+        blockView.setVisibility(View.VISIBLE);
         if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
 
@@ -176,11 +195,13 @@ public class StoriesActivity extends AppCompatActivity {
 
     public void finishActivityWithCustomAnimation(int enter, int exit) {
         super.finish();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         overridePendingTransition(enter, exit);
     }
 
     public void finishActivityWithoutAnimation() {
         super.finish();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         overridePendingTransition(0, 0);
     }
 
@@ -193,6 +214,7 @@ public class StoriesActivity extends AppCompatActivity {
 
 
     ElasticDragDismissFrameLayout draggableFrame;
+    View blockView;
 
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
@@ -227,13 +249,10 @@ public class StoriesActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
         }
-        if (AppearanceManager.getInstance() != null) {
-            setContentView(AppearanceManager.getInstance().csIsDraggable() ?
-                    R.layout.cs_activity_stories_draggable : R.layout.cs_activity_stories);
-        } else {
-            setContentView(R.layout.cs_activity_stories_draggable);
-        }
+
+        setContentView(R.layout.cs_activity_stories_draggable);
         draggableFrame = findViewById(R.id.draggable_frame);
+        blockView = findViewById(R.id.blockView);
         //scrollView = findViewById(R.id.scrollContainer);
         if (Build.VERSION.SDK_INT >= 21) {
             chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
@@ -307,8 +326,15 @@ public class StoriesActivity extends AppCompatActivity {
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
+    boolean closing = false;
+
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
+        if (closing) return;
+        closing = true;
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        blockView.setVisibility(View.VISIBLE);
         if (InAppStoryService.getInstance() != null) {
             Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
 
@@ -360,6 +386,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void swipeDownEvent(SwipeDownEvent event) {
         if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && InAppStoryManager.getInstance().closeOnSwipe()) {
+            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) == null) return;
             if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
                 CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }

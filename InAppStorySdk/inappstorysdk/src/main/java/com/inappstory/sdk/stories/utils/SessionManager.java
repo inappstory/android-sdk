@@ -77,7 +77,7 @@ public class SessionManager {
     }
 
     private static final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers";
+            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader";
 
     public void openSession(final OpenSessionCallback callback) {
         synchronized (openProcessLock) {

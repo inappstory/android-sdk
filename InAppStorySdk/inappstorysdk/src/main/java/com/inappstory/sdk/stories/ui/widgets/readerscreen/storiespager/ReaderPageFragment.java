@@ -48,14 +48,16 @@ import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import static com.inappstory.sdk.InAppStoryManager.testGenerated;
 
 public class ReaderPageFragment extends Fragment {
     ReaderPageManager manager;
     Timeline timeline;
-    SimpleStoriesWebView storiesWebView;
+    SimpleStoriesView storiesView;
     ButtonsPanel buttonsPanel;
+
 
 
     View blackBottom;
@@ -69,8 +71,8 @@ public class ReaderPageFragment extends Fragment {
             manager.setButtonsPanelManager(buttonsPanel.getManager(), storyId);
         if (timeline != null)
             manager.setTimelineManager(timeline.getManager(), storyId);
-        if (storiesWebView != null)
-            manager.setWebViewManager(storiesWebView.getManager(), storyId);
+        if (storiesView != null)
+            manager.setWebViewManager(storiesView.getManager(), storyId);
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -94,7 +96,7 @@ public class ReaderPageFragment extends Fragment {
         } else {
             Story story = StoryDownloader.getInstance().getStoryById(storyId);
             InAppStoryService.getInstance().setCurrentIndex(story.lastIndex);
-            if (storiesWebView != null) {
+            if (storiesView != null) {
                 InAppStoryService.getInstance().startTimer(story.getDurations().get(story.lastIndex), true);
                 if (story.durations != null) {
                     timeline.getManager().setStoryDurations(story.durations);
@@ -110,7 +112,7 @@ public class ReaderPageFragment extends Fragment {
         blackBottom = view.findViewById(R.id.blackBottom);
         blackTop = view.findViewById(R.id.blackTop);
         buttonsPanel = view.findViewById(R.id.buttonsPanel);
-        storiesWebView = view.findViewById(R.id.storiesWebView);
+        storiesView = view.findViewById(R.id.storiesView);
         timeline = view.findViewById(R.id.timeline);
     }
 
@@ -122,6 +124,7 @@ public class ReaderPageFragment extends Fragment {
         InAppStoryService.getInstance().getFullStoryById(new GetStoryByIdCallback() {
             @Override
             public void getStory(final Story story) {
+                if (story == null) return;
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -146,8 +149,13 @@ public class ReaderPageFragment extends Fragment {
                         if (story.durations != null && !story.durations.isEmpty())
                             story.slidesCount = story.durations.size();
 
-                        storiesWebView.getManager().setIndex(story.lastIndex);
-                        manager.setStoryInfo(story, true);
+                        storiesView.getManager().setIndex(story.lastIndex);
+                        new Handler().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                manager.setStoryInfo(story, true);
+                            }
+                        });
                     }
                 });
 
@@ -160,6 +168,7 @@ public class ReaderPageFragment extends Fragment {
 
             @Override
             public void getPartialStory(final Story story) {
+                if (story == null) return;
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -182,7 +191,7 @@ public class ReaderPageFragment extends Fragment {
                         }
                         if (story.durations != null && !story.durations.isEmpty())
                             story.slidesCount = story.durations.size();
-                        storiesWebView.getManager().setIndex(0);
+                        storiesView.getManager().setIndex(0);
                         manager.setStoryInfo(story, false);
                     }
                 });
@@ -199,7 +208,7 @@ public class ReaderPageFragment extends Fragment {
             public void getStory(Story story) {
                 if (InAppStoryService.getInstance().getCurrentId() == storyId
                         && story.lastIndex == ind) {
-                   // timeline.setActive(story.lastIndex);
+                    // timeline.setActive(story.lastIndex);
                     if (story.durations != null) {
                         timeline.getManager().setStoryDurations(story.durations);
                     }
@@ -226,11 +235,12 @@ public class ReaderPageFragment extends Fragment {
     public void prevStoryPage(PrevStoryPageEvent event) {
         final int ind = event.getStoryIndex();
         if (ind != storyId) return;
+        if (StoryDownloader.getInstance().getStoryById(storyId) == null) return;
         int lind = StoryDownloader.getInstance().getStoryById(storyId).lastIndex;
         if (lind > 0) {
             CsEventBus.getDefault().post(new OnPrevEvent());
             StatisticManager.getInstance().sendCurrentState();
-            timeline.getManager().start(lind-1);
+            timeline.getManager().start(lind - 1);
         } else {
             CsEventBus.getDefault().post(new PrevStoryReaderEvent());
         }
@@ -243,6 +253,7 @@ public class ReaderPageFragment extends Fragment {
         if (ind != storyId) return;
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         //storiesProgressView.skip();
+        if (story == null) return;
         if (story.durations != null && !story.durations.isEmpty())
             story.slidesCount = story.durations.size();
 
@@ -328,7 +339,11 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         try {
-            return inflater.inflate(R.layout.cs_fragment_simple_story, container, false);
+            if (testGenerated) {
+                return inflater.inflate(R.layout.cs_fragment_generated_story, container, false);
+            } else {
+                return inflater.inflate(R.layout.cs_fragment_simple_story, container, false);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return new View(getContext());
@@ -339,7 +354,7 @@ public class ReaderPageFragment extends Fragment {
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void generatedWebPageEvent(final GeneratedWebPageEvent event) {
         if (storyId != event.getStoryId()) return;
-        storiesWebView.loadWebData(event.getLayout(), event.getWebData());
+        storiesView.getManager().loadWebData(event.getLayout(), event.getWebData());
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -374,8 +389,8 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        if (storiesWebView != null)
-            storiesWebView.destroyWebView();
+        if (storiesView != null)
+            storiesView.destroyView();
         try {
             CsEventBus.getDefault().unregister(this);
         } catch (Exception e) {

@@ -74,6 +74,17 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         return false;
     }
 
+    public void destroy() {
+        if (this.surface != null) this.surface.release();
+        if (mp != null) {
+            // this.surface.release();
+            mp.stop();
+            mp.reset();
+            mp.release();
+            mp = null;
+        }
+    }
+
     public void release() {
         if (mp != null) {
             // this.surface.release();

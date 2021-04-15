@@ -12,9 +12,28 @@
         android:layout_width="match_parent"
         android:id="@+id/gameWebview"
         android:layout_height="match_parent"/>
+
     <ImageView
         android:layout_width="match_parent"
+        android:elevation="2dp"
         android:id="@+id/loader"
+        android:scaleType="centerCrop"
         android:layout_height="match_parent"/>
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/close_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:tint="@color/black"
+        android:tintMode="src_atop"
+        android:layout_alignParentRight="true"
+        android:background="@null"
+        android:elevation="10dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:src="@drawable/ic_stories_close" />
+
 </RelativeLayout>
 

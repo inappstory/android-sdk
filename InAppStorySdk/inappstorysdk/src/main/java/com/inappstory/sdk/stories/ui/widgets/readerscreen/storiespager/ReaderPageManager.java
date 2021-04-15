@@ -6,12 +6,11 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.TimelineManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebViewManager;
 
 public class ReaderPageManager {
     TimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
-    StoriesWebViewManager webViewManager;
+    StoriesViewManager webViewManager;
 
     public void setStoryId(int storyId) {
         this.storyId = storyId;
@@ -101,7 +100,7 @@ public class ReaderPageManager {
         this.buttonsPanelManager.setStoryId(storyId);
     }
 
-    public void setWebViewManager(StoriesWebViewManager webViewManager, int storyId) {
+    public void setWebViewManager(StoriesViewManager webViewManager, int storyId) {
         this.webViewManager = webViewManager;
         this.webViewManager.setStoryId(storyId);
     }

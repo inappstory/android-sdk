@@ -17,9 +17,14 @@
             android:theme="@style/Theme.Transparent" />
 
         <activity
+            android:name="com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.NonTransparent" />
+
+        <activity
             android:name=".game.reader.GameActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Transparent" />
+            android:theme="@style/Theme.NonTransparent" />
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
 

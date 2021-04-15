@@ -50,6 +50,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             OldStatisticManager.getInstance().sendStatistic();
             Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
 
+            if (story == null) return;
             CsEventBus.getDefault().post(new CloseStory(story.id,
                     story.title, story.tags, story.slidesCount,
                     story.lastIndex, CloseStory.CLICK,

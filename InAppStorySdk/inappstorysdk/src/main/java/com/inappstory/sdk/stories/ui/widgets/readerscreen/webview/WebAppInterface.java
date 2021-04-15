@@ -9,15 +9,16 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 public class WebAppInterface {
-        StoriesWebViewManager manager;
+        StoriesViewManager manager;
 
         /**
          * Instantiate the interface and set the context
          */
-        WebAppInterface(Context c, StoriesWebViewManager manager) {
+        WebAppInterface(Context c, StoriesViewManager manager) {
             //mContext = c;
             this.manager = manager;
         }

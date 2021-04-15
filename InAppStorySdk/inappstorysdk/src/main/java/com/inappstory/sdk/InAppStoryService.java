@@ -1070,7 +1070,7 @@ public class InAppStoryService extends Service {
     }
 
 
-    public static final String EXPAND_STRING = "slides_html,layout,slides_duration,src_list";
+    public static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list";
 
     private String getApiKey() {
         return InAppStoryManager.getInstance().getApiKey();

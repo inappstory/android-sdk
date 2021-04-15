@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPageFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
