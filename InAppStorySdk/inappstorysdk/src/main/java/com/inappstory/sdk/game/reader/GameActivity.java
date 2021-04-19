@@ -60,7 +60,7 @@ public class GameActivity extends AppCompatActivity {
         webView = findViewById(R.id.gameWebview);
         loader = findViewById(R.id.loader);
         loaderContainer = findViewById(R.id.loaderContainer);
-        if (AppearanceManager.getInstance().csGameLoaderView() == null) {
+        if (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csGameLoaderView() == null) {
             loaderView = new GameLoadProgressBar(GameActivity.this,
                     null,
                     android.R.attr.progressBarStyleHorizontal);
