@@ -74,24 +74,17 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
             cover.setBackgroundColor(Color.BLACK);
             return;
         }
-        Bitmap bmp = Downloader.getBitmap(path);
-        if (bmp != null) {
-            cover.setImageBitmap(bmp);
-            onLoaded();
+        FileCache cache = FileCache.INSTANCE;
+        File fl = cache.getStoredFile(getContext(), path, FileType.STORY_IMAGE, storyId, null);
+        if (fl == null || !fl.exists()) {
+            ImageLoader.getInstance().displayImage(path,
+                    -1, cover);
         } else {
-            FileCache cache = FileCache.INSTANCE;
-            File fl = cache.getStoredFile(getContext(), path, FileType.STORY_IMAGE, storyId, null);
-            if (fl == null || !fl.exists()) {
-                ImageLoader.getInstance().displayImage(path,
-                        -1, cover);
-            } else {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                Bitmap bitmap = BitmapFactory.decodeFile(fl.getAbsolutePath(), options);
-                Downloader.putBitmap(path, bitmap);
-                cover.setImageBitmap(bitmap);
-                onLoaded();
-            }
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            Bitmap bitmap = BitmapFactory.decodeFile(fl.getAbsolutePath(), options);
+            cover.setImageBitmap(bitmap);
+            onLoaded();
         }
     }
 

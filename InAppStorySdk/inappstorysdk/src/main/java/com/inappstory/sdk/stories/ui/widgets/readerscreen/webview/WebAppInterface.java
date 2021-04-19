@@ -31,6 +31,7 @@ public class WebAppInterface {
             manager.storyClick(payload);
         }
 
+
         @JavascriptInterface
         public void storyShowSlide(int index) {
             if (manager.index != index) {

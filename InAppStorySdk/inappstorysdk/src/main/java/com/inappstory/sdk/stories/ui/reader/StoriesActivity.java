@@ -162,7 +162,7 @@ public class StoriesActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
             CsEventBus.getDefault().post(new GameCompleteEvent(
-                    data.getStringExtra("data"),
+                    data.getStringExtra("gameState"),
                     Integer.parseInt(data.getStringExtra("storyId")),
                     data.getIntExtra("slideIndex", 0)));
         }

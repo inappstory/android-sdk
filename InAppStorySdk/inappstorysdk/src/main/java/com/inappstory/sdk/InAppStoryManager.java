@@ -62,7 +62,7 @@ public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
 
-    public static boolean testGenerated = false;
+    public static boolean testGenerated = true;
 
     public static boolean isNull() {
         return INSTANCE == null;

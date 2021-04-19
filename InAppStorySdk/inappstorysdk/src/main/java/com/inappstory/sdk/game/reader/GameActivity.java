@@ -2,10 +2,7 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,24 +15,26 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.RelativeLayout;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.loader.FileLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import static java.security.AccessController.getContext;
+import java.util.ArrayList;
 
 public class GameActivity extends AppCompatActivity {
     String storyId;
@@ -43,6 +42,8 @@ public class GameActivity extends AppCompatActivity {
     WebView webView;
     ImageView loader;
     View closeButton;
+    RelativeLayout loaderContainer;
+    IGameLoaderView loaderView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
@@ -51,6 +52,15 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.cs_activity_game);
         webView = findViewById(R.id.gameWebview);
         loader = findViewById(R.id.loader);
+        loaderContainer = findViewById(R.id.loaderContainer);
+        if (AppearanceManager.getInstance().csGameLoaderView() == null) {
+            loaderView = new GameLoadProgressBar(GameActivity.this,
+                    null,
+                    android.R.attr.progressBarStyleHorizontal);
+        } else {
+            loaderView = AppearanceManager.getInstance().csGameLoaderView();
+        }
+        loaderContainer.addView(loaderView.getView());
         webView.getSettings().setJavaScriptEnabled(true);
         closeButton = findViewById(R.id.close_button);
         closeButton.setOnClickListener(new View.OnClickListener() {
@@ -60,6 +70,11 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         String path = getIntent().getStringExtra("gameUrl");
+        String resources = getIntent().getStringExtra("gameResources");
+        ArrayList<WebResource> resourceList = new ArrayList<>();
+        if (resources != null) {
+            resourceList = JsonParser.listFromJson(resources, WebResource.class);
+        }
         storyId = getIntent().getStringExtra("storyId");
         gameConfig = getIntent().getStringExtra("gameConfig");
         index = getIntent().getIntExtra("slideIndex", 0);
@@ -101,19 +116,44 @@ public class GameActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new WebAppInterface(GameActivity.this, index, storyId), "Android");
         String[] urlParts = urlParts(path);
+        final ArrayList<WebResource> finalResourceList = resourceList;
+        final long[] tSize = {0};
+        long rSize = 0;
+        for (WebResource resource : finalResourceList) {
+            rSize += resource.size;
+        }
+        final long finalRSize = rSize;
         FileLoader.downloadAndUnzip(GameActivity.this, path, urlParts[0], new GameLoadCallback() {
             @Override
             public void onLoad(final File file) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                FileLoader.downloadResources(finalResourceList, file.getAbsolutePath(), new GameLoadCallback() {
                     @Override
-                    public void run() {
-                        File fl = new File(file.getAbsolutePath() + "/index.html");
-                        try {
-                            webView.loadDataWithBaseURL("file://" + fl.getAbsolutePath(), getStringFromFile(fl), "text/html; charset=utf-8", "UTF-8", null);
+                    public void onLoad(File file2) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                File fl = new File(file.getAbsolutePath() + "/index.html");
+                                try {
+                                    webView.loadDataWithBaseURL("file://" + fl.getAbsolutePath(), getStringFromFile(fl), "text/html; charset=utf-8", "UTF-8", null);
 
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError() {
+
+                    }
+
+                    @Override
+                    public void onProgress(int loadedSize, int totalSize) {
+                        long sz = finalRSize + tSize[0];
+                        long lz = tSize[0] + loadedSize;
+                        int percent = (int)((lz * 100)/(sz));
+                        loaderView.setProgress(percent, 100);
                     }
                 });
             }
@@ -121,6 +161,13 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onError() {
 
+            }
+
+            @Override
+            public void onProgress(int loadedSize, int totalSize) {
+                tSize[0] = totalSize;
+                int percent = (int)((loadedSize * 100)/(totalSize + finalRSize));
+                loaderView.setProgress(percent, 100);
             }
         });
     }
@@ -174,8 +221,8 @@ public class GameActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void gameLoaded() {
-            if (loader != null)
-                loader.setVisibility(View.GONE);
+            if (loaderContainer != null)
+                loaderContainer.setVisibility(View.GONE);
         }
 
 

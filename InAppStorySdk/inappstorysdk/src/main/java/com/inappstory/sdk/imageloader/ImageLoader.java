@@ -73,6 +73,9 @@ public class ImageLoader {
             Bitmap bitmap = memoryCache.get(url);
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
+                if (imageView instanceof GeneratedImageView) {
+                    ((GeneratedImageView)imageView).onLoaded();
+                }
             } else {
                 queuePhoto(url, imageView);
                 //  imageView.setImageResource(loader);

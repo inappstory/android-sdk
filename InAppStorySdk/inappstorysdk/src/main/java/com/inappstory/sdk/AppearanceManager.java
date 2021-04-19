@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
+import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
@@ -51,6 +52,7 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private ILoaderView csLoaderView;
+    private IGameLoaderView csGameLoaderView;
     private StoryTouchListener storyTouchListener;
     private static WidgetAppearance csWidgetAppearance;
 
@@ -410,6 +412,15 @@ public class AppearanceManager {
 
     public ILoaderView csLoaderView() {
         return csLoaderView;
+    }
+
+    public AppearanceManager csGameLoaderView(IGameLoaderView csGameLoaderView) {
+        this.csGameLoaderView = csGameLoaderView;
+        return AppearanceManager.this;
+    }
+
+    public IGameLoaderView csGameLoaderView() {
+        return csGameLoaderView;
     }
 
     public IStoriesListItem csListItemInterface() {

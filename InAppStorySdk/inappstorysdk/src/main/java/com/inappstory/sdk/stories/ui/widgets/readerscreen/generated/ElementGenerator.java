@@ -94,23 +94,17 @@ public class ElementGenerator {
                 }
             }
         }
-        Bitmap bmp = Downloader.getBitmap(prePath + imgPath);
-        if (bmp != null) {
-            ((GeneratedImageView) generatedView.view).setImageBitmap(bmp);
+        FileCache cache = FileCache.INSTANCE;
+        File fl = cache.getStoredFile(generatedView.view.getContext(), prePath + imgPath, FileType.STORY_IMAGE, storyId, null);
+        if (fl == null || !fl.exists()) {
+            ImageLoader.getInstance().displayImage(prePath + imgPath,
+                    -1, (GeneratedImageView) generatedView.view);
         } else {
-
-            FileCache cache = FileCache.INSTANCE;
-            File fl = cache.getStoredFile(generatedView.view.getContext(), prePath + imgPath, FileType.STORY_IMAGE, storyId, null);
-            if (fl == null || !fl.exists()) {
-                ImageLoader.getInstance().displayImage(prePath + imgPath,
-                        -1, (GeneratedImageView) generatedView.view);
-            } else {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                Bitmap bitmap = BitmapFactory.decodeFile(fl.getAbsolutePath(), options);
-                Downloader.putBitmap(prePath + imgPath, bitmap);
-                ((GeneratedImageView) generatedView.view).setImageBitmap(bitmap);
-            }
+            BitmapFactory.Options options = new BitmapFactory.Options();
+          //  options.inPreferredConfig = Bitmap.Config.;
+            Bitmap bitmap = BitmapFactory.decodeFile(fl.getAbsolutePath(), options);
+            ((GeneratedImageView) generatedView.view).setImageBitmap(bitmap);
+            ((GeneratedImageView) generatedView.view).onLoaded();
         }
 
     }

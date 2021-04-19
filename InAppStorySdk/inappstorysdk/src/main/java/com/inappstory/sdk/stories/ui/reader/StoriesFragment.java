@@ -110,7 +110,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     List<Integer> currentIds = new ArrayList<>();
 
 
-    ReaderPager storiesViewPager;
+    StoriesReaderPager storiesViewPager;
     View invMask;
 
     @Override
@@ -136,8 +136,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             if (getActivity() != null) getActivity().finish();
             return;
         }
-        ReaderPagerAdapter outerViewPagerAdapter =
-                new ReaderPagerAdapter(
+        StoriesReaderPagerAdapter outerViewPagerAdapter =
+                new StoriesReaderPagerAdapter(
                         getChildFragmentManager(),
                         closePosition,
                         getArguments().getBoolean(CS_CLOSE_ON_SWIPE, false), currentIds);
