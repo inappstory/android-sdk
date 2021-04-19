@@ -64,6 +64,7 @@ import com.inappstory.sdk.stories.cache.FileType;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
@@ -629,6 +630,15 @@ public class StoriesWebView extends WebView {
                 story.tags, story.slidesCount, index));
         CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
         CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void gameComplete(GameCompleteEvent event) {
+        if (storyId != event.getStoryId() || index != event.getSlideIndex()) return;
+        if (event.getData() != null)
+            loadUrl("javascript:game_complete('" + event.getData() + "')");
+        else
+            loadUrl("javascript:game_complete()");
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
