@@ -983,7 +983,7 @@ public class InAppStoryService extends Service {
         if (!story.favorite)
             StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
-                story.tags, story.slidesCount, story.lastIndex, story.favorite));
+                story.tags, story.slidesCount, story.lastIndex, !story.favorite));
         NetworkClient.getApi().storyFavorite(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
                 getApiKey(), val ? 0 : 1).enqueue(
