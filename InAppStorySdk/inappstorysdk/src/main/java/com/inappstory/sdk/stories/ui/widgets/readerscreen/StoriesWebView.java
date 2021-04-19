@@ -48,6 +48,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
+import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -77,6 +78,7 @@ import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
+import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
@@ -87,6 +89,7 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.webkit.WebSettings.FORCE_DARK_OFF;
 import static android.webkit.WebSettings.FORCE_DARK_ON;
+import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
 /**
@@ -668,6 +671,58 @@ public class StoriesWebView extends WebView {
             } else {
                 CsEventBus.getDefault().post(new StoryReaderTapEvent(payload));
             }
+        }
+
+
+        @JavascriptInterface
+        public void openGameReader(String gameUrl, String preloadPath, String gameConfig) {
+            Intent intent2 = new Intent(getContext(), GameActivity.class);
+            intent2.putExtra("gameUrl", gameUrl);
+            intent2.putExtra("storyId", Integer.toString(storyId));
+            intent2.putExtra("slideIndex", index);
+
+            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            intent2.putExtra("tags", story.tags);
+            intent2.putExtra("slidesCount", story.slidesCount);
+            intent2.putExtra("title", story.title);
+
+            intent2.putExtra("gameConfig", gameConfig);
+            intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
+            CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags, story.slidesCount, index));
+            ((Activity) getContext()).startActivityForResult(intent2, GAME_READER_REQUEST);
+        }
+
+        @JavascriptInterface
+        public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
+
+            Intent intent2 = new Intent(getContext(), GameActivity.class);
+            intent2.putExtra("gameUrl", gameUrl);
+            intent2.putExtra("storyId", Integer.toString(storyId));
+            intent2.putExtra("slideIndex", index);
+            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            intent2.putExtra("tags", story.tags);
+            intent2.putExtra("slidesCount", story.slidesCount);
+            intent2.putExtra("title", story.title);
+            intent2.putExtra("gameConfig", gameConfig);
+            intent2.putExtra("gameResources", resources);
+            intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
+            CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags, story.slidesCount, index));
+            ((Activity) getContext()).startActivityForResult(intent2, GAME_READER_REQUEST);
+        }
+
+        @JavascriptInterface
+        public void openGameReader(String gameUrl, String preloadPath) {
+            Intent intent2 = new Intent(getContext(), GameActivity.class);
+            intent2.putExtra("gameUrl", gameUrl);
+            intent2.putExtra("storyId", Integer.toString(storyId));
+            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            intent2.putExtra("tags", story.tags);
+            intent2.putExtra("slidesCount", story.slidesCount);
+            intent2.putExtra("title", story.title);
+            intent2.putExtra("slideIndex", index);
+            intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
+            CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags, story.slidesCount, index));
+            ((Activity) getContext()).startActivityForResult(intent2, GAME_READER_REQUEST);
         }
 
         @JavascriptInterface

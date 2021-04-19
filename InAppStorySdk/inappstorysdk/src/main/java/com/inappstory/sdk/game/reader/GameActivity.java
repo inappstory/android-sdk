@@ -21,12 +21,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.loader.FileLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.outerevents.CloseGame;
+import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 
 import java.io.BufferedReader;
@@ -38,7 +41,11 @@ import java.util.ArrayList;
 
 public class GameActivity extends AppCompatActivity {
     String storyId;
+    String title;
+    String tags;
     int index;
+    int slidesCount;
+
     WebView webView;
     ImageView loader;
     View closeButton;
@@ -66,6 +73,8 @@ public class GameActivity extends AppCompatActivity {
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(storyId), title, tags,
+                        slidesCount, index));
                 gameCompleted(null);
             }
         });
@@ -75,9 +84,14 @@ public class GameActivity extends AppCompatActivity {
         if (resources != null) {
             resourceList = JsonParser.listFromJson(resources, WebResource.class);
         }
-        storyId = getIntent().getStringExtra("storyId");
         gameConfig = getIntent().getStringExtra("gameConfig");
+
+        storyId = getIntent().getStringExtra("storyId");
         index = getIntent().getIntExtra("slideIndex", 0);
+        slidesCount = getIntent().getIntExtra("slidesCount", 0);
+        title = getIntent().getStringExtra("title");
+        tags = getIntent().getStringExtra("tags");
+
         String loaderPath = getIntent().getStringExtra("preloadPath");
         if (!loaderPath.isEmpty())
             ImageLoader.getInstance().displayImage(loaderPath, -1, loader);
@@ -135,7 +149,6 @@ public class GameActivity extends AppCompatActivity {
                                 File fl = new File(file.getAbsolutePath() + "/index.html");
                                 try {
                                     webView.loadDataWithBaseURL("file://" + fl.getAbsolutePath(), getStringFromFile(fl), "text/html; charset=utf-8", "UTF-8", null);
-
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -228,6 +241,13 @@ public class GameActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void gameComplete(String data) {
+            gameCompleted(data);
+        }
+
+        @JavascriptInterface
+        public void gameComplete(String data, String eventData) {
+            CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
+                    slidesCount, index, eventData));
             gameCompleted(data);
         }
 

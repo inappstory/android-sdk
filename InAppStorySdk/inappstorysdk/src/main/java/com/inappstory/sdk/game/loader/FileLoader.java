@@ -79,6 +79,7 @@ public class FileLoader {
                 for (WebResource resource : resources) {
                     String url = resource.url;
                     String fileName = resource.key;
+                    if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty()) continue;
                     int count;
                     URL uri = new URL(url);
                     File file = new File(filePath.getAbsolutePath() + "/" + fileName);
