@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -29,6 +31,7 @@ import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
@@ -45,6 +48,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesActivity extends AppCompatActivity {
 
@@ -148,6 +152,17 @@ public class StoriesActivity extends AppCompatActivity {
             finishActivityWithoutAnimation();
         }
 
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
+            CsEventBus.getDefault().post(new GameCompleteEvent(
+                    data.getStringExtra("gameState"),
+                    Integer.parseInt(data.getStringExtra("storyId")),
+                    data.getIntExtra("slideIndex", 0)));
+        }
     }
 
     @Override

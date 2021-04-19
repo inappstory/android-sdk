@@ -6,9 +6,8 @@ import android.graphics.Typeface;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
+import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
@@ -51,6 +50,7 @@ public class AppearanceManager {
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
     private ILoaderView csLoaderView;
+    private IGameLoaderView csGameLoaderView;
     private StoryTouchListener storyTouchListener;
     private static WidgetAppearance csWidgetAppearance;
 
@@ -71,6 +71,43 @@ public class AppearanceManager {
     }
 
     Typeface csCustomFont;
+    Typeface csCustomBoldFont;
+    Typeface csCustomItalicFont;
+
+    public Typeface csCustomBoldFont() {
+        return csCustomBoldFont;
+    }
+
+    public Typeface csCustomItalicFont() {
+        return csCustomItalicFont;
+    }
+
+    public Typeface csCustomBoldItalicFont() {
+        return csCustomBoldItalicFont;
+    }
+
+    public Typeface csCustomSecondaryBoldFont() {
+        return csCustomSecondaryBoldFont;
+    }
+
+    public Typeface csCustomSecondaryItalicFont() {
+        return csCustomSecondaryItalicFont;
+    }
+
+    public Typeface csCustomSecondaryBoldItalicFont() {
+        return csCustomSecondaryBoldItalicFont;
+    }
+
+    Typeface csCustomBoldItalicFont;
+
+    public Typeface csCustomSecondaryFont() {
+        return csCustomSecondaryFont;
+    }
+
+    Typeface csCustomSecondaryFont;
+    Typeface csCustomSecondaryBoldFont;
+    Typeface csCustomSecondaryItalicFont;
+    Typeface csCustomSecondaryBoldItalicFont;
 
     public static WidgetAppearance csWidgetAppearance() {
         if (csWidgetAppearance == null) csWidgetAppearance = new WidgetAppearance();
@@ -98,11 +135,10 @@ public class AppearanceManager {
         this.storyTouchListener = storyTouchListener;
         return AppearanceManager.this;
     }
+
     public StoryTouchListener csStoryTouchListener() {
         return this.storyTouchListener;
     }
-
-
 
 
     public AppearanceManager csListItemWidth(Integer csListItemWidth) {
@@ -112,6 +148,82 @@ public class AppearanceManager {
 
     public AppearanceManager csCustomFont(Typeface csCustomFont) {
         this.csCustomFont = csCustomFont;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csCustomBoldFont(Typeface csCustomFont) {
+        this.csCustomBoldFont = csCustomFont;
+        return AppearanceManager.this;
+    }
+
+    public Typeface getFont(boolean secondary, boolean bold, boolean italic) {
+        if (secondary) {
+            if (bold) {
+                if (italic) {
+                    if (csCustomSecondaryBoldItalicFont == null) return getFont(secondary, bold, false);
+                    return csCustomSecondaryBoldItalicFont;
+                } else {
+                    if (csCustomSecondaryBoldFont == null) return getFont(secondary, false, italic);
+                    return csCustomSecondaryBoldFont;
+                }
+            } else {
+                if (italic) {
+                    if (csCustomSecondaryItalicFont == null) return getFont(secondary, bold, false);
+                    return csCustomSecondaryItalicFont;
+                } else {
+                    if (csCustomSecondaryFont == null) return getFont(false, bold, italic);
+                    return csCustomSecondaryFont;
+                }
+            }
+        } else {
+            if (bold) {
+                if (italic) {
+                    if (csCustomBoldItalicFont == null) return getFont(secondary, bold, false);
+                    return csCustomBoldItalicFont;
+                } else {
+                    if (csCustomBoldFont == null) return getFont(secondary, false, italic);
+                    return csCustomBoldFont;
+                }
+            } else {
+                if (italic) {
+                    if (csCustomItalicFont == null) return getFont(secondary, bold, false);
+                    return csCustomItalicFont;
+                } else {
+                    if (csCustomFont == null) return null;
+                    return csCustomFont;
+                }
+            }
+        }
+    }
+
+    public AppearanceManager csCustomItalicFont(Typeface csCustomFont) {
+        this.csCustomItalicFont = csCustomFont;
+        return AppearanceManager.this;
+    }
+
+
+    public AppearanceManager csCustomBoldItalicFont(Typeface csCustomFont) {
+        this.csCustomBoldItalicFont = csCustomFont;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csCustomSecondaryFont(Typeface csCustomFont) {
+        this.csCustomSecondaryFont = csCustomFont;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csCustomSecondaryBoldFont(Typeface csCustomFont) {
+        this.csCustomSecondaryBoldFont = csCustomFont;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csCustomSecondaryItalicFont(Typeface csCustomFont) {
+        this.csCustomSecondaryItalicFont = csCustomFont;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csCustomSecondaryBoldItalicFont(Typeface csCustomFont) {
+        this.csCustomSecondaryBoldItalicFont = csCustomFont;
         return AppearanceManager.this;
     }
 
@@ -127,7 +239,6 @@ public class AppearanceManager {
         this.csListItemTitleSize = csListItemTitleSize;
         return AppearanceManager.this;
     }
-
 
 
     public AppearanceManager csListItemTitleColor(int csListItemTitleColor) {
@@ -292,7 +403,6 @@ public class AppearanceManager {
     }
 
 
-
     public AppearanceManager csLoaderView(ILoaderView csLoaderView) {
         this.csLoaderView = csLoaderView;
         return AppearanceManager.this;
@@ -300,6 +410,15 @@ public class AppearanceManager {
 
     public ILoaderView csLoaderView() {
         return csLoaderView;
+    }
+
+    public AppearanceManager csGameLoaderView(IGameLoaderView csGameLoaderView) {
+        this.csGameLoaderView = csGameLoaderView;
+        return AppearanceManager.this;
+    }
+
+    public IGameLoaderView csGameLoaderView() {
+        return csGameLoaderView;
     }
 
     public IStoriesListItem csListItemInterface() {
@@ -310,18 +429,6 @@ public class AppearanceManager {
         this.csListItemInterface = csListItemInterface;
         return AppearanceManager.this;
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
