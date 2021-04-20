@@ -60,7 +60,7 @@
                 android:paddingRight="8dp"
                 android:paddingBottom="8dp"
                 android:src="@drawable/ic_stories_close"
-                android:tint="@color/black"
+                android:tint="@color/white"
                 android:tintMode="src_atop" />
         </RelativeLayout>
 
