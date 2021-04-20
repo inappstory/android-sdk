@@ -25,6 +25,9 @@
         <item name="android:windowTranslucentStatus" tools:targetApi="kitkat">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
+            shortEdges <!-- default, shortEdges, never -->
+        </item>
     </style>
 
     <style name="Theme.Transparent" parent="StoriesSDKAppTheme.NoActionBar">
