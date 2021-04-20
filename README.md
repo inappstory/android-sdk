@@ -44,10 +44,6 @@
         *;
     }
 
-При разработке под Android 9 в файле манифеста в application разрешить получение трафика по http:
-
-    android:usesCleartextTraffic="true"
-
 ##### Инициализация в проекте
 
 Для дальнейшей работы в файле res/values/constants.xml необходимо добавить строку:
