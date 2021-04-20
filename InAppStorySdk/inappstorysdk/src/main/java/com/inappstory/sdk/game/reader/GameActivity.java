@@ -34,6 +34,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
@@ -292,12 +293,20 @@ public class GameActivity extends AppCompatActivity {
     public void gameCompleted(String gameState) {
         try {
             Intent intent = new Intent();
-            intent.putExtra("storyId", storyId);
-            intent.putExtra("slideIndex", index);
-            if (gameState != null)
-                intent.putExtra("gameState", gameState);
+            if (Sizes.isTablet()) {
+                CsEventBus.getDefault().post(new GameCompleteEvent(
+                        gameState,
+                        Integer.parseInt(storyId),
+                        index));
+            } else {
+                intent.putExtra("storyId", storyId);
+                intent.putExtra("slideIndex", index);
+                if (gameState != null)
+                    intent.putExtra("gameState", gameState);
+            }
             setResult(RESULT_OK, intent);
             finish();
+
         } catch (Exception e) {
             closing = false;
         }
