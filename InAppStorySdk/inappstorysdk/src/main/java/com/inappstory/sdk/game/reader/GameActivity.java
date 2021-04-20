@@ -1,20 +1,26 @@
 package com.inappstory.sdk.game.reader;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.DisplayCutout;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +37,8 @@ import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
+import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.utils.StatusBarController;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+
 
 public class GameActivity extends AppCompatActivity {
     String storyId;
@@ -51,6 +60,27 @@ public class GameActivity extends AppCompatActivity {
     View closeButton;
     RelativeLayout loaderContainer;
     IGameLoaderView loaderView;
+    View blackTop;
+    View blackBottom;
+    View baseContainer;
+
+
+
+    static void setWindowFlag(Activity activity, final int bits, boolean on) {
+        Window win = activity.getWindow();
+        WindowManager.LayoutParams winParams = win.getAttributes();
+        if (on) {
+            winParams.flags |= bits;
+        } else {
+            winParams.flags &= ~bits;
+        }
+        win.setAttributes(winParams);
+    }
+
+    @Override
+    public void onBackPressed() {
+        closeGame();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
@@ -59,7 +89,9 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.cs_activity_game);
         webView = findViewById(R.id.gameWebview);
         loader = findViewById(R.id.loader);
+        baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
+
         if (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csGameLoaderView() == null) {
             loaderView = new GameLoadProgressBar(GameActivity.this,
                     null,
@@ -67,15 +99,56 @@ public class GameActivity extends AppCompatActivity {
         } else {
             loaderView = AppearanceManager.getInstance().csGameLoaderView();
         }
+        blackTop = findViewById(R.id.blackTop);
+        blackBottom = findViewById(R.id.blackBottom);
+        if (Sizes.isTablet() && baseContainer != null) {
+            baseContainer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    closeGame();
+                }
+            });
+        }
+        if (!Sizes.isTablet()) {
+            if (blackBottom != null) {
+                Point screenSize = Sizes.getScreenSize();
+                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                float realProps = screenSize.y / ((float) screenSize.x);
+                float sn = 1.85f;
+                if (realProps > sn) {
+                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+
+                }
+                blackBottom.setLayoutParams(lp);
+                blackTop.setLayoutParams(lp);
+                if (Build.VERSION.SDK_INT >= 28) {
+                    new Handler(getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                                DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                                if (cutout != null) {
+                                    if (closeButton != null) {
+                                        RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) closeButton.getLayoutParams();
+                                        lp1.topMargin += Math.max(cutout.getSafeInsetTop() - lp.height, 0);
+                                        closeButton.setLayoutParams(lp1);
+                                    }
+                                } else {
+
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
         loaderContainer.addView(loaderView.getView());
         webView.getSettings().setJavaScriptEnabled(true);
         closeButton = findViewById(R.id.close_button);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(storyId), title, tags,
-                        slidesCount, index));
-                gameCompleted(null);
+                closeGame();
             }
         });
         String path = getIntent().getStringExtra("gameUrl");
@@ -137,6 +210,17 @@ public class GameActivity extends AppCompatActivity {
             rSize += resource.size;
         }
         final long finalRSize = rSize;
+        if (!Sizes.isTablet()) {
+            if (Build.VERSION.SDK_INT >= 19) {
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            }
+
+            if (Build.VERSION.SDK_INT >= 21) {
+                setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
+                getWindow().setStatusBarColor(Color.TRANSPARENT);
+            }
+            StatusBarController.hideStatusBar(GameActivity.this, true);
+        }
         FileLoader.downloadAndUnzip(GameActivity.this, path, urlParts[0], new GameLoadCallback() {
             @Override
             public void onLoad(final File file) {
@@ -165,7 +249,7 @@ public class GameActivity extends AppCompatActivity {
                     public void onProgress(int loadedSize, int totalSize) {
                         long sz = finalRSize + tSize[0];
                         long lz = tSize[0] + loadedSize;
-                        int percent = (int)((lz * 100)/(sz));
+                        int percent = (int) ((lz * 100) / (sz));
                         loaderView.setProgress(percent, 100);
                     }
                 });
@@ -179,10 +263,20 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onProgress(int loadedSize, int totalSize) {
                 tSize[0] = totalSize;
-                int percent = (int)((loadedSize * 100)/(totalSize + finalRSize));
+                int percent = (int) ((loadedSize * 100) / (totalSize + finalRSize));
                 loaderView.setProgress(percent, 100);
             }
         });
+    }
+
+    boolean closing = false;
+
+    void closeGame() {
+        if (closing) return;
+        closing = true;
+        CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(storyId), title, tags,
+                slidesCount, index));
+        gameCompleted(null);
     }
 
     public String[] urlParts(String url) {
@@ -196,13 +290,17 @@ public class GameActivity extends AppCompatActivity {
     String gameConfig;
 
     public void gameCompleted(String gameState) {
-        Intent intent = new Intent();
-        intent.putExtra("storyId", storyId);
-        intent.putExtra("slideIndex", index);
-        if (gameState != null)
-            intent.putExtra("gameState", gameState);
-        setResult(RESULT_OK, intent);
-        finish();
+        try {
+            Intent intent = new Intent();
+            intent.putExtra("storyId", storyId);
+            intent.putExtra("slideIndex", index);
+            if (gameState != null)
+                intent.putExtra("gameState", gameState);
+            setResult(RESULT_OK, intent);
+            finish();
+        } catch (Exception e) {
+            closing = false;
+        }
     }
 
     public void initGame(String data) {

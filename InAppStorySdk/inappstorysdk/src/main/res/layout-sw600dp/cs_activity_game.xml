@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
+    android:clickable="true"
     tools:context=".game.reader.GameActivity">
 
     <View
@@ -12,8 +12,11 @@
         android:id="@+id/draggable_frame"
         android:layout_height="match_parent"/>
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:clickable="true"
+        android:layout_width="@dimen/cs_tablet_width"
+        android:background="@android:color/black"
+        android:layout_height="@dimen/cs_tablet_height"
+        android:layout_centerInParent="true"
         android:orientation="vertical">
 
         <View

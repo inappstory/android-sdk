@@ -1,9 +1,12 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.net.Uri;
+import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -25,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -394,6 +398,40 @@ public class Downloader {
     }
 
 
+    public static String getMimeType(Context context, Uri uriImage) {
+        String strMimeType = null;
+
+        Cursor cursor = context.getContentResolver().query(uriImage,
+                new String[]{MediaStore.MediaColumns.MIME_TYPE},
+                null, null, null);
+
+        if (cursor != null && cursor.moveToNext()) {
+            strMimeType = cursor.getString(0);
+        }
+
+        return strMimeType;
+    }
+
+    public static void compressFile(File srcFile, String mimeType) throws IOException {
+        FileOutputStream out = new FileOutputStream(srcFile.getAbsolutePath());
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeFile(srcFile.getAbsolutePath(), options);
+        switch (mimeType) {
+            case "image/jpeg":
+            case "image/jpg":
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out);
+                break;
+            case "image/png":
+                bitmap.compress(Bitmap.CompressFormat.PNG, 70, out);
+                break;
+            case "image/webp":
+                bitmap.compress(Bitmap.CompressFormat.WEBP, 70, out);
+                break;
+        }
+        out.close();
+    }
+
     public static File downloadFile(String url, File outputFile) throws Exception {
 
         outputFile.getParentFile().mkdirs();
@@ -425,7 +463,7 @@ public class Downloader {
         byte[] buffer = new byte[1024];
         int bufferLength = 0;
 
-        while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+        while ((bufferLength = inputStream.read(buffer)) > 0) {
             fileOutput.write(buffer, 0, bufferLength);
         }
         fileOutput.flush();
@@ -434,6 +472,12 @@ public class Downloader {
         } catch (Exception e) {
         }
         fileOutput.close();
+        if (outputFile.length() > 1024*500) {
+            compressFile(outputFile, getMimeType(
+                    InAppStoryManager.getInstance().getContext(),
+                    Uri.fromFile(outputFile))
+            );
+        }
         return outputFile;
 
     }
@@ -460,7 +504,7 @@ public class Downloader {
         byte[] buffer = new byte[1024];
         int bufferLength = 0;
 
-        while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+        while ((bufferLength = inputStream.read(buffer)) > 0) {
             fileOutput.write(buffer, 0, bufferLength);
         }
         fileOutput.flush();
