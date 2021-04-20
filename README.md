@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:1.0.0'
+    implementation 'com.github.inappstory:android-sdk:1.1.1'
 
 Также для корректной работы в dependencies нужно добавить :
 
@@ -70,6 +70,7 @@
     boolean hasShare//флаг, который отвечает за подключение функционала шаринга. По умолчанию - false (отключен).
     boolean hasFavorite //флаг, который отвечает за подключение функционала избранных stories. По умолчанию - false (отключен).
     ArrayList<String> tags //теги для таргетирования stories, опциональный параметр
+    Map<String, String> placeholders //плейсхолдеры для замены специальных переменных в текстах сториз, опциональный параметр. Плейсхолдеры задаются без спецзнаков (%).
 
 Пример инициализации `InAppStoryManager` выглядит следующим образом
 
@@ -82,6 +83,7 @@
             .apiKey(apiKey)
             .testKey(testKey)
             .tags(tags)
+            .tags(placeholders)
             .create();
 
 Добавьте в layout, в котором планируется показ списка, следующий код:
@@ -110,6 +112,9 @@
     setTags(ArrayList<String> tags);
     addTags(ArrayList<String> tags);
     removeTags(ArrayList<String> tags);
+    setPlaceholders(@NonNull Map<String, String> placeholders);
+    Map<String, String> getPlaceholders();
+    setPlaceholder(String key, String value); //используется как для установки, так и для удаления плейсхолдера, если в качетсве value передан null.
 
 Они позволяет менять/добавлять/удалять теги без пересоздания InAppStoryManager.
 
@@ -187,7 +192,7 @@
         .csListItemTitleColor(Color.BLUE)
         .csListItemTitleSize(Sizes.dpToPxExt(20))
 
-Также помимо этого в AppearanceManager есть 4 интерфейса.
+Также помимо этого в AppearanceManager есть несколько интерфейсов.
 `IStoriesListItem csListItemInterface`, используется для полной кастомизации элементов списка.
 
     interface IStoriesListItem {
@@ -303,10 +308,17 @@
                 }
     });
 
-`ILoaderView iLoaderView` - используется для подстановки собственного лоадера вместо дефолтного
+`ILoaderView iLoaderView` - используется для подстановки собственного лоадера вместо дефолтного. Задается в глобальном AppearanceManager.
 
         public interface ILoaderView {
             View getView();
+        }
+
+`IGameLoaderView iGameLoaderView` - используется для подстановки собственного лоадера вместо дефолтного на экране игр. Задается в глобальном AppearanceManager.
+
+        public interface IGameLoaderView {
+            View getView(); //При наследовании от интерфейса View должна возвращать сама себя.
+            void setProgress(int progress, int max); //Значения прогресса - от 0 до 100, в качестве max передается 100. 
         }
         
 `StoryTouchListener csStoryTouchListener` - используется для добавления обработки клика на ячейки списков сториз (например, для анимации)
@@ -387,7 +399,7 @@
     CloseStoryReaderEvent - используется для закрытия ридера сториз (например при перегрузке клика на кнопки, шаринг и прочее)
     SoundOnOffEvent - вызывается после изменения флага включений/выключения звука (InAppStoryManager.getInstance().soundOn). В случае, если ридер закрыт, вызывать событие не требуется.
 
-Ниже перечислены 10 событий, на которые можно подписаться:
+Ниже перечислены события, на которые можно подписаться:
 
 1) StoriesLoaded - список сториз загрузился, виджет готов к работе (срабатывает каждый раз при загрузке списка, в том числе и при refresh). Событие содержит метод getCount() - количество сториз.
 
@@ -402,7 +414,7 @@
 
 3) ShowStory - показ ридера со сториз (после клика или перелистывания в обычном списке, в избранном, одиночной сториз или онбордингов). Дополнительный метод int getSource(), может возвращать значения ShowStory.SINGLE, ShowStory.ONBOARDING, ShowStory.LIST, ShowStory.FAVORITE
 
-Все события со 4 по 10 содержат метод int getIndex() - с какого слайда было вызвано событие
+Все события со 4 по 13 содержат метод int getIndex() - с какого слайда было вызвано событие
 
 4) CloseStory - закрытие сториз. Дополнительные методы: 
 - int getAction(), может возвращать значения CloseStory.AUTO, CloseStory.CLICK, CloseStory.SWIPE, CloseStory.CUSTOM
@@ -414,11 +426,15 @@
 
 7) ClickOnShareStory - нажатие на кнопку поделиться.
 
+8) StartGame - клик на кнопку с открытием игры
+9) CloseGame - при закрытии игры вручную (по крестику, back и т.д.).
+10) FinishGame - по окончании игры (при автоматическом закрытии). Также содержит метод getResult(), который возвращает json строку с результатом игры.
+
 Все события со 8 по 10 содержат метод boolean getValue() - в каком состоянии находится кнопка (true - активирована)
 
-8) LikeStory - клик на кнопку лайка
-9) DislikeStory - клик на кнопку дизлайка
-10) FavoriteStory - клик на кнопку добавления сториз в избранное
+11) LikeStory - клик на кнопку лайка
+12) DislikeStory - клик на кнопку дизлайка
+13) FavoriteStory - клик на кнопку добавления сториз в избранное
 
 Также есть 2 события для отслеживания ошибок:
 
@@ -702,7 +718,7 @@ FAQ
 3) Смена положения таймера/крестика
 В AppearanceManager используется `csClosePosition`.
 
-4) Изменение лоадера
+4) Изменение лоадера в ридере сториз
 В глобальном AppearanceManager используется кастомизация через csLoaderView.
 
 5) Задание обработчика для кнопок
