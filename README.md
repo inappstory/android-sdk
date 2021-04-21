@@ -83,7 +83,7 @@
             .apiKey(apiKey)
             .testKey(testKey)
             .tags(tags)
-            .tags(placeholders)
+            .placeholders(placeholders)
             .create();
 
 Добавьте в layout, в котором планируется показ списка, следующий код:
