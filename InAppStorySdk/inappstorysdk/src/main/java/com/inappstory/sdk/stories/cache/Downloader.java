@@ -472,12 +472,10 @@ public class Downloader {
         } catch (Exception e) {
         }
         fileOutput.close();
-        if (outputFile.length() > 1024*500) {
-            compressFile(outputFile, getMimeType(
-                    InAppStoryManager.getInstance().getContext(),
-                    Uri.fromFile(outputFile))
+       /* if (outputFile.length() > 1024*500) {
+            compressFile(outputFile, contentType
             );
-        }
+        }*/
         return outputFile;
 
     }
