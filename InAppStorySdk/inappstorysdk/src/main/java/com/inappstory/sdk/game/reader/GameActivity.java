@@ -277,7 +277,11 @@ public class GameActivity extends AppCompatActivity {
         closing = true;
         CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(storyId), title, tags,
                 slidesCount, index));
-        gameCompleted(null);
+        if (gameLoaded) {
+            webView.loadUrl("javascript:closeGameReader()");
+        } else {
+            gameCompleted(null);
+        }
     }
 
     public String[] urlParts(String url) {
@@ -312,6 +316,8 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    boolean gameLoaded;
+
     public void initGame(String data) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             webView.evaluateJavascript(data, null);
@@ -341,6 +347,7 @@ public class GameActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void gameLoaded() {
+            gameLoaded = true;
             if (loaderContainer != null)
                 loaderContainer.setVisibility(View.GONE);
         }
