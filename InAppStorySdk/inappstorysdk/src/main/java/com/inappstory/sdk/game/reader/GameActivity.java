@@ -201,8 +201,15 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onProgress(int loadedSize, int totalSize) {
-                int percent = (int) ((loadedSize * 100) / (totalSize));
-                loaderView.setProgress(percent, 100);
+                final int ls = loadedSize;
+                final int ts = totalSize;
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int percent = ((ls * 100) / (ts));
+                        loaderView.setProgress(percent, 100);
+                    }
+                });
             }
         });
     }
