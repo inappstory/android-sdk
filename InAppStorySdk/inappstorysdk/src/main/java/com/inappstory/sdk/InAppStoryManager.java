@@ -496,6 +496,8 @@ public class InAppStoryManager {
         void onError();
     }
 
+    public static boolean disableStatistic = true;
+
     public Point coordinates = null;
 
     public boolean soundOn = false;
