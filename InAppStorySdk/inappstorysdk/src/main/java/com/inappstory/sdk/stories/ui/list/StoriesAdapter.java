@@ -36,6 +36,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
+import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
@@ -198,7 +199,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         } else {
             StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
                     StoryDownloader.getInstance().getStories().get(index).id);
-            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(), StoriesActivity.class);
+            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(),
+                    (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
+                            StoriesActivity.class : StoriesFixedActivity.class);
 
             intent2.putExtra("source", isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
             // intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
