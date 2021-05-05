@@ -45,7 +45,7 @@ import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
+import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
@@ -377,7 +377,7 @@ public class StoriesWebViewManager {
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
-        CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
+        CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
         CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
     }
 

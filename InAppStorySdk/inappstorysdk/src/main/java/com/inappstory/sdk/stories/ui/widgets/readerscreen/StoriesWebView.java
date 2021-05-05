@@ -74,7 +74,7 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
-import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
+import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
@@ -628,8 +628,16 @@ public class StoriesWebView extends WebView {
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
-        CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
         CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
+    }
+
+    void storyStartedEvent() {
+        if (InAppStoryService.getInstance() == null) return;
+        Story story = StoryDownloader.getInstance().getStoryById(storyId);
+        CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+                story.tags, story.slidesCount, index));
+
+        CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -797,6 +805,12 @@ public class StoriesWebView extends WebView {
             Log.e("storyLoaded", storyId + " " + index);
             isWebPageLoaded = true;
             storyLoadedEvent();
+        }
+
+        @JavascriptInterface
+        public void storyStarted() {
+            Log.e("storyStarted", storyId + " " + index);
+            storyStartedEvent();
         }
 
         @JavascriptInterface

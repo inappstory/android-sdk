@@ -62,6 +62,13 @@ public class WebPageConverter {
         for (int i = 0; i < videos.size(); i++) {
             String video = videos.get(i);
             String videoKey = videosKeys.get(i);
+
+            Context con = InAppStoryManager.getInstance().getContext();
+            FileCache cache = FileCache.INSTANCE;
+            File file = cache.getStoredFile(con, video, FileType.STORY_IMAGE, Integer.toString(storyId), null);
+            if (file.exists()) {
+                video = "file://" + file.getAbsolutePath();
+            }
             innerWebData = innerWebData.replace(videoKey, video);
         }
         boolean exists = false;

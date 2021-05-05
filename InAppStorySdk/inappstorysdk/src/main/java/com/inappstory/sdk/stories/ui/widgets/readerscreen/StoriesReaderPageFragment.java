@@ -60,7 +60,7 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
-import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
+import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.ClickOnShareStory;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -154,8 +154,9 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void storyPageLoadedEvent(StoryPageLoadedEvent event) {
+    public void storyPageStartedEvent(StoryPageStartedEvent event) {
         if (this.storyId != event.getStoryId()) return;
+
         final int ind = event.index;
         InAppStoryService.getInstance().getFullStoryById(new GetStoryByIdCallback() {
             @Override
