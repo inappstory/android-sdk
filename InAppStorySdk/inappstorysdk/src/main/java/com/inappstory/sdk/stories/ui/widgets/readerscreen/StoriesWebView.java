@@ -50,6 +50,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.events.NextStoryPageEvent;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
@@ -647,6 +648,11 @@ public class StoriesWebView extends WebView {
     public void shareComplete(ShareCompleteEvent event) {
         if (storyId != event.storyId) return;
         loadUrl("javascript:(function(){share_complete(\"" + event.getId() + "\", " + event.isSuccess() + ");})()");
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void nextStoryPageEvent(NextStoryPageEvent event) {
+        stopVideo();
     }
 
     public class WebAppInterface {
