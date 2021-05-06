@@ -7,24 +7,6 @@
     android:orientation="vertical">
 
     <RelativeLayout
-        android:layout_width="200dp"
-        android:id="@+id/forBlur1"
-        android:layout_marginTop="50dp"
-        android:layout_centerHorizontal="true"
-        android:layout_height="300dp">
-        <androidx.appcompat.widget.AppCompatImageView
-            android:layout_width="match_parent"
-            android:id="@+id/imageView1"
-            android:scaleType="centerCrop"
-            android:src="@drawable/test"
-            android:layout_height="match_parent"/>
-        <com.inappstory.sdk.stories.utils.BlurringView
-            android:layout_width="match_parent"
-            android:id="@+id/blurView1"
-            android:layout_height="match_parent"/>
-    </RelativeLayout>
-
-    <RelativeLayout
         android:layout_width="250dp"
         android:layout_marginTop="400dp"
         android:id="@+id/forBlur2"
