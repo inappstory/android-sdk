@@ -2,8 +2,11 @@ package com.inappstory.sdk.stories.api.models;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
+import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 /**
@@ -24,25 +27,28 @@ public class StatisticSession {
         INSTANCE = instance;
     }
 
-    private static StatisticSession INSTANCE;
+    private static volatile StatisticSession INSTANCE;
+
+    public static StatisticSession getInstance() {
+        if (INSTANCE == null) {
+            synchronized (StatisticSession.class) {
+                if (INSTANCE == null)
+                    INSTANCE = new StatisticSession();
+            }
+        }
+        return INSTANCE;
+    }
+
 
     public static boolean needToUpdate() {
         if (INSTANCE == null) return true;
         if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;
-        /*if (((System.currentTimeMillis() - INSTANCE.updatedAt) / 1000) > (INSTANCE.expireIn/2)) {
-            return true;
-        }*/
         return false;
     }
 
     public static void updateStatistic() {
         if (INSTANCE == null) return;
         INSTANCE.updatedAt = System.currentTimeMillis();
-    }
-
-    public static StatisticSession getInstance() {
-        if (INSTANCE == null) return new StatisticSession();
-        return INSTANCE;
     }
 
     public static void clear() {

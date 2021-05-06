@@ -27,8 +27,6 @@ import androidx.annotation.Nullable;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -43,14 +41,11 @@ import com.inappstory.sdk.stories.cache.FileType;
 import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
+import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesWebView;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
@@ -377,7 +372,7 @@ public class StoriesWebViewManager {
         Story story = StoryDownloader.getInstance().getStoryById(storyId);
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
-        CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
+        CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
         CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
     }
 

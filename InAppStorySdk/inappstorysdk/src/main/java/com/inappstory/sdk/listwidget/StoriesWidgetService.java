@@ -28,6 +28,7 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 import java.lang.reflect.ParameterizedType;
@@ -190,26 +191,7 @@ public class StoriesWidgetService extends RemoteViewsService {
 
             @Override
             public Type getType() {
-                ParameterizedType ptype = new ParameterizedType() {
-                    @NonNull
-                    @Override
-                    public Type[] getActualTypeArguments() {
-                        return new Type[]{Story.class};
-                    }
-
-                    @NonNull
-                    @Override
-                    public Type getRawType() {
-                        return List.class;
-                    }
-
-                    @Nullable
-                    @Override
-                    public Type getOwnerType() {
-                        return List.class;
-                    }
-                };
-                return ptype;
+                return new StoryListType();
             }
         });
     }

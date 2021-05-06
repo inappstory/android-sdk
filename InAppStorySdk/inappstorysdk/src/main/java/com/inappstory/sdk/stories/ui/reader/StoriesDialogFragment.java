@@ -21,13 +21,12 @@ import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
-import com.inappstory.sdk.stories.utils.StatusBarController;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
@@ -48,8 +47,10 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void onDismiss(DialogInterface dialogInterface) {
         if (InAppStoryService.getInstance() != null) {
             OldStatisticManager.getInstance().sendStatistic();
-            Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
+            Story story = InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
+            if (story == null) return;
             CsEventBus.getDefault().post(new CloseStory(story.id,
                     story.title, story.tags, story.slidesCount,
                     story.lastIndex, CloseStory.CLICK,
@@ -75,10 +76,11 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
-        for (Story story : StoryDownloader.getInstance().getStories())
+        for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
             story.lastIndex = 0;
         cleaned = true;
     }
+
 
     @Override
     public void onStart()

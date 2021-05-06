@@ -67,6 +67,12 @@ public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
             new HashMap<Integer, StoriesReaderPageFragment>();
 
 
+    public int getItemId(int position) {
+        if (position < storiesIds.size())
+            return storiesIds.get(position);
+        return -1;
+    }
+
     @NonNull
     @Override
     public Fragment getItem(int position) {
@@ -90,7 +96,6 @@ public class StoriesReaderPagerAdapter extends FragmentStatePagerAdapter {
     public StoriesReaderPageFragment getFragment(int position) {
         return fragMap.get(position);
     }
-
 
 
     @Override

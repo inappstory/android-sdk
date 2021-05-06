@@ -164,16 +164,10 @@ public enum FileCache {
         File directory = context.getFilesDir();
         String uid = "";
         switch (type) {
-            case FileType.STORY_IMAGE:
+            case FileType.STORY_FILE:
                 directory = new File(directory, File.separator + "Stories" + File.separator);
                 if (!directory.exists() || directory.listFiles() == null) return;
                 deleteRecursive(directory);
-                break;
-            case FileType.STORED_FILE:
-                directory = new File(directory, uid + File.separator + "stored" + File.separator);
-                if (!directory.exists() || directory.listFiles() == null) return;
-                for (File child : directory.listFiles())
-                    deleteRecursive(child);
                 break;
             case FileType.TEMP_FILE:
                 directory = new File(directory, File.separator + "temp" + File.separator);
@@ -271,7 +265,7 @@ public enum FileCache {
     public File getStoredFile(Context context, String uri1, String type, String id, String ext) {
         String uri = Downloader.cropUrl(uri1);
         switch (type) {
-            case FileType.STORY_IMAGE:
+            case FileType.STORY_FILE:
                 return getSavedStoryImage(context, uri, id, ext);
             case FileType.TEMP_FILE:
                 return getTempFile(context, uri, ext);
@@ -293,7 +287,7 @@ public enum FileCache {
     }
 
     public void deleteFolderRecursive(File fileOrDirectory, boolean deleteRoot) {
-
+        if (fileOrDirectory == null) return;
         if (fileOrDirectory.isDirectory()) {
             for (File child : fileOrDirectory.listFiles()) {
                 deleteFolderRecursive(child, true);

@@ -23,8 +23,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.game.loader.GameLoader;
+import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
@@ -38,20 +38,29 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import java.util.ArrayList;
 
 public class GameActivity extends AppCompatActivity {
-    String storyId;
-    String title;
-    String tags;
-    int index;
-    int slidesCount;
+    private String storyId;
+    private String title;
+    private String tags;
+    private int index;
+    private int slidesCount;
 
-    WebView webView;
-    ImageView loader;
-    View closeButton;
-    RelativeLayout loaderContainer;
-    IGameLoaderView loaderView;
-    View blackTop;
-    View blackBottom;
-    View baseContainer;
+    private WebView webView;
+    private ImageView loader;
+    private View closeButton;
+    private RelativeLayout loaderContainer;
+    private IGameLoaderView loaderView;
+    private View blackTop;
+    private View blackBottom;
+    private View baseContainer;
+    private String path;
+    private String resources;
+    private String loaderPath;
+
+    public static final int GAME_READER_REQUEST = 878;
+
+    private boolean gameLoaded;
+    private String gameConfig;
+    private boolean closing = false;
 
     @Override
     public void onBackPressed() {
@@ -122,9 +131,6 @@ public class GameActivity extends AppCompatActivity {
             }
         });
     }
-    String path;
-    String resources;
-    String loaderPath;
 
     private void getIntentValues() {
         path = getIntent().getStringExtra("gameUrl");
@@ -201,22 +207,13 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onProgress(int loadedSize, int totalSize) {
-                final int ls = loadedSize;
-                final int ts = totalSize;
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        int percent = ((ls * 100) / (ts));
-                        loaderView.setProgress(percent, 100);
-                    }
-                });
+                int percent = (int) ((loadedSize * 100) / (totalSize));
+                loaderView.setProgress(percent, 100);
             }
         });
     }
 
-    boolean closing = false;
-
-    void closeGame() {
+    private void closeGame() {
         if (closing) return;
         GameLoader.getInstance().terminate();
         closing = true;
@@ -231,17 +228,14 @@ public class GameActivity extends AppCompatActivity {
 
 
 
-    public String[] urlParts(String url) {
+    private String[] urlParts(String url) {
         String[] parts = url.split("/");
         String fName = parts[parts.length - 1].split("\\.")[0];
         return fName.split("_");
     }
 
-    public static final int GAME_READER_REQUEST = 878;
 
-    String gameConfig;
-
-    public void gameCompleted(String gameState) {
+    private void gameCompleted(String gameState) {
         try {
             Intent intent = new Intent();
             if (Sizes.isTablet()) {
@@ -263,9 +257,8 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    boolean gameLoaded;
 
-    public void initGame(String data) {
+    private void initGame(String data) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             webView.evaluateJavascript(data, null);
         } else {
@@ -273,7 +266,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public class WebAppInterface {
+    private class WebAppInterface {
         Context mContext;
         int lindex;
         String storyId;

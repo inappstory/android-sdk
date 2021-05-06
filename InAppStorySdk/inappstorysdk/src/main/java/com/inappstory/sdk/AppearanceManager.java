@@ -6,6 +6,8 @@ import android.graphics.Typeface;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;

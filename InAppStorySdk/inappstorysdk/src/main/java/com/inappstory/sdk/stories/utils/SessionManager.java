@@ -17,17 +17,28 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;
+import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SessionManager {
+
+    private static volatile SessionManager INSTANCE;
+
     public static SessionManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new SessionManager();
+            synchronized (SessionManager.class) {
+                if (INSTANCE == null)
+                    INSTANCE = new SessionManager();
+            }
         }
         return INSTANCE;
     }
@@ -62,7 +73,7 @@ public class SessionManager {
             @Override
             public void run() {
                 response.session.save();
-                InAppStoryService.getInstance().saveSesstionPlaceholders(response.placeholders);
+                InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
                 synchronized (openProcessLock) {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)
@@ -71,7 +82,7 @@ public class SessionManager {
                     callbacks.clear();
                 }
                 InAppStoryService.getInstance().runStatisticThread();
-                InAppStoryService.getInstance().downloadFonts(response.cachedFonts);
+                Downloader.downloadFonts(response.cachedFonts);
             }
         });
     }
@@ -197,6 +208,30 @@ public class SessionManager {
         });
     }
 
-    private static SessionManager INSTANCE;
+    public void closeSession(boolean sendStatistic, final boolean changeUserId) {
+        if (StatisticSession.getInstance().id != null) {
+            NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
+                    sendStatistic ? OldStatisticManager.getInstance().statistic : new ArrayList<List<Object>>())).enqueue(
+                    new NetworkCallback<StatisticResponse>() {
+                        @Override
+                        public void onSuccess(StatisticResponse response) {
+                            if (changeUserId)
+                                CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
+                        }
+
+                        @Override
+                        public Type getType() {
+                            return StatisticResponse.class;
+                        }
+
+                        @Override
+                        public void onError(int code, String message) {
+                            if (changeUserId)
+                                CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
+                        }
+                    });
+        }
+        StatisticSession.clear();
+    }
 
 }

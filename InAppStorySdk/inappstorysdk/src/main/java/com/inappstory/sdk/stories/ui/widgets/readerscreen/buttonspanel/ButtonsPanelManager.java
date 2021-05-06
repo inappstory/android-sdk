@@ -12,7 +12,8 @@ import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.outerevents.ClickOnShareStory;
@@ -33,7 +34,7 @@ public class ButtonsPanelManager {
 
     public void likeClick(final ButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
-        final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
+        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         final int val;
         if (story.liked()) {
             CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
@@ -75,7 +76,7 @@ public class ButtonsPanelManager {
 
     public void dislikeClick(final ButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
-        final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
+        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         final int val;
         if (story.disliked()) {
             CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
@@ -117,12 +118,12 @@ public class ButtonsPanelManager {
 
     public void favoriteClick(final ButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
-        final Story story = StoryDownloader.getInstance().findItemByStoryId(storyId);
+        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         final boolean val = story.favorite;
         if (!story.favorite)
             StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
-                story.tags, story.slidesCount, story.lastIndex, story.favorite));
+                story.tags, story.slidesCount, story.lastIndex, !story.favorite));
         NetworkClient.getApi().storyFavorite(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
                 InAppStoryManager.getInstance().getApiKey(), val ? 0 : 1).enqueue(
@@ -160,7 +161,7 @@ public class ButtonsPanelManager {
 
     public void shareClick(final ButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
-        Story story = StoryDownloader.getInstance().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex));
@@ -171,8 +172,9 @@ public class ButtonsPanelManager {
             public void onSuccess(ShareObject response) {
                 if (callback != null)
                     callback.onSuccess(0);
-                if (InAppStoryManager.getInstance().shareCallback != null) {
-                    InAppStoryManager.getInstance().shareCallback.onShare(response.getUrl(), response.getTitle(), response.getDescription(), Integer.toString(storyId));
+                if (CallbackManager.getInstance().getShareCallback() != null) {
+                    CallbackManager.getInstance().getShareCallback()
+                            .onShare(response.getUrl(), response.getTitle(), response.getDescription(), Integer.toString(storyId));
                 } else {
                     Intent sendIntent = new Intent();
                     sendIntent.setAction(Intent.ACTION_SEND);

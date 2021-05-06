@@ -2,16 +2,16 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.os.Handler;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.TimelineManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.StoriesWebViewManager;
 
 public class ReaderPageManager {
     TimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
-    StoriesWebViewManager webViewManager;
+    StoriesViewManager webViewManager;
 
     public void setStoryId(int storyId) {
         this.storyId = storyId;
@@ -89,7 +89,7 @@ public class ReaderPageManager {
     }
 
     void storyInfoLoaded() {
-        this.timelineManager.setStoryDurations(StoryDownloader.getInstance().getStoryById(storyId).durations);
+        this.timelineManager.setStoryDurations(InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).durations);
     }
 
     public void setTimelineManager(TimelineManager timelineManager, int storyId) {
@@ -101,7 +101,7 @@ public class ReaderPageManager {
         this.buttonsPanelManager.setStoryId(storyId);
     }
 
-    public void setWebViewManager(StoriesWebViewManager webViewManager, int storyId) {
+    public void setWebViewManager(StoriesViewManager webViewManager, int storyId) {
         this.webViewManager = webViewManager;
         this.webViewManager.setStoryId(storyId);
     }

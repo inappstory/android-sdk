@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fillAfter="true"
+    android:interpolator="@android:anim/linear_interpolator">
+
+    <translate
+        android:duration="100"
+        android:fromXDelta="1%p"
+        android:fromYDelta="1%p"
+        android:toXDelta="-1%p"
+        android:toYDelta="-2%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="100"
+        android:fromXDelta="-1%p"
+        android:fromYDelta="-2%p"
+        android:toXDelta="-3%p"
+        android:toYDelta="0%p" />
+
+    <translate
+        android:duration="100"
+        android:startOffset="200"
+        android:fromXDelta="-3%p"
+        android:fromYDelta="0%p"
+        android:toXDelta="3%p"
+        android:toYDelta="2%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="300"
+        android:fromXDelta="3%p"
+        android:fromYDelta="2%p"
+        android:toXDelta="1%p"
+        android:toYDelta="-1%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="400"
+        android:fromXDelta="1%p"
+        android:fromYDelta="-1%p"
+        android:toXDelta="-1%p"
+        android:toYDelta="2%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="500"
+        android:fromXDelta="-1%p"
+        android:fromYDelta="2%p"
+        android:toXDelta="-3%p"
+        android:toYDelta="1%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="600"
+        android:fromXDelta="-3%p"
+        android:fromYDelta="1%p"
+        android:toXDelta="-3%p"
+        android:toYDelta="1%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="700"
+        android:fromXDelta="-3%p"
+        android:fromYDelta="-1%p"
+        android:toXDelta="-1%p"
+        android:toYDelta="-1%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="800"
+        android:fromXDelta="-1%p"
+        android:fromYDelta="-1%p"
+        android:toXDelta="1%p"
+        android:toYDelta="2%p" />
+    <translate
+        android:duration="100"
+        android:startOffset="900"
+        android:fromXDelta="1%p"
+        android:fromYDelta="2%p"
+        android:toXDelta="1%p"
+        android:toYDelta="-2%p" />
+    <rotate
+        android:duration="100"
+        android:fromDegrees="0"
+        android:toDegrees="-1"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="0"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="-1"
+        android:toDegrees="1"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="100"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="1"
+        android:toDegrees="0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="200"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="0"
+        android:toDegrees="1"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="300"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="1"
+        android:toDegrees="-1"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="400"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="-1"
+        android:toDegrees="0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="500"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="0"
+        android:toDegrees="0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="600"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="0"
+        android:toDegrees="1"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="700"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="1"
+        android:toDegrees="0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="800"/>
+    <rotate
+        android:duration="100"
+        android:fromDegrees="0"
+        android:toDegrees="-1"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:startOffset="900"/>
+
+</set>

@@ -1,25 +1,19 @@
 package com.inappstory.sdk.stories.managers;
 
 import android.os.Handler;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
 import com.inappstory.sdk.stories.events.NextStoryPageEvent;
 
 public class TimerManager {
-   /* public TimerManager() {
-        CsEventBus.getDefault().register(this);
-    }
-
-    Handler timerHandler = new Handler();
-    public long timerStart;
-    public long timerDuration;
-    public long totalTimerDuration;
-    public long pauseShift;
+    private Handler timerHandler = new Handler();
+    private long timerStart;
+    private long timerDuration;
+    private long totalTimerDuration;
+    private long pauseShift;
 
     Runnable timerTask = new Runnable() {
         @Override
@@ -27,61 +21,36 @@ public class TimerManager {
             if (System.currentTimeMillis() - timerStart >= timerDuration) {
                 timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
-                CsEventBus.getDefault().post(
-                        new NextStoryPageEvent(InAppStoryService.getInstance().getCurrentId()));
+                CsEventBus.getDefault()
+                        .post(new NextStoryPageEvent(InAppStoryService.getInstance().getCurrentId()));
                 return;
-                //if (currentIndex == )
             }
             timerHandler.postDelayed(timerTask, 50);
         }
     };
 
-    public void resumeTimer() {
-        Log.e("startTimer", "resumeTimer");
-        StatisticManager.getInstance().cleanFakeEvents();
-        resumeLocalTimer();
-        if (currentEvent == null) return;
-        pauseTime += System.currentTimeMillis() - startPauseTime;
-        currentEvent.eventType = 1;
-        currentEvent.timer = System.currentTimeMillis();
-        currentState.storyPause = pauseTime;
-        startPauseTime = 0;
+    public void resumeLocalTimer() {
+        startTimer(timerDuration - pauseShift, false);
     }
-
-    public void pauseLocalTimer() {
-        try {
-            timerHandler.removeCallbacks(timerTask);
-        } catch (Exception e) {
-
-        }
-        Log.e("dragDrop", System.currentTimeMillis() + " " + timerStart);
-        pauseShift = (System.currentTimeMillis() - timerStart);
-    }
-
-    public void pauseTimer() {
-        Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
-
-        StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.slidesCount, System.currentTimeMillis() - currentState.startTime);
-        pauseLocalTimer();
-        startPauseTime = System.currentTimeMillis();
-        closeStatisticEvent(null, true);
-        sendStatistic();
-        eventCount++;
-    }
-
 
     public long startPauseTime;
 
 
     public long pauseTime = 0;
 
-    public void resumeLocalTimer() {
-        Log.e("dragDrop", System.currentTimeMillis() + " " + timerDuration + " " + pauseShift);
-        startTimer(timerDuration - pauseShift, false);
+    public void resumeTimer() {
+        StatisticManager.getInstance().cleanFakeEvents();
+        resumeLocalTimer();
+        if (OldStatisticManager.getInstance().currentEvent == null) return;
+        OldStatisticManager.getInstance().currentEvent.eventType = 1;
+        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
+        pauseTime += System.currentTimeMillis() - startPauseTime;
+        StatisticManager.getInstance().currentState.storyPause = pauseTime;
+        startPauseTime = 0;
     }
 
+
     public void startTimer(long timerDuration, boolean clearDuration) {
-        Log.e("startTimer", timerDuration + "");
         if (timerDuration == 0) {
             try {
                 timerHandler.removeCallbacks(timerTask);
@@ -109,5 +78,26 @@ public class TimerManager {
 
     public void restartTimer(long duration) {
         startTimer(duration, true);
-    }*/
+    }
+
+    public void pauseLocalTimer() {
+        try {
+            timerHandler.removeCallbacks(timerTask);
+        } catch (Exception e) {
+
+        }
+        pauseShift = (System.currentTimeMillis() - timerStart);
+    }
+
+    public void pauseTimer() {
+        Story story = InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(InAppStoryService.getInstance().getCurrentId());
+        StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.slidesCount);
+        pauseLocalTimer();
+        startPauseTime = System.currentTimeMillis();
+        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
+        OldStatisticManager.getInstance().sendStatistic();
+        OldStatisticManager.getInstance().eventCount++;
+    }
+
 }

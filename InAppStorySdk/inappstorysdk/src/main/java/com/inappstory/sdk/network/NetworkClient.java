@@ -1,10 +1,8 @@
 package com.inappstory.sdk.network;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -123,13 +121,9 @@ public class NetworkClient {
 
 
     public static String getDefaultUserAgentString(Context context) {
-        if (Build.VERSION.SDK_INT >= 17) {
-            try {
-                return NewApiWrapper.getDefaultUserAgent(context);
-            } catch (Exception e) {
-                return getDefaultUserStringOld(context);
-            }
-        } else {
+        try {
+            return NewApiWrapper.getDefaultUserAgent(context);
+        } catch (Exception e) {
             return getDefaultUserStringOld(context);
         }
     }
@@ -183,8 +177,6 @@ public class NetworkClient {
         }
     }
 
-
-    @TargetApi(17)
     static class NewApiWrapper {
         static String getDefaultUserAgent(Context context) {
             return WebSettings.getDefaultUserAgent(context);

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
@@ -16,6 +17,13 @@ import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
@@ -77,12 +85,15 @@ public class StatisticManager {
             faketasks.add(task);
             saveFakeTasksSP();
         }
+
+        Log.e("taskName", task.event);
     }
 
     public static void saveTasksSP() {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
             ltasks.addAll(getInstance().tasks);
+            // Log.e("saveTask", JsonParser.getJson(ltasks));
             SharedPreferencesAPI.saveString(TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,6 +104,7 @@ public class StatisticManager {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
             ltasks.addAll(getInstance().faketasks);
+            // Log.e("saveTask", JsonParser.getJson(ltasks));
             SharedPreferencesAPI.saveString(FAKE_TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
@@ -146,10 +158,13 @@ public class StatisticManager {
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (INSTANCE != this) return;
         if (event.isWithBackground()) {
+            Log.e("pauseEv", (System.currentTimeMillis() - pauseTimer) + "");
             if (isBackgroundPause) {
                 pauseTime += (System.currentTimeMillis() - pauseTimer);
             }
             isBackgroundPause = false;
+        } else {
+            Log.e("pauseEv", "miss");
         }
     }
 

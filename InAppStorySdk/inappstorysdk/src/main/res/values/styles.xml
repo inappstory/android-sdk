@@ -10,17 +10,24 @@
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
+    <declare-styleable name="RxBlurringView">
+        <attr name="cblurRadius" format="integer"/>
+        <attr name="cdownsampleFactor" format="integer"/>
+        <attr name="coverlayColor" format="color"/>
+    </declare-styleable>
+
     <style name="StoriesSDKAppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
     </style>
 
-    <style name="Theme.GameActivity" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.GameActivity" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowFullscreen">true</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="android:windowTranslucentStatus" tools:targetApi="kitkat">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>

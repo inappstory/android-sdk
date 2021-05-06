@@ -50,12 +50,18 @@ public class RoundedCornerDialogLayout extends FrameLayout {
 
         setWillNotDraw(false);
     }
+    Bitmap offscreenBitmap;
+    Canvas offscreenCanvas;
+
+    public void createOffscreen(Canvas canvas) {
+        offscreenBitmap= Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+        offscreenCanvas = new Canvas(offscreenBitmap);
+    }
 
     @Override
     public void draw(Canvas canvas) {
-        Bitmap offscreenBitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas offscreenCanvas = new Canvas(offscreenBitmap);
-
+        if (offscreenBitmap == null)
+            createOffscreen(canvas);
         super.draw(offscreenCanvas);
 
         if (maskBitmap == null) {

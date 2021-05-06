@@ -83,7 +83,7 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void setProgress(float progress) {
-        if (duration == 0) {
+        if (duration == null || duration == 0) {
             clear();
         } else {
             if (progress <= 0) {

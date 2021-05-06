@@ -166,10 +166,6 @@ public class OldStatisticManager {
 
     public void closeStatisticEvent(final Integer time, boolean clear) {
         if (currentEvent != null) {
-
-
-            //if (isBackgroundPause)
-            //    resumeTimer();
             putStatistic(new ArrayList<Object>() {{
                 add(currentEvent.eventType);
                 add(eventCount);
@@ -180,8 +176,6 @@ public class OldStatisticManager {
             Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
                     currentEvent.storyId + " " + currentEvent.index + " " +
                     Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
-            //if (isBackgroundPause)
-            //    pauseTimer();
             if (!clear)
                 currentEvent = null;
         }

@@ -11,13 +11,13 @@ import android.view.View;
 
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileType;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
 import java.io.IOException;
 
-import static com.inappstory.sdk.stories.cache.StoryDownloader.COVER_VIDEO_FOLDER_ID;
+import static com.inappstory.sdk.stories.cache.OldStoryDownloader.COVER_VIDEO_FOLDER_ID;
 
 public class VideoPlayer extends TextureView implements TextureView.SurfaceTextureListener {
 
@@ -74,6 +74,17 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         return false;
     }
 
+    public void destroy() {
+        if (this.surface != null) this.surface.release();
+        if (mp != null) {
+            // this.surface.release();
+            mp.stop();
+            mp.reset();
+            mp.release();
+            mp = null;
+        }
+    }
+
     public void release() {
         if (mp != null) {
             // this.surface.release();
@@ -100,7 +111,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
         try {
             if (file == null)
-                file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_IMAGE, COVER_VIDEO_FOLDER_ID, Sizes.getScreenSize());
+                file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_FILE, COVER_VIDEO_FOLDER_ID);
             if (file.exists()) {
                 boolean fileIsNotLocked = file.renameTo(file);
                 if (file.length() > 10 && fileIsNotLocked) {
@@ -110,7 +121,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 }
             } else {
                 mp.setDataSource(url);
-                StoryDownloader.downloadCoverVideo(url);
+                OldStoryDownloader.downloadCoverVideo(url);
             }
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

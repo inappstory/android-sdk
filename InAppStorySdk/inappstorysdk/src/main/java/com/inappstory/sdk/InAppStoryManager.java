@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
@@ -14,8 +13,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -29,16 +26,20 @@ import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
-import com.inappstory.sdk.stories.api.models.StatisticResponse;
-import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
+import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.callbacks.AppClickCallback;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
+import com.inappstory.sdk.stories.callbacks.ShareCallback;
+import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.events.ChangeUserIdEvent;
-import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
@@ -48,19 +49,16 @@ import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
-import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
-import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
-import com.inappstory.sdk.stories.utils.Sizes;
-
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 
 public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
+
+    public static boolean testGenerated = false;
 
     public static boolean isNull() {
         return INSTANCE == null;
@@ -104,6 +102,8 @@ public class InAppStoryManager {
         this.oldTempShareStoryId = tempShareStoryId;
     }
 
+    public static boolean disableStatistic = true;
+
     public int getOldTempShareStoryId() {
         return oldTempShareStoryId;
     }
@@ -122,44 +122,23 @@ public class InAppStoryManager {
 
     //Test
     public void clearCache() {
-        StoryDownloader.clearCache();
+        InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
-
-    public interface UrlClickCallback {
-        void onUrlClick(String url);
-    }
-
-    public interface AppClickCallback {
-        void onAppClick(String type, String data);
-    }
-
-    private UrlClickCallback urlClickCallback;
-    private AppClickCallback appClickCallback;
 
     public static void closeStoryReader() {
         CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
     }
 
-    public interface ShareCallback {
-        void onShare(String url, String title, String description, String id);
-    }
-
-    public ShareCallback shareCallback;
-
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
-        this.urlClickCallback = urlClickCallback;
+        CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
     }
 
-    public UrlClickCallback getUrlClickCallback() {
-        return urlClickCallback;
+    public void setShareCallback(ShareCallback shareCallback) {
+        CallbackManager.getInstance().setShareCallback(shareCallback);
     }
 
     public void setAppClickCallback(AppClickCallback appClickCallback) {
-        this.appClickCallback = appClickCallback;
-    }
-
-    public AppClickCallback getAppClickCallback() {
-        return appClickCallback;
+        CallbackManager.getInstance().setAppClickCallback(appClickCallback);
     }
 
     //Test
@@ -198,7 +177,6 @@ public class InAppStoryManager {
         if (tags.contains(tag)) tags.remove(tag);
     }
 
-
     public void setPlaceholder(String key, String value) {
         if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
         if (placeholders == null) placeholders = new HashMap<>();
@@ -214,7 +192,7 @@ public class InAppStoryManager {
         }
     }
 
-    public void setPlaceholders(Map<String, String> placeholders) {
+    public void setPlaceholders(@NonNull Map<String, String> placeholders) {
 
         for (String placeholderKey : placeholders.keySet()) {
             setPlaceholder(placeholderKey, placeholders.get(placeholderKey));
@@ -241,7 +219,6 @@ public class InAppStoryManager {
 
     Map<String, String> defaultPlaceholders = new HashMap<>();
 
-
     public boolean closeOnOverscroll() {
         return closeOnOverscroll;
     }
@@ -265,9 +242,9 @@ public class InAppStoryManager {
         return hasFavorite;
     }
 
-    boolean hasLike = false;
-    boolean hasShare = false;
-    boolean hasFavorite = false;
+    public boolean hasLike = false;
+    public boolean hasShare = false;
+    public boolean hasFavorite = false;
 
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
     private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
@@ -317,7 +294,7 @@ public class InAppStoryManager {
 
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
-        if (builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
+        if (builder.context.getResources().getString(R.string.csApiKey).isEmpty() || builder.context.getResources().getString(R.string.csApiKey).equals("1")) {
             throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
         }
         initManager(builder.context,
@@ -345,54 +322,30 @@ public class InAppStoryManager {
             intent = new Intent(context, InAppStoryService.class);
             context.startService(intent);
         } catch (IllegalStateException e) {
-          /*  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        InAppStoryService.getInstance().startForegr();
-                    }
-                }, 2000);
-            } else {
 
-            }*/
+        }
+    }
+
+    private void setUserIdInner(String userId) throws DataException {
+        if (InAppStoryService.getInstance() == null) return;
+        if (userId == null)
+            throw new DataException("'userId' can't be null, you can set '' instead", new Throwable("InAppStoryManager data is not valid"));
+        if (userId.length() < 255) {
+            if (this.userId.equals(userId)) return;
+            localOpensKey = null;
+            this.userId = userId;
+            if (InAppStoryService.getInstance().getFavoriteImages() != null)
+                InAppStoryService.getInstance().getFavoriteImages().clear();
+            CsEventBus.getDefault().post(new ChangeUserIdEvent());
+            SessionManager.getInstance().closeSession(sendStatistic, true);
+        } else {
+            throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));
         }
     }
 
     //Test
     public void setUserId(String userId) throws DataException {
-        if (InAppStoryService.getInstance() == null) return;
-        if (userId == null) throw new DataException("'userId' can't be null, you can set '' instead", new Throwable("InAppStoryManager data is not valid"));
-        if (userId.length() < 255) {
-            if (this.userId.equals(userId)) return;
-            localOpensKey = null;
-            this.userId = userId;
-            if (InAppStoryService.getInstance().favoriteImages != null)
-                InAppStoryService.getInstance().favoriteImages.clear();
-            CsEventBus.getDefault().post(new ChangeUserIdEvent());
-            if (StatisticSession.getInstance().id != null) {
-                NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                        sendStatistic ? OldStatisticManager.getInstance().statistic : new ArrayList<List<Object>>())).enqueue(new NetworkCallback<StatisticResponse>() {
-                    @Override
-                    public void onSuccess(StatisticResponse response) {
-                        CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return StatisticResponse.class;
-                    }
-
-                    @Override
-                    public void onError(int code, String message) {
-                        CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
-                    }
-                });
-            }
-            StatisticSession.clear();
-        } else {
-            throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));
-        }
+        setUserIdInner(userId);
     }
 
     private String userId;
@@ -436,13 +389,8 @@ public class InAppStoryManager {
         this.hasShare = hasShare;
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
-        // ApiClient.setContext(context);
         NetworkClient.setContext(context);
         this.userId = userId;
-       /* if (actionBarColor == -1) {
-            actionBarColor = context.getResources().getColor(R.color.nar_readerActionBarColor);
-        }*/
-//        EventBus.getDefault().register(this);
         if (INSTANCE != null) {
             destroy();
         }
@@ -465,14 +413,9 @@ public class InAppStoryManager {
             StatisticSession.clear();
             INSTANCE.context = null;
             KeyValueStorage.removeString("managerInstance");
-            try {
-                // EventBus.getDefault().unregister(INSTANCE);
-            } catch (Exception e) {
-
-            }
         }
         INSTANCE = null;
-        StoryDownloader.destroy();
+        InAppStoryService.getInstance().getDownloadManager().destroy();
     }
 
     private String localOpensKey;
@@ -487,16 +430,6 @@ public class InAppStoryManager {
     public static InAppStoryManager getInstance() {
         return INSTANCE;
     }
-
-    public interface OnboardingLoadedListener {
-        void onLoad();
-
-        void onEmpty();
-
-        void onError();
-    }
-
-    public static boolean disableStatistic = true;
 
     public Point coordinates = null;
 
@@ -519,49 +452,17 @@ public class InAppStoryManager {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        StoryDownloader.getInstance().uploadingAdditional(stories);
-        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                storiesIds.get(0));
-        if (Sizes.isTablet() && outerContext != null && outerContext instanceof AppCompatActivity) {
-            DialogFragment settingsDialogFragment = new StoriesDialogFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("index", 0);
-            bundle.putInt("source", ShowStory.ONBOARDING);
-            bundle.putIntegerArrayList("stories_ids", storiesIds);
-            if (manager != null) {
-                bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
-                bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-            }
-            settingsDialogFragment.setArguments(bundle);
-            settingsDialogFragment.show(
-                    ((AppCompatActivity) outerContext).getSupportFragmentManager(),
-                    "DialogFragment");
-        } else {
-            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(),
-                    (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
-                            StoriesActivity.class : StoriesFixedActivity.class);
-            intent2.putExtra("index", 0);
-            intent2.putExtra("source", ShowStory.ONBOARDING);
-            intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
-            if (manager != null) {
-                intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
-                intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-            }
-            if (outerContext == null) {
-                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryManager.getInstance().getContext().startActivity(intent2);
-            } else {
-                outerContext.startActivity(intent2);
-            }
-        }
-
+        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
+        InAppStoryService.getInstance().getDownloadManager().loadStories(
+                InAppStoryService.getInstance().getDownloadManager().getStories());
+        ScreensManager.getInstance().openStoriesReader(outerContext, manager, storiesIds, 0, ShowStory.ONBOARDING);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
         if (onboardLoadedListener != null) {
             onboardLoadedListener.onLoad();
         }
     }
 
-    public void showOnboardingStories(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    private void showOnboardingStoriesInner(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.getInstance() == null) {
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -611,27 +512,7 @@ public class InAppStoryManager {
 
                     @Override
                     public Type getType() {
-                        // List<Story> c = new ArrayList<Story>();
-                        ParameterizedType ptype = new ParameterizedType() {
-                            @NonNull
-                            @Override
-                            public Type[] getActualTypeArguments() {
-                                return new Type[]{Story.class};
-                            }
-
-                            @NonNull
-                            @Override
-                            public Type getRawType() {
-                                return List.class;
-                            }
-
-                            @Nullable
-                            @Override
-                            public Type getOwnerType() {
-                                return List.class;
-                            }
-                        };
-                        return ptype;
+                        return new StoryListType();
                     }
 
                     @Override
@@ -654,29 +535,30 @@ public class InAppStoryManager {
         });
     }
 
+    public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
+        showOnboardingStoriesInner(tags, outerContext, manager);
+    }
+
     public void showOnboardingStories(Context context, final AppearanceManager manager) {
         showOnboardingStories(getTags(), context, manager);
     }
 
-
-    public void showStory(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
-
+    private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
         if (InAppStoryService.getInstance() == null) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStory(storyId, context, manager, callback);
+                    showStoryInner(storyId, context, manager, callback);
                 }
             }, 1000);
             return;
         }
         if (StoriesActivity.destroyed == -1) {
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
-
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStory(storyId, context, manager, callback);
+                    showStoryInner(storyId, context, manager, callback);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
@@ -685,14 +567,14 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStory(storyId, context, manager, callback);
+                    showStoryInner(storyId, context, manager, callback);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
             return;
         }
 
-        InAppStoryService.getInstance().getFullStoryByStringId(new GetStoryByIdCallback() {
+        InAppStoryService.getInstance().getDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
@@ -702,8 +584,8 @@ public class InAppStoryManager {
                         OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
 
                         StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink);
-                        if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
-                            InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
+                        if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                            CallbackManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
                         } else {
                             if (!InAppStoryService.isConnected()) {
                                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
@@ -723,44 +605,11 @@ public class InAppStoryManager {
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                         return;
                     }
-
-
-                    if (Sizes.isTablet() && context != null) {
-                        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                                story.id);
-                        DialogFragment settingsDialogFragment = new StoriesDialogFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putInt("index", 0);
-                        bundle.putInt("source", ShowStory.SINGLE);
-                        if (manager != null)
-                            bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
-                        ArrayList<Integer> stIds = new ArrayList<>();
-                        stIds.add(story.id);
-                        bundle.putIntegerArrayList("stories_ids", stIds);
-                        settingsDialogFragment.setArguments(bundle);
-                        settingsDialogFragment.show(
-                                ((AppCompatActivity) context).getSupportFragmentManager(),
-                                "DialogFragment");
-                    } else {
-                        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                                story.id);
-                        Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(),
-                                (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
-                                        StoriesActivity.class : StoriesFixedActivity.class);
-                        if (context == null)
-                            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent2.putExtra("index", 0);
-                        intent2.putExtra("source", ShowStory.SINGLE);
-                        if (manager != null)
-                            intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
-                        ArrayList<Integer> stIds = new ArrayList<>();
-                        stIds.add(story.id);
-                        intent2.putIntegerArrayListExtra("stories_ids", stIds);
-                        if (context == null)
-                            InAppStoryManager.getInstance().getContext().startActivity(intent2);
-                        else
-                            context.startActivity(intent2);
-                    }
+                    InAppStoryService.getInstance().getDownloadManager().loadStories(
+                            InAppStoryService.getInstance().getDownloadManager().getStories());
+                    ArrayList<Integer> stIds = new ArrayList<>();
+                    stIds.add(story.id);
+                    ScreensManager.getInstance().openStoriesReader(context, manager, stIds, 0, ShowStory.SINGLE);
                 } else {
                     if (callback != null)
                         callback.onError();
@@ -781,8 +630,12 @@ public class InAppStoryManager {
         }, storyId);
     }
 
-    public void showStory(final String storyId, final Context context, final AppearanceManager manager) {
-        showStory(storyId, context, manager, null);
+    public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
+        showStoryInner(storyId, context, manager, callback);
+    }
+
+    public void showStory(String storyId, Context context, AppearanceManager manager) {
+        showStoryInner(storyId, context, manager, null);
     }
 
     public static class Builder {

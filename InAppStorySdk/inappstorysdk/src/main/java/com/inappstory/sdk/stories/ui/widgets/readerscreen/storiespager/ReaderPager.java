@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
@@ -12,12 +13,22 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.eventbus.CsSubscribe;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
+import com.inappstory.sdk.stories.events.ChangeStoryEvent;
+import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
+import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
 import com.inappstory.sdk.stories.events.SwipeLeftEvent;
 import com.inappstory.sdk.stories.events.SwipeRightEvent;
+import com.inappstory.sdk.stories.events.SwipeUpEvent;
 import com.inappstory.sdk.stories.events.WidgetTapEvent;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPagerAdapter;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
@@ -83,49 +94,67 @@ public class ReaderPager extends ViewPager {
         }
     }
 
+    public void pageScrolled(float positionOffset) {
+        if (positionOffset == 0f) {
+            cubeAnimation = false;
+            requestDisallowInterceptTouchEvent(false);
+        } else {
+            cubeAnimation = true;
+            requestDisallowInterceptTouchEvent(true);
+        }
+    }
+
+    @CsSubscribe
+    public void nextStoryEvent(NextStoryReaderEvent event) {
+        cubeAnimation = true;
+    }
+
+    public boolean cubeAnimation = false;
+
+    @CsSubscribe
+    public void prevStoryEvent(PrevStoryReaderEvent event) {
+        cubeAnimation = true;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (InAppStoryService.getInstance().cubeAnimation) {
+        if (cubeAnimation) {
             return false;
         }
-
-        long pressEndTime;
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         float pressedEndX = 0f;
         float pressedEndY = 0f;
         boolean distance = false;
-        boolean distanceY = false;
-        boolean time = false;
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            // CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             pressStartTime = System.currentTimeMillis();
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
             CsEventBus.getDefault().post(new WidgetTapEvent());
         } else if (!(motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL)) {
-            pressEndTime = System.currentTimeMillis() - pressStartTime;
             pressedEndX = motionEvent.getX() - pressedX;
             pressedEndY = motionEvent.getY() - pressedY;
             distance = (float) Math.sqrt(pressedEndX * pressedEndX + pressedEndY * pressedEndY) > 20;
-            time = pressEndTime > 100;
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             pressedEndY = motionEvent.getY() - pressedY;
             pressedEndX = motionEvent.getX() - pressedX;
-            distanceY = pressedEndY > 400;
-            if (pressedEndY > 0) {
-            }
-            //  CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-            if (distanceY) {
-                if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null && 
-                    !StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
+            if (pressedEndY > 400) {
+                if (st != null
+                        && !st.disableClose) {
                     CsEventBus.getDefault().post(new SwipeDownEvent());
+                    return true;
+                }
+            }
+            if (pressedEndY < -400) {
+                if (st != null) {
+                    CsEventBus.getDefault().post(new SwipeUpEvent());
                     return true;
                 }
             }
             if (getCurrentItem() == 0 &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX > 300) {
-                if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) == null) return true;
-                if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose) {
+                if (st == null) return true;
+                if (!st.disableClose) {
                     CsEventBus.getDefault().post(new SwipeRightEvent());
                     return true;
                 }
@@ -134,7 +163,6 @@ public class ReaderPager extends ViewPager {
             if (getCurrentItem() == getAdapter().getCount() - 1 &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX < -300) {
-                Story st = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
                 if (st == null) return true;
                 if (!st.disableClose) {
                     CsEventBus.getDefault().post(new SwipeLeftEvent());
@@ -163,6 +191,37 @@ public class ReaderPager extends ViewPager {
         return c;
     }
 
+
+    public void onNextStory() {
+        if (getCurrentItem() < getAdapter().getCount() - 1) {
+
+            CsEventBus.getDefault().post(new ChangeStoryEvent(((StoriesReaderPagerAdapter)getAdapter()).
+                    getItemId(getCurrentItem() + 1),
+                    getCurrentItem() + 1));
+            setCurrentItem(getCurrentItem() + 1);
+        } else {
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+        }
+    }
+
+    public void onPrevStory() {
+        if (getCurrentItem() > 0) {
+
+            StatisticManager.getInstance().sendCurrentState();
+            CsEventBus.getDefault().post(new ChangeStoryEvent(((StoriesReaderPagerAdapter)getAdapter()).
+                    getItemId(getCurrentItem() - 1),
+                    getCurrentItem() - 1));
+            setCurrentItem(getCurrentItem() - 1);
+        } else {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    cubeAnimation = false;
+                }
+            }, 100);
+            CsEventBus.getDefault().post(new PrevStoryFragmentEvent(InAppStoryService.getInstance().getCurrentId()));
+        }
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {

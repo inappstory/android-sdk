@@ -12,11 +12,12 @@
         android:id="@+id/stories"
         android:layout_height="match_parent"/>
     <View
-        android:layout_width="match_parent"
+        android:layout_width="1dp"
         android:clickable="true"
         android:elevation="5dp"
+
         android:visibility="gone"
         android:id="@+id/invMask"
-        android:layout_height="match_parent"/>
+        android:layout_height="1dp"/>
 </RelativeLayout>
 

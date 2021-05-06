@@ -13,38 +13,23 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
-import android.webkit.MimeTypeMap;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-
-import androidx.annotation.RequiresApi;
 import androidx.webkit.WebViewFeature;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
@@ -61,7 +46,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileCache;
 import com.inappstory.sdk.stories.cache.FileType;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -74,10 +59,11 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
-import com.inappstory.sdk.stories.events.StoryPageLoadedEvent;
+import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
+import com.inappstory.sdk.stories.events.SwipeUpEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
@@ -87,9 +73,18 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.webkit.WebSettings.FORCE_DARK_OFF;
-import static android.webkit.WebSettings.FORCE_DARK_ON;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
@@ -129,10 +124,8 @@ public class StoriesWebView extends WebView {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
-        videoIsLoaded = false;
-        pausedBeforeLoaded = false;
         Log.e("PageTaskToLoadEvent", "loadStory " + id + " " + index);
-        final Story story = StoryDownloader.getInstance().getStoryById(id);
+        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
         if (story == null || story.getLayout() == null || story.pages == null || story.pages.isEmpty()) {
             return;
         }
@@ -154,21 +147,14 @@ public class StoriesWebView extends WebView {
         StoriesWebView.this.loadedIndex = index;
         StoriesWebView.this.index = index;
         StoriesWebView.this.loadedId = id;
-        isLoaded = StoryDownloader.getInstance().checkIfPageLoaded(new Pair<>(id, index));
+        isLoaded = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
 
         final String layout = story.getLayout();
 
-        Log.e("PageTaskToLoadEvent", "" + isLoaded + " " + index + " " + id);
-
-        // EventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
-
         if (!isLoaded) {
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false));
-            if (Build.VERSION.SDK_INT >= 19) {
-                setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            } else {
-                setLayerType(View.LAYER_TYPE_NONE, null);
-            }
+
+            setLayerType(View.LAYER_TYPE_HARDWARE, null);
         } else {
 
             pageTaskLoaded(null);
@@ -183,7 +169,7 @@ public class StoriesWebView extends WebView {
             if (storyId != event.getId() || index != event.getIndex()) return;
         }
         Log.e("LoadHtml", "PageTaskLoadedEvent");
-        Story story = StoryDownloader.getInstance().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         String layout = story.getLayout();
         List<String> fonturls = new ArrayList<>();
 
@@ -201,21 +187,29 @@ public class StoriesWebView extends WebView {
 
         String innerWebData = story.pages.get(index);
         innerWebText = innerWebData;
+        final String finalLayout = layout;
         if (InAppStoryService.isConnected()) {
             if (innerWebData.contains("<video")) {
                 isVideo = true;
                 getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
                 setLayerType(View.LAYER_TYPE_HARDWARE, null);
-                WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        WebPageConverter.replaceVideoAndLoad(innerWebText, storyId, index, finalLayout);
+                    }
+                });
+
             } else {
                 isVideo = false;
-                if (Build.VERSION.SDK_INT >= 19) {
-                    setLayerType(View.LAYER_TYPE_HARDWARE, null);
-                } else {
-                    getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-                    setLayerType(View.LAYER_TYPE_NONE, null);
-                }
-                WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, index, layout);
+
+                setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        WebPageConverter.replaceImagesAndLoad(innerWebText, storyId, index, finalLayout);
+                    }
+                });
             }
         }
     }
@@ -289,6 +283,7 @@ public class StoriesWebView extends WebView {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(StoryOpenEvent event) {
+        if (!isWebPageLoaded) return;
         if (event.getStoryId() != storyId) {
             stopVideo();
         } else {
@@ -325,7 +320,7 @@ public class StoriesWebView extends WebView {
 
     public void replaceHtml(String page) {
         // if (!isVideo) return;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
         } else {
             loadUrl("javascript:(function(){show_slide(\"" + oldEscape(page) + "\");})()");
@@ -355,17 +350,12 @@ public class StoriesWebView extends WebView {
 
     public void pauseVideo() {
         // if (!isVideo) return;
-        // Log.e("playVideo", storyId + " pause");
+        Log.e("playVideo", storyId + " pause");
         loadUrl("javascript:(function(){story_slide_pause();})()");
-        pausedBeforeLoaded = !videoIsLoaded;
+        //pausedBeforeLoaded = !videoIsLoaded;
     }
 
-
-    boolean pausedBeforeLoaded = false;
-
     public void playVideo() {
-        // if (!isVideo) return;
-        // Log.e("playVideo", storyId + " play");
         boolean withSound = InAppStoryManager.getInstance().soundOn;
 
         if (withSound) {
@@ -378,16 +368,25 @@ public class StoriesWebView extends WebView {
     public void stopVideo() {
         // if (!isVideo) return;
         //loadUrl("javascript:(function(){window.Android.defaultTap('test');})()");
-        Log.e("stopVideo", storyId + " " + StoriesWebView.this.index);
+        Log.e("playVideo", storyId + " " + StoriesWebView.this.index);
         //CsEventBus.getDefault().post(new ClearDurationEvent(StoriesWebView.this.storyId, StoriesWebView.this.index));
         loadUrl("javascript:(function(){story_slide_stop();})()");
 
     }
 
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void gameComplete(GameCompleteEvent event) {
+        if (storyId != event.getStoryId() || index != event.getSlideIndex()) return;
+        if (event.getData() != null)
+            loadUrl("javascript:game_complete('" + event.getData() + "')");
+        else
+            loadUrl("javascript:game_complete()");
+    }
+
     public void resumeVideo() {
 
 
-        // Log.e("playVideo", storyId + " resume");
+        Log.e("playVideo", storyId + " resume");
         //if (!pausedBeforeLoaded)
         loadUrl("javascript:(function(){story_slide_resume();})()");
     }
@@ -462,6 +461,18 @@ public class StoriesWebView extends WebView {
 
     boolean videoIsLoaded = false;
 
+    @CsSubscribe
+    public void swipeUpEvent(SwipeUpEvent event) {
+        if (InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(InAppStoryService.getInstance().getCurrentId()) == null)
+            return;
+        sendSwipeUp();
+    }
+
+    private void sendSwipeUp() {
+        loadUrl("javascript:window.story_slide_swipe_up()");
+    }
+
     private void init() {
 
         loadedIndex = -1;
@@ -473,14 +484,9 @@ public class StoriesWebView extends WebView {
             getSettings().setForceDark(FORCE_DARK_OFF);
         }
         setBackgroundColor(getResources().getColor(R.color.black));
-        if (Build.VERSION.SDK_INT >= 19) {
-            setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        } else {
-            getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-            setLayerType(View.LAYER_TYPE_NONE, null);
-        }
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-            getSettings().setTextZoom(100);
+
+        setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        getSettings().setTextZoom(100);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
@@ -493,14 +499,17 @@ public class StoriesWebView extends WebView {
                 String img = url;
                 Context con = InAppStoryManager.getInstance().getContext();
                 FileCache cache = FileCache.INSTANCE;
-                File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, Integer.toString(storyId), null);
+                File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
 
                 if (file.exists()) {
 
                     try {
-                        Response response = new Request.Builder().head().url(url).build().execute();
-                        String ctType = response.headers.get("Content-Type");
-                        Log.e("storyLoaded", ctType + " " + storyId + " " + index);
+                        String ctType = KeyValueStorage.getString(file.getName());
+                        if (ctType == null) {
+                            Response response = new Request.Builder().head().url(img).build().execute();
+                            ctType = response.headers.get("Content-Type");
+                        }
+                        Log.e("webReplace", ctType + " " + storyId + " " + index + " " + img);
                         WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
                         return resp;
@@ -527,12 +536,17 @@ public class StoriesWebView extends WebView {
                 String img = request.getUrl().toString();
                 Context con = InAppStoryManager.getInstance().getContext();
                 FileCache cache = FileCache.INSTANCE;
-                File file = cache.getStoredFile(con, img, FileType.STORY_IMAGE, Integer.toString(storyId), null);
+                File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
 
                 if (file.exists()) {
                     try {
-                        Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
-                        String ctType = response.headers.get("Content-Type");
+                        //
+                        String ctType = KeyValueStorage.getString(file.getName());
+                        if (ctType == null) {
+                            Response response = new Request.Builder().head().url(img).build().execute();
+                            ctType = response.headers.get("Content-Type");
+                        }
+                        Log.e("webReplace", ctType + " " + storyId + " " + index + " " + img);
                         WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
                                 new FileInputStream(file));
                         // Log.e("playVideo", storyId + " video loaded");
@@ -592,23 +606,20 @@ public class StoriesWebView extends WebView {
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
-        // getSettings().setMediaPlaybackRequiresUserGesture(false);
-        // getSettings().setPluginState(WebSettings.PluginState.ON);
         addJavascriptInterface(new WebAppInterface(getContext(), index), "Android");
     }
 
-    /*public static String getMimeType(String url) {
-        String type = null;
-        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
-        if (extension != null) {
-            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-        }
-        return type;
-    }
-*/
-    Object lock = new Object();
 
     public boolean totalLoaded = false;
+
+    void storyStartedEvent() {
+        if (InAppStoryService.getInstance() == null) return;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+      //  CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+      //          story.tags, story.slidesCount, index));
+
+        CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
+    }
 
     void storyLoadedEvent() {
         //if (totalLoaded || (isVideo && (!videoIsLoaded || !isWebPageLoaded))) return;
@@ -625,20 +636,11 @@ public class StoriesWebView extends WebView {
                 }
             }, 200);
         }
-        Story story = StoryDownloader.getInstance().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
-        CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
+       // CsEventBus.getDefault().post(new StoryPageLoadedEvent(storyId, index));
         CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void gameComplete(GameCompleteEvent event) {
-        if (storyId != event.getStoryId() || index != event.getSlideIndex()) return;
-        if (event.getData() != null)
-            loadUrl("javascript:game_complete('" + event.getData() + "')");
-        else
-            loadUrl("javascript:game_complete()");
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -664,8 +666,6 @@ public class StoriesWebView extends WebView {
          */
         @JavascriptInterface
         public void storyClick(String payload) {
-            Log.e("JSEvent", "storyClick");
-            InAppStoryService.getInstance().lastTapEventTime = System.currentTimeMillis();
             if (payload == null || payload.isEmpty() || payload.equals("test")) {
                 if (InAppStoryService.isConnected()) {
                     CsEventBus.getDefault().post(new StoryReaderTapEvent((int) coordinate1));
@@ -683,7 +683,6 @@ public class StoriesWebView extends WebView {
             }
         }
 
-
         @JavascriptInterface
         public void openGameReader(String gameUrl, String preloadPath, String gameConfig) {
             Intent intent2 = new Intent(getContext(), GameActivity.class);
@@ -691,7 +690,7 @@ public class StoriesWebView extends WebView {
             intent2.putExtra("storyId", Integer.toString(storyId));
             intent2.putExtra("slideIndex", index);
 
-            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
             intent2.putExtra("tags", story.tags);
             intent2.putExtra("slidesCount", story.slidesCount);
             intent2.putExtra("title", story.title);
@@ -709,7 +708,7 @@ public class StoriesWebView extends WebView {
             intent2.putExtra("gameUrl", gameUrl);
             intent2.putExtra("storyId", Integer.toString(storyId));
             intent2.putExtra("slideIndex", index);
-            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
             intent2.putExtra("tags", story.tags);
             intent2.putExtra("slidesCount", story.slidesCount);
             intent2.putExtra("title", story.title);
@@ -725,7 +724,7 @@ public class StoriesWebView extends WebView {
             Intent intent2 = new Intent(getContext(), GameActivity.class);
             intent2.putExtra("gameUrl", gameUrl);
             intent2.putExtra("storyId", Integer.toString(storyId));
-            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
             intent2.putExtra("tags", story.tags);
             intent2.putExtra("slidesCount", story.slidesCount);
             intent2.putExtra("title", story.title);
@@ -733,6 +732,11 @@ public class StoriesWebView extends WebView {
             intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
             CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags, story.slidesCount, index));
             ((Activity) getContext()).startActivityForResult(intent2, GAME_READER_REQUEST);
+        }
+
+        @JavascriptInterface
+        public void storyStarted() {
+            storyStartedEvent();
         }
 
         @JavascriptInterface
@@ -811,8 +815,9 @@ public class StoriesWebView extends WebView {
         @JavascriptInterface
         public void share(String id, String data) {
             ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
-            if (InAppStoryManager.getInstance().shareCallback != null) {
-                InAppStoryManager.getInstance().shareCallback.onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
+            if (CallbackManager.getInstance().getShareCallback() != null) {
+                CallbackManager.getInstance().getShareCallback()
+                        .onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
             } else {
                 Intent sendIntent = new Intent();
                 sendIntent.setAction(Intent.ACTION_SEND);
@@ -823,7 +828,7 @@ public class StoriesWebView extends WebView {
                         new Intent(getContext(), StoryShareBroadcastReceiver.class),
                         FLAG_UPDATE_CURRENT);
                 Intent finalIntent = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP_MR1) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                     finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
                     finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     InAppStoryManager.getInstance().setTempShareId(id);
@@ -843,9 +848,8 @@ public class StoriesWebView extends WebView {
         public void storyFreezeUI() {
             touchSlider = true;
             Log.e("JSEvent", "storyFreezeUI");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
-            }
+
+            getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
         }
 
 
@@ -855,7 +859,7 @@ public class StoriesWebView extends WebView {
             Log.d("quiz", "storySendData" + " " + data);
             if (!InAppStoryManager.getInstance().sendStatistic) return;
             NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
-                    .enqueue(new NetworkCallback<com.inappstory.sdk.network.Response>() {
+                    .enqueue(new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(com.inappstory.sdk.network.Response response) {
 
@@ -935,16 +939,14 @@ public class StoriesWebView extends WebView {
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (storyId == InAppStoryService.getInstance().getCurrentId())
-            if (pausedBeforeLoaded)
-                playVideo();
-            else
-                resumeVideo();
+
+            resumeVideo();
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         float pressedEndY = 0f;
-        if (InAppStoryService.getInstance().cubeAnimation) return false;
+        if (((StoriesReaderPager)getParentForAccessibility()).cubeAnimation) return false;
         boolean distanceY = false;
         if (!InAppStoryService.isConnected()) return true;
         switch (motionEvent.getActionMasked()) {
@@ -968,7 +970,7 @@ public class StoriesWebView extends WebView {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (InAppStoryService.getInstance().cubeAnimation) return false;
+        if (((StoriesReaderPager)getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
@@ -982,19 +984,19 @@ public class StoriesWebView extends WebView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (InAppStoryService.getInstance().cubeAnimation) return false;
+        if (((StoriesReaderPager)getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
 
+            CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
-            }
+
+            getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
         }
         return c || touchSlider;
     }

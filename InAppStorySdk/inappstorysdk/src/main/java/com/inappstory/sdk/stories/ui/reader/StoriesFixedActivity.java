@@ -29,7 +29,7 @@ import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
@@ -164,7 +164,8 @@ public class StoriesFixedActivity extends AppCompatActivity {
         else animateFirst = false;
 
         if (InAppStoryService.getInstance() != null) {
-            Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
+            Story story = InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
                     story.title, story.tags, story.slidesCount,
@@ -223,12 +224,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
             finishActivityWithoutAnimation();
             return;
         }
-
-
-        if (Build.VERSION.SDK_INT >= 19) {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-        }
-
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         if (Build.VERSION.SDK_INT >= 21) {
             setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -297,7 +293,8 @@ public class StoriesFixedActivity extends AppCompatActivity {
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
         if (InAppStoryService.getInstance() != null) {
-            Story story = StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId());
+            Story story = InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
                     story.title, story.tags, story.slidesCount,
@@ -338,9 +335,8 @@ public class StoriesFixedActivity extends AppCompatActivity {
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
-        if (StoryDownloader.getInstance() != null)
-            for (Story story : StoryDownloader.getInstance().getStories())
-                story.lastIndex = 0;
+        for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
+            story.lastIndex = 0;
         cleaned = true;
     }
 
@@ -348,8 +344,10 @@ public class StoriesFixedActivity extends AppCompatActivity {
     public void swipeDownEvent(SwipeDownEvent event) {
         if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
                 && InAppStoryManager.getInstance().closeOnSwipe()) {
-            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) == null) return;
-            if (!StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
+            if (InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId()) == null) return;
+            if (!InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
                 CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }

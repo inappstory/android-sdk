@@ -21,10 +21,13 @@ import java.util.List;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
+import com.inappstory.sdk.stories.events.SwipeDownEvent;
+import com.inappstory.sdk.stories.events.SwipeUpEvent;
 
 /**
  * A {@link FrameLayout} which responds to nested scrolls to create drag-dismissable layouts.
@@ -42,6 +45,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     // state
     private float totalDrag;
+    private float totalDisabledDrag;
     private boolean draggingDown = false;
     private boolean draggingUp = false;
     private int mLastActionEvent;
@@ -109,86 +113,108 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
          * @param rawOffsetPixels     The raw distance the user has dragged
          */
         void onDrag(float elasticOffset, float elasticOffsetPixels,
-                    float rawOffset, float rawOffsetPixels) { }
+                    float rawOffset, float rawOffsetPixels) {
+        }
 
         /**
          * Called when dragging is released and has exceeded the threshold dismiss distance.
          */
-        void onDragDismissed() { }
-        void onDragDropped() { }
+        void onDragDismissed() {
+        }
+
+        void onDragDropped() {
+        }
 
     }
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)
-            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-                return true;
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+       // if (st != null && (st.disableClose || st.hasSwipeUp()))
+       //     return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)
-            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-                return;
+        // if we're in a drag gesture and the user reverses up the we should take those events
+        Log.e("Elastic", "PreScroll " + dx + " " + dy);
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
-            dragScale(dy);
-            consumed[1] = dy;
+            if (st != null && (st.disableClose || st.hasSwipeUp()))
+                disabledDragScale(dy);
+            else {
+                dragScale(dy);
+                consumed[1] = dy;
+            }
         }
     }
 
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null)        
-            if (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-                return;
-        dragScale(dyUnconsumed);
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        if (st != null && (st.disableClose || st.hasSwipeUp())) {
+            disabledDragScale(dyUnconsumed);
+        } else {
+            dragScale(dyUnconsumed);
+        }
     }
 
-    @Override public boolean onInterceptTouchEvent(MotionEvent ev) {
-        mLastActionEvent = ev.getAction();
+    boolean isPaused = false;
 
-        if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
-            CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        mLastActionEvent = ev.getAction();
+        if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
+            if (!isPaused) {
+                isPaused = true;
+                CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+            }
         } else if (mLastActionEvent == MotionEvent.ACTION_UP || mLastActionEvent == MotionEvent.ACTION_CANCEL) {
+            isPaused = false;
             CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
             CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
         }
-        Log.e("elasticEvent", mLastActionEvent + "");
+        Log.e("Elastic", ev.toString());
         return super.onInterceptTouchEvent(ev);
     }
 
     @Override
     public void onStopNestedScroll(View child) {
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        if (totalDisabledDrag > 400) {
+            CsEventBus.getDefault().post(new SwipeUpEvent());
+        } else if (st != null && !st.disableClose && totalDisabledDrag < -400) {
+            CsEventBus.getDefault().post(new SwipeDownEvent());
+        }
         if (Math.abs(totalDrag) >= dragDismissDistance &&
-            (StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()) != null &&
-            !StoryDownloader.getInstance().getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)) {
+                (st != null &&
+                        !(st.disableClose || st.hasSwipeUp()))) {
             dispatchDismissCallback();
-        } else { // settle back to natural position
+        } else {
             if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
-                // this is a 'defensive cleanup for new gestures',
-                // don't animate here
-                // see also https://github.com/nickbutcher/plaid/issues/185
                 setTranslationY(0f);
                 setScaleX(1f);
                 setScaleY(1f);
             } else {
                 if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
+                    isPaused = false;
                     CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
                     CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
                 }
                 animate()
-                    .translationY(0f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(200L)
-                    .setInterpolator(AnimUtils.getFastOutSlowInInterpolator(getContext()))
-                    .setListener(null)
-                    .start();
+                        .translationY(0f)
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(200L)
+                        .setInterpolator(AnimUtils.getFastOutSlowInInterpolator(getContext()))
+                        .setListener(null)
+                        .start();
             }
             totalDrag = 0;
+            totalDisabledDrag = 0;
             draggingDown = draggingUp = false;
             dispatchDragCallback(0f, 0f, 0f, 0f);
             dispatchDropCallback();
@@ -214,6 +240,11 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         if (callbacks != null && callbacks.size() > 0) {
             callbacks.remove(listener);
         }
+    }
+
+    private void disabledDragScale(int scroll) {
+        if (scroll == 0) return;
+        totalDisabledDrag += scroll;
     }
 
     private void dragScale(int scroll) {
@@ -255,7 +286,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         // allow the list to get the scroll events & reset any transforms
         if ((draggingDown && totalDrag >= 0)
                 || (draggingUp && totalDrag <= 0)) {
-            totalDrag = dragTo = dragFraction = 0;
+            totalDrag = totalDisabledDrag = dragTo = dragFraction = 0;
             draggingDown = draggingUp = false;
             setTranslationY(0f);
             setScaleX(1f);

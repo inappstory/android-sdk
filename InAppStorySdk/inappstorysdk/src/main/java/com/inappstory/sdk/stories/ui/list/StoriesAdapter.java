@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -12,8 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -27,20 +24,14 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.ClickOnStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
-import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
-import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
-import com.inappstory.sdk.stories.utils.Sizes;
-
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 
 public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     public List<Integer> getStoriesIds() {
@@ -62,7 +53,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
-        hasFavItem = !isFavoriteList && InAppStoryService.getInstance() != null && InAppStoryService.getInstance().favoriteImages.size() > 0;
+        hasFavItem = !isFavoriteList && InAppStoryService.getInstance() != null
+                && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
     }
 
     public void refresh(List<Integer> storiesIds) {
@@ -98,34 +90,21 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 }
             });
         } else {
-            if (InAppStoryService.getInstance() != null)
-                InAppStoryService.getInstance().getStoryById(new GetStoryByIdCallback() {
+            if (InAppStoryService.getInstance() != null) {
+                final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
-                    public void getStory(final Story story) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                holder.bind(story.getTitle(),
-                                        story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
-                                        story.getSource(),
-                                        (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
-                                        Color.parseColor(story.getBackgroundColor()),
-                                        story.isOpened || isFavoriteList, story.hasAudio(),
-                                        story.getVideoUrl());
-                            }
-                        });
+                    public void run() {
+                        holder.bind(story.getTitle(),
+                                story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
+                                story.getSource(),
+                                (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
+                                Color.parseColor(story.getBackgroundColor()),
+                                story.isOpened || isFavoriteList, story.hasAudio(),
+                                story.getVideoUrl());
                     }
-
-                    @Override
-                    public void loadError(int type) {
-
-                    }
-
-                    @Override
-                    public void getPartialStory(Story story) {
-
-                    }
-                }, storiesIds.get(position));
+                });
+            }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -138,13 +117,13 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     public void onItemClick(int index) {
         if (InAppStoryService.getInstance() == null) return;
-        Story current = StoryDownloader.getInstance().getStoryById(storiesIds.get(index));
+        Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
-                if (InAppStoryManager.getInstance().getUrlClickCallback() != null) {
-                    InAppStoryManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
+                if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                    CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
                     current.saveStoryOpened();
                     notifyItemChanged(index);
@@ -173,7 +152,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = StoryDownloader.getInstance().getStoryById(storyId);
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
@@ -184,33 +163,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null, null, 0,
                     isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
         }
-        if (Sizes.isTablet()) {
-            DialogFragment settingsDialogFragment = new StoriesDialogFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("index", tempStories.indexOf(storiesIds.get(index)));
-            bundle.putInt("source", isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
-            bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
-            bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-            bundle.putIntegerArrayList("stories_ids", tempStories);
-            settingsDialogFragment.setArguments(bundle);
-            settingsDialogFragment.show(
-                    ((AppCompatActivity) context).getSupportFragmentManager(),
-                    "DialogFragment");
-        } else {
-            StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(),
-                    StoryDownloader.getInstance().getStories().get(index).id);
-            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(),
-                    (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
-                            StoriesActivity.class : StoriesFixedActivity.class);
-
-            intent2.putExtra("source", isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
-            // intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
-            intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-            intent2.putExtra("index", tempStories.indexOf(storiesIds.get(index)));
-            intent2.putIntegerArrayListExtra("stories_ids", tempStories);
-            context.startActivity(intent2);
-        }
+        ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
+                tempStories.indexOf(storiesIds.get(index)),
+                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
+        InAppStoryService.getInstance().getDownloadManager().loadStories(
+                InAppStoryService.getInstance().getDownloadManager().getStories());
     }
 
     @Override
@@ -219,7 +176,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         if (InAppStoryManager.getInstance().hasFavorite() && position == storiesIds.size())
             return pref + 3;
         try {
-            Story story = StoryDownloader.getInstance().getStoryById(storiesIds.get(position));
+            Story story = InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(storiesIds.get(position));
             if (story.getVideoUrl() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {

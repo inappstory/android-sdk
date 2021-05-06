@@ -45,10 +45,11 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     IStoriesListItem getListItem;
 
     protected View getDefaultFavoriteCell() {
-        int count = (InAppStoryService.getInstance() != null && InAppStoryService.getInstance().favoriteImages != null) ?
-                InAppStoryService.getInstance().favoriteImages.size() : 0;
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(InAppStoryService.getInstance().favoriteImages, count) != null) {
-            return getFavoriteListItem.getFavoriteItem(InAppStoryService.getInstance().favoriteImages, count);
+        int count = (InAppStoryService.getInstance() != null) ?
+                InAppStoryService.getInstance().getFavoriteImages().size() : 0;
+        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
+                InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
+            return getFavoriteListItem.getFavoriteItem(InAppStoryService.getInstance().getFavoriteImages(), count);
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
@@ -178,11 +179,12 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     }
 
     public void bindFavorite() {
-        int count = (InAppStoryService.getInstance() != null && InAppStoryService.getInstance().favoriteImages != null) ?
-                InAppStoryService.getInstance().favoriteImages.size() : 0;
+        int count = (InAppStoryService.getInstance() != null) ?
+                InAppStoryService.getInstance().getFavoriteImages().size() : 0;
 
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(InAppStoryService.getInstance().favoriteImages, count) != null) {
-            getFavoriteListItem.bindFavoriteItem(itemView, InAppStoryService.getInstance().favoriteImages, count);
+        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
+                InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
+            getFavoriteListItem.bindFavoriteItem(itemView, InAppStoryService.getInstance().getFavoriteImages(), count);
             return;
         }
         RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
@@ -203,7 +205,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
             title.setTextColor(manager.csListItemTitleColor());
         }
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().favoriteImages;
+        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
         int halfHeight = Sizes.dpToPxExt(55);
         int halfWidth = Sizes.dpToPxExt(55);
         int height = Sizes.dpToPxExt(110);

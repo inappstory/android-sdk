@@ -27,11 +27,10 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.exceptions.DataException;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.cache.StoryDownloader;
+import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
@@ -40,7 +39,6 @@ import com.inappstory.sdk.stories.events.OpenStoryByIdEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesList extends RecyclerView {
@@ -120,15 +118,7 @@ public class StoriesList extends RecyclerView {
                 if (adapter != null && adapter.getStoriesIds().size() > i && i >= 0)
                     indexes.add(adapter.getStoriesIds().get(i));
             }
-        } else if (layoutManager instanceof GridLayoutManager) {
-            GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
-            for (int i = gridLayoutManager.findFirstVisibleItemPosition();
-                 i <= gridLayoutManager.findLastVisibleItemPosition(); i++) {
-                if (adapter != null && adapter.getStoriesIds().size() > i && i >= 0)
-                    indexes.add(adapter.getStoriesIds().get(i));
-            }
         }
-
         OldStatisticManager.getInstance().previewStatisticEvent(indexes);
         try {
             if (StatisticManager.getInstance() != null) {
@@ -176,7 +166,8 @@ public class StoriesList extends RecyclerView {
 
     @CsSubscribe
     public void openStoryByIdEvent(OpenStoryByIdEvent event) {
-        StoryDownloader.getInstance().loadStories(StoryDownloader.getInstance().getStories(), event.getIndex());
+        InAppStoryService.getInstance().getDownloadManager().loadStories(
+                InAppStoryService.getInstance().getDownloadManager().getStories());
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -245,7 +236,7 @@ public class StoriesList extends RecyclerView {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
-        Story st = StoryDownloader.getInstance().getStoryById(event.getId());
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
         st.isOpened = true;
         st.saveStoryOpened();
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
@@ -281,11 +272,9 @@ public class StoriesList extends RecyclerView {
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void favItem(StoryFavoriteEvent event) {
         if (InAppStoryService.getInstance() == null) return;
-        if (InAppStoryService.getInstance().favoriteImages == null)
-            InAppStoryService.getInstance().favoriteImages = new ArrayList<>();
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().favoriteImages;
+        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
         boolean isEmpty = favImages.isEmpty();
-        Story story = StoryDownloader.getInstance().getStoryById(event.getId());
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
         if (event.favStatus) {
             FavoriteImage favoriteImage = new FavoriteImage(Integer.valueOf(event.getId()), story.getImage(), story.getBackgroundColor());
             if (!favImages.contains(favoriteImage))
@@ -334,7 +323,7 @@ public class StoriesList extends RecyclerView {
         }
 
         if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().loadStories(new LoadStoriesCallback() {
+            InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
@@ -354,7 +343,7 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void run() {
                     if (InAppStoryService.getInstance() != null)
-                        InAppStoryService.getInstance().loadStories(new LoadStoriesCallback() {
+                        InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
