@@ -296,7 +296,7 @@ public class StoriesActivity extends AppCompatActivity {
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putBoolean("canUseNotLoaded", getIntent().getBooleanExtra("canUseNotLoaded", false));
                 bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
-                bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
+              //  bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
                 bundle.putBoolean("onboarding", getIntent().getBooleanExtra("onboarding", false));
                 bundle.putInt(CS_CLOSE_POSITION, getIntent().getIntExtra(CS_CLOSE_POSITION, 1));
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
@@ -383,8 +383,7 @@ public class StoriesActivity extends AppCompatActivity {
 
     @CsSubscribe
     public void swipeDownEvent(SwipeDownEvent event) {
-        if (getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false)
-                && InAppStoryManager.getInstance().closeOnSwipe()) {
+        if (InAppStoryManager.getInstance().closeOnSwipe()) {
             if (InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId()) == null)
                 return;

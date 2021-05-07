@@ -67,7 +67,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         super.onDismiss(dialogInterface);
     }
 
-    boolean cleaned = false;
+    private boolean cleaned = false;
 
     public void cleanReader() {
         if (InAppStoryService.getInstance() == null) return;
@@ -168,7 +168,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         args.putInt("index", getArguments().getInt("index", 0));
         args.putBoolean("canUseNotLoaded", getArguments().getBoolean("canUseNotLoaded", false));
         args.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
-        args.putBoolean(CS_CLOSE_ON_SWIPE, getArguments().getBoolean(CS_CLOSE_ON_SWIPE, false));
+        //args.putBoolean(CS_CLOSE_ON_SWIPE, getArguments().getBoolean(CS_CLOSE_ON_SWIPE, false));
         args.putBoolean("onboarding", getArguments().getBoolean("onboarding", false));
         args.putInt(CS_CLOSE_POSITION, getArguments().getInt(CS_CLOSE_POSITION, 1));
         args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));

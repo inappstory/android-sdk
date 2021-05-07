@@ -122,7 +122,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         invMask = view.findViewById(R.id.invMask);
         storiesViewPager.setParameters(
                 getArguments().getInt(CS_STORY_READER_ANIMATION, 0),
-                getArguments().getBoolean(CS_CLOSE_ON_SWIPE, false));
+                InAppStoryManager.getInstance().closeOnSwipe());
         int closePosition = getArguments().getInt(CS_CLOSE_POSITION, 1);
         currentIds = getArguments().getIntegerArrayList("stories_ids");
         if (currentIds == null) {
@@ -133,7 +133,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 new StoriesReaderPagerAdapter(
                         getChildFragmentManager(),
                         closePosition,
-                        getArguments().getBoolean(CS_CLOSE_ON_SWIPE, false), currentIds);
+                        InAppStoryManager.getInstance().closeOnSwipe(), currentIds);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
         int ind = getArguments().getInt("index", 0);

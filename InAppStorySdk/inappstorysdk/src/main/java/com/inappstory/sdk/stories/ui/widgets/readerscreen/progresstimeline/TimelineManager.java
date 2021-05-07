@@ -6,26 +6,25 @@ import android.util.Log;
 import java.util.List;
 
 public class TimelineManager {
-    public void setTimeline(Timeline timeline) {
+    void setTimeline(Timeline timeline) {
         this.timeline = timeline;
     }
 
     public void setStoryDurations(List<Integer> durations) {
         if (durations == null) return;
         for (int i = 0; i < timeline.progressBars.size(); i++) {
-            timeline.progressBars.get(i).setDuration(durations.get(i) * 1L);
+            timeline.progressBars.get(i).setDuration((long) durations.get(i));
         }
     }
 
-    Timeline timeline;
+    private Timeline timeline;
 
     public void setSlidesCount(int slidesCount) {
         timeline.setSlidesCount(slidesCount);
     }
 
     public void syncTime(long timeLeft, long syncTime) {
-        if (timeline.curAnimation != null) {
-        }
+
     }
 
     public void start(int ind) {
@@ -35,7 +34,7 @@ public class TimelineManager {
         timeline.curAnimation.start();
     }
 
-    public void setCurrentSlide(int ind) {
+    void setCurrentSlide(int ind) {
         if (ind < 0) return;
         if (ind > timeline.slidesCount) return;
         for (int i = 0; i < ind; i++) {
