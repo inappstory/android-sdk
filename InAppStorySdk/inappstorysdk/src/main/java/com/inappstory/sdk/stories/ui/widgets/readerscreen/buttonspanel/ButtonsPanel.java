@@ -62,6 +62,10 @@ public class ButtonsPanel extends LinearLayout {
     }
 
 
+    public void refreshSoundStatus() {
+        sound.setActivated(InAppStoryManager.getInstance().soundOn);
+    }
+
     ButtonsPanelManager manager;
 
     public void init() {

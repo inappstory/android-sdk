@@ -55,6 +55,14 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     }
 
 
+
+    public int getItemId(int position) {
+        if (position < storiesIds.size())
+            return storiesIds.get(position);
+        return -1;
+    }
+
+
     private int closePosition = 0;
 
     private boolean closeOnSwipe = false;

@@ -23,6 +23,10 @@ public class ReaderPageManager {
         webViewManager.storyLoaded(id, index);
     }
 
+    void syncTime(long timeLeft, long eventTimer) {
+        timelineManager.syncTime(timeLeft, eventTimer);
+    }
+
     void storyOpen(int storyId) {
         if (storyId != this.storyId) {
             webViewManager.stopVideo();
@@ -69,11 +73,11 @@ public class ReaderPageManager {
     }
 
     void nextSlide() {
-
+        webViewManager.stopVideo();
     }
 
     void prevSlide() {
-
+        webViewManager.stopVideo();
     }
 
     void closeReader() {

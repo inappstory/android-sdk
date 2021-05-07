@@ -78,7 +78,6 @@ public class ImageLoader {
                 }
             } else {
                 queuePhoto(url, imageView);
-                //  imageView.setImageResource(loader);
             }
         } catch (Exception e) {
 
@@ -88,19 +87,15 @@ public class ImageLoader {
     public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio) {
         try {
             stub_id = loader;
-            // remoteViews.put(rv, url);
             if (memoryCache2 == null) memoryCache2 = new MemoryCache();
             final Bitmap[] bitmap = {memoryCache2.get(url)};
             Log.e("MyWidget", url + " " + cornerRadius + " " + ratio);
             if (bitmap[0] != null)
                 rv.setImageViewBitmap(id, bitmap[0]);
-                //imageView.setImageBitmap(bitmap);
             else {
                 bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null);
                 memoryCache2.put(url, bitmap[0]);
                 rv.setImageViewBitmap(id, bitmap[0]);
-                // queueRemoteImage(url, rv, id, cornerRadius, ratio, null);
-                //  imageView.setImageResource(loader);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -328,7 +323,6 @@ public class ImageLoader {
         o.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(stream, null, o);
 
-        //Find the correct scale value. It should be the power of 2.
         final int REQUIRED_SIZE = Sizes.dpToPxExt(800);
         int width_tmp = o.outWidth, height_tmp = o.outHeight;
         int scale = 1;
@@ -340,13 +334,11 @@ public class ImageLoader {
             scale *= 2;
         }
 
-        //decode with inSampleSize
         BitmapFactory.Options o2 = new BitmapFactory.Options();
         o2.inSampleSize = scale;
         return BitmapFactory.decodeStream(stream, null, o2);
     }
 
-    //Task for the queue
     private class PhotoToLoad {
         public String url;
         public ImageView imageView;
@@ -409,9 +401,6 @@ public class ImageLoader {
 
             Bitmap bmp = getWidgetBitmap(photoToLoad.url, photoToLoad.cornerRadius, true, photoToLoad.ratio, photoToLoad.color);
             photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bmp);
-           /* RemoteBitmapDisplayer bd = new RemoteBitmapDisplayer(bmp, photoToLoad);
-            Activity a = (Activity) photoToLoad.imageView.getContext();
-            a.runOnUiThread(bd);*/
         }
     }
 

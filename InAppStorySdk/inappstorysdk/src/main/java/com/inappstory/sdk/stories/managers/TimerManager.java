@@ -1,12 +1,14 @@
 package com.inappstory.sdk.stories.managers;
 
 import android.os.Handler;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.NextStoryPageEvent;
+import com.inappstory.sdk.stories.events.SyncTimerEvent;
 
 public class TimerManager {
     private Handler timerHandler = new Handler();
@@ -30,6 +32,7 @@ public class TimerManager {
     };
 
     public void resumeLocalTimer() {
+        CsEventBus.getDefault().post(new SyncTimerEvent(timerDuration - pauseShift));
         startTimer(timerDuration - pauseShift, false);
     }
 
@@ -65,6 +68,7 @@ public class TimerManager {
         if (timerDuration < 0) {
             return;
         }
+        Log.e("slideAnimation", "physical " + timerDuration);
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;

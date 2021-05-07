@@ -35,10 +35,12 @@ import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransforme
 public class ReaderPager extends ViewPager {
     public ReaderPager(@NonNull Context context) {
         super(context);
+        CsEventBus.getDefault().register(this);
     }
 
     public ReaderPager(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        CsEventBus.getDefault().register(this);
     }
 
     public boolean canUseNotLoaded;
@@ -195,7 +197,7 @@ public class ReaderPager extends ViewPager {
     public void onNextStory() {
         if (getCurrentItem() < getAdapter().getCount() - 1) {
 
-            CsEventBus.getDefault().post(new ChangeStoryEvent(((StoriesReaderPagerAdapter)getAdapter()).
+            CsEventBus.getDefault().post(new ChangeStoryEvent(((ReaderPagerAdapter)getAdapter()).
                     getItemId(getCurrentItem() + 1),
                     getCurrentItem() + 1));
             setCurrentItem(getCurrentItem() + 1);
@@ -208,7 +210,7 @@ public class ReaderPager extends ViewPager {
         if (getCurrentItem() > 0) {
 
             StatisticManager.getInstance().sendCurrentState();
-            CsEventBus.getDefault().post(new ChangeStoryEvent(((StoriesReaderPagerAdapter)getAdapter()).
+            CsEventBus.getDefault().post(new ChangeStoryEvent(((ReaderPagerAdapter)getAdapter()).
                     getItemId(getCurrentItem() - 1),
                     getCurrentItem() - 1));
             setCurrentItem(getCurrentItem() - 1);

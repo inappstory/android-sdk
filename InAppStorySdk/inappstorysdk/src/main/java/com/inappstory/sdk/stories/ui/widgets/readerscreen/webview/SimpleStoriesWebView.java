@@ -28,6 +28,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -400,6 +401,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 return false;
             }
 
+            CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;

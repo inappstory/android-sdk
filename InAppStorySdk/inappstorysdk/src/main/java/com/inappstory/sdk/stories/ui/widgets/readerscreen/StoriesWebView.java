@@ -366,6 +366,12 @@ public class StoriesWebView extends WebView {
         }
     }
 
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void nextStoryPageEvent(NextStoryPageEvent event) {
+        stopVideo();
+    }
+
+
     public void stopVideo() {
         // if (!isVideo) return;
         //loadUrl("javascript:(function(){window.Android.defaultTap('test');})()");
@@ -648,11 +654,6 @@ public class StoriesWebView extends WebView {
     public void shareComplete(ShareCompleteEvent event) {
         if (storyId != event.storyId) return;
         loadUrl("javascript:(function(){share_complete(\"" + event.getId() + "\", " + event.isSuccess() + ");})()");
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void nextStoryPageEvent(NextStoryPageEvent event) {
-        stopVideo();
     }
 
     public class WebAppInterface {

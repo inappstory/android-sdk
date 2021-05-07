@@ -13,7 +13,7 @@ public class TimelineManager {
     public void setStoryDurations(List<Integer> durations) {
         if (durations == null) return;
         for (int i = 0; i < timeline.progressBars.size(); i++) {
-            timeline.progressBars.get(i).setDuration(durations.get(i)*1L);
+            timeline.progressBars.get(i).setDuration(durations.get(i) * 1L);
         }
     }
 
@@ -23,8 +23,15 @@ public class TimelineManager {
         timeline.setSlidesCount(slidesCount);
     }
 
+    public void syncTime(long timeLeft, long syncTime) {
+        if (timeline.curAnimation != null) {
+        }
+    }
+
     public void start(int ind) {
+        mAnimationRest = -1;
         timeline.setActive(ind);
+        Log.e("slideAnimation", "visual " + timeline.curAnimation.getDuration());
         timeline.curAnimation.start();
     }
 
@@ -42,28 +49,22 @@ public class TimelineManager {
     }
 
     public void stop() {
-
+        mAnimationRest = -1;
     }
 
 
-    private long mAnimationTime;
+    private long mAnimationRest;
 
     public void pause() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             timeline.curAnimation.pause();
-        } else {
-            Log.e("animationDur", timeline.curAnimation.getDuration() + " resume");
-            mAnimationTime = timeline.curAnimation.getCurrentPlayTime();
-            timeline.curAnimation.cancel();
         }
+        mAnimationRest = timeline.curAnimation.getDuration() - timeline.curAnimation.getCurrentPlayTime();
     }
 
     public void resume() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             timeline.curAnimation.resume();
-        } else {
-            timeline.curAnimation.start();
-            timeline.curAnimation.setCurrentPlayTime(mAnimationTime);
         }
     }
 

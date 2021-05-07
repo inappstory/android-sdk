@@ -287,10 +287,6 @@ public class StoriesViewManager {
 
     public void storyStartedEvent() {
         if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        // CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-        //         story.tags, story.slidesCount, index));
-
         CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
     }
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ public class TimelineProgressBar extends FrameLayout {
     public void setDuration(Long duration) {
         this.duration = duration;
         animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
+        animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(getDuration());
         animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override

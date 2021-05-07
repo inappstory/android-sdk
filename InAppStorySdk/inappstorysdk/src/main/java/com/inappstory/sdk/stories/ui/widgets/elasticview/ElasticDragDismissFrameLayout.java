@@ -173,8 +173,10 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
                 CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             }
         } else if (mLastActionEvent == MotionEvent.ACTION_UP || mLastActionEvent == MotionEvent.ACTION_CANCEL) {
-            isPaused = false;
-            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+            if (isPaused) {
+                isPaused = false;
+                CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
+            }
             CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
         }
         Log.e("Elastic", ev.toString());

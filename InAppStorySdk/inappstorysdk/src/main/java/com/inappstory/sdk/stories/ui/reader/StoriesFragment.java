@@ -45,6 +45,7 @@ import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
+import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
@@ -61,6 +62,8 @@ import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPagerAdapter;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
@@ -222,7 +225,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
         super.onResume();
     }
-
 
     @CsSubscribe
     public void refreshPageEvent(PageByIndexRefreshEvent event) {
@@ -439,6 +441,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         i.setData(Uri.parse(object.getLink().getTarget()));
                         startActivity(i);
+                        getActivity().overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
                     }
                     break;
                 default:
@@ -566,6 +569,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (isDestroyed) return;
         storiesViewPager.onNextStory();
     }
+
+
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void onPrevStory(PrevStoryReaderEvent event) {

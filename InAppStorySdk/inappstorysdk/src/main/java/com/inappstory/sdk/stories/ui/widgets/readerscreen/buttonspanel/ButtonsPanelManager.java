@@ -32,61 +32,40 @@ public class ButtonsPanelManager {
 
     int storyId;
 
-    public void likeClick(final ButtonClickCallback callback) {
-        if (InAppStoryManager.isNull()) return;
-        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        final int val;
-        if (story.liked()) {
-            CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
-                    story.tags, story.slidesCount, story.lastIndex, false));
-            val = 0;
-        } else {
-            CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
-                    story.tags, story.slidesCount, story.lastIndex, true));
-            StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex);
-            val = 1;
-        }
-        NetworkClient.getApi().storyLike(Integer.toString(storyId),
-                StatisticSession.getInstance().id,
-                InAppStoryManager.getInstance().getApiKey(), val).enqueue(
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        if (story != null)
-                            story.like = val;
-                        if (callback != null)
-                            callback.onSuccess(val);
-                        CsEventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
-                    }
-
-
-                    @Override
-                    public void onError(int code, String message) {
-                        super.onError(code, message);
-                        if (callback != null)
-                            callback.onError();
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
+    public void likeClick(ButtonClickCallback callback) {
+        likeDislikeClick(callback, true);
     }
 
-    public void dislikeClick(final ButtonClickCallback callback) {
+    public void dislikeClick(ButtonClickCallback callback) {
+        likeDislikeClick(callback, false);
+    }
+
+    private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
         if (InAppStoryManager.isNull()) return;
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         final int val;
-        if (story.disliked()) {
-            CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
-                    story.tags, story.slidesCount, story.lastIndex, false));
-            val = 0;
+        if (like) {
+            if (story.liked()) {
+                CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, false));
+                val = 0;
+            } else {
+                CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, true));
+                StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex);
+                val = 1;
+            }
         } else {
-            CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
-                    story.tags, story.slidesCount, story.lastIndex, true));
-            StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
-            val = -1;
+            if (story.disliked()) {
+                CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, false));
+                val = 0;
+            } else {
+                CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
+                        story.tags, story.slidesCount, story.lastIndex, true));
+                StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
+                val = -1;
+            }
         }
         NetworkClient.getApi().storyLike(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
