@@ -420,7 +420,7 @@
 - int getAction(), может возвращать значения CloseStory.AUTO, CloseStory.CLICK, CloseStory.SWIPE, CloseStory.CUSTOM
 - int getSource(), может возвращать значения ShowStory.SINGLE, ShowStory.ONBOARDING, ShowStory.LIST, ShowStory.FAVORITE
 
-5) CallToAction - клик по кнопке в сториз. Дополнительный методы
+5) CallToAction - клик по кнопке в сториз или свайп вверх на соответствующем виджете. Дополнительные методы:
 - String getLink(), возвращает ссылку, передаваемую в кнопке
 - int getType(), может возвращать значения CallToAction.SWIPE = 1, CallToAction.BUTTON = 0
 Данное событие заменяет Deprecated событие ClickOnButton.
