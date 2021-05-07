@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:1.1.6'
+    implementation 'com.github.inappstory:android-sdk:1.2.0'
 
 Также для корректной работы в dependencies нужно добавить :
 
@@ -420,7 +420,10 @@
 - int getAction(), может возвращать значения CloseStory.AUTO, CloseStory.CLICK, CloseStory.SWIPE, CloseStory.CUSTOM
 - int getSource(), может возвращать значения ShowStory.SINGLE, ShowStory.ONBOARDING, ShowStory.LIST, ShowStory.FAVORITE
 
-5) ClickOnButton - клик по кнопке в сториз. Дополнительный метож getLink(), возвращает ссылку, передаваемую в кнопке.
+5) CallToAction - клик по кнопке в сториз. Дополнительный методы
+- String getLink(), возвращает ссылку, передаваемую в кнопке
+- int getType(), может возвращать значения CallToAction.SWIPE = 1, CallToAction.BUTTON = 0
+Данное событие заменяет Deprecated событие ClickOnButton.
 
 6) ShowSlide - показ слайда.
 
