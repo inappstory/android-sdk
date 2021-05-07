@@ -468,6 +468,14 @@ public class StoriesWebView extends WebView {
 
     boolean videoIsLoaded = false;
 
+    void storyResumedEvent(double timer) {
+        if (InAppStoryService.getInstance() == null) return;
+        Log.e("resTimer", "" + timer);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        long slideDuration = story.getDurations().get(index);
+        InAppStoryService.getInstance().getTimerManager().startTimer((long)(slideDuration - timer - 50), false);
+    }
+
     @CsSubscribe
     public void swipeUpEvent(SwipeUpEvent event) {
         if (InAppStoryService.getInstance().getDownloadManager()
@@ -745,6 +753,17 @@ public class StoriesWebView extends WebView {
         public void storyStarted() {
             storyStartedEvent();
         }
+
+        @JavascriptInterface
+        public void storyStarted(double startTime) {
+            storyStartedEvent();
+        }
+
+        @JavascriptInterface
+        public void storyResumed(double startTime) {
+            storyResumedEvent(startTime);
+        }
+
 
         @JavascriptInterface
         public void storyShowSlide(int index) {

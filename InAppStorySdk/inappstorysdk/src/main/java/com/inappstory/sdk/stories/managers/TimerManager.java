@@ -52,6 +52,17 @@ public class TimerManager {
         startPauseTime = 0;
     }
 
+    public void resumeTimer(int timer) {
+        StatisticManager.getInstance().cleanFakeEvents();
+        startTimer(timer, false);
+        if (OldStatisticManager.getInstance().currentEvent == null) return;
+        OldStatisticManager.getInstance().currentEvent.eventType = 1;
+        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
+        pauseTime += System.currentTimeMillis() - startPauseTime;
+        StatisticManager.getInstance().currentState.storyPause = pauseTime;
+        startPauseTime = 0;
+    }
+
 
     public void startTimer(long timerDuration, boolean clearDuration) {
         if (timerDuration == 0) {
@@ -68,7 +79,7 @@ public class TimerManager {
         if (timerDuration < 0) {
             return;
         }
-        Log.e("slideAnimation", "physical " + timerDuration);
+        Log.e("resTimer", "td" + timerDuration);
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;

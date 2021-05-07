@@ -27,6 +27,5 @@ public class CallToAction extends BaseOuterEvent {
         this.index = index;
         this.link = link;
         this.type = type;
-        Log.e("CallToAction", link + " " + type);
     }
 }

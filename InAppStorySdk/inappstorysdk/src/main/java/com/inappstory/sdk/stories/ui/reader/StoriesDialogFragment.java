@@ -67,7 +67,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         super.onDismiss(dialogInterface);
     }
 
-    private boolean cleaned = false;
+    boolean cleaned = false;
 
     public void cleanReader() {
         if (InAppStoryService.getInstance() == null) return;

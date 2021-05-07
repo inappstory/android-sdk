@@ -6,25 +6,26 @@ import android.util.Log;
 import java.util.List;
 
 public class TimelineManager {
-    void setTimeline(Timeline timeline) {
+    public void setTimeline(Timeline timeline) {
         this.timeline = timeline;
     }
 
     public void setStoryDurations(List<Integer> durations) {
         if (durations == null) return;
         for (int i = 0; i < timeline.progressBars.size(); i++) {
-            timeline.progressBars.get(i).setDuration((long) durations.get(i));
+            timeline.progressBars.get(i).setDuration(durations.get(i) * 1L);
         }
     }
 
-    private Timeline timeline;
+    Timeline timeline;
 
     public void setSlidesCount(int slidesCount) {
         timeline.setSlidesCount(slidesCount);
     }
 
     public void syncTime(long timeLeft, long syncTime) {
-
+        if (timeline.curAnimation != null) {
+        }
     }
 
     public void start(int ind) {
@@ -34,7 +35,7 @@ public class TimelineManager {
         timeline.curAnimation.start();
     }
 
-    void setCurrentSlide(int ind) {
+    public void setCurrentSlide(int ind) {
         if (ind < 0) return;
         if (ind > timeline.slidesCount) return;
         for (int i = 0; i < ind; i++) {
@@ -55,16 +56,12 @@ public class TimelineManager {
     private long mAnimationRest;
 
     public void pause() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            timeline.curAnimation.pause();
-        }
+        timeline.curAnimation.pause();
         mAnimationRest = timeline.curAnimation.getDuration() - timeline.curAnimation.getCurrentPlayTime();
     }
 
     public void resume() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            timeline.curAnimation.resume();
-        }
+        timeline.curAnimation.resume();
     }
 
     public void next() {
