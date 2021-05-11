@@ -69,7 +69,7 @@
     boolean hasShare//флаг, который отвечает за подключение функционала шаринга. По умолчанию - false (отключен).
     boolean hasFavorite //флаг, который отвечает за подключение функционала избранных stories. По умолчанию - false (отключен).
     ArrayList<String> tags //теги для таргетирования stories, опциональный параметр
-    Map<String, String> placeholders //плейсхолдеры для замены специальных переменных в текстах сториз, опциональный параметр. Плейсхолдеры задаются без спецзнаков (%).
+    Map<String, String> placeholders //плейсхолдеры для замены специальных переменных в текстах сторис, опциональный параметр. Плейсхолдеры задаются без спецзнаков (%).
 
 ###### Внимание! Если передать testKey, то в приложении будут показаны сторис только в статусе "Проверка"
 
@@ -94,7 +94,7 @@
         app:cs_listIsFavorite="false"
         android:layout_height="wrap_content"/>
 
-Аттрибут cs_listIsFavorite отвечает за то, добавляем мы обычный список или список избранных сториз (true - избранные, false - полный список).
+Аттрибут cs_listIsFavorite отвечает за то, добавляем мы обычный список или список избранных сторис (true - избранные, false - полный список).
 
 Или же добавить через код:
 
@@ -181,7 +181,7 @@
     ANIMATION_DEPTH = 1;
     ANIMATION_CUBE = 2;
    
-    boolean csIsDraggable - флаг, отвечающий за возможность закрытия ридера сториз по drag'n'drop. По умолчанию функционал включен и значение флага - true. Данный флаг задается     только для глобального AppearanceManager.
+    boolean csIsDraggable - флаг, отвечающий за возможность закрытия ридера сторис по drag'n'drop. По умолчанию функционал включен и значение флага - true. Данный флаг задается     только для глобального AppearanceManager.
 
 Пример задания параметров выглядит следующим образом
 
@@ -202,7 +202,7 @@
         void setSource(View itemView, String source); // itemView - текущая ячейка, в необходимой View используем источник story.
         void setImage(View itemView, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем обложку story или цвет фона в случае ее отсутствия.
         void setReaded(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если она прочитана.
-        void setHasAudio(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если у данной сториз есть аудио внутри.
+        void setHasAudio(View itemView, boolean isReaded); // itemView - текущая ячейка, меняем ее по необходимости в случае если у данной сторис есть аудио внутри.
         void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView - текущая ячейка, в необходимой View показываем видеообложку story (videoUrl), постер видео (url) или цвет фона в случае его отсутствия. Для работы с ячейками видео рекомендуется использовать класс из библиотеки VideoPlayer в качестве контейнера для отображения видео и метод loadVideo(String videoUrl) для запуска. Данный класс предусматривает кэширование видеообложек. Класс VideoPlayer наследуется от TextureView
     }
 
@@ -235,7 +235,7 @@
 
                         @Override
                         public void setImage(View itemView, String url, int backgroundColor) {
-                            //В случае, если есть сториз без изображений и с изображением, возможно потребуется предварительная очистка imageView с помощью setImageResource(0)
+                            //В случае, если есть сторис без изображений и с изображением, возможно потребуется предварительная очистка imageView с помощью setImageResource(0)
                             itemView.findViewById(R.id.image).setBackgroundColor(backgroundColor);
                         }
 
@@ -299,7 +299,7 @@
                     }
                 });
  
-Так же, для взаимодействия с ячейкой избранного (например, открытия нового окна со списком избранных сториз) необходимо добавить обработчик 
+Так же, для взаимодействия с ячейкой избранного (например, открытия нового окна со списком избранных сторис) необходимо добавить обработчик 
     
     storiesList.setOnFavoriteItemClick(new StoriesList.OnFavoriteItemClick() {
                 @Override
@@ -321,7 +321,7 @@
             void setProgress(int progress, int max); //Значения прогресса - от 0 до 100, в качестве max передается 100. 
         }
         
-`StoryTouchListener csStoryTouchListener` - используется для добавления обработки клика на ячейки списков сториз (например, для анимации)
+`StoryTouchListener csStoryTouchListener` - используется для добавления обработки клика на ячейки списков сторис (например, для анимации)
 
     public interface StoryTouchListener {
         void touchDown(View view, int position); //View - ячейка списка, position - позиция в списке
@@ -396,31 +396,31 @@
     
 На данный момент в SDK можно отправить 2 события
 
-    CloseStoryReaderEvent - используется для закрытия ридера сториз (например при перегрузке клика на кнопки, шаринг и прочее)
+    CloseStoryReaderEvent - используется для закрытия ридера сторис (например при перегрузке клика на кнопки, шаринг и прочее)
     SoundOnOffEvent - вызывается после изменения флага включений/выключения звука (InAppStoryManager.getInstance().soundOn). В случае, если ридер закрыт, вызывать событие не требуется.
 
 Ниже перечислены события, на которые можно подписаться:
 
-1) StoriesLoaded - список сториз загрузился, виджет готов к работе (срабатывает каждый раз при загрузке списка, в том числе и при refresh). Событие содержит метод getCount() - количество сториз.
+1) StoriesLoaded - список сторис загрузился, виджет готов к работе (срабатывает каждый раз при загрузке списка, в том числе и при refresh). Событие содержит метод getCount() - количество сторис.
 
 Все события со 2 по 10 содержат 4 метода (некоторые события помимо этих 4 - содержат еще и дополнительные) 
  
-    int getId() - получение id сториз
-    String getTitle() - получение заголовка сториз
-    ArrayList<String> getTags() - получение тегов сториз
+    int getId() - получение id сторис
+    String getTitle() - получение заголовка сторис
+    ArrayList<String> getTags() - получение тегов сторис
     int getSlidesCount() - количество слайдов
 
-2) ClickOnStory - клик по сториз в списке (и в обычном списке и в избранном). Дополнительный метод int getSource(), может возвращать значения ClickOnStory.LIST, ClickOnStory.FAVORITE.
+2) ClickOnStory - клик по сторис в списке (и в обычном списке и в избранном). Дополнительный метод int getSource(), может возвращать значения ClickOnStory.LIST, ClickOnStory.FAVORITE.
 
-3) ShowStory - показ ридера со сториз (после клика или перелистывания в обычном списке, в избранном, одиночной сториз или онбордингов). Дополнительный метод int getSource(), может возвращать значения ShowStory.SINGLE, ShowStory.ONBOARDING, ShowStory.LIST, ShowStory.FAVORITE
+3) ShowStory - показ ридера со сторис (после клика или перелистывания в обычном списке, в избранном, одиночной сторис или онбордингов). Дополнительный метод int getSource(), может возвращать значения ShowStory.SINGLE, ShowStory.ONBOARDING, ShowStory.LIST, ShowStory.FAVORITE
 
 Все события со 4 по 13 содержат метод int getIndex() - с какого слайда было вызвано событие
 
-4) CloseStory - закрытие сториз. Дополнительные методы: 
+4) CloseStory - закрытие сторис. Дополнительные методы: 
 - int getAction(), может возвращать значения CloseStory.AUTO, CloseStory.CLICK, CloseStory.SWIPE, CloseStory.CUSTOM
 - int getSource(), может возвращать значения ShowStory.SINGLE, ShowStory.ONBOARDING, ShowStory.LIST, ShowStory.FAVORITE
 
-5) CallToAction - клик по кнопке в сториз или свайп вверх на соответствующем виджете. Дополнительные методы:
+5) CallToAction - клик по кнопке в сторис или свайп вверх на соответствующем виджете. Дополнительные методы:
 - String getLink(), возвращает ссылку, передаваемую в кнопке
 - int getType(), может возвращать значения CallToAction.SWIPE = 1, CallToAction.BUTTON = 0
 Данное событие заменяет Deprecated событие ClickOnButton.
@@ -437,7 +437,7 @@
 
 11) LikeStory - клик на кнопку лайка
 12) DislikeStory - клик на кнопку дизлайка
-13) FavoriteStory - клик на кнопку добавления сториз в избранное
+13) FavoriteStory - клик на кнопку добавления сторис в избранное
 
 Также есть 2 события для отслеживания ошибок:
 
@@ -457,15 +457,15 @@
 
     CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
     
-Помимо этого для работы с онбордингами и одиночными сториз добавлены события:
-`OnboardingLoad` - отправляется при подгрузке списка онбордингов. Содержит метод getCount, который возвращает количество онбординг сториз и isEmpty - флаг того, пустой списко вернулся по запросу или нет.
+Помимо этого для работы с онбордингами и одиночными сторис добавлены события:
+`OnboardingLoad` - отправляется при подгрузке списка онбордингов. Содержит метод getCount, который возвращает количество онбординг сторис и isEmpty - флаг того, пустой списко вернулся по запросу или нет.
 `OnboardingLoadError` - отправляется при подгрузке списка онбордингов в случае возникновения какой-то ошибки. 
-`SingleLoad` - отправляется при загрузке единичной сториз по id (методом `InAppStoryManager.getInstance().showStory`). 
-`SingleLoadError` - отправляется при загрузке единичной сториз по id в случае возникновения какой-то ошибки. 
+`SingleLoad` - отправляется при загрузке единичной сторис по id (методом `InAppStoryManager.getInstance().showStory`). 
+`SingleLoadError` - отправляется при загрузке единичной сторис по id в случае возникновения какой-то ошибки. 
     
 ##### Работа со звуком
 
-За включение/выключение воспроизведения звука в сториз отвечает флаг `InAppStoryManager.getInstance().soundOn` (true - звук включен, false - выключен). Значение флага по умолчанию прописано в файле `constants.xml` в переменной `defaultMuted` (по умолчанию true - звук выключен) и может быть перегружено. Необходимо учитывать, что значение `soundOn` выставляется как `!soundMuted` (то есть по умолчанию будет false). 
+За включение/выключение воспроизведения звука в сторис отвечает флаг `InAppStoryManager.getInstance().soundOn` (true - звук включен, false - выключен). Значение флага по умолчанию прописано в файле `constants.xml` в переменной `defaultMuted` (по умолчанию true - звук выключен) и может быть перегружено. Необходимо учитывать, что значение `soundOn` выставляется как `!soundMuted` (то есть по умолчанию будет false). 
 Также флаг `InAppStoryManager.getInstance().soundOn` является публичным, потому можно (например после инициализации InAppStoryManager) задать его значение напрямую, например:
 
     InAppStoryManager.getInstance().soundOn = true;
@@ -476,9 +476,9 @@
 
 Если ридер закрыт - отправка события не требуется.
 
-##### Onboarding сториз и одиночные сториз
+##### Onboarding сторис и одиночные сторис
 
-Библиотека поддерживает работу с onboarding сториз. 
+Библиотека поддерживает работу с onboarding сторис. 
 Функция загрузки онбордингов следующая:
 
     InAppStoryManager.getInstance().showOnboardingStories(List<String> tags, Context context, AppearanceManager manager);
@@ -490,20 +490,20 @@
     OnboardingLoad - отправляется при подгрузке списка онбордингов.
     OnboardingLoadError - отправляется при подгрузке списка онбордингов в случае возникновения какой-то ошибки. 
 
-Помимо этого есть возможность открытия одной сториз по ее id|slug.
+Помимо этого есть возможность открытия одной сторис по ее id|slug.
 
     InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager);
 
-В случае успешной/неуспешной попытки загрузки сториз вызываются события, на которые может подписаться разработчик для изменения состояний каких либо внешних элементов в приложении.  
+В случае успешной/неуспешной попытки загрузки сторис вызываются события, на которые может подписаться разработчик для изменения состояний каких либо внешних элементов в приложении.  
 
-    SingleLoad - отправляется при загрузке единичной сториз по id (методом `InAppStoryManager.getInstance().showStory`). 
-    SingleLoadError - отправляется при загрузке единичной сториз по id в случае возникновения какой-то ошибки. 
+    SingleLoad - отправляется при загрузке единичной сторис по id (методом `InAppStoryManager.getInstance().showStory`). 
+    SingleLoadError - отправляется при загрузке единичной сторис по id в случае возникновения какой-то ошибки. 
 
-Функция позволяет загружать все сториз, в том числе и те, которые отсутствуют в списке, возвращенном пользователю. 
+Функция позволяет загружать все сторис, в том числе и те, которые отсутствуют в списке, возвращенном пользователю. 
 
 ##### Обработчики
 
-Обработчик кликов на кнопки в сториз задается в InAppStoryManager через метод
+Обработчик кликов на кнопки в сторис задается в InAppStoryManager через метод
 
     InAppStoryManager.getInstance().setUrlClickCallback(UrlClickCallback callback);
 
@@ -538,7 +538,7 @@
         
 ##### Виджет
 
-При создании виджета есть возможность добавления списка сториз. При этом будут отображены первые 4 элемента списка.
+При создании виджета есть возможность добавления списка сторис. При этом будут отображены первые 4 элемента списка.
 Для этого необходимо задать свойства списка с помощью метода: 
 
     AppearanceManager.csWidgetAppearance(Context context, //контекст, лучше всего передавать контекст виджета, обязательный параметр 
@@ -573,11 +573,11 @@
         <intent-filter>
             <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             <action android:name="ias_w.UPDATE_WIDGETS"/> //приходит, когда возникает необходимость подгрузить список с сервера
-            <action android:name="ias_w.UPDATE_SUCCESS_WIDGETS"/> //приходит в случае успешного получения непустого списка сториз с сервера
+            <action android:name="ias_w.UPDATE_SUCCESS_WIDGETS"/> //приходит в случае успешного получения непустого списка сторис с сервера
             <action android:name="ias_w.UPDATE_NO_CONNECTION"/> //приходит в случае если при попытке получить список с сервера не удалось соединиться с интернетом
-            <action android:name="ias_w.UPDATE_EMPTY_WIDGETS"/> //приходит в случае получения пустого списка сториз с сервера
+            <action android:name="ias_w.UPDATE_EMPTY_WIDGETS"/> //приходит в случае получения пустого списка сторис с сервера
             <action android:name="ias_w.UPDATE_AUTH"/> //приходит в случае если пользователь не авторизован в InAppStorySDK
-            <action android:name="ias_w.CLICK_ITEM"/> //приходит при нажатии на элемент списка сториз виджета
+            <action android:name="ias_w.CLICK_ITEM"/> //приходит при нажатии на элемент списка сторис виджета
         </intent-filter>
         <meta-data
             android:name="android.appwidget.provider"
@@ -716,12 +716,12 @@ FAQ
 Для того, чтобы задать прямоугольную ячейку - в AppearanceManager можно использовать `csListItemWidth(int width)`, `csListItemHeight(int height)`. В случае, если необходима круглая ячейка - необходимо использовать кастомизацию через `csListItemInterface`.
 
 2) Кастомный шрифт
-Для кастомизации шрифта ячейки - в AppearanceManager используем `csCustomFont(Typeface font)`. Кастомизации шрифта в ридере нету, шрифт для сториз автоматически подгружается с сервера.
+Для кастомизации шрифта ячейки - в AppearanceManager используем `csCustomFont(Typeface font)`. Кастомизации шрифта в ридере нету, шрифт для сторис автоматически подгружается с сервера.
 
 3) Смена положения таймера/крестика
 В AppearanceManager используется `csClosePosition`.
 
-4) Изменение лоадера в ридере сториз
+4) Изменение лоадера в ридере сторис
 В глобальном AppearanceManager используется кастомизация через csLoaderView.
 
 5) Задание обработчика для кнопок
@@ -745,8 +745,8 @@ FAQ
 9) Добавление избранного
 При инициализации `InAppStoryManager.Builder()` используем свойство `hasFavorite(true)`. В случае кастомизации внешнего вида ячеек списка через `IStoriesListItem csListItemInterface`, необходимо также кастомизировать внешний вид ячейки для избранного с помощью интерфейса `IGetFavoriteListItem csFavoriteListItemInterface`. Помимо этого для взаимодействия с ячейкой избранного добавляем обработчик `storiesList.setOnFavoriteItemClick(StoriesList.OnFavoriteItemClick callback)`. При отображении списка избранных в xml-разметку со списком необходимо добавить аттрибут `cs_listIsFavorite`.
 
-10) Открытие сториз из push-уведомления
-В функции-обработчике push-уведомления добавляем вызов единичной сториз с помощью функции `InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager)`.
+10) Открытие сторис из push-уведомления
+В функции-обработчике push-уведомления добавляем вызов единичной сторис с помощью функции `InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager)`.
 
 11) Онбоардинг
 Используем вызов `InAppStoryManager.getInstance().showOnboardingStories(List<String> tags, Context context, AppearanceManager manager)`.
