@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:1.2.0'
+    implementation 'com.github.inappstory:android-sdk:1.2.1'
 
 Также для корректной работы в dependencies нужно добавить :
 
@@ -53,7 +53,7 @@
 В файле `AndroidManifest.xml` в разделе application необходимо добавить 
 
     <service
-        android:name=".InAppStoryService"
+        android:name="com.inappstory.sdk.InAppStoryService"
         android:enabled="true"
         android:exported="true" />
 
