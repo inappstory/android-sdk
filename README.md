@@ -127,7 +127,7 @@
 
 ##### StoriesList
 
-Класс наследуется от androidx.recyclerview.widget.RecyclerView. При необходимости можно использовать все метода, которые есть в RecyclerView (установка layoutManager, получение адаптера и т.д.).
+Класс наследуется от androidx.recyclerview.widget.RecyclerView. При необходимости можно использовать все методы, которые есть в RecyclerView (установка layoutManager, получение адаптера и т.д.).
 Внешний вид списка, а таже некоторых элементов ридера настраивается через класс `AppearanceManager`. Его необходимо задать глобально для библиотеки, либо отдельно для списка перед вызовом loadStories(). 
 Для глобального задания необходимо вызвать статический метод класса `setInstance(AppearanceManager manager)`
 
