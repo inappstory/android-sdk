@@ -693,13 +693,13 @@ public class InAppStoryManager {
             return placeholders;
         }
 
-        boolean sandbox = true;
+        boolean sandbox;
         boolean closeOnOverscroll = true;
         boolean closeOnSwipe = true;
-        boolean hasLike = false;
+        boolean hasLike = true;
         boolean sendStatistic = true;
-        boolean hasFavorite = false;
-        boolean hasShare = false;
+        boolean hasFavorite = true;
+        boolean hasShare = true;
         String userId;
         String apiKey;
         String testKey;
