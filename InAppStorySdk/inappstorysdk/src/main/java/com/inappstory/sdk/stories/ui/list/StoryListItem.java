@@ -174,7 +174,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             ImageLoader.getInstance().displayImage(image.getImage().get(0).getUrl(), -1, imageView);
         } else {
-            imageView.setBackgroundColor(Color.parseColor(image.backgroundColor));
+            imageView.setBackgroundColor(image.getBackgroundColor());
         }
     }
 

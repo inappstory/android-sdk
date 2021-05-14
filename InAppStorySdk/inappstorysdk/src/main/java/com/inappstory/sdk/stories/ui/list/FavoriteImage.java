@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 
 import java.util.List;
 
@@ -29,6 +30,15 @@ public class FavoriteImage {
     private Bitmap bitmap;
 
     private List<Image> image;
+
+    public int getBackgroundColor() {
+        try {
+            return Color.parseColor(backgroundColor);
+        } catch (Exception e) {
+            return Color.BLACK;
+        }
+    }
+
     public String backgroundColor;
 
     public FavoriteImage(int id, List<Image> image, String backgroundColor) {

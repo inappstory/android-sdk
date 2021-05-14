@@ -4,6 +4,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Handler;
@@ -13,6 +15,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -429,6 +432,17 @@ public class InAppStoryManager {
 
     public static InAppStoryManager getInstance() {
         return INSTANCE;
+    }
+
+    public static Pair<String, Integer> getLibraryVersion(Context context) {
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            return new Pair<>(pInfo.versionName, pInfo.versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return new Pair<>("Error in packageInfo", -1);
+        }
     }
 
     public Point coordinates = null;
