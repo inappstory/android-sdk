@@ -434,15 +434,8 @@ public class InAppStoryManager {
         return INSTANCE;
     }
 
-    public static Pair<String, Integer> getLibraryVersion(Context context) {
-        PackageInfo pInfo = null;
-        try {
-            pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-            return new Pair<>(pInfo.versionName, pInfo.versionCode);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            return new Pair<>("Error in packageInfo", -1);
-        }
+    public static Pair<String, Integer> getLibraryVersion() {
+        return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
     public Point coordinates = null;
