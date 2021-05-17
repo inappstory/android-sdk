@@ -118,9 +118,6 @@ public class Image implements Parcelable {
                 return image.getUrl();
             }
         }
-        /*if (resUrl != null && !resUrl.isEmpty()) {
-            return resUrl;
-        }*/
         return TEMP_IMAGE;
     }
 

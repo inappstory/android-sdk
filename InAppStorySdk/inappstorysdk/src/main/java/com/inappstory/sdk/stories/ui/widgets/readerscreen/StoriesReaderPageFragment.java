@@ -433,41 +433,16 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     private void setButtons(final Story story) {
         if (story.disableClose)
             close.setVisibility(View.GONE);
-        if (!story.hasLike() && like != null && dislike != null) {
-            like.setVisibility(View.GONE);
-            dislike.setVisibility(View.GONE);
-        }
-        if (!story.hasFavorite() && favorite != null)
-            favorite.setVisibility(View.GONE);
-        if (!story.hasShare() && share != null)
-            share.setVisibility(View.GONE);
-        if (buttonsPanel != null)
-            if (!story.hasShare() && !story.hasFavorite() && !story.hasLike() && !story.hasAudio()) {
-                buttonsPanel.setVisibility(View.GONE);
-            } else {
-                buttonsPanel.setVisibility(View.VISIBLE);
-            }
-        if (like != null) {
+
+        boolean hasLike = story.hasLike() && InAppStoryManager.getInstance().hasLike();
+        boolean hasFavorite = story.hasFavorite() && InAppStoryManager.getInstance().hasFavorite();
+        boolean hasShare = story.hasShare() && InAppStoryManager.getInstance().hasShare();
+
+        if (like != null && dislike != null) {
+            like.setVisibility(hasLike ? View.VISIBLE : View.GONE);
+            dislike.setVisibility(hasLike ? View.VISIBLE : View.GONE);
+
             like.setActivated(story.liked());
-        }
-        if (dislike != null) {
-            dislike.setActivated(story.disliked());
-        }
-        if (favorite != null) {
-            favorite.setActivated(story.favorite);
-        }
-        if (sound != null) {
-            if (story.hasAudio()) {
-                sound.setVisibility(View.VISIBLE);
-            } else {
-                sound.setVisibility(View.GONE);
-            }
-            sound.setActivated(InAppStoryManager.getInstance().soundOn);
-        }
-
-
-        if (like != null) {
-            like.setVisibility(getArguments().getBoolean(CS_HAS_LIKE, true) ? View.VISIBLE : View.GONE);
             like.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -475,23 +450,22 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                     like.setClickable(false);
                     controller.likeDislikeClick(false, story.id,
                             new StoriesReaderPageFragmentController.LikeDislikeCallback() {
-                        @Override
-                        public void onSuccess() {
-                            like.setEnabled(true);
-                            like.setClickable(true);
-                        }
+                                @Override
+                                public void onSuccess() {
+                                    like.setEnabled(true);
+                                    like.setClickable(true);
+                                }
 
-                        @Override
-                        public void onError() {
-                            like.setEnabled(true);
-                            like.setClickable(true);
-                        }
-                    });
+                                @Override
+                                public void onError() {
+                                    like.setEnabled(true);
+                                    like.setClickable(true);
+                                }
+                            });
                 }
             });
-        }
-        if (dislike != null) {
-            dislike.setVisibility(getArguments().getBoolean(CS_HAS_LIKE, true) ? View.VISIBLE : View.GONE);
+
+            dislike.setActivated(story.disliked());
             dislike.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -499,40 +473,23 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                     dislike.setClickable(false);
                     controller.likeDislikeClick(true, story.id,
                             new StoriesReaderPageFragmentController.LikeDislikeCallback() {
-                        @Override
-                        public void onSuccess() {
-                            dislike.setEnabled(true);
-                            dislike.setClickable(true);
-                        }
+                                @Override
+                                public void onSuccess() {
+                                    dislike.setEnabled(true);
+                                    dislike.setClickable(true);
+                                }
 
-                        @Override
-                        public void onError() {
-                            dislike.setEnabled(true);
-                            dislike.setClickable(true);
-                        }
-                    });
-                }
-            });
-        }
-        if (share != null) {
-            share.setVisibility(getArguments().getBoolean(CS_HAS_SHARE, true) ? View.VISIBLE : View.GONE);
-            share.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    controller.shareClick(storyId,
-                            new StoriesReaderPageFragmentController.ShareEnableDisableCallback() {
-
-                        @Override
-                        public void onChange(boolean isEnable) {
-                            share.setEnabled(isEnable);
-                            share.setClickable(isEnable);
-                        }
-                    });
+                                @Override
+                                public void onError() {
+                                    dislike.setEnabled(true);
+                                    dislike.setClickable(true);
+                                }
+                            });
                 }
             });
         }
         if (favorite != null) {
-            favorite.setVisibility(getArguments().getBoolean(CS_HAS_FAVORITE, true) ? View.VISIBLE : View.GONE);
+            favorite.setVisibility(hasFavorite ? View.VISIBLE : View.GONE);
             favorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -541,21 +498,55 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                     favorite.setClickable(false);
                     controller.favoriteClick(story.id,
                             new StoriesReaderPageFragmentController.LikeDislikeCallback() {
-                        @Override
-                        public void onSuccess() {
-                            favorite.setEnabled(true);
-                            favorite.setClickable(true);
-                        }
+                                @Override
+                                public void onSuccess() {
+                                    favorite.setEnabled(true);
+                                    favorite.setClickable(true);
+                                }
 
-                        @Override
-                        public void onError() {
-                            favorite.setEnabled(true);
-                            favorite.setClickable(true);
-                        }
-                    });
+                                @Override
+                                public void onError() {
+                                    favorite.setEnabled(true);
+                                    favorite.setClickable(true);
+                                }
+                            });
                 }
             });
         }
+        if (share != null) {
+            share.setVisibility(hasShare ? View.VISIBLE : View.GONE);
+            share.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    controller.shareClick(storyId,
+                            new StoriesReaderPageFragmentController.ShareEnableDisableCallback() {
+
+                                @Override
+                                public void onChange(boolean isEnable) {
+                                    share.setEnabled(isEnable);
+                                    share.setClickable(isEnable);
+                                }
+                            });
+                }
+            });
+        }
+        if (sound != null) {
+            sound.setVisibility(story.hasAudio() ? View.VISIBLE : View.GONE);
+            sound.setActivated(InAppStoryManager.getInstance().soundOn);
+            sound.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
+                    CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryManager.getInstance().soundOn, storyId));
+                }
+            });
+        }
+        if (buttonsPanel != null)
+            if (!hasLike && !hasFavorite && !hasShare && !story.hasAudio()) {
+                buttonsPanel.setVisibility(View.GONE);
+            } else {
+                buttonsPanel.setVisibility(View.VISIBLE);
+            }
     }
 
     @Override
@@ -568,21 +559,6 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         CsEventBus.getDefault().register(this);
         storyId = getArguments().getInt("story_id");
         CsEventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
-        boolean hasPanel = (getArguments().getBoolean(CS_HAS_LIKE, false) ||
-                getArguments().getBoolean(CS_HAS_FAVORITE, false) ||
-                getArguments().getBoolean(CS_HAS_SHARE, false) ||
-                getArguments().getBoolean(CS_HAS_SOUND, false));
-        if (sound != null) {
-            sound.setVisibility(getArguments().getBoolean(CS_HAS_SOUND, false) ? View.VISIBLE : View.GONE);
-            sound.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
-                    CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryManager.getInstance().soundOn, storyId));
-                }
-            });
-            sound.setActivated(InAppStoryManager.getInstance().soundOn);
-        }
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         setButtons(story);

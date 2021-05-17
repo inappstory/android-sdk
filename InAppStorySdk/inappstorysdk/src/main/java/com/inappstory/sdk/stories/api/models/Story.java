@@ -4,7 +4,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -94,7 +93,7 @@ public class Story implements Parcelable {
             }
         }
         return tmp;
-      //  return source;
+        //  return source;
     }
 
     public String source;
@@ -125,7 +124,6 @@ public class Story implements Parcelable {
 
     @SerializedName("favorite")
     public boolean favorite;
-
 
 
     @SerializedName("hide_in_reader")
@@ -191,17 +189,16 @@ public class Story implements Parcelable {
     }
 
 
-
     public Boolean hasLike() {
-        return hasLike != null ? hasLike : true;
+        return hasLike != null ? hasLike : false;
     }
 
     public Boolean hasFavorite() {
-        return hasFavorite != null ? hasFavorite : true;
+        return hasFavorite != null ? hasFavorite : false;
     }
 
     public Boolean hasShare() {
-        return hasShare != null ? hasShare : true;
+        return hasShare != null ? hasShare : false;
     }
 
     public Boolean hasAudio() {
@@ -214,6 +211,7 @@ public class Story implements Parcelable {
         opens.add(Integer.toString(id));
         SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
     }
+
     @SerializedName("like_functional")
     public Boolean hasLike;
 

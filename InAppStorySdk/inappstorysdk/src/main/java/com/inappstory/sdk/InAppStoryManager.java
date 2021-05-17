@@ -696,10 +696,10 @@ public class InAppStoryManager {
         boolean sandbox;
         boolean closeOnOverscroll = true;
         boolean closeOnSwipe = true;
-        boolean hasLike = true;
+        boolean hasLike = false;
         boolean sendStatistic = true;
-        boolean hasFavorite = true;
-        boolean hasShare = true;
+        boolean hasFavorite = false;
+        boolean hasShare = false;
         String userId;
         String apiKey;
         String testKey;

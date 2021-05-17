@@ -12,8 +12,10 @@ public class FavoriteImage {
         return id;
     }
 
-    public List<Image> getImage() {
-        return image;
+    public Image getImage() {
+        if (image == null || image.isEmpty())
+            return null;
+        return image.get(0);
     }
 
     private int id;
