@@ -339,6 +339,7 @@ public class InAppStoryManager {
             this.userId = userId;
             if (InAppStoryService.getInstance().getFavoriteImages() != null)
                 InAppStoryService.getInstance().getFavoriteImages().clear();
+            InAppStoryService.getInstance().getDownloadManager().refreshLocals();
             CsEventBus.getDefault().post(new ChangeUserIdEvent());
             SessionManager.getInstance().closeSession(sendStatistic, true);
         } else {

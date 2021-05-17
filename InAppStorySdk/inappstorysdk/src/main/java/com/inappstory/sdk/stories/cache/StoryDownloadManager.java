@@ -139,21 +139,24 @@ public class StoryDownloadManager {
             else {
                 Story tmp = story;
                 int ind = this.stories.indexOf(story);
-                if (tmp.pages == null & this.stories.get(ind).pages != null) {
-                    tmp.pages = new ArrayList<>();
-                    tmp.pages.addAll(this.stories.get(ind).pages);
-                }
-                if (tmp.durations == null & this.stories.get(ind).durations != null) {
-                    tmp.durations = new ArrayList<>();
-                    tmp.durations.addAll(this.stories.get(ind).durations);
-                    tmp.slidesCount = tmp.durations.size();
-                }
-                if (tmp.layout == null & this.stories.get(ind).layout != null) {
-                    tmp.layout = this.stories.get(ind).layout;
-                }
-                if (tmp.srcList == null & this.stories.get(ind).srcList != null) {
-                    tmp.srcList = new ArrayList<>();
-                    tmp.srcList.addAll(this.stories.get(ind).srcList);
+                if (ind >= 0) {
+                    if (tmp.pages == null & this.stories.get(ind).pages != null) {
+                        tmp.pages = new ArrayList<>();
+                        tmp.pages.addAll(this.stories.get(ind).pages);
+                    }
+                    if (tmp.durations == null & this.stories.get(ind).durations != null) {
+                        tmp.durations = new ArrayList<>();
+                        tmp.durations.addAll(this.stories.get(ind).durations);
+                        tmp.slidesCount = tmp.durations.size();
+                    }
+                    if (tmp.layout == null & this.stories.get(ind).layout != null) {
+                        tmp.layout = this.stories.get(ind).layout;
+                    }
+                    if (tmp.srcList == null & this.stories.get(ind).srcList != null) {
+                        tmp.srcList = new ArrayList<>();
+                        tmp.srcList.addAll(this.stories.get(ind).srcList);
+                    }
+                    tmp.isOpened = tmp.isOpened || this.stories.get(ind).isOpened;
                 }
                 this.stories.set(ind, tmp);
             }
@@ -286,6 +289,14 @@ public class StoryDownloadManager {
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
     }
 
+    public void refreshLocals() {
+        for (Story story : stories) {
+            story.isOpened = false;
+        }
+        setLocalsOpened(stories);
+    }
+
+
     void setLocalsOpened(List<Story> response) {
         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
         if (opens == null) opens = new HashSet<>();
@@ -360,6 +371,13 @@ public class StoryDownloadManager {
                         favStories.clear();
                         favStories.addAll(response2);
                         favoriteImages.clear();
+                        for (Story st : StoryDownloadManager.this.stories) {
+                            for (Story st2 : response2) {
+                                if (st2.id == st.id) {
+                                    st.isOpened = true;
+                                }
+                            }
+                        }
                         CsEventBus.getDefault().post(new LoadFavStories());
                         if (response2 != null && response2.size() > 0) {
                             Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
@@ -436,6 +454,7 @@ public class StoryDownloadManager {
             } else {
                 CsEventBus.getDefault().post(new ContentLoadedEvent(false));
             }
+            setLocalsOpened(response);
             InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
             CsEventBus.getDefault().post(new ListVisibilityEvent());
             List<Story> newStories = new ArrayList<>();

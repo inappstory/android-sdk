@@ -45,16 +45,15 @@ public final class NetworkHandler implements InvocationHandler {
 
     public static Response doRequest(Request req)
             throws Exception {
-        Log.e("MyWidget", "doRequest");
         HttpURLConnection connection = (HttpURLConnection) getURL(req).openConnection();
-        Log.e("MyWidget", "openConnection");
+        connection.setConnectTimeout(30000);
+        connection.setReadTimeout(30000);
         connection.setRequestMethod(req.getMethod());
         if (req.getHeaders() != null) {
             for (Object key : req.getHeaders().keySet()) {
                 connection.setRequestProperty(key.toString(), req.getHeader(key));
             }
         }
-        Log.e("MyWidget", "setHeaders");
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         }
@@ -70,20 +69,19 @@ public final class NetworkHandler implements InvocationHandler {
             outStreamWriter.close();
             outStream.close();
         }
-        Log.e("MyWidget", "reqThreadEnd");
         int statusCode = connection.getResponseCode();
         Response respObject = null;
 
-        Log.e("MyWidget", "Status Code: " + statusCode);
-        Log.d("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+      //  Log.e("MyWidget", "Status Code: " + statusCode);
+      //  Log.d("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
 
             String res = getResponseFromStream(connection.getInputStream());
-            Log.d("InAppStory_Network", "Response: " + res);
+       //     Log.d("InAppStory_Network", "Response: " + res);
             respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
             String res = getResponseFromStream(connection.getErrorStream());
-            Log.d("InAppStory_Network", "Error: " + res);
+       //     Log.d("InAppStory_Network", "Error: " + res);
             respObject = new Response.Builder().code(statusCode).errorBody(res).build();
         }
         connection.disconnect();
