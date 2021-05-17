@@ -397,6 +397,8 @@ public class InAppStoryManager {
         this.userId = userId;
         if (INSTANCE != null) {
             destroy();
+            if (InAppStoryService.getInstance() != null)
+                InAppStoryService.getInstance().getDownloadManager().refreshLocals();
         }
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
