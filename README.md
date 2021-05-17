@@ -270,7 +270,7 @@
 
     int getId() // идентификатор story
     Image getImage() // обложка story (объект Image содержит метод getUrl() для получения ссылки на картинку)
-    String backgroundColor // цвет фона (в случае отсутствия обложки) в HEX
+    int getBackgroundColor() // цвет фона
 
 Пример использования:
 
