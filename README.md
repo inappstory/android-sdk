@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:1.2.2'
+    implementation 'com.github.inappstory:android-sdk:1.2.5'
 
 Также для корректной работы в dependencies нужно добавить :
 
@@ -269,8 +269,8 @@
 Класс FavoriteImage содержит следующие геттеры:
 
     int getId() // идентификатор story
-    List<Image> getImage() // обложка story (список объектов Image - картинок разного качества)
-    String backgroundColor // цвет фона (в случае отсутствия обложки) в HEX
+    Image getImage() // обложка story (объект Image содержит метод getUrl() для получения ссылки на картинку)
+    int getBackgroundColor() // цвет фона
 
 Пример использования:
 
@@ -293,7 +293,12 @@
                         if (!favImages.isEmpty()) {
                             image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                                     RelativeLayout.LayoutParams.MATCH_PARENT));
-                            ImageLoader.getInstance().displayImage(favImages.get(0).getImage().get(0).getUrl(), -1, image1);
+                            if (favImages.get(0).getImage() != null) {
+                                ImageLoader.getInstance().displayImage(favImages.get(0).getImage().getUrl(), -1, image1);
+                            } else {
+                                image1.setBackgroundColor(favImages.get(0).getBackgroundColor());
+                            }
+                            container.addView(image1);
                         } else {
                             container.setBackgroundColor(Color.RED);
                         }
