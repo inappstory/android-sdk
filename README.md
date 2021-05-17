@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:1.2.5'
+    implementation 'com.github.inappstory:android-sdk:1.2.6'
 
 Также для корректной работы в dependencies нужно добавить :
 
