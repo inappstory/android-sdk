@@ -298,6 +298,7 @@
                             } else {
                                 image1.setBackgroundColor(favImages.get(0).getBackgroundColor());
                             }
+                            container.addView(image1);
                         } else {
                             container.setBackgroundColor(Color.RED);
                         }
