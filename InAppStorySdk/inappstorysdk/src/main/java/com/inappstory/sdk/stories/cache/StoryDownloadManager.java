@@ -123,6 +123,11 @@ public class StoryDownloadManager {
     public void destroy() {
         storyDownloader.destroy();
         slidesDownloader.destroy();
+        if (stories == null)
+            return;
+        for (Story story : stories) {
+            story.isOpened = false;
+        }
     }
 
     public void clearCache() {
@@ -290,6 +295,7 @@ public class StoryDownloadManager {
     }
 
     public void refreshLocals() {
+        if (stories == null) return;
         for (Story story : stories) {
             story.isOpened = false;
         }
