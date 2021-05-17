@@ -269,7 +269,7 @@
 Класс FavoriteImage содержит следующие геттеры:
 
     int getId() // идентификатор story
-    List<Image> getImage() // обложка story (список объектов Image - картинок разного качества)
+    Image getImage() // обложка story (объект Image содержит метод getUrl() для получения ссылки на картинку)
     String backgroundColor // цвет фона (в случае отсутствия обложки) в HEX
 
 Пример использования:
