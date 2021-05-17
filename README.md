@@ -293,7 +293,11 @@
                         if (!favImages.isEmpty()) {
                             image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                                     RelativeLayout.LayoutParams.MATCH_PARENT));
-                            ImageLoader.getInstance().displayImage(favImages.get(0).getImage().get(0).getUrl(), -1, image1);
+                            if (favImages.get(0).getImage() != null) {
+                                ImageLoader.getInstance().displayImage(favImages.get(0).getImage().getUrl(), -1, image1);
+                            } else {
+                                image1.setBackgroundColor(favImages.get(0).getBackgroundColor());
+                            }
                         } else {
                             container.setBackgroundColor(Color.RED);
                         }
