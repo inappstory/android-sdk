@@ -408,6 +408,9 @@ public class InAppStoryManager {
                 .setWebUrl(cmsUrl)
                 .cmsUrl(cmsUrl);
 
+        if (InAppStoryService.getInstance() != null) {
+            InAppStoryService.getInstance().getDownloadManager().initDownloaders();
+        }
     }
 
     public static void destroy() {

@@ -34,6 +34,14 @@ class SlidesDownloader {
         return sync;
     }
 
+    void init() {
+        try {
+            if (handler != null) {
+                handler.removeCallbacks(queuePageReadRunnable);
+            }
+        } catch (Exception e) {}
+        handler.postDelayed(queuePageReadRunnable, 100);
+    }
 
     void destroy() {
         if (handler != null) {

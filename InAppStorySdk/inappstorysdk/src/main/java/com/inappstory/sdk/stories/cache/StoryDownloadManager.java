@@ -59,6 +59,14 @@ public class StoryDownloadManager {
         loadStories(stories);
     }
 
+
+    public void initDownloaders() {
+        if (storyDownloader != null)
+            storyDownloader.init();
+        if (slidesDownloader != null)
+            slidesDownloader.init();
+    }
+
     public static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list";
 
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
@@ -125,9 +133,9 @@ public class StoryDownloadManager {
         slidesDownloader.destroy();
         if (stories == null)
             return;
-        for (Story story : stories) {
-            story.isOpened = false;
-        }
+        stories.clear();
+        storyDownloader.cleanTasks();
+        slidesDownloader.cleanTasks();
     }
 
     public void clearCache() {
@@ -286,7 +294,6 @@ public class StoryDownloadManager {
 
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
-
 
 
     public void loadStories(LoadStoriesCallback callback, boolean isFavorite) {

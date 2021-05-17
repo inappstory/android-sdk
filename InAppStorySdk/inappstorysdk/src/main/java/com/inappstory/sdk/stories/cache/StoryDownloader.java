@@ -44,6 +44,15 @@ class StoryDownloader {
         handler.postDelayed(queueStoryReadRunnable, 100);
     }
 
+    void init() {
+        try {
+            if (handler != null) {
+                handler.removeCallbacks(queueStoryReadRunnable);
+            }
+        } catch (Exception e) {}
+        handler.postDelayed(queueStoryReadRunnable, 100);
+    }
+
     private DownloadStoryCallback callback;
 
     private final ExecutorService loader = Executors.newFixedThreadPool(1);
