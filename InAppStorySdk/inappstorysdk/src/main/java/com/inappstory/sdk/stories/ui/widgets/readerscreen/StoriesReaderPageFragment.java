@@ -490,6 +490,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
         if (favorite != null) {
             favorite.setVisibility(hasFavorite ? View.VISIBLE : View.GONE);
+            favorite.setActivated(story.isFavorite());
             favorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

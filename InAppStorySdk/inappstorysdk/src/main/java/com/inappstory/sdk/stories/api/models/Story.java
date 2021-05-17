@@ -58,6 +58,9 @@ public class Story implements Parcelable {
         return layout;
     }
 
+    public boolean isFavorite() {
+        return favorite;
+    }
 
     public String getTitleColor() {
         return titleColor;
