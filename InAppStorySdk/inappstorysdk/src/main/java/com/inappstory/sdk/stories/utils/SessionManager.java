@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -28,6 +29,8 @@ import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.inappstory.sdk.InAppStoryService.IAS_LOG;
 
 public class SessionManager {
 
@@ -104,6 +107,8 @@ public class SessionManager {
             if (callback != null)
                 callbacks.add(callback);
         }
+
+        Log.d(IAS_LOG, "open session");
         Context context = InAppStoryManager.getInstance().getContext();
         String platform = "android";
         String deviceId = Settings.Secure.getString(context.getContentResolver(),
@@ -153,6 +158,7 @@ public class SessionManager {
         ).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
+                Log.d(IAS_LOG, "opened");
                 openStatisticSuccess(response);
                 CachedSessionData cachedSessionData = new CachedSessionData();
                 cachedSessionData.userId = InAppStoryManager.getInstance().getUserId();

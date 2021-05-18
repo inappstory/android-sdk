@@ -299,7 +299,7 @@ public class StoryDownloadManager {
     public void loadStories(LoadStoriesCallback callback, boolean isFavorite) {
         loadStoriesCallback = callback;
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
-        
+
     }
 
     public void refreshLocals() {

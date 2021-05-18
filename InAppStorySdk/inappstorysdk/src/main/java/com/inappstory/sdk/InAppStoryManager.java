@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,6 +57,8 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
+
+import static com.inappstory.sdk.InAppStoryService.IAS_LOG;
 
 public class InAppStoryManager {
 
@@ -298,8 +301,11 @@ public class InAppStoryManager {
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         if (builder.context.getResources().getString(R.string.csApiKey).isEmpty() || builder.context.getResources().getString(R.string.csApiKey).equals("1")) {
+
+            Log.d(IAS_LOG, "empty key");
             throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
         }
+        Log.d(IAS_LOG, "init manager");
         initManager(builder.context,
                 builder.sandbox ? TEST_DOMAIN
                         : PRODUCT_DOMAIN,
@@ -320,10 +326,12 @@ public class InAppStoryManager {
         if (intent != null) {
             context.unbindService(mConnection);
             mBound = false;
+            Log.d(IAS_LOG, "service unbind");
         }
         try {
             intent = new Intent(context, InAppStoryService.class);
             context.startService(intent);
+            Log.d(IAS_LOG, "manager service start");
         } catch (IllegalStateException e) {
 
         }
@@ -349,6 +357,7 @@ public class InAppStoryManager {
 
     //Test
     public void setUserId(String userId) throws DataException {
+        Log.d(IAS_LOG, "setUserId");
         setUserIdInner(userId);
     }
 
@@ -415,6 +424,7 @@ public class InAppStoryManager {
 
     public static void destroy() {
         if (INSTANCE != null) {
+            Log.d(IAS_LOG, "destroy old manager");
             if (InAppStoryService.getInstance() != null)
                 InAppStoryService.getInstance().logout();
             StatisticSession.clear();
@@ -796,6 +806,7 @@ public class InAppStoryManager {
 
         public InAppStoryManager create() throws DataException {
             if (Builder.this.context == null) {
+                Log.d(IAS_LOG, "Manager null context");
                 throw new DataException("'context' can't be null", new Throwable("InAppStoryManager.Builder data is not valid"));
             }
             return new InAppStoryManager(Builder.this);

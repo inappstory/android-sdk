@@ -59,6 +59,7 @@ public class InAppStoryService extends Service {
     }
 
     void logout() {
+        Log.d(IAS_LOG, "logout service");
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         SessionManager.getInstance().closeSession(true, false);
         OldStatisticManager.getInstance().statistic.clear();
@@ -88,10 +89,11 @@ public class InAppStoryService extends Service {
 
     private int currentIndex;
 
+    public static final String IAS_LOG = "IAS_LOG";
 
     @Override
     public void onDestroy() {
-        Log.e("InAppService", "destroy");
+        Log.d(IAS_LOG, "destroy service");
         super.onDestroy();
     }
 
@@ -209,6 +211,7 @@ public class InAppStoryService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(IAS_LOG, "create service");
         CsEventBus.getDefault().register(this);
         Thread.setDefaultUncaughtExceptionHandler(new TryMe());
         new ImageLoader(getApplicationContext());
@@ -216,17 +219,19 @@ public class InAppStoryService extends Service {
         downloadManager = new StoryDownloadManager(getApplicationContext());
         timerManager = new TimerManager();
         INSTANCE = this;
-
+        Log.d(IAS_LOG, "service created");
     }
 
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
         INSTANCE = this;
+        Log.d(IAS_LOG, "service onStart");
     }
 
     @Override
     public int onStartCommand(Intent startIntent, int flags, int startId) {
         INSTANCE = this;
+        Log.d(IAS_LOG, "service onStartCommand");
         return START_STICKY;
     }
 

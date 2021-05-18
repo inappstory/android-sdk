@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.inappstory.sdk.InAppStoryService.IAS_LOG;
+
 public final class NetworkHandler implements InvocationHandler {
     /**
      * Трекер аналитики
@@ -57,6 +59,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         }
+        Log.d(IAS_LOG, connection.getURL().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -71,9 +74,7 @@ public final class NetworkHandler implements InvocationHandler {
         }
         int statusCode = connection.getResponseCode();
         Response respObject = null;
-
-      //  Log.e("MyWidget", "Status Code: " + statusCode);
-      //  Log.d("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        Log.d(IAS_LOG, connection.getURL().toString() + " \nStatus Code: " + statusCode);
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
 
             String res = getResponseFromStream(connection.getInputStream());
