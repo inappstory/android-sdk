@@ -560,6 +560,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         CsEventBus.getDefault().register(this);
         storyId = getArguments().getInt("story_id");
         CsEventBus.getDefault().post(new PageByIdSelectedEvent(storyId, true));
+
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         setButtons(story);

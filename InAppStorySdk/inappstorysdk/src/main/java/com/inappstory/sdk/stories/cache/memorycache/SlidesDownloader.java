@@ -1,6 +1,7 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.cache.memorycache;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Pair;
 
 import com.inappstory.sdk.eventbus.CsEventBus;

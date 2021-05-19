@@ -46,6 +46,9 @@ public class ScreensManager {
             bundle.putInt("index", index);
             bundle.putInt("source", source);
             bundle.putIntegerArrayList("stories_ids", storiesIds);
+            if (manager == null) {
+                manager = AppearanceManager.getInstance();
+            }
             if (manager != null) {
                 bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
                 bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());

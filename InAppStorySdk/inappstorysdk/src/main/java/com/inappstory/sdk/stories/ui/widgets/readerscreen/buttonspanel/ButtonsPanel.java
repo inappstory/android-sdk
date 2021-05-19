@@ -44,6 +44,9 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     public void setButtonsVisibility(boolean hasLike, boolean hasFavorite, boolean hasShare, boolean hasSound) {
+        hasLike = hasLike && InAppStoryManager.getInstance().hasLike();
+        hasFavorite = hasFavorite && InAppStoryManager.getInstance().hasFavorite();
+        hasShare = hasShare && InAppStoryManager.getInstance().hasShare();
         like.setVisibility(hasLike ? VISIBLE : GONE);
         dislike.setVisibility(hasLike ? VISIBLE : GONE);
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);

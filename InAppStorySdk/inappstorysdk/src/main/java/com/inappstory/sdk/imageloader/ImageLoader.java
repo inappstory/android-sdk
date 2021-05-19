@@ -36,7 +36,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.cache.filecache.Downloader;
+import com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -44,9 +47,7 @@ public class ImageLoader {
 
     MemoryCache memoryCache = new MemoryCache();
     MemoryCache memoryCache2 = new MemoryCache();
-    FileCache fileCache;
     private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
-    private Map<RemoteViews, String> remoteViews = Collections.synchronizedMap(new HashMap<RemoteViews, String>());
     ExecutorService executorService;
     ExecutorService widgetImageExecutorService;
 
@@ -57,7 +58,6 @@ public class ImageLoader {
     }
 
     public ImageLoader(Context context) {
-        fileCache = new FileCache(context);
         memoryCache2 = new MemoryCache();
         executorService = Executors.newFixedThreadPool(1);
         widgetImageExecutorService = Executors.newFixedThreadPool(1);
@@ -66,7 +66,7 @@ public class ImageLoader {
 
     int stub_id = R.drawable.ic_stories_close;
 
-    public void displayImage(String url, int loader, ImageView imageView) {
+    public void displayImage(String url, int loader, ImageView imageView, LruDiskCache cache) {
         try {
             stub_id = loader;
             imageViews.put(imageView, url);
@@ -74,10 +74,10 @@ public class ImageLoader {
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
                 if (imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView)imageView).onLoaded();
+                    ((GeneratedImageView) imageView).onLoaded();
                 }
             } else {
-                queuePhoto(url, imageView);
+                queuePhoto(url, imageView, cache);
             }
         } catch (Exception e) {
 
@@ -106,11 +106,9 @@ public class ImageLoader {
     public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio) {
         try {
             stub_id = loader;
-            // remoteViews.put(rv, color);
             Bitmap bitmap = memoryCache2.get(color);
             if (bitmap != null)
                 rv.setImageViewBitmap(id, bitmap);
-                //imageView.setImageBitmap(bitmap);
             else {
                 bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color);
                 memoryCache2.put(color, bitmap);
@@ -121,14 +119,9 @@ public class ImageLoader {
         }
     }
 
-    private void queuePhoto(String url, ImageView imageView) {
-        PhotoToLoad p = new PhotoToLoad(url, imageView);
+    private void queuePhoto(String url, ImageView imageView, LruDiskCache cache) {
+        PhotoToLoad p = new PhotoToLoad(url, imageView, cache);
         executorService.submit(new PhotosLoader(p));
-    }
-
-    private void queueRemoteImage(String url, RemoteViews remoteViews, int id, Integer cornerRadius, Float ratio, String color) {
-        RemoteImageToLoad p = new RemoteImageToLoad(url, remoteViews, id, cornerRadius, ratio, color);
-        executorService.submit(new RemoteImagesLoader(p));
     }
 
     public void addDarkGradient(Bitmap bitmap) {
@@ -146,34 +139,26 @@ public class ImageLoader {
         return shader;
     }
 
-    public Bitmap getBitmap(String url) {
+    public Bitmap getBitmap(String url, LruDiskCache cache) {
         if (url == null) return null;
-        File f = fileCache.getFile(url);
-
-        //from SD cache
-        Bitmap b = decodeFile(f);
-        if (b != null) {
-            return b;
-        }
+        File file = null;
         try {
-            Bitmap bitmap = null;
-            URL imageUrl = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(30000);
-            conn.setInstanceFollowRedirects(true);
-            InputStream is = conn.getInputStream();
-            OutputStream os = new FileOutputStream(f);
-            Utils.CopyStream(is, os);
-            os.close();
-            is.close();
-            conn.disconnect();
-            bitmap = decodeFile(f);
-            return bitmap;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
+            file = cache.get(url);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        Bitmap bitmap = null;
+        if (file != null)
+            bitmap = decodeFile(file);
+        else {
+            try {
+                file = Downloader.downloadFile(url, cache, null, null);
+                bitmap = decodeFile(file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return bitmap;
     }
 
     public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color) {
@@ -213,10 +198,16 @@ public class ImageLoader {
                 bmp = getRoundedCornerBitmap(bmp, pixels);
             return bmp;
         }
-        File f = fileCache.getFile(url);
-
+        File f = null;
+        try {
+            f = InAppStoryService.getInstance().getFastCache().get(url);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         //from SD cache
-        Bitmap b = decodeFile(f);
+        Bitmap b = null;
+        if (f != null)
+            b = decodeFile(f);
         if (b != null) {
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
@@ -231,20 +222,8 @@ public class ImageLoader {
             return b;
         }
         try {
-            Bitmap bitmap = null;
-
-
-            URL imageUrl = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(30000);
-            conn.setInstanceFollowRedirects(true);
-            InputStream is = conn.getInputStream();
-            OutputStream os = new FileOutputStream(f);
-            Utils.CopyStream(is, os);
-            os.close();
-            is.close();
-            bitmap = decodeFile(f);
+            f = Downloader.downloadFile(url, InAppStoryService.getInstance().getFastCache(), null, null);
+            Bitmap bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int) (ratio * 300), 300);
@@ -342,11 +321,73 @@ public class ImageLoader {
     private class PhotoToLoad {
         public String url;
         public ImageView imageView;
+        public LruDiskCache cache;
 
-        public PhotoToLoad(String u, ImageView i) {
+        public PhotoToLoad(String u, ImageView i, LruDiskCache c) {
             url = u;
             imageView = i;
+            cache = c;
         }
+    }
+
+
+    class PhotosLoader implements Runnable {
+        PhotoToLoad photoToLoad;
+
+        PhotosLoader(PhotoToLoad photoToLoad) {
+            this.photoToLoad = photoToLoad;
+        }
+
+        @Override
+        public void run() {
+            if (imageViewReused(photoToLoad))
+                return;
+            Bitmap bmp = getBitmap(photoToLoad.url, photoToLoad.cache);
+            if (bmp != null)
+                memoryCache.put(photoToLoad.url, bmp);
+            if (imageViewReused(photoToLoad))
+                return;
+            BitmapDisplayer bd = new BitmapDisplayer(bmp, photoToLoad);
+            Activity a = (Activity) photoToLoad.imageView.getContext();
+            a.runOnUiThread(bd);
+        }
+    }
+
+    public boolean imageViewReused(PhotoToLoad photoToLoad) {
+        String tag = imageViews.get(photoToLoad.imageView);
+        if (tag == null || !tag.equals(photoToLoad.url))
+            return true;
+        return false;
+    }
+
+    class BitmapDisplayer implements Runnable {
+        Bitmap bitmap;
+        PhotoToLoad photoToLoad;
+
+        public BitmapDisplayer(Bitmap b, PhotoToLoad p) {
+            bitmap = b;
+            photoToLoad = p;
+        }
+
+        public void run() {
+            if (imageViewReused(photoToLoad))
+                return;
+            if (bitmap != null) {
+                photoToLoad.imageView.setImageBitmap(bitmap);
+                if (photoToLoad.imageView instanceof GeneratedImageView) {
+                    ((GeneratedImageView) photoToLoad.imageView).onLoaded();
+                }
+            }
+        }
+    }
+
+    public void clearCache() {
+        memoryCache.clear();
+        memoryCache2.clear();
+    }
+
+    public void clearWidgetCache() {
+        memoryCache2.clear();
     }
 
     private class RemoteImageToLoad {
@@ -367,28 +408,6 @@ public class ImageLoader {
         }
     }
 
-    class PhotosLoader implements Runnable {
-        PhotoToLoad photoToLoad;
-
-        PhotosLoader(PhotoToLoad photoToLoad) {
-            this.photoToLoad = photoToLoad;
-        }
-
-        @Override
-        public void run() {
-            if (imageViewReused(photoToLoad))
-                return;
-            Bitmap bmp = getBitmap(photoToLoad.url);
-            if (bmp != null)
-                memoryCache.put(photoToLoad.url, bmp);
-            if (imageViewReused(photoToLoad))
-                return;
-            BitmapDisplayer bd = new BitmapDisplayer(bmp, photoToLoad);
-            Activity a = (Activity) photoToLoad.imageView.getContext();
-            a.runOnUiThread(bd);
-        }
-    }
-
     class RemoteImagesLoader implements Runnable {
         RemoteImageToLoad photoToLoad;
 
@@ -402,68 +421,6 @@ public class ImageLoader {
             Bitmap bmp = getWidgetBitmap(photoToLoad.url, photoToLoad.cornerRadius, true, photoToLoad.ratio, photoToLoad.color);
             photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bmp);
         }
-    }
-
-
-    public boolean imageViewReused(PhotoToLoad photoToLoad) {
-        String tag = imageViews.get(photoToLoad.imageView);
-        if (tag == null || !tag.equals(photoToLoad.url))
-            return true;
-        return false;
-    }
-
-
-    //Used to display bitmap in the UI thread
-    class BitmapDisplayer implements Runnable {
-        Bitmap bitmap;
-        PhotoToLoad photoToLoad;
-
-        public BitmapDisplayer(Bitmap b, PhotoToLoad p) {
-            bitmap = b;
-            photoToLoad = p;
-        }
-
-        public void run() {
-            if (imageViewReused(photoToLoad))
-                return;
-            if (bitmap != null) {
-                photoToLoad.imageView.setImageBitmap(bitmap);
-                if (photoToLoad.imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView)photoToLoad.imageView).onLoaded();
-                }
-            }
-           /* else
-                photoToLoad.imageView.setImageResource(stub_id);*/
-        }
-    }
-
-    class RemoteBitmapDisplayer implements Runnable {
-        Bitmap bitmap;
-        RemoteImageToLoad photoToLoad;
-
-        public RemoteBitmapDisplayer(Bitmap b, RemoteImageToLoad p) {
-            bitmap = b;
-            photoToLoad = p;
-        }
-
-        public void run() {
-
-            if (bitmap != null)
-                photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bitmap);
-            //photoToLoad.imageView.setImageBitmap(bitmap);
-           /* else
-                photoToLoad.imageView.setImageResource(stub_id);*/
-        }
-    }
-
-    public void clearCache() {
-        memoryCache.clear();
-        memoryCache2.clear();
-        fileCache.clear();
-    }
-
-    public void clearWidgetCache() {
-        memoryCache2.clear();
     }
 
 }

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.cache.memorycache;
 
 public class StoryTask {
     public int priority;

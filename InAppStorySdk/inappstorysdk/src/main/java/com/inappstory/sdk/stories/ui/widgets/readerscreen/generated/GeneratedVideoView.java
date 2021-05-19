@@ -17,18 +17,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileCache;
-import com.inappstory.sdk.stories.cache.FileType;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
-import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.cache.filecache.Downloader;
+import com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.lrudiskcache.Utils;
 
 import java.io.File;
 import java.io.IOException;
-
-import static com.inappstory.sdk.stories.cache.OldStoryDownloader.COVER_VIDEO_FOLDER_ID;
 
 public class GeneratedVideoView extends RelativeLayout implements TextureView.SurfaceTextureListener, GeneratedViewCallback {
 
@@ -41,6 +38,8 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
 
     ImageView cover;
     TextureView tv;
+
+    LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
 
     private void init(Context context) {
         LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -66,16 +65,22 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
         init(context);
     }
 
-    public void loadCover(String path, String storyId) {
+    public void loadCover(String path) {
         if (path == null) {
             cover.setBackgroundColor(Color.BLACK);
             return;
         }
-        FileCache cache = FileCache.INSTANCE;
-        File fl = cache.getStoredFile(getContext(), path, FileType.STORY_FILE, storyId, null);
+        File fl = null;
+        if (cache.hasKey(path)) {
+            try {
+                fl = cache.get(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         if (fl == null || !fl.exists()) {
             ImageLoader.getInstance().displayImage(path,
-                    -1, cover);
+                    -1, cover, InAppStoryService.getInstance().getCommonCache());
         } else {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -164,10 +169,12 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
 
         try {
             if (storyId == null)
-                storyId = COVER_VIDEO_FOLDER_ID;
+                storyId = Utils.hash(Downloader.cropUrl(url));
             if (file == null)
-                file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_FILE, COVER_VIDEO_FOLDER_ID);
-            if (file.exists()) {
+                if (cache.hasKey(url)) {
+                    file = cache.get(url);
+                }
+            if (file != null && file.exists()) {
                 boolean fileIsNotLocked = file.renameTo(file);
                 if (file.length() > 10 && fileIsNotLocked) {
                     mp.setDataSource(file.getAbsolutePath());
@@ -176,7 +183,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
                 }
             } else {
                 mp.setDataSource(url);
-                OldStoryDownloader.downloadCoverVideo(url);
+                Downloader.downloadCoverVideo(url, cache);
             }
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

@@ -10,18 +10,14 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Messenger;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -33,6 +29,7 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -40,10 +37,11 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
-import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.cache.lrudiskcache.CacheSize;
+import com.inappstory.sdk.stories.cache.memorycache.StoryDownloadManager;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
@@ -62,7 +60,11 @@ import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
-import static com.inappstory.sdk.InAppStoryService.IAS_LOG;
+import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_1;
+import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_200;
+import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_5;
 
 public class InAppStoryManager {
 
@@ -91,6 +93,16 @@ public class InAppStoryManager {
     public void setTempShareStoryId(int tempShareStoryId) {
         this.tempShareStoryId = tempShareStoryId;
     }
+
+    public void setCallback(ExceptionCallback callback) {
+        this.exceptionCallback = callback;
+    }
+
+    public ExceptionCallback getExceptionCallback() {
+        return exceptionCallback;
+    }
+
+    private ExceptionCallback exceptionCallback;
 
     public int getTempShareStoryId() {
         return tempShareStoryId;
@@ -300,16 +312,64 @@ public class InAppStoryManager {
 
     }
 
-    private InAppStoryManager(Builder builder) throws DataException {
+    InAppStoryService service;
 
+    Thread serviceThread;
+
+    void createServiceThread(final Context context) {
+        if (InAppStoryService.getInstance() != null) {
+            InAppStoryService.getInstance().onDestroy();
+        }
+        if (serviceThread != null) {
+            serviceThread.interrupt();
+            serviceThread = null;
+        }
+        serviceThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                service = new InAppStoryService();
+                service.onCreate(context, exceptionCache);
+                Looper.loop();
+            }
+        });
+        serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
+        serviceThread.start();
+    }
+
+    public void setExceptionCache(ExceptionCache exceptionCache) {
+        this.exceptionCache = exceptionCache;
+    }
+
+    private ExceptionCache exceptionCache;
+
+
+    private InAppStoryManager(final Builder builder) throws DataException {
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
+        createServiceThread(builder.context);
         if (builder.context.getResources().getString(R.string.csApiKey).isEmpty() || builder.context.getResources().getString(R.string.csApiKey).equals("1")) {
-
-            InAppStoryManager.addDebug("empty key");
             throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
         }
-        InAppStoryManager.addDebug("init manager");
+        long freeSpace = builder.context.getCacheDir().getFreeSpace();
+        if (freeSpace < MB_5 + MB_10 + MB_10) {
+            throw new DataException("there is no free space on device", new Throwable("initialization error"));
+        }
+        if (InAppStoryService.getInstance() != null) {
+            long commonCacheSize = MB_100;
+            long fastCacheSize = MB_10;
+            switch (builder.cacheSize) {
+                case CacheSize.SMALL:
+                    fastCacheSize = MB_5;
+                    commonCacheSize = MB_10;
+                    break;
+                case CacheSize.LARGE:
+                    commonCacheSize = MB_200;
+                    break;
+            }
+            InAppStoryService.getInstance().getFastCache().setCacheSize(fastCacheSize);
+            InAppStoryService.getInstance().getCommonCache().setCacheSize(commonCacheSize);
+        }
         initManager(builder.context,
                 builder.sandbox ? TEST_DOMAIN
                         : PRODUCT_DOMAIN,
@@ -327,21 +387,16 @@ public class InAppStoryManager {
                 builder.hasShare,
                 builder.sendStatistic);
 
-        if (intent != null) {
+      /*  if (intent != null) {
             context.unbindService(mConnection);
             mBound = false;
-            InAppStoryManager.addDebug("service unbind");
         }
         try {
             intent = new Intent(context, InAppStoryService.class);
             context.startService(intent);
-            InAppStoryManager.addDebug( "manager service start");
         } catch (IllegalStateException e) {
-            Writer writer = new StringWriter();
-            e.printStackTrace(new PrintWriter(writer));
-            String s = writer.toString();
-            InAppStoryManager.addDebug(s);
-        }
+
+        }*/
     }
 
     private void setUserIdInner(String userId) throws DataException {
@@ -364,7 +419,6 @@ public class InAppStoryManager {
 
     //Test
     public void setUserId(String userId) throws DataException {
-        InAppStoryManager.addDebug("setUserId");
         setUserIdInner(userId);
     }
 
@@ -423,7 +477,6 @@ public class InAppStoryManager {
                 .cmsKey(this.API_KEY)
                 .setWebUrl(cmsUrl)
                 .cmsUrl(cmsUrl);
-
         if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().getDownloadManager().initDownloaders();
         }
@@ -431,15 +484,16 @@ public class InAppStoryManager {
 
     public static void destroy() {
         if (INSTANCE != null) {
-            InAppStoryManager.addDebug( "destroy old manager");
             if (InAppStoryService.getInstance() != null)
                 InAppStoryService.getInstance().logout();
             StatisticSession.clear();
             INSTANCE.context = null;
             KeyValueStorage.removeString("managerInstance");
         }
+
         INSTANCE = null;
-        InAppStoryService.getInstance().getDownloadManager().destroy();
+        if (InAppStoryService.getInstance() != null)
+            InAppStoryService.getInstance().getDownloadManager().destroy();
     }
 
     private String localOpensKey;
@@ -462,20 +516,6 @@ public class InAppStoryManager {
     public Point coordinates = null;
 
     public boolean soundOn = false;
-
-    private static String debugLog = "";
-
-    public static void addDebug(String debugString) {
-        if (debugLog == null) debugLog = "";
-        Log.e(IAS_LOG,  DateFormat.format("dd/MM/yyyy hh-mm-ss",
-                System.currentTimeMillis()).toString()  + ": " + debugString);
-        debugLog += "IAS_LOG " + DateFormat.format("dd/MM/yyyy hh-mm-ss",
-                System.currentTimeMillis()).toString()  + ": " + debugString + "\n";
-    }
-
-    public static String getDebug() {
-        return debugLog;
-    }
 
     public OnboardingLoadedListener onboardLoadedListener;
     public OnboardingLoadedListener singleLoadedListener;
@@ -724,6 +764,10 @@ public class InAppStoryManager {
             return tags;
         }
 
+        public int getCacheSize() {
+            return cacheSize;
+        }
+
         public Map<String, String> placeholders() {
             return placeholders;
         }
@@ -733,6 +777,9 @@ public class InAppStoryManager {
         boolean closeOnSwipe = true;
         boolean hasLike = false;
         boolean sendStatistic = true;
+
+
+        int cacheSize;
         boolean hasFavorite = false;
         boolean hasShare = false;
         String userId;
@@ -754,6 +801,11 @@ public class InAppStoryManager {
 
         public Builder sandbox(boolean sandbox) {
             Builder.this.sandbox = sandbox;
+            return Builder.this;
+        }
+
+        public Builder cacheSize(int cacheSize) {
+            Builder.this.cacheSize = cacheSize;
             return Builder.this;
         }
 
@@ -827,7 +879,6 @@ public class InAppStoryManager {
 
         public InAppStoryManager create() throws DataException {
             if (Builder.this.context == null) {
-                InAppStoryManager.addDebug("Manager null context");
                 throw new DataException("'context' can't be null", new Throwable("InAppStoryManager.Builder data is not valid"));
             }
             return new InAppStoryManager(Builder.this);

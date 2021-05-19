@@ -43,9 +43,7 @@ import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileCache;
-import com.inappstory.sdk.stories.cache.FileType;
+import com.inappstory.sdk.stories.cache.filecache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
@@ -87,7 +85,7 @@ import java.util.regex.Pattern;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.webkit.WebSettings.FORCE_DARK_OFF;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
-import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
+import static com.inappstory.sdk.stories.utils.WebPageConverter.fromHtml;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -181,7 +179,7 @@ public class StoriesWebView extends WebView {
             }
         }
         for (String fonturl : fonturls) {
-            String fileLink = Downloader.getFontFile(getContext(), fonturl);
+            String fileLink = Downloader.getFontFile(fonturl);
             if (fileLink != null)
                 layout = layout.replaceFirst(fonturl, "file://" + fileLink);
         }
@@ -197,7 +195,11 @@ public class StoriesWebView extends WebView {
                 new Handler().post(new Runnable() {
                     @Override
                     public void run() {
-                        WebPageConverter.replaceVideoAndLoad(innerWebText, storyId, index, finalLayout);
+                        try {
+                            WebPageConverter.replaceVideoAndLoad(innerWebText, storyId, index, finalLayout);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
 
@@ -208,7 +210,11 @@ public class StoriesWebView extends WebView {
                 new Handler().post(new Runnable() {
                     @Override
                     public void run() {
-                        WebPageConverter.replaceImagesAndLoad(innerWebText, storyId, index, finalLayout);
+                        try {
+                            WebPageConverter.replaceImagesAndLoad(innerWebText, storyId, index, finalLayout);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -470,7 +476,6 @@ public class StoriesWebView extends WebView {
 
     void storyResumedEvent(double timer) {
         if (InAppStoryService.getInstance() == null) return;
-        Log.e("resTimer", "" + timer);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         long slideDuration = story.getDurations().get(index);
         InAppStoryService.getInstance().getTimerManager().startTimer((long)(slideDuration - timer - 50), false);
@@ -512,34 +517,23 @@ public class StoriesWebView extends WebView {
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
                 String img = url;
-                Context con = InAppStoryManager.getInstance().getContext();
-                FileCache cache = FileCache.INSTANCE;
-                File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
-
-                if (file.exists()) {
-
-                    try {
-                        String ctType = KeyValueStorage.getString(file.getName());
-                        if (ctType == null) {
-                            Response response = new Request.Builder().head().url(img).build().execute();
-                            ctType = response.headers.get("Content-Type");
-                        }
-                        Log.e("webReplace", ctType + " " + storyId + " " + index + " " + img);
-                        WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
-                                new FileInputStream(file));
-                        return resp;
-                    } catch (FileNotFoundException e) {
-                        return super.shouldInterceptRequest(view, url);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return super.shouldInterceptRequest(view, url);
-                    } catch (Exception e) {
-
-                        return super.shouldInterceptRequest(view, url);
+                try {
+                    File file = InAppStoryService.getInstance().getCommonCache().get(url);
+                    String ctType = KeyValueStorage.getString(file.getName());
+                    if (ctType == null) {
+                        Response response = new Request.Builder().head().url(img).build().execute();
+                        ctType = response.headers.get("Content-Type");
                     }
-                } else {
+                    WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
+                            new FileInputStream(file));
+                    return resp;
+                } catch (FileNotFoundException e) {
+                    return super.shouldInterceptRequest(view, url);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return super.shouldInterceptRequest(view, url);
+                } catch (Exception e) {
 
-                    //Log.e("playVideo", storyId + " video loaded");
                     return super.shouldInterceptRequest(view, url);
                 }
             }
@@ -549,33 +543,24 @@ public class StoriesWebView extends WebView {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String img = request.getUrl().toString();
-                Context con = InAppStoryManager.getInstance().getContext();
-                FileCache cache = FileCache.INSTANCE;
-                File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
-
-                if (file.exists()) {
-                    try {
-                        //
-                        String ctType = KeyValueStorage.getString(file.getName());
-                        if (ctType == null) {
-                            Response response = new Request.Builder().head().url(img).build().execute();
-                            ctType = response.headers.get("Content-Type");
-                        }
-                        Log.e("webReplace", ctType + " " + storyId + " " + index + " " + img);
-                        WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
-                                new FileInputStream(file));
-                        // Log.e("playVideo", storyId + " video loaded");
-                        return resp;
-                    } catch (FileNotFoundException e) {
-                        return super.shouldInterceptRequest(view, request);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return super.shouldInterceptRequest(view, request);
-                    } catch (Exception e) {
-                        return super.shouldInterceptRequest(view, request);
+                try {
+                    File file = InAppStoryService.getInstance().getCommonCache().get(img);
+                    String ctType = KeyValueStorage.getString(file.getName());
+                    if (ctType == null) {
+                        Response response = new Request.Builder().head().url(img).build().execute();
+                        ctType = response.headers.get("Content-Type");
                     }
-                } else {
+                    Log.e("webReplace", ctType + " " + storyId + " " + index + " " + img);
+                    WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
+                            new FileInputStream(file));
                     // Log.e("playVideo", storyId + " video loaded");
+                    return resp;
+                } catch (FileNotFoundException e) {
+                    return super.shouldInterceptRequest(view, request);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return super.shouldInterceptRequest(view, request);
+                } catch (Exception e) {
                     return super.shouldInterceptRequest(view, request);
                 }
             }

@@ -21,6 +21,7 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.loader.GameLoader;
@@ -173,7 +174,7 @@ public class GameActivity extends AppCompatActivity {
 
     private void setLoader() {
         if (loaderPath != null && !loaderPath.isEmpty())
-            ImageLoader.getInstance().displayImage(loaderPath, -1, loader);
+            ImageLoader.getInstance().displayImage(loaderPath, -1, loader, InAppStoryService.getInstance().getCommonCache());
         else
             loader.setBackgroundColor(Color.BLACK);
     }

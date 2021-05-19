@@ -30,7 +30,6 @@ import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
@@ -40,8 +39,6 @@ import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import static com.inappstory.sdk.InAppStoryService.IAS_LOG;
 
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
@@ -314,25 +311,20 @@ public class StoriesList extends RecyclerView {
     }
 
     public void loadStories() throws DataException {
-        InAppStoryManager.addDebug( "loadStories start");
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getInstance();
         }
         if (appearanceManager == null) {
-            InAppStoryManager.addDebug("AppearanceManager null");
             throw new DataException("Need to set an AppearanceManager", new Throwable("StoriesList data is not valid"));
         }
         if (InAppStoryManager.getInstance().getUserId() == null) {
-            InAppStoryManager.addDebug("user id null");
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
 
         if (InAppStoryService.getInstance() != null) {
-            InAppStoryManager.addDebug("loadStories service created");
             InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
-                    InAppStoryManager.addDebug("loadStories storiesLoaded");
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
@@ -346,24 +338,19 @@ public class StoriesList extends RecyclerView {
             }, isFavoriteList);
 
         } else {
-            InAppStoryManager.addDebug( "loadStories service create");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    InAppStoryManager.addDebug( "loadStories service check");
-                    if (InAppStoryService.getInstance() != null) {
-                        InAppStoryManager.addDebug("loadStories service checked");
+                    if (InAppStoryService.getInstance() != null)
                         InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
-                                InAppStoryManager.addDebug("loadStories storiesLoaded");
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
                             }
                         }, isFavoriteList);
-                    }
                 }
             }, 1000);
         }

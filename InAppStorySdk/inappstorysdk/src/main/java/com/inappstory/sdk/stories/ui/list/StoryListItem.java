@@ -172,7 +172,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     private void setImage(AppCompatImageView imageView, FavoriteImage image) {
         if (image.getImage() != null) {
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView);
+            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
+                    InAppStoryService.getInstance().getFastCache());
         } else {
             imageView.setBackgroundColor(image.getBackgroundColor());
         }
@@ -312,7 +313,6 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                      String videoUrl) {
         if (getListItem != null) {
             getListItem.setTitle(itemView, titleText, titleColor);
-            getListItem.setSource(itemView, sourceText);
             getListItem.setHasAudio(itemView, hasAudio);
             getListItem.setImage(itemView, imageUrl, backgroundColor);
             getListItem.setOpened(itemView, isOpened);
@@ -348,7 +348,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image);
+                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
+                            InAppStoryService.getInstance().getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);
@@ -365,7 +366,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image);
+                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
+                            InAppStoryService.getInstance().getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);

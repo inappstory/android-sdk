@@ -280,7 +280,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                     String img = url;
                     File file = getManager().getCurrentFile(img);
-                    if (file.exists()) {
+                    if (file != null && file.exists()) {
                         try {
                             Response response = new Request.Builder().head().url(url).build().execute();
                             String ctType = response.headers.get("Content-Type");
@@ -305,7 +305,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                     String img = request.getUrl().toString();
                     File file = getManager().getCurrentFile(img);
-                    if (file.exists()) {
+                    if (file != null && file.exists()) {
                         try {
                             Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
                             String ctType = response.headers.get("Content-Type");

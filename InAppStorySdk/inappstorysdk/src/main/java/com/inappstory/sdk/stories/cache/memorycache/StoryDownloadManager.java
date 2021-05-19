@@ -1,7 +1,8 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.cache.memorycache;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
@@ -15,6 +16,7 @@ import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -22,12 +24,12 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.cache.filecache.Downloader;
 import com.inappstory.sdk.stories.callbacks.DownloadPageCallback;
 import com.inappstory.sdk.stories.callbacks.DownloadStoryCallback;
 import com.inappstory.sdk.stories.events.ContentLoadedEvent;
 import com.inappstory.sdk.stories.events.ListVisibilityEvent;
 import com.inappstory.sdk.stories.events.LoadFavStories;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
@@ -36,6 +38,7 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -57,14 +60,6 @@ public class StoryDownloadManager {
             return;
         }
         loadStories(stories);
-    }
-
-
-    public void initDownloaders() {
-        if (storyDownloader != null)
-            storyDownloader.init();
-        if (slidesDownloader != null)
-            slidesDownloader.init();
     }
 
     public static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list";
@@ -128,6 +123,12 @@ public class StoryDownloadManager {
         });
     }
 
+    public void initDownloaders() {
+
+        storyDownloader.init();
+        slidesDownloader.init();
+    }
+
     public void destroy() {
         storyDownloader.destroy();
         slidesDownloader.destroy();
@@ -141,7 +142,11 @@ public class StoryDownloadManager {
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
-        FileCache.INSTANCE.deleteFolderRecursive(context.getFilesDir(), false);
+        try {
+            InAppStoryService.getInstance().getCommonCache().clearCache();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void addStories(List<Story> stories) {
@@ -201,10 +206,20 @@ public class StoryDownloadManager {
         return slidesDownloader.checkIfPageLoaded(new Pair<>(storyId, index));
     }
 
-    public StoryDownloadManager(final Context context) {
+    public StoryDownloadManager(final Context context, ExceptionCache cache) {
         this.context = context;
         this.stories = new ArrayList<>();
+        this.favStories = new ArrayList<>();
+        this.favoriteImages = new ArrayList<>();
+        if (cache != null) {
+            if (!cache.getStories().isEmpty())
+                this.stories = cache.getStories();
+            if (!cache.getStories().isEmpty())
+                this.favStories = cache.getFavStories();
+            if (!cache.getStories().isEmpty())
+                this.favoriteImages = cache.getFavoriteImages();
 
+        }
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
             public void onDownload(Story story, int loadType) {
@@ -225,7 +240,7 @@ public class StoryDownloadManager {
             @Override
             public void downloadFile(String url, String storyId, int index) {
                 try {
-                    Downloader.downloadFile(context, url, FileType.STORY_FILE, storyId);
+                    Downloader.downloadFile(url, InAppStoryService.getInstance().getCommonCache(), null, null);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -252,7 +267,6 @@ public class StoryDownloadManager {
         slidesDownloader.setCurrentSlide(storyId, slideIndex);
     }
 
-    private List<Story> stories;
 
     public Story getStoryById(int id) {
         if (stories != null) {
@@ -299,7 +313,6 @@ public class StoryDownloadManager {
     public void loadStories(LoadStoriesCallback callback, boolean isFavorite) {
         loadStoriesCallback = callback;
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
-
     }
 
     public void refreshLocals() {
@@ -309,7 +322,6 @@ public class StoryDownloadManager {
         }
         setLocalsOpened(stories);
     }
-
 
     void setLocalsOpened(List<Story> response) {
         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
@@ -333,7 +345,7 @@ public class StoryDownloadManager {
 
         @Override
         public void onSuccess(final List<Story> response) {
-            ArrayList<Story> stories = new ArrayList<>();
+            final ArrayList<Story> stories = new ArrayList<>();
             for (int i = 0; i < Math.min(response.size(), 4); i++) {
                 stories.add(response.get(i));
             }
@@ -468,7 +480,6 @@ public class StoryDownloadManager {
             } else {
                 CsEventBus.getDefault().post(new ContentLoadedEvent(false));
             }
-            setLocalsOpened(response);
             InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
             CsEventBus.getDefault().post(new ListVisibilityEvent());
             List<Story> newStories = new ArrayList<>();
@@ -481,6 +492,7 @@ public class StoryDownloadManager {
             }
             if (newStories.size() > 0) {
                 try {
+                    setLocalsOpened(newStories);
                     InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -497,6 +509,7 @@ public class StoryDownloadManager {
     };
 
 
+    private List<Story> stories;
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();
 }

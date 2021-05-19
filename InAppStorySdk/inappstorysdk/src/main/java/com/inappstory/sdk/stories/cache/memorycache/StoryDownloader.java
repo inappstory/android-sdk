@@ -1,40 +1,34 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.cache.memorycache;
 
 import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.network.Callback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryListType;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.DownloadStoryCallback;
-import com.inappstory.sdk.stories.events.LoadFavStories;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadErrorEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
+import static com.inappstory.sdk.stories.cache.memorycache.StoryDownloadManager.EXPAND_STRING;
 
 class StoryDownloader {
     StoryDownloader(DownloadStoryCallback callback) {
@@ -193,6 +187,7 @@ class StoryDownloader {
 
         @Override
         public void run() {
+            Log.e("queueStoryReadRunnable", "queueStoryReadRunnable");
             Integer tKey = null;
             try {
                 tKey = getMaxPriorityStoryTaskKey();
@@ -288,7 +283,7 @@ class StoryDownloader {
 
                 @Override
                 public void onError() {
-                    CsEventBus.getDefault().post(new StoriesErrorEvent(NoConnectionEvent.LOAD_LIST));
+                    CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
                 }
             });
         } else {

@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.webkit.WebSettings;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -22,9 +21,7 @@ import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileCache;
-import com.inappstory.sdk.stories.cache.FileType;
+import com.inappstory.sdk.stories.cache.filecache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
@@ -41,6 +38,7 @@ import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +48,7 @@ import java.util.regex.Pattern;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.inappstory.sdk.InAppStoryManager.testGenerated;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
-import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
+import static com.inappstory.sdk.stories.utils.WebPageConverter.fromHtml;
 
 public class StoriesViewManager {
     public int index = -1;
@@ -103,7 +101,11 @@ public class StoriesViewManager {
             } else {
                 String innerWebData = story.pages.get(index);
                 String layout = getLayoutWithFonts(story.getLayout());
-                setWebViewSettings(innerWebData, layout);
+                try {
+                    setWebViewSettings(innerWebData, layout);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -143,7 +145,7 @@ public class StoriesViewManager {
         }
     }
 
-    void setWebViewSettings(String innerWebData, String layout) {
+    void setWebViewSettings(String innerWebData, String layout) throws IOException {
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
         if (innerWebData.contains("<video")) {
             isVideo = true;
@@ -166,7 +168,7 @@ public class StoriesViewManager {
             }
         }
         for (String fonturl : fonturls) {
-            String fileLink = Downloader.getFontFile(storiesView.getContext(), fonturl);
+            String fileLink = Downloader.getFontFile(fonturl);
             if (fileLink != null)
                 layout = layout.replaceFirst(fonturl, "file://" + fileLink);
         }
@@ -191,9 +193,11 @@ public class StoriesViewManager {
     }
 
     public File getCurrentFile(String img) {
-        Context con = InAppStoryManager.getInstance().getContext();
-        FileCache cache = FileCache.INSTANCE;
-        return cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
+        try {
+            return InAppStoryService.getInstance().getCommonCache().get(img);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private CoreProgressBar progressBar;

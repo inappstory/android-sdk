@@ -118,13 +118,12 @@ public class AppearanceManager {
 
     public static void csWidgetAppearance(@NonNull Context context,
                                           @NonNull Class widgetClass,
-                                          Integer corners,
-                                          Boolean sandbox) {
+                                          Integer corners) {
         csWidgetAppearance();
         csWidgetAppearance.widgetClass = widgetClass;
         csWidgetAppearance.corners = corners;
         csWidgetAppearance.context = context;
-        csWidgetAppearance.sandbox = sandbox;
+        csWidgetAppearance.sandbox = false;
         csWidgetAppearance.save();
     }
 

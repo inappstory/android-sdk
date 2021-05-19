@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.cache.memorycache;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;

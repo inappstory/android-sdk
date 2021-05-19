@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.cache.memorycache;
 
 import java.util.ArrayList;
 import java.util.List;
