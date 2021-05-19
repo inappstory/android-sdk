@@ -314,25 +314,25 @@ public class StoriesList extends RecyclerView {
     }
 
     public void loadStories() throws DataException {
-        Log.d(IAS_LOG, "loadStories start");
+        InAppStoryManager.addDebug( "loadStories start");
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getInstance();
         }
         if (appearanceManager == null) {
-            Log.d(IAS_LOG, "AppearanceManager null");
+            InAppStoryManager.addDebug("AppearanceManager null");
             throw new DataException("Need to set an AppearanceManager", new Throwable("StoriesList data is not valid"));
         }
         if (InAppStoryManager.getInstance().getUserId() == null) {
-            Log.d(IAS_LOG, "user id null");
+            InAppStoryManager.addDebug("user id null");
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
 
         if (InAppStoryService.getInstance() != null) {
-            Log.d(IAS_LOG, "loadStories service created");
+            InAppStoryManager.addDebug("loadStories service created");
             InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
-                    Log.d(IAS_LOG, "loadStories storiesLoaded");
+                    InAppStoryManager.addDebug("loadStories storiesLoaded");
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
@@ -346,17 +346,17 @@ public class StoriesList extends RecyclerView {
             }, isFavoriteList);
 
         } else {
-            Log.d(IAS_LOG, "loadStories service create");
+            InAppStoryManager.addDebug( "loadStories service create");
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(IAS_LOG, "loadStories service check");
+                    InAppStoryManager.addDebug( "loadStories service check");
                     if (InAppStoryService.getInstance() != null)
-                        Log.d(IAS_LOG, "loadStories service checked");
+                        InAppStoryManager.addDebug("loadStories service checked");
                         InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
-                                Log.d(IAS_LOG, "loadStories storiesLoaded");
+                                InAppStoryManager.addDebug( "loadStories storiesLoaded");
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
                                 setLayoutManager(layoutManager);

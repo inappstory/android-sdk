@@ -59,7 +59,7 @@ public class InAppStoryService extends Service {
     }
 
     void logout() {
-        Log.d(IAS_LOG, "logout service");
+        InAppStoryManager.addDebug( "logout service");
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         SessionManager.getInstance().closeSession(true, false);
         OldStatisticManager.getInstance().statistic.clear();
@@ -93,7 +93,7 @@ public class InAppStoryService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.d(IAS_LOG, "destroy service");
+        InAppStoryManager.addDebug("destroy service");
         super.onDestroy();
     }
 
@@ -211,7 +211,7 @@ public class InAppStoryService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(IAS_LOG, "create service");
+        InAppStoryManager.addDebug( "create service");
         CsEventBus.getDefault().register(this);
         Thread.setDefaultUncaughtExceptionHandler(new TryMe());
         new ImageLoader(getApplicationContext());
@@ -219,19 +219,19 @@ public class InAppStoryService extends Service {
         downloadManager = new StoryDownloadManager(getApplicationContext());
         timerManager = new TimerManager();
         INSTANCE = this;
-        Log.d(IAS_LOG, "service created");
+        InAppStoryManager.addDebug( "service created");
     }
 
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
         INSTANCE = this;
-        Log.d(IAS_LOG, "service onStart");
+        InAppStoryManager.addDebug("service onStart");
     }
 
     @Override
     public int onStartCommand(Intent startIntent, int flags, int startId) {
         INSTANCE = this;
-        Log.d(IAS_LOG, "service onStartCommand");
+        InAppStoryManager.addDebug( "service onStartCommand");
         return START_STICKY;
     }
 

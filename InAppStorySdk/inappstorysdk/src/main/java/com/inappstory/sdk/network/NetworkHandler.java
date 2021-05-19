@@ -5,6 +5,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -59,7 +61,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         }
-        Log.d(IAS_LOG, connection.getURL().toString());
+        InAppStoryManager.addDebug( connection.getURL().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -74,7 +76,7 @@ public final class NetworkHandler implements InvocationHandler {
         }
         int statusCode = connection.getResponseCode();
         Response respObject = null;
-        Log.d(IAS_LOG, connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        InAppStoryManager.addDebug(connection.getURL().toString() + " \nStatus Code: " + statusCode);
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
 
             String res = getResponseFromStream(connection.getInputStream());

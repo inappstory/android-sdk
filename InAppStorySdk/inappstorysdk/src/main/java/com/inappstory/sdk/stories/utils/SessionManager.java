@@ -108,7 +108,7 @@ public class SessionManager {
                 callbacks.add(callback);
         }
 
-        Log.d(IAS_LOG, "open session");
+        InAppStoryManager.addDebug("open session");
         Context context = InAppStoryManager.getInstance().getContext();
         String platform = "android";
         String deviceId = Settings.Secure.getString(context.getContentResolver(),
@@ -158,7 +158,7 @@ public class SessionManager {
         ).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
-                Log.d(IAS_LOG, "opened");
+                InAppStoryManager.addDebug( "session opened");
                 openStatisticSuccess(response);
                 CachedSessionData cachedSessionData = new CachedSessionData();
                 cachedSessionData.userId = InAppStoryManager.getInstance().getUserId();
