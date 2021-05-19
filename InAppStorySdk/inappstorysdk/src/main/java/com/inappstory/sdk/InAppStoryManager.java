@@ -19,6 +19,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -334,7 +337,10 @@ public class InAppStoryManager {
             context.startService(intent);
             InAppStoryManager.addDebug( "manager service start");
         } catch (IllegalStateException e) {
-            InAppStoryManager.addDebug(e.toString());
+            Writer writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            String s = writer.toString();
+            InAppStoryManager.addDebug(s);
         }
     }
 
