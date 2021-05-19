@@ -334,7 +334,7 @@ public class InAppStoryManager {
             context.startService(intent);
             InAppStoryManager.addDebug( "manager service start");
         } catch (IllegalStateException e) {
-
+            InAppStoryManager.addDebug(e.toString());
         }
     }
 
@@ -458,7 +458,7 @@ public class InAppStoryManager {
     public boolean soundOn = false;
 
     private static String debugLog = "";
-    
+
     public static void addDebug(String debugString) {
         if (debugLog == null) debugLog = "";
         Log.e(IAS_LOG,  DateFormat.format("dd/MM/yyyy hh-mm-ss",
