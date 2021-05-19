@@ -351,18 +351,19 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void run() {
                     InAppStoryManager.addDebug( "loadStories service check");
-                    if (InAppStoryService.getInstance() != null)
+                    if (InAppStoryService.getInstance() != null) {
                         InAppStoryManager.addDebug("loadStories service checked");
                         InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
-                                InAppStoryManager.addDebug( "loadStories storiesLoaded");
+                                InAppStoryManager.addDebug("loadStories storiesLoaded");
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
                             }
                         }, isFavoriteList);
+                    }
                 }
             }, 1000);
         }
