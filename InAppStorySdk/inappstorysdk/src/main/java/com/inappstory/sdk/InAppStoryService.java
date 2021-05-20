@@ -229,25 +229,26 @@ public class InAppStoryService {
 
         @Override
         public void uncaughtException(Thread thread, final Throwable throwable) {
-            if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
-                InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
-            } else {
-                Log.e("InAppStoryException", throwable.getCause() + "\n"
-                        + throwable.getMessage());
+            Log.e("InAppStoryException", throwable.getCause() + "\n"
+                    + throwable.getMessage());
 
-                if (InAppStoryManager.getInstance() != null) {
-                    InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
-                            getInstance().getDownloadManager().getStories(),
-                            getInstance().getDownloadManager().favStories,
-                            getInstance().getDownloadManager().favoriteImages
-                    ));
-                }
-                synchronized (lock) {
-                    if (getInstance() != null)
-                        getInstance().onDestroy();
-                }
-                if (InAppStoryManager.getInstance() != null) {
-                    InAppStoryManager.getInstance().createServiceThread(InAppStoryManager.getInstance().context);
+            if (InAppStoryManager.getInstance() != null) {
+
+                InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
+                        getInstance().getDownloadManager().getStories(),
+                        getInstance().getDownloadManager().favStories,
+                        getInstance().getDownloadManager().favoriteImages
+                ));
+
+            }
+            synchronized (lock) {
+                if (getInstance() != null)
+                    getInstance().onDestroy();
+            }
+            if (InAppStoryManager.getInstance() != null) {
+                InAppStoryManager.getInstance().createServiceThread(InAppStoryManager.getInstance().context);
+                if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
+                    InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
                 }
             }
         }
