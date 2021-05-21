@@ -101,7 +101,7 @@ final class PausableProgressBar extends FrameLayout {
     public void clearProgress(boolean isDestroy) {
 
         maxProgressView.setVisibility(GONE);
-        frontProgressView.setVisibility(INVISIBLE);
+        frontProgressView.setAlpha(0);
         if (animation != null) {
             animation.setAnimationListener(null);
             animation.cancel();
@@ -143,7 +143,7 @@ final class PausableProgressBar extends FrameLayout {
         animation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                frontProgressView.setVisibility(View.VISIBLE);
+                frontProgressView.setAlpha(1);
                 if (callback != null) callback.onStartProgress();
             }
 
@@ -318,3 +318,4 @@ final class PausableProgressBar extends FrameLayout {
 
     }
 }
+
