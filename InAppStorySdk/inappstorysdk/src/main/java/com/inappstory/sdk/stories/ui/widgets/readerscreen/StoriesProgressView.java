@@ -105,9 +105,8 @@ public class StoriesProgressView extends LinearLayout {
             }
         }
         current = counter;
-        if (!stopTimer) {
-            same();
-        }
+
+        same(stopTimer);
     }
 
     public void setCurrentCounterAndRestart(int counter) {
@@ -129,7 +128,7 @@ public class StoriesProgressView extends LinearLayout {
         if (counter < progressBars.size() - 1) {
             isComplete = false;
         }
-        same();
+        same(false);
     }
 
     private void bindViews() {
@@ -197,7 +196,7 @@ public class StoriesProgressView extends LinearLayout {
         }
     }
 
-    public void same() {
+    public void same(boolean stopTimer) {
         Log.e("eventsLoaded", "same");
         if (isComplete) {
             return;
@@ -206,7 +205,7 @@ public class StoriesProgressView extends LinearLayout {
         same = true;
         PausableProgressBar p = progressBars.get(current);
         p.setMin();
-
+        if (!stopTimer)
         progressBars.get(current).startProgress();
     }
 

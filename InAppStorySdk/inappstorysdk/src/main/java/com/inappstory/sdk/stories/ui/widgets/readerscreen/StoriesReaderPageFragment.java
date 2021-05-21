@@ -51,6 +51,7 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
+import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -231,7 +232,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void prevStoryFragment(PrevStoryFragmentEvent event) {
         if (storyId != event.getId()) return;
-        storiesProgressView.same();
+        storiesProgressView.same(false);
         storiesWebView.restartVideo();
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         InAppStoryService.getInstance().getTimerManager().restartTimer(story.getDurations().get(0));
@@ -249,6 +250,13 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (favorite != null) {
             favorite.setActivated(event.favStatus);
         }
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void changeStoryPageEvent(StoryPageOpenEvent event) {
+        if (this.storyId != event.getStoryId()) return;
+        if (storiesProgressView.current != event.getIndex())
+            storiesProgressView.setCurrentCounter(event.getIndex(), true);
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
