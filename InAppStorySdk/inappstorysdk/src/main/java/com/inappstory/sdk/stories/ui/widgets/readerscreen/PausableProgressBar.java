@@ -84,6 +84,7 @@ final class PausableProgressBar extends FrameLayout {
         maxProgressView.setBackgroundResource(R.color.cs_progressSecondary);
 
         maxProgressView.setVisibility(VISIBLE);
+        frontProgressView.setAlpha(0);
         if (animation != null) {
             animation.setAnimationListener(null);
             animation.cancel();
@@ -119,6 +120,7 @@ final class PausableProgressBar extends FrameLayout {
     private void finishProgress(boolean isMax) {
         if (isMax) maxProgressView.setBackgroundResource(R.color.cs_progressMaxActive);
         maxProgressView.setVisibility(isMax ? VISIBLE : GONE);
+        frontProgressView.setAlpha(0);
         if (animation != null) {
             animation.setAnimationListener(null);
             animation.cancel();
