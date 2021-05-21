@@ -466,14 +466,14 @@ public class InAppStoryManager {
     private static String debugLog = "";
 
     public static void addDebug(String debugString) {
-        if (debugLog == null) debugLog = "";
+    /*    if (debugLog == null) debugLog = "";
         Log.e(IAS_LOG,  DateFormat.format("dd/MM/yyyy hh-mm-ss",
                 System.currentTimeMillis()).toString()  + ": " + debugString);
         debugLog += "IAS_LOG " + DateFormat.format("dd/MM/yyyy hh-mm-ss",
-                System.currentTimeMillis()).toString()  + ": " + debugString + "\n";
+                System.currentTimeMillis()).toString()  + ": " + debugString + "\n";*/
     }
 
-    public static String getDebug() {
+    private static String getDebug() {
         return debugLog;
     }
 
