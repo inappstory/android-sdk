@@ -78,7 +78,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
+    public void onBindViewHolder(@NonNull StoryListItem holder, int position) {
+        if (holder == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -91,28 +92,25 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             });
         } else {
             if (InAppStoryService.getInstance() != null) {
-                final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        holder.bind(story.getTitle(),
-                                story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
-                                story.getSource(),
-                                (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
-                                Color.parseColor(story.getBackgroundColor()),
-                                story.isOpened || isFavoriteList, story.hasAudio(),
-                                story.getVideoUrl());
-                    }
-                });
+                Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
+                if (holder == null) return;
+                if (story == null) return;
+                holder.bind(story.getTitle(),
+                        story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
+                        story.getSource(),
+                        (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
+                        Color.parseColor(story.getBackgroundColor()),
+                        story.isOpened || isFavoriteList, story.hasAudio(),
+                        story.getVideoUrl());
             }
+            final int pos = position;
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClick(position);
+                    onItemClick(pos);
                 }
             });
         }
-
     }
 
     public void onItemClick(int index) {
