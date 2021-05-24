@@ -335,7 +335,7 @@ public class InAppStoryManager {
         try {
             intent = new Intent(context, InAppStoryService.class);
             context.startService(intent);
-            InAppStoryManager.addDebug( "manager service start");
+            InAppStoryManager.addDebug("manager service start");
         } catch (IllegalStateException e) {
             Writer writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
@@ -431,15 +431,17 @@ public class InAppStoryManager {
 
     public static void destroy() {
         if (INSTANCE != null) {
-            InAppStoryManager.addDebug( "destroy old manager");
-            if (InAppStoryService.getInstance() != null)
+            InAppStoryManager.addDebug("destroy old manager");
+            if (InAppStoryService.getInstance() != null) {
+                if (InAppStoryService.getInstance().getDownloadManager() != null)
+                    InAppStoryService.getInstance().getDownloadManager().destroy();
                 InAppStoryService.getInstance().logout();
+            }
             StatisticSession.clear();
             INSTANCE.context = null;
             KeyValueStorage.removeString("managerInstance");
         }
         INSTANCE = null;
-        InAppStoryService.getInstance().getDownloadManager().destroy();
     }
 
     private String localOpensKey;
