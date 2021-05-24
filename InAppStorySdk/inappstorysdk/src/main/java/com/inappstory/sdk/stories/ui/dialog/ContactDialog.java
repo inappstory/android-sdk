@@ -117,8 +117,8 @@ public class ContactDialog {
             fullWidth = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
             fullHeight = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
         } else {
-            fullWidth = Sizes.getScreenSize().x;
-            fullHeight = Sizes.getScreenSize().y;
+            fullWidth = Sizes.getScreenSize(activity).x;
+            fullHeight = Sizes.getScreenSize(activity).y;
         }
         if (dialogStructure.size == null) {
             dialogStructure.size = new SizeStructure();

@@ -123,7 +123,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
             Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
             anim.setDuration(200);
             animationSet.addAnimation(anim);
-            if (InAppStoryManager.getInstance().coordinates != null) {
+            if (InAppStoryManager.getInstance() != null && InAppStoryManager.getInstance().coordinates != null) {
                 Animation anim2 = new TranslateAnimation(draggableFrame.getX(), InAppStoryManager.getInstance().coordinates.x - Sizes.getScreenSize().x / 2,
                         0f, InAppStoryManager.getInstance().coordinates.y - draggableFrame.getY());
                 anim2.setDuration(200);

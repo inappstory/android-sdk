@@ -392,7 +392,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
             if (event.getLink() == null || event.getLink().isEmpty()) {
                 int real = event.getCoordinate();
-                int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
+                int sz = (!Sizes.isTablet() ? Sizes.getScreenSize(getContext()).x : Sizes.dpToPxExt(400));
                 if (real >= 0.3 * sz && !event.isForbidden()) {
                     CsEventBus.getDefault().post(new NextStoryPageEvent(currentIds.get(storiesViewPager.getCurrentItem())));
                 } else if (real < 0.3 * sz) {

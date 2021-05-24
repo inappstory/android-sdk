@@ -117,8 +117,8 @@ public class SessionManager {
         String model = Build.MODEL;
         String manufacturer = Build.MANUFACTURER;
         String brand = Build.BRAND;
-        String screenWidth = Integer.toString(Sizes.getScreenSize().x);
-        String screenHeight = Integer.toString(Sizes.getScreenSize().y);
+        String screenWidth = Integer.toString(Sizes.getScreenSize(context).x);
+        String screenHeight = Integer.toString(Sizes.getScreenSize(context).y);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         String screenDpi = Float.toString(metrics.density * 160f);
         String osVersion = Build.VERSION.CODENAME;
