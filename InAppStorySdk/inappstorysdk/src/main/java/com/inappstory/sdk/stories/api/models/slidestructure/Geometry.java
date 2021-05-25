@@ -11,5 +11,5 @@ public class Geometry {
     public boolean expand;
   //  @SerializedName("align-bottom")
   //  public Boolean alignBottom;
-    public Stored stored;
+    //public Stored stored;
 }
