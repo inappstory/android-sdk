@@ -59,10 +59,10 @@ public class OldStatisticManager {
     };
 
     public void previewStatisticEvent(ArrayList<Integer> vals) {
-        ArrayList<Object> sendObject = new ArrayList<Object>() {{
-            add(5);
-            add(eventCount);
-        }};
+        ArrayList<Object> sendObject = new ArrayList<Object>();
+        sendObject.add(5);
+        sendObject.add(eventCount);
+
         ArrayList<Integer> addedVals = new ArrayList<>();
         for (Integer val : vals) {
             if (!StatisticSession.getInstance().viewed.contains(val)) {
@@ -153,13 +153,13 @@ public class OldStatisticManager {
 
     public void closeStatisticEvent(final Integer time, boolean clear) {
         if (currentEvent != null) {
-            putStatistic(new ArrayList<Object>() {{
-                add(currentEvent.eventType);
-                add(eventCount);
-                add(currentEvent.storyId);
-                add(currentEvent.index);
-                add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
-            }});
+            ArrayList statObject = new ArrayList<Object>();
+            statObject.add(currentEvent.eventType);
+            statObject.add(eventCount);
+            statObject.add(currentEvent.storyId);
+            statObject.add(currentEvent.index);
+            statObject.add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
+            putStatistic(statObject);
             Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
                     currentEvent.storyId + " " + currentEvent.index + " " +
                     Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));

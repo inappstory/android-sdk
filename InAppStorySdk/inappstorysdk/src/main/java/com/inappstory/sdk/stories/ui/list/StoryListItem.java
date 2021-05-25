@@ -2,16 +2,12 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -317,7 +313,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             getListItem.setImage(itemView, imageUrl, backgroundColor);
             getListItem.setOpened(itemView, isOpened);
             if (videoUrl != null) {
-                getListItem.setHasVideo(itemView, videoUrl, imageUrl, backgroundColor);
+                getListItem.setVideo(itemView, videoUrl, imageUrl, backgroundColor);
             }
             return;
         }

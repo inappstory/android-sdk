@@ -6,20 +6,18 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.cache.filecache.Downloader;
-import com.inappstory.sdk.stories.cache.filecache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -102,7 +100,7 @@ public class GameLoader {
                 String fileName = resource.key;
                 if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
                     continue;
-                Downloader.downloadFile(url, InAppStoryService.getInstance().getCommonCache(),
+                Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(),
                         new File(filePath.getAbsolutePath() + "/" + fileName),
                         null);
                 cnt += resource.size;
@@ -144,7 +142,7 @@ public class GameLoader {
                         totalSize += resource.size;
                     }
                     final int fTotalSize = totalSize;
-                    File file = Downloader.downloadFile(url, InAppStoryService.getInstance().getCommonCache(),
+                    File file = Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(),
                             new File(InAppStoryService.getInstance().getCommonCache().getCacheDir() +
                                     File.separator + "zip" +
                                     File.separator + pathName +

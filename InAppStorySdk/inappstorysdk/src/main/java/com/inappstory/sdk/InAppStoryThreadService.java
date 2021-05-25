@@ -1,26 +1,25 @@
 package com.inappstory.sdk;
 
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.IBinder;
 import android.util.Log;
 
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
+import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
@@ -30,13 +29,18 @@ import com.inappstory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
-public class InAppStoryService {
+public class InAppStoryThreadService extends Service {
 
-    public static InAppStoryService getInstance() {
+    public static InAppStoryThreadService getInstance() {
         synchronized (lock) {
             return INSTANCE;
         }
@@ -47,7 +51,13 @@ public class InAppStoryService {
     }
 
     StoryDownloadManager downloadManager;
-    public static InAppStoryService INSTANCE;
+    public static InAppStoryThreadService INSTANCE;
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
     void logout() {
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
@@ -78,17 +88,22 @@ public class InAppStoryService {
     private int currentIndex;
 
 
+    @Override
     public void onDestroy() {
-        getDownloadManager().destroy();
-        if (INSTANCE == this)
-            INSTANCE = null;
+        Log.e("InAppStoryService", "destroy");
+        synchronized (lock) {
+            if (INSTANCE == this)
+                INSTANCE = null;
+        }
+        super.onDestroy();
     }
 
-    @CsSubscribe//(threadMode = CsThreadMode.MAIN)
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         OldStatisticManager.getInstance().addStatisticBlock(event.storyId, event.index);
         StatisticManager.getInstance().createCurrentState(event.storyId, event.index);
     }
+
 
     public boolean isBackgroundPause = false;
 
@@ -122,14 +137,13 @@ public class InAppStoryService {
     private Object cacheLock = new Object();
 
     public static final String IAS_PREFIX = File.separator + "ias" + File.separator;
-    Context context;
 
     public LruDiskCache getFastCache() {
         synchronized (cacheLock) {
             if (fastCache == null) {
                 try {
                     fastCache = LruDiskCache.create(new File(
-                                    context.getCacheDir() +
+                                    getApplicationContext().getCacheDir() +
                                             IAS_PREFIX + "fastCache"),
                             MB_10);
                 } catch (IOException e) {
@@ -145,7 +159,7 @@ public class InAppStoryService {
             if (commonCache == null) {
                 try {
                     commonCache = LruDiskCache.create(new File(
-                                    context.getCacheDir() +
+                                    getApplicationContext().getCacheDir() +
                                             IAS_PREFIX + "commonCache"),
                             LruDiskCache.MB_100);
                 } catch (IOException e) {
@@ -214,7 +228,7 @@ public class InAppStoryService {
         return InAppStoryManager.getInstance().getApiKey();
     }
 
-    public static class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
+    public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
 
         Thread.UncaughtExceptionHandler oldHandler;
 
@@ -224,27 +238,13 @@ public class InAppStoryService {
 
         @Override
         public void uncaughtException(Thread thread, final Throwable throwable) {
-            Log.e("InAppStoryException", throwable.getCause() + "\n"
-                    + throwable.getMessage());
+            if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
+                InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
+            } else {
+                stopSelf();
+                Log.e("InAppStoryException", throwable.getCause().toString() + "\n"
+                        + throwable.getMessage());
 
-            if (InAppStoryManager.getInstance() != null) {
-
-                InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
-                        getInstance().getDownloadManager().getStories(),
-                        getInstance().getDownloadManager().favStories,
-                        getInstance().getDownloadManager().favoriteImages
-                ));
-
-            }
-            synchronized (lock) {
-                if (getInstance() != null)
-                    getInstance().onDestroy();
-            }
-            if (InAppStoryManager.getInstance() != null) {
-                InAppStoryManager.getInstance().createServiceThread(InAppStoryManager.getInstance().context);
-                if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
-                    InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
-                }
             }
         }
     }
@@ -271,18 +271,20 @@ public class InAppStoryService {
     Handler spaceHandler;
 
     private void clearOldFiles() {
-        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "Stories"));
-        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "temp"));
+        FileManager.deleteRecursive(new File(getFilesDir() + File.separator + "Stories"));
+        FileManager.deleteRecursive(new File(getFilesDir() + File.separator + "temp"));
     }
 
-    public void createDownloadManager(ExceptionCache cache) {
-        if (downloadManager == null)
-            downloadManager = new StoryDownloadManager(context, cache);
+    public void createDownloadManager() {
+     //   if (downloadManager == null)
+        //    downloadManager = new StoryDownloadManager(getApplicationContext());
     }
 
-    public void onCreate(Context context, ExceptionCache exceptionCache) {
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
         Log.e("InAppStoryService", "create");
-        this.context = context;
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -290,10 +292,10 @@ public class InAppStoryService {
             }
         });
         CsEventBus.getDefault().register(this);
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
-        new ImageLoader(context);
+        Thread.setDefaultUncaughtExceptionHandler(new InAppStoryThreadService.DefaultExceptionHandler());
+        new ImageLoader(getApplicationContext());
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
-        createDownloadManager(exceptionCache);
+        createDownloadManager();
         timerManager = new TimerManager();
         spaceHandler = new Handler();
         synchronized (lock) {
@@ -302,7 +304,24 @@ public class InAppStoryService {
         spaceHandler.postDelayed(checkFreeSpace, 60000);
     }
 
+    public void onStart(Intent intent, int startId) {
+        super.onStart(intent, startId);
+        synchronized (lock) {
+            INSTANCE = this;
+        }
+    }
+
     private static Object lock = new Object();
+
+    @Override
+    public int onStartCommand(Intent startIntent, int flags, int startId) {
+
+        Log.e("InAppStoryService", "onStartCommand");
+        synchronized (lock) {
+            INSTANCE = this;
+        }
+        return START_STICKY;
+    }
 
     public int getCurrentId() {
         return currentId;

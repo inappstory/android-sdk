@@ -7,11 +7,18 @@ import java.util.List;
 
 import com.inappstory.sdk.stories.api.models.Image;
 
+/**
+ * Defines type for story cover in favorite cell. Use {@link #getImage()}, {@link #getUrl()}
+ * or {@link #getBackgroundColor()} to get cover.
+ */
 public class FavoriteImage {
     public int getId() {
         return id;
     }
 
+    /**
+     * @return {@link Image} instance with cover of Story
+     */
     public Image getImage() {
         if (image == null || image.isEmpty())
             return null;

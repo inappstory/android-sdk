@@ -114,7 +114,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         CsEventBus.getDefault().register(this);
         configurationChanged = false;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        // storiesViewPager = view.findViewById(R.id.stories);
+       // storiesViewPager = view.findViewById(R.id.stories);
         //invMask = view.findViewById(R.id.invMask);
         storiesViewPager.setParameters(
                 getArguments().getInt(CS_STORY_READER_ANIMATION, 0),

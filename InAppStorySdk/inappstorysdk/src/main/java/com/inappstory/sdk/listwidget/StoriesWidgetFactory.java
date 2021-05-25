@@ -162,20 +162,17 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public RemoteViews getLoadingView() {
-        Log.e("MyWidget", "getLoadingView");
         return null;
     }
 
 
     @Override
     public int getViewTypeCount() {
-        Log.e("MyWidget", "getViewTypeCount");
         return mWidgetItems.size();
     }
 
     @Override
     public long getItemId(int position) {
-        Log.e("MyWidget", "getItemId " + position);
         return position;
     }
 

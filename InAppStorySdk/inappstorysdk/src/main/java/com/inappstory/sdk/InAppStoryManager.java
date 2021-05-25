@@ -4,8 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Handler;
@@ -15,10 +13,8 @@ import android.os.Messenger;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +23,7 @@ import java.util.Map;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
@@ -37,8 +34,6 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.lrudiskcache.CacheSize;
-import com.inappstory.sdk.stories.cache.memorycache.StoryDownloadManager;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
@@ -60,12 +55,18 @@ import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
-import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_1;
-import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_200;
-import static com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
+
+/**
+ * Main class for work with SDK.
+ * Need to initialize it first with {@link Builder} before other interactions.
+ * Singleton class, can be available with {@link #getInstance()}.
+ * Can be reinitialized.
+ */
 public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
@@ -94,6 +95,10 @@ public class InAppStoryManager {
         this.tempShareStoryId = tempShareStoryId;
     }
 
+    /**
+     * use set custom callback in case of uncaught exceptions.
+     * @param callback (callback). Has {@link ExceptionCallback} type
+     */
     public void setCallback(ExceptionCallback callback) {
         this.exceptionCallback = callback;
     }
@@ -138,42 +143,72 @@ public class InAppStoryManager {
 
     String oldTempShareId;
 
+    /**
+     * @return {@link ArrayList} of tags
+     */
     public ArrayList<String> getTags() {
         return tags;
     }
 
     //Test
+
+    /**
+     * use to clear downloaded files and in-app cache
+     */
     public void clearCache() {
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
 
+    /**
+     * use to force close story reader
+     */
     public static void closeStoryReader() {
         CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
     }
 
+    /**
+     * use to customize click on buttons in reader
+     */
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
     }
 
+    /**
+     * use to customize share functional
+     */
     public void setShareCallback(ShareCallback shareCallback) {
         CallbackManager.getInstance().setShareCallback(shareCallback);
     }
 
+    /**
+     * use to customize click on non-url buttons in reader
+     */
     public void setAppClickCallback(AppClickCallback appClickCallback) {
         CallbackManager.getInstance().setAppClickCallback(appClickCallback);
     }
 
     //Test
+    /**
+     * @return {@link String} with tags joined by comma
+     */
     public String getTagsString() {
         if (tags == null) return null;
         return TextUtils.join(",", tags);
     }
 
+    /**
+     * use to customize tags in runtime. Replace tags array.
+     * @param tags (tags)
+     */
     //Test
     public void setTags(ArrayList<String> tags) {
         this.tags = tags;
     }
 
+    /**
+     * use to customize tags in runtime. Adds tags to array.
+     * @param newTags (newTags) - list of additional tags
+     */
     //Test
     public void addTags(ArrayList<String> newTags) {
         if (newTags == null || newTags.isEmpty()) return;
@@ -183,22 +218,39 @@ public class InAppStoryManager {
         }
     }
 
+    /**
+     * use to customize tags in runtime. Removes tags from array.
+     * @param removedTags (removedTags) - list of removing tags
+     */
     //Test
-    public void removeTags(ArrayList<String> newTags) {
-        if (tags == null || newTags == null || newTags.isEmpty()) return;
-        for (String tag : newTags) {
+    public void removeTags(ArrayList<String> removedTags) {
+        if (tags == null || removedTags == null || removedTags.isEmpty()) return;
+        for (String tag : removedTags) {
             removeTag(tag);
         }
     }
 
+    /**
+     * use to customize tags in runtime. Adds tag to array.
+     * @param tag (tag) - single additional tag
+     */
     private void addTag(String tag) {
         if (!tags.contains(tag)) tags.add(tag);
     }
 
+    /**
+     * use to customize tags in runtime. Removes tag from array.
+     * @param tag (tag) - single removing tags
+     */
     private void removeTag(String tag) {
         if (tags.contains(tag)) tags.remove(tag);
     }
 
+    /**
+     * use to customize default string in stories runtime.
+     * @param key (key) - what we replace
+     * @param value (value) - replacement result
+     */
     public void setPlaceholder(String key, String value) {
         if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
         if (placeholders == null) placeholders = new HashMap<>();
@@ -214,6 +266,11 @@ public class InAppStoryManager {
         }
     }
 
+    /**
+     * use to customize default string in stories runtime.
+     * @param key (key) - what we replace
+     * @param value (value) - replacement result
+     */
     public void setPlaceholders(@NonNull Map<String, String> placeholders) {
 
         for (String placeholderKey : placeholders.keySet()) {
@@ -223,6 +280,9 @@ public class InAppStoryManager {
 
     ArrayList<String> tags;
 
+    /**
+     * Returns map with all default strings replacements
+     */
     public Map<String, String> getPlaceholders() {
 
         if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
@@ -291,9 +351,6 @@ public class InAppStoryManager {
 
     Messenger mService = null;
 
-    /**
-     * Flag indicating whether we have called bind on the service.
-     */
     boolean mBound;
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -337,7 +394,7 @@ public class InAppStoryManager {
         serviceThread.start();
     }
 
-    public void setExceptionCache(ExceptionCache exceptionCache) {
+    void setExceptionCache(ExceptionCache exceptionCache) {
         this.exceptionCache = exceptionCache;
     }
 
@@ -387,16 +444,6 @@ public class InAppStoryManager {
                 builder.hasShare,
                 builder.sendStatistic);
 
-      /*  if (intent != null) {
-            context.unbindService(mConnection);
-            mBound = false;
-        }
-        try {
-            intent = new Intent(context, InAppStoryService.class);
-            context.startService(intent);
-        } catch (IllegalStateException e) {
-
-        }*/
     }
 
     private void setUserIdInner(String userId) throws DataException {
@@ -418,6 +465,12 @@ public class InAppStoryManager {
     }
 
     //Test
+
+    /**
+     * use to change user id in runtime
+     * @param userId (userId)
+     * @throws DataException 'userId' can't be longer than 255 characters
+     */
     public void setUserId(String userId) throws DataException {
         setUserIdInner(userId);
     }
@@ -483,8 +536,6 @@ public class InAppStoryManager {
     }
 
     public static void destroy() {
-        if (InAppStoryService.getInstance() != null)
-            InAppStoryService.getInstance().getDownloadManager().destroy();
         if (INSTANCE != null) {
             if (InAppStoryService.getInstance() != null)
                 InAppStoryService.getInstance().logout();
@@ -494,6 +545,8 @@ public class InAppStoryManager {
         }
 
         INSTANCE = null;
+        if (InAppStoryService.getInstance() != null)
+            InAppStoryService.getInstance().getDownloadManager().destroy();
     }
 
     private String localOpensKey;
@@ -505,10 +558,16 @@ public class InAppStoryManager {
         return localOpensKey;
     }
 
+    /**
+     * @return current instance of {@link InAppStoryManager}
+     */
     public static InAppStoryManager getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * @return {@link Pair} with version name in first argument and version code in second
+     */
     public static Pair<String, Integer> getLibraryVersion() {
         return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
@@ -535,7 +594,7 @@ public class InAppStoryManager {
             storiesIds.add(story.id);
         }
         InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
-        InAppStoryService.getInstance().getDownloadManager().loadStories(
+        InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
         ScreensManager.getInstance().openStoriesReader(outerContext, manager, storiesIds, 0, ShowStory.ONBOARDING);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
@@ -549,7 +608,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showOnboardingStories(tags, outerContext, manager);
+                    showOnboardingStoriesInner(tags, outerContext, manager);
                 }
             }, 1000);
             return;
@@ -560,7 +619,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showOnboardingStories(tags, outerContext, manager);
+                    showOnboardingStoriesInner(tags, outerContext, manager);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
@@ -569,7 +628,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showOnboardingStories(tags, outerContext, manager);
+                    showOnboardingStoriesInner(tags, outerContext, manager);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
@@ -617,10 +676,23 @@ public class InAppStoryManager {
         });
     }
 
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     * @param tags (tags)
+     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
         showOnboardingStoriesInner(tags, outerContext, manager);
     }
 
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     */
     public void showOnboardingStories(Context context, final AppearanceManager manager) {
         showOnboardingStories(getTags(), context, manager);
     }
@@ -687,7 +759,7 @@ public class InAppStoryManager {
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                         return;
                     }
-                    InAppStoryService.getInstance().getDownloadManager().loadStories(
+                    InAppStoryService.getInstance().getDownloadManager().putStories(
                             InAppStoryService.getInstance().getDownloadManager().getStories());
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
@@ -712,10 +784,23 @@ public class InAppStoryManager {
         }, storyId);
     }
 
+    /**
+     * use to show single story in reader by id
+     * @param storyId (storyId)
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     * @param callback (callback) custom action when story is loaded
+     */
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
         showStoryInner(storyId, context, manager, callback);
     }
 
+    /**
+     * use to show single story in reader by id
+     * @param storyId (storyId)
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
         showStoryInner(storyId, context, manager, null);
     }
@@ -799,37 +884,76 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
+        @Deprecated
         public Builder sandbox(boolean sandbox) {
             Builder.this.sandbox = sandbox;
             return Builder.this;
         }
 
+        /**
+         * use to set available space for file caching (slide images, videos, games, etc.)
+         * @param cacheSize (cacheSize) - size of available space for cache. Can be set with {@link CacheSize} constants
+         * {@link com.inappstory.sdk.lrudiskcache.CacheSize#SMALL} - 10mb for stories, 5mb fo story covers
+         * {@link com.inappstory.sdk.lrudiskcache.CacheSize#MEDIUM} - (by default) 100mb for stories, 10mb fo story covers
+         * {@link com.inappstory.sdk.lrudiskcache.CacheSize#LARGE} -  200mb for stories, 10mb fo story covers
+         * @return {@link Builder}
+         */
         public Builder cacheSize(int cacheSize) {
             Builder.this.cacheSize = cacheSize;
             return Builder.this;
         }
 
-
+        /**
+         * use to set if stories reader can be closed by swipe down
+         * @param closeOnSwipe (closeOnSwipe) true - if reader has to be closed by swipe down
+         *                     true by default
+         * @return {@link Builder}
+         */
         public Builder closeOnSwipe(boolean closeOnSwipe) {
             Builder.this.closeOnSwipe = closeOnSwipe;
             return Builder.this;
         }
 
+        /**
+         * use to set if stories reader can be closed by swipe right
+         * on first slide of first story or last slide of last story
+         * @param closeOnOverscroll (closeOnOverscroll) true - if reader has to be closed by swipe
+         *                          true by default
+         * @return {@link Builder}
+         */
         public Builder closeOnOverscroll(boolean closeOnOverscroll) {
             Builder.this.closeOnOverscroll = closeOnOverscroll;
             return Builder.this;
         }
 
+        /**
+         * use to allow users use favorite features (favorite cell in list and add/remove)
+         * @param hasFavorite (hasFavorite) true - to use this feature
+         *                     false by default
+         * @return {@link Builder}
+         */
         public Builder hasFavorite(boolean hasFavorite) {
             Builder.this.hasFavorite = hasFavorite;
             return Builder.this;
         }
 
+        /**
+         * use to allow users use share features (available in stories reader)
+         * @param hasShare (hasShare) true - to use this feature
+         *                 false by default
+         * @return {@link Builder}
+         */
         public Builder hasShare(boolean hasShare) {
             Builder.this.hasShare = hasShare;
             return Builder.this;
         }
 
+        /**
+         * use to allow users use like/dislike features (available in stories reader)
+         * @param hasLike (hasLike) true - to use this feature
+         *                 false by default
+         * @return {@link Builder}
+         */
         public Builder hasLike(boolean hasLike) {
             Builder.this.hasLike = hasLike;
             return Builder.this;
@@ -840,6 +964,12 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
+        /**
+         * use to set api key in runtime (or as alternate to csApiKey string constant)
+         * @param apiKey (apiKey) value for api key
+         *                 false by default
+         * @return {@link Builder}
+         */
         public Builder apiKey(String apiKey) {
             Builder.this.apiKey = apiKey;
             return Builder.this;
@@ -850,6 +980,11 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
+        /**
+         * use to set user id.
+         * @param userId (userId) value for user id. Can't be longer than 255 characters.
+         * @return {@link Builder}
+         */
         public Builder userId(String userId) throws DataException {
             if (userId.length() < 255) {
                 Builder.this.userId = userId;
@@ -859,6 +994,10 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
+        /**
+         * @param tags (tags) tags for targeting stories
+         * @return {@link Builder}
+         */
         public Builder tags(String... tags) {
             Builder.this.tags = new ArrayList<>();
             for (int i = 0; i < tags.length; i++) {
@@ -867,16 +1006,28 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
+        /**
+         * @param tags (tags) tags for targeting stories
+         * @return {@link Builder}
+         */
         public Builder tags(ArrayList<String> tags) {
             Builder.this.tags = tags;
             return Builder.this;
         }
 
+        /**
+         * @param placeholders (placeholders) placeholders for default values in stories
+         * @return {@link Builder}
+         */
         public Builder placeholders(Map<String, String> placeholders) {
             Builder.this.placeholders = placeholders;
             return Builder.this;
         }
 
+        /** main method to create {@link InAppStoryManager} instance.
+         * @return {@link InAppStoryManager}
+         * @throws DataException 'context' can't be null
+         */
         public InAppStoryManager create() throws DataException {
             if (Builder.this.context == null) {
                 throw new DataException("'context' can't be null", new Throwable("InAppStoryManager.Builder data is not valid"));

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
@@ -15,6 +16,11 @@ import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+/**
+ * Defines appearance of the stories list, as well as some elements of the reader.
+ * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
+ * For a global setting, you must call the static method of the class {@link #setInstance(AppearanceManager)}.
+ */
 public class AppearanceManager {
 
     public static final String CS_CLOSE_POSITION = "closePosition";
@@ -63,6 +69,10 @@ public class AppearanceManager {
         return mainInstance;
     }
 
+    /**
+     * use to set global {@link AppearanceManager}
+     * @param manager (manager) {@link AppearanceManager} instance
+     */
     public static void setInstance(AppearanceManager manager) {
         mainInstance = manager;
     }
@@ -127,11 +137,22 @@ public class AppearanceManager {
         csWidgetAppearance.save();
     }
 
+    /**
+     * use to set custom list item height in default cells
+     * @param csListItemHeight (csListItemHeight)
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csListItemHeight(Integer csListItemHeight) {
         this.csListItemHeight = csListItemHeight;
         return AppearanceManager.this;
     }
 
+
+    /**
+     * use to set custom touch effect on list item
+     * @param storyTouchListener (storyTouchListener) {@link StoryTouchListener}
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csStoryTouchListener(StoryTouchListener storyTouchListener) {
         this.storyTouchListener = storyTouchListener;
         return AppearanceManager.this;
@@ -141,12 +162,21 @@ public class AppearanceManager {
         return this.storyTouchListener;
     }
 
-
+    /**
+     * use to set custom list item width in default cells
+     * @param csListItemWidth (csListItemWidth)
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csListItemWidth(Integer csListItemWidth) {
         this.csListItemWidth = csListItemWidth;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to set custom font for list items in default cells
+     * @param csCustomFont (csCustomFont) {@link Typeface} font
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csCustomFont(Typeface csCustomFont) {
         this.csCustomFont = csCustomFont;
         return AppearanceManager.this;
@@ -231,17 +261,27 @@ public class AppearanceManager {
     private boolean csListOpenedItemBorderVisibility = false;
     private int csListOpenedItemBorderColor = Color.GRAY;
 
+
     public AppearanceManager csListItemTitleVisibility(boolean csListItemTitleVisibility) {
         this.csListItemTitleVisibility = csListItemTitleVisibility;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to set font size for list items in default cells
+     * @param csListItemTitleSize (csListItemTitleSize)
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csListItemTitleSize(int csListItemTitleSize) {
         this.csListItemTitleSize = csListItemTitleSize;
         return AppearanceManager.this;
     }
 
-
+    /**
+     * use to set font color for list items in default cells
+     * @param csListItemTitleColor (csListItemTitleColor)
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csListItemTitleColor(int csListItemTitleColor) {
         this.csListItemTitleColor = csListItemTitleColor;
         return AppearanceManager.this;
@@ -272,6 +312,11 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }*/
 
+    /**
+     * use to set border color for list items in default cells
+     * @param csListItemBorderColor (csListItemBorderColor)
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csListItemBorderColor(int csListItemBorderColor) {
         this.csListItemBorderColor = csListItemBorderColor;
         return AppearanceManager.this;

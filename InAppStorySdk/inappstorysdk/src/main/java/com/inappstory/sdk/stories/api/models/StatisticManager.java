@@ -323,11 +323,10 @@ public class StatisticManager {
     public void createCurrentState(final int stId, final int ind) {
         synchronized (csLock) {
             pauseTime = 0;
-            currentState = new CurrentState() {{
-                storyId = stId;
-                slideIndex = ind;
-                startTime = System.currentTimeMillis();
-            }};
+            currentState = new CurrentState();
+            currentState.storyId = stId;
+            currentState.slideIndex = ind;
+            currentState.startTime = System.currentTimeMillis();
         }
     }
 

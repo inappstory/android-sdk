@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +12,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
@@ -84,6 +86,7 @@ final class PausableProgressBar extends FrameLayout {
         maxProgressView.setBackgroundResource(R.color.cs_progressSecondary);
 
         maxProgressView.setVisibility(VISIBLE);
+        frontProgressView.setAlpha(0);
         if (animation != null) {
             animation.setAnimationListener(null);
             animation.cancel();
@@ -101,7 +104,7 @@ final class PausableProgressBar extends FrameLayout {
     public void clearProgress(boolean isDestroy) {
 
         maxProgressView.setVisibility(GONE);
-        frontProgressView.setVisibility(INVISIBLE);
+        frontProgressView.setAlpha(0);
         if (animation != null) {
             animation.setAnimationListener(null);
             animation.cancel();
@@ -118,6 +121,7 @@ final class PausableProgressBar extends FrameLayout {
 
     private void finishProgress(boolean isMax) {
         if (isMax) maxProgressView.setBackgroundResource(R.color.cs_progressMaxActive);
+        frontProgressView.setAlpha(0);
         maxProgressView.setVisibility(isMax ? VISIBLE : GONE);
         if (animation != null) {
             animation.setAnimationListener(null);
@@ -143,7 +147,7 @@ final class PausableProgressBar extends FrameLayout {
         animation.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                frontProgressView.setVisibility(View.VISIBLE);
+                frontProgressView.setAlpha(1);
                 if (callback != null) callback.onStartProgress();
             }
 

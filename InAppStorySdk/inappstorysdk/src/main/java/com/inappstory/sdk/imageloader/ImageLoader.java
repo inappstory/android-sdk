@@ -14,22 +14,15 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.media.ThumbnailUtils;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.channels.FileLock;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
@@ -38,8 +31,8 @@ import java.util.concurrent.Executors;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.cache.filecache.Downloader;
-import com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -89,7 +82,6 @@ public class ImageLoader {
             stub_id = loader;
             if (memoryCache2 == null) memoryCache2 = new MemoryCache();
             final Bitmap[] bitmap = {memoryCache2.get(url)};
-            Log.e("MyWidget", url + " " + cornerRadius + " " + ratio);
             if (bitmap[0] != null)
                 rv.setImageViewBitmap(id, bitmap[0]);
             else {
@@ -152,7 +144,7 @@ public class ImageLoader {
             bitmap = decodeFile(file);
         else {
             try {
-                file = Downloader.downloadFile(url, cache, null, null);
+                file = Downloader.downloadOrGetFile(url, cache, null, null);
                 bitmap = decodeFile(file);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -222,7 +214,7 @@ public class ImageLoader {
             return b;
         }
         try {
-            f = Downloader.downloadFile(url, InAppStoryService.getInstance().getFastCache(), null, null);
+            f = Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getFastCache(), null, null);
             Bitmap bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {

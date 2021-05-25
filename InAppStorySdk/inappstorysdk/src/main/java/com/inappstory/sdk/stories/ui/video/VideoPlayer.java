@@ -10,7 +10,7 @@ import android.view.TextureView;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.cache.filecache.Downloader;
+import com.inappstory.sdk.stories.cache.Downloader;
 
 import java.io.File;
 import java.io.IOException;

@@ -134,7 +134,6 @@ public final class Request<T> {
     }
 
     public void enqueue(final Callback callback) {
-        Log.e("MyWidget", "enqueue");
         new AsyncTask<Void, String, Response>() {
             @Override
             protected Response doInBackground(Void... voids) {

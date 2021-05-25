@@ -6,7 +6,9 @@ import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
@@ -92,8 +94,13 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void storyLoaded(int slideIndex) {
-        manager.storyLoaded(slideIndex);
+    public void storyLoaded(String data) {
+        if (data != null) {
+            int slideIndex = JsonParser.fromJson(data, StoryLoadedData.class).index;
+            manager.storyLoaded(slideIndex);
+        } else {
+            manager.storyLoaded(-1);
+        }
     }
 
 

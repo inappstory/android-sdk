@@ -20,9 +20,9 @@ import android.widget.RelativeLayout;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.cache.filecache.Downloader;
-import com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.lrudiskcache.Utils;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.lrudiskcache.Utils;
 
 import java.io.File;
 import java.io.IOException;

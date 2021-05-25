@@ -12,7 +12,6 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,11 +29,11 @@ import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
+import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
-import com.inappstory.sdk.stories.events.OpenStoryByIdEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
@@ -61,10 +60,6 @@ public class StoriesList extends RecyclerView {
     }
 
     StoryTouchListener storyTouchListener = null;
-
-    public interface OnFavoriteItemClick {
-        void onClick();
-    }
 
 
     public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -108,7 +103,7 @@ public class StoriesList extends RecyclerView {
         //getRecycledViewPool().setMaxRecycledViews(6, 0);
     }
 
-    public void sendIndexes() {
+    void sendIndexes() {
         ArrayList<Integer> indexes = new ArrayList<>();
         if (layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
@@ -143,6 +138,10 @@ public class StoriesList extends RecyclerView {
         this.appearanceManager = appearanceManager;
     }
 
+    /**
+     * Use to interact with the favorite cell (for example, to open a new window with a list of favorite stories)
+     * @param favoriteItemClick (favoriteItemClick) - instance of OnFavoriteItemClick.
+     */
     public void setOnFavoriteItemClick(OnFavoriteItemClick favoriteItemClick) {
         this.favoriteItemClick = favoriteItemClick;
     }
@@ -163,12 +162,6 @@ public class StoriesList extends RecyclerView {
         sendIndexes();
     }
 
-    @CsSubscribe
-    public void openStoryByIdEvent(OpenStoryByIdEvent event) {
-        InAppStoryService.getInstance().getDownloadManager().loadStories(
-                InAppStoryService.getInstance().getDownloadManager().getStories());
-    }
-
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeUserId(ChangeUserIdForListEvent event) {
         try {
@@ -178,8 +171,6 @@ public class StoriesList extends RecyclerView {
             e.printStackTrace();
         }
     }
-
-    public Object touchLock = new Object();
 
     public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
         private GestureDetector gestureDetector;

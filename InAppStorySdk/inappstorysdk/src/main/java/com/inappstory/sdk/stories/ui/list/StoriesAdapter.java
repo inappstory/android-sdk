@@ -24,6 +24,7 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
@@ -38,14 +39,14 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     private List<Integer> storiesIds = new ArrayList<>();
     private boolean isFavoriteList;
-    StoriesList.OnFavoriteItemClick favoriteItemClick;
+    OnFavoriteItemClick favoriteItemClick;
 
     boolean hasFavItem = false;
 
     public Context context;
 
     public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
-                          StoriesList.OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList) {
+                          OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList) {
         this.context = context;
         this.storiesIds = storiesIds;
         this.manager = manager;
@@ -161,7 +162,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
                 isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
-        InAppStoryService.getInstance().getDownloadManager().loadStories(
+        InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
     }
 

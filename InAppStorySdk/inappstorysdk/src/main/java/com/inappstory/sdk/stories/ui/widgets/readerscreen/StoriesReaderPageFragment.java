@@ -51,6 +51,7 @@ import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
+import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -130,6 +131,14 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
             storiesProgressView.setMax(story.lastIndex);
             CsEventBus.getDefault().post(new OnNextEvent());
         }
+    }
+
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void changeStoryPageEvent(StoryPageOpenEvent event) {
+        if (this.storyId != event.getStoryId()) return;
+        if (storiesProgressView.current != event.getIndex())
+            storiesProgressView.setCurrentCounter(event.getIndex(), true);
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -231,7 +240,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void prevStoryFragment(PrevStoryFragmentEvent event) {
         if (storyId != event.getId()) return;
-        storiesProgressView.same();
+        storiesProgressView.same(false);
         storiesWebView.restartVideo();
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         InAppStoryService.getInstance().getTimerManager().restartTimer(story.getDurations().get(0));
@@ -359,10 +368,9 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         if (AppearanceManager.getInstance() != null && AppearanceManager.getInstance().csLoaderView() != null) {
             v = AppearanceManager.getInstance().csLoaderView().getView();
         } else {
-            v = new ProgressBar(getContext()) {{
-                setIndeterminate(true);
-                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-            }};
+            v = new ProgressBar(getContext());
+            ((ProgressBar) v).setIndeterminate(true);
+            ((ProgressBar) v).getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
         }
         relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -411,7 +419,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
     }
 
-   private void setOffsets(View view) {
+    private void setOffsets(View view) {
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize(getContext());

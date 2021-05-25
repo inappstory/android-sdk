@@ -150,7 +150,6 @@ public class StoriesWidgetService extends RemoteViewsService {
         if (NetworkClient.getAppContext() == null) {
             NetworkClient.setContext(context);
         }
-        Log.e("MyWidget", "request");
         NetworkClient.getApi().getStories(cachedSessionData.sessionId, cachedSessionData.testKey, 0,
                 cachedSessionData.tags, null, null).enqueue(new NetworkCallback<List<Story>>() {
             @Override
@@ -172,12 +171,10 @@ public class StoriesWidgetService extends RemoteViewsService {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            Log.e("MyWidget", "requestSuccessLoad");
                             loadSuccess(context, widgetClass);
                         }
                     }, 500);
                 } else {
-                    Log.e("MyWidget", "requestSuccessEmpty");
                     loadEmpty(context, widgetClass);
                 }
 

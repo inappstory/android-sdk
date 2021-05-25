@@ -45,7 +45,6 @@ public final class NetworkHandler implements InvocationHandler {
 
     public static Response doRequest(Request req)
             throws Exception {
-        Log.e("MyWidget", "doRequest");
         HttpURLConnection connection = (HttpURLConnection) getURL(req).openConnection();
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
@@ -55,10 +54,10 @@ public final class NetworkHandler implements InvocationHandler {
                 connection.setRequestProperty(key.toString(), req.getHeader(key));
             }
         }
-        Log.e("MyWidget", "setHeaders");
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         }
+        Log.d("InAppStory_Network", req.getHeaders().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -71,12 +70,10 @@ public final class NetworkHandler implements InvocationHandler {
             outStreamWriter.close();
             outStream.close();
         }
-        Log.e("MyWidget", "reqThreadEnd");
         int statusCode = connection.getResponseCode();
         Response respObject = null;
-
-        Log.e("MyWidget", "Status Code: " + statusCode);
         Log.d("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
 
             String res = getResponseFromStream(connection.getInputStream());

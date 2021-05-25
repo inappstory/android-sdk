@@ -15,7 +15,7 @@ import java.util.List;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.stories.cache.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 
 public class WebPageConverter {
