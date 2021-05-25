@@ -79,7 +79,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
             }
         }
         if (manager != null)
-            manager.storyLoaded();
+            manager.storyLoaded(-1);
     }
 
     void clearTemp() {
