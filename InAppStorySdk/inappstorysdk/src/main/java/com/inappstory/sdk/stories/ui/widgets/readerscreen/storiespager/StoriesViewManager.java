@@ -294,6 +294,11 @@ public class StoriesViewManager {
         CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
     }
 
+
+    public void storyResumedEvent(double startTime) {
+        if (InAppStoryService.getInstance() == null) return;
+    }
+
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
@@ -310,9 +315,11 @@ public class StoriesViewManager {
         ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
     }
 
-    public void storyLoaded() {
+    public void storyLoaded(int slideIndex) {
         if (InAppStoryService.getInstance() == null) return;
-        if (InAppStoryService.getInstance().getCurrentId() != storyId) {
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if ((slideIndex >= 0 && story.lastIndex != slideIndex)
+                || InAppStoryService.getInstance().getCurrentId() != storyId) {
             storiesView.stopVideo();
         } else {
             storiesView.playVideo();
@@ -323,7 +330,6 @@ public class StoriesViewManager {
                 }
             }, 200);
         }
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
         //   CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));

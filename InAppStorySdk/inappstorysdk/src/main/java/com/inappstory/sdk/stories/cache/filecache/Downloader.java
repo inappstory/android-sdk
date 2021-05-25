@@ -52,8 +52,8 @@ public class Downloader {
 
     @NonNull
     @WorkerThread
-    public static File downloadFile(@NonNull String url,
-                                    LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+    public static File downloadOrGetFile(@NonNull String url,
+                                         LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = cropUrl(url);
         if (cache.hasKey(key)) {
             return cache.get(key);
@@ -82,11 +82,11 @@ public class Downloader {
     private static final ExecutorService fontDownloader = Executors.newFixedThreadPool(1);
     private static final ExecutorService tmpFileDownloader = Executors.newFixedThreadPool(1);
 
-    public static void downFontFile(final String url, final LruDiskCache cache) {
+    private static void downFontFile(final String url, final LruDiskCache cache) {
         fontDownloader.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return downloadFile(url, cache, null, null);
+                return downloadOrGetFile(url, cache, null, null);
             }
         });
     }
@@ -95,7 +95,7 @@ public class Downloader {
         tmpFileDownloader.submit(new Callable() {
             @Override
             public File call() throws Exception {
-                return downloadFile(url, cache, null, null);
+                return downloadOrGetFile(url, cache, null, null);
             }
         });
     }
@@ -127,6 +127,7 @@ public class Downloader {
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
         urlConnection.setConnectTimeout(300000);
+        urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
         urlConnection.connect();
 

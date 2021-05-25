@@ -20,6 +20,13 @@ public class StoryPageOpenEvent {
 
     public int storyId;
 
+    public StoryPageOpenEvent(int storyId, int index, boolean isNext, boolean isPrev) {
+        this.isNext = isNext;
+        this.isPrev = isPrev;
+        this.index = index;
+        this.storyId = storyId;
+    }
+
     public StoryPageOpenEvent(int storyId, int index) {
         this.index = index;
         this.storyId = storyId;
@@ -27,3 +34,4 @@ public class StoryPageOpenEvent {
 
 
 }
+

@@ -52,6 +52,7 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void clear() {
+      //  if (animation != null && animation.isRunning()) animation.cancel();
         if (progressForeground.getAlpha() > 0)
             progressForeground.setAlpha(0);
     }
