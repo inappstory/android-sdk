@@ -187,7 +187,7 @@ public class ReaderPageFragment extends Fragment {
     private void setOffsets(View view) {
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize();
+                Point screenSize = Sizes.getScreenSize(getContext());
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
                 float sn = 1.85f;

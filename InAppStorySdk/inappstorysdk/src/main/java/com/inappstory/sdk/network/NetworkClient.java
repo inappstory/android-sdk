@@ -91,11 +91,13 @@ public class NetworkClient {
 
     public static ApiInterface getApi() {
         if (instance == null) {
+            String packageName = appContext.getPackageName();
             instance = new NetworkClient.Builder()
                     .context(appContext)
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
                     .addHeader("Accept", "application/json")
                     .addHeader("User-Agent", getUAString(appContext))
+                    .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
                     .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getCmsKey()).build();
         }
         if (apiInterface == null) {
@@ -106,9 +108,11 @@ public class NetworkClient {
 
     public static ApiInterface getStatApi() {
         if (statinstance == null) {
+            String packageName = appContext.getPackageName();
             statinstance = new NetworkClient.Builder()
                     .context(appContext)
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
+                    .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
                     .addHeader("User-Agent", getUAString(appContext)).build();
         }
         if (statApiInterface == null) {

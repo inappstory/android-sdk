@@ -483,6 +483,8 @@ public class InAppStoryManager {
     }
 
     public static void destroy() {
+        if (InAppStoryService.getInstance() != null)
+            InAppStoryService.getInstance().getDownloadManager().destroy();
         if (INSTANCE != null) {
             if (InAppStoryService.getInstance() != null)
                 InAppStoryService.getInstance().logout();
@@ -492,8 +494,6 @@ public class InAppStoryManager {
         }
 
         INSTANCE = null;
-        if (InAppStoryService.getInstance() != null)
-            InAppStoryService.getInstance().getDownloadManager().destroy();
     }
 
     private String localOpensKey;

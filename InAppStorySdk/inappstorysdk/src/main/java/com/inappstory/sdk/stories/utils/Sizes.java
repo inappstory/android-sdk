@@ -7,6 +7,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryManager;
 
@@ -47,7 +48,9 @@ public class Sizes {
     }
 
     public static Point getScreenSize() {
-        Context con = InAppStoryManager.getInstance().getContext();
+        Context con = null;
+        if (InAppStoryManager.getInstance() != null)
+            con = InAppStoryManager.getInstance().getContext();
         if (con == null) return new Point(0, 0);
         WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
