@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -27,6 +28,7 @@ public class TimelineProgressBar extends FrameLayout {
 
     public void setDuration(Long duration) {
         this.duration = duration;
+        Log.e("slideAnimation", "setDuration");
         animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(getDuration());
@@ -52,22 +54,22 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void clear() {
-      //  if (animation != null && animation.isRunning()) animation.cancel();
-        if (progressForeground.getAlpha() > 0)
-            progressForeground.setAlpha(0);
+        if (progressForeground.getVisibility() == VISIBLE)
+            progressForeground.setVisibility(INVISIBLE);
     }
 
     public void setMin() {
-        if (progressForeground.getAlpha() == 0)
-            progressForeground.setAlpha(1);
+        Log.e("slideAnimation", "visual setMin");
+        if (progressForeground.getVisibility() == INVISIBLE)
+            progressForeground.setVisibility(VISIBLE);
         progressForeground.setScaleX(1f / getDuration());
         //progressForeground.setVisibility(INVISIBLE);
     }
 
 
     public void setMax() {
-        if (progressForeground.getAlpha() == 0)
-            progressForeground.setAlpha(1);
+        if (progressForeground.getVisibility() == INVISIBLE)
+            progressForeground.setVisibility(VISIBLE);
         progressForeground.setScaleX(1);
         //progressForeground.setVisibility(INVISIBLE);
     }
@@ -103,6 +105,7 @@ public class TimelineProgressBar extends FrameLayout {
         progressForeground = findViewById(R.id.progress_foreground);
         progressBackground = findViewById(R.id.progress_background);
         progressForeground.setPivotX(-progressForeground.getWidth()/2);
+        Log.e("slideAnimation", "visual init");
         animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
         animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
