@@ -52,21 +52,21 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void clear() {
-        if (progressForeground.getVisibility() == VISIBLE)
-            progressForeground.setVisibility(INVISIBLE);
+        if (progressForeground.getAlpha() > 0)
+            progressForeground.setAlpha(0);
     }
 
     public void setMin() {
-        if (progressForeground.getVisibility() == INVISIBLE)
-            progressForeground.setVisibility(VISIBLE);
+        if (progressForeground.getAlpha() == 0)
+            progressForeground.setAlpha(1);
         progressForeground.setScaleX(1f / getDuration());
         //progressForeground.setVisibility(INVISIBLE);
     }
 
 
     public void setMax() {
-        if (progressForeground.getVisibility() == INVISIBLE)
-            progressForeground.setVisibility(VISIBLE);
+        if (progressForeground.getAlpha() == 0)
+            progressForeground.setAlpha(1);
         progressForeground.setScaleX(1);
         //progressForeground.setVisibility(INVISIBLE);
     }
