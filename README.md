@@ -1,6 +1,6 @@
 ### Требования
 
-Минимальная версия SDK - 17 (Android 4.2)
+Минимальная версия SDK - 19 (Android 4.4)
 
 Библиотека предназначена для Phone и Tablet проектов (не предназначена для Android TV или Android Wear приложений)
 
@@ -17,7 +17,7 @@
 
 Затем в `build.gradle` проекта (на уровне app) в раздел `dependencies` добавьте 
 
-    implementation 'com.github.inappstory:android-sdk:1.2.6'
+    implementation 'com.github.inappstory:android-sdk:1.2.9'
 
 Также для корректной работы в dependencies нужно добавить :
 
