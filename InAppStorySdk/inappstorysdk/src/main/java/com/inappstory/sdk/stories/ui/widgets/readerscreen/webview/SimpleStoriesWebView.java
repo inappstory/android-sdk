@@ -199,8 +199,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         final String data = tmpData;
         final String lt = tmpLayout;
         if (!notFirstLoading) {
-
-            Log.e("LoadHtml", "first");
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override

@@ -259,7 +259,6 @@ final class PausableProgressBar extends FrameLayout {
 
             if (mPausedSystem) {
                 if (mSystemElapsedAtPause == 0) {
-                    Log.e("resumePB", "getTransformation");
                     checkAfterBGPause = -1;
                     mSystemElapsedAtPause = currentTime - getStartTime();
                 }
@@ -304,7 +303,6 @@ final class PausableProgressBar extends FrameLayout {
                 @Override
                 public void run() {
                     if (checkAfterBGPause != -1) {
-                        Log.e("resumePB", "pauseWithBackground");
                         mSystemElapsedAtPause = checkAfterBGPause - getStartTime();
                         setStartTime(checkAfterBGPause - mSystemElapsedAtPause);
                     }

@@ -137,7 +137,6 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         // if we're in a drag gesture and the user reverses up the we should take those events
-        Log.e("Elastic", "PreScroll " + dx + " " + dy);
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
 
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
@@ -178,7 +177,6 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             }
             CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
         }
-        Log.e("Elastic", ev.toString());
         return super.onInterceptTouchEvent(ev);
     }
 

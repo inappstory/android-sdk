@@ -109,10 +109,11 @@ public class StoriesActivity extends AppCompatActivity {
     }
 
     boolean animateFirst = true;
-
+    boolean isAnimation = false;
 
     public void loadAnim() {
         try {
+            isAnimation = true;
             float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
             float y = draggableFrame.getY();
             AnimationSet animationSet = new AnimationSet(true);
@@ -169,6 +170,7 @@ public class StoriesActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
+        if (isAnimation) return;
         blockView.setVisibility(View.VISIBLE);
         if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
@@ -296,7 +298,7 @@ public class StoriesActivity extends AppCompatActivity {
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putBoolean("canUseNotLoaded", getIntent().getBooleanExtra("canUseNotLoaded", false));
                 bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
-              //  bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
+                //  bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
                 bundle.putBoolean("onboarding", getIntent().getBooleanExtra("onboarding", false));
                 bundle.putInt(CS_CLOSE_POSITION, getIntent().getIntExtra(CS_CLOSE_POSITION, 1));
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
@@ -392,7 +394,6 @@ public class StoriesActivity extends AppCompatActivity {
                 CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
     }
-
 
 
     @CsSubscribe

@@ -160,9 +160,6 @@ public class OldStatisticManager {
             statObject.add(currentEvent.index);
             statObject.add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
             putStatistic(statObject);
-            Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
-                    currentEvent.storyId + " " + currentEvent.index + " " +
-                    Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
             if (!clear)
                 currentEvent = null;
         }

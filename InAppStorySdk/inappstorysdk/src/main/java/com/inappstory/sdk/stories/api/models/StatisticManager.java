@@ -75,7 +75,6 @@ public class StatisticManager {
             saveTasksSP();
         }
 
-        Log.e("taskName", task.event);
     }
 
 
@@ -85,8 +84,6 @@ public class StatisticManager {
             faketasks.add(task);
             saveFakeTasksSP();
         }
-
-        Log.e("taskName", task.event);
     }
 
     public static void saveTasksSP() {
@@ -158,13 +155,11 @@ public class StatisticManager {
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (INSTANCE != this) return;
         if (event.isWithBackground()) {
-            Log.e("pauseEv", (System.currentTimeMillis() - pauseTimer) + "");
             if (isBackgroundPause) {
                 pauseTime += (System.currentTimeMillis() - pauseTimer);
             }
             isBackgroundPause = false;
         } else {
-            Log.e("pauseEv", "miss");
         }
     }
 

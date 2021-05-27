@@ -45,7 +45,7 @@ public class StoriesReaderPager extends ViewPager {
     @Override
     protected int getChildDrawingOrder(int childCount, int i) {
         int res = super.getChildDrawingOrder(childCount, i);
-        Log.e("getChildDrawingOrder", (childCount - res - 1) + " " + i + " " + res);
+        //Log.e("getChildDrawingOrder", (childCount - res - 1) + " " + i + " " + res);
         return childCount - res - 1;
         //return res;
     }

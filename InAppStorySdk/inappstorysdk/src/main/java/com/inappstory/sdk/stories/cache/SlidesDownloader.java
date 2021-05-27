@@ -1,8 +1,10 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
+import android.util.Log;
 import android.util.Pair;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -14,6 +16,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -38,7 +41,8 @@ class SlidesDownloader {
             if (handler != null) {
                 handler.removeCallbacks(queuePageReadRunnable);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         handler.postDelayed(queuePageReadRunnable, 100);
     }
 
@@ -71,13 +75,31 @@ class SlidesDownloader {
         }
     }
 
+    boolean checkUrlInCache(List<String> urls) {
+        boolean remove = false;
+        for (String url : urls) {
+            if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
+                remove = true;
+                break;
+            }
+        }
+        return remove;
+    }
+
     boolean checkIfPageLoaded(Pair<Integer, Integer> key) {
+        boolean remove = false;
         if (pageTasks.get(key) != null && pageTasks.get(key).loadType == 2) {
+            remove = checkUrlInCache(pageTasks.get(key).urls);
+            if (!remove)
+               remove = checkUrlInCache(pageTasks.get(key).videoUrls);
+            if (remove) {
+                pageTasks.remove(key);
+                return false;
+            }
             return true;
         } else {
             return false;
         }
-
     }
 
     private static final String VIDEO = "video";
@@ -200,6 +222,7 @@ class SlidesDownloader {
                 if (callback != null) callback.downloadFile(url, storyId, key.second);
             }
             for (String url : videoUrls) {
+                Log.e("ias_videoUrl", url);
                 if (callback != null) callback.downloadFile(url, storyId, key.second);
             }
             synchronized (pageTasksLock) {

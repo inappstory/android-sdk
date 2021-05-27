@@ -235,7 +235,6 @@ public class ReaderPageFragment extends Fragment {
             if (story.durations != null) {
                 timeline.getManager().setStoryDurations(story.durations);
             }
-            Log.e("slideAnimation", "StoryPageStartedEvent " + story.lastIndex + " " + event.index);
             timeline.getManager().start(story.lastIndex);
             InAppStoryService.getInstance().getTimerManager().startTimer(story.getDurations().get(ind), true);
             if (OldStatisticManager.getInstance().currentEvent != null)
@@ -303,7 +302,6 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void storyCacheLoaded(StoryCacheLoadedEvent event) {
-        Log.e("animationDur", "cache " + event.storyId + " " + storyId);
         if (storyId != event.getStoryId()) return;
         manager.storyInfoLoaded();
     }
@@ -382,7 +380,6 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskLoadedEvent event) {
-        Log.e("storyLoaded", "PageTaskLoadedEvent");
         manager.storyLoaded(event.getId(), event.getIndex());
     }
 

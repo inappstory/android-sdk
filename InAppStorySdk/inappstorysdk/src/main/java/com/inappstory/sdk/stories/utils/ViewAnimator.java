@@ -44,7 +44,6 @@ public class ViewAnimator {
             public void onAnimationUpdate(ValueAnimator animation) {
                 int ds = Math.max(1, (int) ((float) animation.getAnimatedValue() / 3f));
                 bv.setDownsampleFactor(ds);
-                Log.e("animVal", (float) animation.getAnimatedValue() + " ");
                 //bv.setBlurRadius(Math.max(0.01f, (float)animation.getAnimatedValue()));
                 bv.setAlpha(1f / 12 * (float) animation.getAnimatedValue());
                 if ((float) animation.getAnimatedValue() < 0.01f) {

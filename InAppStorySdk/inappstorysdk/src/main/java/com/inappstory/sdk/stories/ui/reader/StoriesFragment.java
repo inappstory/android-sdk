@@ -310,7 +310,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                         adds.add(currentIds.get(position - 1));
                     }
                 }
-                Log.e("PageTaskToLoadEvent", "addStoryTask " + currentIds.get(position));
                 InAppStoryService.getInstance().getDownloadManager().addStoryTask(currentIds.get(position), adds);
 
 

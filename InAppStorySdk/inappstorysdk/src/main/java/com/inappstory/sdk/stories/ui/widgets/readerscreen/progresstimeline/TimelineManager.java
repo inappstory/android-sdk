@@ -31,7 +31,6 @@ public class TimelineManager {
     public void start(int ind) {
         mAnimationRest = -1;
         timeline.setActive(ind);
-        Log.e("slideAnimation", "visual " + timeline.curAnimation.getDuration());
         timeline.curAnimation.start();
     }
 

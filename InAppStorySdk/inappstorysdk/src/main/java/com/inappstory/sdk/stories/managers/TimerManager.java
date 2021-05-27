@@ -79,7 +79,6 @@ public class TimerManager {
         if (timerDuration < 0) {
             return;
         }
-        Log.e("resTimer", "td" + timerDuration);
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;

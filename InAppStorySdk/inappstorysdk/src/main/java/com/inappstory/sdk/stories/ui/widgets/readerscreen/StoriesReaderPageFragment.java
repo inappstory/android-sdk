@@ -330,7 +330,6 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskToLoadEvent event) {
-        Log.e("PageTaskToLoadEvent", event.getId() + " " + event.getIndex() + " " + storiesWebView.storyId + " " + storiesWebView.index);
         if (storiesWebView == null || storiesWebView.storyId != event.getId() || storiesWebView.index != event.getIndex())
             return;
         if (event.isLoaded()) {

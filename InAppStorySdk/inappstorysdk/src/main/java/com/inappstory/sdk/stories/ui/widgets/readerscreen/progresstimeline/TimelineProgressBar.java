@@ -28,7 +28,6 @@ public class TimelineProgressBar extends FrameLayout {
 
     public void setDuration(Long duration) {
         this.duration = duration;
-        Log.e("slideAnimation", "setDuration");
         animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(getDuration());
@@ -59,7 +58,6 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void setMin() {
-        Log.e("slideAnimation", "visual setMin");
         if (progressForeground.getVisibility() == INVISIBLE)
             progressForeground.setVisibility(VISIBLE);
         progressForeground.setScaleX(1f / getDuration());
@@ -105,7 +103,6 @@ public class TimelineProgressBar extends FrameLayout {
         progressForeground = findViewById(R.id.progress_foreground);
         progressBackground = findViewById(R.id.progress_background);
         progressForeground.setPivotX(-progressForeground.getWidth()/2);
-        Log.e("slideAnimation", "visual init");
         animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
         animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override

@@ -281,7 +281,6 @@ public class InAppStoryService {
     }
 
     public void onCreate(Context context, ExceptionCache exceptionCache) {
-        Log.e("InAppStoryService", "create");
         this.context = context;
         new Handler().post(new Runnable() {
             @Override

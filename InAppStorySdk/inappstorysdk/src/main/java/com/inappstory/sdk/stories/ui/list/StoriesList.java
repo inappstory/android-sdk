@@ -71,15 +71,12 @@ public class StoriesList extends RecyclerView {
     public void onDetachedFromWindow() {
         CsEventBus.getDefault().unregister(this);
         super.onDetachedFromWindow();
-        Log.e("cslistEvent", "detached");
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         CsEventBus.getDefault().register(this);
-
-        Log.e("cslistEvent", "attached");
     }
 
     private void init(AttributeSet attributeSet) {

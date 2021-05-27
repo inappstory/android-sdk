@@ -198,7 +198,6 @@ public class StoriesProgressView extends LinearLayout {
     }
 
     public void same(boolean stopTimer) {
-        Log.e("eventsLoaded", "same");
         if (isComplete) {
             return;
         }
@@ -239,7 +238,6 @@ public class StoriesProgressView extends LinearLayout {
             progressBars.get(i).setDuration(durations.get(i));
             progressBars.get(i).setCallback(callback(i));
         }
-        Log.e("eventsLoaded", "StoryCacheLoadedEvent set");
     }
 
     /**
@@ -290,7 +288,6 @@ public class StoriesProgressView extends LinearLayout {
      * Start progress animation
      */
     public void startStories() {
-        Log.e("eventsLoaded", "startStories");
         try {
             if (progressBars.get(current).startProgress()) {
                 started = true;
