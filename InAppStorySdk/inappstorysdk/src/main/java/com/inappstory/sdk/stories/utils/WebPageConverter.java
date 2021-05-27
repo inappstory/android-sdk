@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.utils;
 
 import android.content.Context;
 import android.util.Base64;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,6 +77,7 @@ public class WebPageConverter {
             if (file.exists()) {
                 video = "file://" + file.getAbsolutePath();
             }
+            Log.e("IAS_VIDEO_LOG", storyId + " " + video + " " + videoKey);
             innerWebData = innerWebData.replace(videoKey, video);
         }
         boolean exists = false;

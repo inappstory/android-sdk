@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -71,6 +72,7 @@ public class Downloader {
         FileCache cache = FileCache.INSTANCE;
 
         File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
+        Log.e("IAS_VIDEO_LOG", img + " " + url);
         File img2;
         if (img.exists()) {
             return img;
@@ -82,6 +84,7 @@ public class Downloader {
             }
         }
         File file = downloadFile(url, img);
+        Log.e("IAS_VIDEO_LOG", file.getAbsolutePath() + " " + url);
         return file;
     }
 

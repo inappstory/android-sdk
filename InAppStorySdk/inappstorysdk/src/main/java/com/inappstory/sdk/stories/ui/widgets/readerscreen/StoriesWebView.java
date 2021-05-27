@@ -516,6 +516,7 @@ public class StoriesWebView extends WebView {
                 FileCache cache = FileCache.INSTANCE;
                 File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
 
+                Log.e("IAS_VIDEO_LOG", img + " " + file.getAbsolutePath());
                 if (file.exists()) {
 
                     try {
@@ -553,6 +554,7 @@ public class StoriesWebView extends WebView {
                 FileCache cache = FileCache.INSTANCE;
                 File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
 
+                Log.e("IAS_VIDEO_LOG", img + " " + file.getAbsolutePath());
                 if (file.exists()) {
                     try {
                         //

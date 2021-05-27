@@ -13,6 +13,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -241,7 +242,7 @@ public class StoriesActivity extends AppCompatActivity {
             finishActivityWithoutAnimation();
             return;
         }
-
+        WebView.setWebContentsDebuggingEnabled(true);
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
