@@ -498,6 +498,8 @@ public class StoriesWebView extends WebView {
                 WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
             getSettings().setForceDark(FORCE_DARK_OFF);
         }
+        getSettings().setAllowFileAccess(true);
+        getSettings().setAllowContentAccess(true);
         setBackgroundColor(getResources().getColor(R.color.black));
 
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
