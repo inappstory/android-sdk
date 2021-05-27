@@ -498,7 +498,8 @@ public class StoriesWebView extends WebView {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
-
+        getSettings().setAllowFileAccess(true);
+        getSettings().setAllowContentAccess(true);
         setWebViewClient(new WebViewClient() {
 
             @Override
@@ -540,7 +541,6 @@ public class StoriesWebView extends WebView {
                     }
                     WebResourceResponse resp = new WebResourceResponse(ctType, "BINARY",
                             new FileInputStream(file));
-                    // Log.e("playVideo", storyId + " video loaded");
                     return resp;
                 } catch (FileNotFoundException e) {
                     return super.shouldInterceptRequest(view, request);

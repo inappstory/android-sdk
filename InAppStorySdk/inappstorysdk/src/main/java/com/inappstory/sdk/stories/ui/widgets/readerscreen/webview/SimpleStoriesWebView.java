@@ -224,6 +224,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
         getSettings().setTextZoom(100);
+        getSettings().setAllowContentAccess(true);
+        getSettings().setAllowFileAccess(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
