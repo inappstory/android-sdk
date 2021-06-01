@@ -3,6 +3,7 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 
@@ -30,7 +31,16 @@ public class AppearanceManager {
     public static final String CS_HAS_SOUND = "hasSound";
     public static final String CS_HAS_SHARE = "hasShare";
     public static final String CS_CLOSE_ON_SWIPE = "closeOnSwipe";
+    public static final String CS_CLOSE_ON_OVERSCROLL = "closeOnOverscroll";
     public static final String CS_READER_OPEN_ANIM = "readerOpenAnimation";
+    public static final String CS_FAVORITE_ICON = "iconFavorite";
+    public static final String CS_LIKE_ICON = "iconLike";
+    public static final String CS_DISLIKE_ICON = "iconDislike";
+    public static final String CS_SHARE_ICON = "iconShare";
+    public static final String CS_CLOSE_ICON = "iconClose";
+    public static final String CS_SOUND_ICON = "iconSound";
+    public static final String CS_REFRESH_ICON = "iconRefresh";
+    public static final String CS_READER_SETTINGS = "readerSettings";
 
 
     public static final int TOP_LEFT = 1;
@@ -62,6 +72,47 @@ public class AppearanceManager {
     private StoryTouchListener storyTouchListener;
     private static WidgetAppearance csWidgetAppearance;
 
+    private boolean csHasLike;
+    private boolean csHasFavorite;
+    private boolean csHasShare;
+
+    private int csFavoriteIcon;
+    private int csLikeIcon;
+    private int csDislikeIcon;
+    private int csShareIcon;
+    private int csCloseIcon;
+    private int csRefreshIcon;
+    private int csSoundIcon;
+
+    private Typeface csCustomFont;
+    private Typeface csCustomBoldFont;
+    private Typeface csCustomItalicFont;
+    private Typeface csCustomBoldItalicFont;
+    private Typeface csCustomSecondaryFont;
+    private Typeface csCustomSecondaryBoldFont;
+    private Typeface csCustomSecondaryItalicFont;
+    private Typeface csCustomSecondaryBoldItalicFont;
+
+    public boolean csCloseOnSwipe() {
+        return csCloseOnSwipe;
+    }
+
+    public boolean csCloseOnOverscroll() {
+        return csCloseOnOverscroll;
+    }
+
+    public AppearanceManager csCloseOnSwipe(boolean closeOnSwipe) {
+        this.csCloseOnSwipe = csCloseOnSwipe;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csCloseOnOverscroll(boolean closeOnOverscroll) {
+        this.csCloseOnOverscroll = closeOnOverscroll;
+        return AppearanceManager.this;
+    }
+
+    private boolean csCloseOnSwipe;
+    private boolean csCloseOnOverscroll;
 
     private static AppearanceManager mainInstance;
 
@@ -71,6 +122,7 @@ public class AppearanceManager {
 
     /**
      * use to set global {@link AppearanceManager}
+     *
      * @param manager (manager) {@link AppearanceManager} instance
      */
     public static void setInstance(AppearanceManager manager) {
@@ -82,9 +134,6 @@ public class AppearanceManager {
         return csCustomFont;
     }
 
-    Typeface csCustomFont;
-    Typeface csCustomBoldFont;
-    Typeface csCustomItalicFont;
 
     public Typeface csCustomBoldFont() {
         return csCustomBoldFont;
@@ -110,16 +159,10 @@ public class AppearanceManager {
         return csCustomSecondaryBoldItalicFont;
     }
 
-    Typeface csCustomBoldItalicFont;
 
     public Typeface csCustomSecondaryFont() {
         return csCustomSecondaryFont;
     }
-
-    Typeface csCustomSecondaryFont;
-    Typeface csCustomSecondaryBoldFont;
-    Typeface csCustomSecondaryItalicFont;
-    Typeface csCustomSecondaryBoldItalicFont;
 
     public static WidgetAppearance csWidgetAppearance() {
         if (csWidgetAppearance == null) csWidgetAppearance = new WidgetAppearance();
@@ -139,6 +182,7 @@ public class AppearanceManager {
 
     /**
      * use to set custom list item height in default cells
+     *
      * @param csListItemHeight (csListItemHeight)
      * @return {@link AppearanceManager}
      */
@@ -150,6 +194,7 @@ public class AppearanceManager {
 
     /**
      * use to set custom touch effect on list item
+     *
      * @param storyTouchListener (storyTouchListener) {@link StoryTouchListener}
      * @return {@link AppearanceManager}
      */
@@ -164,6 +209,7 @@ public class AppearanceManager {
 
     /**
      * use to set custom list item width in default cells
+     *
      * @param csListItemWidth (csListItemWidth)
      * @return {@link AppearanceManager}
      */
@@ -174,6 +220,7 @@ public class AppearanceManager {
 
     /**
      * use to set custom font for list items in default cells
+     *
      * @param csCustomFont (csCustomFont) {@link Typeface} font
      * @return {@link AppearanceManager}
      */
@@ -187,11 +234,102 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    public boolean csHasLike() {
+        return csHasLike;
+    }
+
+    public boolean csHasFavorite() {
+        return csHasFavorite;
+    }
+
+    public boolean csHasShare() {
+        return csHasShare;
+    }
+
+    public int csFavoriteIcon() {
+        return csFavoriteIcon != 0 ? csFavoriteIcon : R.drawable.ic_stories_status_favorite;
+    }
+
+    public int csLikeIcon() {
+        return csLikeIcon != 0 ? csLikeIcon : R.drawable.ic_stories_status_like;
+    }
+
+    public int csDislikeIcon() {
+        return csDislikeIcon != 0 ? csDislikeIcon : R.drawable.ic_stories_status_dislike;
+    }
+
+    public int csShareIcon() {
+        return csShareIcon != 0 ? csShareIcon : R.drawable.ic_share_status;
+    }
+
+    public int csCloseIcon() {
+        return csCloseIcon != 0 ? csCloseIcon : R.drawable.ic_stories_close;
+    }
+
+    public int csRefreshIcon() {
+        return csRefreshIcon != 0 ? csRefreshIcon : R.drawable.ic_refresh;
+    }
+
+    public int csSoundIcon() {
+        return csSoundIcon != 0 ? csSoundIcon : R.drawable.ic_stories_status_sound;
+    }
+
+    public AppearanceManager csHasLike(boolean hasLike) {
+        this.csHasLike = hasLike;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csHasFavorite(boolean hasFavorite) {
+        this.csHasFavorite = hasFavorite;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csHasShare(boolean hasShare) {
+        this.csHasShare = hasShare;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csFavoriteIcon(int favoriteIcon) {
+        csFavoriteIcon = favoriteIcon;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csLikeIcon(int likeIcon) {
+        csLikeIcon = likeIcon;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csDislikeIcon(int dislikeIcon) {
+        csDislikeIcon = dislikeIcon;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csShareIcon(int shareIcon) {
+        csShareIcon = shareIcon;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csCloseIcon(int closeIcon) {
+        csCloseIcon = closeIcon;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csRefreshIcon(int refreshIcon) {
+        csRefreshIcon = refreshIcon;
+        return AppearanceManager.this;
+    }
+
+    public AppearanceManager csSoundIcon(int soundIcon) {
+        csSoundIcon = soundIcon;
+        return AppearanceManager.this;
+    }
+
     public Typeface getFont(boolean secondary, boolean bold, boolean italic) {
         if (secondary) {
             if (bold) {
                 if (italic) {
-                    if (csCustomSecondaryBoldItalicFont == null) return getFont(secondary, bold, false);
+                    if (csCustomSecondaryBoldItalicFont == null)
+                        return getFont(secondary, bold, false);
                     return csCustomSecondaryBoldItalicFont;
                 } else {
                     if (csCustomSecondaryBoldFont == null) return getFont(secondary, false, italic);
@@ -269,6 +407,7 @@ public class AppearanceManager {
 
     /**
      * use to set font size for list items in default cells
+     *
      * @param csListItemTitleSize (csListItemTitleSize)
      * @return {@link AppearanceManager}
      */
@@ -279,6 +418,7 @@ public class AppearanceManager {
 
     /**
      * use to set font color for list items in default cells
+     *
      * @param csListItemTitleColor (csListItemTitleColor)
      * @return {@link AppearanceManager}
      */
@@ -314,6 +454,7 @@ public class AppearanceManager {
 
     /**
      * use to set border color for list items in default cells
+     *
      * @param csListItemBorderColor (csListItemBorderColor)
      * @return {@link AppearanceManager}
      */

@@ -71,12 +71,15 @@ public class StoriesList extends RecyclerView {
     public void onDetachedFromWindow() {
         CsEventBus.getDefault().unregister(this);
         super.onDetachedFromWindow();
+        Log.e("cslistEvent", "detached");
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         CsEventBus.getDefault().register(this);
+
+        Log.e("cslistEvent", "attached");
     }
 
     private void init(AttributeSet attributeSet) {
@@ -285,7 +288,7 @@ public class StoriesList extends RecyclerView {
             }
             adapter.notifyDataSetChanged();
         } else if (isEmpty && !favImages.isEmpty()) {
-            adapter.hasFavItem = (true && InAppStoryManager.getInstance().hasFavorite());
+            adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
             // adapter.refresh();
             adapter.notifyDataSetChanged();
         } else if (!isEmpty && favImages.isEmpty()) {

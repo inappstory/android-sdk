@@ -347,24 +347,6 @@ public class InAppStoryManager {
 
     String TEST_KEY = null;
 
-    Intent intent;
-
-    Messenger mService = null;
-
-    boolean mBound;
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mService = new Messenger(service);
-            mBound = true;
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            mService = null;
-            mBound = false;
-        }
-    };
-
     public InAppStoryManager() {
 
     }

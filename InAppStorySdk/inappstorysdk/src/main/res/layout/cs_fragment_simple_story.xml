@@ -88,15 +88,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:elevation="20dp"
-                android:minHeight="40dp"
-                android:orientation="horizontal">
+                android:minHeight="40dp">
 
                 <com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline
                     android:id="@+id/timeline"
                     android:layout_width="match_parent"
                     android:layout_height="3dp"
                     android:layout_gravity="center_vertical"
-                    android:layout_weight="1"
                     android:elevation="10dp"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp" />

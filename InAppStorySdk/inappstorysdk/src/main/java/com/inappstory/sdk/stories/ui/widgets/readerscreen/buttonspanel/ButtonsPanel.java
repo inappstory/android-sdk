@@ -10,6 +10,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 
 public class ButtonsPanel extends LinearLayout {
 
@@ -43,10 +44,10 @@ public class ButtonsPanel extends LinearLayout {
             favorite.setActivated(favVal == 1);
     }
 
-    public void setButtonsVisibility(boolean hasLike, boolean hasFavorite, boolean hasShare, boolean hasSound) {
-        hasLike = hasLike && InAppStoryManager.getInstance().hasLike();
-        hasFavorite = hasFavorite && InAppStoryManager.getInstance().hasFavorite();
-        hasShare = hasShare && InAppStoryManager.getInstance().hasShare();
+    public void setButtonsVisibility(StoriesReaderSettings readerSettings, boolean hasLike, boolean hasFavorite, boolean hasShare, boolean hasSound) {
+        hasLike = hasLike && readerSettings.hasLike;
+        hasFavorite = hasFavorite && readerSettings.hasFavorite;
+        hasShare = hasShare && readerSettings.hasShare;
         like.setVisibility(hasLike ? VISIBLE : GONE);
         dislike.setVisibility(hasLike ? VISIBLE : GONE);
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);
@@ -116,6 +117,14 @@ public class ButtonsPanel extends LinearLayout {
             });
             sound.setActivated(InAppStoryManager.getInstance().soundOn);
         }
+    }
+
+    public void setIcons(StoriesReaderSettings readerSettings) {
+        like.setImageDrawable(getResources().getDrawable(readerSettings.likeIcon));
+        dislike.setImageDrawable(getResources().getDrawable(readerSettings.dislikeIcon));
+        favorite.setImageDrawable(getResources().getDrawable(readerSettings.favoriteIcon));
+        share.setImageDrawable(getResources().getDrawable(readerSettings.shareIcon));
+        sound.setImageDrawable(getResources().getDrawable(readerSettings.soundIcon));
     }
 
     public void likeClick() {

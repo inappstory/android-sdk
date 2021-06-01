@@ -64,8 +64,8 @@ import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 
 public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
@@ -114,11 +114,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         CsEventBus.getDefault().register(this);
         configurationChanged = false;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-       // storiesViewPager = view.findViewById(R.id.stories);
-        //invMask = view.findViewById(R.id.invMask);
         storiesViewPager.setParameters(
-                getArguments().getInt(CS_STORY_READER_ANIMATION, 0),
-                InAppStoryManager.getInstance().closeOnSwipe());
+                getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
         int closePosition = getArguments().getInt(CS_CLOSE_POSITION, 1);
         currentIds = getArguments().getIntegerArrayList("stories_ids");
         if (currentIds == null) {
@@ -128,8 +125,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         outerViewPagerAdapter =
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
-                        closePosition,
-                        InAppStoryManager.getInstance().closeOnSwipe(), currentIds);
+                        getArguments().getString(CS_READER_SETTINGS),
+                        currentIds);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
         int ind = getArguments().getInt("index", 0);
@@ -310,6 +307,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                         adds.add(currentIds.get(position - 1));
                     }
                 }
+                Log.e("PageTaskToLoadEvent", "addStoryTask " + currentIds.get(position));
                 InAppStoryService.getInstance().getDownloadManager().addStoryTask(currentIds.get(position), adds);
 
 

@@ -64,9 +64,8 @@ public class ReaderPager extends ViewPager {
     private int transformAnimation;
     boolean closeOnSwipe;
 
-    public void setParameters(int transformAnimation, boolean closeOnSwipe) {
+    public void setParameters(int transformAnimation) {
         this.transformAnimation = transformAnimation;
-        this.closeOnSwipe = closeOnSwipe;
         init();
     }
 

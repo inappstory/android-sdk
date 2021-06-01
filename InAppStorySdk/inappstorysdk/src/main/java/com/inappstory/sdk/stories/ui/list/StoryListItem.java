@@ -55,6 +55,12 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         return v;
     }
 
+    private void createDefaultFavoriteCell() {
+    }
+
+    private void createDefaultCell() {
+    }
+
     protected View getDefaultCell() {
 
         View v;

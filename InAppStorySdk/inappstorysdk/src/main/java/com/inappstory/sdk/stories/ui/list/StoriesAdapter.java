@@ -169,7 +169,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     @Override
     public int getItemViewType(int position) {
         int pref = position * 10;
-        if (InAppStoryManager.getInstance().hasFavorite() && position == storiesIds.size())
+        if (manager != null && manager.csHasFavorite() && position == storiesIds.size())
             return pref + 3;
         try {
             Story story = InAppStoryService.getInstance().getDownloadManager()

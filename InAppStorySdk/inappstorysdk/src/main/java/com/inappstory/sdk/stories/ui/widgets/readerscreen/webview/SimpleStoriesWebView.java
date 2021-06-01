@@ -199,6 +199,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         final String data = tmpData;
         final String lt = tmpLayout;
         if (!notFirstLoading) {
+
+            Log.e("LoadHtml", "first");
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -222,6 +224,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         setBackgroundColor(getResources().getColor(R.color.black));
 
+        setVerticalScrollBarEnabled(false);
+        setHorizontalScrollBarEnabled(false);
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
         getSettings().setTextZoom(100);
         getSettings().setAllowContentAccess(true);
