@@ -108,11 +108,12 @@ public class ButtonsPanelManager {
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
+                        boolean res = !val;
                         if (story != null)
-                            story.favorite = !val;
+                            story.favorite = res;
                         if (callback != null)
-                            callback.onSuccess(val ? 1 : 0);
-                        CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
+                            callback.onSuccess(res ? 1 : 0);
+                        CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, res));
                     }
 
                     @Override

@@ -297,8 +297,129 @@ public class StoryDownloadManager {
     private SlidesDownloader slidesDownloader;
 
 
-    public void loadStories(LoadStoriesCallback callback, boolean isFavorite) {
+    public void loadStories(LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         loadStoriesCallback = callback;
+        final boolean loadFavorite = hasFavorite;
+        NetworkCallback loadCallback = new LoadListCallback() {
+            @Override
+            protected void error424(String message) {
+                super.error424(message);
+                storyDownloader.loadStoryList(this, false);
+            }
+
+            @Override
+            public void onSuccess(final List<Story> response) {
+                final ArrayList<Story> stories = new ArrayList<>();
+                for (int i = 0; i < Math.min(response.size(), 4); i++) {
+                    stories.add(response.get(i));
+                }
+                try {
+                    SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                CsEventBus.getDefault().post(new ListLoadedEvent());
+                if (response == null || response.size() == 0) {
+                    if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
+                        StoriesWidgetService.loadEmpty(context, AppearanceManager.csWidgetAppearance().getWidgetClass());
+                    }
+                } else {
+                    if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                StoriesWidgetService.loadSuccess(context, AppearanceManager.csWidgetAppearance().getWidgetClass());
+                            }
+                        }, 500);
+                    }
+                }
+                setLocalsOpened(response);
+                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
+                List<Story> newStories = new ArrayList<>();
+                if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
+                    for (Story story : response) {
+                        if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
+                            newStories.add(story);
+                        }
+                    }
+                }
+                if (newStories.size() > 0) {
+                    try {
+                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (loadFavorite) {
+                    storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
+                        @Override
+                        public void onSuccess(List<Story> response2) {
+                            favStories.clear();
+                            favStories.addAll(response2);
+                            favoriteImages.clear();
+                            for (Story st : StoryDownloadManager.this.stories) {
+                                for (Story st2 : response2) {
+                                    if (st2.id == st.id) {
+                                        st.isOpened = true;
+                                    }
+                                }
+                            }
+                            if (response2 != null && response2.size() > 0) {
+                                Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                                if (opens == null) opens = new HashSet<>();
+                                for (Story story : response2) {
+                                    //if (favoriteImages.size() < 4)
+                                    favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
+                                    opens.add(Integer.toString(story.id));
+                                }
+                                SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+                                if (loadStoriesCallback != null) {
+                                    List<Integer> ids = new ArrayList<>();
+                                    for (Story story : response) {
+                                        ids.add(story.id);
+                                    }
+                                    loadStoriesCallback.storiesLoaded(ids);
+                                }
+
+                            } else {
+                                if (loadStoriesCallback != null) {
+                                    List<Integer> ids = new ArrayList<>();
+                                    for (Story story : response) {
+                                        ids.add(story.id);
+                                    }
+                                    loadStoriesCallback.storiesLoaded(ids);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public Type getType() {
+                            return new StoryListType();
+                        }
+
+                        @Override
+                        public void onError(int code, String m) {
+                            if (loadStoriesCallback != null) {
+                                List<Integer> ids = new ArrayList<>();
+                                for (Story story : response) {
+                                    ids.add(story.id);
+                                }
+                                loadStoriesCallback.storiesLoaded(ids);
+                            }
+                        }
+                    });
+                } else {
+                    if (loadStoriesCallback != null) {
+                        List<Integer> ids = new ArrayList<>();
+                        for (Story story : response) {
+                            ids.add(story.id);
+                        }
+                        loadStoriesCallback.storiesLoaded(ids);
+                    }
+                }
+            }
+        };
+
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
     }
 
@@ -323,127 +444,6 @@ public class StoryDownloadManager {
         SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
     }
 
-    NetworkCallback loadCallback = new LoadListCallback() {
-        @Override
-        protected void error424(String message) {
-            super.error424(message);
-            storyDownloader.loadStoryList(this, false);
-        }
-
-        @Override
-        public void onSuccess(final List<Story> response) {
-            final ArrayList<Story> stories = new ArrayList<>();
-            for (int i = 0; i < Math.min(response.size(), 4); i++) {
-                stories.add(response.get(i));
-            }
-            try {
-                SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            CsEventBus.getDefault().post(new ListLoadedEvent());
-            if (response == null || response.size() == 0) {
-                if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
-                    StoriesWidgetService.loadEmpty(context, AppearanceManager.csWidgetAppearance().getWidgetClass());
-                }
-            } else {
-                if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            StoriesWidgetService.loadSuccess(context, AppearanceManager.csWidgetAppearance().getWidgetClass());
-                        }
-                    }, 500);
-                }
-            }
-            setLocalsOpened(response);
-            InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
-            List<Story> newStories = new ArrayList<>();
-            if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
-                for (Story story : response) {
-                    if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
-                        newStories.add(story);
-                    }
-                }
-            }
-            if (newStories.size() > 0) {
-                try {
-                    InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (InAppStoryManager.getInstance().hasFavorite) {
-                storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
-                    @Override
-                    public void onSuccess(List<Story> response2) {
-                        favStories.clear();
-                        favStories.addAll(response2);
-                        favoriteImages.clear();
-                        for (Story st : StoryDownloadManager.this.stories) {
-                            for (Story st2 : response2) {
-                                if (st2.id == st.id) {
-                                    st.isOpened = true;
-                                }
-                            }
-                        }
-                        if (response2 != null && response2.size() > 0) {
-                            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                            if (opens == null) opens = new HashSet<>();
-                            for (Story story : response2) {
-                                //if (favoriteImages.size() < 4)
-                                favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
-                                opens.add(Integer.toString(story.id));
-                            }
-                            SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
-                            if (loadStoriesCallback != null) {
-                                List<Integer> ids = new ArrayList<>();
-                                for (Story story : response) {
-                                    ids.add(story.id);
-                                }
-                                loadStoriesCallback.storiesLoaded(ids);
-                            }
-
-                        } else {
-                            if (loadStoriesCallback != null) {
-                                List<Integer> ids = new ArrayList<>();
-                                for (Story story : response) {
-                                    ids.add(story.id);
-                                }
-                                loadStoriesCallback.storiesLoaded(ids);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return new StoryListType();
-                    }
-
-                    @Override
-                    public void onError(int code, String m) {
-                        if (loadStoriesCallback != null) {
-                            List<Integer> ids = new ArrayList<>();
-                            for (Story story : response) {
-                                ids.add(story.id);
-                            }
-                            loadStoriesCallback.storiesLoaded(ids);
-                        }
-                    }
-                });
-            } else {
-                if (loadStoriesCallback != null) {
-                    List<Integer> ids = new ArrayList<>();
-                    for (Story story : response) {
-                        ids.add(story.id);
-                    }
-                    loadStoriesCallback.storiesLoaded(ids);
-                }
-            }
-        }
-
-
-    };
 
     LoadStoriesCallback loadStoriesCallback;
 

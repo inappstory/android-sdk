@@ -311,7 +311,7 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
-
+        final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                 @Override
@@ -326,7 +326,7 @@ public class StoriesList extends RecyclerView {
                         adapter.notifyDataSetChanged();
                     }
                 }
-            }, isFavoriteList);
+            }, isFavoriteList, hasFavorite);
 
         } else {
             new Handler().postDelayed(new Runnable() {
@@ -341,7 +341,7 @@ public class StoriesList extends RecyclerView {
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
                             }
-                        }, isFavoriteList);
+                        }, isFavoriteList, hasFavorite);
                 }
             }, 1000);
         }

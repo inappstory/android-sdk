@@ -470,7 +470,7 @@ public class InAppStoryManager {
 
     public int actionBarColor = -1;
 
-    public boolean sendStatistic;
+    public boolean sendStatistic = true;
 
     private void initManager(Context context,
                              String cmsUrl,
