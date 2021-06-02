@@ -53,6 +53,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
         hasFavItem = !isFavoriteList && InAppStoryService.getInstance() != null
+                && manager != null && manager.csHasFavorite()
                 && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
     }
 
