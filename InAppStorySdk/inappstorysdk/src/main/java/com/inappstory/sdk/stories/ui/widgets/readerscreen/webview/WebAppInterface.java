@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
@@ -139,7 +140,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public String storyGetLocalData() {
         String res = KeyValueStorage.getString("story" + manager.storyId
-                + "__" + InAppStoryManager.getInstance().getUserId());
+                + "__" + InAppStoryService.getInstance().getUserId());
         return res == null ? "" : res;
     }
 

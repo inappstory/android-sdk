@@ -48,7 +48,8 @@ public class OldStatisticManager {
     public Runnable statisticUpdateThread = new Runnable() {
         @Override
         public void run() {
-            if (InAppStoryManager.getInstance().getContext() == null || InAppStoryService.getInstance() == null) {
+            if (InAppStoryService.isNull()
+                    || InAppStoryService.getInstance().getContext() == null) {
                 handler.removeCallbacks(statisticUpdateThread);
                 return;
             }
@@ -64,9 +65,11 @@ public class OldStatisticManager {
         sendObject.add(eventCount);
 
         ArrayList<Integer> addedVals = new ArrayList<>();
+        int count = 0;
         for (Integer val : vals) {
             if (!StatisticSession.getInstance().viewed.contains(val)) {
                 sendObject.add(val);
+                count++;
                 StatisticSession.getInstance().viewed.add(val);
             }
         }
@@ -74,7 +77,9 @@ public class OldStatisticManager {
             putStatistic(sendObject);
             eventCount++;
         }
-
+        if (count > 2) {
+            sendStatistic();
+        }
     }
 
     public boolean sendStatistic() {
@@ -84,7 +89,7 @@ public class OldStatisticManager {
         if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
             return true;
         }
-        if (!InAppStoryManager.getInstance().sendStatistic) {
+        if (!InAppStoryService.getInstance().getSendStatistic()) {
             StatisticSession.getInstance();
             StatisticSession.updateStatistic();
             if (statistic != null)

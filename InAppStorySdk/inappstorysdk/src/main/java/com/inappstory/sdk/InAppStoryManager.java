@@ -1,15 +1,10 @@
 package com.inappstory.sdk;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.graphics.Point;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
-import android.os.Messenger;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -87,13 +82,6 @@ public class InAppStoryManager {
 
     Context context;
 
-    public void setTempShareId(String tempShareId) {
-        this.tempShareId = tempShareId;
-    }
-
-    public void setTempShareStoryId(int tempShareStoryId) {
-        this.tempShareStoryId = tempShareStoryId;
-    }
 
     /**
      * use set custom callback in case of uncaught exceptions.
@@ -109,39 +97,11 @@ public class InAppStoryManager {
 
     private ExceptionCallback exceptionCallback;
 
-    public int getTempShareStoryId() {
-        return tempShareStoryId;
-    }
 
-    public String getTempShareId() {
-        return tempShareId;
-    }
 
-    int tempShareStoryId;
-
-    String tempShareId;
-
-    public void setOldTempShareId(String tempShareId) {
-        this.oldTempShareId = tempShareId;
-    }
-
-    public void setOldTempShareStoryId(int tempShareStoryId) {
-        this.oldTempShareStoryId = tempShareStoryId;
-    }
 
     public static boolean disableStatistic = true;
 
-    public int getOldTempShareStoryId() {
-        return oldTempShareStoryId;
-    }
-
-    public String getOldTempShareId() {
-        return oldTempShareId;
-    }
-
-    int oldTempShareStoryId;
-
-    String oldTempShareId;
 
     /**
      * @return {@link ArrayList} of tags
@@ -356,7 +316,7 @@ public class InAppStoryManager {
     Thread serviceThread;
 
     void createServiceThread(final Context context) {
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().onDestroy();
         }
         if (serviceThread != null) {
@@ -367,7 +327,7 @@ public class InAppStoryManager {
             @Override
             public void run() {
                 Looper.prepare();
-                service = new InAppStoryService();
+                service = new InAppStoryService(userId);
                 service.onCreate(context, exceptionCache);
                 Looper.loop();
             }
@@ -394,7 +354,7 @@ public class InAppStoryManager {
         if (freeSpace < MB_5 + MB_10 + MB_10) {
             throw new DataException("there is no free space on device", new Throwable("initialization error"));
         }
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             long commonCacheSize = MB_100;
             long fastCacheSize = MB_10;
             switch (builder.cacheSize) {
@@ -429,7 +389,7 @@ public class InAppStoryManager {
     }
 
     private void setUserIdInner(String userId) throws DataException {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         if (userId == null)
             throw new DataException("'userId' can't be null, you can set '' instead", new Throwable("InAppStoryManager data is not valid"));
         if (userId.length() < 255) {
@@ -441,6 +401,7 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().getDownloadManager().refreshLocals();
             CsEventBus.getDefault().post(new ChangeUserIdEvent());
             SessionManager.getInstance().closeSession(sendStatistic, true);
+            InAppStoryService.getInstance().setUserId(userId);
         } else {
             throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));
         }
@@ -509,17 +470,17 @@ public class InAppStoryManager {
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
-                .cmsKey(this.API_KEY)
+                .apiKey(this.API_KEY)
                 .setWebUrl(cmsUrl)
                 .cmsUrl(cmsUrl);
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().getDownloadManager().initDownloaders();
         }
     }
 
     public static void destroy() {
         if (INSTANCE != null) {
-            if (InAppStoryService.getInstance() != null)
+            if (InAppStoryService.isNotNull())
                 InAppStoryService.getInstance().logout();
             StatisticSession.clear();
             INSTANCE.context = null;
@@ -527,7 +488,7 @@ public class InAppStoryManager {
         }
 
         INSTANCE = null;
-        if (InAppStoryService.getInstance() != null)
+        if (InAppStoryService.isNotNull())
             InAppStoryService.getInstance().getDownloadManager().destroy();
     }
 
@@ -554,12 +515,23 @@ public class InAppStoryManager {
         return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
-    public Point coordinates = null;
-
     public boolean soundOn = false;
 
-    public OnboardingLoadedListener onboardLoadedListener;
-    public OnboardingLoadedListener singleLoadedListener;
+    public void setOnboardLoadedListener(OnboardingLoadedListener onboardLoadedListener) {
+        this.onboardLoadedListener = onboardLoadedListener;
+    }
+
+    private OnboardingLoadedListener onboardLoadedListener;
+
+    public OnboardingLoadedListener getSingleLoadedListener() {
+        return singleLoadedListener;
+    }
+
+    public void setSingleLoadedListener(OnboardingLoadedListener singleLoadedListener) {
+        this.singleLoadedListener = singleLoadedListener;
+    }
+
+    private OnboardingLoadedListener singleLoadedListener;
 
     private void showLoadedOnboardings(List<Story> response, Context outerContext, final AppearanceManager manager) {
         if (response == null || response.size() == 0) {
@@ -586,7 +558,7 @@ public class InAppStoryManager {
     }
 
     private void showOnboardingStoriesInner(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        if (InAppStoryService.getInstance() == null) {
+        if (InAppStoryService.isNull()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -680,7 +652,7 @@ public class InAppStoryManager {
     }
 
     private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
-        if (InAppStoryService.getInstance() == null) {
+        if (InAppStoryService.isNull()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -759,10 +731,6 @@ public class InAppStoryManager {
                     callback.onError();
             }
 
-            @Override
-            public void getPartialStory(Story story) {
-
-            }
         }, storyId);
     }
 

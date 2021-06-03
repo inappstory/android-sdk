@@ -1,11 +1,10 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
-import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -234,7 +233,7 @@ class StoryDownloader {
         try {
             Response response = NetworkClient.getApi().getStoryById(Integer.toString(key),
                     StatisticSession.getInstance().id, 1,
-                    InAppStoryManager.getInstance().getApiKey(),
+                    ApiSettings.getInstance().getApiKey(),
                     EXPAND_STRING).execute();
             if (response.body != null) {
                 Story story = JsonParser.fromJson(response.body, Story.class);
@@ -261,21 +260,25 @@ class StoryDownloader {
 
     void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
         NetworkClient.getApi().getStories(StatisticSession.getInstance().id,
-                InAppStoryManager.getInstance().getTestKey(), 1,
+                ApiSettings.getInstance().getTestKey(), 1,
                 null, "id, background_color, image",
                 null).enqueue(callback);
     }
 
     void loadStoryList(final NetworkCallback<List<Story>> callback, final boolean isFavorite) {
+        if (InAppStoryService.isNull()) {
+            CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            return;
+        }
         if (InAppStoryService.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
                     NetworkClient.getApi().getStories(StatisticSession.getInstance().id,
-                            InAppStoryManager.getInstance().getTestKey(),
+                            ApiSettings.getInstance().getTestKey(),
                             isFavorite ? 1 : 0,
-                            InAppStoryManager.getInstance().getTagsString(),
-                            InAppStoryManager.getInstance().getTestKey(), null)
+                            InAppStoryService.getInstance().getTagsString(),
+                            null, null)
                             .enqueue(callback);
                 }
 

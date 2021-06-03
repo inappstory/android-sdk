@@ -10,13 +10,18 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
@@ -27,6 +32,7 @@ import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
@@ -38,8 +44,96 @@ public class InAppStoryService {
 
     public static InAppStoryService getInstance() {
         synchronized (lock) {
+            if (InAppStoryManager.getInstance() == null) return null;
             return INSTANCE;
         }
+    }
+
+    public static boolean isNotNull() {
+        return getInstance() != null;
+    }
+
+    public static boolean isNull() {
+        return getInstance() == null;
+    }
+
+    public InAppStoryService() {
+
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    private String userId;
+
+    public String getTagsString() {
+        if (InAppStoryManager.getInstance() != null) {
+            return InAppStoryManager.getInstance().getTagsString();
+        } else {
+            return null;
+        }
+    }
+
+    public void saveStoriesOpened(List<Story> stories) {
+  /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        if (opens == null) opens = new HashSet<>();
+        for (Story story : stories) {
+            opens.add(Integer.toString(story.id));
+        }
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+
+
+*/
+        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        if (opens == null) opens = new HashSet<>();
+        for (Story story : stories) {
+            if (story.isOpened) {
+                opens.add(Integer.toString(story.id));
+            } else if (opens.contains(Integer.toString(story.id))) {
+                story.isOpened = true;
+            }
+        }
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+    }
+
+    public void saveStoryOpened(int id) {
+        if (InAppStoryManager.getInstance() == null) return;
+        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        if (opens == null) opens = new HashSet<>();
+        opens.add(Integer.toString(id));
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+    }
+
+    public boolean isSoundOn() {
+        if (InAppStoryManager.getInstance() != null) {
+            return InAppStoryManager.getInstance().soundOn;
+        } else {
+            return true;
+        }
+    }
+
+    public void changeSoundStatus() {
+        if (InAppStoryManager.getInstance() != null) {
+            InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
+        }
+    }
+
+
+    public boolean getSendStatistic() {
+        if (InAppStoryManager.getInstance() != null) {
+            return InAppStoryManager.getInstance().sendStatistic;
+        } else {
+            return true;
+        }
+    }
+
+    public InAppStoryService(String userId) {
+        this.userId = userId;
     }
 
     public StoryDownloadManager getDownloadManager() {
@@ -55,6 +149,8 @@ public class InAppStoryService {
         OldStatisticManager.getInstance().statistic.clear();
         OldStatisticManager.getInstance().statistic = null;
     }
+
+
 
 
     public List<FavoriteImage> getFavoriteImages() {
@@ -122,7 +218,12 @@ public class InAppStoryService {
     private Object cacheLock = new Object();
 
     public static final String IAS_PREFIX = File.separator + "ias" + File.separator;
-    Context context;
+
+    public Context getContext() {
+        return context;
+    }
+
+    private Context context;
 
     public LruDiskCache getFastCache() {
         synchronized (cacheLock) {
@@ -176,10 +277,9 @@ public class InAppStoryService {
     TimerManager timerManager;
 
     public static boolean isConnected() {
-        if (InAppStoryManager.getInstance() == null) return false;
-        if (InAppStoryManager.getInstance().context == null) return false;
+        if (getInstance() == null || getInstance().getContext() == null) return false;
         try {
-            ConnectivityManager cm = (ConnectivityManager) InAppStoryManager.getInstance().context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            ConnectivityManager cm = (ConnectivityManager) getInstance().getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo info = cm.getActiveNetworkInfo();
             return (info != null && info.isConnected());
         } catch (Exception e) {
@@ -187,8 +287,15 @@ public class InAppStoryService {
         }
     }
 
+    public Map<String, String> getPlaceholders() {
+        if (InAppStoryManager.getInstance() != null)
+            return InAppStoryManager.getInstance().getPlaceholders();
+        return new HashMap<>();
+    }
+
     public void saveSessionPlaceholders(List<StoryPlaceholder> placeholders) {
         if (placeholders == null) return;
+        if (InAppStoryManager.getInstance() == null) return;
         for (StoryPlaceholder placeholder : placeholders) {
             String key = "%" + placeholder.name + "%";
             InAppStoryManager.getInstance().defaultPlaceholders.put(key,
@@ -209,10 +316,6 @@ public class InAppStoryService {
     private static final long statisticUpdateInterval = 30000;
 
     private Handler handler = new Handler();
-
-    private String getApiKey() {
-        return InAppStoryManager.getInstance().getApiKey();
-    }
 
     public static class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
 

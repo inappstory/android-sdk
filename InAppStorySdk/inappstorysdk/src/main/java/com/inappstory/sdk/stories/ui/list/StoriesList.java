@@ -37,6 +37,7 @@ import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesList extends RecyclerView {
@@ -140,6 +141,7 @@ public class StoriesList extends RecyclerView {
 
     /**
      * Use to interact with the favorite cell (for example, to open a new window with a list of favorite stories)
+     *
      * @param favoriteItemClick (favoriteItemClick) - instance of OnFavoriteItemClick.
      */
     public void setOnFavoriteItemClick(OnFavoriteItemClick favoriteItemClick) {
@@ -250,7 +252,7 @@ public class StoriesList extends RecyclerView {
                         v.getLocationOnScreen(location);
                         int x = location[0];
                         int y = location[1];
-                        InAppStoryManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8), y + v.getHeight() / 2);
+                        ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8), y + v.getHeight() / 2);
                     }
                 }, 950);
             }
@@ -259,9 +261,19 @@ public class StoriesList extends RecyclerView {
 
     boolean hasFavItem;
 
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (!hasWindowFocus) {
+            OldStatisticManager.getInstance().sendStatistic();
+        }
+    }
+
+
+
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void favItem(StoryFavoriteEvent event) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
         boolean isEmpty = favImages.isEmpty();
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
@@ -301,6 +313,7 @@ public class StoriesList extends RecyclerView {
 
     }
 
+
     public void loadStories() throws DataException {
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getInstance();
@@ -308,11 +321,14 @@ public class StoriesList extends RecyclerView {
         if (appearanceManager == null) {
             throw new DataException("Need to set an AppearanceManager", new Throwable("StoriesList data is not valid"));
         }
+        if (InAppStoryManager.getInstance() == null) {
+            throw new DataException("'InAppStoryManager' can't be null", new Throwable("InAppStoryManager data is not valid"));
+        }
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
@@ -332,7 +348,7 @@ public class StoriesList extends RecyclerView {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (InAppStoryService.getInstance() != null)
+                    if (InAppStoryService.isNotNull())
                         InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {

@@ -15,8 +15,12 @@ public class ApiSettings {
         return cmsId;
     }
 
-    public String getCmsKey() {
-        return cmsKey;
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public String getTestKey() {
+        return testKey;
     }
 
     public String getCmsUrl() {
@@ -25,7 +29,8 @@ public class ApiSettings {
 
     private String cacheDirPath;
     private String cmsId;
-    private String cmsKey;
+    private String apiKey;
+    private String testKey;
     private String cmsUrl;
 
 
@@ -64,10 +69,15 @@ public class ApiSettings {
         return ApiSettings.this;
     }
 
-    public ApiSettings cmsKey(String cmsKey) {
-        if (ApiSettings.this.cmsKey != null && cmsKey != null && !ApiSettings.this.cmsKey.equals(cmsKey))
+    public ApiSettings apiKey(String cmsKey) {
+        if (ApiSettings.this.apiKey != null && cmsKey != null && !ApiSettings.this.apiKey.equals(cmsKey))
             NetworkClient.clear();
-        ApiSettings.this.cmsKey = cmsKey;
+        ApiSettings.this.apiKey = cmsKey;
+        return ApiSettings.this;
+    }
+
+    public ApiSettings testKey(String testKey) {
+        ApiSettings.this.testKey = testKey;
         return ApiSettings.this;
     }
 

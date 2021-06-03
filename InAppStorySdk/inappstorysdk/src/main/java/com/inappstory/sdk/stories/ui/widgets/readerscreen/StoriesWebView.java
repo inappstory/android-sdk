@@ -66,6 +66,7 @@ import com.inappstory.sdk.stories.events.SwipeUpEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -356,9 +357,7 @@ public class StoriesWebView extends WebView {
     }
 
     public void playVideo() {
-        boolean withSound = InAppStoryManager.getInstance().soundOn;
-
-        if (withSound) {
+        if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
         } else {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": true}');})()");
@@ -406,7 +405,7 @@ public class StoriesWebView extends WebView {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeSoundStatus(SoundOnOffEvent event) {
-        if (InAppStoryManager.getInstance().soundOn) {
+        if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
             loadUrl("javascript:(function(){story_slide_disable_audio();})()");
@@ -463,7 +462,7 @@ public class StoriesWebView extends WebView {
     boolean videoIsLoaded = false;
 
     void storyResumedEvent(double timer) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         long slideDuration = story.getDurations().get(index);
         InAppStoryService.getInstance().getTimerManager().startTimer((long)(slideDuration - timer - 50), false);
@@ -599,7 +598,7 @@ public class StoriesWebView extends WebView {
     public boolean totalLoaded = false;
 
     void storyStartedEvent() {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
       //  CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
       //          story.tags, story.slidesCount, index));
@@ -610,7 +609,7 @@ public class StoriesWebView extends WebView {
     void storyLoadedEvent() {
         //if (totalLoaded || (isVideo && (!videoIsLoaded || !isWebPageLoaded))) return;
         //totalLoaded = true;
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         if (InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopVideo();
         } else {
@@ -826,15 +825,15 @@ public class StoriesWebView extends WebView {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                     finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
                     finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    InAppStoryManager.getInstance().setTempShareId(id);
-                    InAppStoryManager.getInstance().setTempShareStoryId(storyId);
-                    InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
+                    ScreensManager.getInstance().setTempShareId(id);
+                    ScreensManager.getInstance().setTempShareStoryId(storyId);
+                    InAppStoryService.getInstance().getContext().startActivity(finalIntent);
                 } else {
                     finalIntent = Intent.createChooser(sendIntent, null);
                     finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
-                    InAppStoryManager.getInstance().setOldTempShareId(id);
-                    InAppStoryManager.getInstance().setOldTempShareStoryId(storyId);
+                    InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                    ScreensManager.getInstance().setOldTempShareId(id);
+                    ScreensManager.getInstance().setOldTempShareStoryId(storyId);
                 }
             }
         }
@@ -849,7 +848,7 @@ public class StoriesWebView extends WebView {
 
         @JavascriptInterface
         public void storySendData(String data) {
-            if (!InAppStoryManager.getInstance().sendStatistic) return;
+            if (!InAppStoryService.getInstance().getSendStatistic()) return;
             NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
                         @Override
@@ -871,7 +870,7 @@ public class StoriesWebView extends WebView {
             KeyValueStorage.saveString("story" + storyId
                     + "__" + InAppStoryManager.getInstance().getUserId(), data);
 
-            if (!InAppStoryManager.getInstance().sendStatistic) return;
+            if (!InAppStoryService.getInstance().getSendStatistic()) return;
             if (sendToServer) {
                 NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                         .enqueue(new NetworkCallback<Response>() {

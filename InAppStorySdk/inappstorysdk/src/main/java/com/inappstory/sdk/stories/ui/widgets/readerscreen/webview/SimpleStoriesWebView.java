@@ -109,8 +109,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
 
     public void playVideo() {
-        boolean withSound = InAppStoryManager.getInstance().soundOn;
-        if (withSound) {
+        if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
         } else {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": true}');})()");
@@ -137,7 +136,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
     public void changeSoundStatus() {
-        if (InAppStoryManager.getInstance().soundOn) {
+        if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
             loadUrl("javascript:(function(){story_slide_disable_audio();})()");
@@ -192,9 +191,9 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         String tmpData = outerData;
         String tmpLayout = outerLayout;
-        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
-            tmpData = tmpData.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
-            tmpLayout = tmpLayout.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+        for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
+            tmpData = tmpData.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
+            tmpLayout = tmpLayout.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
         }
         final String data = tmpData;
         final String lt = tmpLayout;

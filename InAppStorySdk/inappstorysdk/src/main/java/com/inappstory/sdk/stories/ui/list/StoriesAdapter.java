@@ -52,7 +52,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
-        hasFavItem = !isFavoriteList && InAppStoryService.getInstance() != null
+        hasFavItem = !isFavoriteList && InAppStoryService.isNotNull()
                 && manager != null && manager.csHasFavorite()
                 && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
     }
@@ -91,7 +91,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 }
             });
         } else {
-            if (InAppStoryService.getInstance() != null) {
+            if (InAppStoryService.isNotNull()) {
                 final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
                 if (story == null) return;
                 holder.bind(story.getTitle(),
@@ -113,7 +113,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     public void onItemClick(int index) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
             if (current.deeplink != null) {

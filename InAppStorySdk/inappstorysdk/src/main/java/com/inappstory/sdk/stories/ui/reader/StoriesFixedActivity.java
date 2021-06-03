@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,10 +39,12 @@ import com.inappstory.sdk.stories.events.SwipeRightEvent;
 import com.inappstory.sdk.stories.events.WidgetTapEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
@@ -122,10 +125,11 @@ public class StoriesFixedActivity extends AppCompatActivity {
             Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
             anim.setDuration(200);
             animationSet.addAnimation(anim);
-            if (InAppStoryManager.getInstance().coordinates != null) {
-                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), InAppStoryManager.getInstance().coordinates.x
+            Point coordinates = ScreensManager.getInstance().coordinates;
+            if (coordinates != null) {
+                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x
                         - Sizes.getScreenSize(StoriesFixedActivity.this).x / 2,
-                        0f, InAppStoryManager.getInstance().coordinates.y - draggableFrame.getY());
+                        0f, coordinates.y - draggableFrame.getY());
                 anim2.setDuration(200);
                 animationSet.addAnimation(anim2);
 
@@ -160,10 +164,10 @@ public class StoriesFixedActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
+        if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
 
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
@@ -215,12 +219,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
         }
 
         super.onCreate(savedInstanceState1);
-
-        if (InAppStoryManager.getInstance() == null) {
-            finishActivityWithoutAnimation();
-            return;
-        }
-        if (InAppStoryService.getInstance() == null) {
+        if (InAppStoryService.isNull()) {
             finishActivityWithoutAnimation();
             return;
         }
@@ -229,6 +228,9 @@ public class StoriesFixedActivity extends AppCompatActivity {
             setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
+
+        closeOnSwipe = getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true);
+        closeOnOverscroll = getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true);
 
         View view = getCurrentFocus();
         if (view != null) {
@@ -292,7 +294,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
@@ -317,7 +319,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
         cleanReader();
         CsEventBus.getDefault().unregister(this);
 
-        if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
+        if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             finishAfterTransition();
@@ -329,7 +331,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
@@ -340,9 +342,13 @@ public class StoriesFixedActivity extends AppCompatActivity {
         cleaned = true;
     }
 
+
+    boolean closeOnSwipe = true;
+    boolean closeOnOverscroll = true;
+
     @CsSubscribe
     public void swipeDownEvent(SwipeDownEvent event) {
-        if (InAppStoryManager.getInstance().closeOnSwipe()) {
+        if (closeOnSwipe) {
             if (InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId()) == null) return;
             if (!InAppStoryService.getInstance().getDownloadManager()
@@ -353,7 +359,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
     @CsSubscribe
     public void swipeLeftEvent(SwipeLeftEvent event) {
-        if (InAppStoryManager.getInstance().closeOnOverscroll()) {
+        if (closeOnOverscroll) {
             // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
@@ -361,7 +367,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
     @CsSubscribe
     public void swipeRightEvent(SwipeRightEvent event) {
-        if (InAppStoryManager.getInstance().closeOnOverscroll()) {
+        if (closeOnOverscroll) {
             //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }

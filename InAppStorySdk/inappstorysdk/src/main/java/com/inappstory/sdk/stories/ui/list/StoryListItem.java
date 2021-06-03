@@ -41,7 +41,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     IStoriesListItem getListItem;
 
     protected View getDefaultFavoriteCell() {
-        int count = (InAppStoryService.getInstance() != null) ?
+        int count = InAppStoryService.isNotNull() ?
                 InAppStoryService.getInstance().getFavoriteImages().size() : 0;
         if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
                 InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
@@ -182,7 +182,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     }
 
     public void bindFavorite() {
-        int count = (InAppStoryService.getInstance() != null) ?
+        int count = InAppStoryService.isNotNull() ?
                 InAppStoryService.getInstance().getFavoriteImages().size() : 0;
 
         if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(

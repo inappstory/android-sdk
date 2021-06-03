@@ -73,6 +73,7 @@ public class NetworkClient {
         return instance;
     }
 
+
     public static Context getAppContext() {
         return appContext;
     }
@@ -98,7 +99,7 @@ public class NetworkClient {
                     .addHeader("Accept", "application/json")
                     .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
                     .addHeader("User-Agent", getUAString(appContext))
-                    .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getCmsKey()).build();
+                    .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey()).build();
         }
         if (apiInterface == null) {
             apiInterface = NetworkHandler.implement(ApiInterface.class, instance);

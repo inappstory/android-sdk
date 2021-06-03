@@ -203,7 +203,7 @@ public class StatisticManager {
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.getInstance() == null
+            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.isNull()
                     || !InAppStoryService.isConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
@@ -271,8 +271,8 @@ public class StatisticManager {
 
     public void generateBase(StatisticTask task) {
         task.sessionId = StatisticSession.getInstance().id;
-        if (InAppStoryManager.getInstance() != null)
-            task.userId = InAppStoryManager.getInstance().getUserId();
+        if (InAppStoryService.isNotNull())
+            task.userId = InAppStoryService.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 
@@ -464,7 +464,7 @@ public class StatisticManager {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    if (!InAppStoryManager.getInstance().sendStatistic) return true;
+                    if (!InAppStoryService.getInstance().getSendStatistic()) return true;
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,
                             task.sessionId,

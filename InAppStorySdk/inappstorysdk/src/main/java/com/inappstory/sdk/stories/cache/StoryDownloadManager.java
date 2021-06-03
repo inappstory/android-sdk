@@ -12,6 +12,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.listwidget.ListLoadedEvent;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -33,9 +34,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class StoryDownloadManager {
     public List<Story> getStories() {
@@ -71,18 +70,22 @@ public class StoryDownloadManager {
     }
 
     public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback, final String id) {
+        if (InAppStoryService.isNull()) {
+            storyByIdCallback.loadError(-1);
+            return;
+        }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
 
                 NetworkClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
-                        InAppStoryManager.getInstance().getApiKey(), EXPAND_STRING
+                        ApiSettings.getInstance().getApiKey(), EXPAND_STRING
                 ).enqueue(new NetworkCallback<Story>() {
                     @Override
                     public void onSuccess(final Story response) {
                         CsEventBus.getDefault().post(new SingleLoad());
-                        if (InAppStoryManager.getInstance().singleLoadedListener != null) {
-                            InAppStoryManager.getInstance().singleLoadedListener.onLoad();
+                        if (InAppStoryManager.getInstance().getSingleLoadedListener() != null) {
+                            InAppStoryManager.getInstance().getSingleLoadedListener().onLoad();
                         }
                         ArrayList<Story> st = new ArrayList<>();
                         st.add(response);
@@ -98,8 +101,8 @@ public class StoryDownloadManager {
 
                     @Override
                     public void onError(int code, String message) {
-                        if (InAppStoryManager.getInstance().singleLoadedListener != null) {
-                            InAppStoryManager.getInstance().singleLoadedListener.onError();
+                        if (InAppStoryManager.getInstance().getSingleLoadedListener() != null) {
+                            InAppStoryManager.getInstance().getSingleLoadedListener().onError();
                         }
                         CsEventBus.getDefault().post(new SingleLoadError());
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
@@ -365,14 +368,10 @@ public class StoryDownloadManager {
                                 }
                             }
                             if (response2 != null && response2.size() > 0) {
-                                Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                                if (opens == null) opens = new HashSet<>();
+                                setLocalsOpened(response2);
                                 for (Story story : response2) {
-                                    //if (favoriteImages.size() < 4)
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
-                                    opens.add(Integer.toString(story.id));
                                 }
-                                SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
                                 if (loadStoriesCallback != null) {
                                     List<Integer> ids = new ArrayList<>();
                                     for (Story story : response) {
@@ -380,7 +379,6 @@ public class StoryDownloadManager {
                                     }
                                     loadStoriesCallback.storiesLoaded(ids);
                                 }
-
                             } else {
                                 if (loadStoriesCallback != null) {
                                     List<Integer> ids = new ArrayList<>();
@@ -432,16 +430,8 @@ public class StoryDownloadManager {
     }
 
     void setLocalsOpened(List<Story> response) {
-        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-        if (opens == null) opens = new HashSet<>();
-        for (Story story : response) {
-            if (story.isOpened) {
-                opens.add(Integer.toString(story.id));
-            } else if (opens.contains(Integer.toString(story.id))) {
-                story.isOpened = true;
-            }
-        }
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+        if (InAppStoryService.isNull()) return;
+        InAppStoryService.getInstance().saveStoriesOpened(response);
     }
 
 

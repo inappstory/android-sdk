@@ -8,6 +8,7 @@ import android.content.Intent;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 
 import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
 
@@ -15,10 +16,10 @@ public class StoryShareBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         ComponentName clickedComponent = intent.getParcelableExtra(EXTRA_CHOSEN_COMPONENT);
-        if (clickedComponent != null && InAppStoryManager.getInstance().getTempShareId() != null) {
+        if (clickedComponent != null && ScreensManager.getInstance().getTempShareId() != null) {
             CsEventBus.getDefault().post(new ShareCompleteEvent(
-                    InAppStoryManager.getInstance().getTempShareStoryId(),
-                    InAppStoryManager.getInstance().getTempShareId(),
+                    ScreensManager.getInstance().getTempShareStoryId(),
+                    ScreensManager.getInstance().getTempShareId(),
                     true));
         }
     }

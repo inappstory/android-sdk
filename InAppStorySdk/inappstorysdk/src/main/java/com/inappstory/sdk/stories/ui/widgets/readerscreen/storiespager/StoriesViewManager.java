@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.StartGame;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStoriesGeneratedView;
@@ -122,7 +123,7 @@ public class StoriesViewManager {
 
     public void loadStory(final int id, final int index) {
         if (loadedId == id && loadedIndex == index) return;
-        if (InAppStoryManager.getInstance() == null)
+        if (InAppStoryService.isNull())
             return;
         if (!InAppStoryService.isConnected()) {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
@@ -276,27 +277,27 @@ public class StoriesViewManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryManager.getInstance().setTempShareId(id);
-                InAppStoryManager.getInstance().setTempShareStoryId(storyId);
-                InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
+                ScreensManager.getInstance().setTempShareId(id);
+                ScreensManager.getInstance().setTempShareStoryId(storyId);
+                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
             } else {
                 finalIntent = Intent.createChooser(sendIntent, null);
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
-                InAppStoryManager.getInstance().setOldTempShareId(id);
-                InAppStoryManager.getInstance().setOldTempShareStoryId(storyId);
+                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                ScreensManager.getInstance().setOldTempShareId(id);
+                ScreensManager.getInstance().setOldTempShareStoryId(storyId);
             }
         }
     }
 
     public void storyStartedEvent() {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
     }
 
 
     public void storyResumedEvent(double startTime) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
     }
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
@@ -316,7 +317,7 @@ public class StoriesViewManager {
     }
 
     public void storyLoaded(int slideIndex) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
@@ -342,9 +343,9 @@ public class StoriesViewManager {
 
     public void storySetLocalData(String data, boolean sendToServer) {
         KeyValueStorage.saveString("story" + storyId
-                + "__" + InAppStoryManager.getInstance().getUserId(), data);
+                + "__" + InAppStoryService.getInstance().getUserId(), data);
 
-        if (!InAppStoryManager.getInstance().sendStatistic) return;
+        if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
@@ -362,7 +363,7 @@ public class StoriesViewManager {
     }
 
     public void storySendData(String data) {
-        if (!InAppStoryManager.getInstance().sendStatistic) return;
+        if (!InAppStoryService.getInstance().getSendStatistic()) return;
         NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                 .enqueue(new NetworkCallback<Response>() {
                     @Override

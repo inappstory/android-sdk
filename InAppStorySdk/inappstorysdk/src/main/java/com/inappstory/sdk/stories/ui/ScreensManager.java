@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
@@ -50,8 +52,53 @@ public class ScreensManager {
         return INSTANCE;
     }
 
+    public void setOldTempShareId(String tempShareId) {
+        this.oldTempShareId = tempShareId;
+    }
+
+    public void setOldTempShareStoryId(int tempShareStoryId) {
+        this.oldTempShareStoryId = tempShareStoryId;
+    }
+
+    public int getOldTempShareStoryId() {
+        return oldTempShareStoryId;
+    }
+
+    public String getOldTempShareId() {
+        return oldTempShareId;
+    }
+
+
+    public int getTempShareStoryId() {
+        return tempShareStoryId;
+    }
+
+    public String getTempShareId() {
+        return tempShareId;
+    }
+
+    public void setTempShareId(String tempShareId) {
+        this.tempShareId = tempShareId;
+    }
+
+    public void setTempShareStoryId(int tempShareStoryId) {
+        this.tempShareStoryId = tempShareStoryId;
+    }
+
+
+    int tempShareStoryId;
+
+    String tempShareId;
+
+    int oldTempShareStoryId;
+
+    String oldTempShareId;
+
+    public Point coordinates = null;
+
     public void openStoriesReader(Context outerContext, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source) {
+
         if (Sizes.isTablet() && outerContext != null && outerContext instanceof AppCompatActivity) {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
@@ -82,7 +129,9 @@ public class ScreensManager {
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
-            Intent intent2 = new Intent(InAppStoryManager.getInstance().getContext(),
+            Context ctx = (InAppStoryService.isNotNull() ?
+                    InAppStoryService.getInstance().getContext() : outerContext);
+            Intent intent2 = new Intent(ctx,
                     (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
                             StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", index);
@@ -106,7 +155,7 @@ public class ScreensManager {
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryManager.getInstance().getContext().startActivity(intent2);
+                ctx.startActivity(intent2);
             } else {
                 outerContext.startActivity(intent2);
             }

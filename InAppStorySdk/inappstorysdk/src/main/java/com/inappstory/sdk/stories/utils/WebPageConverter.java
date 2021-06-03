@@ -90,7 +90,7 @@ public class WebPageConverter {
         for (int i = 0; i < imgs.size(); i++) {
             String img = imgs.get(i);
             String imgKey = imgKeys.get(i);
-            Context con = InAppStoryManager.getInstance().getContext();
+            Context con = InAppStoryService.getInstance().getContext();
             File file = cache.get(img);
             if (file.exists()) {
                 FileInputStream fis = null;

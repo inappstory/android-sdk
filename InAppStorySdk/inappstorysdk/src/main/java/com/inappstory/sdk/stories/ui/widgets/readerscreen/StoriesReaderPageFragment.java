@@ -164,10 +164,6 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.READER));
             }
 
-            @Override
-            public void getPartialStory(Story story) {
-
-            }
         }, storyId);
     }
 
@@ -325,7 +321,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeSoundStatus(SoundOnOffEvent event) {
-        if (sound != null) sound.setActivated(InAppStoryManager.getInstance().soundOn);
+        if (sound != null) sound.setActivated(InAppStoryService.getInstance().isSoundOn());
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -540,12 +536,12 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
         }
         if (sound != null) {
             sound.setVisibility(story.hasAudio() ? View.VISIBLE : View.GONE);
-            sound.setActivated(InAppStoryManager.getInstance().soundOn);
+            sound.setActivated(InAppStoryService.getInstance().isSoundOn());
             sound.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
-                    CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryManager.getInstance().soundOn, storyId));
+                    InAppStoryService.getInstance().changeSoundStatus();
+                    CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryService.getInstance().isSoundOn(), storyId));
                 }
             });
         }
@@ -561,7 +557,7 @@ public class StoriesReaderPageFragment extends Fragment implements StoriesProgre
     public void onViewCreated(final View view, @Nullable final Bundle savedInstanceState) {
         if (view == null) return;
         if (getArguments() == null) return;
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         initViews(view);
         if (storiesWebView == null) return;
         CsEventBus.getDefault().register(this);

@@ -57,7 +57,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             OldStatisticManager.getInstance().sendStatistic();
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
@@ -82,7 +82,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
