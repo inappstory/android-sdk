@@ -62,6 +62,8 @@ public class InAppStoryService {
     }
 
     public String getUserId() {
+        if (userId == null && !InAppStoryManager.isNull())
+            return InAppStoryManager.getInstance().getUserId();
         return userId;
     }
 
@@ -345,7 +347,9 @@ public class InAppStoryService {
                     getInstance().onDestroy();
             }
             if (InAppStoryManager.getInstance() != null) {
-                InAppStoryManager.getInstance().createServiceThread(InAppStoryManager.getInstance().context);
+                InAppStoryManager.getInstance().createServiceThread(
+                        InAppStoryManager.getInstance().context,
+                        InAppStoryManager.getInstance().getUserId());
                 if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
                     InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
                 }

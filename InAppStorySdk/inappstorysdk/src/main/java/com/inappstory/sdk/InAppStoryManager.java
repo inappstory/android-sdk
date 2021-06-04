@@ -298,7 +298,7 @@ public class InAppStoryManager {
 
     Thread serviceThread;
 
-    void createServiceThread(final Context context) {
+    void createServiceThread(final Context context, final String userId) {
         if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().onDestroy();
         }
@@ -329,7 +329,7 @@ public class InAppStoryManager {
     private InAppStoryManager(final Builder builder) throws DataException {
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
-        createServiceThread(builder.context);
+        createServiceThread(builder.context, builder.userId);
         if (builder.context.getResources().getString(R.string.csApiKey).isEmpty() || builder.context.getResources().getString(R.string.csApiKey).equals("1")) {
             throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
         }
