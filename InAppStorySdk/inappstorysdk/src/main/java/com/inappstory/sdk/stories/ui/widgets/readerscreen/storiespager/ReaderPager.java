@@ -20,6 +20,7 @@ import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
+import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
 import com.inappstory.sdk.stories.events.SwipeLeftEvent;
 import com.inappstory.sdk.stories.events.SwipeRightEvent;
@@ -218,7 +219,10 @@ public class ReaderPager extends ViewPager {
                     cubeAnimation = false;
                 }
             }, 100);
-            CsEventBus.getDefault().post(new PrevStoryFragmentEvent(InAppStoryService.getInstance().getCurrentId()));
+            int storyId = ((ReaderPagerAdapter)getAdapter()).
+                    getItemId(getCurrentItem());
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+            CsEventBus.getDefault().post(new RestartStoryReaderEvent(storyId, story.getDurations().get(0)));
         }
     }
 

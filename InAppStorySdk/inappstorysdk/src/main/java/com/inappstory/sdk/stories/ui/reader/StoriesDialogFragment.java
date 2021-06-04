@@ -89,7 +89,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
         for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
-            story.lastIndex = 0;
+            story.setLastIndex(0);
         cleaned = true;
     }
 

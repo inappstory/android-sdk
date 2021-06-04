@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.Size;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +29,6 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.NextStoryPageEvent;
 import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
@@ -43,7 +41,6 @@ import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
@@ -52,9 +49,6 @@ import com.inappstory.sdk.stories.events.SyncTimerEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
-import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
-import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
-import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
@@ -63,7 +57,6 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
@@ -117,7 +110,7 @@ public class ReaderPageFragment extends Fragment {
                 if (story.durations != null) {
                     timeline.getManager().setStoryDurations(story.durations);
                 }
-                timeline.getManager().start(story.lastIndex);
+                // timeline.getManager().start(story.lastIndex);
             }
         }
     }
@@ -244,7 +237,7 @@ public class ReaderPageFragment extends Fragment {
             if (story.durations != null) {
                 timeline.getManager().setStoryDurations(story.durations);
             }
-            Log.e("slideAnimation", "StoryPageStartedEvent " + story.lastIndex + " " + event.index);
+            Log.e("Story_VisualTimers", "StoryPageStartedEvent");
             timeline.getManager().start(story.lastIndex);
             InAppStoryService.getInstance().getTimerManager().startTimer(story.getDurations().get(ind), true);
             if (OldStatisticManager.getInstance().currentEvent != null)
@@ -254,18 +247,16 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void prevStoryPage(PrevStoryPageEvent event) {
-        final int ind = event.getStoryIndex();
-        if (ind != storyId) return;
+        if (event.getStoryId() != storyId) return;
         if (story == null)
             story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null)
             return;
-        manager.prevSlide();
         int lind = story.lastIndex;
         if (lind > 0) {
-            CsEventBus.getDefault().post(new OnPrevEvent());
+            manager.prevSlide();
             StatisticManager.getInstance().sendCurrentState();
-            timeline.getManager().setCurrentSlide(lind - 1);
+            openPrevSlide(story);
         } else {
             CsEventBus.getDefault().post(new PrevStoryReaderEvent());
         }
@@ -274,13 +265,11 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void nextStoryPage(NextStoryPageEvent event) {
-        final int ind = event.getStoryIndex();
-        if (ind != storyId) return;
+        if (event.getStoryId() != storyId) return;
         if (story == null)
             story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         //storiesProgressView.skip();
         if (story == null) return;
-        manager.nextSlide();
         if (story.durations != null && !story.durations.isEmpty())
             story.slidesCount = story.durations.size();
 
@@ -289,10 +278,32 @@ public class ReaderPageFragment extends Fragment {
             CsEventBus.getDefault().post(new NextStoryReaderEvent());
 
         } else {
-            timeline.getManager().setCurrentSlide(story.lastIndex + 1);
-            CsEventBus.getDefault().post(new OnNextEvent());
+            manager.nextSlide();
+            StatisticManager.getInstance().sendCurrentState();
+            openNextSlide(story);
         }
     }
+
+    private void openNextSlide(Story st) {
+        if (st.lastIndex >= st.slidesCount - 1) return;
+        st.setLastIndex(st.lastIndex + 1);
+        InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId);
+        Log.e("Story_VisualTimers", "openNextSlide");
+        timeline.getManager().setCurrentSlide(st.lastIndex);
+        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, st.lastIndex);
+        manager.loadStoryAndSlide(st.id, st.lastIndex);
+    }
+
+    private void openPrevSlide(Story st) {
+        if (st.lastIndex <= 0) return;
+        st.setLastIndex(st.lastIndex - 1);
+        Log.e("changePriority", "openPrevSlide " + st.id + " " + st.lastIndex + " " + st.slidesCount);
+        Log.e("Story_VisualTimers", "openPrevSlide");
+        timeline.getManager().setCurrentSlide(st.lastIndex);
+        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, st.lastIndex);
+        manager.loadStoryAndSlide(st.id, st.lastIndex);
+    }
+
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeSoundStatus(SoundOnOffEvent event) {
@@ -303,10 +314,15 @@ public class ReaderPageFragment extends Fragment {
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void restartEvent(RestartStoryReaderEvent event) {
         if (storyId == event.getId()) {
-
-            timeline.setSlideDuration(event.getIndex(), event.getNewDuration());
-            timeline.forceStartProgress();
-            InAppStoryService.getInstance().getTimerManager().startTimer(event.getNewDuration(), true);
+            if (event.getIndex() > 0) {
+                timeline.setSlideDuration(event.getIndex(), event.getNewDuration());
+                timeline.forceStartProgress();
+                InAppStoryService.getInstance().getTimerManager().startTimer(event.getNewDuration(), true);
+            } else {
+     //           timeline.forceRestartProgress();
+                InAppStoryService.getInstance().getTimerManager().restartTimer(event.getNewDuration());
+                manager.restartSlide();
+            }
         }
     }
 
@@ -466,10 +482,10 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
         storiesView = new SimpleStoriesWebView(context);
-        ((SimpleStoriesWebView)storiesView).setLayoutParams(new LinearLayout.LayoutParams(
+        ((SimpleStoriesWebView) storiesView).setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        ((SimpleStoriesWebView)storiesView).setId(R.id.ias_stories_view);
-        webViewContainer.addView(((SimpleStoriesWebView)storiesView));
+        ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
+        webViewContainer.addView(((SimpleStoriesWebView) storiesView));
         return webViewContainer;
     }
 
@@ -533,14 +549,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void generatedWebPageEvent(final GeneratedWebPageEvent event) {
-        if (storyId != event.getStoryId()) return;
-        storiesView.getManager().loadWebData(event.getLayout(), event.getWebData());
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageTaskLoaded(PageTaskLoadedEvent event) {
-        Log.e("storyLoaded", "PageTaskLoadedEvent");
         manager.storyLoaded(event.getId(), event.getIndex());
     }
 

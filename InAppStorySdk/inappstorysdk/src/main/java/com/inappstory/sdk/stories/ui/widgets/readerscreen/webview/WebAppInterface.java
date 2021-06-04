@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.webkit.JavascriptInterface;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
@@ -13,7 +12,6 @@ import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesWebView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 

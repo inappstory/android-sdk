@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -36,6 +37,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStorie
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
+import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 import java.io.File;
@@ -49,7 +51,6 @@ import java.util.regex.Pattern;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.inappstory.sdk.InAppStoryManager.testGenerated;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
-import static com.inappstory.sdk.stories.utils.WebPageConverter.fromHtml;
 
 public class StoriesViewManager {
     public int index = -1;
@@ -79,6 +80,7 @@ public class StoriesViewManager {
 
     public void storyLoaded(int oId, int oInd) {
         if (storyId != oId || index != oInd) return;
+        Log.e("checkSlidesLoading", "storyLoaded" + oId + " " + oInd);
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
@@ -100,14 +102,14 @@ public class StoriesViewManager {
             if (testGenerated) {
                 initViews(story.slidesStructure.get(index));
             } else {
-                String innerWebData = story.pages.get(index);
-                String layout = getLayoutWithFonts(story.getLayout());
                 try {
-                    setWebViewSettings(innerWebData, layout);
+                    setWebViewSettings(story);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
+        } else {
+
         }
     }
 
@@ -123,6 +125,7 @@ public class StoriesViewManager {
 
     public void loadStory(final int id, final int index) {
         if (loadedId == id && loadedIndex == index) return;
+
         if (InAppStoryService.isNull())
             return;
         if (!InAppStoryService.isConnected()) {
@@ -130,15 +133,18 @@ public class StoriesViewManager {
             return;
         }
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+        Log.e("Story_LoadStory", "loadStory " + id + " " + index);
         if (story == null || story.checkIfEmpty()) {
             return;
         }
         if (story.slidesCount <= index) return;
+        Log.e("Story_LoadStory", "loadStory empty check " + id + " " + index);
         storyId = id;
         this.index = index;
         loadedIndex = index;
         loadedId = id;
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
+        Log.e("changePriority", "loadStory slideInCache " + id + " " + index + " " + slideInCache);
         if (!slideInCache) {
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false)); //animation
         } else {
@@ -146,18 +152,30 @@ public class StoriesViewManager {
         }
     }
 
-    void setWebViewSettings(String innerWebData, String layout) throws IOException {
+    void setWebViewSettings(Story story) throws IOException {
+        String innerWebData = story.pages.get(index);
+        String layout = getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
+        WebPageConvertCallback callback = new WebPageConvertCallback() {
+            @Override
+            public void onConvert(String webData, String webLayout, int lastIndex) {
+             //   Log.e("changePriority", "loadWebData" + storyId + " " + index);
+                if (index != lastIndex) return;
+               // Log.e("changePriority", "loadWebData" + storyId + " " + index);
+                loadWebData(webLayout, webData);
+            }
+        };
+        ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
         if (innerWebData.contains("<video")) {
             isVideo = true;
-            ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
+            converter.replaceVideoAndLoad(innerWebData, story, index, layout, callback);
         } else {
             isVideo = false;
-            ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, index, layout);
+            converter.replaceImagesAndLoad(innerWebData, story, index, layout, callback);
         }
     }
+
+    WebPageConverter converter = new WebPageConverter();
 
     String getLayoutWithFonts(String layout) {
         List<String> fonturls = new ArrayList<>();
@@ -165,7 +183,7 @@ public class StoriesViewManager {
         Matcher urlMatcher = FONT_SRC.matcher(layout);
         while (urlMatcher.find()) {
             if (urlMatcher.groupCount() == 1) {
-                fonturls.add(fromHtml(urlMatcher.group(1)).toString());
+                fonturls.add(converter.fromHtml(urlMatcher.group(1)).toString());
             }
         }
         for (String fonturl : fonturls) {
@@ -380,6 +398,10 @@ public class StoriesViewManager {
 
     public void stopVideo() {
         storiesView.stopVideo();
+    }
+
+    public void restartVideo() {
+        storiesView.restartVideo();
     }
 
     public void playVideo() {

@@ -124,6 +124,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
+    public void restartVideo() {
+
+    }
+
+    @Override
     public void stopVideo() {
         for (GeneratedVideoView videoView : tempVideos) {
             videoView.stopPlay();

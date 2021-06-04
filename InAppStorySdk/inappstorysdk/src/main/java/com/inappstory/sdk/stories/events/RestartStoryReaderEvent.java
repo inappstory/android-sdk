@@ -27,6 +27,11 @@ public class RestartStoryReaderEvent {
         this.newDuration = newDuration;
     }
 
+    public RestartStoryReaderEvent(int id, long newDuration) {
+        this.index = -1;
+        this.id = id;
+        this.newDuration = newDuration;
+    }
 
 }
 

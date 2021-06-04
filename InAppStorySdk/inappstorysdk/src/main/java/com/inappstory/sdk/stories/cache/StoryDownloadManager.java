@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
@@ -118,6 +119,17 @@ public class StoryDownloadManager {
         });
     }
 
+    public void changePriority(int storyId, List<Integer> adjacent) {
+        if (slidesDownloader != null)
+            slidesDownloader.changePriority(storyId, adjacent);
+    }
+
+    public void changePriorityForSingle(int storyId) {
+        if (slidesDownloader != null)
+            slidesDownloader.changePriorityForSingle(storyId);
+
+    }
+
     public void initDownloaders() {
 
         storyDownloader.init();
@@ -230,7 +242,7 @@ public class StoryDownloadManager {
                     e.printStackTrace();
                 }
             }
-        });
+        }, StoryDownloadManager.this);
 
         this.slidesDownloader = new SlidesDownloader(new DownloadPageCallback() {
             @Override
@@ -241,7 +253,7 @@ public class StoryDownloadManager {
                     e.printStackTrace();
                 }
             }
-        });
+        }, StoryDownloadManager.this);
     }
 
     public void addStoryTask(int storyId, ArrayList<Integer> addIds) {

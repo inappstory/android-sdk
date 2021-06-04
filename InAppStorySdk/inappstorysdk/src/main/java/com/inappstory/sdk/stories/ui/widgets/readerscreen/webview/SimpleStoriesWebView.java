@@ -59,25 +59,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     boolean clientIsSet = false;
 
     public void restartVideo() {
-        //if (isVideo) {
         stopVideo();
+
         playVideo();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                resumeVideo();
-            }
-        }, 200);
-        // }
     }
 
 
     private void replaceHtml(String page) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
-        } else {
-            loadUrl("javascript:(function(){show_slide(\"" + oldEscape(page) + "\");})()");
-        }
+        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }
 
     private String oldEscape(String raw) {
@@ -85,7 +74,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 .replaceAll("\"", "\\\\\"")
                 .replaceAll("\n", " ")
                 .replaceAll("\r", " ");
-        //.replaceAll("muted", "");
         return escaped;
     }
 
@@ -102,8 +90,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
     public void pauseVideo() {
-        // if (!isVideo) return;
-        //Log.e("playVideo", storyId + " pause");
         loadUrl("javascript:(function(){story_slide_pause();})()");
     }
 
@@ -157,7 +143,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         init();
     }
 
-    String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
+  //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
 
 
     public void destroyView() {
@@ -175,7 +161,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         loadUrl("about:blank");
         manager.loadedId = -1;
         manager.loadedIndex = -1;
-        //  onPause();
         removeAllViews();
         destroyDrawingCache();
     }
@@ -198,8 +183,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         final String data = tmpData;
         final String lt = tmpLayout;
         if (!notFirstLoading) {
-
-            Log.e("LoadHtml", "first");
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -209,7 +192,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 }
             });
         } else {
-            replaceHtml(data);
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    replaceHtml(data);
+                }
+            });
         }
     }
 
@@ -295,7 +283,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, url);
                         } catch (Exception e) {
-
                             return super.shouldInterceptRequest(view, url);
                         }
                     } else

@@ -6,15 +6,15 @@ package com.inappstory.sdk.stories.events;
 
 public class PrevStoryPageEvent {
 
-    public int getStoryIndex() {
-        return storyIndex;
+    public int getStoryId() {
+        return storyId;
     }
 
-    public PrevStoryPageEvent(int storyIndex)
+    public PrevStoryPageEvent(int storyId)
     {
-        this.storyIndex = storyIndex;
+        this.storyId = storyId;
     }
 
-    int storyIndex;
+    int storyId;
 
 }

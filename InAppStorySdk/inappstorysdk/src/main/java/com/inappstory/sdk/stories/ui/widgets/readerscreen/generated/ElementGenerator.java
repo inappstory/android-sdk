@@ -212,7 +212,7 @@ public class ElementGenerator {
                 break;
         }
         textView.setLayoutParams(lp);
-        Typeface t = AppearanceManager.getInstance().getFont(element.secondaryFont, element.bold, element.italic);
+        Typeface t = AppearanceManager.getCommonInstance().getFont(element.secondaryFont, element.bold, element.italic);
         int bold = element.bold ? 1 : 0;
         int italic = element.italic ? 2 : 0;
         textView.setTypeface(t != null ? t : textView.getTypeface(), bold + italic);
@@ -267,7 +267,7 @@ public class ElementGenerator {
                 break;
         }
         textView.setLayoutParams(lp);
-        Typeface t = AppearanceManager.getInstance().getFont(element.secondaryFont, element.bold, element.italic);
+        Typeface t = AppearanceManager.getCommonInstance().getFont(element.secondaryFont, element.bold, element.italic);
         int bold = element.bold ? 1 : 0;
         int italic = element.italic ? 2 : 0;
         textView.setTypeface(t != null ? t : textView.getTypeface(), bold + italic);

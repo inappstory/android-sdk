@@ -1,20 +1,22 @@
 package com.inappstory.sdk.stories.events;
 
+import android.util.Log;
+
 /**
  * Created by Paperrose on 15.06.2018.
  */
 
 public class NextStoryPageEvent {
 
-    public int getStoryIndex() {
-        return storyIndex;
+    public int getStoryId() {
+        return storyId;
     }
 
-    public NextStoryPageEvent(int storyIndex) {
-
-        this.storyIndex = storyIndex;
+    public NextStoryPageEvent(int storyId) {
+        Log.e("Story_Events", "NextStoryPageEvent " + storyId);
+        this.storyId = storyId;
     }
 
-    int storyIndex;
+    int storyId;
 
 }

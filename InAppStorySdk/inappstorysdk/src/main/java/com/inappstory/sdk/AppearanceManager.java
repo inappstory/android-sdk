@@ -3,12 +3,10 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
@@ -20,7 +18,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
  * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
- * For a global setting, you must call the static method of the class {@link #setInstance(AppearanceManager)}.
+ * For a global setting, you must call the static method of the class {@link #setCommonInstance(AppearanceManager)}.
  */
 public class AppearanceManager {
 
@@ -101,11 +99,25 @@ public class AppearanceManager {
         return csCloseOnOverscroll;
     }
 
+    /**
+     * use to set if stories reader can be closed by swipe down
+     * @param closeOnSwipe (closeOnSwipe) true - if reader has to be closed by swipe down
+     *                     true by default
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csCloseOnSwipe(boolean closeOnSwipe) {
         this.csCloseOnSwipe = csCloseOnSwipe;
         return AppearanceManager.this;
     }
 
+
+    /**
+     * use to set if stories reader can be closed by swipe right
+     * on first slide of first story or last slide of last story
+     * @param closeOnOverscroll (closeOnOverscroll) true - if reader has to be closed by swipe
+     *                          true by default
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csCloseOnOverscroll(boolean closeOnOverscroll) {
         this.csCloseOnOverscroll = closeOnOverscroll;
         return AppearanceManager.this;
@@ -114,19 +126,29 @@ public class AppearanceManager {
     private boolean csCloseOnSwipe;
     private boolean csCloseOnOverscroll;
 
-    private static AppearanceManager mainInstance;
+    private static AppearanceManager commonInstance;
 
-    public static AppearanceManager getInstance() {
-        return mainInstance;
+    public static AppearanceManager getCommonInstance() {
+        if (commonInstance == null) {
+            synchronized (lock) {
+                if (commonInstance == null)
+                    commonInstance = new AppearanceManager();
+            }
+        }
+        return commonInstance;
     }
 
+    private static Object lock = new Object();
+
     /**
-     * use to set global {@link AppearanceManager}
+     * use to set common {@link AppearanceManager}
      *
      * @param manager (manager) {@link AppearanceManager} instance
      */
-    public static void setInstance(AppearanceManager manager) {
-        mainInstance = manager;
+    public static void setCommonInstance(AppearanceManager manager) {
+        synchronized (lock) {
+            commonInstance = manager;
+        }
     }
 
 
@@ -274,51 +296,105 @@ public class AppearanceManager {
         return csSoundIcon != 0 ? csSoundIcon : R.drawable.ic_stories_status_sound;
     }
 
+    /**
+     * use to allow users use like/dislike features (available in stories reader)
+     * @param hasLike (hasLike) true - to use this feature
+     *                 false by default
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csHasLike(boolean hasLike) {
         this.csHasLike = hasLike;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to allow users use favorite features (favorite cell in list and add/remove)
+     * @param hasFavorite (hasFavorite) true - to use this feature
+     *                     false by default
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csHasFavorite(boolean hasFavorite) {
         this.csHasFavorite = hasFavorite;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to allow users use share features (available in stories reader)
+     * @param hasShare (hasShare) true - to use this feature
+     *                 false by default
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csHasShare(boolean hasShare) {
         this.csHasShare = hasShare;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to change default favorite icon (available in stories reader)
+     * @param favoriteIcon (favoriteIcon) drawable id
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csFavoriteIcon(int favoriteIcon) {
         csFavoriteIcon = favoriteIcon;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to change default like icon (available in stories reader)
+     * @param likeIcon (likeIcon) drawable id
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csLikeIcon(int likeIcon) {
         csLikeIcon = likeIcon;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to change default dislike icon (available in stories reader)
+     * @param dislikeIcon (dislikeIcon) drawable id
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csDislikeIcon(int dislikeIcon) {
         csDislikeIcon = dislikeIcon;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to change default share icon (available in stories reader)
+     * @param shareIcon (shareIcon) drawable id
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csShareIcon(int shareIcon) {
         csShareIcon = shareIcon;
         return AppearanceManager.this;
     }
 
+
+    /**
+     * use to change default close icon (available in stories reader)
+     * @param closeIcon (closeIcon) drawable id
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csCloseIcon(int closeIcon) {
         csCloseIcon = closeIcon;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to change default refresh icon (available in stories reader)
+     * @param refreshIcon (refreshIcon) drawable id
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csRefreshIcon(int refreshIcon) {
         csRefreshIcon = refreshIcon;
         return AppearanceManager.this;
     }
 
+    /**
+     * use to change default sound icon (available in stories reader)
+     * @param soundIcon (soundIcon) drawable id
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csSoundIcon(int soundIcon) {
         csSoundIcon = soundIcon;
         return AppearanceManager.this;
@@ -400,6 +476,7 @@ public class AppearanceManager {
     private int csListOpenedItemBorderColor = Color.GRAY;
 
 
+    @Deprecated
     public AppearanceManager csListItemTitleVisibility(boolean csListItemTitleVisibility) {
         this.csListItemTitleVisibility = csListItemTitleVisibility;
         return AppearanceManager.this;
@@ -427,21 +504,25 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csListItemSourceVisibility(boolean csListItemSourceVisibility) {
         this.csListItemSourceVisibility = csListItemSourceVisibility;
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csListItemSourceSize(int csListItemSourceSize) {
         this.csListItemSourceSize = csListItemSourceSize;
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csListItemSourceColor(int csListItemSourceColor) {
         this.csListItemSourceColor = csListItemSourceColor;
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csListItemBorderVisibility(boolean csListItemBorderVisibility) {
         this.csListItemBorderVisibility = csListItemBorderVisibility;
         return AppearanceManager.this;
@@ -463,6 +544,7 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csListOpenedItemBorderVisibility(boolean csListOpenedItemBorderVisibility) {
         this.csListOpenedItemBorderVisibility = csListOpenedItemBorderVisibility;
         return AppearanceManager.this;

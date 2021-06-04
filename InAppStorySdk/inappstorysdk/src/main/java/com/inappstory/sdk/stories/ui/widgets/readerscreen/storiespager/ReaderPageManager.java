@@ -51,7 +51,7 @@ public class ReaderPageManager {
     }
 
     void restartSlide() {
-
+        webViewManager.restartVideo();
     }
 
     void setStoryInfo(Story story, boolean full) {

@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.events;
 
+import android.util.Log;
+
 /**
  * Created by Paperrose on 15.06.2018.
  */
@@ -25,6 +27,7 @@ public class StoryPageOpenEvent {
         this.isPrev = isPrev;
         this.index = index;
         this.storyId = storyId;
+        Log.e("Story_Events", "StoryPageOpenEvent " + storyId + " " + index);
     }
 
     public StoryPageOpenEvent(int storyId, int index) {

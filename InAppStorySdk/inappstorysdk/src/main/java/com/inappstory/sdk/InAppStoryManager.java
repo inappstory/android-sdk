@@ -227,9 +227,8 @@ public class InAppStoryManager {
     }
 
     /**
-     * use to customize default string in stories runtime.
-     * @param key (key) - what we replace
-     * @param value (value) - replacement result
+     * use to customize default strings in stories runtime.
+     * @param placeholders (placeholders) - key-value map (key - what we replace, value - replacement result)
      */
     public void setPlaceholders(@NonNull Map<String, String> placeholders) {
 
@@ -271,22 +270,6 @@ public class InAppStoryManager {
 
     boolean closeOnOverscroll = true;
     boolean closeOnSwipe = true;
-
-    public boolean hasLike() {
-        return hasLike;
-    }
-
-    public boolean hasShare() {
-        return hasShare;
-    }
-
-    public boolean hasFavorite() {
-        return hasFavorite;
-    }
-
-    public boolean hasLike = false;
-    public boolean hasShare = false;
-    public boolean hasFavorite = false;
 
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
     private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
@@ -379,11 +362,6 @@ public class InAppStoryManager {
                         "",
                 builder.tags != null ? builder.tags : null,
                 builder.placeholders != null ? builder.placeholders : null,
-                builder.closeOnOverscroll,
-                builder.closeOnSwipe,
-                builder.hasFavorite,
-                builder.hasLike,
-                builder.hasShare,
                 builder.sendStatistic);
 
     }
@@ -440,11 +418,6 @@ public class InAppStoryManager {
                              String userId,
                              ArrayList<String> tags,
                              Map<String, String> placeholders,
-                             boolean closeOnOverscroll,
-                             boolean closeOnSwipe,
-                             boolean hasFavorite,
-                             boolean hasLike,
-                             boolean hasShare,
                              boolean sendStatistic) {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
@@ -452,11 +425,6 @@ public class InAppStoryManager {
         if (placeholders != null)
             setPlaceholders(placeholders);
         this.sendStatistic = sendStatistic;
-        this.closeOnOverscroll = closeOnOverscroll;
-        this.closeOnSwipe = closeOnSwipe;
-        this.hasFavorite = hasFavorite;
-        this.hasLike = hasLike;
-        this.hasShare = hasShare;
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         NetworkClient.setContext(context);
@@ -763,26 +731,6 @@ public class InAppStoryManager {
             return sandbox;
         }
 
-        public boolean closeOnOverscroll() {
-            return closeOnOverscroll;
-        }
-
-        public boolean closeOnSwipe() {
-            return closeOnSwipe;
-        }
-
-        public boolean hasLike() {
-            return hasLike;
-        }
-
-        public boolean hasFavorite() {
-            return hasFavorite;
-        }
-
-        public boolean hasShare() {
-            return hasShare;
-        }
-
         public String userId() {
             return userId;
         }
@@ -808,15 +756,9 @@ public class InAppStoryManager {
         }
 
         boolean sandbox;
-        boolean closeOnOverscroll = true;
-        boolean closeOnSwipe = true;
-        boolean hasLike = false;
         boolean sendStatistic = true;
 
-
         int cacheSize;
-        boolean hasFavorite = false;
-        boolean hasShare = false;
         String userId;
         String apiKey;
         String testKey;
@@ -850,62 +792,6 @@ public class InAppStoryManager {
          */
         public Builder cacheSize(int cacheSize) {
             Builder.this.cacheSize = cacheSize;
-            return Builder.this;
-        }
-
-        /**
-         * use to set if stories reader can be closed by swipe down
-         * @param closeOnSwipe (closeOnSwipe) true - if reader has to be closed by swipe down
-         *                     true by default
-         * @return {@link Builder}
-         */
-        public Builder closeOnSwipe(boolean closeOnSwipe) {
-            Builder.this.closeOnSwipe = closeOnSwipe;
-            return Builder.this;
-        }
-
-        /**
-         * use to set if stories reader can be closed by swipe right
-         * on first slide of first story or last slide of last story
-         * @param closeOnOverscroll (closeOnOverscroll) true - if reader has to be closed by swipe
-         *                          true by default
-         * @return {@link Builder}
-         */
-        public Builder closeOnOverscroll(boolean closeOnOverscroll) {
-            Builder.this.closeOnOverscroll = closeOnOverscroll;
-            return Builder.this;
-        }
-
-        /**
-         * use to allow users use favorite features (favorite cell in list and add/remove)
-         * @param hasFavorite (hasFavorite) true - to use this feature
-         *                     false by default
-         * @return {@link Builder}
-         */
-        public Builder hasFavorite(boolean hasFavorite) {
-            Builder.this.hasFavorite = hasFavorite;
-            return Builder.this;
-        }
-
-        /**
-         * use to allow users use share features (available in stories reader)
-         * @param hasShare (hasShare) true - to use this feature
-         *                 false by default
-         * @return {@link Builder}
-         */
-        public Builder hasShare(boolean hasShare) {
-            Builder.this.hasShare = hasShare;
-            return Builder.this;
-        }
-
-        /**
-         * use to allow users use like/dislike features (available in stories reader)
-         * @param hasLike (hasLike) true - to use this feature
-         *                 false by default
-         * @return {@link Builder}
-         */
-        public Builder hasLike(boolean hasLike) {
-            Builder.this.hasLike = hasLike;
             return Builder.this;
         }
 

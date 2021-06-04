@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
+import android.util.Log;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -16,6 +17,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -35,12 +37,15 @@ class SlidesDownloader {
         return sync;
     }
 
+    StoryDownloadManager manager;
+
     void init() {
         try {
             if (handler != null) {
                 handler.removeCallbacks(queuePageReadRunnable);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         handler.postDelayed(queuePageReadRunnable, 100);
     }
 
@@ -53,6 +58,8 @@ class SlidesDownloader {
     void cleanTasks() {
         synchronized (pageTasksLock) {
             pageTasks.clear();
+            firstPriority.clear();
+            secondPriority.clear();
         }
     }
 
@@ -60,10 +67,11 @@ class SlidesDownloader {
     private final Object pageTasksLock = new Object();
     private final ExecutorService loader = Executors.newFixedThreadPool(1);
 
-    SlidesDownloader(DownloadPageCallback callback) {
+    SlidesDownloader(DownloadPageCallback callback, StoryDownloadManager manager) {
         this.callback = callback;
         this.handler = new Handler();
         this.errorHandler = new Handler();
+        this.manager = manager;
         handler.postDelayed(queuePageReadRunnable, 100);
     }
 
@@ -103,28 +111,96 @@ class SlidesDownloader {
 
     private static final String VIDEO = "video";
 
+    List<Pair<Integer, Integer>> firstPriority = new ArrayList<>();
+    List<Pair<Integer, Integer>> secondPriority = new ArrayList<>();
+
+    //adjacent - for next and prev story
+    void changePriority(Integer storyId, List<Integer> adjacents) {
+       // Log.e("changePriority", "multiple");
+        synchronized (pageTasksLock) {
+            for (int i = firstPriority.size() - 1; i >= 0; i--) {
+                if (!secondPriority.contains(firstPriority.get(i))) {
+                    secondPriority.add(0, firstPriority.get(i));
+                }
+            }
+            firstPriority.clear();
+            Story currentStory = manager.getStoryById(storyId);
+            int sc = currentStory.slidesCount;
+            for (int i = 0; i < sc; i++) {
+                Pair<Integer, Integer> kv = new Pair<>(storyId, i);
+                secondPriority.remove(kv);
+         //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
+         //           continue;
+                if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
+                    continue;
+                firstPriority.add(kv);
+            }
+            if (sc > currentStory.lastIndex) {
+                firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
+                if (sc > currentStory.lastIndex + 1) {
+                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex+1));
+                }
+            }
+            int ind = Math.min(firstPriority.size(), 2);
+            for (Integer adjacent : adjacents) {
+                Story adjacentStory = manager.getStoryById(adjacent);
+                if (adjacentStory.lastIndex < adjacentStory.slidesCount - 1) {
+                    Pair<Integer, Integer> nk = new Pair<>(adjacent, adjacentStory.lastIndex + 1);
+                    secondPriority.remove(nk);
+
+        //            if (!(pageTasks.containsKey(nk) && pageTasks.get(nk).loadType != 0))
+                        firstPriority.add(ind, nk);
+                }
+
+                Pair<Integer, Integer> ck = new Pair<>(adjacent, adjacentStory.lastIndex);
+                secondPriority.remove(ck);
+
+           //     if (!(pageTasks.containsKey(ck) && pageTasks.get(ck).loadType != 0))
+                    firstPriority.add(ind, ck);
+            }
+        }
+    }
+
+    void changePriorityForSingle(Integer storyId) {
+      //  Log.e("changePriority", "single");
+        synchronized (pageTasksLock) {
+            Story currentStory = manager.getStoryById(storyId);
+            int sc = currentStory.slidesCount;
+            for (int i = 0; i < sc; i++) {
+                Pair<Integer, Integer> kv = new Pair<>(storyId, i);
+                firstPriority.remove(kv);
+            }
+
+            for (int i = 0; i < sc; i++) {
+                Pair<Integer, Integer> kv = new Pair<>(storyId, i);
+           //     if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
+           //         continue;
+                if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
+                    continue;
+                firstPriority.add(kv);
+            }
+            if (sc > currentStory.lastIndex) {
+                firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
+                if (sc > currentStory.lastIndex + 1) {
+                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex+1));
+                }
+            }
+        }
+    }
+
     void addStoryPages(Story story, int loadType) throws Exception {
         synchronized (pageTasksLock) {
             int key = story.id;
-            Set<Pair<Integer, Integer>> keys = pageTasks.keySet();
             int sz;
             if (loadType == 3) {
                 sz = story.pages.size();
-                for (Pair<Integer, Integer> taskKey : keys) {
-                    if (pageTasks.get(taskKey).loadType != 0)
-                        continue;
-                    pageTasks.get(taskKey).priority += story.pages.size() + 4;
-                }
                 for (int i = 0; i < sz; i++) {
                     if (pageTasks.get(new Pair<>(key, i)) == null) {
                         StoryPageTask spt = new StoryPageTask();
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
                         spt.videoUrls = story.getSrcListUrls(i, VIDEO);
-                        spt.priority = i < 2 ? i : i + 4;
                         pageTasks.put(new Pair<>(key, i), spt);
-                    } else {
-                        pageTasks.get(new Pair<>(key, i)).priority = i < 2 ? i : i + 4;
                     }
                 }
             } else {
@@ -135,10 +211,7 @@ class SlidesDownloader {
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
                         spt.videoUrls = story.getSrcListUrls(i, VIDEO);
-                        spt.priority = i + 2;
                         pageTasks.put(new Pair<>(key, i), spt);
-                    } else {
-                        pageTasks.get(new Pair<>(key, i)).priority = i + 2;
                     }
                 }
 
@@ -175,7 +248,10 @@ class SlidesDownloader {
                 handler.postDelayed(queuePageReadRunnable, 100);
                 return;
             }
-
+            synchronized (pageTasksLock) {
+              //  firstPriority.remove(key);
+             //   secondPriority.remove(key);
+            }
             if (StatisticSession.needToUpdate()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
@@ -225,6 +301,7 @@ class SlidesDownloader {
             }
             synchronized (pageTasksLock) {
                 pageTasks.get(key).loadType = 2;
+                //Log.e("changePriority", key + " ");
             }
             CsEventBus.getDefault().post(new PageTaskLoadedEvent(key.first, key.second));
             handler.postDelayed(queuePageReadRunnable, 200);
@@ -242,26 +319,26 @@ class SlidesDownloader {
         synchronized (pageTasksLock) {
             if (pageTasks == null) pageTasks = new HashMap<>();
             if (pageTasks.get(key) != null && pageTasks.get(key).loadType == -1) {
-                pageTasks.get(key).priority = 0;
                 pageTasks.get(key).loadType = 0;
             }
         }
     }
 
     private Pair<Integer, Integer> getMaxPriorityPageTaskKey() {
-        Pair<Integer, Integer> keyRes = null;
-        int priority = 100000;
         synchronized (pageTasksLock) {
             if (pageTasks == null || pageTasks.size() == 0) return null;
-            Set<Pair<Integer, Integer>> keys = pageTasks.keySet();
-            for (Pair<Integer, Integer> key : keys) {
+            if (firstPriority == null || secondPriority == null) return null;
+            for (Pair<Integer, Integer> key : firstPriority) {
+                if (!pageTasks.containsKey(key)) continue;
                 if (pageTasks.get(key).loadType != 0) continue;
-                if (pageTasks.get(key).priority < priority) {
-                    keyRes = key;
-                    priority = pageTasks.get(key).priority;
-                }
+                return key;
             }
-            return keyRes;
+            for (Pair<Integer, Integer> key : secondPriority) {
+                if (!pageTasks.containsKey(key)) continue;
+                if (pageTasks.get(key).loadType != 0) continue;
+                return key;
+            }
+            return null;
         }
     }
 

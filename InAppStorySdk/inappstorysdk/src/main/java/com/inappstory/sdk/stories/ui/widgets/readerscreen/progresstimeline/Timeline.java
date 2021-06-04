@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -73,6 +74,17 @@ public class Timeline extends LinearLayout {
 
     public void forceStartProgress() {
         try {
+            Log.e("Story_VisualTimers", "forceStartProgress");
+            getManager().start(activeInd);
+        } catch (Exception e) {
+        }
+    }
+
+    public void forceRestartProgress() {
+        try {
+      //      if (curAnimation != null) curAnimation.cancel();
+      //      curAnimation = progressBars.get(activeInd).animation;
+      //      Log.e("Story_VisualTimers", "forceRestartProgress");
             getManager().start(activeInd);
         } catch (Exception e) {
         }
@@ -86,6 +98,7 @@ public class Timeline extends LinearLayout {
             curAnimation = progressBars.get(ind).animation;
             activeInd = ind;
         }
+        Log.e("Story_VisualTimers", "setActive " + activeInd);
         timelineManager.setCurrentSlide(activeInd);
     }
 

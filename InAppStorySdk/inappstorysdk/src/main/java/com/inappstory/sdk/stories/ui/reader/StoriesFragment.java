@@ -20,7 +20,6 @@ import androidx.viewpager.widget.ViewPager;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -57,8 +56,6 @@ import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
 import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPagerAdapter;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
@@ -308,11 +305,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                         adds.add(currentIds.get(position - 1));
                     }
                 }
-                Log.e("PageTaskToLoadEvent", "addStoryTask " + currentIds.get(position));
+                if (InAppStoryService.isNull()) return;
+
+                InAppStoryService.getInstance().getDownloadManager().changePriority(currentIds.get(position), adds);
                 InAppStoryService.getInstance().getDownloadManager().addStoryTask(currentIds.get(position), adds);
 
 
-                if (InAppStoryService.isNull()) return;
                 if (currentIds != null && currentIds.size() > position) {
                     OldStatisticManager.getInstance().addStatisticBlock(currentIds.get(position),
                             InAppStoryService.getInstance().getDownloadManager().getStoryById(currentIds.get(position)).lastIndex);
@@ -469,26 +467,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void nextStoryPageEvent(OnNextEvent event) {
-        if (isDestroyed) return;
-        if (InAppStoryService.isNull()) return;
-        Story st = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId());
-        if (st.durations != null && !st.durations.isEmpty()) st.slidesCount = st.durations.size();
-        if (currentIndex < st.slidesCount - 1) {
-            currentIndex++;
-        }
-
-        CsEventBus.getDefault().post(new StoryPageOpenEvent(
-                InAppStoryService.getInstance().getCurrentId(),
-                currentIndex, true, false
-        ));
-
-        if (st.lastIndex < st.slidesCount) {
-            st.lastIndex++;
-        }
-    }
 
 
 
@@ -497,8 +475,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void setCurrentIndexEvent(ChangeIndexEvent event) {
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
+            Log.e("changePriority", "set0 setCurrentIndexEvent " + event.getIndex());
             InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentIds.get(curItem)).lastIndex = event.getIndex();
+                    .getStoryById(currentIds.get(curItem)).setLastIndex(event.getIndex());
             CsEventBus.getDefault().post(new ChangeIndexEventInFragment(event.getIndex(), currentIds.get(curItem)));
         }
     }
@@ -512,30 +491,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
         if (isDestroyed) return;
         currentIndex = event.getIndex();
-
     }
 
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void onPrev(OnPrevEvent event) {
-        if (isDestroyed) return;
-        if (InAppStoryService.isNull()) return;
-
-        Handler handler = new Handler(Looper.getMainLooper());
-        if (InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId()).lastIndex > 0) {
-            InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId()).lastIndex--;
-        }
-        if (currentIndex > 0) {
-            currentIndex--;
-            CsEventBus.getDefault().post(new StoryPageOpenEvent(
-                    InAppStoryService.getInstance().getCurrentId(),
-                    currentIndex, false, true
-            ));
-        }
-
-    }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(ChangeStoryEvent event) {

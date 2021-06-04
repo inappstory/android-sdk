@@ -75,12 +75,12 @@ public class GameActivity extends AppCompatActivity {
         loaderContainer = findViewById(R.id.loaderContainer);
         blackTop = findViewById(R.id.blackTop);
         blackBottom = findViewById(R.id.blackBottom);
-        if (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csGameLoaderView() == null) {
+        if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
             loaderView = new GameLoadProgressBar(GameActivity.this,
                     null,
                     android.R.attr.progressBarStyleHorizontal);
         } else {
-            loaderView = AppearanceManager.getInstance().csGameLoaderView();
+            loaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
         }
         if (Sizes.isTablet() && baseContainer != null) {
             baseContainer.setOnClickListener(new View.OnClickListener() {

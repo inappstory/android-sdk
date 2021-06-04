@@ -9,9 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
@@ -106,7 +104,7 @@ public class ScreensManager {
             bundle.putInt("source", source);
             bundle.putIntegerArrayList("stories_ids", storiesIds);
             if (manager == null) {
-                manager = AppearanceManager.getInstance();
+                manager = AppearanceManager.getCommonInstance();
             }
             if (manager != null) {
                 bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
@@ -132,7 +130,7 @@ public class ScreensManager {
             Context ctx = (InAppStoryService.isNotNull() ?
                     InAppStoryService.getInstance().getContext() : outerContext);
             Intent intent2 = new Intent(ctx,
-                    (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csIsDraggable()) ?
+                    AppearanceManager.getCommonInstance().csIsDraggable() ?
                             StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", index);
             intent2.putExtra("source", source);

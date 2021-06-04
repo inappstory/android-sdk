@@ -45,7 +45,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     public Parcelable saveState() {
         try {
             Bundle bundle = (Bundle) super.saveState();
-            bundle.putParcelableArray("states", null); // Never maintain any states from the base class, just null it out
+            bundle.putParcelableArray("states", null);
             return bundle;
         } catch (Exception e) {
             return new Bundle();
@@ -61,16 +61,8 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     }
 
 
-  //  private int closePosition = 0;
-
-  //  private boolean closeOnSwipe = false;
-  //  private boolean hasFavorite = false;
-  //  private boolean hasShare = false;
- //   private boolean hasLike = false;
-
-
     private HashMap<Integer, ReaderPageFragment> fragMap =
-            new HashMap<Integer, ReaderPageFragment>();
+            new HashMap<>();
 
 
     @NonNull

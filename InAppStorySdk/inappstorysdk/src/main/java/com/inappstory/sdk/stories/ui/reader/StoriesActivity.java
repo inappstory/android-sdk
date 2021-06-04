@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -418,8 +419,10 @@ public class StoriesActivity extends AppCompatActivity {
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
         if (InAppStoryService.getInstance().getDownloadManager() != null)
-            for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
-                story.lastIndex = 0;
+            for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {
+                Log.e("changePriority", "set0 cleanReader");
+                story.setLastIndex(0);
+            }
         cleaned = true;
     }
 

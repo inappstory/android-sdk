@@ -180,10 +180,10 @@ public class InAppStoryService {
             INSTANCE = null;
     }
 
-    @CsSubscribe//(threadMode = CsThreadMode.MAIN)
-    public void changeStoryPageEvent(StoryPageOpenEvent event) {
-        OldStatisticManager.getInstance().addStatisticBlock(event.storyId, event.index);
-        StatisticManager.getInstance().createCurrentState(event.storyId, event.index);
+
+    public void sendPageOpenStatistic(int storyId, int index) {
+        OldStatisticManager.getInstance().addStatisticBlock(storyId, index);
+        StatisticManager.getInstance().createCurrentState(storyId, index);
     }
 
     public boolean isBackgroundPause = false;
@@ -193,6 +193,7 @@ public class InAppStoryService {
         currentId = 0;
         currentIndex = 0;
         for (int i = 0; i < InAppStoryService.getInstance().getDownloadManager().getStories().size(); i++) {
+            Log.e("changePriority", "set0 destroy");
             InAppStoryService.getInstance().getDownloadManager().getStories().get(i).lastIndex = 0;
         }
     }

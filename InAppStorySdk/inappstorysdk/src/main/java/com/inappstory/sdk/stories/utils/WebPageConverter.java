@@ -16,10 +16,11 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 
 public class WebPageConverter {
-    public static Spanned fromHtml(String html) {
+    public Spanned fromHtml(String html) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
         } else {
@@ -27,10 +28,10 @@ public class WebPageConverter {
         }
     }
 
-    public static void replaceImagesAndLoad(String innerWebData, final int storyId, final int index, String layout) throws IOException {
-        boolean exists = false;
-        List<String> imgs = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).getSrcListUrls(index, null);
-        List<String> imgKeys = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).getSrcListKeys(index, null);
+    public void replaceImagesAndLoad(String innerWebData, Story story, final int index, String layout,
+                                     WebPageConvertCallback callback) throws IOException {
+        List<String> imgs = story.getSrcListUrls(index, null);
+        List<String> imgKeys = story.getSrcListKeys(index, null);
         for (int i = 0; i < imgs.size(); i++) {
             String img = imgs.get(i);
             String imgKey = imgKeys.get(i);
@@ -61,18 +62,22 @@ public class WebPageConverter {
                 }
             }
         }
-        String webData = layout
-                .replace("//_ratio = 0.66666666666,", "")
-                .replace("{{%content}}", innerWebData);
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
-        return;
+        try {
+            String wData = layout
+                    .replace("//_ratio = 0.66666666666,", "")
+                    .replace("{{%content}}", innerWebData);
+            callback.onConvert(innerWebData, wData, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void replaceVideoAndLoad(String innerWebData, final int storyId, final int index, String layout) throws IOException {
-        List<String> videos = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListUrls(index, "video");
-        List<String> videosKeys = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListKeys(index, "video");
+
+
+    public void replaceVideoAndLoad(String innerWebData, Story story, final int index, String layout,
+                                    WebPageConvertCallback callback) throws IOException {
+        List<String> videos = story.getSrcListUrls(index, "video");
+        List<String> videosKeys = story.getSrcListKeys(index, "video");
         LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
         for (int i = 0; i < videos.size(); i++) {
             String video = videos.get(i);
@@ -83,10 +88,8 @@ public class WebPageConverter {
             }
             innerWebData = innerWebData.replace(videoKey, video);
         }
-        List<String> imgs = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListUrls(index, null);
-        List<String> imgKeys = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListKeys(index, null);
+        List<String> imgs = story.getSrcListUrls(index, null);
+        List<String> imgKeys = story.getSrcListKeys(index, null);
         for (int i = 0; i < imgs.size(); i++) {
             String img = imgs.get(i);
             String imgKey = imgKeys.get(i);
@@ -113,20 +116,13 @@ public class WebPageConverter {
                 }
             }
         }
-        String webData = layout
-                .replace("//_ratio = 0.66666666666,", "")
-                .replace("{{%content}}", innerWebData);
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
-        return;
+        try {
+            String wData = layout
+                    .replace("//_ratio = 0.66666666666,", "")
+                    .replace("{{%content}}", innerWebData);
+            callback.onConvert(innerWebData, wData, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
-    public static void replaceEmptyAndLoad(String innerWebData, final int storyId, final int index, String layout) {
-        String webData = layout
-                .replace("//_ratio = 0.66666666666,", "")
-                .replace("{{%content}}", innerWebData)
-                .replace("window.Android.storyLoaded", "window.Android.emptyLoaded");
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
-        return;
-    }
-
 }

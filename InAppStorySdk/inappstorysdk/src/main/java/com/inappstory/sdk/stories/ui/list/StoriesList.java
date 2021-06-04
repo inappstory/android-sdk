@@ -193,7 +193,7 @@ public class StoriesList extends RecyclerView {
         public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
             View child = rv.findChildViewUnder(e.getX(), e.getY());
             if (appearanceManager == null) {
-                appearanceManager = AppearanceManager.getInstance();
+                appearanceManager = AppearanceManager.getCommonInstance();
             }
             if (touchListener == null)
                 touchListener = appearanceManager.csStoryTouchListener();
@@ -316,7 +316,7 @@ public class StoriesList extends RecyclerView {
 
     public void loadStories() throws DataException {
         if (appearanceManager == null) {
-            appearanceManager = AppearanceManager.getInstance();
+            appearanceManager = AppearanceManager.getCommonInstance();
         }
         if (appearanceManager == null) {
             throw new DataException("Need to set an AppearanceManager", new Throwable("StoriesList data is not valid"));

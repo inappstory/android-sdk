@@ -9,4 +9,11 @@ public class StoryPageTask {
     public List<String> urlKeys = new ArrayList<>();
     List<String> videoUrls = new ArrayList<>();
     int loadType = 0; //0 - not loaded, 1 - loading, 2 - loaded
+
+    @Override
+    public String toString() {
+        return "StoryPageTask{" +
+                ", loadType=" + loadType +
+                '}';
+    }
 }

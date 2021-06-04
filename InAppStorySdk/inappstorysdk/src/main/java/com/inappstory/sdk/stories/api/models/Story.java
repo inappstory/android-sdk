@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 
 import java.util.ArrayList;
@@ -74,6 +75,16 @@ public class Story implements Parcelable {
 
     public String getVideoUrl() {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
+    }
+
+    public void setLastIndex(int lastIndex) {
+        this.lastIndex = lastIndex;
+        try {
+            InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(id).lastIndex = lastIndex;
+        } catch (Exception e) {
+
+        }
     }
 
     /**
@@ -276,6 +287,7 @@ public class Story implements Parcelable {
         if (durations == null) durations = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         id = in.readInt();
+        Log.e("changePriority", "set0 readFromParcel");
         lastIndex = in.readInt();
         title = in.readString();
         source = in.readString();
