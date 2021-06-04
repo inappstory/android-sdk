@@ -119,7 +119,7 @@ public class ReaderPager extends ViewPager {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
         if (cubeAnimation) {
-            return false;
+            return true;
         }
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         float pressedEndX = 0f;

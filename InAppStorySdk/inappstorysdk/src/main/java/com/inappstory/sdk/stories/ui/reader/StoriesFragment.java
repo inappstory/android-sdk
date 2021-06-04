@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.reader;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -85,12 +86,15 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    Log.e("check_mask", "onPageScrolled mask is gone");
                     invMask.setVisibility(View.GONE);
                 }
-            }, 100);
+            }, 400);
         } else {
-            if (invMask.getVisibility() != View.VISIBLE)
+            if (invMask.getVisibility() != View.VISIBLE) {
+                Log.e("check_mask", "onPageScrolled mask is visible");
                 invMask.setVisibility(View.VISIBLE);
+            }
         }
         storiesViewPager.pageScrolled(positionOffset);
     }
@@ -201,12 +205,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         invMask = new View(getContext());
         invMask.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+        Log.e("check_mask", "mask is gone");
         invMask.setVisibility(View.GONE);
         storiesViewPager.setId(R.id.ias_stories_pager);
         invMask.setId(R.id.ias_inv_mask);
+        invMask.setClickable(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             storiesViewPager.setElevation(4);
-            storiesViewPager.setElevation(5);
+            invMask.setElevation(10);
         }
         resView.addView(storiesViewPager);
         resView.addView(invMask);
@@ -393,13 +399,15 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
             Handler handler = new Handler(Looper.getMainLooper());
+            Log.e("check_mask", "storyReaderTap mask is visible");
             invMask.setVisibility(View.VISIBLE);
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    Log.e("check_mask", "storyReaderTap mask is gone");
                     invMask.setVisibility(View.GONE);
                 }
-            }, 200);
+            }, 300);
 
             if (event.getLink() == null || event.getLink().isEmpty()) {
                 int real = event.getCoordinate();
@@ -501,10 +509,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         InAppStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
         currentIndex = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(currentIds.get(event.getIndex())).lastIndex;
+        Log.e("check_mask", "ChangeStoryEvent mask is visible");
         invMask.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                Log.e("check_mask", "ChangeStoryEvent mask is gone");
                 invMask.setVisibility(View.GONE);
             }
         }, 600);
