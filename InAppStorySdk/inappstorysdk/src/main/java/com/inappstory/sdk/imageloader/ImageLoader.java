@@ -36,6 +36,8 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+
 public class ImageLoader {
 
     MemoryCache memoryCache = new MemoryCache();
@@ -50,8 +52,11 @@ public class ImageLoader {
         return loader;
     }
 
+    Context mContext;
+
     public ImageLoader(Context context) {
         memoryCache2 = new MemoryCache();
+        mContext = context;
         executorService = Executors.newFixedThreadPool(1);
         widgetImageExecutorService = Executors.newFixedThreadPool(1);
         loader = this;
@@ -77,7 +82,9 @@ public class ImageLoader {
         }
     }
 
-    public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio) {
+    LruDiskCache cache;
+
+    public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio, Context context) {
         try {
             stub_id = loader;
             if (memoryCache2 == null) memoryCache2 = new MemoryCache();
@@ -85,7 +92,13 @@ public class ImageLoader {
             if (bitmap[0] != null)
                 rv.setImageViewBitmap(id, bitmap[0]);
             else {
-                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null);
+                if (cache == null) {
+                    cache = LruDiskCache.create(new File(
+                                    context.getCacheDir() +
+                                            File.separator + "ias" + File.separator + "fastCache"),
+                            MB_10, true);
+                }
+                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null, cache);
                 memoryCache2.put(url, bitmap[0]);
                 rv.setImageViewBitmap(id, bitmap[0]);
             }
@@ -95,14 +108,20 @@ public class ImageLoader {
     }
 
 
-    public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio) {
+    public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio, Context context) {
         try {
             stub_id = loader;
             Bitmap bitmap = memoryCache2.get(color);
             if (bitmap != null)
                 rv.setImageViewBitmap(id, bitmap);
             else {
-                bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color);
+                if (cache == null) {
+                    cache = LruDiskCache.create(new File(
+                                    context.getCacheDir() +
+                                            File.separator + "ias" + File.separator + "fastCache"),
+                            MB_10, true);
+                }
+                bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color, cache);
                 memoryCache2.put(color, bitmap);
                 rv.setImageViewBitmap(id, bitmap);
             }
@@ -153,7 +172,7 @@ public class ImageLoader {
         return bitmap;
     }
 
-    public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color) {
+    public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color, LruDiskCache lruDiskCache) {
         if (url == null && color == null) return null;
         String spixels;
         String sratio;
@@ -192,7 +211,7 @@ public class ImageLoader {
         }
         File f = null;
         try {
-            f = InAppStoryService.getInstance().getFastCache().get(url);
+            f = lruDiskCache.get(url);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -214,7 +233,7 @@ public class ImageLoader {
             return b;
         }
         try {
-            f = Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getFastCache(), null, null);
+            f = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
             Bitmap bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
@@ -380,39 +399,6 @@ public class ImageLoader {
 
     public void clearWidgetCache() {
         memoryCache2.clear();
-    }
-
-    private class RemoteImageToLoad {
-        public String url;
-        public RemoteViews imageView;
-        public int id;
-        public Integer cornerRadius;
-        public String color;
-        public Float ratio;
-
-        public RemoteImageToLoad(String u, RemoteViews remoteViews, int i, Integer cr, Float r, String c) {
-            url = u;
-            imageView = remoteViews;
-            id = i;
-            cornerRadius = cr;
-            ratio = r;
-            color = c;
-        }
-    }
-
-    class RemoteImagesLoader implements Runnable {
-        RemoteImageToLoad photoToLoad;
-
-        RemoteImagesLoader(RemoteImageToLoad photoToLoad) {
-            this.photoToLoad = photoToLoad;
-        }
-
-        @Override
-        public void run() {
-
-            Bitmap bmp = getWidgetBitmap(photoToLoad.url, photoToLoad.cornerRadius, true, photoToLoad.ratio, photoToLoad.color);
-            photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bmp);
-        }
     }
 
 }

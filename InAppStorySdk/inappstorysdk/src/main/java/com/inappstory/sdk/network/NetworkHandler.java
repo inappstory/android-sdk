@@ -62,6 +62,7 @@ public final class NetworkHandler implements InvocationHandler {
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
             }
+            Log.d("InAppStory_Network", req.getBody());
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");

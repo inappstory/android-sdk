@@ -235,7 +235,7 @@ public class InAppStoryService {
                     fastCache = LruDiskCache.create(new File(
                                     context.getCacheDir() +
                                             IAS_PREFIX + "fastCache"),
-                            MB_10);
+                            MB_10, true);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -251,7 +251,7 @@ public class InAppStoryService {
                     commonCache = LruDiskCache.create(new File(
                                     context.getCacheDir() +
                                             IAS_PREFIX + "commonCache"),
-                            LruDiskCache.MB_100);
+                            LruDiskCache.MB_100, false);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

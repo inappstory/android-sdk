@@ -141,12 +141,12 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
                     ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
                             R.id.image, widgetAppearance.getCorners(),
                             containerRatio != null ?
-                                    containerRatio : widgetAppearance.getRatio());
+                                    containerRatio : widgetAppearance.getRatio(), mContext);
                 } else {
                     ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
                             R.id.image, widgetAppearance.getCorners(),
                             containerRatio != null ?
-                                    containerRatio : widgetAppearance.getRatio());
+                                    containerRatio : widgetAppearance.getRatio(), mContext);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

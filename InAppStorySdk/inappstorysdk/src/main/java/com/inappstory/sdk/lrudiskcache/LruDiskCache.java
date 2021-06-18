@@ -11,24 +11,32 @@ public class LruDiskCache {
     private FileManager manager;
     private long cacheSize;
 
+    private static LruDiskCache fastCache;
+    private static LruDiskCache commonCache;
 
-
-    public static final long MB_1 = 1024*1024;
-    public static final long MB_5 = 5*MB_1;
-    public static final long MB_10 = 10*MB_1;
-    public static final long MB_50 = 50*MB_1;
-    public static final long MB_100 = 100*MB_1;
-    public static final long MB_200 = 200*MB_1;
+    public static final long MB_1 = 1024 * 1024;
+    public static final long MB_5 = 5 * MB_1;
+    public static final long MB_10 = 10 * MB_1;
+    public static final long MB_50 = 50 * MB_1;
+    public static final long MB_100 = 100 * MB_1;
+    public static final long MB_200 = 200 * MB_1;
 
     public File getCacheDir() {
         return manager.getCacheDir();
     }
 
-    public static LruDiskCache create(File cacheDir, long cacheSize) throws IOException {
-
+    public static LruDiskCache create(File cacheDir, long cacheSize, boolean isFastCache) throws IOException {
         if (cacheSize < MB_1)
             cacheSize = MB_1;
-        return new LruDiskCache(cacheDir, cacheSize);
+        if (isFastCache) {
+            if (fastCache == null)
+                fastCache = new LruDiskCache(cacheDir, cacheSize);
+            return fastCache;
+        } else {
+            if (commonCache == null)
+                commonCache = new LruDiskCache(cacheDir, cacheSize);
+            return commonCache;
+        }
     }
 
     private LruDiskCache(File cacheDir, long cacheSize) throws IOException {
@@ -51,7 +59,6 @@ public class LruDiskCache {
             return cacheFile;
         }
     }
-
 
 
     public void delete(String key) throws IOException {
