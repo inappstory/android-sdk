@@ -18,6 +18,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 public class AppearanceManager {
 
     public static final String CS_CLOSE_POSITION = "closePosition";
+    public static final String CS_NAVBAR_COLOR = "navBarColor";
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
     public static final String CS_HAS_LIKE = "hasLike";
     public static final String CS_HAS_FAVORITE = "hasFavorite";
@@ -162,7 +163,8 @@ public class AppearanceManager {
         if (secondary) {
             if (bold) {
                 if (italic) {
-                    if (csCustomSecondaryBoldItalicFont == null) return getFont(secondary, bold, false);
+                    if (csCustomSecondaryBoldItalicFont == null)
+                        return getFont(secondary, bold, false);
                     return csCustomSecondaryBoldItalicFont;
                 } else {
                     if (csCustomSecondaryBoldFont == null) return getFont(secondary, false, italic);
@@ -380,6 +382,23 @@ public class AppearanceManager {
         return csStoryReaderAnimation;
     }
 
+    public void csNavBarColor(int csNavBarColor) {
+        this.csNavBarColor = csNavBarColor;
+    }
+    public int csNavBarColor() {
+        return csNavBarColor;
+    }
+    public void csNightNavBarColor(int csNightNavBarColor) {
+        this.csNightNavBarColor = csNightNavBarColor;
+    }
+
+    public int csNightNavBarColor() {
+        return csNightNavBarColor != 0 ? csNightNavBarColor : csNavBarColor;
+    }
+
+
+    private int csNavBarColor = Color.TRANSPARENT;
+    private int csNightNavBarColor = Color.TRANSPARENT;
     private int csListItemMargin = Sizes.dpToPxExt(4);
     private boolean csShowStatusBar = false;
     private int csClosePosition = TOP_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
@@ -393,6 +412,7 @@ public class AppearanceManager {
     public void csIsDraggable(boolean csIsDraggable) {
         this.csIsDraggable = csIsDraggable;
     }
+
 
 
     public IGetFavoriteListItem csFavoriteListItemInterface() {

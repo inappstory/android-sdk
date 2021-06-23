@@ -587,6 +587,8 @@ public class InAppStoryManager {
         showOnboardingStories(getTags(), context, manager);
     }
 
+    private String lastSingleOpen = null;
+
     private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
         if (InAppStoryService.getInstance() == null) {
             new Handler().postDelayed(new Runnable() {
@@ -597,34 +599,46 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
+        if (lastSingleOpen != null &&
+                lastSingleOpen.equals(storyId)) return;
+        lastSingleOpen = storyId;
+
         if (StoriesActivity.destroyed == -1) {
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    lastSingleOpen = null;
                     showStoryInner(storyId, context, manager, callback);
-                    StoriesActivity.destroyed = 0;
                 }
-            }, 350);
+            }, 500);
             return;
         } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    lastSingleOpen = null;
                     showStoryInner(storyId, context, manager, callback);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
             return;
         }
-
         InAppStoryService.getInstance().getDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
+                    try {
+                        int c = Integer.parseInt(lastSingleOpen);
+                        if (c != story.id)
+                            return;
+                    } catch (Exception ignored) {
+
+                    }
                     if (callback != null)
                         callback.onShow();
                     if (story.deeplink != null) {
+                        lastSingleOpen = null;
                         OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
 
                         StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink);
@@ -654,9 +668,16 @@ public class InAppStoryManager {
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
                     ScreensManager.getInstance().openStoriesReader(context, manager, stIds, 0, ShowStory.SINGLE);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            lastSingleOpen = null;
+                        }
+                    }, 1000);
                 } else {
                     if (callback != null)
                         callback.onError();
+                    lastSingleOpen = null;
                     return;
                 }
             }
@@ -665,6 +686,7 @@ public class InAppStoryManager {
             public void loadError(int type) {
                 if (callback != null)
                     callback.onError();
+                lastSingleOpen = null;
             }
 
             @Override

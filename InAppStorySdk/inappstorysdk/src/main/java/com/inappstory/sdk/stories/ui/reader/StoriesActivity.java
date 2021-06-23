@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.reader;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,6 +47,7 @@ import com.inappstory.sdk.stories.utils.StatusBarController;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
@@ -234,6 +236,11 @@ public class StoriesActivity extends AppCompatActivity {
         }
 
         super.onCreate(savedInstanceState1);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
+            if (navColor != 0)
+                getWindow().setNavigationBarColor(navColor);
+        }
         if (InAppStoryManager.getInstance() == null) {
             finishActivityWithoutAnimation();
             return;
@@ -313,13 +320,17 @@ public class StoriesActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
-                //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
-                FragmentTransaction t = fragmentManager.beginTransaction()
-                        .replace(R.id.fragments_layout, storiesFragment);
-                t.addToBackStack("STORIES_FRAGMENT");
-                t.commit();
+                if (storiesFragment != null) {
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
+                    //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
+                    FragmentTransaction t = fragmentManager.beginTransaction()
+                            .replace(R.id.fragments_layout, storiesFragment);
+                    t.addToBackStack("STORIES_FRAGMENT");
+                    t.commit();
+                } else {
+                    finish();
+                }
             }
         }, 300);
 
