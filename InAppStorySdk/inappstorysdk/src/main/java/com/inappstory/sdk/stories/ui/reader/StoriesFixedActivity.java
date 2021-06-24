@@ -204,13 +204,6 @@ public class StoriesFixedActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
-        if (destroyed == -1) {
-            isFakeActivity = true;
-            super.onCreate(savedInstanceState1);
-            finishActivityWithoutAnimation();
-            return;
-        }
-        destroyed = -1;
         if (Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
