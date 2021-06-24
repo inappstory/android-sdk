@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```
-implementation 'com.github.inappstory:android-sdk:1.2.11'
+implementation 'com.github.inappstory:android-sdk:1.2.12'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -176,6 +176,8 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csListReadedItemBorderColor      | Integer             |        | the border color for the opened cell                                    |
 | csListItemMargin                 | Integer             |        | indent between cells                                                    |
 | csShowStatusBar                  | Boolean             |        | whether to display the status bar when opening the story reader         |
+| csNavBarColor                    | Integer             | 0      | color of navigation bar.			                                    |
+| csNightNavBarColor               | Integer             | 0      | color of navigation bar in dark mode. If 0 - we use csNavBarColor		|
 | csClosePosition                  | Integer             |        | place, where we display the close button of the story reader (`TOP_LEFT = 1; TOP_RIGHT = 2; BOTTOM_LEFT = 3; BOTTOM_RIGHT = 4;`)|
 | csStoryReaderAnimation           | Integer             |        | animation of scrolling through stories in the story reader (`ANIMATION_DEPTH = 1; ANIMATION_CUBE = 2;`)|
 | csIsDraggable                    | Boolean             | true   | a flag that is responsible for the ability to close the story reader by drag'n'drop. This flag is set only for the global `AppearanceManager`|
@@ -524,10 +526,15 @@ OnboardingLoadError - sent when loading the onboarding list in case of an error.
 
 In addition, it is possible to open one story by its id or slug.
 ```
-InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager);
+InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback /*optional, may be null*/);
+
+interface IShowStoryCallback {
+    void onShow(); //Calls after loading data about story from server
+    void onError(); //Calls if loading fails
+}
 ```
 
-In case of a successful / unsuccessful attempt to load stories, events are raised that the developer can subscribe to change the states of any external elements in the application:
+Also in case of a successful / unsuccessful attempt to load stories, events are raised that the developer can subscribe to change the states of any external elements in the application:
 ```
 SingleLoad - sent when loading a single story by id (by `InAppStoryManager.getInstance().showStory` method). 
 SingleLoadError - sent when loading a single story by id in case of some error. 
