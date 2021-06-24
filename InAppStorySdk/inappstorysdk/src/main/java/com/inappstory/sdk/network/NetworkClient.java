@@ -3,11 +3,13 @@ package com.inappstory.sdk.network;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.Locale;
 
 import com.inappstory.sdk.BuildConfig;
 
@@ -91,10 +93,19 @@ public class NetworkClient {
 
     public static ApiInterface getApi() {
         if (instance == null) {
+            String packageName = appContext.getPackageName();
+            String language;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                language = Locale.getDefault().toLanguageTag();
+            } else {
+                language = Locale.getDefault().getLanguage();
+            }
             instance = new NetworkClient.Builder()
                     .context(appContext)
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
                     .addHeader("Accept", "application/json")
+                    .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
+                    .addHeader("Accept-Language", language)
                     .addHeader("User-Agent", getUAString(appContext))
                     .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getCmsKey()).build();
         }
