@@ -79,7 +79,6 @@ public class ScreensManager {
                         manager.csNightNavBarColor() : manager.csNavBarColor());
                 intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
                 intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-                intent2.putExtra(CS_NAVBAR_COLOR, manager.csNavBarColor());
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
