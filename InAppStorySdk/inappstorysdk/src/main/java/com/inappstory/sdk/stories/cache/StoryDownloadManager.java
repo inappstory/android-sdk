@@ -92,7 +92,8 @@ public class StoryDownloadManager {
                         st.add(response);
                         InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(st);
                         InAppStoryService.getInstance().getDownloadManager().setStory(response, response.id);
-                        storyByIdCallback.getStory(response);
+                        if (storyByIdCallback != null)
+                            storyByIdCallback.getStory(response);
                     }
 
                     @Override
@@ -107,6 +108,8 @@ public class StoryDownloadManager {
                         }
                         CsEventBus.getDefault().post(new SingleLoadError());
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
+                        if (storyByIdCallback != null)
+                            storyByIdCallback.loadError(-1);
                     }
                 });
             }
@@ -114,6 +117,8 @@ public class StoryDownloadManager {
             @Override
             public void onError() {
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
+                if (storyByIdCallback != null)
+                    storyByIdCallback.loadError(-1);
             }
 
         });

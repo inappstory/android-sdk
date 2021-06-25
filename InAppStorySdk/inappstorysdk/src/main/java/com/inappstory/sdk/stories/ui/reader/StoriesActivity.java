@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.reader;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,6 +57,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
@@ -82,10 +84,8 @@ public class StoriesActivity extends AppCompatActivity {
             } catch (Exception e) {
 
             }
-            if (!isFakeActivity) {
-                destroyed = 0;
-                cleanReader();
-            }
+            destroyed = 0;
+            cleanReader();
             System.gc();
             pauseDestroyed = true;
         }
@@ -243,18 +243,23 @@ public class StoriesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
-        if (destroyed == -1) {
+
+      /*  if (destroyed == -1) {
             isFakeActivity = true;
             super.onCreate(savedInstanceState1);
             finishActivityWithoutAnimation();
             return;
-        }
-        destroyed = -1;
+        }*/
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
 
         super.onCreate(savedInstanceState1);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
+            if (navColor != 0)
+                getWindow().setNavigationBarColor(navColor);
+        }
         if (InAppStoryService.isNull()) {
             finishActivityWithoutAnimation();
             return;
@@ -329,13 +334,17 @@ public class StoriesActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
-                //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
-                FragmentTransaction t = fragmentManager.beginTransaction()
-                        .replace(R.id.fragments_layout, storiesFragment);
-                t.addToBackStack("STORIES_FRAGMENT");
-                t.commit();
+                if (storiesFragment != null) {
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
+                    //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
+                    FragmentTransaction t = fragmentManager.beginTransaction()
+                            .replace(R.id.fragments_layout, storiesFragment);
+                    t.addToBackStack("STORIES_FRAGMENT");
+                    t.commit();
+                } else {
+                    finish();
+                }
             }
         }, 300);
 
@@ -467,10 +476,9 @@ public class StoriesActivity extends AppCompatActivity {
             } catch (Exception e) {
 
             }
-            if (!isFakeActivity) {
-                destroyed = 0;
-                cleanReader();
-            }
+
+            destroyed = 0;
+            cleanReader();
             System.gc();
             pauseDestroyed = true;
         }

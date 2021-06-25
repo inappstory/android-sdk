@@ -29,6 +29,8 @@ public class AppearanceManager {
     public static final String CS_HAS_SOUND = "hasSound";
     public static final String CS_HAS_SHARE = "hasShare";
     public static final String CS_CLOSE_ON_SWIPE = "closeOnSwipe";
+    public static final String CS_NAVBAR_COLOR = "navBarColor";
+
     public static final String CS_CLOSE_ON_OVERSCROLL = "closeOnOverscroll";
     public static final String CS_READER_OPEN_ANIM = "readerOpenAnimation";
     public static final String CS_FAVORITE_ICON = "iconFavorite";
@@ -81,6 +83,8 @@ public class AppearanceManager {
     private int csCloseIcon;
     private int csRefreshIcon;
     private int csSoundIcon;
+    private int csNavBarColor = Color.TRANSPARENT;
+    private int csNightNavBarColor = Color.TRANSPARENT;
 
     private Typeface csCustomFont;
     private Typeface csCustomBoldFont;
@@ -90,6 +94,23 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldFont;
     private Typeface csCustomSecondaryItalicFont;
     private Typeface csCustomSecondaryBoldItalicFont;
+
+    public void csNavBarColor(int csNavBarColor) {
+        this.csNavBarColor = csNavBarColor;
+    }
+
+    public int csNavBarColor() {
+        return csNavBarColor;
+    }
+
+    public void csNightNavBarColor(int csNightNavBarColor) {
+        this.csNightNavBarColor = csNightNavBarColor;
+    }
+
+    public int csNightNavBarColor() {
+        return csNightNavBarColor != 0 ? csNightNavBarColor : csNavBarColor;
+    }
+
 
     public boolean csCloseOnSwipe() {
         return csCloseOnSwipe;
@@ -101,6 +122,7 @@ public class AppearanceManager {
 
     /**
      * use to set if stories reader can be closed by swipe down
+     *
      * @param closeOnSwipe (closeOnSwipe) true - if reader has to be closed by swipe down
      *                     true by default
      * @return {@link AppearanceManager}
@@ -114,6 +136,7 @@ public class AppearanceManager {
     /**
      * use to set if stories reader can be closed by swipe right
      * on first slide of first story or last slide of last story
+     *
      * @param closeOnOverscroll (closeOnOverscroll) true - if reader has to be closed by swipe
      *                          true by default
      * @return {@link AppearanceManager}
@@ -298,8 +321,9 @@ public class AppearanceManager {
 
     /**
      * use to allow users use like/dislike features (available in stories reader)
+     *
      * @param hasLike (hasLike) true - to use this feature
-     *                 false by default
+     *                false by default
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csHasLike(boolean hasLike) {
@@ -309,8 +333,9 @@ public class AppearanceManager {
 
     /**
      * use to allow users use favorite features (favorite cell in list and add/remove)
+     *
      * @param hasFavorite (hasFavorite) true - to use this feature
-     *                     false by default
+     *                    false by default
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csHasFavorite(boolean hasFavorite) {
@@ -320,6 +345,7 @@ public class AppearanceManager {
 
     /**
      * use to allow users use share features (available in stories reader)
+     *
      * @param hasShare (hasShare) true - to use this feature
      *                 false by default
      * @return {@link AppearanceManager}
@@ -331,6 +357,7 @@ public class AppearanceManager {
 
     /**
      * use to change default favorite icon (available in stories reader)
+     *
      * @param favoriteIcon (favoriteIcon) drawable id
      * @return {@link AppearanceManager}
      */
@@ -341,6 +368,7 @@ public class AppearanceManager {
 
     /**
      * use to change default like icon (available in stories reader)
+     *
      * @param likeIcon (likeIcon) drawable id
      * @return {@link AppearanceManager}
      */
@@ -351,6 +379,7 @@ public class AppearanceManager {
 
     /**
      * use to change default dislike icon (available in stories reader)
+     *
      * @param dislikeIcon (dislikeIcon) drawable id
      * @return {@link AppearanceManager}
      */
@@ -361,6 +390,7 @@ public class AppearanceManager {
 
     /**
      * use to change default share icon (available in stories reader)
+     *
      * @param shareIcon (shareIcon) drawable id
      * @return {@link AppearanceManager}
      */
@@ -372,6 +402,7 @@ public class AppearanceManager {
 
     /**
      * use to change default close icon (available in stories reader)
+     *
      * @param closeIcon (closeIcon) drawable id
      * @return {@link AppearanceManager}
      */
@@ -382,6 +413,7 @@ public class AppearanceManager {
 
     /**
      * use to change default refresh icon (available in stories reader)
+     *
      * @param refreshIcon (refreshIcon) drawable id
      * @return {@link AppearanceManager}
      */
@@ -392,6 +424,7 @@ public class AppearanceManager {
 
     /**
      * use to change default sound icon (available in stories reader)
+     *
      * @param soundIcon (soundIcon) drawable id
      * @return {@link AppearanceManager}
      */

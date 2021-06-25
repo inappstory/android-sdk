@@ -47,6 +47,7 @@ import com.inappstory.sdk.stories.utils.StatusBarController;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 
@@ -194,7 +195,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
     @CsSubscribe
     public void widgetTapEvent(WidgetTapEvent event) {
         if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
-             StatusBarController.hideStatusBar(this, true);
+            StatusBarController.hideStatusBar(this, true);
         }
     }
 
@@ -207,12 +208,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
-        if (destroyed == -1) {
-            isFakeActivity = true;
-            super.onCreate(savedInstanceState1);
-            finishActivityWithoutAnimation();
-            return;
-        }
+
         destroyed = -1;
         if (Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -225,8 +221,11 @@ public class StoriesFixedActivity extends AppCompatActivity {
         }
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         if (Build.VERSION.SDK_INT >= 21) {
+            int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
             setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
+            if (navColor != 0)
+                getWindow().setNavigationBarColor(navColor);
         }
 
         closeOnSwipe = getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true);
@@ -264,7 +263,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putBoolean("canUseNotLoaded", getIntent().getBooleanExtra("canUseNotLoaded", false));
                 bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
-               // bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
+                // bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
                 bundle.putBoolean("onboarding", getIntent().getBooleanExtra("onboarding", false));
                 bundle.putInt(CS_CLOSE_POSITION, getIntent().getIntExtra(CS_CLOSE_POSITION, 1));
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));

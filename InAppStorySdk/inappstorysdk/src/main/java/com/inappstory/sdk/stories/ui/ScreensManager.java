@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.os.Bundle;
 
@@ -27,6 +28,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
@@ -127,6 +129,8 @@ public class ScreensManager {
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
+            if (StoriesActivity.destroyed == -1) return;
+            StoriesActivity.destroyed = -1;
             Context ctx = (InAppStoryService.isNotNull() ?
                     InAppStoryService.getInstance().getContext() : outerContext);
             Intent intent2 = new Intent(ctx,
@@ -136,10 +140,15 @@ public class ScreensManager {
             intent2.putExtra("source", source);
             intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
             if (manager != null) {
+                int nightModeFlags =
+                        ctx.getResources().getConfiguration().uiMode &
+                                Configuration.UI_MODE_NIGHT_MASK;
                 intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
                 intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
                 intent2.putExtra(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
                 intent2.putExtra(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
+                intent2.putExtra(CS_NAVBAR_COLOR, nightModeFlags == Configuration.UI_MODE_NIGHT_YES ?
+                        manager.csNightNavBarColor() : manager.csNavBarColor());
                 intent2.putExtra(CS_HAS_LIKE, manager.csHasLike());
                 intent2.putExtra(CS_HAS_FAVORITE, manager.csHasFavorite());
                 intent2.putExtra(CS_HAS_SHARE, manager.csHasShare());
