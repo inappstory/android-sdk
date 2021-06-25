@@ -104,7 +104,7 @@ public class NetworkClient {
                     .context(appContext)
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
                     .addHeader("Accept", "application/json")
-                    .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
+                    //.addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
                     .addHeader("Accept-Language", language)
                     .addHeader("User-Agent", getUAString(appContext))
                     .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getCmsKey()).build();
