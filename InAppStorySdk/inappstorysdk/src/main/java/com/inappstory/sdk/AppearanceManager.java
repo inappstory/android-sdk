@@ -95,16 +95,18 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryItalicFont;
     private Typeface csCustomSecondaryBoldItalicFont;
 
-    public void csNavBarColor(int csNavBarColor) {
+    public AppearanceManager csNavBarColor(int csNavBarColor) {
         this.csNavBarColor = csNavBarColor;
+        return AppearanceManager.this;
     }
 
     public int csNavBarColor() {
         return csNavBarColor;
     }
 
-    public void csNightNavBarColor(int csNightNavBarColor) {
+    public AppearanceManager csNightNavBarColor(int csNightNavBarColor) {
         this.csNightNavBarColor = csNightNavBarColor;
+        return AppearanceManager.this;
     }
 
     public int csNightNavBarColor() {
