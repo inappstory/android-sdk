@@ -386,7 +386,6 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.e("RPF", "onCreateView " + ReaderPageFragment.this);
         readerSettings = JsonParser.fromJson(getArguments().getString(CS_READER_SETTINGS),
                 StoriesReaderSettings.class);
         try {
@@ -555,6 +554,16 @@ public class ReaderPageFragment extends Fragment {
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void closeReaderEvent(CloseStoryReaderEvent event) {
+        try {
+            CsEventBus.getDefault().unregister(this);
+        } catch (Exception ignored) {
+
+        }
+    }
+
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryPageEvent(StoryPageOpenEvent event) {
         if (this.storyId != event.getStoryId()) return;
         manager.loadStoryAndSlide(event.storyId, event.index);
@@ -590,20 +599,7 @@ public class ReaderPageFragment extends Fragment {
 
 
     @Override
-    public void onAttach(@NonNull Context context) {
-        Log.e("RPF", "onAttach " + ReaderPageFragment.this);
-        super.onAttach(context);
-    }
-
-    @Override
-    public void onDetach() {
-        Log.e("RPF", "onDetach " + ReaderPageFragment.this);
-        super.onDetach();
-    }
-
-    @Override
     public void onDestroyView() {
-        Log.e("RPF", "onDestroyView " + ReaderPageFragment.this);
         if (storiesView != null)
             storiesView.destroyView();
         try {
