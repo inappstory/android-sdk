@@ -169,6 +169,7 @@ public class SessionManager {
                 return StatisticResponse.class;
             }
 
+
             @Override
             public void onError(int code, String message) {
                 synchronized (openProcessLock) {

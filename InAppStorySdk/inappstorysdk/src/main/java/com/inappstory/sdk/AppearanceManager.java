@@ -95,6 +95,12 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryItalicFont;
     private Typeface csCustomSecondaryBoldItalicFont;
 
+    /**
+     * use to set navigation bar color in stories reader
+     *
+     * @param csNavBarColor (csNavBarColor) color for nav bar
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csNavBarColor(int csNavBarColor) {
         this.csNavBarColor = csNavBarColor;
         return AppearanceManager.this;
@@ -104,6 +110,12 @@ public class AppearanceManager {
         return csNavBarColor;
     }
 
+    /**
+     * use to set night-mode navigation bar color in stories reader
+     *
+     * @param csNightNavBarColor (csNightNavBarColor) color for nav bar
+     * @return {@link AppearanceManager}
+     */
     public AppearanceManager csNightNavBarColor(int csNightNavBarColor) {
         this.csNightNavBarColor = csNightNavBarColor;
         return AppearanceManager.this;
