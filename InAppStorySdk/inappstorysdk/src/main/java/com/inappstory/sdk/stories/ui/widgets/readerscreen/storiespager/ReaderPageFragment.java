@@ -554,7 +554,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void closeReaderEvent(CloseStoryReaderEvent event) {
+    public void closeReaderEvent(CloseStory event) {
         try {
             CsEventBus.getDefault().unregister(this);
         } catch (Exception ignored) {
