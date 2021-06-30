@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```
-implementation 'com.github.inappstory:android-sdk:1.2.12'
+implementation 'com.github.inappstory:android-sdk:1.3.0'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -59,14 +59,6 @@ For further work in the file `res/values/constants.xml` you need to add the stri
 <string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
 
-In the `AndroidManifest.xml` file, in the `application` section, add:
-```
-<service
-    android:name="com.inappstory.sdk.InAppStoryService"
-    android:enabled="true"
-    android:exported="true" />
-```
-
 To initialize the library in the `Application`, `Activity`, `View` class (or any other with access to the `Context` object), the  `InAppStoryManager.Builder()` class is used. The class contains the following parameters (and setters of the same name):
 
 | Variable           | Type                | Required | Default| Description                                                             |
@@ -77,9 +69,7 @@ To initialize the library in the `Application`, `Activity`, `View` class (or any
 | testKey            | String              | no       |        | Test integration key for testing stories on the device                  |
 | closeOnSwipe       | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping down            |
 | closeOnOverscroll  | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
-| hasLike            | Boolean             | no       | false  | Flag that is responsible for connecting the like / dislike functionality|
-| hasShare           | Boolean             | no       | false  | Flag that is responsible for connecting the sharing functionality       |
-| hasFavorite        | Boolean             | no       | false  | Flag that is responsible for connecting the functionality of favorite stories |
+| cacheSize			 | Integer             | no       | 0	   | Defines amount of space which SDK can use for caching files (`CacheSize.SMALL = 15mb; CacheSize.MEDIUM = 110mb; CacheSize.LARGE = 210mb;`)|
 | tags               | ArrayList<String>   | no       |        | Tags for targeting stories                                              |
 | placeholders       | Map<String, String> | no       |        | Placeholders for replacing special variables in the story content       |
 
@@ -136,7 +126,7 @@ Also `InAppStoryManager` contains methods:
 
 If the application supports multiple accounts, then you can implement switch user ID. To change user ID, you should use:
 ```
-InAppStoryService.getInstance().setUserId(userId)
+InAppStoryManager.getInstance().setUserId(userId)
 ```
 
 To change the `apiKey` parameter, you will need to reinitialize the `InAppStoryManager` (see the initialization example). This will remove the old instance.
@@ -166,21 +156,28 @@ If the method for the list is not specified, then the settings from the global `
 The `AppearanceManager` contains the following parameters (and their corresponding setters):
 | Variable                         | Type                | Default| Description                                                             |
 |----------------------------------|---------------------|--------|-------------------------------------------------------------------------|
+| csHasLike            			   | Boolean             | false  | Flag that is responsible for connecting the like / dislike functionality|
+| csHasShare           			   | Boolean             | false  | Flag that is responsible for connecting the sharing functionality       |       
+| csHasFavorite        			   | Boolean             | false  | Flag that is responsible for connecting the functionality of favorite stories |
 | csListItemWidth                  | Integer             | null   | the width of the list cell in pixels                                    |
 | csListItemHeight                 | Integer             | null   | the height of the list cell in pixels                                   |
 | csListItemTitleSize              | Integer             |        | size of the title                                                       |
-| csListItemTitleColor             | Integer             |        | title color                                                             |
-| csListItemBorderColor            | Integer             |        | the border color for the unopened cell                                  |
+| csListItemTitleColor             | Integer             | Color.WHITE | title color                                                        |
+| csListItemBorderColor            | Integer             | Color.BLACK | the border color for the unopened cell                             |
 | csCustomFont                     | Typeface            |        | the font used for the title / source of the story in the cell           |
-| csListItemBorderVisibility       | Boolean             |        | whether to show a border for an unopened cell                           |
-| csListReadedItemBorderColor      | Integer             |        | the border color for the opened cell                                    |
-| csListItemMargin                 | Integer             |        | indent between cells                                                    |
-| csShowStatusBar                  | Boolean             |        | whether to display the status bar when opening the story reader         |
+| csListItemMargin                 | Integer             | 4dp    | indent between cells                                                    |
 | csNavBarColor                    | Integer             | 0      | color of navigation bar.			                                    |
 | csNightNavBarColor               | Integer             | 0      | color of navigation bar in dark mode. If 0 - we use csNavBarColor		|
-| csClosePosition                  | Integer             |        | place, where we display the close button of the story reader (`TOP_LEFT = 1; TOP_RIGHT = 2; BOTTOM_LEFT = 3; BOTTOM_RIGHT = 4;`)|
-| csStoryReaderAnimation           | Integer             |        | animation of scrolling through stories in the story reader (`ANIMATION_DEPTH = 1; ANIMATION_CUBE = 2;`)|
+| csClosePosition                  | Integer             | 2      | place, where we display the close button of the story reader (`TOP_LEFT = 1; TOP_RIGHT = 2; BOTTOM_LEFT = 3; BOTTOM_RIGHT = 4;`)|
+| csStoryReaderAnimation           | Integer             | 2      | animation of scrolling through stories in the story reader (`ANIMATION_DEPTH = 1; ANIMATION_CUBE = 2;`)|
 | csIsDraggable                    | Boolean             | true   | a flag that is responsible for the ability to close the story reader by drag'n'drop. This flag is set only for the global `AppearanceManager`|
+| csLikeIcon	                   | Integer(id)         | R.drawable.ic_stories_status_like		| icon for like button in reader.		|
+| csDislikeIcon                    | Integer(id)         | R.drawable.ic_stories_status_dislike		| icon for dislike button in reader.	|
+| csFavoriteIcon                   | Integer(id)         | R.drawable.ic_stories_status_favorite	| icon for favorite button in reader.	|
+| csShareIcon                      | Integer(id)         | R.drawable.ic_share_status				| icon for share button in reader.		|
+| csCloseIcon                      | Integer(id)         | R.drawable.ic_stories_close				| icon for close button in reader.		|
+| csRefreshIcon                    | Integer(id)         | R.drawable.ic_refresh					| icon for refresh button in reader.	|
+| csSoundIcon                      | Integer(id)         | R.drawable.ic_stories_status_sound		| icon for sound button in reader.		|
 
 
 The example of set parameters:
@@ -207,7 +204,7 @@ interface IStoriesListItem {
     void setImage(View itemView, String url, int backgroundColor); // itemView - the current cell, in the required View show the story's cover or background color if it is absent
     void setOpened(View itemView, boolean isOpened); // itemView is the current cell, change it as needed if it is opened
     void setHasAudio(View itemView, boolean hasAudio); // itemView - the current cell, change it as needed if this story has audio inside
-    void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView is the current cell, in the required View we show the video cover story (videoUrl), video poster (url) or background color if it is absent. To work with video cells, it is recommended to use a class from the VideoPlayer library as a container for displaying video and the loadVideo(String videoUrl) method to launch. This class provides for caching video covers. The VideoPlayer class inherits from TextureView
+    void setVideo(View itemView, String videoUrl, String url, int backgroundColor); // itemView is the current cell, in the required View we show the video cover story (videoUrl), video poster (url) or background color if it is absent. To work with video cells, it is recommended to use a class from the VideoPlayer library as a container for displaying video and the loadVideo(String videoUrl) method to launch. This class provides for caching video covers. The VideoPlayer class inherits from TextureView
 }
 ```
 If this interface is specified, other parameters, affecting the appearance of the list cell, will be ignored.
@@ -239,7 +236,7 @@ appearanceManager
         }
 
         @Override
-        public void setHasVideo(View itemView, String videoUrl, String url, int backgroundColor) {
+        public void setVideo(View itemView, String videoUrl, String url, int backgroundColor) {
             itemView.findViewById(R.id.image).setBackgroundColor(backgroundColor);
             ((VideoPlayer)itemView.findViewById(R.id.video)).loadVideo(videoUrl);
         }
@@ -811,7 +808,7 @@ InAppStoryManager.getInstance().removeTags(ArrayList<String> tags);
 
 #### 9) Favorites
 
-When initializing `InAppStoryManager.Builder()` use the `hasFavorite(true)` property. In the case of customizing the appearance of the list cells through `IStoriesListItem csListItemInterface`, you must also customize the appearance of the favorites cell using the `IGetFavoriteListItem csFavoriteListItemInterface` interface. In addition, to interact with the favorites cell, add the `storiesList.setOnFavoriteItemClick(StoriesList.OnFavoriteItemClick callback)` handler. When displaying a list of favorites in xml-layout with a list, you must add the `cs_listIsFavorite` attribute.
+When initializing `AppearanceManager` use the `csHasFavorite(true)` property. In the case of customizing the appearance of the list cells through `IStoriesListItem csListItemInterface`, you must also customize the appearance of the favorites cell using the `IGetFavoriteListItem csFavoriteListItemInterface` interface. In addition, to interact with the favorites cell, add the `storiesList.setOnFavoriteItemClick(StoriesList.OnFavoriteItemClick callback)` handler. When displaying a list of favorites in xml-layout with a list, you must add the `cs_listIsFavorite` attribute.
 
 #### 10) Opening stories from push notifications
 
@@ -823,11 +820,11 @@ Use the call to `InAppStoryManager.getInstance().showOnboardingStories(List<Stri
 
 #### 12) Like / dislike.
 
-When initializing `InAppStoryManager.Builder()` use the `hasLike(true)` property.
+When initializing `AppearanceManager` use the `csHasLike(true)` property.
 
 #### 13) Sharing
 
-When initializing `InAppStoryManager.Builder()`  use the `hasShare(true)` property.  It is also possible to customize the `InAppStoryManager.getInstance().shareCallback` handler.
+When initializing `AppearanceManager`  use the `csHasShare(true)` property.  It is also possible to customize the `InAppStoryManager.getInstance().setShareCallback(ShareCallback shareCallback)` handler.
 
 #### 14) Turn on / off sound by default
 
@@ -844,3 +841,6 @@ If the value changes while the reader is open, you must also send the `SoundOnOf
 ```
 CsEventBus.getDefault().post(new SoundOnOffEvent());
 ``` 
+
+### Samples
+You can find more basic code samples in [this repository](https://github.com/inappstory/Android-Example)
