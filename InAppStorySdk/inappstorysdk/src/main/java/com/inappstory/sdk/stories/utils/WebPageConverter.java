@@ -1,6 +1,9 @@
 package com.inappstory.sdk.stories.utils;
 
 import android.content.Context;
+import android.os.Build;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Base64;
 import android.util.Log;
 
@@ -13,30 +16,34 @@ import java.util.List;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.stories.cache.FileCache;
-import com.inappstory.sdk.stories.cache.FileType;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 
 public class WebPageConverter {
-    public static void replaceImagesAndLoad(String innerWebData, final int storyId, final int index, String layout) {
-        boolean exists = false;
-        List<String> imgs = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).getSrcListUrls(index, null);
-        List<String> imgKeys = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).getSrcListKeys(index, null);
+    public Spanned fromHtml(String html) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            return Html.fromHtml(html);
+        }
+    }
+
+    public void replaceImagesAndLoad(String innerWebData, Story story, final int index, String layout,
+                                     WebPageConvertCallback callback) throws IOException {
+        List<String> imgs = story.getSrcListUrls(index, null);
+        List<String> imgKeys = story.getSrcListKeys(index, null);
         for (int i = 0; i < imgs.size(); i++) {
             String img = imgs.get(i);
             String imgKey = imgKeys.get(i);
-            Context con = InAppStoryManager.getInstance().getContext();
-            FileCache cache = FileCache.INSTANCE;
-            File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
-            if (file.exists()) {
-                exists = true;
+            File file = InAppStoryService.getInstance().getCommonCache().get(img);
+            if (file != null) {
                 FileInputStream fis = null;
                 try {
 
-                    if (file.length() < 0) {
+                    if (file.length() > 0) {
                         fis = new FileInputStream(file);
-                        byte[] imageRaw = new byte[(int)file.length()];
+                        byte[] imageRaw = new byte[(int) file.length()];
                         fis.read(imageRaw);
                         String cType = KeyValueStorage.getString(file.getName());
                         String image64;
@@ -56,43 +63,41 @@ public class WebPageConverter {
                 }
             }
         }
-        String webData = layout
-                .replace("//_ratio = 0.66666666666,", "")
-                .replace("{{%content}}", innerWebData);
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
-        return;
+        try {
+            String wData = layout
+                    .replace("//_ratio = 0.66666666666,", "")
+                    .replace("{{%content}}", innerWebData);
+            callback.onConvert(innerWebData, wData, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void replaceVideoAndLoad(String innerWebData, final int storyId, final int index, String layout) {
-        List<String> videos = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListUrls(index, "video");
-        List<String> videosKeys = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListKeys(index, "video");
+
+
+    public void replaceVideoAndLoad(String innerWebData, Story story, final int index, String layout,
+                                    WebPageConvertCallback callback) throws IOException {
+        List<String> videos = story.getSrcListUrls(index, "video");
+        List<String> videosKeys = story.getSrcListKeys(index, "video");
+        LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
         for (int i = 0; i < videos.size(); i++) {
             String video = videos.get(i);
             String videoKey = videosKeys.get(i);
-            Context con = InAppStoryManager.getInstance().getContext();
-            FileCache cache = FileCache.INSTANCE;
-            File file = cache.getStoredFile(con, video, FileType.STORY_FILE, Integer.toString(storyId), null);
-            if (file.exists()) {
+            File file = cache.get(video);
+            if (file != null) {
                 video = "file://" + file.getAbsolutePath();
             }
             Log.e("IAS_VIDEO_LOG", storyId + " " + video + " " + videoKey);
             innerWebData = innerWebData.replace(videoKey, video);
         }
-        boolean exists = false;
-        List<String> imgs = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListUrls(index, null);
-        List<String> imgKeys = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).getSrcListKeys(index, null);
+        List<String> imgs = story.getSrcListUrls(index, null);
+        List<String> imgKeys = story.getSrcListKeys(index, null);
         for (int i = 0; i < imgs.size(); i++) {
             String img = imgs.get(i);
             String imgKey = imgKeys.get(i);
-            Context con = InAppStoryManager.getInstance().getContext();
-            FileCache cache = FileCache.INSTANCE;
-            File file = cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
+            Context con = InAppStoryService.getInstance().getContext();
+            File file = cache.get(img);
             if (file.exists()) {
-                exists = true;
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(file);
@@ -113,20 +118,13 @@ public class WebPageConverter {
                 }
             }
         }
-        String webData = layout
-                .replace("//_ratio = 0.66666666666,", "")
-                .replace("{{%content}}", innerWebData);
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
-        return;
+        try {
+            String wData = layout
+                    .replace("//_ratio = 0.66666666666,", "")
+                    .replace("{{%content}}", innerWebData);
+            callback.onConvert(innerWebData, wData, index);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
-    public static void replaceEmptyAndLoad(String innerWebData, final int storyId, final int index, String layout) {
-        String webData = layout
-                .replace("//_ratio = 0.66666666666,", "")
-                .replace("{{%content}}", innerWebData)
-                .replace("window.Android.storyLoaded", "window.Android.emptyLoaded");
-        CsEventBus.getDefault().post(new GeneratedWebPageEvent(innerWebData, webData, storyId));
-        return;
-    }
-
 }

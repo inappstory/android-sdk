@@ -59,25 +59,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     boolean clientIsSet = false;
 
     public void restartVideo() {
-        //if (isVideo) {
         stopVideo();
+
         playVideo();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                resumeVideo();
-            }
-        }, 200);
-        // }
     }
 
 
     private void replaceHtml(String page) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
-        } else {
-            loadUrl("javascript:(function(){show_slide(\"" + oldEscape(page) + "\");})()");
-        }
+        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }
 
     private String oldEscape(String raw) {
@@ -85,7 +74,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 .replaceAll("\"", "\\\\\"")
                 .replaceAll("\n", " ")
                 .replaceAll("\r", " ");
-        //.replaceAll("muted", "");
         return escaped;
     }
 
@@ -102,15 +90,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
     public void pauseVideo() {
-        // if (!isVideo) return;
-        //Log.e("playVideo", storyId + " pause");
         loadUrl("javascript:(function(){story_slide_pause();})()");
     }
 
 
     public void playVideo() {
-        boolean withSound = InAppStoryManager.getInstance().soundOn;
-        if (withSound) {
+        if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
         } else {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": true}');})()");
@@ -137,7 +122,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
     public void changeSoundStatus() {
-        if (InAppStoryManager.getInstance().soundOn) {
+        if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
             loadUrl("javascript:(function(){story_slide_disable_audio();})()");
@@ -158,7 +143,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         init();
     }
 
-    String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
+  //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
 
 
     public void destroyView() {
@@ -176,7 +161,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         loadUrl("about:blank");
         manager.loadedId = -1;
         manager.loadedIndex = -1;
-        //  onPause();
         removeAllViews();
         destroyDrawingCache();
     }
@@ -192,15 +176,13 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         String tmpData = outerData;
         String tmpLayout = outerLayout;
-        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
-            tmpData = tmpData.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
-            tmpLayout = tmpLayout.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+        for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
+            tmpData = tmpData.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
+            tmpLayout = tmpLayout.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
         }
         final String data = tmpData;
         final String lt = tmpLayout;
         if (!notFirstLoading) {
-
-            Log.e("LoadHtml", "first");
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -210,7 +192,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 }
             });
         } else {
-            replaceHtml(data);
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    replaceHtml(data);
+                }
+            });
         }
     }
 
@@ -224,8 +211,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         setBackgroundColor(getResources().getColor(R.color.black));
 
+        setVerticalScrollBarEnabled(false);
+        setHorizontalScrollBarEnabled(false);
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
         getSettings().setTextZoom(100);
+        getSettings().setAllowContentAccess(true);
+        getSettings().setAllowFileAccess(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
@@ -280,7 +271,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                     String img = url;
                     File file = getManager().getCurrentFile(img);
-                    if (file.exists()) {
+                    if (file != null && file.exists()) {
                         try {
                             Response response = new Request.Builder().head().url(url).build().execute();
                             String ctType = response.headers.get("Content-Type");
@@ -292,7 +283,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, url);
                         } catch (Exception e) {
-
                             return super.shouldInterceptRequest(view, url);
                         }
                     } else
@@ -305,7 +295,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                     String img = request.getUrl().toString();
                     File file = getManager().getCurrentFile(img);
-                    if (file.exists()) {
+                    if (file != null && file.exists()) {
                         try {
                             Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
                             String ctType = response.headers.get("Content-Type");

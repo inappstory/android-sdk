@@ -1,6 +1,8 @@
 package com.inappstory.sdk.network;
 
 
+import android.util.Log;
+
 public abstract class NetworkCallback<T> implements Callback<T> {
     @Override
     public final void onFailure(Response response) {
@@ -14,6 +16,13 @@ public abstract class NetworkCallback<T> implements Callback<T> {
     protected void error400(String message) {
 
     }
+
+
+    protected void error402(String message) {
+        Log.e("InAppStory_Network",
+                "Access was terminated. Check the management console for details.");
+    }
+
 
     protected void error401(String message) {
 
@@ -80,6 +89,9 @@ public abstract class NetworkCallback<T> implements Callback<T> {
                 break;
             case 401:
                 error401(message);
+                break;
+            case 402:
+                error402(message);
                 break;
             case 403:
                 error403(message);

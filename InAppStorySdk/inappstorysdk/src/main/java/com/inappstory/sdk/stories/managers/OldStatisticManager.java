@@ -1,29 +1,16 @@
 package com.inappstory.sdk.stories.managers;
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
-import android.util.DisplayMetrics;
 import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -61,7 +48,8 @@ public class OldStatisticManager {
     public Runnable statisticUpdateThread = new Runnable() {
         @Override
         public void run() {
-            if (InAppStoryManager.getInstance().getContext() == null || InAppStoryService.getInstance() == null) {
+            if (InAppStoryService.isNull()
+                    || InAppStoryService.getInstance().getContext() == null) {
                 handler.removeCallbacks(statisticUpdateThread);
                 return;
             }
@@ -72,14 +60,16 @@ public class OldStatisticManager {
     };
 
     public void previewStatisticEvent(ArrayList<Integer> vals) {
-        ArrayList<Object> sendObject = new ArrayList<Object>() {{
-            add(5);
-            add(eventCount);
-        }};
+        ArrayList<Object> sendObject = new ArrayList<Object>();
+        sendObject.add(5);
+        sendObject.add(eventCount);
+
         ArrayList<Integer> addedVals = new ArrayList<>();
+        int count = 0;
         for (Integer val : vals) {
             if (!StatisticSession.getInstance().viewed.contains(val)) {
                 sendObject.add(val);
+                count++;
                 StatisticSession.getInstance().viewed.add(val);
             }
         }
@@ -87,7 +77,9 @@ public class OldStatisticManager {
             putStatistic(sendObject);
             eventCount++;
         }
-
+        if (count > 2) {
+            sendStatistic();
+        }
     }
 
     public boolean sendStatistic() {
@@ -97,7 +89,7 @@ public class OldStatisticManager {
         if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
             return true;
         }
-        if (!InAppStoryManager.getInstance().sendStatistic) {
+        if (!InAppStoryService.getInstance().getSendStatistic()) {
             StatisticSession.getInstance();
             StatisticSession.updateStatistic();
             if (statistic != null)
@@ -166,16 +158,13 @@ public class OldStatisticManager {
 
     public void closeStatisticEvent(final Integer time, boolean clear) {
         if (currentEvent != null) {
-            putStatistic(new ArrayList<Object>() {{
-                add(currentEvent.eventType);
-                add(eventCount);
-                add(currentEvent.storyId);
-                add(currentEvent.index);
-                add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
-            }});
-            Log.e("statisticEvent", currentEvent.eventType + " " + eventCount + " " +
-                    currentEvent.storyId + " " + currentEvent.index + " " +
-                    Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
+            ArrayList statObject = new ArrayList<Object>();
+            statObject.add(currentEvent.eventType);
+            statObject.add(eventCount);
+            statObject.add(currentEvent.storyId);
+            statObject.add(currentEvent.index);
+            statObject.add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
+            putStatistic(statObject);
             if (!clear)
                 currentEvent = null;
         }

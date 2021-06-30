@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import java.util.HashMap;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 
 public class KeyValueStorage {
@@ -21,8 +22,8 @@ public class KeyValueStorage {
 
     public static SharedPreferences getDefaultPreferences() {
         if (context == null) {
-            if (InAppStoryManager.getInstance() == null) return null;
-            context = InAppStoryManager.getInstance().getContext();
+            if (InAppStoryService.isNull()) return null;
+            context = InAppStoryService.getInstance().getContext();
         }
         if (context == null) return null;
         return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);

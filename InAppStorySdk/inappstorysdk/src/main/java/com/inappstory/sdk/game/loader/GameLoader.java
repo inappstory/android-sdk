@@ -4,19 +4,20 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -81,111 +82,88 @@ public class GameLoader {
     }
 
     private void downloadResources(final List<WebResource> resources,
-                                          final File file,
-                                          final GameLoadCallback callback,
-                                          final int totalSize,
-                                          final int curSize) {
+                                   final File file,
+                                   final GameLoadCallback callback,
+                                   final int totalSize,
+                                   final int curSize) {
         if (terminate) return;
         String pathName = file.getAbsolutePath();
         final File filePath = new File(pathName + "/src/");
-        if (!filePath.exists()) {
-            filePath.mkdirs();
+        //  if (!filePath.exists()) {
+        //      filePath.mkdirs();
+        //  }
+        int cnt = curSize;
+        for (WebResource resource : resources) {
+            if (terminate) return;
+            try {
+                String url = resource.url;
+                String fileName = resource.key;
+                if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
+                    continue;
+                Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(),
+                        new File(filePath.getAbsolutePath() + "/" + fileName),
+                        null);
+                cnt += resource.size;
+                if (callback != null)
+                    callback.onProgress(cnt, totalSize);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        gameFileThread.submit(new Callable<Void>() {
-            @Override
-            public Void call() {
-                int cnt = curSize;
-                for (WebResource resource : resources) {
-                    if (terminate) return null;
+
+        if (callback != null) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    File fl = new File(file.getAbsolutePath() + INDEX_MANE);
                     try {
-                        String url = resource.url;
-                        String fileName = resource.key;
-                        if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
-                            continue;
-                        URL uri = new URL(url);
-                        File file = new File(filePath.getAbsolutePath() + "/" + fileName);
-                        if (file.exists()) {
-                            cnt += resource.size;
-                            if (callback != null)
-                                callback.onProgress(cnt, totalSize);
-                            continue;
-                        }
-                        URLConnection connection = uri.openConnection();
-                        connection.connect();
-                        cnt = downloadStream(uri, file, callback, cnt, totalSize);
+                        callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
-
-                if (callback != null) {
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            File fl = new File(file.getAbsolutePath() + INDEX_MANE);
-                            try {
-                                callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-                }
-                return null;
-            }
-        });
+            });
+        }
 
     }
 
     public void downloadAndUnzip(final Context context,
-                                        final List<WebResource> resources,
-                                        final String url,
-                                        final String pathName,
-                                        final GameLoadCallback callback) {
+                                 final List<WebResource> resources,
+                                 final String url,
+                                 final String pathName,
+                                 final GameLoadCallback callback) {
         terminate = false;
         gameFileThread.submit(new Callable() {
             @Override
             public Void call() {
                 try {
-                    URL uri = new URL(url);
-                    File file = new File(context.getFilesDir() + "/zip/" + pathName + "/" + url.hashCode() + ".zip");
-
-                    //TODO remove after tests
-               /* if (file.exists()) {
-                    File parentFolder = file.getParentFile();
-                    if (parentFolder != null && parentFolder.exists()) {
-                        deleteFolderRecursive(parentFolder, true);
-                    }
-                }*/
-                    int curSize = 0;
                     int totalSize = 0;
                     for (WebResource resource : resources) {
                         totalSize += resource.size;
                     }
-                    if (!file.exists()) {
-                        try {
-                            file.mkdirs();
-                        } catch (Exception e) {
-
-                        }
-                        if (file.exists()) file.delete();
-                        File parentFolder = file.getParentFile();
-                        if (parentFolder != null && parentFolder.exists()) {
-                            deleteFolderRecursive(parentFolder, false);
-                        }
-                        URLConnection connection = uri.openConnection();
-                        connection.connect();
-                        int sz = connection.getContentLength();
-                        curSize = sz;
-                        totalSize += sz;
-                        downloadStream(uri, file, callback, 0, totalSize);
+                    final int fTotalSize = totalSize;
+                    File file = Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(),
+                            new File(InAppStoryService.getInstance().getCommonCache().getCacheDir() +
+                                    File.separator + "zip" +
+                                    File.separator + pathName +
+                                    File.separator + url.hashCode() + ".zip"),
+                            new FileLoadProgressCallback() {
+                                @Override
+                                public void onProgress(int loadedSize, int totalSize) {
+                                    callback.onProgress(loadedSize, fTotalSize + totalSize);
+                                }
+                            });
+                    File directory = new File(file.getParent() + File.separator + url.hashCode());
+                    if (directory.exists()) {
+                        downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
+                                (int) file.length());
+                        InAppStoryService.getInstance().getCommonCache().get(directory.getName());
                     }
-                    File directory = new File(file.getParent() + "/" + url.hashCode());
-                    if (directory.exists())
-                        downloadResources(resources, directory, callback, totalSize, curSize);
                     else if (file.exists()) {
                         FileUnzipper.unzip(file, directory);
-                        downloadResources(resources, directory, callback, totalSize, curSize);
+                        InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
+                        downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
+                                (int) file.length());
                     } else {
                         if (callback != null)
                             callback.onError();

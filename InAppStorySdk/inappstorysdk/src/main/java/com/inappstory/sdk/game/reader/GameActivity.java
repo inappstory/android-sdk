@@ -21,6 +21,7 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.loader.GameLoader;
@@ -74,12 +75,12 @@ public class GameActivity extends AppCompatActivity {
         loaderContainer = findViewById(R.id.loaderContainer);
         blackTop = findViewById(R.id.blackTop);
         blackBottom = findViewById(R.id.blackBottom);
-        if (AppearanceManager.getInstance() == null || AppearanceManager.getInstance().csGameLoaderView() == null) {
+        if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
             loaderView = new GameLoadProgressBar(GameActivity.this,
                     null,
                     android.R.attr.progressBarStyleHorizontal);
         } else {
-            loaderView = AppearanceManager.getInstance().csGameLoaderView();
+            loaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
         }
         if (Sizes.isTablet() && baseContainer != null) {
             baseContainer.setOnClickListener(new View.OnClickListener() {
@@ -173,7 +174,7 @@ public class GameActivity extends AppCompatActivity {
 
     private void setLoader() {
         if (loaderPath != null && !loaderPath.isEmpty())
-            ImageLoader.getInstance().displayImage(loaderPath, -1, loader);
+            ImageLoader.getInstance().displayImage(loaderPath, -1, loader, InAppStoryService.getInstance().getCommonCache());
         else
             loader.setBackgroundColor(Color.BLACK);
     }

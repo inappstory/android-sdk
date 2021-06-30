@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -14,7 +16,6 @@ import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,9 +29,9 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
@@ -41,14 +42,27 @@ import com.inappstory.sdk.stories.events.SwipeRightEvent;
 import com.inappstory.sdk.stories.events.WidgetTapEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
+import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
@@ -70,10 +84,8 @@ public class StoriesActivity extends AppCompatActivity {
             } catch (Exception e) {
 
             }
-            if (!isFakeActivity) {
-                destroyed = 0;
-                cleanReader();
-            }
+            destroyed = 0;
+            cleanReader();
             System.gc();
             pauseDestroyed = true;
         }
@@ -114,19 +126,22 @@ public class StoriesActivity extends AppCompatActivity {
 
     boolean animateFirst = true;
 
+    boolean isAnimation = false;
 
     public void loadAnim() {
         try {
+            isAnimation = true;
             float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
             float y = draggableFrame.getY();
             AnimationSet animationSet = new AnimationSet(true);
             Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
             anim.setDuration(200);
             animationSet.addAnimation(anim);
-            if (InAppStoryManager.getInstance() != null && InAppStoryManager.getInstance().coordinates != null) {
-                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), InAppStoryManager.getInstance().coordinates.x -
-                        Sizes.getScreenSize().x / 2,
-                        0f, InAppStoryManager.getInstance().coordinates.y - draggableFrame.getY());
+            Point coordinates = ScreensManager.getInstance().coordinates;
+            if (coordinates != null) {
+                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x -
+                        Sizes.getScreenSize(StoriesActivity.this).x / 2,
+                        0f, coordinates.y - draggableFrame.getY());
                 anim2.setDuration(200);
                 animationSet.addAnimation(anim2);
 
@@ -172,20 +187,21 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-
+        if (isAnimation) return;
         blockView.setVisibility(View.VISIBLE);
-        if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
+        if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
 
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
-
-            CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.slidesCount,
-                    story.lastIndex, CloseStory.CUSTOM,
-                    getIntent().getIntExtra("source", 0)));
+            if (story != null)
+                CsEventBus.getDefault().post(new CloseStory(story.id,
+                        story.title, story.tags, story.slidesCount,
+                        story.lastIndex, CloseStory.CUSTOM,
+                        getIntent().getIntExtra("source", 0)));
             String cause = StatisticManager.BACK;
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
+            if (story != null)
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -220,10 +236,20 @@ public class StoriesActivity extends AppCompatActivity {
 
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
+    boolean closeOnSwipe = true;
+    boolean closeOnOverscroll = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
+
+      /*  if (destroyed == -1) {
+            isFakeActivity = true;
+            super.onCreate(savedInstanceState1);
+            finishActivityWithoutAnimation();
+            return;
+        }*/
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
@@ -234,21 +260,20 @@ public class StoriesActivity extends AppCompatActivity {
             if (navColor != 0)
                 getWindow().setNavigationBarColor(navColor);
         }
-        if (InAppStoryManager.getInstance() == null) {
+        if (InAppStoryService.isNull()) {
             finishActivityWithoutAnimation();
             return;
         }
-        if (InAppStoryService.getInstance() == null) {
-            finishActivityWithoutAnimation();
-            return;
-        }
-        WebView.setWebContentsDebuggingEnabled(true);
+
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
         }
+
+        closeOnSwipe = getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true);
+        closeOnOverscroll = getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true);
 
         setContentView(R.layout.cs_activity_stories_draggable);
         draggableFrame = findViewById(R.id.draggable_frame);
@@ -263,7 +288,7 @@ public class StoriesActivity extends AppCompatActivity {
 
                 @Override
                 public void onDragDismissed() {
-                    if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
+                    if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
                     else animateFirst = false;
                     CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
                 }
@@ -296,11 +321,7 @@ public class StoriesActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
-                bundle.putBoolean("canUseNotLoaded", getIntent().getBooleanExtra("canUseNotLoaded", false));
-                bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
-              //  bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
-                bundle.putBoolean("onboarding", getIntent().getBooleanExtra("onboarding", false));
-                bundle.putInt(CS_CLOSE_POSITION, getIntent().getIntExtra(CS_CLOSE_POSITION, 1));
+                setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
             }
@@ -330,6 +351,31 @@ public class StoriesActivity extends AppCompatActivity {
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
+    private void setAppearanceSettings(Bundle bundle) {
+        StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(
+                getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
+                getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
+                getIntent().getIntExtra(CS_CLOSE_POSITION, 1),
+                //,
+                getIntent().getBooleanExtra(CS_HAS_LIKE, false),
+                getIntent().getBooleanExtra(CS_HAS_FAVORITE, false),
+                getIntent().getBooleanExtra(CS_HAS_SHARE, false),
+                getIntent().getIntExtra(CS_FAVORITE_ICON, R.drawable.ic_stories_status_favorite),
+                getIntent().getIntExtra(CS_LIKE_ICON, R.drawable.ic_stories_status_like),
+                getIntent().getIntExtra(CS_DISLIKE_ICON, R.drawable.ic_stories_status_dislike),
+                getIntent().getIntExtra(CS_SHARE_ICON, R.drawable.ic_share_status),
+                getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
+                getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
+                getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound)
+        );
+        try {
+            bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
+            bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     boolean closing = false;
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
@@ -339,7 +385,7 @@ public class StoriesActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
-        if (InAppStoryService.getInstance() != null) {
+        if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
@@ -363,7 +409,7 @@ public class StoriesActivity extends AppCompatActivity {
         cleanReader();
         CsEventBus.getDefault().unregister(this);
 
-        if (InAppStoryManager.getInstance().coordinates != null) animateFirst = true;
+        if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             finishAfterTransition();
@@ -375,21 +421,23 @@ public class StoriesActivity extends AppCompatActivity {
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
         if (InAppStoryService.getInstance().getDownloadManager() != null)
-            for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
-                story.lastIndex = 0;
+            for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {
+                Log.e("changePriority", "set0 cleanReader");
+                story.setLastIndex(0);
+            }
         cleaned = true;
     }
 
     @CsSubscribe
     public void swipeDownEvent(SwipeDownEvent event) {
-        if (InAppStoryManager.getInstance().closeOnSwipe()) {
+        if (closeOnSwipe) {
             if (InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId()) == null)
                 return;
@@ -400,10 +448,9 @@ public class StoriesActivity extends AppCompatActivity {
     }
 
 
-
     @CsSubscribe
     public void swipeLeftEvent(SwipeLeftEvent event) {
-        if (InAppStoryManager.getInstance().closeOnOverscroll()) {
+        if (closeOnOverscroll) {
             // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
@@ -411,7 +458,7 @@ public class StoriesActivity extends AppCompatActivity {
 
     @CsSubscribe
     public void swipeRightEvent(SwipeRightEvent event) {
-        if (InAppStoryManager.getInstance().closeOnOverscroll()) {
+        if (closeOnOverscroll) {
             //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
         }
@@ -429,10 +476,9 @@ public class StoriesActivity extends AppCompatActivity {
             } catch (Exception e) {
 
             }
-            if (!isFakeActivity) {
-                destroyed = 0;
-                cleanReader();
-            }
+
+            destroyed = 0;
+            cleanReader();
             System.gc();
             pauseDestroyed = true;
         }

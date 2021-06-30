@@ -14,39 +14,35 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.media.ThumbnailUtils;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.channels.FileLock;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 
 public class ImageLoader {
 
     MemoryCache memoryCache = new MemoryCache();
     MemoryCache memoryCache2 = new MemoryCache();
-    FileCache fileCache;
     private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
-    private Map<RemoteViews, String> remoteViews = Collections.synchronizedMap(new HashMap<RemoteViews, String>());
     ExecutorService executorService;
     ExecutorService widgetImageExecutorService;
 
@@ -56,9 +52,11 @@ public class ImageLoader {
         return loader;
     }
 
+    Context mContext;
+
     public ImageLoader(Context context) {
-        fileCache = new FileCache(context);
         memoryCache2 = new MemoryCache();
+        mContext = context;
         executorService = Executors.newFixedThreadPool(1);
         widgetImageExecutorService = Executors.newFixedThreadPool(1);
         loader = this;
@@ -66,7 +64,7 @@ public class ImageLoader {
 
     int stub_id = R.drawable.ic_stories_close;
 
-    public void displayImage(String url, int loader, ImageView imageView) {
+    public void displayImage(String url, int loader, ImageView imageView, LruDiskCache cache) {
         try {
             stub_id = loader;
             imageViews.put(imageView, url);
@@ -74,26 +72,33 @@ public class ImageLoader {
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
                 if (imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView)imageView).onLoaded();
+                    ((GeneratedImageView) imageView).onLoaded();
                 }
             } else {
-                queuePhoto(url, imageView);
+                queuePhoto(url, imageView, cache);
             }
         } catch (Exception e) {
 
         }
     }
 
-    public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio) {
+    LruDiskCache cache;
+
+    public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio, Context context) {
         try {
             stub_id = loader;
             if (memoryCache2 == null) memoryCache2 = new MemoryCache();
             final Bitmap[] bitmap = {memoryCache2.get(url)};
-            Log.e("MyWidget", url + " " + cornerRadius + " " + ratio);
             if (bitmap[0] != null)
                 rv.setImageViewBitmap(id, bitmap[0]);
             else {
-                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null);
+                if (cache == null) {
+                    cache = LruDiskCache.create(new File(
+                                    context.getCacheDir() +
+                                            File.separator + "ias" + File.separator + "fastCache"),
+                            MB_10, true);
+                }
+                bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null, cache);
                 memoryCache2.put(url, bitmap[0]);
                 rv.setImageViewBitmap(id, bitmap[0]);
             }
@@ -103,16 +108,20 @@ public class ImageLoader {
     }
 
 
-    public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio) {
+    public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio, Context context) {
         try {
             stub_id = loader;
-            // remoteViews.put(rv, color);
             Bitmap bitmap = memoryCache2.get(color);
             if (bitmap != null)
                 rv.setImageViewBitmap(id, bitmap);
-                //imageView.setImageBitmap(bitmap);
             else {
-                bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color);
+                if (cache == null) {
+                    cache = LruDiskCache.create(new File(
+                                    context.getCacheDir() +
+                                            File.separator + "ias" + File.separator + "fastCache"),
+                            MB_10, true);
+                }
+                bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color, cache);
                 memoryCache2.put(color, bitmap);
                 rv.setImageViewBitmap(id, bitmap);
             }
@@ -121,14 +130,9 @@ public class ImageLoader {
         }
     }
 
-    private void queuePhoto(String url, ImageView imageView) {
-        PhotoToLoad p = new PhotoToLoad(url, imageView);
+    private void queuePhoto(String url, ImageView imageView, LruDiskCache cache) {
+        PhotoToLoad p = new PhotoToLoad(url, imageView, cache);
         executorService.submit(new PhotosLoader(p));
-    }
-
-    private void queueRemoteImage(String url, RemoteViews remoteViews, int id, Integer cornerRadius, Float ratio, String color) {
-        RemoteImageToLoad p = new RemoteImageToLoad(url, remoteViews, id, cornerRadius, ratio, color);
-        executorService.submit(new RemoteImagesLoader(p));
     }
 
     public void addDarkGradient(Bitmap bitmap) {
@@ -146,37 +150,29 @@ public class ImageLoader {
         return shader;
     }
 
-    public Bitmap getBitmap(String url) {
+    public Bitmap getBitmap(String url, LruDiskCache cache) {
         if (url == null) return null;
-        File f = fileCache.getFile(url);
-
-        //from SD cache
-        Bitmap b = decodeFile(f);
-        if (b != null) {
-            return b;
-        }
+        File file = null;
         try {
-            Bitmap bitmap = null;
-            URL imageUrl = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(30000);
-            conn.setInstanceFollowRedirects(true);
-            InputStream is = conn.getInputStream();
-            OutputStream os = new FileOutputStream(f);
-            Utils.CopyStream(is, os);
-            os.close();
-            is.close();
-            conn.disconnect();
-            bitmap = decodeFile(f);
-            return bitmap;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
+            file = cache.get(url);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        Bitmap bitmap = null;
+        if (file != null)
+            bitmap = decodeFile(file);
+        else {
+            try {
+                file = Downloader.downloadOrGetFile(url, cache, null, null);
+                bitmap = decodeFile(file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return bitmap;
     }
 
-    public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color) {
+    public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color, LruDiskCache lruDiskCache) {
         if (url == null && color == null) return null;
         String spixels;
         String sratio;
@@ -213,10 +209,16 @@ public class ImageLoader {
                 bmp = getRoundedCornerBitmap(bmp, pixels);
             return bmp;
         }
-        File f = fileCache.getFile(url);
-
+        File f = null;
+        try {
+            f = lruDiskCache.get(url);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         //from SD cache
-        Bitmap b = decodeFile(f);
+        Bitmap b = null;
+        if (f != null)
+            b = decodeFile(f);
         if (b != null) {
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
@@ -231,20 +233,8 @@ public class ImageLoader {
             return b;
         }
         try {
-            Bitmap bitmap = null;
-
-
-            URL imageUrl = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) imageUrl.openConnection();
-            conn.setConnectTimeout(30000);
-            conn.setReadTimeout(30000);
-            conn.setInstanceFollowRedirects(true);
-            InputStream is = conn.getInputStream();
-            OutputStream os = new FileOutputStream(f);
-            Utils.CopyStream(is, os);
-            os.close();
-            is.close();
-            bitmap = decodeFile(f);
+            f = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
+            Bitmap bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int) (ratio * 300), 300);
@@ -342,30 +332,15 @@ public class ImageLoader {
     private class PhotoToLoad {
         public String url;
         public ImageView imageView;
+        public LruDiskCache cache;
 
-        public PhotoToLoad(String u, ImageView i) {
+        public PhotoToLoad(String u, ImageView i, LruDiskCache c) {
             url = u;
             imageView = i;
+            cache = c;
         }
     }
 
-    private class RemoteImageToLoad {
-        public String url;
-        public RemoteViews imageView;
-        public int id;
-        public Integer cornerRadius;
-        public String color;
-        public Float ratio;
-
-        public RemoteImageToLoad(String u, RemoteViews remoteViews, int i, Integer cr, Float r, String c) {
-            url = u;
-            imageView = remoteViews;
-            id = i;
-            cornerRadius = cr;
-            ratio = r;
-            color = c;
-        }
-    }
 
     class PhotosLoader implements Runnable {
         PhotoToLoad photoToLoad;
@@ -378,7 +353,7 @@ public class ImageLoader {
         public void run() {
             if (imageViewReused(photoToLoad))
                 return;
-            Bitmap bmp = getBitmap(photoToLoad.url);
+            Bitmap bmp = getBitmap(photoToLoad.url, photoToLoad.cache);
             if (bmp != null)
                 memoryCache.put(photoToLoad.url, bmp);
             if (imageViewReused(photoToLoad))
@@ -389,22 +364,6 @@ public class ImageLoader {
         }
     }
 
-    class RemoteImagesLoader implements Runnable {
-        RemoteImageToLoad photoToLoad;
-
-        RemoteImagesLoader(RemoteImageToLoad photoToLoad) {
-            this.photoToLoad = photoToLoad;
-        }
-
-        @Override
-        public void run() {
-
-            Bitmap bmp = getWidgetBitmap(photoToLoad.url, photoToLoad.cornerRadius, true, photoToLoad.ratio, photoToLoad.color);
-            photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bmp);
-        }
-    }
-
-
     public boolean imageViewReused(PhotoToLoad photoToLoad) {
         String tag = imageViews.get(photoToLoad.imageView);
         if (tag == null || !tag.equals(photoToLoad.url))
@@ -412,8 +371,6 @@ public class ImageLoader {
         return false;
     }
 
-
-    //Used to display bitmap in the UI thread
     class BitmapDisplayer implements Runnable {
         Bitmap bitmap;
         PhotoToLoad photoToLoad;
@@ -429,37 +386,15 @@ public class ImageLoader {
             if (bitmap != null) {
                 photoToLoad.imageView.setImageBitmap(bitmap);
                 if (photoToLoad.imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView)photoToLoad.imageView).onLoaded();
+                    ((GeneratedImageView) photoToLoad.imageView).onLoaded();
                 }
             }
-           /* else
-                photoToLoad.imageView.setImageResource(stub_id);*/
-        }
-    }
-
-    class RemoteBitmapDisplayer implements Runnable {
-        Bitmap bitmap;
-        RemoteImageToLoad photoToLoad;
-
-        public RemoteBitmapDisplayer(Bitmap b, RemoteImageToLoad p) {
-            bitmap = b;
-            photoToLoad = p;
-        }
-
-        public void run() {
-
-            if (bitmap != null)
-                photoToLoad.imageView.setImageViewBitmap(photoToLoad.id, bitmap);
-            //photoToLoad.imageView.setImageBitmap(bitmap);
-           /* else
-                photoToLoad.imageView.setImageResource(stub_id);*/
         }
     }
 
     public void clearCache() {
         memoryCache.clear();
         memoryCache2.clear();
-        fileCache.clear();
     }
 
     public void clearWidgetCache() {

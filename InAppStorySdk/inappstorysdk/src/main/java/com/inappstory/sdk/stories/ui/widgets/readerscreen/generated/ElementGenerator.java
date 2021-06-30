@@ -15,16 +15,16 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StoryLink;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.api.models.slidestructure.Element;
 import com.inappstory.sdk.stories.api.models.slidestructure.Source;
-import com.inappstory.sdk.stories.cache.FileCache;
-import com.inappstory.sdk.stories.cache.FileType;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ElementGenerator {
     public static GeneratedView generate(Element element, Context context, int ySize, int xSize) {
@@ -89,11 +89,16 @@ public class ElementGenerator {
                 }
             }
         }
-        FileCache cache = FileCache.INSTANCE;
-        File fl = cache.getStoredFile(generatedView.view.getContext(), prePath + imgPath, FileType.STORY_FILE, storyId, null);
-        if (fl == null || !fl.exists()) {
+        File fl = null;
+        try {
+            fl = InAppStoryService.getInstance().getCommonCache().get(prePath + imgPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (fl == null) {
             ImageLoader.getInstance().displayImage(prePath + imgPath,
-                    -1, (GeneratedImageView) generatedView.view);
+                    -1, (GeneratedImageView) generatedView.view,
+                    InAppStoryService.getInstance().getCommonCache());
         } else {
             BitmapFactory.Options options = new BitmapFactory.Options();
           //  options.inPreferredConfig = Bitmap.Config.;
@@ -129,7 +134,7 @@ public class ElementGenerator {
     static void loadVideo(Element element, GeneratedView generatedView, String storyId) {
         if (element.thumbnail != null && element.thumbnail.path != null) {
             ((GeneratedVideoView) generatedView.view).loadCover(
-                    prePath + element.thumbnail.path, storyId
+                    prePath + element.thumbnail.path
             );
         }
         if (element.sources != null && element.sources.size() > 0) {
@@ -207,7 +212,7 @@ public class ElementGenerator {
                 break;
         }
         textView.setLayoutParams(lp);
-        Typeface t = AppearanceManager.getInstance().getFont(element.secondaryFont, element.bold, element.italic);
+        Typeface t = AppearanceManager.getCommonInstance().getFont(element.secondaryFont, element.bold, element.italic);
         int bold = element.bold ? 1 : 0;
         int italic = element.italic ? 2 : 0;
         textView.setTypeface(t != null ? t : textView.getTypeface(), bold + italic);
@@ -262,7 +267,7 @@ public class ElementGenerator {
                 break;
         }
         textView.setLayoutParams(lp);
-        Typeface t = AppearanceManager.getInstance().getFont(element.secondaryFont, element.bold, element.italic);
+        Typeface t = AppearanceManager.getCommonInstance().getFont(element.secondaryFont, element.bold, element.italic);
         int bold = element.bold ? 1 : 0;
         int italic = element.italic ? 2 : 0;
         textView.setTypeface(t != null ? t : textView.getTypeface(), bold + italic);

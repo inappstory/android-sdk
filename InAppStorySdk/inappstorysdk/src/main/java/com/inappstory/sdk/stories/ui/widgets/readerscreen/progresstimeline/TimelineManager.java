@@ -30,14 +30,15 @@ public class TimelineManager {
 
     public void start(int ind) {
         mAnimationRest = -1;
+        Log.e("Story_VisualTimers", "start " + ind);
         timeline.setActive(ind);
-        Log.e("slideAnimation", "visual " + timeline.curAnimation.getDuration());
         timeline.curAnimation.start();
     }
 
     public void setCurrentSlide(int ind) {
         if (ind < 0) return;
         if (ind > timeline.slidesCount) return;
+        Log.e("Story_VisualTimers", "setCurrentSlide " + ind);
         for (int i = 0; i < ind; i++) {
             timeline.progressBars.get(i).setMax();
         }

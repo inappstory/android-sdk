@@ -5,6 +5,7 @@ import android.content.Context;
 public interface SimpleStoriesView {
     void pauseVideo();
     void playVideo();
+    void restartVideo();
     void stopVideo();
     void resumeVideo();
     Context getContext();

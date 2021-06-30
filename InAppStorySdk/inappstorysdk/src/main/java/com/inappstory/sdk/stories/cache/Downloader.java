@@ -1,23 +1,12 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Point;
-import android.net.Uri;
-import android.provider.MediaStore;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,22 +15,17 @@ import java.net.URL;
 import java.nio.channels.FileLock;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.imageloader.MemoryCache;
-import com.inappstory.sdk.network.Request;
-import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 
 /**
-     * Загрузчик файлов
+ * Загрузчик файлов
  */
 
 public class Downloader {
@@ -58,79 +42,80 @@ public class Downloader {
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
         if (cachedFonts != null) {
             for (CacheFontObject cacheFontObject : cachedFonts) {
-                downFontFile(InAppStoryManager.getInstance().getContext(), cacheFontObject.url);
+                downFontFile(cacheFontObject.url, InAppStoryService.getInstance().getCommonCache());
             }
         }
     }
+
 
     @NonNull
     @WorkerThread
-    static File downloadFile(Context con,
-                                    @NonNull String url,
-                                    String type,
-                                    String sourceId) throws Exception {
-        FileCache cache = FileCache.INSTANCE;
-
-        File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
-        Log.e("IAS_VIDEO_LOG", img + " " + url);
-        File img2;
-        if (img.exists()) {
-            return img;
+    public static File downloadOrGetFile(@NonNull String url,
+                                         LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+        String key = cropUrl(url);
+        if (cache.hasKey(key)) {
+            return cache.get(key);
         } else {
-            img2 = cache.getStoredFile(con, cropUrl(url), FileType.TEMP_FILE, null, null);
-            if (img2.exists()) {
-                cache.moveFileToStorage(con, cropUrl(url), type, sourceId, null);
-                return img2;
+            if (img == null) {
+                img = cache.getFileFromKey(key);
             }
+            File file = downloadFile(url, img, callback);
+            cache.put(key, file);
+            return file;
         }
-        File file = downloadFile(url, img);
-        Log.e("IAS_VIDEO_LOG", file.getAbsolutePath() + " " + url);
-        return file;
     }
 
-    public static File getCoverVideo(Context con,
-                                     @NonNull String url,
-                                     String type,
-                                     String sourceId) {
-        FileCache cache = FileCache.INSTANCE;
-        File img = cache.getStoredFile(con, cropUrl(url), type, sourceId, null);
-        return img;
+
+    public static File getCoverVideo(@NonNull String url,
+                                     LruDiskCache cache) throws IOException {
+        String key = cropUrl(url);
+        if (cache.hasKey(key)) {
+            return cache.get(key);
+        } else {
+            return null;
+        }
     }
+
 
     private static final ExecutorService fontDownloader = Executors.newFixedThreadPool(1);
+    private static final ExecutorService tmpFileDownloader = Executors.newFixedThreadPool(1);
 
-    public static void downFontFile(final Context con, final String url) {
+    private static void downFontFile(final String url, final LruDiskCache cache) {
         fontDownloader.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return downloadFile(con, url, FileType.TEMP_FILE, null);
+                return downloadOrGetFile(url, cache, null, null);
             }
         });
     }
 
-    public static String getFontFile(Context con, String url) {
+    public static void downloadCoverVideo(final String url, final LruDiskCache cache) {
+        tmpFileDownloader.submit(new Callable() {
+            @Override
+            public File call() throws Exception {
+                return downloadOrGetFile(url, cache, null, null);
+            }
+        });
+    }
+
+
+    public static String getFontFile(String url) {
         if (url == null || url.isEmpty()) return null;
-        FileCache cache = FileCache.INSTANCE;
-        File img = cache.getStoredFile(con, cropUrl(url), FileType.TEMP_FILE, null, null);
-        if (img.exists()) {
+        File img = null;
+        if (InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
+            try {
+                img = InAppStoryService.getInstance().getCommonCache().get(url);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (img != null && img.exists()) {
             return img.getAbsolutePath();
         }
         return null;
     }
 
-    static MemoryCache bitmapCache = new MemoryCache();
-
-    public static void putBitmap(String url, Bitmap bitmap) {
-        if (bitmapCache == null) bitmapCache = new MemoryCache();
-        bitmapCache.put(url, bitmap);
-    }
-
-    public static Bitmap getBitmap(String url) {
-        if (bitmapCache == null) bitmapCache = new MemoryCache();
-        return bitmapCache.get(url);
-    }
-
-    private static File downloadFile(String url, File outputFile) throws Exception {
+    private static File downloadFile(String url, File outputFile, FileLoadProgressCallback callback) throws Exception {
 
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
@@ -139,9 +124,9 @@ public class Downloader {
 
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
-        urlConnection.setConnectTimeout(60000);
+        urlConnection.setConnectTimeout(300000);
+        urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        //urlConnection.setDoOutput(true);
         urlConnection.connect();
 
 
@@ -159,11 +144,16 @@ public class Downloader {
         else
             KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
 
+        int sz = urlConnection.getContentLength();
+
         byte[] buffer = new byte[1024];
         int bufferLength = 0;
-
+        int cnt = 0;
         while ((bufferLength = inputStream.read(buffer)) > 0) {
             fileOutput.write(buffer, 0, bufferLength);
+            cnt += bufferLength;
+            if (callback != null)
+                callback.onProgress(cnt, sz);
         }
         fileOutput.flush();
         try {

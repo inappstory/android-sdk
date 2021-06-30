@@ -23,9 +23,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
@@ -40,20 +39,21 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     private List<Integer> storiesIds = new ArrayList<>();
     private boolean isFavoriteList;
-    StoriesList.OnFavoriteItemClick favoriteItemClick;
+    OnFavoriteItemClick favoriteItemClick;
 
     boolean hasFavItem = false;
 
     public Context context;
 
     public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
-                          StoriesList.OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList) {
+                          OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList) {
         this.context = context;
         this.storiesIds = storiesIds;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.isFavoriteList = isFavoriteList;
-        hasFavItem = !isFavoriteList && InAppStoryService.getInstance() != null
+        hasFavItem = !isFavoriteList && InAppStoryService.isNotNull()
+                && manager != null && manager.csHasFavorite()
                 && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
     }
 
@@ -78,7 +78,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull StoryListItem holder, int position) {
+    public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
         if (holder == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
@@ -91,9 +91,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 }
             });
         } else {
-            if (InAppStoryService.getInstance() != null) {
-                Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
-                if (holder == null) return;
+            if (InAppStoryService.isNotNull()) {
+                final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
                 if (story == null) return;
                 holder.bind(story.getTitle(),
                         story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
@@ -103,18 +102,18 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         story.isOpened || isFavoriteList, story.hasAudio(),
                         story.getVideoUrl());
             }
-            final int pos = position;
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClick(pos);
+                    onItemClick(position);
                 }
             });
         }
+
     }
 
     public void onItemClick(int index) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
             if (current.deeplink != null) {
@@ -164,14 +163,14 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
                 isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
-        InAppStoryService.getInstance().getDownloadManager().loadStories(
+        InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
     }
 
     @Override
     public int getItemViewType(int position) {
         int pref = position * 10;
-        if (InAppStoryManager.getInstance().hasFavorite() && position == storiesIds.size())
+        if (manager != null && manager.csHasFavorite() && position == storiesIds.size())
             return pref + 3;
         try {
             Story story = InAppStoryService.getInstance().getDownloadManager()

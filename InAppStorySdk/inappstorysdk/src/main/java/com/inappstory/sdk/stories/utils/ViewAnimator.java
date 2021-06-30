@@ -44,7 +44,6 @@ public class ViewAnimator {
             public void onAnimationUpdate(ValueAnimator animation) {
                 int ds = Math.max(1, (int) ((float) animation.getAnimatedValue() / 3f));
                 bv.setDownsampleFactor(ds);
-                Log.e("animVal", (float) animation.getAnimatedValue() + " ");
                 //bv.setBlurRadius(Math.max(0.01f, (float)animation.getAnimatedValue()));
                 bv.setAlpha(1f / 12 * (float) animation.getAnimatedValue());
                 if ((float) animation.getAnimatedValue() < 0.01f) {
@@ -151,8 +150,6 @@ public class ViewAnimator {
             gv.setPivotY(ySize / 2f);
             gv.setScaleX(1.1f);
             gv.setScaleY(1.1f);
-          //  gv.setPivotX(xSize * 1.1f / 2f);
-          //  gv.setPivotY(ySize * 1.1f / 2f);
         }
 
         final float[] toX = {1, -1, -3, 3, 1, -1, -3, -3, -1, 1, 1};
@@ -160,11 +157,7 @@ public class ViewAnimator {
         final int[] toDeg = {0, -1, 1, 0, 1, -1, 0, 0, 1, 0, -1};
         ValueAnimator animator = ValueAnimator.ofFloat(0, 10);
         int duration = 1000;
-        // final AnimationSet animationSet = new AnimationSet(true);
         animator.setDuration(duration);
-        //   animationSet.setDuration(duration);
-
-        //if (1 == 1) return animator;
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {

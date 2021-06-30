@@ -2,16 +2,12 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -45,7 +41,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     IStoriesListItem getListItem;
 
     protected View getDefaultFavoriteCell() {
-        int count = (InAppStoryService.getInstance() != null) ?
+        int count = InAppStoryService.isNotNull() ?
                 InAppStoryService.getInstance().getFavoriteImages().size() : 0;
         if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
                 InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
@@ -57,6 +53,12 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         cv.setBackgroundColor(Color.WHITE);
         title = v.findViewById(R.id.title);
         return v;
+    }
+
+    private void createDefaultFavoriteCell() {
+    }
+
+    private void createDefaultCell() {
     }
 
     protected View getDefaultCell() {
@@ -172,14 +174,15 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     private void setImage(AppCompatImageView imageView, FavoriteImage image) {
         if (image.getImage() != null) {
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView);
+            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
+                    InAppStoryService.getInstance().getFastCache());
         } else {
             imageView.setBackgroundColor(image.getBackgroundColor());
         }
     }
 
     public void bindFavorite() {
-        int count = (InAppStoryService.getInstance() != null) ?
+        int count = InAppStoryService.isNotNull() ?
                 InAppStoryService.getInstance().getFavoriteImages().size() : 0;
 
         if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
@@ -312,12 +315,11 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                      String videoUrl) {
         if (getListItem != null) {
             getListItem.setTitle(itemView, titleText, titleColor);
-            getListItem.setSource(itemView, sourceText);
             getListItem.setHasAudio(itemView, hasAudio);
             getListItem.setImage(itemView, imageUrl, backgroundColor);
             getListItem.setOpened(itemView, isOpened);
             if (videoUrl != null) {
-                getListItem.setHasVideo(itemView, videoUrl, imageUrl, backgroundColor);
+                getListItem.setVideo(itemView, videoUrl, imageUrl, backgroundColor);
             }
             return;
         }
@@ -348,7 +350,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image);
+                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
+                            InAppStoryService.getInstance().getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);
@@ -365,7 +368,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image);
+                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
+                            InAppStoryService.getInstance().getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);

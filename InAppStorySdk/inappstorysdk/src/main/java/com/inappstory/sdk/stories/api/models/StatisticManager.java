@@ -75,7 +75,6 @@ public class StatisticManager {
             saveTasksSP();
         }
 
-        Log.e("taskName", task.event);
     }
 
 
@@ -85,8 +84,6 @@ public class StatisticManager {
             faketasks.add(task);
             saveFakeTasksSP();
         }
-
-        Log.e("taskName", task.event);
     }
 
     public static void saveTasksSP() {
@@ -158,13 +155,11 @@ public class StatisticManager {
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (INSTANCE != this) return;
         if (event.isWithBackground()) {
-            Log.e("pauseEv", (System.currentTimeMillis() - pauseTimer) + "");
             if (isBackgroundPause) {
                 pauseTime += (System.currentTimeMillis() - pauseTimer);
             }
             isBackgroundPause = false;
         } else {
-            Log.e("pauseEv", "miss");
         }
     }
 
@@ -208,7 +203,7 @@ public class StatisticManager {
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.getInstance() == null
+            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.isNull()
                     || !InAppStoryService.isConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
@@ -276,8 +271,8 @@ public class StatisticManager {
 
     public void generateBase(StatisticTask task) {
         task.sessionId = StatisticSession.getInstance().id;
-        if (InAppStoryManager.getInstance() != null)
-            task.userId = InAppStoryManager.getInstance().getUserId();
+        if (InAppStoryService.isNotNull())
+            task.userId = InAppStoryService.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 
@@ -323,11 +318,10 @@ public class StatisticManager {
     public void createCurrentState(final int stId, final int ind) {
         synchronized (csLock) {
             pauseTime = 0;
-            currentState = new CurrentState() {{
-                storyId = stId;
-                slideIndex = ind;
-                startTime = System.currentTimeMillis();
-            }};
+            currentState = new CurrentState();
+            currentState.storyId = stId;
+            currentState.slideIndex = ind;
+            currentState.startTime = System.currentTimeMillis();
         }
     }
 
@@ -470,7 +464,7 @@ public class StatisticManager {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    if (!InAppStoryManager.getInstance().sendStatistic) return true;
+                    if (!InAppStoryService.getInstance().getSendStatistic()) return true;
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,
                             task.sessionId,

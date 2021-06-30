@@ -8,18 +8,13 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.RemoteViewsService;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.WidgetAppearance;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.ApiSettings;
@@ -31,13 +26,9 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 public class StoriesWidgetService extends RemoteViewsService {
 
@@ -56,7 +47,7 @@ public class StoriesWidgetService extends RemoteViewsService {
             ApiSettings
                     .getInstance()
                     .cacheDirPath(context.getCacheDir().getAbsolutePath())
-                    .cmsKey(context.getResources().getString(R.string.csApiKey))
+                    .apiKey(context.getResources().getString(R.string.csApiKey))
                     .setWebUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
                             "https://api.test.inappstory.com/" : "https://api.inappstory.com/")
                     .cmsUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
@@ -150,7 +141,6 @@ public class StoriesWidgetService extends RemoteViewsService {
         if (NetworkClient.getAppContext() == null) {
             NetworkClient.setContext(context);
         }
-        Log.e("MyWidget", "request");
         NetworkClient.getApi().getStories(cachedSessionData.sessionId, cachedSessionData.testKey, 0,
                 cachedSessionData.tags, null, null).enqueue(new NetworkCallback<List<Story>>() {
             @Override
@@ -172,12 +162,10 @@ public class StoriesWidgetService extends RemoteViewsService {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            Log.e("MyWidget", "requestSuccessLoad");
                             loadSuccess(context, widgetClass);
                         }
                     }, 500);
                 } else {
-                    Log.e("MyWidget", "requestSuccessEmpty");
                     loadEmpty(context, widgetClass);
                 }
 

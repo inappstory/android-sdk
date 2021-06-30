@@ -9,11 +9,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -29,8 +28,6 @@ import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.inappstory.sdk.InAppStoryService.IAS_LOG;
 
 public class SessionManager {
 
@@ -107,9 +104,7 @@ public class SessionManager {
             if (callback != null)
                 callbacks.add(callback);
         }
-
-        InAppStoryManager.addDebug("open session");
-        Context context = InAppStoryManager.getInstance().getContext();
+        Context context = InAppStoryService.getInstance().getContext();
         String platform = "android";
         String deviceId = Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID);// Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -140,7 +135,7 @@ public class SessionManager {
         }
         NetworkClient.getApi().statisticsOpen(
                 "cache",
-                InAppStoryManager.getInstance().getTagsString(), FEATURES,
+                InAppStoryService.getInstance().getTagsString(), FEATURES,
                 platform,
                 deviceId,
                 model,
@@ -154,19 +149,18 @@ public class SessionManager {
                 appPackageId,
                 appVersion,
                 appBuild,
-                InAppStoryManager.getInstance().getUserId()
+                InAppStoryService.getInstance().getUserId()
         ).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
-                InAppStoryManager.addDebug( "session opened");
                 openStatisticSuccess(response);
                 CachedSessionData cachedSessionData = new CachedSessionData();
-                cachedSessionData.userId = InAppStoryManager.getInstance().getUserId();
+                cachedSessionData.userId = InAppStoryService.getInstance().getUserId();
                 cachedSessionData.placeholders = response.placeholders;
                 cachedSessionData.sessionId = response.session.id;
-                cachedSessionData.testKey = InAppStoryManager.getInstance().getTestKey();
-                cachedSessionData.token = InAppStoryManager.getInstance().getApiKey();
-                cachedSessionData.tags = InAppStoryManager.getInstance().getTagsString();
+                cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
+                cachedSessionData.token = ApiSettings.getInstance().getApiKey();
+                cachedSessionData.tags = InAppStoryService.getInstance().getTagsString();
                 CachedSessionData.setInstance(cachedSessionData);
             }
 
@@ -174,6 +168,7 @@ public class SessionManager {
             public Type getType() {
                 return StatisticResponse.class;
             }
+
 
             @Override
             public void onError(int code, String message) {

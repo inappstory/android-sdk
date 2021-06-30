@@ -19,6 +19,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 
 public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     private List<Integer> storiesIds = new ArrayList<>();
@@ -31,23 +32,20 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         super(fm, behavior);
     }
 
-    public ReaderPagerAdapter(@NonNull FragmentManager fm, int closePosition, boolean closeOnSwipe, List<Integer> ids) {
+    String readerSettings;
+
+    public ReaderPagerAdapter(@NonNull FragmentManager fm, String readerSettings, List<Integer> ids) {
         super(fm);
         this.storiesIds.clear();
         this.storiesIds.addAll(ids);
-
-        this.closePosition = closePosition;
-        this.closeOnSwipe = closeOnSwipe;
-        this.hasFavorite = InAppStoryManager.getInstance().hasFavorite();
-        this.hasShare = InAppStoryManager.getInstance().hasShare();
-        this.hasLike = InAppStoryManager.getInstance().hasLike();
+        this.readerSettings = readerSettings;
     }
 
     @Override
     public Parcelable saveState() {
         try {
             Bundle bundle = (Bundle) super.saveState();
-            bundle.putParcelableArray("states", null); // Never maintain any states from the base class, just null it out
+            bundle.putParcelableArray("states", null);
             return bundle;
         } catch (Exception e) {
             return new Bundle();
@@ -63,16 +61,8 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     }
 
 
-    private int closePosition = 0;
-
-    private boolean closeOnSwipe = false;
-    private boolean hasFavorite = false;
-    private boolean hasShare = false;
-    private boolean hasLike = false;
-
-
     private HashMap<Integer, ReaderPageFragment> fragMap =
-            new HashMap<Integer, ReaderPageFragment>();
+            new HashMap<>();
 
 
     @NonNull
@@ -82,11 +72,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
             ReaderPageFragment frag = new ReaderPageFragment();
             Bundle a = new Bundle();
             a.putInt("story_id", storiesIds.get(position));
-            a.putInt(CS_CLOSE_POSITION, closePosition);
-            a.putBoolean(CS_CLOSE_ON_SWIPE, closeOnSwipe);
-            a.putBoolean(CS_HAS_FAVORITE, hasFavorite);
-            a.putBoolean(CS_HAS_LIKE, hasLike);
-            a.putBoolean(CS_HAS_SHARE, hasShare);
+            a.putString(CS_READER_SETTINGS, readerSettings);
             frag.setArguments(a);
             fragMap.put(position, frag);
         }

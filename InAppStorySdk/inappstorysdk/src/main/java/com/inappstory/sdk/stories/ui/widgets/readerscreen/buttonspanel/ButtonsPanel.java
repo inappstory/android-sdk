@@ -9,7 +9,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 
 public class ButtonsPanel extends LinearLayout {
 
@@ -43,13 +45,16 @@ public class ButtonsPanel extends LinearLayout {
             favorite.setActivated(favVal == 1);
     }
 
-    public void setButtonsVisibility(boolean hasLike, boolean hasFavorite, boolean hasShare, boolean hasSound) {
+    public void setButtonsVisibility(StoriesReaderSettings readerSettings, boolean hasLike, boolean hasFavorite, boolean hasShare, boolean hasSound) {
+        hasLike = hasLike && readerSettings.hasLike;
+        hasFavorite = hasFavorite && readerSettings.hasFavorite;
+        hasShare = hasShare && readerSettings.hasShare;
         like.setVisibility(hasLike ? VISIBLE : GONE);
         dislike.setVisibility(hasLike ? VISIBLE : GONE);
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);
         share.setVisibility(hasShare ? VISIBLE : GONE);
         sound.setVisibility(hasSound ? VISIBLE : GONE);
-        sound.setActivated(InAppStoryManager.getInstance().soundOn);
+        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
         if (hasFavorite || hasLike || hasShare || hasSound) {
             setVisibility(VISIBLE);
         } else {
@@ -63,7 +68,7 @@ public class ButtonsPanel extends LinearLayout {
 
 
     public void refreshSoundStatus() {
-        sound.setActivated(InAppStoryManager.getInstance().soundOn);
+        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
     }
 
     ButtonsPanelManager manager;
@@ -111,8 +116,16 @@ public class ButtonsPanel extends LinearLayout {
                     soundClick();
                 }
             });
-            sound.setActivated(InAppStoryManager.getInstance().soundOn);
+            sound.setActivated(InAppStoryService.getInstance().isSoundOn());
         }
+    }
+
+    public void setIcons(StoriesReaderSettings readerSettings) {
+        like.setImageDrawable(getResources().getDrawable(readerSettings.likeIcon));
+        dislike.setImageDrawable(getResources().getDrawable(readerSettings.dislikeIcon));
+        favorite.setImageDrawable(getResources().getDrawable(readerSettings.favoriteIcon));
+        share.setImageDrawable(getResources().getDrawable(readerSettings.shareIcon));
+        sound.setImageDrawable(getResources().getDrawable(readerSettings.soundIcon));
     }
 
     public void likeClick() {

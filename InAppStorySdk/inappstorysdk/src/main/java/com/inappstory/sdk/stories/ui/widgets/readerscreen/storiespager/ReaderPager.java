@@ -16,11 +16,11 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
+import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SwipeDownEvent;
 import com.inappstory.sdk.stories.events.SwipeLeftEvent;
 import com.inappstory.sdk.stories.events.SwipeRightEvent;
@@ -28,7 +28,6 @@ import com.inappstory.sdk.stories.events.SwipeUpEvent;
 import com.inappstory.sdk.stories.events.WidgetTapEvent;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPagerAdapter;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
@@ -66,9 +65,8 @@ public class ReaderPager extends ViewPager {
     private int transformAnimation;
     boolean closeOnSwipe;
 
-    public void setParameters(int transformAnimation, boolean closeOnSwipe) {
+    public void setParameters(int transformAnimation) {
         this.transformAnimation = transformAnimation;
-        this.closeOnSwipe = closeOnSwipe;
         init();
     }
 
@@ -121,7 +119,7 @@ public class ReaderPager extends ViewPager {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
         if (cubeAnimation) {
-            return false;
+            return true;
         }
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         float pressedEndX = 0f;
@@ -221,7 +219,10 @@ public class ReaderPager extends ViewPager {
                     cubeAnimation = false;
                 }
             }, 100);
-            CsEventBus.getDefault().post(new PrevStoryFragmentEvent(InAppStoryService.getInstance().getCurrentId()));
+            int storyId = ((ReaderPagerAdapter)getAdapter()).
+                    getItemId(getCurrentItem());
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+            CsEventBus.getDefault().post(new RestartStoryReaderEvent(storyId, story.getDurations().get(0)));
         }
     }
 

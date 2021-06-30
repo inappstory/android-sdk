@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.reader;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
 
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
@@ -19,9 +21,8 @@ import androidx.viewpager.widget.ViewPager;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
@@ -29,9 +30,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.AppKillEvent;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdEvent;
@@ -45,11 +44,9 @@ import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
-import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
-import com.inappstory.sdk.stories.events.StoryTimerReverseEvent;
 import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CallToAction;
@@ -57,19 +54,17 @@ import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
-import com.inappstory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnNextEvent;
 import com.inappstory.sdk.stories.storieslistenerevents.OnPrevEvent;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.StoriesReaderPagerAdapter;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 
 public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
@@ -91,12 +86,15 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    Log.e("check_mask", "onPageScrolled mask is gone");
                     invMask.setVisibility(View.GONE);
                 }
-            }, 100);
+            }, 400);
         } else {
-            if (invMask.getVisibility() != View.VISIBLE)
+            if (invMask.getVisibility() != View.VISIBLE) {
+                Log.e("check_mask", "onPageScrolled mask is visible");
                 invMask.setVisibility(View.VISIBLE);
+            }
         }
         storiesViewPager.pageScrolled(positionOffset);
     }
@@ -104,13 +102,13 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     List<Integer> currentIds = new ArrayList<>();
 
 
-    StoriesReaderPager storiesViewPager;
+    ReaderPagerAdapter outerViewPagerAdapter;
     View invMask;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (InAppStoryService.getInstance() == null || InAppStoryManager.getInstance() == null) {
+        if (InAppStoryService.isNull()) {
             if (getActivity() != null) getActivity().finish();
             return;
         }
@@ -118,22 +116,19 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         CsEventBus.getDefault().register(this);
         configurationChanged = false;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        storiesViewPager = view.findViewById(R.id.stories);
-        invMask = view.findViewById(R.id.invMask);
         storiesViewPager.setParameters(
-                getArguments().getInt(CS_STORY_READER_ANIMATION, 0),
-                InAppStoryManager.getInstance().closeOnSwipe());
+                getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
         int closePosition = getArguments().getInt(CS_CLOSE_POSITION, 1);
         currentIds = getArguments().getIntegerArrayList("stories_ids");
         if (currentIds == null) {
             if (getActivity() != null) getActivity().finish();
             return;
         }
-        StoriesReaderPagerAdapter outerViewPagerAdapter =
-                new StoriesReaderPagerAdapter(
+        outerViewPagerAdapter =
+                new ReaderPagerAdapter(
                         getChildFragmentManager(),
-                        closePosition,
-                        InAppStoryManager.getInstance().closeOnSwipe(), currentIds);
+                        getArguments().getString(CS_READER_SETTINGS),
+                        currentIds);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
         int ind = getArguments().getInt("index", 0);
@@ -166,7 +161,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onDestroyView() {
         if (!isDestroyed) {
             CsEventBus.getDefault().unregister(this);
-            if (InAppStoryService.getInstance() != null) {
+            if (InAppStoryService.isNotNull()) {
                 OldStatisticManager.getInstance().currentEvent = null;
                 if (!configurationChanged) {
                     // EventBus.getDefault().post(new DestroyStoriesFragmentEvent());
@@ -195,12 +190,33 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
 
+    ReaderPager storiesViewPager;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         isDestroyed = getArguments().getBoolean("isDestroyed");
         created = true;
-        return inflater.inflate(R.layout.cs_fragment_stories, container, false);
+        RelativeLayout resView = new RelativeLayout(getContext());
+        resView.setBackgroundColor(getResources().getColor(R.color.black));
+        storiesViewPager = new ReaderPager(getContext());
+        storiesViewPager.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        invMask = new View(getContext());
+        invMask.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        Log.e("check_mask", "mask is gone");
+        invMask.setVisibility(View.GONE);
+        storiesViewPager.setId(R.id.ias_stories_pager);
+        invMask.setId(R.id.ias_inv_mask);
+        invMask.setClickable(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            storiesViewPager.setElevation(4);
+            invMask.setElevation(10);
+        }
+        resView.addView(storiesViewPager);
+        resView.addView(invMask);
+        return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);
     }
 
 
@@ -213,15 +229,15 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             if (!Sizes.isTablet())
                 StatusBarController.hideStatusBar(getActivity(), true);
             created = false;
-            InAppStoryManager.getInstance().setTempShareStoryId(0);
-            InAppStoryManager.getInstance().setTempShareId(null);
-            if (InAppStoryManager.getInstance().getOldTempShareId() != null) {
+            ScreensManager.getInstance().setTempShareStoryId(0);
+            ScreensManager.getInstance().setTempShareId(null);
+            if (ScreensManager.getInstance().getOldTempShareId() != null) {
                 CsEventBus.getDefault().post(new ShareCompleteEvent(
-                        InAppStoryManager.getInstance().getOldTempShareStoryId(),
-                        InAppStoryManager.getInstance().getOldTempShareId(), true));
+                        ScreensManager.getInstance().getOldTempShareStoryId(),
+                        ScreensManager.getInstance().getOldTempShareId(), true));
             }
-            InAppStoryManager.getInstance().setOldTempShareStoryId(0);
-            InAppStoryManager.getInstance().setOldTempShareId(null);
+            ScreensManager.getInstance().setOldTempShareStoryId(0);
+            ScreensManager.getInstance().setOldTempShareId(null);
         }
         super.onResume();
     }
@@ -295,11 +311,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                         adds.add(currentIds.get(position - 1));
                     }
                 }
-                Log.e("PageTaskToLoadEvent", "addStoryTask " + currentIds.get(position));
+                if (InAppStoryService.isNull()) return;
+
+                InAppStoryService.getInstance().getDownloadManager().changePriority(currentIds.get(position), adds);
                 InAppStoryService.getInstance().getDownloadManager().addStoryTask(currentIds.get(position), adds);
 
 
-                if (InAppStoryService.getInstance() == null) return;
                 if (currentIds != null && currentIds.size() > position) {
                     OldStatisticManager.getInstance().addStatisticBlock(currentIds.get(position),
                             InAppStoryService.getInstance().getDownloadManager().getStoryById(currentIds.get(position)).lastIndex);
@@ -344,7 +361,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Override
     public void onPageScrollStateChanged(int state) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         if (state == ViewPager.SCROLL_STATE_IDLE) {
             if (getCurIndexById(InAppStoryService.getInstance().getCurrentId()) == currentIndex) {
                 CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
@@ -382,13 +399,15 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
             Handler handler = new Handler(Looper.getMainLooper());
+            Log.e("check_mask", "storyReaderTap mask is visible");
             invMask.setVisibility(View.VISIBLE);
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    Log.e("check_mask", "storyReaderTap mask is gone");
                     invMask.setVisibility(View.GONE);
                 }
-            }, 200);
+            }, 300);
 
             if (event.getLink() == null || event.getLink().isEmpty()) {
                 int real = event.getCoordinate();
@@ -456,47 +475,17 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void nextStoryPageEvent(OnNextEvent event) {
-        if (isDestroyed) return;
-        if (InAppStoryService.getInstance() == null) return;
-        Story st = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId());
-        if (st.durations != null && !st.durations.isEmpty()) st.slidesCount = st.durations.size();
-        if (currentIndex < st.slidesCount - 1) {
-            currentIndex++;
-        }
-
-        CsEventBus.getDefault().post(new StoryPageOpenEvent(
-                InAppStoryService.getInstance().getCurrentId(),
-                currentIndex
-        ) {{
-            isNext = true;
-        }});
-
-        if (st.lastIndex < st.slidesCount) {
-            st.lastIndex++;
-        }
-    }
 
 
-    /**
-     * Открываем предыдущий слайд нарратива
-     *
-     * @param event
-     */
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void prevStoryPageEvent(StoryTimerReverseEvent event) {
-        if (isDestroyed) return;
-        CsEventBus.getDefault().post(new OnPrevEvent());
-    }
+
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void setCurrentIndexEvent(ChangeIndexEvent event) {
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
+            Log.e("changePriority", "set0 setCurrentIndexEvent " + event.getIndex());
             InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentIds.get(curItem)).lastIndex = event.getIndex();
+                    .getStoryById(currentIds.get(curItem)).setLastIndex(event.getIndex());
             CsEventBus.getDefault().post(new ChangeIndexEventInFragment(event.getIndex(), currentIds.get(curItem)));
         }
     }
@@ -510,44 +499,22 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void changeIndexEvent(ChangeIndexEventInFragment event) {
         if (isDestroyed) return;
         currentIndex = event.getIndex();
-
     }
 
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void onPrev(OnPrevEvent event) {
-        if (isDestroyed) return;
-        if (InAppStoryService.getInstance() == null) return;
-
-        Handler handler = new Handler(Looper.getMainLooper());
-        if (InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId()).lastIndex > 0) {
-            InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId()).lastIndex--;
-        }
-        if (currentIndex > 0) {
-            currentIndex--;
-            CsEventBus.getDefault().post(new StoryPageOpenEvent(
-                    InAppStoryService.getInstance().getCurrentId(),
-                    currentIndex
-            ) {{
-                isPrev = true;
-            }});
-        }
-
-    }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(ChangeStoryEvent event) {
         if (isDestroyed) return;
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         InAppStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
         currentIndex = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(currentIds.get(event.getIndex())).lastIndex;
+        Log.e("check_mask", "ChangeStoryEvent mask is visible");
         invMask.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                Log.e("check_mask", "ChangeStoryEvent mask is gone");
                 invMask.setVisibility(View.GONE);
             }
         }, 600);
@@ -559,10 +526,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         getArguments().putInt("index", event.getIndex());
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void appKillEvent(AppKillEvent event) {
-        Log.e("app_kill", "appKill");
-    }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void onNextStory(NextStoryReaderEvent event) {

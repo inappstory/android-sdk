@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.SerializedName;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -23,10 +25,10 @@ public class Story implements Parcelable {
 
     public String getTitle() {
         String tmp = title != null ? title : "";
-        if (InAppStoryManager.getInstance() == null) return title;
-        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
+        if (InAppStoryService.isNull()) return title;
+        for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
             if (tmp.contains(key)) {
-                tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+                tmp = tmp.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
             }
         }
         return tmp;
@@ -58,9 +60,6 @@ public class Story implements Parcelable {
         return layout;
     }
 
-    public boolean isFavorite() {
-        return favorite;
-    }
 
     public String getTitleColor() {
         return titleColor;
@@ -78,6 +77,16 @@ public class Story implements Parcelable {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
     }
 
+    public void setLastIndex(int lastIndex) {
+        this.lastIndex = lastIndex;
+        try {
+            InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(id).lastIndex = lastIndex;
+        } catch (Exception e) {
+
+        }
+    }
+
     /**
      * Последний открытый слайд
      */
@@ -89,10 +98,10 @@ public class Story implements Parcelable {
 
     public String getSource() {
         String tmp = source != null ? source : "";
-        if (InAppStoryManager.getInstance() == null) return source;
-        for (String key : InAppStoryManager.getInstance().getPlaceholders().keySet()) {
+        if (InAppStoryService.isNull()) return source;
+        for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
             if (tmp.contains(key)) {
-                tmp = tmp.replace(key, InAppStoryManager.getInstance().getPlaceholders().get(key));
+                tmp = tmp.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
             }
         }
         return tmp;
@@ -124,6 +133,9 @@ public class Story implements Parcelable {
     @SerializedName("slides_count")
     public int slidesCount;
 
+    public boolean isFavorite() {
+        return favorite;
+    }
 
     @SerializedName("favorite")
     public boolean favorite;
@@ -209,10 +221,9 @@ public class Story implements Parcelable {
     }
 
     public void saveStoryOpened() {
-        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-        if (opens == null) opens = new HashSet<>();
-        opens.add(Integer.toString(id));
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+        if (InAppStoryService.isNotNull()) {
+            InAppStoryService.getInstance().saveStoryOpened(id);
+        }
     }
 
     @SerializedName("like_functional")
@@ -276,6 +287,7 @@ public class Story implements Parcelable {
         if (durations == null) durations = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         id = in.readInt();
+        Log.e("changePriority", "set0 readFromParcel");
         lastIndex = in.readInt();
         title = in.readString();
         source = in.readString();

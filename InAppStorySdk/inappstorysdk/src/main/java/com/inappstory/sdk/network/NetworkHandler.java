@@ -5,8 +5,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryManager;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,8 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.inappstory.sdk.InAppStoryService.IAS_LOG;
 
 public final class NetworkHandler implements InvocationHandler {
     /**
@@ -61,11 +57,12 @@ public final class NetworkHandler implements InvocationHandler {
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         }
-        InAppStoryManager.addDebug( connection.getURL().toString());
+        Log.d("InAppStory_Network", req.getHeaders().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
             }
+            Log.d("InAppStory_Network", req.getBody());
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
@@ -76,15 +73,16 @@ public final class NetworkHandler implements InvocationHandler {
         }
         int statusCode = connection.getResponseCode();
         Response respObject = null;
-        InAppStoryManager.addDebug(connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        Log.d("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
 
             String res = getResponseFromStream(connection.getInputStream());
-       //     Log.d("InAppStory_Network", "Response: " + res);
+            Log.d("InAppStory_Network", "Response: " + res);
             respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
             String res = getResponseFromStream(connection.getErrorStream());
-       //     Log.d("InAppStory_Network", "Error: " + res);
+            Log.d("InAppStory_Network", "Error: " + res);
             respObject = new Response.Builder().code(statusCode).errorBody(res).build();
         }
         connection.disconnect();

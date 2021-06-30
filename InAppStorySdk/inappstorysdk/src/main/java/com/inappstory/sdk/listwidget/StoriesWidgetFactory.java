@@ -141,12 +141,12 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
                     ImageLoader.getInstance().displayRemoteImage(mWidgetItems.get(position).getImage().get(0).getUrl(), 0, rv,
                             R.id.image, widgetAppearance.getCorners(),
                             containerRatio != null ?
-                                    containerRatio : widgetAppearance.getRatio());
+                                    containerRatio : widgetAppearance.getRatio(), mContext);
                 } else {
                     ImageLoader.getInstance().displayRemoteColor(mWidgetItems.get(position).backgroundColor, 0, rv,
                             R.id.image, widgetAppearance.getCorners(),
                             containerRatio != null ?
-                                    containerRatio : widgetAppearance.getRatio());
+                                    containerRatio : widgetAppearance.getRatio(), mContext);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -162,20 +162,17 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public RemoteViews getLoadingView() {
-        Log.e("MyWidget", "getLoadingView");
         return null;
     }
 
 
     @Override
     public int getViewTypeCount() {
-        Log.e("MyWidget", "getViewTypeCount");
         return mWidgetItems.size();
     }
 
     @Override
     public long getItemId(int position) {
-        Log.e("MyWidget", "getItemId " + position);
         return position;
     }
 

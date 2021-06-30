@@ -4,9 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StoryPageTask {
-    public int priority = 0;
-    public List<String> urls = new ArrayList<>();
+    int priority = 0;
+    List<String> urls = new ArrayList<>();
     public List<String> urlKeys = new ArrayList<>();
-    public List<String> videoUrls = new ArrayList<>();
-    public int loadType = 0; //0 - not loaded, 1 - loading, 2 - loaded
+    List<String> videoUrls = new ArrayList<>();
+    int loadType = 0; //0 - not loaded, 1 - loading, 2 - loaded
+
+    @Override
+    public String toString() {
+        return "StoryPageTask{" +
+                ", loadType=" + loadType +
+                '}';
+    }
 }

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.callbacks;
+package com.inappstory.sdk.stories.cache;
 
 import com.inappstory.sdk.stories.api.models.Story;
 

@@ -5,6 +5,7 @@ import android.content.Intent;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
@@ -12,7 +13,6 @@ import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
@@ -69,7 +69,7 @@ public class ButtonsPanelManager {
         }
         NetworkClient.getApi().storyLike(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
-                InAppStoryManager.getInstance().getApiKey(), val).enqueue(
+                ApiSettings.getInstance().getApiKey(), val).enqueue(
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
@@ -105,15 +105,16 @@ public class ButtonsPanelManager {
                 story.tags, story.slidesCount, story.lastIndex, !story.favorite));
         NetworkClient.getApi().storyFavorite(Integer.toString(storyId),
                 StatisticSession.getInstance().id,
-                InAppStoryManager.getInstance().getApiKey(), val ? 0 : 1).enqueue(
+                ApiSettings.getInstance().getApiKey(), val ? 0 : 1).enqueue(
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
+                        boolean res = !val;
                         if (story != null)
-                            story.favorite = !val;
+                            story.favorite = res;
                         if (callback != null)
-                            callback.onSuccess(val ? 1 : 0);
-                        CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, !val));
+                            callback.onSuccess(res ? 1 : 0);
+                        CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, res));
                     }
 
                     @Override
@@ -131,11 +132,11 @@ public class ButtonsPanelManager {
     }
 
     public void soundClick(ButtonClickCallback callback) {
-        if (InAppStoryManager.isNull()) return;
-        InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
-        CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryManager.getInstance().soundOn, storyId));
+        if (InAppStoryService.isNull()) return;
+        InAppStoryService.getInstance().changeSoundStatus();
+        CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryService.getInstance().isSoundOn(), storyId));
         if (callback != null)
-            callback.onSuccess(InAppStoryManager.getInstance().soundOn ? 1 : 0);
+            callback.onSuccess(InAppStoryService.getInstance().isSoundOn() ? 1 : 0);
     }
 
     public void shareClick(final ButtonClickCallback callback) {
@@ -146,7 +147,7 @@ public class ButtonsPanelManager {
                 story.tags, story.slidesCount, story.lastIndex));
         CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
         NetworkClient.getApi().share(Integer.toString(storyId), StatisticSession.getInstance().id,
-                InAppStoryManager.getInstance().getApiKey(), null).enqueue(new NetworkCallback<ShareObject>() {
+                ApiSettings.getInstance().getApiKey(), null).enqueue(new NetworkCallback<ShareObject>() {
             @Override
             public void onSuccess(ShareObject response) {
                 if (callback != null)
@@ -162,7 +163,7 @@ public class ButtonsPanelManager {
                     sendIntent.setType("text/plain");
                     Intent finalIntent = Intent.createChooser(sendIntent, null);
                     finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
+                    InAppStoryService.getInstance().getContext().startActivity(finalIntent);
                 }
             }
 

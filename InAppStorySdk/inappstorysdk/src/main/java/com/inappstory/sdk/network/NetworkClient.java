@@ -75,6 +75,7 @@ public class NetworkClient {
         return instance;
     }
 
+
     public static Context getAppContext() {
         return appContext;
     }
@@ -100,14 +101,14 @@ public class NetworkClient {
             } else {
                 language = Locale.getDefault().getLanguage();
             }
-            instance = new NetworkClient.Builder()
+            instance = new Builder()
                     .context(appContext)
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
                     .addHeader("Accept", "application/json")
-                    .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
                     .addHeader("Accept-Language", language)
+                    .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
                     .addHeader("User-Agent", getUAString(appContext))
-                    .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getCmsKey()).build();
+                    .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey()).build();
         }
         if (apiInterface == null) {
             apiInterface = NetworkHandler.implement(ApiInterface.class, instance);

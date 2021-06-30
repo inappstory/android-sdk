@@ -7,6 +7,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryManager;
 
@@ -30,8 +31,8 @@ public class Sizes {
 
 
     public static float getPixelScaleFactorExt() {
-        if (InAppStoryManager.getInstance() == null) return 1;
-        Context con = InAppStoryManager.getInstance().getContext();
+        if (InAppStoryService.isNull()) return 1;
+        Context con = InAppStoryService.getInstance().getContext();
         if (con == null)
             return 1;
         DisplayMetrics displayMetrics = con.getResources().getDisplayMetrics();
@@ -48,8 +49,8 @@ public class Sizes {
 
     public static Point getScreenSize() {
         Context con = null;
-        if (InAppStoryManager.getInstance() != null)
-            con = InAppStoryManager.getInstance().getContext();
+        if (InAppStoryService.isNotNull())
+            con = InAppStoryService.getInstance().getContext();
         if (con == null) return new Point(0, 0);
         WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -57,6 +58,7 @@ public class Sizes {
         display.getSize(size);
         return size;
     }
+
     public static Point getScreenSize(Context context) {
         Context con = context;
         WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
@@ -71,8 +73,8 @@ public class Sizes {
     }
 
     public static boolean isTablet() {
-        if (InAppStoryManager.getInstance() != null && InAppStoryManager.getInstance().getContext() != null)
-            return InAppStoryManager.getInstance().getContext().getResources().getBoolean(R.bool.isTablet);
+        if (InAppStoryService.isNotNull() && InAppStoryService.getInstance().getContext() != null)
+            return InAppStoryService.getInstance().getContext().getResources().getBoolean(R.bool.isTablet);
         else return false;
     }
 

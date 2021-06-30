@@ -4,10 +4,13 @@ import android.content.Context;
 import android.os.Handler;
 import android.webkit.JavascriptInterface;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
+import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -46,6 +49,11 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void resetTimers() {
+        CsEventBus.getDefault().post(new ClearDurationEvent(manager.storyId, manager.index));
+    }
+
+    @JavascriptInterface
     public void storyShowNextSlide(final long delay) {
         if (delay != 0) {
             new Handler().postDelayed(new Runnable() {
@@ -70,9 +78,30 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void storyLoaded() {
-        manager.storyLoaded();
+    public void storyStarted(double startTime) {
+        manager.storyStartedEvent();
     }
+
+    @JavascriptInterface
+    public void storyResumed(double startTime) {
+        manager.storyResumedEvent(startTime);
+    }
+
+    @JavascriptInterface
+    public void storyLoaded() {
+        manager.storyLoaded(-1);
+    }
+
+    @JavascriptInterface
+    public void storyLoaded(String data) {
+        if (data != null) {
+            int slideIndex = JsonParser.fromJson(data, StoryLoadedData.class).index;
+            manager.storyLoaded(slideIndex);
+        } else {
+            manager.storyLoaded(-1);
+        }
+    }
+
 
     @JavascriptInterface
     public void storyStatisticEvent(String name, String data) {
@@ -109,7 +138,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public String storyGetLocalData() {
         String res = KeyValueStorage.getString("story" + manager.storyId
-                + "__" + InAppStoryManager.getInstance().getUserId());
+                + "__" + InAppStoryService.getInstance().getUserId());
         return res == null ? "" : res;
     }
 

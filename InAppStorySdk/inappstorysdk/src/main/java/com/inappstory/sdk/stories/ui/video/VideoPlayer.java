@@ -9,15 +9,11 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileType;
-import com.inappstory.sdk.stories.cache.OldStoryDownloader;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
 import java.io.IOException;
-
-import static com.inappstory.sdk.stories.cache.OldStoryDownloader.COVER_VIDEO_FOLDER_ID;
 
 public class VideoPlayer extends TextureView implements TextureView.SurfaceTextureListener {
 
@@ -111,8 +107,8 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
         try {
             if (file == null)
-                file = Downloader.getCoverVideo(getContext(), url, FileType.STORY_FILE, COVER_VIDEO_FOLDER_ID);
-            if (file.exists()) {
+                file = Downloader.getCoverVideo(url, InAppStoryService.getInstance().getFastCache());
+            if (file != null && file.exists()) {
                 boolean fileIsNotLocked = file.renameTo(file);
                 if (file.length() > 10 && fileIsNotLocked) {
                     mp.setDataSource(file.getAbsolutePath());
@@ -121,7 +117,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 }
             } else {
                 mp.setDataSource(url);
-                OldStoryDownloader.downloadCoverVideo(url);
+                Downloader.downloadCoverVideo(url, InAppStoryService.getInstance().getFastCache());
             }
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

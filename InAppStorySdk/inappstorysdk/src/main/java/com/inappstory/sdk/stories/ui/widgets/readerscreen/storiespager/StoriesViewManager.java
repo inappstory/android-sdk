@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
-import android.webkit.WebSettings;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -23,8 +23,6 @@ import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileCache;
-import com.inappstory.sdk.stories.cache.FileType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
@@ -32,15 +30,18 @@ import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.StartGame;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStoriesGeneratedView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
+import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,6 @@ import java.util.regex.Pattern;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.inappstory.sdk.InAppStoryManager.testGenerated;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
-import static com.inappstory.sdk.stories.cache.HtmlParser.fromHtml;
 
 public class StoriesViewManager {
     public int index = -1;
@@ -80,6 +80,7 @@ public class StoriesViewManager {
 
     public void storyLoaded(int oId, int oInd) {
         if (storyId != oId || index != oInd) return;
+        Log.e("checkSlidesLoading", "storyLoaded" + oId + " " + oInd);
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
@@ -101,10 +102,14 @@ public class StoriesViewManager {
             if (testGenerated) {
                 initViews(story.slidesStructure.get(index));
             } else {
-                String innerWebData = story.pages.get(index);
-                String layout = getLayoutWithFonts(story.getLayout());
-                setWebViewSettings(innerWebData, layout);
+                try {
+                    setWebViewSettings(story);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+        } else {
+
         }
     }
 
@@ -120,22 +125,26 @@ public class StoriesViewManager {
 
     public void loadStory(final int id, final int index) {
         if (loadedId == id && loadedIndex == index) return;
-        if (InAppStoryManager.getInstance() == null)
+
+        if (InAppStoryService.isNull())
             return;
         if (!InAppStoryService.isConnected()) {
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+        Log.e("Story_LoadStory", "loadStory " + id + " " + index);
         if (story == null || story.checkIfEmpty()) {
             return;
         }
         if (story.slidesCount <= index) return;
+        Log.e("Story_LoadStory", "loadStory empty check " + id + " " + index);
         storyId = id;
         this.index = index;
         loadedIndex = index;
         loadedId = id;
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
+        Log.e("changePriority", "loadStory slideInCache " + id + " " + index + " " + slideInCache);
         if (!slideInCache) {
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false)); //animation
         } else {
@@ -143,18 +152,30 @@ public class StoriesViewManager {
         }
     }
 
-    void setWebViewSettings(String innerWebData, String layout) {
+    void setWebViewSettings(Story story) throws IOException {
+        String innerWebData = story.pages.get(index);
+        String layout = getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
+        WebPageConvertCallback callback = new WebPageConvertCallback() {
+            @Override
+            public void onConvert(String webData, String webLayout, int lastIndex) {
+             //   Log.e("changePriority", "loadWebData" + storyId + " " + index);
+                if (index != lastIndex) return;
+               // Log.e("changePriority", "loadWebData" + storyId + " " + index);
+                loadWebData(webLayout, webData);
+            }
+        };
+        ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
         if (innerWebData.contains("<video")) {
             isVideo = true;
-            ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            WebPageConverter.replaceVideoAndLoad(innerWebData, storyId, index, layout);
+            converter.replaceVideoAndLoad(innerWebData, story, index, layout, callback);
         } else {
             isVideo = false;
-            ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            WebPageConverter.replaceImagesAndLoad(innerWebData, storyId, index, layout);
+            converter.replaceImagesAndLoad(innerWebData, story, index, layout, callback);
         }
     }
+
+    WebPageConverter converter = new WebPageConverter();
 
     String getLayoutWithFonts(String layout) {
         List<String> fonturls = new ArrayList<>();
@@ -162,11 +183,11 @@ public class StoriesViewManager {
         Matcher urlMatcher = FONT_SRC.matcher(layout);
         while (urlMatcher.find()) {
             if (urlMatcher.groupCount() == 1) {
-                fonturls.add(fromHtml(urlMatcher.group(1)).toString());
+                fonturls.add(converter.fromHtml(urlMatcher.group(1)).toString());
             }
         }
         for (String fonturl : fonturls) {
-            String fileLink = Downloader.getFontFile(storiesView.getContext(), fonturl);
+            String fileLink = Downloader.getFontFile(fonturl);
             if (fileLink != null)
                 layout = layout.replaceFirst(fonturl, "file://" + fileLink);
         }
@@ -191,9 +212,11 @@ public class StoriesViewManager {
     }
 
     public File getCurrentFile(String img) {
-        Context con = InAppStoryManager.getInstance().getContext();
-        FileCache cache = FileCache.INSTANCE;
-        return cache.getStoredFile(con, img, FileType.STORY_FILE, Integer.toString(storyId), null);
+        try {
+            return InAppStoryService.getInstance().getCommonCache().get(img);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     private CoreProgressBar progressBar;
@@ -272,22 +295,27 @@ public class StoriesViewManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryManager.getInstance().setTempShareId(id);
-                InAppStoryManager.getInstance().setTempShareStoryId(storyId);
-                InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
+                ScreensManager.getInstance().setTempShareId(id);
+                ScreensManager.getInstance().setTempShareStoryId(storyId);
+                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
             } else {
                 finalIntent = Intent.createChooser(sendIntent, null);
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
-                InAppStoryManager.getInstance().setOldTempShareId(id);
-                InAppStoryManager.getInstance().setOldTempShareStoryId(storyId);
+                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                ScreensManager.getInstance().setOldTempShareId(id);
+                ScreensManager.getInstance().setOldTempShareStoryId(storyId);
             }
         }
     }
 
     public void storyStartedEvent() {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
+    }
+
+
+    public void storyResumedEvent(double startTime) {
+        if (InAppStoryService.isNull()) return;
     }
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
@@ -306,9 +334,11 @@ public class StoriesViewManager {
         ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
     }
 
-    public void storyLoaded() {
-        if (InAppStoryService.getInstance() == null) return;
-        if (InAppStoryService.getInstance().getCurrentId() != storyId) {
+    public void storyLoaded(int slideIndex) {
+        if (InAppStoryService.isNull()) return;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if ((slideIndex >= 0 && story.lastIndex != slideIndex)
+                || InAppStoryService.getInstance().getCurrentId() != storyId) {
             storiesView.stopVideo();
         } else {
             storiesView.playVideo();
@@ -319,7 +349,6 @@ public class StoriesViewManager {
                 }
             }, 200);
         }
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
         //   CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
@@ -332,9 +361,9 @@ public class StoriesViewManager {
 
     public void storySetLocalData(String data, boolean sendToServer) {
         KeyValueStorage.saveString("story" + storyId
-                + "__" + InAppStoryManager.getInstance().getUserId(), data);
+                + "__" + InAppStoryService.getInstance().getUserId(), data);
 
-        if (!InAppStoryManager.getInstance().sendStatistic) return;
+        if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
@@ -352,7 +381,7 @@ public class StoriesViewManager {
     }
 
     public void storySendData(String data) {
-        if (!InAppStoryManager.getInstance().sendStatistic) return;
+        if (!InAppStoryService.getInstance().getSendStatistic()) return;
         NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                 .enqueue(new NetworkCallback<Response>() {
                     @Override
@@ -369,6 +398,10 @@ public class StoriesViewManager {
 
     public void stopVideo() {
         storiesView.stopVideo();
+    }
+
+    public void restartVideo() {
+        storiesView.restartVideo();
     }
 
     public void playVideo() {
