@@ -27,10 +27,8 @@ public class AppearanceManager {
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
     public static final String CS_HAS_LIKE = "hasLike";
     public static final String CS_HAS_FAVORITE = "hasFavorite";
-    public static final String CS_HAS_SOUND = "hasSound";
     public static final String CS_HAS_SHARE = "hasShare";
     public static final String CS_CLOSE_ON_SWIPE = "closeOnSwipe";
-    public static final String CS_NAVBAR_COLOR = "navBarColor";
 
     public static final String CS_CLOSE_ON_OVERSCROLL = "closeOnOverscroll";
     public static final String CS_READER_OPEN_ANIM = "readerOpenAnimation";
@@ -695,23 +693,7 @@ public class AppearanceManager {
         return csStoryReaderAnimation;
     }
 
-    public void csNavBarColor(int csNavBarColor) {
-        this.csNavBarColor = csNavBarColor;
-    }
-    public int csNavBarColor() {
-        return csNavBarColor;
-    }
-    public void csNightNavBarColor(int csNightNavBarColor) {
-        this.csNightNavBarColor = csNightNavBarColor;
-    }
 
-    public int csNightNavBarColor() {
-        return csNightNavBarColor != 0 ? csNightNavBarColor : csNavBarColor;
-    }
-
-
-    private int csNavBarColor = Color.TRANSPARENT;
-    private int csNightNavBarColor = Color.TRANSPARENT;
     private int csListItemMargin = Sizes.dpToPxExt(4);
     private boolean csShowStatusBar = false;
     private int csClosePosition = TOP_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;

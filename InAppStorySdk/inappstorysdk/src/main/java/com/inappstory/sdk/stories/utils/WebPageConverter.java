@@ -5,7 +5,6 @@ import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Base64;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,7 +86,6 @@ public class WebPageConverter {
             if (file != null) {
                 video = "file://" + file.getAbsolutePath();
             }
-            Log.e("IAS_VIDEO_LOG", storyId + " " + video + " " + videoKey);
             innerWebData = innerWebData.replace(videoKey, video);
         }
         List<String> imgs = story.getSrcListUrls(index, null);
