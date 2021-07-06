@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```
-implementation 'com.github.inappstory:android-sdk:1.3.0'
+implementation 'com.github.inappstory:android-sdk:1.3.1'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -178,6 +178,7 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csCloseIcon                      | Integer(id)         | R.drawable.ic_stories_close				| icon for close button in reader.		|
 | csRefreshIcon                    | Integer(id)         | R.drawable.ic_refresh					| icon for refresh button in reader.	|
 | csSoundIcon                      | Integer(id)         | R.drawable.ic_stories_status_sound		| icon for sound button in reader.		|
+| csCoverQuality                   | Integer             | 0 	  | quality for stories list covers. If not set - sdk uses medium image quality (`QUALITY_MEDIUM = 1; QUALITY_HIGH = 2;`)|
 
 
 The example of set parameters:
