@@ -25,6 +25,8 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.eventbus.CsSubscribe;
+import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
@@ -34,6 +36,7 @@ import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -151,6 +154,11 @@ public class GameActivity extends AppCompatActivity {
         ScreensManager.getInstance().setOldTempShareId(null);
         super.onResume();
     }
+    
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void shareCompleteEvent(ShareCompleteEvent event) {
+        shareComplete(event.getId(), event.isSuccess());
+    }
 
     private void shareData(String id, String data) {
         ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
@@ -234,9 +242,15 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        CsEventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
-
+        CsEventBus.getDefault().register(this);
         setContentView(R.layout.cs_activity_game);
         setViews();
         getIntentValues();
