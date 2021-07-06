@@ -12,6 +12,10 @@ public class ReaderPageManager {
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
 
+    void gameComplete(String data) {
+        webViewManager.gameComplete(data);
+    }
+
     public void setStoryId(int storyId) {
         this.storyId = storyId;
     }

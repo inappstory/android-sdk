@@ -66,6 +66,12 @@ public class StoriesViewManager {
         this.storyId = storyId;
     }
 
+    void gameComplete(String data) {
+        if (storiesView instanceof SimpleStoriesWebView) {
+            ((SimpleStoriesWebView)storiesView).gameComplete(data);
+        }
+    }
+
     public int storyId;
     boolean slideInCache = false;
 

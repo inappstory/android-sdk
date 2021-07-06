@@ -65,6 +65,13 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
 
+    public void gameComplete(String data) {
+        if (data != null)
+            loadUrl("javascript:game_complete('" + data + "')");
+        else
+            loadUrl("javascript:game_complete()");
+    }
+
     private void replaceHtml(String page) {
         evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }

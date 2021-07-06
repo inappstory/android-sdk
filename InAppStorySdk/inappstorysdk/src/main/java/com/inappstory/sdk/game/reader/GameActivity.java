@@ -304,6 +304,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
+
     private void gameCompleted(String gameState) {
         try {
             Intent intent = new Intent();

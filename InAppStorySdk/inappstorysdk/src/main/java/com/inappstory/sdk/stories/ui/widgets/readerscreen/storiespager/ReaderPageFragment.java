@@ -30,6 +30,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.NextStoryPageEvent;
 import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
 import com.inappstory.sdk.stories.events.PageByIdSelectedEvent;
@@ -84,6 +85,8 @@ public class ReaderPageFragment extends Fragment {
         if (storiesView != null)
             manager.setWebViewManager(storiesView.getManager(), storyId);
     }
+
+
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageByIdSelected(PageByIdSelectedEvent event) {
@@ -229,6 +232,12 @@ public class ReaderPageFragment extends Fragment {
     public void shareComplete(ShareCompleteEvent event) {
         if (storyId != event.storyId) return;
         manager.shareComplete(event.getId(), event.isSuccess());
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void gameComplete(GameCompleteEvent event) {
+        if (storyId != event.getStoryId() || story.lastIndex != event.getSlideIndex()) return;
+        manager.gameComplete(event.getData());
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
