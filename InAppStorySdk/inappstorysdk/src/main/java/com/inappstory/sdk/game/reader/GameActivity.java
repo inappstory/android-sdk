@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -144,6 +145,16 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SHARE_EVENT && resultCode == RESULT_CANCELED) {
+            closeGame();
+        }
+    }
+
+    public static final int SHARE_EVENT = 909;
+
+    @Override
     public void onResume() {
         ScreensManager.getInstance().setTempShareStoryId(0);
         ScreensManager.getInstance().setTempShareId(null);
@@ -171,16 +182,16 @@ public class GameActivity extends AppCompatActivity {
             sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObj.getTitle());
             sendIntent.putExtra(Intent.EXTRA_TEXT, shareObj.getUrl());
             sendIntent.setType("text/plain");
-            PendingIntent pi = PendingIntent.getBroadcast(GameActivity.this, 979,
+            PendingIntent pi = PendingIntent.getBroadcast(GameActivity.this, SHARE_EVENT,
                     new Intent(GameActivity.this, StoryShareBroadcastReceiver.class),
                     FLAG_UPDATE_CURRENT);
             Intent finalIntent = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ScreensManager.getInstance().setTempShareId(id);
                 ScreensManager.getInstance().setTempShareStoryId(-1);
-                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                startActivityForResult(finalIntent, SHARE_EVENT);
             } else {
                 finalIntent = Intent.createChooser(sendIntent, null);
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
