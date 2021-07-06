@@ -40,6 +40,7 @@ import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
+import com.inappstory.sdk.stories.events.ShareCompleteEvent;
 import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
@@ -224,6 +225,11 @@ public class ReaderPageFragment extends Fragment {
         }
     }
 
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void shareComplete(ShareCompleteEvent event) {
+        if (storyId != event.storyId) return;
+        manager.shareComplete(event.getId(), event.isSuccess());
+    }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void storyPageStartedEvent(StoryPageStartedEvent event) {

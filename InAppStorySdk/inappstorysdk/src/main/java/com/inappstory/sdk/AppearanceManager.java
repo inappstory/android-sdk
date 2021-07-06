@@ -42,6 +42,9 @@ public class AppearanceManager {
     public static final String CS_READER_SETTINGS = "readerSettings";
 
 
+    public static final String CS_COVER_QUALITY = "coverQuality";
+
+
     public static final int TOP_LEFT = 1;
     public static final int TOP_RIGHT = 2;
     public static final int BOTTOM_LEFT = 3;
@@ -93,6 +96,25 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldFont;
     private Typeface csCustomSecondaryItalicFont;
     private Typeface csCustomSecondaryBoldItalicFont;
+
+    private int csCoverQuality;
+
+    /**
+     * use to set quality for story covers
+     *
+     * @param csCoverQuality (csCoverQuality) quality for covers
+     * {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_MEDIUM}
+     * {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_HIGH}
+     * @return {@link AppearanceManager}
+     */
+    public AppearanceManager csCoverQuality(int csCoverQuality) {
+        this.csCoverQuality = csCoverQuality;
+        return AppearanceManager.this;
+    }
+
+    public int csCoverQuality() {
+        return csCoverQuality;
+    }
 
     /**
      * use to set navigation bar color in stories reader

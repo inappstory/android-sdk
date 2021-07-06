@@ -14,7 +14,7 @@ public interface SimpleStoriesView {
     void sendDialog(String id, String data);
     void destroyView();
     float getCoordinate();
-    void shareComplete(int stId, boolean success);
+    void shareComplete(String stId, boolean success);
     void freezeUI();
     void setStoriesView(SimpleStoriesView storiesView);
     void checkIfClientIsSet();

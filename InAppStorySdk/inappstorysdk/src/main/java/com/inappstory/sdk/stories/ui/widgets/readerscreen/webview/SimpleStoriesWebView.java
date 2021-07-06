@@ -229,7 +229,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
 
-    public void shareComplete(int id, boolean success) {
+    public void shareComplete(String id, boolean success) {
         loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 

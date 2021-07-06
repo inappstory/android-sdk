@@ -97,7 +97,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 holder.bind(story.getTitle(),
                         story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                         story.getSource(),
-                        (story.getImage() != null && story.getImage().size() > 0) ? story.getImage().get(0).getUrl() : null,
+                        (story.getImage() != null && story.getImage().size() > 0) ?
+                                story.getProperImage(manager.csCoverQuality()).getUrl() : null,
                         Color.parseColor(story.getBackgroundColor()),
                         story.isOpened || isFavoriteList, story.hasAudio(),
                         story.getVideoUrl());

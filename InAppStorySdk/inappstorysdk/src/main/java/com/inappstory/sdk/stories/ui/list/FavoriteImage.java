@@ -17,13 +17,31 @@ public class FavoriteImage {
     }
 
     /**
-     * @return {@link Image} instance with cover of Story
+     * @return {@link Image} instance with cover of Story with lowest quality
      */
     public Image getImage() {
         if (image == null || image.isEmpty())
             return null;
         return image.get(0);
     }
+
+    /**
+     * @return {@link Image} instance with cover of Story with custom quality
+     */
+    public Image getImage(int quality) {
+        if (image == null || image.isEmpty())
+            return null;
+        String q = Image.TYPE_MEDIUM;
+        switch (quality) {
+            case Image.QUALITY_HIGH:
+                q = Image.TYPE_HIGH;
+        }
+        for (Image img : image) {
+            if (img.getType().equals(q)) return img;
+        }
+        return image.get(0);
+    }
+
 
     private int id;
 

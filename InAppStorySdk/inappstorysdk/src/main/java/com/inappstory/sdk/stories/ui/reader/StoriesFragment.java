@@ -490,10 +490,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
     }
 
-    /*@Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNext(OnNextEvent event) {
-
-    }*/
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeIndexEvent(ChangeIndexEventInFragment event) {

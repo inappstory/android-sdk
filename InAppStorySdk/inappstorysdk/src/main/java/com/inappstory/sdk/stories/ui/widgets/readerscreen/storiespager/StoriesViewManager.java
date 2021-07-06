@@ -272,8 +272,7 @@ public class StoriesViewManager {
         }
     }
 
-    public void shareComplete(int stId, boolean success) {
-        if (storyId != stId) return;
+    public void shareComplete(String stId, boolean success) {
         storiesView.shareComplete(stId, success);
     }
 

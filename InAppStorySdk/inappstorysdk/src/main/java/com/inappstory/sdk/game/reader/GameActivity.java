@@ -1,5 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -28,15 +29,21 @@ import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
 import java.util.ArrayList;
+
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 public class GameActivity extends AppCompatActivity {
     private String storyId;
@@ -131,6 +138,53 @@ public class GameActivity extends AppCompatActivity {
                 closeGame();
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        ScreensManager.getInstance().setTempShareStoryId(0);
+        ScreensManager.getInstance().setTempShareId(null);
+        if (ScreensManager.getInstance().getOldTempShareId() != null) {
+            shareComplete(ScreensManager.getInstance().getOldTempShareId(), true);
+        }
+        ScreensManager.getInstance().setOldTempShareStoryId(0);
+        ScreensManager.getInstance().setOldTempShareId(null);
+        super.onResume();
+    }
+
+    private void shareData(String id, String data) {
+        ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
+        if (CallbackManager.getInstance().getShareCallback() != null) {
+            CallbackManager.getInstance().getShareCallback()
+                    .onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
+        } else {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObj.getTitle());
+            sendIntent.putExtra(Intent.EXTRA_TEXT, shareObj.getUrl());
+            sendIntent.setType("text/plain");
+            PendingIntent pi = PendingIntent.getBroadcast(GameActivity.this, 979,
+                    new Intent(GameActivity.this, StoryShareBroadcastReceiver.class),
+                    FLAG_UPDATE_CURRENT);
+            Intent finalIntent = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
+                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                ScreensManager.getInstance().setTempShareId(id);
+                ScreensManager.getInstance().setTempShareStoryId(-1);
+                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+            } else {
+                finalIntent = Intent.createChooser(sendIntent, null);
+                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                ScreensManager.getInstance().setOldTempShareId(id);
+                ScreensManager.getInstance().setOldTempShareStoryId(-1);
+            }
+        }
+    }
+
+    public void shareComplete(String id, boolean success) {
+        webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
     private void getIntentValues() {
@@ -313,6 +367,12 @@ public class GameActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void emptyLoaded() {
+        }
+
+
+        @JavascriptInterface
+        public void share(String id, String data) {
+            shareData(id, data);
         }
 
     }

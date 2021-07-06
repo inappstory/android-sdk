@@ -16,6 +16,10 @@ public class ReaderPageManager {
         this.storyId = storyId;
     }
 
+    void shareComplete(String id, boolean isSuccess) {
+        webViewManager.shareComplete(id, isSuccess);
+    }
+
     int storyId;
 
     void storyLoaded(int id, int index) {

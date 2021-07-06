@@ -13,6 +13,8 @@ public class Image implements Parcelable {
     public static final String TYPE_MEDIUM = "m";
     public static final String TYPE_HIGH = "h";
 
+    public static final int QUALITY_MEDIUM = 1;
+    public static final int QUALITY_HIGH = 2;
 
     public static final String TEMP_IMAGE = "";
 
