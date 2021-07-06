@@ -351,7 +351,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
-    public void shareComplete(int stId, boolean success) {
+    public void shareComplete(String stId, boolean success) {
 
     }
 
