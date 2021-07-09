@@ -25,6 +25,8 @@ public class AppearanceManager {
     public static final String CS_CLOSE_POSITION = "closePosition";
     public static final String CS_NAVBAR_COLOR = "navBarColor";
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
+
+    public static final String CS_TIMER_GRADIENT = "timerGradientEnable";
     public static final String CS_HAS_LIKE = "hasLike";
     public static final String CS_HAS_FAVORITE = "hasFavorite";
     public static final String CS_HAS_SHARE = "hasShare";
@@ -77,6 +79,7 @@ public class AppearanceManager {
     private boolean csHasLike;
     private boolean csHasFavorite;
     private boolean csHasShare;
+    private boolean csTimerGradientEnable;
 
     private int csFavoriteIcon;
     private int csLikeIcon;
@@ -209,6 +212,10 @@ public class AppearanceManager {
         }
     }
 
+
+    public boolean csTimerGradientEnable() {
+        return csTimerGradientEnable;
+    }
 
     public Typeface csCustomFont() {
         return csCustomFont;
@@ -355,7 +362,7 @@ public class AppearanceManager {
     }
 
     /**
-     * use to allow users use like/dislike features (available in stories reader)
+     * use to turn on/off like/dislike features (available in stories reader)
      *
      * @param hasLike (hasLike) true - to use this feature
      *                false by default
@@ -367,7 +374,20 @@ public class AppearanceManager {
     }
 
     /**
-     * use to allow users use favorite features (favorite cell in list and add/remove)
+     * use to turn on/off gradient under timer (available in stories reader)
+     *
+     * @param gradientEnable (gradientEnable) true - to use this feature
+     *                false by default
+     * @return {@link AppearanceManager}
+     */
+    public AppearanceManager csTimerGradientEnable(boolean gradientEnable) {
+        this.csTimerGradientEnable = gradientEnable;
+        return AppearanceManager.this;
+    }
+
+
+    /**
+     * use to turn on/off favorite feature (favorite cell in list and add/remove)
      *
      * @param hasFavorite (hasFavorite) true - to use this feature
      *                    false by default
@@ -379,7 +399,7 @@ public class AppearanceManager {
     }
 
     /**
-     * use to allow users use share features (available in stories reader)
+     * use to turn on/off share feature (available in stories reader)
      *
      * @param hasShare (hasShare) true - to use this feature
      *                 false by default

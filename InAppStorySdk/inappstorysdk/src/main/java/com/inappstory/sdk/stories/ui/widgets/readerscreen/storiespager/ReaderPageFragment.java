@@ -252,7 +252,6 @@ public class ReaderPageFragment extends Fragment {
             if (story.durations != null) {
                 timeline.getManager().setStoryDurations(story.durations);
             }
-            Log.e("Story_VisualTimers", "StoryPageStartedEvent");
             timeline.getManager().start(story.lastIndex);
             InAppStoryService.getInstance().getTimerManager().startTimer(story.getDurations().get(ind), true);
             if (OldStatisticManager.getInstance().currentEvent != null)
@@ -303,7 +302,6 @@ public class ReaderPageFragment extends Fragment {
         if (st.lastIndex >= st.slidesCount - 1) return;
         st.setLastIndex(st.lastIndex + 1);
         InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId);
-        Log.e("Story_VisualTimers", "openNextSlide");
         timeline.getManager().setCurrentSlide(st.lastIndex);
         InAppStoryService.getInstance().sendPageOpenStatistic(storyId, st.lastIndex);
         manager.loadStoryAndSlide(st.id, st.lastIndex);
@@ -312,8 +310,6 @@ public class ReaderPageFragment extends Fragment {
     private void openPrevSlide(Story st) {
         if (st.lastIndex <= 0) return;
         st.setLastIndex(st.lastIndex - 1);
-        Log.e("changePriority", "openPrevSlide " + st.id + " " + st.lastIndex + " " + st.slidesCount);
-        Log.e("Story_VisualTimers", "openPrevSlide");
         timeline.getManager().setCurrentSlide(st.lastIndex);
         InAppStoryService.getInstance().sendPageOpenStatistic(storyId, st.lastIndex);
         manager.loadStoryAndSlide(st.id, st.lastIndex);
@@ -343,7 +339,6 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void storyCacheLoaded(StoryCacheLoadedEvent event) {
-        Log.e("animationDur", "cache " + event.storyId + " " + storyId);
         if (storyId != event.getStoryId()) return;
         manager.storyInfoLoaded();
     }
