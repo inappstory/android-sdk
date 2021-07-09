@@ -18,7 +18,10 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -496,6 +499,13 @@ public class ReaderPageFragment extends Fragment {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
         webViewContainer.addView(((SimpleStoriesWebView) storiesView));
+        View gradient = new View(context);
+        gradient.setClickable(false);
+        gradient.setBackground(AppCompatResources.getDrawable(context, R.drawable.story_gradient));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            gradient.setElevation(8);
+        }
+        webViewContainer.addView(gradient);
         return webViewContainer;
     }
 

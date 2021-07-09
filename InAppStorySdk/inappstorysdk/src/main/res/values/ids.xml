@@ -12,6 +12,7 @@
     <item name="ias_stories_view" type="id"/>
     <item name="ias_timeline_container" type="id"/>
     <item name="ias_timeline" type="id"/>
+    <item name="ias_reader_gradient" type="id"/>
     <item name="ias_close_button" type="id"/>
     <item name="ias_black_bottom" type="id"/>
     <item name="ias_refresh_button" type="id"/>
