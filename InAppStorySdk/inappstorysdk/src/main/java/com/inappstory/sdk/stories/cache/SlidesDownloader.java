@@ -294,10 +294,20 @@ class SlidesDownloader {
             }
             final String storyId = key.first != null ? Integer.toString(key.first) : null;
             for (String url : urls) {
-                if (callback != null) callback.downloadFile(url, storyId, key.second);
+                if (callback != null) {
+                    boolean success = callback.downloadFile(url, storyId, key.second);
+                    synchronized (pageTasksLock) {
+                        if (!success) pageTasks.get(key).urls.remove(url);
+                    }
+                }
             }
             for (String url : videoUrls) {
-                if (callback != null) callback.downloadFile(url, storyId, key.second);
+                if (callback != null) {
+                    boolean success = callback.downloadFile(url, storyId, key.second);
+                    synchronized (pageTasksLock) {
+                        if (!success) pageTasks.get(key).videoUrls.remove(url);
+                    }
+                }
             }
             synchronized (pageTasksLock) {
                 pageTasks.get(key).loadType = 2;
