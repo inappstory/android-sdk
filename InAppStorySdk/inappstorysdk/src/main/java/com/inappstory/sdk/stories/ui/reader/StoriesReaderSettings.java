@@ -15,6 +15,7 @@ public class StoriesReaderSettings {
     public int closeIcon;
     public int refreshIcon;
     public int soundIcon;
+    public boolean timerGradient;
 
 
     public StoriesReaderSettings(boolean closeOnSwipe, boolean closeOnOverscroll,
@@ -23,7 +24,8 @@ public class StoriesReaderSettings {
                                  boolean hasShare, int favoriteIcon,
                                  int likeIcon, int dislikeIcon,
                                  int shareIcon, int closeIcon,
-                                 int refreshIcon, int soundIcon) {
+                                 int refreshIcon, int soundIcon,
+                                 boolean timerGradient) {
         this.closeOnSwipe = closeOnSwipe;
         this.closeOnOverscroll = closeOnOverscroll;
         this.closePosition = closePosition;
@@ -38,6 +40,7 @@ public class StoriesReaderSettings {
         this.closeIcon = closeIcon;
         this.refreshIcon = refreshIcon;
         this.soundIcon = soundIcon;
+        this.timerGradient = timerGradient;
     }
 
     public StoriesReaderSettings() {

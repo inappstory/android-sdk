@@ -43,6 +43,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 public class StoriesDialogFragment extends DialogFragment implements BackPressHandler {
 
@@ -206,7 +207,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 getArguments().getInt(CS_SHARE_ICON, R.drawable.ic_share_status),
                 getArguments().getInt(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getArguments().getInt(CS_REFRESH_ICON, R.drawable.ic_refresh),
-                getArguments().getInt(CS_SOUND_ICON, R.drawable.ic_stories_status_sound)
+                getArguments().getInt(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
+                getArguments().getBoolean(CS_TIMER_GRADIENT, true)
         );
         try {
             bundle.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, 0));

@@ -28,6 +28,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
@@ -44,12 +45,24 @@ import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrame
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
+import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 public class StoriesFixedActivity extends AppCompatActivity {
 
@@ -66,6 +79,32 @@ public class StoriesFixedActivity extends AppCompatActivity {
             winParams.flags &= ~bits;
         }
         win.setAttributes(winParams);
+    }
+
+    private void setAppearanceSettings(Bundle bundle) {
+        StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(
+                getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
+                getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
+                getIntent().getIntExtra(CS_CLOSE_POSITION, 1),
+                //,
+                getIntent().getBooleanExtra(CS_HAS_LIKE, false),
+                getIntent().getBooleanExtra(CS_HAS_FAVORITE, false),
+                getIntent().getBooleanExtra(CS_HAS_SHARE, false),
+                getIntent().getIntExtra(CS_FAVORITE_ICON, R.drawable.ic_stories_status_favorite),
+                getIntent().getIntExtra(CS_LIKE_ICON, R.drawable.ic_stories_status_like),
+                getIntent().getIntExtra(CS_DISLIKE_ICON, R.drawable.ic_stories_status_dislike),
+                getIntent().getIntExtra(CS_SHARE_ICON, R.drawable.ic_share_status),
+                getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
+                getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
+                getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
+                getIntent().getBooleanExtra(CS_TIMER_GRADIENT, true)
+        );
+        try {
+            bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
+            bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -261,11 +300,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
-                bundle.putBoolean("canUseNotLoaded", getIntent().getBooleanExtra("canUseNotLoaded", false));
-                bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
-                // bundle.putBoolean(CS_CLOSE_ON_SWIPE, getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, false));
-                bundle.putBoolean("onboarding", getIntent().getBooleanExtra("onboarding", false));
-                bundle.putInt(CS_CLOSE_POSITION, getIntent().getIntExtra(CS_CLOSE_POSITION, 1));
+                setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
             }

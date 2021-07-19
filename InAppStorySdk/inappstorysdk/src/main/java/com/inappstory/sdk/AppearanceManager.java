@@ -79,7 +79,7 @@ public class AppearanceManager {
     private boolean csHasLike;
     private boolean csHasFavorite;
     private boolean csHasShare;
-    private boolean csTimerGradientEnable;
+    private boolean csTimerGradientEnable = true;
 
     private int csFavoriteIcon;
     private int csLikeIcon;

@@ -251,11 +251,13 @@ public class StoryDownloadManager {
 
         this.slidesDownloader = new SlidesDownloader(new DownloadPageCallback() {
             @Override
-            public void downloadFile(String url, String storyId, int index) {
+            public boolean downloadFile(String url, String storyId, int index) {
                 try {
                     Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(), null, null);
+                    return true;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    return false;
                 }
             }
         }, StoryDownloadManager.this);

@@ -64,6 +64,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesActivity extends AppCompatActivity {
@@ -366,7 +367,8 @@ public class StoriesActivity extends AppCompatActivity {
                 getIntent().getIntExtra(CS_SHARE_ICON, R.drawable.ic_share_status),
                 getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
-                getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound)
+                getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
+                getIntent().getBooleanExtra(CS_TIMER_GRADIENT, true)
         );
         try {
             bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));

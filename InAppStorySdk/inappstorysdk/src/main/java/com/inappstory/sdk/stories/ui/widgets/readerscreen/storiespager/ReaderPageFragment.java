@@ -32,6 +32,7 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.NextStoryPageEvent;
@@ -59,6 +60,9 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPa
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
@@ -90,7 +94,6 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageByIdSelected(PageByIdSelectedEvent event) {
         if (event.getStoryId() != storyId) return;
@@ -100,9 +103,12 @@ public class ReaderPageFragment extends Fragment {
                 @Override
                 public void run() {
                     Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+
+                    if (localDurations.isEmpty() && story.durations != null)
+                        localDurations.addAll(story.durations);
                     if (timeline != null) {
                         if (story.durations != null) {
-                            timeline.getManager().setStoryDurations(story.durations);
+                            timeline.getManager().setStoryDurations(localDurations);
                         }
                         timeline.setActive(story.lastIndex);
                         timeline.setActive(-1);
@@ -111,11 +117,14 @@ public class ReaderPageFragment extends Fragment {
             }, 100);
         } else {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+
+            if (localDurations.isEmpty() && story.durations != null)
+                localDurations.addAll(story.durations);
             InAppStoryService.getInstance().setCurrentIndex(story.lastIndex);
             if (storiesView != null) {
-                InAppStoryService.getInstance().getTimerManager().startTimer(story.getDurations().get(story.lastIndex), true);
+                InAppStoryService.getInstance().getTimerManager().startTimer(localDurations.get(story.lastIndex), true);
                 if (story.durations != null) {
-                    timeline.getManager().setStoryDurations(story.durations);
+                    timeline.getManager().setStoryDurations(localDurations);
                 }
                 // timeline.getManager().start(story.lastIndex);
             }
@@ -194,6 +203,8 @@ public class ReaderPageFragment extends Fragment {
         });
     }
 
+    List<Integer> localDurations = new ArrayList<>();
+
     private void setOffsets(View view) {
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
@@ -252,11 +263,12 @@ public class ReaderPageFragment extends Fragment {
         if (InAppStoryService.getInstance().getCurrentId() == storyId
                 && story.lastIndex == ind) {
             // timeline.setActive(story.lastIndex);
-            if (story.durations != null) {
-                timeline.getManager().setStoryDurations(story.durations);
-            }
+            if (localDurations.isEmpty() && story.durations != null)
+                localDurations.addAll(story.durations);
+
+            timeline.getManager().setStoryDurations(localDurations);
             timeline.getManager().start(story.lastIndex);
-            InAppStoryService.getInstance().getTimerManager().startTimer(story.getDurations().get(ind), true);
+            InAppStoryService.getInstance().getTimerManager().startTimer(localDurations.get(ind), true);
             if (OldStatisticManager.getInstance().currentEvent != null)
                 OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
         }
@@ -325,15 +337,27 @@ public class ReaderPageFragment extends Fragment {
         storiesView.changeSoundStatus();
     }
 
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void resetTimers(ClearDurationEvent event) {
+        if (storyId == event.getId()) {
+            localDurations.clear();
+            if (story != null && story.durations != null) {
+                localDurations.addAll(story.durations);
+            }
+        }
+    }
+
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void restartEvent(RestartStoryReaderEvent event) {
         if (storyId == event.getId()) {
             if (event.getIndex() > 0) {
+                localDurations.set(event.getIndex(), (int) event.getNewDuration());
                 timeline.setSlideDuration(event.getIndex(), event.getNewDuration());
                 timeline.forceStartProgress();
                 InAppStoryService.getInstance().getTimerManager().startTimer(event.getNewDuration(), true);
             } else {
-     //           timeline.forceRestartProgress();
+                //           timeline.forceRestartProgress();
                 InAppStoryService.getInstance().getTimerManager().restartTimer(event.getNewDuration());
                 manager.restartSlide();
             }
@@ -478,7 +502,8 @@ public class ReaderPageFragment extends Fragment {
         addButtonsPanel(context, readerContainer);
         // readerContainer.addView(createProgressContainer(context));
         readerContainer.addView(createWebViewContainer(context));
-        addGradient(context, readerContainer);
+        if (readerSettings.timerGradient)
+            addGradient(context, readerContainer);
 
         return readerContainer;
     }
@@ -495,12 +520,15 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
         storiesView = new SimpleStoriesWebView(context);
-        ((SimpleStoriesWebView) storiesView).setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        ((SimpleStoriesWebView) storiesView).setLayoutParams(lp);
         ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
         webViewContainer.addView(((SimpleStoriesWebView) storiesView));
+
         View gradient = new View(context);
         gradient.setClickable(false);
+        gradient.setLayoutParams(lp);
         gradient.setBackground(AppCompatResources.getDrawable(context, R.drawable.story_gradient));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             gradient.setElevation(8);
@@ -537,6 +565,9 @@ public class ReaderPageFragment extends Fragment {
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT
         ));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            gradientView.setElevation(8);
+        }
         gradientView.setClickable(false);
         gradientView.setBackground(getResources().getDrawable(R.drawable.story_gradient));
         relativeLayout.addView(gradientView);

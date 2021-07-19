@@ -33,6 +33,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 public class ScreensManager {
 
@@ -123,6 +124,8 @@ public class ScreensManager {
                 bundle.putInt(CS_LIKE_ICON, manager.csLikeIcon());
                 bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
+                bundle.putBoolean(CS_TIMER_GRADIENT, manager.csTimerGradientEnable());
+
             }
             settingsDialogFragment.setArguments(bundle);
             settingsDialogFragment.show(
@@ -159,6 +162,7 @@ public class ScreensManager {
                 intent2.putExtra(CS_LIKE_ICON, manager.csLikeIcon());
                 intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
+                intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradientEnable());
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
