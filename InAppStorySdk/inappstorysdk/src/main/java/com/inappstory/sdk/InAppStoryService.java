@@ -18,6 +18,7 @@ import java.util.Set;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
+import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
@@ -37,6 +38,7 @@ import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
@@ -248,10 +250,25 @@ public class InAppStoryService {
         synchronized (cacheLock) {
             if (commonCache == null) {
                 try {
-                    commonCache = LruDiskCache.create(new File(
-                                    context.getCacheDir() +
-                                            IAS_PREFIX + "commonCache"),
-                            LruDiskCache.MB_100, false);
+                    long cacheType = MB_100;
+                    long fastCacheType = MB_10;
+                    long freeSpace = context.getCacheDir().getFreeSpace();
+                    if (freeSpace < cacheType + fastCacheType + MB_10) {
+                        cacheType = MB_50;
+                        if (freeSpace < cacheType + fastCacheType + MB_10) {
+                            cacheType = MB_10;
+                            fastCacheType = MB_5;
+                            if (freeSpace < cacheType + fastCacheType + MB_10) {
+                                cacheType = 0;
+                            }
+                        }
+                    }
+                    if (cacheType > 0) {
+                        commonCache = LruDiskCache.create(new File(
+                                        context.getCacheDir() +
+                                                IAS_PREFIX + "commonCache"),
+                                MB_100, false);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -360,6 +377,7 @@ public class InAppStoryService {
     Runnable checkFreeSpace = new Runnable() {
         @Override
         public void run() {
+
             long freeSpace = getCommonCache().getCacheDir().getFreeSpace();
             if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
                 getCommonCache().setCacheSize(MB_50);

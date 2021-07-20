@@ -302,8 +302,8 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private String oldEscape(String raw) {
-        String escaped = raw
-                .replaceAll("\"", "\\\\\"")
+        String escaped = JSONObject.quote(raw)
+                .replaceFirst("^\"(.*)\"$", "$1")
                 .replaceAll("\n", " ")
                 .replaceAll("\r", " ");
         return escaped;
