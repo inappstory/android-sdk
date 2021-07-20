@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,7 +32,11 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.network.Callback;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.NetworkHandler;
+import com.inappstory.sdk.network.Request;
+import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -45,9 +50,18 @@ import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.lang.reflect.ParameterizedType;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static com.inappstory.sdk.network.JsonParser.toMap;
 
 public class GameActivity extends AppCompatActivity {
     private String storyId;
@@ -73,10 +87,33 @@ public class GameActivity extends AppCompatActivity {
     private boolean gameLoaded;
     private String gameConfig;
     private boolean closing = false;
+    boolean showClose = true;
 
     @Override
     public void onBackPressed() {
-        closeGame();
+        if (gameReaderGestureBack) {
+            gameReaderGestureBack();
+        } else {
+            closeGame();
+        }
+
+    }
+
+    void gameReaderGestureBack() {
+        if (webView != null) {
+            webView.evaluateJavascript("gameReaderGestureBack();", null);
+        }
+    }
+
+    void updateUI() {
+        new Handler(getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                closeButton.setVisibility(showClose ? View.VISIBLE : View.GONE);
+                if (loaderContainer != null)
+                    loaderContainer.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void setViews() {
@@ -111,6 +148,7 @@ public class GameActivity extends AppCompatActivity {
                     lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
 
                 }
+
                 blackBottom.setLayoutParams(lp);
                 blackTop.setLayoutParams(lp);
                 if (Build.VERSION.SDK_INT >= 28) {
@@ -165,11 +203,13 @@ public class GameActivity extends AppCompatActivity {
         ScreensManager.getInstance().setOldTempShareId(null);
         super.onResume();
     }
-    
+
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void shareCompleteEvent(ShareCompleteEvent event) {
         shareComplete(event.getId(), event.isSuccess());
     }
+
+    boolean gameReaderGestureBack = false;
 
     private void shareData(String id, String data) {
         ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
@@ -218,8 +258,60 @@ public class GameActivity extends AppCompatActivity {
         loaderPath = getIntent().getStringExtra("preloadPath");
     }
 
+    public void sendRequest(final String method,
+                            final String path,
+                            final Map<String, String> headers,
+                            final Map<String, String> getParams,
+                            final String body,
+                            final String requestId,
+                            final String cb) {
+        new AsyncTask<Void, String, GameResponse>() {
+            @Override
+            protected GameResponse doInBackground(Void... voids) {
+                try {
+                    GameResponse s = GameNetwork.sendRequest(method, path, headers, getParams, body, requestId, GameActivity.this);
+                    return s;
+                } catch (Exception e) {
+                    GameResponse response = new GameResponse();
+                    response.status = 12002;
+                    return response;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(GameResponse result) {
+                try {
+                    JSONObject resultJson = new JSONObject();
+                    resultJson.put("requestId", result.requestId);
+                    resultJson.put("status", result.status);
+                    resultJson.put("data", oldEscape(result.data));
+                    try {
+                        resultJson.put("headers", new JSONObject(result.headers));
+                    } catch (Exception e) {
+                    }
+                    loadGameResponse(resultJson.toString(), cb);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.execute();
+    }
+
+    private void loadGameResponse(String gameResponse, String cb) {
+        webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
+    }
+
+    private String oldEscape(String raw) {
+        String escaped = raw
+                .replaceAll("\"", "\\\\\"")
+                .replaceAll("\n", " ")
+                .replaceAll("\r", " ");
+        return escaped;
+    }
+
     private void initWebView() {
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setWebChromeClient(new WebChromeClient() {
             boolean init = false;
 
@@ -257,6 +349,8 @@ public class GameActivity extends AppCompatActivity {
         CsEventBus.getDefault().unregister(this);
         super.onDestroy();
     }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
@@ -307,13 +401,11 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-
     private String[] urlParts(String url) {
         String[] parts = url.split("/");
         String fName = parts[parts.length - 1].split("\\.")[0];
         return fName.split("_");
     }
-
 
 
     private void gameCompleted(String gameState) {
@@ -367,12 +459,29 @@ public class GameActivity extends AppCompatActivity {
 
 
         @JavascriptInterface
-        public void gameLoaded() {
+        public void gameLoaded(String data) {
+            GameLoadedConfig config = JsonParser.fromJson(data, GameLoadedConfig.class);
+            gameReaderGestureBack = config.backGesture;
+            showClose = config.showClose;
             gameLoaded = true;
-            if (loaderContainer != null)
-                loaderContainer.setVisibility(View.GONE);
+            updateUI();
         }
 
+        @JavascriptInterface
+        public void sendApiRequest(String data) {
+            Log.e("gameJS", "sendApiRequest | " + data);
+            GameRequestConfig config = JsonParser.fromJson(data, GameRequestConfig.class);
+            Map<String, String> headers = null;
+            if (config.headers != null && !config.headers.isEmpty()) {
+                headers = toMap(config.headers);
+            }
+            Map<String, String> getParams = null;
+            if (config.params != null && !config.params.isEmpty()) {
+                getParams = toMap(config.params);
+            }
+            sendRequest(config.method, config.url, headers, getParams,
+                    config.data, config.id, config.cb);
+        }
 
         @JavascriptInterface
         public void gameComplete(String data) {
