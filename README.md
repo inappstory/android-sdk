@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```
-implementation 'com.github.inappstory:android-sdk:1.3.1'
+implementation 'com.github.inappstory:android-sdk:1.3.2'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -164,7 +164,14 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csListItemTitleSize              | Integer             |        | size of the title                                                       |
 | csListItemTitleColor             | Integer             | Color.WHITE | title color                                                        |
 | csListItemBorderColor            | Integer             | Color.BLACK | the border color for the unopened cell                             |
-| csCustomFont                     | Typeface            |        | the font used for the title / source of the story in the cell           |
+| csCustomFont                     | Typeface            |        | the primary regular font, default for the title of the story in the cell and reader dialogs |
+| csCustomBoldFont                 | Typeface            |        | the primary bold font, set for reader dialogs                           |
+| csCustomItalicFont               | Typeface            |        | the primary italic font, set for reader dialogs                         |
+| csCustomBoldItalicFont           | Typeface            |        | the primary bold italic font, set for reader dialogs                    |
+| csCustomSecondaryFont            | Typeface            |        | the secondary regular font, set for reader dialogs                      |
+| csCustomSecondaryBoldFont        | Typeface            |        | the secondary bold font, set for reader dialogs                         |
+| csCustomSecondaryItalicFont      | Typeface            |        | the secondary italic font, set for reader dialogs                       |
+| csCustomSecondaryBoldItalicFont  | Typeface            |        | the secondary bold italic font, set for reader dialogs                  |
 | csListItemMargin                 | Integer             | 4dp    | indent between cells                                                    |
 | csNavBarColor                    | Integer             | 0      | color of navigation bar.			                                    |
 | csNightNavBarColor               | Integer             | 0      | color of navigation bar in dark mode. If 0 - we use csNavBarColor		|
@@ -179,6 +186,7 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csRefreshIcon                    | Integer(id)         | R.drawable.ic_refresh					| icon for refresh button in reader.	|
 | csSoundIcon                      | Integer(id)         | R.drawable.ic_stories_status_sound		| icon for sound button in reader.		|
 | csCoverQuality                   | Integer             | 0 	  | quality for stories list covers. If not set - sdk uses medium image quality (`QUALITY_MEDIUM = 1; QUALITY_HIGH = 2;`)|
+| csTimerGradientEnable 		   | Boolean             | true   | Flag that is responsible for show dark gradient behind timer in reader  |
 
 
 The example of set parameters:
