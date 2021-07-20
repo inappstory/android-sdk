@@ -164,14 +164,14 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csListItemTitleSize              | Integer             |        | size of the title                                                       |
 | csListItemTitleColor             | Integer             | Color.WHITE | title color                                                        |
 | csListItemBorderColor            | Integer             | Color.BLACK | the border color for the unopened cell                             |
-| csCustomFont                     | Typeface            |        | the primary regular font, default for the title of the story in the cell and reader dialogs |
-| csCustomBoldFont                 | Typeface            |        | the primary bold font, set for reader dialogs                           |
-| csCustomItalicFont               | Typeface            |        | the primary italic font, set for reader dialogs                         |
-| csCustomBoldItalicFont           | Typeface            |        | the primary bold italic font, set for reader dialogs                    |
-| csCustomSecondaryFont            | Typeface            |        | the secondary regular font, set for reader dialogs                      |
-| csCustomSecondaryBoldFont        | Typeface            |        | the secondary bold font, set for reader dialogs                         |
-| csCustomSecondaryItalicFont      | Typeface            |        | the secondary italic font, set for reader dialogs                       |
-| csCustomSecondaryBoldItalicFont  | Typeface            |        | the secondary bold italic font, set for reader dialogs                  |
+| csCustomFont                     | Typeface            |        | the primary regular font, default for the title of the story in the cell. For reader dialogs must be set in  the global `AppearanceManager` |
+| csCustomBoldFont                 | Typeface            |        | the primary bold font, set for reader dialogs and only in the global `AppearanceManager` |
+| csCustomItalicFont               | Typeface            |        | the primary italic font, set for reader dialogs and only in the global `AppearanceManager` |
+| csCustomBoldItalicFont           | Typeface            |        | the primary bold italic font, set for reader dialogs and only in the global `AppearanceManager` |
+| csCustomSecondaryFont            | Typeface            |        | the secondary regular font, set for reader dialogs and only in the global `AppearanceManager` |
+| csCustomSecondaryBoldFont        | Typeface            |        | the secondary bold font, set for reader dialogs and only in the global `AppearanceManager` |
+| csCustomSecondaryItalicFont      | Typeface            |        | the secondary italic font, set for reader dialogs and only in the global `AppearanceManager` |
+| csCustomSecondaryBoldItalicFont  | Typeface            |        | the secondary bold italic font, set for reader dialogs and only in the global `AppearanceManager` |
 | csListItemMargin                 | Integer             | 4dp    | indent between cells                                                    |
 | csNavBarColor                    | Integer             | 0      | color of navigation bar.			                                    |
 | csNightNavBarColor               | Integer             | 0      | color of navigation bar in dark mode. If 0 - we use csNavBarColor		|
