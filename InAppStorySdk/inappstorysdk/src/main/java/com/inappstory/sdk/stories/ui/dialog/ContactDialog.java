@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
@@ -23,6 +24,7 @@ import android.widget.FrameLayout;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
@@ -77,6 +79,21 @@ public class ContactDialog {
 
     private int flags = 0;
 
+
+    private void setTypeface(AppCompatTextView textView, boolean bold, boolean italic, boolean secondary) {
+        Typeface t = AppearanceManager.getCommonInstance().getFont(secondary, bold, italic);
+        int boldV = bold ? 1 : 0;
+        int italicV = italic ? 2 : 0;
+        textView.setTypeface(t != null ? t : textView.getTypeface(), boldV + italicV);
+    }
+
+    private void setTypeface(AppCompatEditText textView, boolean bold, boolean italic, boolean secondary) {
+        Typeface t = AppearanceManager.getCommonInstance().getFont(secondary, bold, italic);
+        int boldV = bold ? 1 : 0;
+        int italicV = italic ? 2 : 0;
+        textView.setTypeface(t != null ? t : textView.getTypeface(), boldV + italicV);
+    }
+
     public void showDialog(final Activity activity) {
         final Dialog dialog = new Dialog(activity, R.style.DialogTheme);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -128,12 +145,19 @@ public class ContactDialog {
         final int dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
         int dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);
         text.setText(dialogStructure.text.value);
+        setTypeface(text, dialogStructure.text.isBold(),
+                dialogStructure.text.isItalic(),
+                dialogStructure.text.isSecondary());
         text.setTextColor(hex2color(dialogStructure.text.color));
         text.setTextSize((int) (coeff * dialogStructure.text.size));
         editText.setHint(dialogStructure.input.text.placeholder);
+
         editText.setTextColor(hex2color(dialogStructure.input.text.color));
         editText.setHintTextColor(hex2color(dialogStructure.input.text.color));
         editText.setTextSize((int) (coeff * dialogStructure.input.text.size));
+        setTypeface(editText.getMainText(), dialogStructure.input.text.isBold(),
+                dialogStructure.input.text.isItalic(),
+                dialogStructure.input.text.isSecondary());
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) editContainer.getLayoutParams();
         int borderWidth = Sizes.dpToPxExt(dialogStructure.input.border.width);
         lp.setMargins(borderWidth,
@@ -144,7 +168,9 @@ public class ContactDialog {
         buttonText.setText(dialogStructure.button.text.value);
         buttonText.setTextColor(hex2color(dialogStructure.button.text.color));
         buttonText.setTextSize((int) (coeff * dialogStructure.button.text.size));
-
+        setTypeface(buttonText, dialogStructure.button.text.isBold(),
+                dialogStructure.button.text.isItalic(),
+                dialogStructure.button.text.isSecondary());
         int rad = Sizes.dpToPxExt(dialogStructure.border.radius);
 
         GradientDrawable buttonBackgroundGradient = new GradientDrawable(
