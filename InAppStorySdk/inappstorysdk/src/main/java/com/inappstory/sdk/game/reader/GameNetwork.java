@@ -69,12 +69,17 @@ public class GameNetwork {
         connection.setRequestProperty("User-Agent", getUAString(context));
         connection.setRequestProperty("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey());
         connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
+
+        boolean hasBody = !method.equals(GET) && body != null && !body.isEmpty();
+        if (hasBody) {
+            connection.setRequestProperty("Content-Type", "application/json");
+        }
         if (headers != null) {
             for (String key : headers.keySet()) {
                 connection.setRequestProperty(key, headers.get(key));
             }
         }
-        if (!method.equals(GET) && body != null && !body.isEmpty()) {
+        if (hasBody) {
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
