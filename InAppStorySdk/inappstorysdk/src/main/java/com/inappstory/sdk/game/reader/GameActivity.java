@@ -118,6 +118,7 @@ public class GameActivity extends AppCompatActivity {
 
     private void setViews() {
         webView = findViewById(R.id.gameWebview);
+        webView.setBackgroundColor(Color.BLACK);
         loader = findViewById(R.id.loader);
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
