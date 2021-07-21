@@ -47,6 +47,9 @@ public class FileManager {
 
     public void delete(String name) throws IOException {
         File file = new File(cacheDir, name);
+        if (!file.exists()) {
+            file = new File(name);
+        }
         if (file.exists() && !deleteRecursive(file)) {
             throw formatException("Unable to delete file %s", file);
         }
