@@ -239,7 +239,13 @@ public class InAppStoryService {
                                             IAS_PREFIX + "fastCache"),
                             MB_10, true);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    final Throwable e2 = e;
+                    if (handler != null) handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            throw new RuntimeException(e2);
+                        }
+                    }, 500);
                 }
             }
             return fastCache;
@@ -267,10 +273,16 @@ public class InAppStoryService {
                         commonCache = LruDiskCache.create(new File(
                                         context.getCacheDir() +
                                                 IAS_PREFIX + "commonCache"),
-                                MB_100, false);
+                                cacheType, false);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    final Throwable e2 = e;
+                    if (handler != null) handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            throw new RuntimeException(e2);
+                        }
+                    }, 500);
                 }
             }
             return commonCache;
@@ -377,16 +389,17 @@ public class InAppStoryService {
     Runnable checkFreeSpace = new Runnable() {
         @Override
         public void run() {
-
-            long freeSpace = getCommonCache().getCacheDir().getFreeSpace();
-            if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
-                getCommonCache().setCacheSize(MB_50);
+            if (getCommonCache() != null) {
+                long freeSpace = getCommonCache().getCacheDir().getFreeSpace();
                 if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
-                    getCommonCache().setCacheSize(MB_10);
-                    getFastCache().setCacheSize(MB_5);
+                    getCommonCache().setCacheSize(MB_50);
                     if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
                         getCommonCache().setCacheSize(MB_10);
                         getFastCache().setCacheSize(MB_5);
+                        if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
+                            getCommonCache().setCacheSize(MB_10);
+                            getFastCache().setCacheSize(MB_5);
+                        }
                     }
                 }
             }
