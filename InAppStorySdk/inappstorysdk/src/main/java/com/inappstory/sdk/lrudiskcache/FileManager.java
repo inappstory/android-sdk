@@ -1,5 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -69,6 +71,7 @@ public class FileManager {
             }
         }
 
+        Log.d("deleted", fileOrDirectory.getName());
         res &= fileOrDirectory.delete();
         return res;
     }
