@@ -157,7 +157,9 @@ public class GameLoader {
                     if (directory.exists()) {
                         downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
                                 (int) file.length());
-                        InAppStoryService.getInstance().getCommonCache().get(directory.getName());
+                        if (InAppStoryService.getInstance().getCommonCache().get(directory.getName()) == null) {
+                            InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
+                        }
                     }
                     else if (file.exists()) {
                         FileUnzipper.unzip(file, directory);
