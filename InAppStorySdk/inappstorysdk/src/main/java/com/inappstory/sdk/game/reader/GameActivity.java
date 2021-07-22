@@ -203,12 +203,32 @@ public class GameActivity extends AppCompatActivity {
         ScreensManager.getInstance().setOldTempShareStoryId(0);
         ScreensManager.getInstance().setOldTempShareId(null);
         super.onResume();
+        resumeGame();
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void shareCompleteEvent(ShareCompleteEvent event) {
         shareComplete(event.getId(), event.isSuccess());
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        pauseGame();
+    }
+
+    private void resumeGame() {
+        if (webView != null) {
+            webView.evaluateJavascript("resumeUI();", null);
+        }
+    }
+
+    private void pauseGame() {
+        if (webView != null) {
+            webView.evaluateJavascript("pauseUI();", null);
+        }
+    }
+
 
     boolean gameReaderGestureBack = false;
 
