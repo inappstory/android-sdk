@@ -42,7 +42,13 @@ public class FileManager {
     private File cacheDir;
 
     public File getJournalFile() {
-        return new File(cacheDir, "journal.bin");
+        File file = new File(cacheDir, "journal.bin");
+        try {
+            cacheDir.mkdirs();
+            if (!file.exists()) file.createNewFile();
+        } catch (Exception ignored) {
+        }
+        return file;
     }
 
     public void delete(String name) throws IOException {
@@ -50,7 +56,7 @@ public class FileManager {
         if (!file.exists()) {
             file = new File(name);
         }
-        if (file.exists() && !deleteRecursive(file)) {
+        if (!file.exists() && !deleteRecursive(file)) {
             throw formatException("Unable to delete file %s", file);
         }
     }

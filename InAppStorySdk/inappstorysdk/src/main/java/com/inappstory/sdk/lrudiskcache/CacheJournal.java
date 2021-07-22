@@ -124,6 +124,7 @@ public class CacheJournal {
     private void readJournal() {
         synchronized (lock) {
             journalFile = fileManager.getJournalFile();
+            if (journalFile.length() == 0) return;
             DataInputStream stream = null;
             try {
                 stream = new DataInputStream(new FileInputStream(journalFile));
