@@ -58,7 +58,7 @@ public class FileManager {
         if (!file.exists()) {
             file = new File(name);
         }
-        if (!file.exists() && !deleteRecursive(file)) {
+        if (!file.exists() || !deleteRecursive(file)) {
             throw formatException("Unable to delete file %s", file);
         }
     }
@@ -71,7 +71,6 @@ public class FileManager {
             }
         }
 
-        Log.d("deleted", fileOrDirectory.getName());
         res &= fileOrDirectory.delete();
         return res;
     }
