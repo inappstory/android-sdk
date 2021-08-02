@@ -16,6 +16,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +34,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
+import com.inappstory.sdk.stories.events.DebugEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
@@ -232,6 +234,10 @@ public class StoriesActivity extends AppCompatActivity {
         }
     }
 
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void debug(DebugEvent event) {
+        Toast.makeText(StoriesActivity.this, event.getMessage(), Toast.LENGTH_LONG).show();
+    }
 
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;

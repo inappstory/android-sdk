@@ -25,6 +25,7 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.events.DebugEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
@@ -256,11 +257,11 @@ public class StoryDownloadManager {
             @Override
             public boolean downloadFile(String url, String storyId, int index) {
                 try {
+                    CsEventBus.getDefault().post(new DebugEvent(url));
                     Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(), null, null);
                     return true;
                 } catch (Exception e) {
-                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
-                    Toast.makeText(context, e.getCause().toString(), Toast.LENGTH_LONG).show();
+                    CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                     e.printStackTrace();
                     return false;
                 }
