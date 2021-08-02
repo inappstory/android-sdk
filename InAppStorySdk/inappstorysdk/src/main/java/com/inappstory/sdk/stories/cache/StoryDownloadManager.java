@@ -257,11 +257,9 @@ public class StoryDownloadManager {
             @Override
             public boolean downloadFile(String url, String storyId, int index) {
                 try {
-                    CsEventBus.getDefault().post(new DebugEvent(url));
                     Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(), null, null);
                     return true;
                 } catch (Exception e) {
-                    CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                     e.printStackTrace();
                     return false;
                 }

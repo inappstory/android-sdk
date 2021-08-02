@@ -28,6 +28,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.stories.events.DebugEvent;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
@@ -285,15 +286,21 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
                         } catch (FileNotFoundException e) {
+                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, url);
                         } catch (IOException e) {
+                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, url);
                         } catch (Exception e) {
+                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, url);
                         }
-                    } else
+                    } else {
+
+                        CsEventBus.getDefault().post(new DebugEvent("file is null " + url));
                         return super.shouldInterceptRequest(view, url);
+                    }
                 }
 
 
@@ -309,15 +316,20 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
                         } catch (FileNotFoundException e) {
+                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, request);
                         } catch (IOException e) {
+                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, request);
                         } catch (Exception e) {
+                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, request);
                         }
-                    } else
+                    } else {
+                        CsEventBus.getDefault().post(new DebugEvent("file is null " + img));
                         return super.shouldInterceptRequest(view, request);
+                    }
                 }
 
                 @Override
