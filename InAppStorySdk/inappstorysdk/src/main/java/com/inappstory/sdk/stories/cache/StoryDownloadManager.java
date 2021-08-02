@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import androidx.annotation.WorkerThread;
 
@@ -29,7 +30,9 @@ import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
 import com.inappstory.sdk.stories.outerevents.SingleLoadError;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.io.IOException;
@@ -256,6 +259,8 @@ public class StoryDownloadManager {
                     Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(), null, null);
                     return true;
                 } catch (Exception e) {
+                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, e.getCause().toString(), Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                     return false;
                 }
