@@ -103,7 +103,8 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
-        if (animateFirst) {
+        if (animateFirst &&
+                android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             animateFirst = false;
             loadAnim();
         } else {
