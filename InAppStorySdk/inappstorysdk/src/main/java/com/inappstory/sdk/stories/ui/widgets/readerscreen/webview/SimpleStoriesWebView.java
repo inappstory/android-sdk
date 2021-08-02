@@ -297,8 +297,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return super.shouldInterceptRequest(view, url);
                         }
                     } else {
-
-                        CsEventBus.getDefault().post(new DebugEvent("file is null " + url));
                         return super.shouldInterceptRequest(view, url);
                     }
                 }
@@ -327,7 +325,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return super.shouldInterceptRequest(view, request);
                         }
                     } else {
-                        CsEventBus.getDefault().post(new DebugEvent("file is null " + img));
                         return super.shouldInterceptRequest(view, request);
                     }
                 }
@@ -359,6 +356,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                    CsEventBus.getDefault().post(new DebugEvent(consoleMessage.message()));
                     Log.d("MyApplication", consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());

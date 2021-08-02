@@ -139,12 +139,10 @@ public class StoriesViewManager {
             return;
         }
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
-        Log.e("Story_LoadStory", "loadStory " + id + " " + index);
         if (story == null || story.checkIfEmpty()) {
             return;
         }
         if (story.slidesCount <= index) return;
-        Log.e("Story_LoadStory", "loadStory empty check " + id + " " + index);
         storyId = id;
         this.index = index;
         loadedIndex = index;

@@ -27,6 +27,7 @@ import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.events.DebugEvent;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
@@ -361,7 +362,7 @@ public class InAppStoryService {
         public void uncaughtException(Thread thread, final Throwable throwable) {
             Log.e("InAppStoryException", throwable.getCause() + "\n"
                     + throwable.getMessage());
-
+            CsEventBus.getDefault().post(new DebugEvent(throwable.getMessage()));
             if (InAppStoryManager.getInstance() != null) {
 
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
