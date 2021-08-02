@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,8 +13,11 @@ import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
@@ -24,6 +28,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -40,6 +45,7 @@ import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
 import com.inappstory.sdk.stories.events.PageByIdSelectedEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadErrorEvent;
 import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
+import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
 import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
 import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
@@ -505,6 +511,8 @@ public class ReaderPageFragment extends Fragment {
         if (readerSettings.timerGradient)
             addGradient(context, readerContainer);
 
+        createLoader();
+        readerContainer.addView(mask);
         return readerContainer;
     }
 
@@ -536,6 +544,75 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.addView(gradient);
         return webViewContainer;
     }
+
+    private void createLoader() {
+        Context context = getContext();
+        mask = new RelativeLayout(context);
+        mask.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mask.setElevation(8);
+        }
+        ((ViewGroup) mask).addView(getLoader(context));
+    }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void pageTaskLoaded(PageTaskToLoadEvent event) {
+        if (event.getId() != storyId) return;
+        // Log.e("slideInCache", "pageTaskLoaded " + event.getId() + " " + event.getIndex() + " " + event.isLoaded());
+        if (event.isLoaded()) {
+            Animation anim = new AlphaAnimation(1f, 0f);
+            anim.setDuration(200);
+            anim.setAnimationListener(new Animation.AnimationListener() {
+
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    if (mask == null) return;
+                    mask.setVisibility(View.GONE);
+                    mask.setAlpha(1f);
+                }
+            });
+            if (mask == null) return;
+            mask.startAnimation(anim);
+        } else {
+            if (mask == null) return;
+            mask.setAlpha(1f);
+            mask.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private View getLoader(Context context) {
+        View v = null;
+        RelativeLayout.LayoutParams relativeParams;
+        if (AppearanceManager.getCommonInstance() != null
+                && AppearanceManager.getCommonInstance().csLoaderView() != null) {
+            v = AppearanceManager.getCommonInstance().csLoaderView().getView();
+        } else {
+            v = new ProgressBar(context) {{
+                setIndeterminate(true);
+                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            }};
+        }
+        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        v.setLayoutParams(relativeParams);
+        return v;
+    }
+
+
+    View mask;
 
     private View createProgressContainer(Context context) {
         return null;

@@ -145,15 +145,20 @@ public class NetworkClient {
         String userAgent = "";
         String agentString = System.getProperty("http.agent");
         if (agentString != null && !agentString.isEmpty()) {
-            int version = BuildConfig.VERSION_CODE;
+            int appVersion = BuildConfig.VERSION_CODE;
+            String appVersionName = BuildConfig.VERSION_NAME;
+            String appPackageName = "";
             PackageInfo pInfo = null;
             try {
                 pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-                version = pInfo.versionCode;
+                appVersion = pInfo.versionCode;
+                appVersionName = pInfo.versionName;
+                appPackageName = pInfo.packageName;
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
-            userAgent = "InAppStorySDK/" + version + " " + System.getProperty("http.agent");
+            userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
+                    + " " + System.getProperty("http.agent") + " " + " Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
         }

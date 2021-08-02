@@ -95,7 +95,7 @@ public class WebPageConverter {
             String imgKey = imgKeys.get(i);
             Context con = InAppStoryService.getInstance().getContext();
             File file = cache.get(img);
-            if (file.exists()) {
+            if (file != null && file.exists()) {
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(file);
