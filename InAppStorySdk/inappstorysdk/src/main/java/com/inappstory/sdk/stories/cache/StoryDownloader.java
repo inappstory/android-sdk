@@ -194,6 +194,15 @@ class StoryDownloader {
         }
     }
 
+    void removeStoryAndSendError(Integer key) {
+        synchronized (storyTasksLock) {
+            storyTasks.remove(key);
+            firstPriority.remove(key);
+            secondPriority.remove(key);
+        }
+        loadStoryError(key);
+    }
+
     private Runnable queueStoryReadRunnable = new Runnable() {
         boolean isRefreshing = false;
 
@@ -271,10 +280,12 @@ class StoryDownloader {
                         callback.onDownload(story, loadType);
                     }
                 }
+            } else if (response.errorBody != null) {
+                removeStoryAndSendError(key);
             }
             handler.postDelayed(queueStoryReadRunnable, 200);
         } catch (Throwable t) {
-            loadStoryError(key);
+            removeStoryAndSendError(key);
             handler.postDelayed(queueStoryReadRunnable, 200);
         }
     }

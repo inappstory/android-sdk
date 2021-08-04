@@ -403,7 +403,13 @@ public class ReaderPageFragment extends Fragment {
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                refresh.setVisibility(View.GONE);
 
+                if (mask == null) return;
+                mask.setAlpha(1f);
+                mask.setVisibility(View.VISIBLE);
+                InAppStoryService.getInstance().getDownloadManager().addStoryTask(storyId, new ArrayList<Integer>());
+                // manager.loadStoryAndSlide(storyId, story.lastIndex);
             }
         });
         //clicks
@@ -423,8 +429,39 @@ public class ReaderPageFragment extends Fragment {
             @Override
             public void run() {
                 refresh.setVisibility(View.VISIBLE);
+                hideMask();
+                close.setVisibility(View.VISIBLE);
+                //    Toast.makeText(getContext(), "Error", Toast.LENGTH_LONG).show();
             }
         }, 200);
+    }
+
+    private void hideMask() {
+        Animation anim = new AlphaAnimation(1f, 0f);
+        anim.setDuration(200);
+        anim.setAnimationListener(new Animation.AnimationListener() {
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (mask == null) return;
+                mask.setVisibility(View.GONE);
+                mask.setAlpha(1f);
+            }
+        });
+        if (mask == null) return;
+        mask.startAnimation(anim);
     }
 
     @Override
@@ -561,31 +598,7 @@ public class ReaderPageFragment extends Fragment {
         if (event.getId() != storyId) return;
         // Log.e("slideInCache", "pageTaskLoaded " + event.getId() + " " + event.getIndex() + " " + event.isLoaded());
         if (event.isLoaded()) {
-            Animation anim = new AlphaAnimation(1f, 0f);
-            anim.setDuration(200);
-            anim.setAnimationListener(new Animation.AnimationListener() {
-
-                @Override
-                public void onAnimationStart(Animation animation) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    if (mask == null) return;
-                    mask.setVisibility(View.GONE);
-                    mask.setAlpha(1f);
-                }
-            });
-            if (mask == null) return;
-            mask.startAnimation(anim);
+            hideMask();
         } else {
             if (mask == null) return;
             mask.setAlpha(1f);
