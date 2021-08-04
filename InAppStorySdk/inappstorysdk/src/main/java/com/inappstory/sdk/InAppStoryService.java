@@ -362,7 +362,7 @@ public class InAppStoryService {
         public void uncaughtException(Thread thread, final Throwable throwable) {
             Log.e("InAppStoryException", throwable.getCause() + "\n"
                     + throwable.getMessage());
-            CsEventBus.getDefault().post(new DebugEvent(throwable.getMessage()));
+           // CsEventBus.getDefault().post(new DebugEvent(throwable.getMessage()));
             if (InAppStoryManager.getInstance() != null) {
 
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(

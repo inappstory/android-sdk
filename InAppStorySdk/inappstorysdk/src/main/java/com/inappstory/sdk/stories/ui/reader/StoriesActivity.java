@@ -234,10 +234,10 @@ public class StoriesActivity extends AppCompatActivity {
         }
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+   /* @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void debug(DebugEvent event) {
         Toast.makeText(StoriesActivity.this, event.getMessage(), Toast.LENGTH_LONG).show();
-    }
+    }*/
 
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;

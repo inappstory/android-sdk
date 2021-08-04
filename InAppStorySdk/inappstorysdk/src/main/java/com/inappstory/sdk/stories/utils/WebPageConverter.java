@@ -123,7 +123,7 @@ public class WebPageConverter {
                     .replace("{{%content}}", innerWebData);
             callback.onConvert(innerWebData, wData, index);
         } catch (Exception e) {
-            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
+         //   CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
             e.printStackTrace();
         }
     }

@@ -286,14 +286,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
                         } catch (FileNotFoundException e) {
-                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
+                          //  CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, url);
                         } catch (IOException e) {
-                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
+                         //   CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, url);
                         } catch (Exception e) {
-                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
+                         //   CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, url);
                         }
                     } else {
@@ -314,14 +314,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
                         } catch (FileNotFoundException e) {
-                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
+                    //        CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, request);
                         } catch (IOException e) {
-                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
+                   //         CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, request);
                         } catch (Exception e) {
-                            CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
+                     //       CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, request);
                         }
                     } else {
@@ -356,7 +356,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    CsEventBus.getDefault().post(new DebugEvent(consoleMessage.message()));
+              //      CsEventBus.getDefault().post(new DebugEvent(consoleMessage.message()));
                     Log.d("MyApplication", consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());
