@@ -39,6 +39,7 @@ import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -281,6 +282,30 @@ public class GameActivity extends AppCompatActivity {
         loaderPath = getIntent().getStringExtra("preloadPath");
     }
 
+    public void checkAndSendRequest(final String method,
+                                    final String path,
+                                    final Map<String, String> headers,
+                                    final Map<String, String> getParams,
+                                    final String body,
+                                    final String requestId,
+                                    final String cb) {
+        if (StatisticSession.needToUpdate()) {
+            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                @Override
+                public void onSuccess() {
+                    sendRequest(method, path, headers, getParams, body, requestId, cb);
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
+        } else {
+            sendRequest(method, path, headers, getParams, body, requestId, cb);
+        }
+    }
+
     public void sendRequest(final String method,
                             final String path,
                             final Map<String, String> headers,
@@ -289,46 +314,36 @@ public class GameActivity extends AppCompatActivity {
                             final String requestId,
                             final String cb) {
 
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        new AsyncTask<Void, String, GameResponse>() {
             @Override
-            public void onSuccess() {
-                new AsyncTask<Void, String, GameResponse>() {
-                    @Override
-                    protected GameResponse doInBackground(Void... voids) {
-                        try {
-                            GameResponse s = GameNetwork.sendRequest(method, path, headers, getParams, body, requestId, GameActivity.this);
-                            return s;
-                        } catch (Exception e) {
-                            GameResponse response = new GameResponse();
-                            response.status = 12002;
-                            return response;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(GameResponse result) {
-                        try {
-                            JSONObject resultJson = new JSONObject();
-                            resultJson.put("requestId", result.requestId);
-                            resultJson.put("status", result.status);
-                            resultJson.put("data", oldEscape(result.data));
-                            try {
-                                resultJson.put("headers", new JSONObject(result.headers));
-                            } catch (Exception e) {
-                            }
-                            loadGameResponse(resultJson.toString(), cb);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }.execute();
+            protected GameResponse doInBackground(Void... voids) {
+                try {
+                    GameResponse s = GameNetwork.sendRequest(method, path, headers, getParams, body, requestId, GameActivity.this);
+                    return s;
+                } catch (Exception e) {
+                    GameResponse response = new GameResponse();
+                    response.status = 12002;
+                    return response;
+                }
             }
 
             @Override
-            public void onError() {
-
+            protected void onPostExecute(GameResponse result) {
+                try {
+                    JSONObject resultJson = new JSONObject();
+                    resultJson.put("requestId", result.requestId);
+                    resultJson.put("status", result.status);
+                    resultJson.put("data", oldEscape(result.data));
+                    try {
+                        resultJson.put("headers", new JSONObject(result.headers));
+                    } catch (Exception e) {
+                    }
+                    loadGameResponse(resultJson.toString(), cb);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        });
+        }.execute();
     }
 
     private void loadGameResponse(String gameResponse, String cb) {
@@ -383,7 +398,6 @@ public class GameActivity extends AppCompatActivity {
         CsEventBus.getDefault().unregister(this);
         super.onDestroy();
     }
-
 
 
     @Override
@@ -513,7 +527,7 @@ public class GameActivity extends AppCompatActivity {
             if (config.params != null && !config.params.isEmpty()) {
                 getParams = toMap(config.params);
             }
-            sendRequest(config.method, config.url, headers, getParams,
+            checkAndSendRequest(config.method, config.url, headers, getParams,
                     config.data, config.id, config.cb);
         }
 

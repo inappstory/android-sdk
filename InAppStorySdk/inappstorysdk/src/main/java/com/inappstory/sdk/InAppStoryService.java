@@ -360,9 +360,9 @@ public class InAppStoryService {
 
         @Override
         public void uncaughtException(Thread thread, final Throwable throwable) {
-            Log.e("InAppStoryException", throwable.getCause() + "\n"
+            if (oldHandler != null) oldHandler.uncaughtException(thread, throwable);
+            Log.d("InAppStoryException", throwable.getCause() + "\n"
                     + throwable.getMessage());
-           // CsEventBus.getDefault().post(new DebugEvent(throwable.getMessage()));
             if (InAppStoryManager.getInstance() != null) {
 
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
