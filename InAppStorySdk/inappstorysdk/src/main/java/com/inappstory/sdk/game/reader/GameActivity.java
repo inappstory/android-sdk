@@ -40,6 +40,7 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
@@ -47,6 +48,7 @@ import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
+import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
@@ -286,36 +288,47 @@ public class GameActivity extends AppCompatActivity {
                             final String body,
                             final String requestId,
                             final String cb) {
-        new AsyncTask<Void, String, GameResponse>() {
+
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            protected GameResponse doInBackground(Void... voids) {
-                try {
-                    GameResponse s = GameNetwork.sendRequest(method, path, headers, getParams, body, requestId, GameActivity.this);
-                    return s;
-                } catch (Exception e) {
-                    GameResponse response = new GameResponse();
-                    response.status = 12002;
-                    return response;
-                }
+            public void onSuccess() {
+                new AsyncTask<Void, String, GameResponse>() {
+                    @Override
+                    protected GameResponse doInBackground(Void... voids) {
+                        try {
+                            GameResponse s = GameNetwork.sendRequest(method, path, headers, getParams, body, requestId, GameActivity.this);
+                            return s;
+                        } catch (Exception e) {
+                            GameResponse response = new GameResponse();
+                            response.status = 12002;
+                            return response;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(GameResponse result) {
+                        try {
+                            JSONObject resultJson = new JSONObject();
+                            resultJson.put("requestId", result.requestId);
+                            resultJson.put("status", result.status);
+                            resultJson.put("data", oldEscape(result.data));
+                            try {
+                                resultJson.put("headers", new JSONObject(result.headers));
+                            } catch (Exception e) {
+                            }
+                            loadGameResponse(resultJson.toString(), cb);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }.execute();
             }
 
             @Override
-            protected void onPostExecute(GameResponse result) {
-                try {
-                    JSONObject resultJson = new JSONObject();
-                    resultJson.put("requestId", result.requestId);
-                    resultJson.put("status", result.status);
-                    resultJson.put("data", oldEscape(result.data));
-                    try {
-                        resultJson.put("headers", new JSONObject(result.headers));
-                    } catch (Exception e) {
-                    }
-                    loadGameResponse(resultJson.toString(), cb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            public void onError() {
+
             }
-        }.execute();
+        });
     }
 
     private void loadGameResponse(String gameResponse, String cb) {
