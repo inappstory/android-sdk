@@ -36,6 +36,7 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import static com.inappstory.sdk.InAppStoryService.IAS_PREFIX;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 
 public class ImageLoader {
@@ -93,9 +94,10 @@ public class ImageLoader {
                 rv.setImageViewBitmap(id, bitmap[0]);
             else {
                 if (cache == null) {
-                    cache = LruDiskCache.create(new File(
-                                    context.getCacheDir() +
-                                            File.separator + "ias" + File.separator + "fastCache"),
+                    cache = LruDiskCache.create(
+
+                            context.getCacheDir(),
+                            IAS_PREFIX + "fastCache",
                             MB_10, true);
                 }
                 bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null, cache);
@@ -116,9 +118,9 @@ public class ImageLoader {
                 rv.setImageViewBitmap(id, bitmap);
             else {
                 if (cache == null) {
-                    cache = LruDiskCache.create(new File(
-                                    context.getCacheDir() +
-                                            File.separator + "ias" + File.separator + "fastCache"),
+                    cache = LruDiskCache.create(
+                            context.getCacheDir(),
+                            IAS_PREFIX + "fastCache",
                             MB_10, true);
                 }
                 bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color, cache);

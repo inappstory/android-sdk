@@ -2,15 +2,18 @@ package com.inappstory.sdk.lrudiskcache;
 
 import android.util.Log;
 
+import com.inappstory.sdk.InAppStoryManager;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
 public class FileManager {
-    public FileManager(File cacheDir) throws IOException {
+
+    public FileManager(File cacheDir, String subPath) throws IOException {
         this.cacheDir = cacheDir;
-        prepare();
+        prepare(subPath);
     }
 
     public long getFileSize(final File file) {
@@ -83,9 +86,33 @@ public class FileManager {
         return new File(cacheDir, name).exists();
     }
 
-    public void prepare() throws IOException {
-        if (!cacheDir.exists()) {
-            if (!cacheDir.mkdirs()) {
+    public boolean checkAndUse(File baseDir, String subPath) throws IOException {
+        File file = new File(baseDir + subPath);
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                if (!baseDir.canWrite()) {
+                    return false;
+                } else {
+                    File file1 = new File(baseDir + File.separator + "testFile");
+                    if (file1.createNewFile()) {
+                        file1.delete();
+                        cacheDir = baseDir;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
+            }
+        }
+        cacheDir = new File(baseDir + subPath);
+        return true;
+    }
+
+    public void prepare(String subPath) throws IOException {
+        if (!checkAndUse(cacheDir, subPath)) {
+            if (!checkAndUse(InAppStoryManager.getInstance().getContext().getFilesDir(),
+                    subPath)) {
                 throw formatException("Unable to use cache directory %s", cacheDir);
             }
         }

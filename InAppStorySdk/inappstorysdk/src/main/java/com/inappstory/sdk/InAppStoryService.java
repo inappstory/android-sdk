@@ -156,8 +156,6 @@ public class InAppStoryService {
     }
 
 
-
-
     public List<FavoriteImage> getFavoriteImages() {
         if (downloadManager == null) return new ArrayList<>();
         if (downloadManager.favoriteImages == null)
@@ -235,9 +233,9 @@ public class InAppStoryService {
         synchronized (cacheLock) {
             if (fastCache == null) {
                 try {
-                    fastCache = LruDiskCache.create(new File(
-                                    context.getCacheDir() +
-                                            IAS_PREFIX + "fastCache"),
+                    fastCache = LruDiskCache.create(
+                            context.getCacheDir(),
+                            IAS_PREFIX + "fastCache",
                             MB_10, true);
                 } catch (IOException e) {
                     final Throwable e2 = e;
@@ -245,6 +243,7 @@ public class InAppStoryService {
                         @Override
                         public void run() {
                             throw new RuntimeException(e2);
+
                         }
                     }, 500);
                 }
@@ -271,9 +270,9 @@ public class InAppStoryService {
                         }
                     }
                     if (cacheType > 0) {
-                        commonCache = LruDiskCache.create(new File(
-                                        context.getCacheDir() +
-                                                IAS_PREFIX + "commonCache"),
+                        commonCache = LruDiskCache.create(
+                                context.getCacheDir(),
+                                IAS_PREFIX + "commonCache",
                                 cacheType, false);
                     }
                 } catch (IOException e) {

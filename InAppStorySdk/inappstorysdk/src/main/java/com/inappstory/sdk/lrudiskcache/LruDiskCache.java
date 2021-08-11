@@ -25,22 +25,28 @@ public class LruDiskCache {
         return manager.getCacheDir();
     }
 
-    public static LruDiskCache create(File cacheDir, long cacheSize, boolean isFastCache) throws IOException {
-        if (cacheSize < MB_1)
-            cacheSize = MB_1;
-        if (isFastCache) {
-            if (fastCache == null)
-                fastCache = new LruDiskCache(cacheDir, cacheSize);
-            return fastCache;
-        } else {
-            if (commonCache == null)
-                commonCache = new LruDiskCache(cacheDir, cacheSize);
-            return commonCache;
+    private static Object cacheLock = new Object();
+
+    public static LruDiskCache create(File cacheDir, String subPath, long cacheSize, boolean isFastCache) throws IOException {
+        synchronized (cacheLock) {
+            if (cacheSize < MB_1)
+                cacheSize = MB_1;
+            if (isFastCache) {
+                if (fastCache == null)
+                    fastCache = new LruDiskCache(cacheDir, subPath, cacheSize);
+                return fastCache;
+            } else {
+                if (commonCache == null)
+                    commonCache = new LruDiskCache(cacheDir, subPath, cacheSize);
+                return commonCache;
+            }
         }
     }
 
-    private LruDiskCache(File cacheDir, long cacheSize) throws IOException {
-        this.manager = new FileManager(cacheDir);
+    String subPath;
+
+    private LruDiskCache(File cacheDir, String subPath, long cacheSize) throws IOException {
+        this.manager = new FileManager(cacheDir, subPath);
         this.journal = new CacheJournal(manager);
         this.cacheSize = cacheSize;
     }
