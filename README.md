@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```
-implementation 'com.github.inappstory:android-sdk:1.3.6'
+implementation 'com.github.inappstory:android-sdk:1.3.7'
 ```
 
 Also for correct work in `dependencies` you need to add:
