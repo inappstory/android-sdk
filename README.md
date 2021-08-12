@@ -122,6 +122,7 @@ Also `InAppStoryManager` contains methods:
 | `setPlaceholders(@NonNull Map<String, String> placeholders)`| Set placeholders list                                        |
 | `Map<String, String> getPlaceholders()`                     | Get placeholders list                                        |
 | `setPlaceholder(String key, String value)`                  | Set placeholder to the placeholders list. If you pass null, then the placeholder will be remove|
+| `clearCache()`                                              | Clear all cached images, videos, game files                  |
 
 
 If the application supports multiple accounts, then you can implement switch user ID. To change user ID, you should use:
