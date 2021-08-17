@@ -158,6 +158,18 @@ public class ContactDialog {
         setTypeface(editText.getMainText(), dialogStructure.input.text.isBold(),
                 dialogStructure.input.text.isItalic(),
                 dialogStructure.input.text.isSecondary());
+
+        if (inttype == PHONE) {
+
+            setTypeface(editText.getCountryCodeText(), dialogStructure.input.text.isBold(),
+                    dialogStructure.input.text.isItalic(),
+                    dialogStructure.input.text.isSecondary());
+
+            setTypeface(editText.getPhoneNumberHint(), dialogStructure.input.text.isBold(),
+                    dialogStructure.input.text.isItalic(),
+                    dialogStructure.input.text.isSecondary());
+        }
+
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) editContainer.getLayoutParams();
         int borderWidth = Sizes.dpToPxExt(dialogStructure.input.border.width);
         lp.setMargins(borderWidth,

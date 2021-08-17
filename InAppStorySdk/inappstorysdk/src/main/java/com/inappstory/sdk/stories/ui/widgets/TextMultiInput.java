@@ -101,6 +101,12 @@ public class TextMultiInput extends LinearLayout {
 
     AppCompatEditText phoneNumberHint;
 
+
+
+    public AppCompatEditText getPhoneNumberHint() {
+        return phoneNumberHint;
+    }
+
     public static final int PHONE = 0;
     public static final int MAIL = 1;
     public static final int TEXT = 2;
