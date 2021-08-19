@@ -23,8 +23,9 @@ public class TimerManager {
             if (System.currentTimeMillis() - timerStart >= timerDuration) {
                 timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
-                CsEventBus.getDefault()
-                        .post(new NextStoryPageEvent(InAppStoryService.getInstance().getCurrentId()));
+                if (InAppStoryService.isNotNull())
+                    CsEventBus.getDefault()
+                            .post(new NextStoryPageEvent(InAppStoryService.getInstance().getCurrentId()));
                 return;
             }
             timerHandler.postDelayed(timerTask, 50);
