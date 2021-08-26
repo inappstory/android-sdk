@@ -44,8 +44,8 @@ public class WebAppInterface {
 
 
     @JavascriptInterface
-    public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
-        manager.openGameReader(gameUrl, preloadPath, gameConfig, resources);
+    public void openGameReader(String gameFile, String coverFile, String initCode, String gameResources) {
+        manager.openGameReader(gameFile, coverFile, initCode, gameResources);
     }
 
     @JavascriptInterface

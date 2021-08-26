@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -281,6 +282,7 @@ public class GameActivity extends AppCompatActivity {
         title = getIntent().getStringExtra("title");
         tags = getIntent().getStringExtra("tags");
         gameConfig = getIntent().getStringExtra("gameConfig");
+        gameConfig = gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
         loaderPath = getIntent().getStringExtra("preloadPath");
     }
 
