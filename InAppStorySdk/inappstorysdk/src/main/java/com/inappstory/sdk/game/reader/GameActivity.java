@@ -285,53 +285,29 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void tapOnLink(String link) {
-        StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
-        if (object != null) {
-            switch (object.getLink().getType()) {
-                case "url":
-                    Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                            Integer.parseInt(storyId));
-                    CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
-                            story.tags, story.slidesCount, story.lastIndex,
-                            object.getLink().getTarget()));
-                    int cta = CallToAction.BUTTON;
-                    if (object.getType() != null && !object.getType().isEmpty()) {
-                        switch (object.getType()) {
-                            case "swipeUpLink":
-                                cta = CallToAction.SWIPE;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
-                            story.tags, story.slidesCount, story.lastIndex,
-                            object.getLink().getTarget(), cta));
-                    OldStatisticManager.getInstance().addLinkOpenStatistic();
-                    if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                        CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
-                                object.getLink().getTarget()
-                        );
-                    } else {
-                        if (!InAppStoryService.isConnected()) {
-                            return;
-                        }
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        i.setData(Uri.parse(object.getLink().getTarget()));
-                        startActivity(i);
-                        overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
-                    }
-                    break;
-                default:
-                    if (CallbackManager.getInstance().getAppClickCallback() != null) {
-                        CallbackManager.getInstance().getAppClickCallback().onAppClick(
-                                object.getLink().getType(),
-                                object.getLink().getTarget()
-                        );
-                    }
-                    break;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                Integer.parseInt(storyId));
+        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
+                story.tags, story.slidesCount, story.lastIndex,
+                link));
+        int cta = CallToAction.BUTTON;
+        CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
+                story.tags, story.slidesCount, story.lastIndex,
+                link, cta));
+        OldStatisticManager.getInstance().addLinkOpenStatistic();
+        if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+            CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
+                    link
+            );
+        } else {
+            if (!InAppStoryService.isConnected()) {
+                return;
             }
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.setData(Uri.parse(link));
+            startActivity(i);
+            overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
         }
     }
 
