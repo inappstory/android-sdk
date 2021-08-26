@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,11 +42,17 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.ShareCompleteEvent;
+import com.inappstory.sdk.stories.managers.OldStatisticManager;
+import com.inappstory.sdk.stories.outerevents.CallToAction;
+import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -197,6 +204,8 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+
+
     public static final int SHARE_EVENT = 909;
 
     @Override
@@ -211,6 +220,12 @@ public class GameActivity extends AppCompatActivity {
         super.onResume();
         resumeGame();
     }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void closeStoryReader(CloseStoryReaderEvent event) {
+        closeGame();
+    }
+
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void shareCompleteEvent(ShareCompleteEvent event) {
@@ -265,6 +280,57 @@ public class GameActivity extends AppCompatActivity {
                 InAppStoryService.getInstance().getContext().startActivity(finalIntent);
                 ScreensManager.getInstance().setOldTempShareId(id);
                 ScreensManager.getInstance().setOldTempShareStoryId(-1);
+            }
+        }
+    }
+
+    private void tapOnLink(String link) {
+        StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
+        if (object != null) {
+            switch (object.getLink().getType()) {
+                case "url":
+                    Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                            Integer.parseInt(storyId));
+                    CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
+                            story.tags, story.slidesCount, story.lastIndex,
+                            object.getLink().getTarget()));
+                    int cta = CallToAction.BUTTON;
+                    if (object.getType() != null && !object.getType().isEmpty()) {
+                        switch (object.getType()) {
+                            case "swipeUpLink":
+                                cta = CallToAction.SWIPE;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
+                            story.tags, story.slidesCount, story.lastIndex,
+                            object.getLink().getTarget(), cta));
+                    OldStatisticManager.getInstance().addLinkOpenStatistic();
+                    if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                        CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
+                                object.getLink().getTarget()
+                        );
+                    } else {
+                        if (!InAppStoryService.isConnected()) {
+                            return;
+                        }
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        i.setData(Uri.parse(object.getLink().getTarget()));
+                        startActivity(i);
+                        overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+                    }
+                    break;
+                default:
+                    if (CallbackManager.getInstance().getAppClickCallback() != null) {
+                        CallbackManager.getInstance().getAppClickCallback().onAppClick(
+                                object.getLink().getType(),
+                                object.getLink().getTarget()
+                        );
+                    }
+                    break;
             }
         }
     }
@@ -448,7 +514,7 @@ public class GameActivity extends AppCompatActivity {
         if (gameLoaded) {
             webView.loadUrl("javascript:closeGameReader()");
         } else {
-            gameCompleted(null);
+            gameCompleted(null, null);
         }
     }
 
@@ -460,8 +526,9 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    private void gameCompleted(String gameState) {
+    private void gameCompleted(String gameState, String link) {
         try {
+
             Intent intent = new Intent();
             if (Sizes.isTablet()) {
                 CsEventBus.getDefault().post(new GameCompleteEvent(
@@ -474,6 +541,8 @@ public class GameActivity extends AppCompatActivity {
                 if (gameState != null)
                     intent.putExtra("gameState", gameState);
             }
+            if (link != null)
+                tapOnLink(link);
             setResult(RESULT_OK, intent);
             finish();
 
@@ -537,14 +606,14 @@ public class GameActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void gameComplete(String data) {
-            gameCompleted(data);
+            gameCompleted(data, null);
         }
 
         @JavascriptInterface
-        public void gameComplete(String data, String eventData) {
+        public void gameComplete(String data, String eventData, String deeplink) {
             CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
                     slidesCount, index, eventData));
-            gameCompleted(data);
+            gameCompleted(data, deeplink);
         }
 
         @JavascriptInterface
