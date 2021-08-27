@@ -290,11 +290,11 @@ public class GameActivity extends AppCompatActivity {
         CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex,
                 link));
-        int cta = CallToAction.BUTTON;
+        int cta = CallToAction.GAME;
         CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex,
                 link, cta));
-        OldStatisticManager.getInstance().addLinkOpenStatistic();
+       // OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
                     link
