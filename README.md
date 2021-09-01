@@ -65,7 +65,7 @@ To initialize the library in the `Application`, `Activity`, `View` class (or any
 |--------------------|---------------------|----------|--------|-------------------------------------------------------------------------|
 | context            | Context             | yes      |        | Application context                                                     |
 | userId             | String              | no       |        | Unique text user identifier (id, login, etc ...) that refers to stories |
-| apiKey             | String              | no       |        | By default, the key is set in the csApiKey string. You can change it on runtime, using this parameter |
+| apiKey             | String              | no       |        | By default, the key is set in the csApiKey string. You can change it on runtime, using this parameter. Non-empty csApiKey in `res/values/constants.xml` still needed |
 | testKey            | String              | no       |        | Test integration key for testing stories on the device                  |
 | closeOnSwipe       | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping down            |
 | closeOnOverscroll  | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
