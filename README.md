@@ -54,7 +54,7 @@ keepclassmembers class fqcn.of.javascript.interface.for.webview {
 
 ## Initialization in the project
 
-For further work in the file `res/values/constants.xml` you need to add the string:
+**For further work in the file `res/values/constants.xml` you need to add the string:
 ```
 <string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
