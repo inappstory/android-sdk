@@ -802,6 +802,7 @@ CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM)).
 #### 6) Changing user's account in the application
 
 Use the `InAppStoryManager.getInstance().setUserId(String userId)` method.
+All loaded StoriesList instances will be reloaded (calling `storiesList.loadStories()` is automatical).
 
 #### 7) Adding PTR
 
