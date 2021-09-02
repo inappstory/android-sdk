@@ -391,8 +391,8 @@ The library interacts using the event model, which is provided by the internal `
 Example:
 ```
 @CsSubscribe(threadMode = CsThreadMode.MAIN)
-public void onMessageEvent(MessageEvent event) {
-    Toast.makeText(getActivity(), event.message, Toast.LENGTH_SHORT).show();
+public void onStoriesLoadedEvent(StoriesLoaded event) {
+    Toast.makeText(getActivity(), ""+event.getCount(), Toast.LENGTH_SHORT).show();
 }
  
 @CsSubscribe
