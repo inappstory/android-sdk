@@ -21,7 +21,7 @@ public class CallToAction extends BaseOuterEvent {
 
     public static final int BUTTON = 0;
     public static final int SWIPE = 1;
-    public static final int GAME = 1;
+    public static final int GAME = 2;
 
     public CallToAction(int id, String title, String tags, int slidesCount, int index, String link, int type) {
         super(id, title, tags, slidesCount);
