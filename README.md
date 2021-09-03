@@ -54,7 +54,7 @@ keepclassmembers class fqcn.of.javascript.interface.for.webview {
 
 ## Initialization in the project
 
-For further work in the file `res/values/constants.xml` you need to add the string:
+**For further work in the file `res/values/constants.xml` you need to add the string:**
 ```
 <string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
@@ -65,7 +65,7 @@ To initialize the library in the `Application`, `Activity`, `View` class (or any
 |--------------------|---------------------|----------|--------|-------------------------------------------------------------------------|
 | context            | Context             | yes      |        | Application context                                                     |
 | userId             | String              | no       |        | Unique text user identifier (id, login, etc ...) that refers to stories |
-| apiKey             | String              | no       |        | By default, the key is set in the csApiKey string. You can change it on runtime, using this parameter |
+| apiKey             | String              | no       |        | By default, the key is set in the csApiKey string. You can change it on runtime, using this parameter. Non-empty csApiKey in `res/values/constants.xml` still needed |
 | testKey            | String              | no       |        | Test integration key for testing stories on the device                  |
 | closeOnSwipe       | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping down            |
 | closeOnOverscroll  | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
@@ -391,8 +391,8 @@ The library interacts using the event model, which is provided by the internal `
 Example:
 ```
 @CsSubscribe(threadMode = CsThreadMode.MAIN)
-public void onMessageEvent(MessageEvent event) {
-    Toast.makeText(getActivity(), event.message, Toast.LENGTH_SHORT).show();
+public void onStoriesLoadedEvent(StoriesLoaded event) {
+    Toast.makeText(getActivity(), ""+event.getCount(), Toast.LENGTH_SHORT).show();
 }
  
 @CsSubscribe
@@ -802,6 +802,7 @@ CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM)).
 #### 6) Changing user's account in the application
 
 Use the `InAppStoryManager.getInstance().setUserId(String userId)` method.
+All loaded StoriesList instances will be reloaded (calling `storiesList.loadStories()` is automatical).
 
 #### 7) Adding PTR
 
