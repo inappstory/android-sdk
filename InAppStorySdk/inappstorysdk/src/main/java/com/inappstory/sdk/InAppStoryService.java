@@ -341,8 +341,14 @@ public class InAppStoryService {
 
 
     public void runStatisticThread() {
-        if (handler != null)
+        if (handler != null) {
+            try {
+                handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
+            } catch (Exception e) {
+
+            }
             handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread, statisticUpdateInterval);
+        }
     }
 
     private static final long statisticUpdateInterval = 30000;
