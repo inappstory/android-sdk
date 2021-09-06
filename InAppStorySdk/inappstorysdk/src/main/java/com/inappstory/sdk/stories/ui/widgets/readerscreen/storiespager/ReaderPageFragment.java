@@ -387,7 +387,10 @@ public class ReaderPageFragment extends Fragment {
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
         if (InAppStoryService.getInstance().getCurrentId() != storyId) return;
-        final boolean isWithBackground = event.isWithBackground();
+        if (event.isWithBackground() && OldStatisticManager.getInstance().currentEvent != null) {
+            OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
+        }
+
         manager.resumeSlide();
 
     }

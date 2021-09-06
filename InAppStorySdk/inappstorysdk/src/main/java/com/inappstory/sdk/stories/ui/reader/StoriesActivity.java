@@ -342,21 +342,24 @@ public class StoriesActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (storiesFragment != null) {
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
-                    //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
-                    FragmentTransaction t = fragmentManager.beginTransaction()
-                            .replace(R.id.fragments_layout, storiesFragment);
-                    t.addToBackStack("STORIES_FRAGMENT");
-                    t.commit();
-                } else {
-                    finish();
+                try {
+                    if (isFinishing()) return;
+                    if (storiesFragment != null) {
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
+                        //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
+                        FragmentTransaction t = fragmentManager.beginTransaction()
+                                .replace(R.id.fragments_layout, storiesFragment);
+                        t.addToBackStack("STORIES_FRAGMENT");
+                        t.commitAllowingStateLoss();
+                    } else {
+                        finish();
+                    }
+                } catch (Exception e) {
+
                 }
             }
         }, 300);
-
-        //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
     private void setAppearanceSettings(Bundle bundle) {

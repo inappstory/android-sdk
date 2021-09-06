@@ -330,8 +330,9 @@ public class InAppStoryManager {
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         createServiceThread(builder.context, builder.userId);
-        if (builder.context.getResources().getString(R.string.csApiKey).isEmpty() || builder.context.getResources().getString(R.string.csApiKey).equals("1")) {
-            throw new DataException("'csApiKey' can't be empty", new Throwable("config is not valid"));
+        if (builder.apiKey == null &&
+                (builder.context.getResources().getString(R.string.csApiKey).isEmpty() || builder.context.getResources().getString(R.string.csApiKey).equals("1"))) {
+            throw new DataException("'apiKey' can't be empty. Set 'csApiKey' in 'constants.xml' or put use 'builder.apiKey()'", new Throwable("config is not valid"));
         }
         long freeSpace = builder.context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {

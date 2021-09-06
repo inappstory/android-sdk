@@ -1,5 +1,7 @@
 package com.inappstory.sdk.exceptions;
 
+import android.util.Log;
+
 public class DataException extends Exception {
     @Override
     public String getMessage() {
@@ -23,11 +25,12 @@ public class DataException extends Exception {
         super();
     }
 
-    public DataException(String message, Throwable cause)
-    {
+    public DataException(String message, Throwable cause) {
         super(message, cause);
 
         this.cause = cause;
         this.message = message;
+        if (message != null)
+            Log.d("InAppStory_Exception", message);
     }
 }
