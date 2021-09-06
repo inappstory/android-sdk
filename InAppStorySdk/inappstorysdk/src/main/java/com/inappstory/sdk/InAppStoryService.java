@@ -341,14 +341,8 @@ public class InAppStoryService {
 
 
     public void runStatisticThread() {
-        if (handler != null) {
-            try {
-                handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
-            } finally {
-                handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread,
-                        statisticUpdateInterval);
-            }
-        }
+        if (handler != null)
+            handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread, statisticUpdateInterval);
     }
 
     private static final long statisticUpdateInterval = 30000;
