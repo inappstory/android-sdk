@@ -344,10 +344,10 @@ public class InAppStoryService {
         if (handler != null) {
             try {
                 handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
-            } catch (Exception e) {
-
+            } finally {
+                handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread,
+                        statisticUpdateInterval);
             }
-            handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread, statisticUpdateInterval);
         }
     }
 
