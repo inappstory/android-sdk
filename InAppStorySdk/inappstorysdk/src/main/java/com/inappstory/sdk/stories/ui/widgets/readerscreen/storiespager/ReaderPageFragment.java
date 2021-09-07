@@ -363,10 +363,11 @@ public class ReaderPageFragment extends Fragment {
                 timeline.forceStartProgress();
                 InAppStoryService.getInstance().getTimerManager().startTimer(event.getNewDuration(), true);
             } else {
-
-                localDurations.set(event.getIndex(), (int) event.getNewDuration());
-                timeline.setSlideDuration(event.getIndex(), event.getNewDuration());
-                timeline.forceStartProgress();
+                if (event.getIndex() == 0) {
+                    localDurations.set(event.getIndex(), (int) event.getNewDuration());
+                    timeline.setSlideDuration(event.getIndex(), event.getNewDuration());
+                    timeline.forceStartProgress();
+                }
                 //           timeline.forceRestartProgress();
                 InAppStoryService.getInstance().getTimerManager().restartTimer(event.getNewDuration());
                 manager.restartSlide();
