@@ -160,8 +160,7 @@ public class GameLoader {
                         if (InAppStoryService.getInstance().getCommonCache().get(directory.getName()) == null) {
                             InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         }
-                    }
-                    else if (file.exists()) {
+                    } else if (file.exists()) {
                         FileUnzipper.unzip(file, directory);
                         InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),

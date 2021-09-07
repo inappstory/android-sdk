@@ -20,6 +20,7 @@ public class TimerManager {
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
+            Log.e("timerTask", (System.currentTimeMillis() - timerStart) + " " + timerDuration);
             if (System.currentTimeMillis() - timerStart >= timerDuration) {
                 timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
