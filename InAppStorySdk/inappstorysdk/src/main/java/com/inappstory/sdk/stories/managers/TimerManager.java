@@ -98,6 +98,7 @@ public class TimerManager {
 
     public void pauseLocalTimer() {
         try {
+
             timerHandler.removeCallbacks(timerTask);
         } catch (Exception e) {
 
