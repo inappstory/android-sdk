@@ -43,8 +43,12 @@ public class OldStatisticManager {
     private Handler handler = new Handler();
 
     public void putStatistic(List<Object> e) {
-        if (statistic != null) {
-            statistic.add(e);
+        synchronized (openProcessLock) {
+            if (statistic != null) {
+                for (List<Object> obj : statistic)
+                    if (e.toString().equals(obj.toString())) return;
+                statistic.add(e);
+            }
         }
     }
 
@@ -92,36 +96,54 @@ public class OldStatisticManager {
         if (!InAppStoryService.isConnected()) return true;
         if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
             return false;
-        if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
-            return true;
+        synchronized (openProcessLock) {
+            if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
+                return true;
+            }
         }
         if (!InAppStoryService.getInstance().getSendStatistic()) {
-            StatisticSession.getInstance();
-            StatisticSession.updateStatistic();
-            if (statistic != null)
-                statistic.clear();
-            return true;
+            cleanStatistic();
         }
         try {
-            NetworkClient.getApi().statisticsUpdate(
-                    new StatisticSendObject(StatisticSession.getInstance().id,
-                            statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
-                @Override
-                public void onSuccess(StatisticResponse response) {
-                    StatisticSession.getInstance();
-                    StatisticSession.updateStatistic();
-                    if (statistic == null) return;
-                    statistic.clear();
-                }
+            synchronized (openProcessLock) {
+                NetworkClient.getApi().statisticsUpdate(
+                        new StatisticSendObject(StatisticSession.getInstance().id,
+                                statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
+                    @Override
+                    public void onSuccess(StatisticResponse response) {
+                        cleanStatistic();
+                    }
 
-                @Override
-                public Type getType() {
-                    return StatisticResponse.class;
-                }
-            });
+                    @Override
+                    public void onError(int code, String message) {
+                        super.onError(code, message);
+                        cleanStatistic();
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        cleanStatistic();
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return StatisticResponse.class;
+                    }
+                });
+            }
         } catch (Exception e) {
         }
         return true;
+    }
+
+    public void cleanStatistic() {
+        StatisticSession.getInstance();
+        StatisticSession.updateStatistic();
+        synchronized (openProcessLock) {
+            if (statistic == null) return;
+            statistic.clear();
+        }
     }
 
 
