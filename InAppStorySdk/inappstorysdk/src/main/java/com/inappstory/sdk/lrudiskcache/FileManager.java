@@ -56,12 +56,13 @@ public class FileManager {
         return file;
     }
 
-    public void delete(String name) throws IOException {
+    public void delete(String name, boolean ignoreFile) throws IOException {
         File file = new File(cacheDir, name);
         if (!file.exists()) {
             file = new File(name);
         }
         if (!file.exists() || !deleteRecursive(file)) {
+            if (ignoreFile) return;
             throw formatException("Unable to delete file %s", file);
         }
     }

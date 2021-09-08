@@ -64,10 +64,11 @@ public class CacheJournal {
         CacheJournalItem item = itemsLinks.remove(key);
         if (item != null) {
             currentSize -= item.getSize();
-            if (withFile) fileManager.delete(item.getName());
+            if (withFile) fileManager.delete(item.getName(), withFile);
         }
         return item;
     }
+
 
 
     public Set<String> keySet() {
@@ -114,7 +115,7 @@ public class CacheJournal {
             Collections.sort(items, new Utils.TimeComparator());
             for (int i = items.size() - 1; i > 0; i--) {
                 CacheJournalItem item = items.remove(i);
-                fileManager.delete(item.getName());
+                fileManager.delete(item.getName(), true);
                 itemsLinks.remove(item.getKey());
                 currentSize -= item.getSize();
                 if (currentSize + newFileSize < limitSize) {
