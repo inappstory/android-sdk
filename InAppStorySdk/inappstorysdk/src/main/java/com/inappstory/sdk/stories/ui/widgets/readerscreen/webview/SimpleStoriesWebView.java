@@ -22,17 +22,15 @@ import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.stories.events.DebugEvent;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,15 +64,22 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
 
+    private void logMethod(String payload) {
+        Log.e("JS_method_call", manager.storyId + " " + payload);
+    }
+
     public void gameComplete(String data) {
         if (data != null)
             loadUrl("javascript:game_complete('" + data + "')");
         else
             loadUrl("javascript:game_complete()");
+        logMethod("game_complete " + data);
     }
 
     private void replaceHtml(String page) {
         evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
+
+        logMethod("show_slide");
     }
 
     private String oldEscape(String raw) {
@@ -99,6 +104,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public void pauseVideo() {
         loadUrl("javascript:(function(){story_slide_pause();})()");
+
+        logMethod("story_slide_pause");
     }
 
 
@@ -108,15 +115,18 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         } else {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": true}');})()");
         }
+        logMethod("story_slide_start");
     }
 
     public void stopVideo() {
         loadUrl("javascript:(function(){story_slide_stop();})()");
 
+        logMethod("story_slide_stop");
     }
 
     public void resumeVideo() {
         loadUrl("javascript:(function(){story_slide_resume();})()");
+        logMethod("story_slide_resume");
     }
 
     @Override
@@ -151,7 +161,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         init();
     }
 
-  //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
+    //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
 
 
     public void destroyView() {
@@ -181,7 +191,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     boolean notFirstLoading = false;
 
     public void loadWebData(String outerLayout, String outerData) {
-        getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         String tmpData = outerData;
         String tmpLayout = outerLayout;
         for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
@@ -190,6 +199,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         }
         final String data = tmpData;
         final String lt = tmpLayout;
+
         if (!notFirstLoading) {
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -239,6 +249,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public void shareComplete(String id, boolean success) {
         loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
+        logMethod("share_complete " + id + " " + success);
     }
 
     public SimpleStoriesWebView(Context context, AttributeSet attrs) {
@@ -286,19 +297,15 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
                         } catch (FileNotFoundException e) {
-                          //  CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, url);
                         } catch (IOException e) {
-                         //   CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, url);
                         } catch (Exception e) {
-                         //   CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, url);
                         }
-                    } else {
+                    } else
                         return super.shouldInterceptRequest(view, url);
-                    }
                 }
 
 
@@ -314,19 +321,15 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
                         } catch (FileNotFoundException e) {
-                    //        CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, request);
                         } catch (IOException e) {
-                   //         CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             e.printStackTrace();
                             return super.shouldInterceptRequest(view, request);
                         } catch (Exception e) {
-                     //       CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
                             return super.shouldInterceptRequest(view, request);
                         }
-                    } else {
+                    } else
                         return super.shouldInterceptRequest(view, request);
-                    }
                 }
 
                 @Override
@@ -356,7 +359,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-              //      CsEventBus.getDefault().post(new DebugEvent(consoleMessage.message()));
                     Log.d("MyApplication", consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());
@@ -369,7 +371,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         if (!InAppStoryService.isConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -387,12 +389,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return true;
             }
+        } else if (Sizes.isTablet() && motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            getManager().getPageManager().resumeSlide(false);
         }
         return c;
     }
@@ -401,14 +405,15 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
+            getManager().getPageManager().pauseSlide(false);
 
-            CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+            //CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;

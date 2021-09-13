@@ -21,9 +21,8 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -211,13 +210,21 @@ public class SessionManager {
 
     public void closeSession(boolean sendStatistic, final boolean changeUserId) {
         if (StatisticSession.getInstance().id != null) {
+            List<List<Object>> stat = new ArrayList<>();
+            stat.addAll(sendStatistic ? OldStatisticManager.getInstance().statistic :
+                    new ArrayList<List<Object>>());
+            try {
+                OldStatisticManager.getInstance().statistic.clear();
+            } catch (Exception e) {
+
+            }
             NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
-                    sendStatistic ? OldStatisticManager.getInstance().statistic : new ArrayList<List<Object>>())).enqueue(
+                    stat)).enqueue(
                     new NetworkCallback<StatisticResponse>() {
                         @Override
                         public void onSuccess(StatisticResponse response) {
-                            if (changeUserId)
-                                CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
+                            if (changeUserId && InAppStoryService.isNotNull())
+                                InAppStoryService.getInstance().getListReaderConnector().changeUserId();
                         }
 
                         @Override
@@ -227,8 +234,8 @@ public class SessionManager {
 
                         @Override
                         public void onError(int code, String message) {
-                            if (changeUserId)
-                                CsEventBus.getDefault().post(new ChangeUserIdForListEvent());
+                            if (changeUserId && InAppStoryService.isNotNull())
+                                InAppStoryService.getInstance().getListReaderConnector().changeUserId();
                         }
                     });
         }

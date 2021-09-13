@@ -22,9 +22,9 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
+import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 
@@ -88,7 +88,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        InAppStoryService.getInstance().isBackgroundPause = false;
         for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
             story.setLastIndex(0);
         cleaned = true;
@@ -148,22 +147,14 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
-       /* if (InAppStoryService.getInstance() == null) return;
-        InAppStoryService.getInstance().closeStatisticEvent();
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
-        InAppStoryService.getInstance().isBackgroundPause = false;
-        for (Story story : StoryDownloader.getInstance().getStories())
-            story.lastIndex = 0;
-        CsEventBus.getDefault().unregister(this);*/
+        InAppStoryService.getInstance().getListReaderConnector().closeReader();
         dismiss();
     }
 
 
-
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void changeStoryEvent(ChangeStoryEvent event) {
-        getArguments().putInt("index", event.getIndex());
+    public void changeStory(int index) {
+        getArguments().putInt("index", index);
     }
 
 

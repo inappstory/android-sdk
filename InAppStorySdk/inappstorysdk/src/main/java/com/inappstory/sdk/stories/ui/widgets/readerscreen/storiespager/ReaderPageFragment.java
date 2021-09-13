@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,51 +23,23 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatImageView;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.ClearDurationEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.events.NextStoryPageEvent;
-import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
-import com.inappstory.sdk.stories.events.PageByIdSelectedEvent;
-import com.inappstory.sdk.stories.events.PageTaskLoadErrorEvent;
-import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
-import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.PrevStoryPageEvent;
-import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
-import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ShareCompleteEvent;
-import com.inappstory.sdk.stories.events.SoundOnOffEvent;
-import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
-import com.inappstory.sdk.stories.events.StoryOpenEvent;
-import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
-import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
-import com.inappstory.sdk.stories.events.SyncTimerEvent;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
+import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.serviceevents.ChangeIndexEventInFragment;
+import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
@@ -82,7 +53,7 @@ public class ReaderPageFragment extends Fragment {
     Timeline timeline;
     SimpleStoriesView storiesView;
     ButtonsPanel buttonsPanel;
-
+    ReaderManager parentManager;
 
     View blackBottom;
     View blackTop;
@@ -97,45 +68,9 @@ public class ReaderPageFragment extends Fragment {
             manager.setTimelineManager(timeline.getManager(), storyId);
         if (storiesView != null)
             manager.setWebViewManager(storiesView.getManager(), storyId);
+        manager.setTimerManager(new TimerManager());
     }
 
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pageByIdSelected(PageByIdSelectedEvent event) {
-        if (event.getStoryId() != storyId) return;
-        Handler handler = new Handler(Looper.getMainLooper());
-        if (event.isOnlyResume()) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-
-                    if (localDurations.isEmpty() && story.durations != null)
-                        localDurations.addAll(story.durations);
-                    if (timeline != null) {
-                        if (story.durations != null) {
-                            timeline.getManager().setStoryDurations(localDurations);
-                        }
-                        timeline.setActive(story.lastIndex);
-                        timeline.setActive(-1);
-                    }
-                }
-            }, 100);
-        } else {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-
-            if (localDurations.isEmpty() && story.durations != null)
-                localDurations.addAll(story.durations);
-            InAppStoryService.getInstance().setCurrentIndex(story.lastIndex);
-            if (storiesView != null) {
-                InAppStoryService.getInstance().getTimerManager().startTimer(localDurations.get(story.lastIndex), true);
-                if (story.durations != null) {
-                    timeline.getManager().setStoryDurations(localDurations);
-                }
-                // timeline.getManager().start(story.lastIndex);
-            }
-        }
-    }
 
     void bindViews(View view) {
         close = view.findViewById(R.id.ias_close_button);
@@ -186,10 +121,8 @@ public class ReaderPageFragment extends Fragment {
         storyId = getArguments().getInt("story_id");
     }
 
-    Story story;
-
     void setViews(View view) {
-        story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         if (story.disableClose)
             close.setVisibility(View.GONE);
@@ -197,19 +130,35 @@ public class ReaderPageFragment extends Fragment {
                 story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
         buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
         setOffsets(view);
-        if (story.durations != null && !story.durations.isEmpty())
-            story.slidesCount = story.durations.size();
-
         storiesView.getManager().setIndex(story.lastIndex);
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                manager.setStoryInfo(story, true);
-            }
-        });
+
     }
 
-    List<Integer> localDurations = new ArrayList<>();
+    public void storyLoadStart() {
+        showLoader();
+    }
+
+    public void storyLoadedSuccess() {
+        hideLoader();
+    }
+
+    private View getLoader(Context context) {
+        View v = null;
+        RelativeLayout.LayoutParams relativeParams;
+        if (AppearanceManager.getCommonInstance() != null
+                && AppearanceManager.getCommonInstance().csLoaderView() != null) {
+            v = AppearanceManager.getCommonInstance().csLoaderView().getView();
+        } else {
+            v = new ProgressBar(context) {{
+                setIndeterminate(true);
+                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            }};
+        }
+        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        v.setLayoutParams(relativeParams);
+        return v;
+    }
 
     private void setOffsets(View view) {
         if (!Sizes.isTablet()) {
@@ -248,158 +197,8 @@ public class ReaderPageFragment extends Fragment {
         }
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void shareComplete(ShareCompleteEvent event) {
-        if (storyId != event.storyId) return;
-        manager.shareComplete(event.getId(), event.isSuccess());
-    }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void gameComplete(GameCompleteEvent event) {
-        if (storyId != event.getStoryId() || story.lastIndex != event.getSlideIndex()) return;
-        manager.gameComplete(event.getData());
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void storyPageStartedEvent(StoryPageStartedEvent event) {
-        if (this.storyId != event.getStoryId()) return;
-        final int ind = event.index;
-        if (story != null)
-            story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        if (InAppStoryService.getInstance().getCurrentId() == storyId
-                && story.lastIndex == ind) {
-            // timeline.setActive(story.lastIndex);
-            if (localDurations.isEmpty() && story.durations != null)
-                localDurations.addAll(story.durations);
-
-            timeline.getManager().setStoryDurations(localDurations);
-            timeline.getManager().start(story.lastIndex);
-            InAppStoryService.getInstance().getTimerManager().startTimer(localDurations.get(ind), true);
-            if (OldStatisticManager.getInstance().currentEvent != null)
-                OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
-        }
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void prevStoryPage(PrevStoryPageEvent event) {
-        if (event.getStoryId() != storyId) return;
-        if (story == null)
-            story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        if (story == null)
-            return;
-        int lind = story.lastIndex;
-        if (lind > 0) {
-            manager.prevSlide();
-            StatisticManager.getInstance().sendCurrentState();
-            openPrevSlide(story);
-        } else {
-            CsEventBus.getDefault().post(new PrevStoryReaderEvent());
-        }
-    }
-
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void nextStoryPage(NextStoryPageEvent event) {
-        if (event.getStoryId() != storyId) return;
-        if (story == null)
-            story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        //storiesProgressView.skip();
-        if (story == null) return;
-        if (story.durations != null && !story.durations.isEmpty())
-            story.slidesCount = story.durations.size();
-
-        StatisticManager.getInstance().sendCurrentState();
-        if (story.lastIndex == story.slidesCount - 1) {
-            CsEventBus.getDefault().post(new NextStoryReaderEvent());
-
-        } else {
-            manager.nextSlide();
-            StatisticManager.getInstance().sendCurrentState();
-            openNextSlide(story);
-        }
-    }
-
-    private void openNextSlide(Story st) {
-        if (st.lastIndex >= st.slidesCount - 1) return;
-        st.setLastIndex(st.lastIndex + 1);
-        InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId);
-        timeline.getManager().setCurrentSlide(st.lastIndex);
-        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, st.lastIndex);
-        manager.loadStoryAndSlide(st.id, st.lastIndex);
-    }
-
-    private void openPrevSlide(Story st) {
-        if (st.lastIndex <= 0) return;
-        st.setLastIndex(st.lastIndex - 1);
-        timeline.getManager().setCurrentSlide(st.lastIndex);
-        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, st.lastIndex);
-        manager.loadStoryAndSlide(st.id, st.lastIndex);
-    }
-
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void changeSoundStatus(SoundOnOffEvent event) {
-        buttonsPanel.refreshSoundStatus();
-        storiesView.changeSoundStatus();
-    }
-
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void resetTimers(ClearDurationEvent event) {
-        if (storyId == event.getId()) {
-            localDurations.clear();
-            if (story != null && story.durations != null) {
-                localDurations.addAll(story.durations);
-            }
-        }
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void restartEvent(RestartStoryReaderEvent event) {
-        if (storyId == event.getId()) {
-            if (event.getIndex() > 0) {
-                localDurations.set(event.getIndex(), (int) event.getNewDuration());
-                timeline.setSlideDuration(event.getIndex(), event.getNewDuration());
-                timeline.forceStartProgress();
-                InAppStoryService.getInstance().getTimerManager().startTimer(event.getNewDuration(), true);
-            } else {
-                if (event.getIndex() == 0) {
-                    localDurations.set(event.getIndex(), (int) event.getNewDuration());
-                    timeline.setSlideDuration(event.getIndex(), event.getNewDuration());
-                    timeline.forceStartProgress();
-                }
-                //           timeline.forceRestartProgress();
-                InAppStoryService.getInstance().getTimerManager().restartTimer(event.getNewDuration());
-                manager.restartSlide();
-            }
-        }
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void storyCacheLoaded(StoryCacheLoadedEvent event) {
-        if (storyId != event.getStoryId()) return;
-        manager.storyInfoLoaded();
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pauseStoryEvent(PauseStoryReaderEvent event) {
-        if (InAppStoryService.getInstance().getCurrentId() != storyId) return;
-        final boolean isWithBackground = event.isWithBackground();
-        manager.pauseSlide();
-
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void resumeStoryEvent(ResumeStoryReaderEvent event) {
-        if (InAppStoryService.getInstance().getCurrentId() != storyId) return;
-        if (event.isWithBackground() && OldStatisticManager.getInstance().currentEvent != null) {
-            OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
-        }
-
-        manager.resumeSlide();
-
-    }
-
+    View loader;
 
     void setActions() {
         close.setOnClickListener(new View.OnClickListener() {
@@ -412,39 +211,21 @@ public class ReaderPageFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 refresh.setVisibility(View.GONE);
-
-                if (mask == null) return;
-                mask.setAlpha(1f);
-                mask.setVisibility(View.VISIBLE);
-                InAppStoryService.getInstance().getDownloadManager().addStoryTask(storyId, new ArrayList<Integer>());
-                // manager.loadStoryAndSlide(storyId, story.lastIndex);
+                if (loader == null) return;
+                loader.setAlpha(1f);
+                loader.setVisibility(View.VISIBLE);
+                manager.reloadStory();
             }
         });
-        //clicks
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void changeIndexEvent(ChangeIndexEventInFragment event) {
-        if (event.getCurItem() != storyId) return;
-        final int curIndex = event.getIndex();
-        manager.loadStoryAndSlide(storyId, curIndex);
+    private void showLoader() {
+        if (loader == null) return;
+        loader.setAlpha(1f);
+        loader.setVisibility(View.VISIBLE);
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pageLoadError(PageTaskLoadErrorEvent errorEvent) {
-        if (errorEvent.getId() != storyId) return;
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                refresh.setVisibility(View.VISIBLE);
-                hideMask();
-                close.setVisibility(View.VISIBLE);
-                //    Toast.makeText(getContext(), "Error", Toast.LENGTH_LONG).show();
-            }
-        }, 200);
-    }
-
-    private void hideMask() {
+    private void hideLoader() {
         Animation anim = new AlphaAnimation(1f, 0f);
         anim.setDuration(200);
         anim.setAnimationListener(new Animation.AnimationListener() {
@@ -463,14 +244,26 @@ public class ReaderPageFragment extends Fragment {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                if (mask == null) return;
-                mask.setVisibility(View.GONE);
-                mask.setAlpha(1f);
+                if (loader == null) return;
+                loader.setVisibility(View.GONE);
+                loader.setAlpha(1f);
             }
         });
-        if (mask == null) return;
-        mask.startAnimation(anim);
+        if (loader == null) return;
+        loader.startAnimation(anim);
     }
+
+    public void storyLoadError() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                refresh.setVisibility(View.VISIBLE);
+                hideLoader();
+                close.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -557,9 +350,21 @@ public class ReaderPageFragment extends Fragment {
             addGradient(context, readerContainer);
 
         createLoader();
-        readerContainer.addView(mask);
+        readerContainer.addView(loader);
         return readerContainer;
     }
+
+    private void createLoader() {
+        Context context = getContext();
+        loader = new RelativeLayout(context);
+        loader.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            loader.setElevation(8);
+        }
+        ((ViewGroup) loader).addView(getLoader(context));
+    }
+
 
     private View createWebViewContainer(Context context) {
         LinearLayout webViewContainer = new LinearLayout(context);
@@ -590,54 +395,11 @@ public class ReaderPageFragment extends Fragment {
         return webViewContainer;
     }
 
-    private void createLoader() {
-        Context context = getContext();
-        mask = new RelativeLayout(context);
-        mask.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mask.setElevation(8);
-        }
-        ((ViewGroup) mask).addView(getLoader(context));
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pageTaskLoaded(PageTaskToLoadEvent event) {
-        if (event.getId() != storyId) return;
-        // Log.e("slideInCache", "pageTaskLoaded " + event.getId() + " " + event.getIndex() + " " + event.isLoaded());
-        if (event.isLoaded()) {
-            hideMask();
-        } else {
-            if (mask == null) return;
-            mask.setAlpha(1f);
-            mask.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private View getLoader(Context context) {
-        View v = null;
-        RelativeLayout.LayoutParams relativeParams;
-        if (AppearanceManager.getCommonInstance() != null
-                && AppearanceManager.getCommonInstance().csLoaderView() != null) {
-            v = AppearanceManager.getCommonInstance().csLoaderView().getView();
-        } else {
-            v = new ProgressBar(context) {{
-                setIndeterminate(true);
-                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-            }};
-        }
-        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-        v.setLayoutParams(relativeParams);
-        return v;
-    }
-
-
-    View mask;
 
     private View createProgressContainer(Context context) {
         return null;
     }
+
 
     private void addButtonsPanel(Context context, RelativeLayout relativeLayout) {
         buttonsPanel = new ButtonsPanel(context);
@@ -671,6 +433,7 @@ public class ReaderPageFragment extends Fragment {
         relativeLayout.addView(gradientView);
     }
 
+
     private RelativeLayout createTimelineContainer(Context context) {
         RelativeLayout timelineContainer = new RelativeLayout(context);
         timelineContainer.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -697,53 +460,24 @@ public class ReaderPageFragment extends Fragment {
         return timelineContainer;
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void pageTaskLoaded(PageTaskLoadedEvent event) {
-        manager.storyLoaded(event.getId(), event.getIndex());
-    }
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void closeReaderEvent(CloseStory event) {
-        try {
-            CsEventBus.getDefault().unregister(this);
-        } catch (Exception ignored) {
-
-        }
-    }
-
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void changeStoryPageEvent(StoryPageOpenEvent event) {
-        if (this.storyId != event.getStoryId()) return;
-        manager.loadStoryAndSlide(event.storyId, event.index);
-    }
-
     StoriesReaderSettings readerSettings = null;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         manager = new ReaderPageManager();
-        CsEventBus.getDefault().register(this);
+        manager.host = this;
+        manager.parentManager = parentManager;
+        parentManager.addSubscriber(manager);
         setStoryId();
         bindViews(view);
         setActions();
         setManagers();
         manager.setStoryId(storyId);
         setViews(view);
-    }
+        InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
+        manager.storyLoadedInCache();
 
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void changeStoryEvent(StoryOpenEvent event) {
-        manager.storyOpen(event.getStoryId());
-    }
-
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void syncTimer(SyncTimerEvent event) {
-        if (InAppStoryService.getInstance().getCurrentId() != storyId) return;
-        manager.syncTime(event.getCurrentTimeLeft(), event.getEventTimer());
     }
 
 
@@ -751,10 +485,9 @@ public class ReaderPageFragment extends Fragment {
     public void onDestroyView() {
         if (storiesView != null)
             storiesView.destroyView();
-        try {
-            CsEventBus.getDefault().unregister(this);
-        } catch (Exception e) {
-        }
+
+        parentManager.removeSubscriber(manager);
+        InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
         super.onDestroyView();
     }
 }

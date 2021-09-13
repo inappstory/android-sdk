@@ -1,8 +1,15 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
+import android.animation.ValueAnimator;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.animation.LinearInterpolator;
 
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class TimelineManager {
@@ -10,12 +17,20 @@ public class TimelineManager {
         this.timeline = timeline;
     }
 
-    public void setStoryDurations(List<Integer> durations) {
+    List<Integer> durations;
+
+    int activeInd = 0;
+
+    public void setStoryDurations(List<Integer> durations, boolean createFirst) {
         if (durations == null) return;
-        for (int i = 0; i < timeline.progressBars.size(); i++) {
-            timeline.progressBars.get(i).setDuration(durations.get(i) * 1L);
-        }
+        if (this.durations == null) this.durations = new ArrayList<>();
+        this.durations.clear();
+        this.durations.addAll(durations);
+        timeline.setDurations(durations);
+        if (createFirst)
+            createFirstAnimation();
     }
+
 
     Timeline timeline;
 
@@ -23,53 +38,77 @@ public class TimelineManager {
         timeline.setSlidesCount(slidesCount);
     }
 
-    public void syncTime(long timeLeft, long syncTime) {
-        if (timeline.curAnimation != null) {
-        }
+    public void start() {
+        mAnimationRest = -1;
+        getCurrentBar().start();
     }
 
-    public void start(int ind) {
-        mAnimationRest = -1;
-        Log.e("Story_VisualTimers", "start " + ind);
-        timeline.setActive(ind);
-        timeline.curAnimation.start();
+    public void createFirstAnimation() {
+        if (activeInd == 0) {
+            // timeline.progressBars.get(0).setMin();
+           // timeline.progressBars.get(0).createAnimation();
+            timeline.progressBars.get(0).isActive = true;
+        }
     }
 
     public void setCurrentSlide(int ind) {
         if (ind < 0) return;
         if (ind > timeline.slidesCount) return;
-        Log.e("Story_VisualTimers", "setCurrentSlide " + ind);
-        for (int i = 0; i < ind; i++) {
-            timeline.progressBars.get(i).setMax();
+        activeInd = ind;
+        for (int i = 0; i < timeline.slidesCount; i++) {
+            timeline.progressBars.get(i).isActive = (i == activeInd);
         }
-        for (int i = ind + 1; i < timeline.slidesCount; i++) {
-            timeline.progressBars.get(i).clear();
-        }
-        timeline.progressBars.get(ind).setMin();
-        //timeline.setActive(ind);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+
+                for (int i = 0; i < timeline.slidesCount; i++) {
+                    timeline.progressBars.get(i).stopInLooper();
+                }
+                //createCurrentAnimation(ind);
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i = 0; i < activeInd; i++) {
+                            timeline.progressBars.get(i).setMax();
+                        }
+                        for (int i = activeInd + 1; i < timeline.slidesCount; i++) {
+                            timeline.progressBars.get(i).clearInLooper();
+                        }
+                        timeline.progressBars.get(activeInd).setMin();
+                        timeline.progressBars.get(activeInd).createAnimation();
+                    }
+                }, 100);
+
+            }
+        });
+
     }
 
+
     public void stop() {
-        mAnimationRest = -1;
+        getCurrentBar().stop();
     }
 
 
     private long mAnimationRest;
 
+    public ReaderPageManager pageManager;
+
+    TimelineProgressBar getCurrentBar() {
+        return timeline.progressBars.get(pageManager.getSlideIndex());
+    }
+
+    public void restart() {
+        getCurrentBar().createAnimation();
+        getCurrentBar().restart();
+    }
+
     public void pause() {
-        timeline.curAnimation.pause();
-        mAnimationRest = timeline.curAnimation.getDuration() - timeline.curAnimation.getCurrentPlayTime();
+        getCurrentBar().pause();
     }
 
     public void resume() {
-        timeline.curAnimation.resume();
-    }
-
-    public void next() {
-        start(timeline.activeInd + 1);
-    }
-
-    public void prev() {
-        start(timeline.activeInd - 1);
+        getCurrentBar().resume();
     }
 }

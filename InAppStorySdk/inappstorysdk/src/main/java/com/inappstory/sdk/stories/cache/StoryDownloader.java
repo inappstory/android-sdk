@@ -14,15 +14,12 @@ import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.events.PageTaskLoadErrorEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -184,23 +181,15 @@ class StoryDownloader {
     private void loadStoryError(final int key) {
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
         synchronized (storyTasksLock) {
+            if (storyTasks != null)
+                storyTasks.remove(key);
+            if (firstPriority != null)
+                firstPriority.remove(key);
+            if (secondPriority != null)
+                secondPriority.remove(key);
             setStoryLoadType(key, -1);
-            errorHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(key, -1));
-                }
-            }, 300);
+            callback.onError(key);
         }
-    }
-
-    void removeStoryAndSendError(Integer key) {
-        synchronized (storyTasksLock) {
-            storyTasks.remove(key);
-            firstPriority.remove(key);
-            secondPriority.remove(key);
-        }
-        loadStoryError(key);
     }
 
     private Runnable queueStoryReadRunnable = new Runnable() {
@@ -281,11 +270,11 @@ class StoryDownloader {
                     }
                 }
             } else if (response.errorBody != null) {
-                removeStoryAndSendError(key);
+                loadStoryError(key);
             }
             handler.postDelayed(queueStoryReadRunnable, 200);
         } catch (Throwable t) {
-            removeStoryAndSendError(key);
+            loadStoryError(key);
             handler.postDelayed(queueStoryReadRunnable, 200);
         }
     }

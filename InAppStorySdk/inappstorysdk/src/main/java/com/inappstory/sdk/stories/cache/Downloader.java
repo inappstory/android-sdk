@@ -68,7 +68,7 @@ public class Downloader {
     @NonNull
     @WorkerThread
     public static File downloadOrGetGameFile(@NonNull String url, @NonNull String hashKey,
-                                             LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+                                         LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
         if (cache.hasKey(key)) {
             return cache.get(key);

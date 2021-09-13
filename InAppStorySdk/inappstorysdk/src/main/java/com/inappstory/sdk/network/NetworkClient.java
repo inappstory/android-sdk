@@ -7,11 +7,11 @@ import android.os.Build;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import com.inappstory.sdk.BuildConfig;
+
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Locale;
-
-import com.inappstory.sdk.BuildConfig;
 
 public class NetworkClient {
     private static ApiInterface apiInterface;
@@ -128,8 +128,6 @@ public class NetworkClient {
         }
         return statApiInterface;
     }
-
-
 
 
     public static String getDefaultUserAgentString(Context context) {

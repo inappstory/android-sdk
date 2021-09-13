@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
@@ -10,36 +9,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.ChangeStoryEvent;
-import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
-import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
-import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
-import com.inappstory.sdk.stories.events.SwipeDownEvent;
-import com.inappstory.sdk.stories.events.SwipeLeftEvent;
-import com.inappstory.sdk.stories.events.SwipeRightEvent;
-import com.inappstory.sdk.stories.events.SwipeUpEvent;
-import com.inappstory.sdk.stories.events.WidgetTapEvent;
-import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.serviceevents.PrevStoryFragmentEvent;
+import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
 public class ReaderPager extends ViewPager {
+    public void setHost(StoriesFragment host) {
+        this.host = host;
+    }
+
+    StoriesFragment host;
+
     public ReaderPager(@NonNull Context context) {
         super(context);
-        CsEventBus.getDefault().register(this);
     }
 
     public ReaderPager(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        CsEventBus.getDefault().register(this);
     }
 
     public boolean canUseNotLoaded;
@@ -72,7 +59,7 @@ public class ReaderPager extends ViewPager {
 
     public void init(@Nullable AttributeSet attrs) {
         if (attrs != null) {
-            TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.StoriesReaderPager);
+            TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ReaderPager);
         }
     }
 
@@ -104,24 +91,15 @@ public class ReaderPager extends ViewPager {
         }
     }
 
-    @CsSubscribe
-    public void nextStoryEvent(NextStoryReaderEvent event) {
-        cubeAnimation = true;
-    }
-
     public boolean cubeAnimation = false;
 
-    @CsSubscribe
-    public void prevStoryEvent(PrevStoryReaderEvent event) {
-        cubeAnimation = true;
-    }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
         if (cubeAnimation) {
             return true;
         }
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+       // Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         float pressedEndX = 0f;
         float pressedEndY = 0f;
         boolean distance = false;
@@ -129,7 +107,7 @@ public class ReaderPager extends ViewPager {
             pressStartTime = System.currentTimeMillis();
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
-            CsEventBus.getDefault().post(new WidgetTapEvent());
+            //CsEventBus.getDefault().post(new WidgetTapEvent());
         } else if (!(motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL)) {
             pressedEndX = motionEvent.getX() - pressedX;
             pressedEndY = motionEvent.getY() - pressedY;
@@ -138,36 +116,26 @@ public class ReaderPager extends ViewPager {
             pressedEndY = motionEvent.getY() - pressedY;
             pressedEndX = motionEvent.getX() - pressedX;
             if (pressedEndY > 400) {
-                if (st != null
-                        && !st.disableClose) {
-                    CsEventBus.getDefault().post(new SwipeDownEvent());
-                    return true;
-                }
+                host.swipeDownEvent(getCurrentItem());
+               // CsEventBus.getDefault().post(new SwipeDownEvent());
+                return true;
             }
             if (pressedEndY < -400) {
-                if (st != null) {
-                    CsEventBus.getDefault().post(new SwipeUpEvent());
-                    return true;
-                }
+                host.swipeUpEvent(getCurrentItem());
+                return true;
             }
             if (getCurrentItem() == 0 &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX > 300) {
-                if (st == null) return true;
-                if (!st.disableClose) {
-                    CsEventBus.getDefault().post(new SwipeRightEvent());
-                    return true;
-                }
+                host.swipeRightEvent(getCurrentItem());
+                return true;
             }
 
             if (getCurrentItem() == getAdapter().getCount() - 1 &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX < -300) {
-                if (st == null) return true;
-                if (!st.disableClose) {
-                    CsEventBus.getDefault().post(new SwipeLeftEvent());
-                    return true;
-                }
+                host.swipeLeftEvent(getCurrentItem());
+                return true;
             }
         }
         if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
@@ -189,41 +157,6 @@ public class ReaderPager extends ViewPager {
         }
         boolean c = super.onInterceptTouchEvent(motionEvent);
         return c;
-    }
-
-
-    public void onNextStory() {
-        if (getCurrentItem() < getAdapter().getCount() - 1) {
-
-            CsEventBus.getDefault().post(new ChangeStoryEvent(((ReaderPagerAdapter)getAdapter()).
-                    getItemId(getCurrentItem() + 1),
-                    getCurrentItem() + 1));
-            setCurrentItem(getCurrentItem() + 1);
-        } else {
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
-        }
-    }
-
-    public void onPrevStory() {
-        if (getCurrentItem() > 0) {
-
-            StatisticManager.getInstance().sendCurrentState();
-            CsEventBus.getDefault().post(new ChangeStoryEvent(((ReaderPagerAdapter)getAdapter()).
-                    getItemId(getCurrentItem() - 1),
-                    getCurrentItem() - 1));
-            setCurrentItem(getCurrentItem() - 1);
-        } else {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    cubeAnimation = false;
-                }
-            }, 100);
-            int storyId = ((ReaderPagerAdapter)getAdapter()).
-                    getItemId(getCurrentItem());
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-            CsEventBus.getDefault().post(new RestartStoryReaderEvent(storyId, story.getDurations().get(0)));
-        }
     }
 
     @Override

@@ -2,13 +2,10 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 
 import org.json.JSONObject;
@@ -18,7 +15,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 

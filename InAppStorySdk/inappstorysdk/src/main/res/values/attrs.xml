@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="StoriesReaderPager">
+    <declare-styleable name="ReaderPager">
 
         <attr name="cs_readerTransitionAnimation" format="dimension">
             <enum name="cube" value="0" />

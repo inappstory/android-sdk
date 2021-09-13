@@ -79,10 +79,10 @@ public class TextMultiInput extends LinearLayout {
 
     public void setTextSize(int size) {
         if (inputType == PHONE) {
-            getCountryCodeText().setTextSize(size);
-            phoneNumberHint.setTextSize(size);
+            getCountryCodeText().setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
+            phoneNumberHint.setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
         }
-        getMainText().setTextSize(size);
+        getMainText().setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
     }
 
     public static final String PHONE_CODE_MASK = "+−−−−";
@@ -99,13 +99,12 @@ public class TextMultiInput extends LinearLayout {
 
     AppCompatEditText countryCodeText;
 
-    AppCompatEditText phoneNumberHint;
-
-
 
     public AppCompatEditText getPhoneNumberHint() {
         return phoneNumberHint;
     }
+
+    AppCompatEditText phoneNumberHint;
 
     public static final int PHONE = 0;
     public static final int MAIL = 1;

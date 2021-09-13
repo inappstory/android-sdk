@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,20 +22,12 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
-import com.inappstory.sdk.stories.events.ChangeStoryEvent;
-import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
-import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
-import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -46,6 +37,8 @@ public class StoriesList extends RecyclerView {
         init(null);
     }
 
+
+    StoriesListManager manager;
     boolean isFavoriteList = false;
 
     public StoriesList(@NonNull Context context, boolean isFavoriteList) {
@@ -53,6 +46,7 @@ public class StoriesList extends RecyclerView {
         init(null);
         this.isFavoriteList = isFavoriteList;
     }
+
 
 
     public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -70,20 +64,18 @@ public class StoriesList extends RecyclerView {
 
     @Override
     public void onDetachedFromWindow() {
-        CsEventBus.getDefault().unregister(this);
         super.onDetachedFromWindow();
-        Log.e("cslistEvent", "detached");
+        InAppStoryService.getInstance().removeListSubscriber(manager);
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        CsEventBus.getDefault().register(this);
-
-        Log.e("cslistEvent", "attached");
+        InAppStoryService.getInstance().addListSubscriber(manager);
     }
 
     private void init(AttributeSet attributeSet) {
+        manager = new StoriesListManager(this);
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
@@ -153,19 +145,17 @@ public class StoriesList extends RecyclerView {
 
     boolean readerIsOpened = false;
 
-    @CsSubscribe
-    public void openReaderEvent(OpenStoriesScreenEvent event) {
+    public void openReader() {
         readerIsOpened = true;
     }
 
-    @CsSubscribe
-    public void openReaderEvent(CloseStoryReaderEvent event) {
+    public void closeReader() {
         readerIsOpened = false;
         sendIndexes();
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void changeUserId(ChangeUserIdForListEvent event) {
+
+    void refreshList() {
         try {
             adapter = null;
             loadStories();
@@ -226,19 +216,16 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void changeStoryEvent(final ChangeStoryEvent event) {
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
-        st.isOpened = true;
-        st.saveStoryOpened();
+    public void changeStoryEvent(int storyId) {
+
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
-            if (adapter.getStoriesIds().get(i) == event.getId()) {
+            if (adapter.getStoriesIds().get(i) == storyId) {
                 adapter.notifyItemChanged(i);
                 break;
             }
         }
         if (layoutManager instanceof LinearLayoutManager) {
-            final int ind = adapter.getIndexById(event.getId());
+            final int ind = adapter.getIndexById(storyId);
             if (ind == -1) return;
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
 
@@ -252,14 +239,14 @@ public class StoriesList extends RecyclerView {
                         v.getLocationOnScreen(location);
                         int x = location[0];
                         int y = location[1];
-                        ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8), y + v.getHeight() / 2);
+                        ScreensManager.getInstance().coordinates =
+                                new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
+                                        y + v.getHeight() / 2);
                     }
                 }, 950);
             }
         }
     }
-
-    boolean hasFavItem;
 
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
@@ -269,34 +256,17 @@ public class StoriesList extends RecyclerView {
         }
     }
 
-
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void favItem(StoryFavoriteEvent event) {
+    public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
         if (InAppStoryService.isNull()) return;
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-        boolean isEmpty = favImages.isEmpty();
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
-        if (event.favStatus) {
-            FavoriteImage favoriteImage = new FavoriteImage(Integer.valueOf(event.getId()), story.getImage(), story.getBackgroundColor());
-            if (!favImages.contains(favoriteImage))
-                favImages.add(0, favoriteImage);
-        } else {
-            for (FavoriteImage favoriteImage : favImages) {
-                if (favoriteImage.getId() == Integer.valueOf(event.getId())) {
-                    favImages.remove(favoriteImage);
-                    break;
-                }
-            }
-        }
+
         if (isFavoriteList) {
             adapter.hasFavItem = false;
-            if (event.favStatus) {
-                if (!adapter.getStoriesIds().contains(event.getId()))
-                    adapter.getStoriesIds().add(0, event.getId());
+            if (favStatus) {
+                if (!adapter.getStoriesIds().contains(id))
+                    adapter.getStoriesIds().add(0, id);
             } else {
-                if (adapter.getStoriesIds().contains(event.getId()))
-                    adapter.getStoriesIds().remove(new Integer(event.getId()));
+                if (adapter.getStoriesIds().contains(id))
+                    adapter.getStoriesIds().remove(new Integer(id));
             }
             adapter.notifyDataSetChanged();
         } else if (isEmpty && !favImages.isEmpty()) {
@@ -329,7 +299,8 @@ public class StoriesList extends RecyclerView {
         }
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
+            InAppStoryService.getInstance().getDownloadManager()
+                    .loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
@@ -349,7 +320,8 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void run() {
                     if (InAppStoryService.isNotNull())
-                        InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .loadStories(new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));

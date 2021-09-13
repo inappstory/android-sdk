@@ -29,17 +29,17 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
-import com.inappstory.sdk.stories.events.ChangeUserIdEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
@@ -97,10 +97,6 @@ public class InAppStoryManager {
 
     private ExceptionCallback exceptionCallback;
 
-
-
-
-    public static boolean disableStatistic = true;
 
 
     /**
@@ -331,7 +327,8 @@ public class InAppStoryManager {
         SharedPreferencesAPI.setContext(builder.context);
         createServiceThread(builder.context, builder.userId);
         if (builder.apiKey == null &&
-                (builder.context.getResources().getString(R.string.csApiKey).isEmpty() || builder.context.getResources().getString(R.string.csApiKey).equals("1"))) {
+                (builder.context.getResources().getString(R.string.csApiKey).isEmpty()
+                        || builder.context.getResources().getString(R.string.csApiKey).equals("1"))) {
             throw new DataException("'apiKey' can't be empty. Set 'csApiKey' in 'constants.xml' or put use 'builder.apiKey()'", new Throwable("config is not valid"));
         }
         long freeSpace = builder.context.getCacheDir().getFreeSpace();
@@ -378,8 +375,10 @@ public class InAppStoryManager {
             if (InAppStoryService.getInstance().getFavoriteImages() != null)
                 InAppStoryService.getInstance().getFavoriteImages().clear();
             InAppStoryService.getInstance().getDownloadManager().refreshLocals();
-            CsEventBus.getDefault().post(new ChangeUserIdEvent());
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
             SessionManager.getInstance().closeSession(sendStatistic, true);
+            OldStatisticManager.getInstance().eventCount = 0;
+            InAppStoryService.getInstance().getDownloadManager().cleanTasks();
             InAppStoryService.getInstance().setUserId(userId);
         } else {
             throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));

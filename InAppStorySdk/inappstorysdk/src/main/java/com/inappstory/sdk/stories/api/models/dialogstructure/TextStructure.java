@@ -1,7 +1,9 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
 public class TextStructure {
-    public int size;
+    public float size;
+    public float lineHeight;
+    public String align;
     public String color;
     public String value;
     public String placeholder;

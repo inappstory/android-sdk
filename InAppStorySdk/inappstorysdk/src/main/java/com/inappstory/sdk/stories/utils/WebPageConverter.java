@@ -12,13 +12,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.DebugEvent;
-import com.inappstory.sdk.stories.serviceevents.GeneratedWebPageEvent;
 
 public class WebPageConverter {
     public Spanned fromHtml(String html) {
@@ -96,7 +92,7 @@ public class WebPageConverter {
             String imgKey = imgKeys.get(i);
             Context con = InAppStoryService.getInstance().getContext();
             File file = cache.get(img);
-            if (file != null && file.exists()) {
+            if (file.exists()) {
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(file);
@@ -123,7 +119,6 @@ public class WebPageConverter {
                     .replace("{{%content}}", innerWebData);
             callback.onConvert(innerWebData, wData, index);
         } catch (Exception e) {
-         //   CsEventBus.getDefault().post(new DebugEvent(e.getMessage()));
             e.printStackTrace();
         }
     }

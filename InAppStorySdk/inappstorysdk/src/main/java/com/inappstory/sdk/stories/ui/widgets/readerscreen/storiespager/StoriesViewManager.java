@@ -2,6 +2,8 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -10,7 +12,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.reader.GameActivity;
@@ -25,9 +26,6 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
-import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
-import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -49,6 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
 import static com.inappstory.sdk.InAppStoryManager.testGenerated;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
@@ -72,8 +71,22 @@ public class StoriesViewManager {
         }
     }
 
+    public void changeSoundStatus() {
+        storiesView.changeSoundStatus();
+    }
+
     public int storyId;
     boolean slideInCache = false;
+
+    public void setPageManager(ReaderPageManager pageManager) {
+        this.pageManager = pageManager;
+    }
+
+    public ReaderPageManager getPageManager() {
+        return pageManager;
+    }
+
+    ReaderPageManager pageManager;
 
     public float getClickCoordinate() {
         return storiesView.getCoordinate();//storiesWebView.coordinate1;
@@ -85,8 +98,6 @@ public class StoriesViewManager {
     boolean lock = true;
 
     public void storyLoaded(int oId, int oInd) {
-        if (storyId != oId || index != oInd) return;
-        Log.e("checkSlidesLoading", "storyLoaded" + oId + " " + oInd);
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
@@ -148,11 +159,11 @@ public class StoriesViewManager {
         loadedIndex = index;
         loadedId = id;
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
-        Log.e("changePriority", "loadStory slideInCache " + id + " " + index + " " + slideInCache);
-        if (!slideInCache) {
-            CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false)); //animation
-        } else {
+        if (slideInCache) {
             innerLoad(story);
+            pageManager.slideLoadedInCache(index);
+        } else {
+            pageManager.storyLoadStart();
         }
     }
 
@@ -160,6 +171,7 @@ public class StoriesViewManager {
         String innerWebData = story.pages.get(index);
         String layout = getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
+
         WebPageConvertCallback callback = new WebPageConvertCallback() {
             @Override
             public void onConvert(String webData, String webLayout, int lastIndex) {
@@ -261,24 +273,36 @@ public class StoriesViewManager {
     public void storyClick(String payload) {
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
             if (InAppStoryService.isConnected()) {
-                CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate()));
+                pageManager.storyClick(null, (int)getClickCoordinate(), false);
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else if (payload.equals("forbidden")) {
             if (InAppStoryService.isConnected()) {
-                CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate(), true));
+                pageManager.storyClick(null, (int)getClickCoordinate(), true);
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else {
-            CsEventBus.getDefault().post(new StoryReaderTapEvent(payload));
+            pageManager.storyClick(payload, (int)getClickCoordinate(), false);
         }
     }
+
 
     public void shareComplete(String stId, boolean success) {
         storiesView.shareComplete(stId, success);
     }
+
+    /*public class StoryShareBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ComponentName clickedComponent = intent.getParcelableExtra(EXTRA_CHOSEN_COMPONENT);
+            if (clickedComponent != null && ScreensManager.getInstance().getTempShareId() != null) {
+                shareComplete(Integer.toString(ScreensManager.getInstance().getTempShareStoryId()),
+                        true);
+            }
+        }
+    }*/
 
     public void share(String id, String data) {
         ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
@@ -297,14 +321,14 @@ public class StoriesViewManager {
             Intent finalIntent = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+               // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ScreensManager.getInstance().setTempShareId(id);
                 ScreensManager.getInstance().setTempShareStoryId(storyId);
-                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                storiesView.getContext().startActivity(finalIntent);
             } else {
                 finalIntent = Intent.createChooser(sendIntent, null);
-                finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                storiesView.getContext().startActivity(finalIntent);
                 ScreensManager.getInstance().setOldTempShareId(id);
                 ScreensManager.getInstance().setOldTempShareStoryId(storyId);
             }
@@ -313,7 +337,7 @@ public class StoriesViewManager {
 
     public void storyStartedEvent() {
         if (InAppStoryService.isNull()) return;
-        CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
+        pageManager.startStoryTimers();
     }
 
 
@@ -322,19 +346,8 @@ public class StoriesViewManager {
     }
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
-        Intent intent2 = new Intent(context, GameActivity.class);
-        intent2.putExtra("gameUrl", gameUrl);
-        intent2.putExtra("storyId", Integer.toString(storyId));
-        intent2.putExtra("slideIndex", index);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        intent2.putExtra("tags", story.tags);
-        intent2.putExtra("slidesCount", story.slidesCount);
-        intent2.putExtra("title", story.title);
-        intent2.putExtra("gameConfig", gameConfig);
-        intent2.putExtra("gameResources", resources);
-        intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
-        CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags, story.slidesCount, index));
-        ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+        ScreensManager.getInstance().openGameReader(context, storyId, index, gameUrl,
+                preloadPath, gameConfig, resources);
     }
 
     public void storyLoaded(int slideIndex) {
@@ -342,20 +355,18 @@ public class StoriesViewManager {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
-            storiesView.stopVideo();
+            stopStory();
         } else {
-            storiesView.playVideo();
+            playStory();
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    storiesView.resumeVideo();
+                    resumeStory();
                 }
             }, 200);
         }
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
-        //   CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
-        CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
     }
 
     public void freezeUI() {
@@ -399,31 +410,39 @@ public class StoriesViewManager {
                 });
     }
 
-    public void stopVideo() {
+    public void stopStory() {
         storiesView.stopVideo();
     }
 
-    public void restartVideo() {
+    public void restartStory() {
         storiesView.restartVideo();
     }
 
-    public void playVideo() {
+    public void playStory() {
         storiesView.playVideo();
     }
 
-    public void pauseVideo() {
-        storiesView.pauseVideo();
-    }
+    public void pauseByClick() {
 
-    public void resumeVideo() {
-        storiesView.resumeVideo();
     }
 
     public void pauseStory() {
-        pauseVideo();
+        storiesView.pauseVideo();
     }
 
     public void resumeStory() {
-        resumeVideo();
+        storiesView.resumeVideo();
+    }
+
+    public void changeIndex(int index) {
+        pageManager.openSlideByIndex(index);
+    }
+
+    public void restartStoryWithDuration(long duration) {
+        pageManager.restartCurrentWithDuration(duration);
+    }
+
+    public void resetTimers() {
+        pageManager.resetCurrentDuration();
     }
 }

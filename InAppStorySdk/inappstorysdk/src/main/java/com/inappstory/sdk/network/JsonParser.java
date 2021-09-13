@@ -106,6 +106,44 @@ public class JsonParser {
     }
 
 
+    public static Map<String, String> toMap(String jsonString) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            return toMap(jsonObject);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static Map<String, String> toMap(JSONObject jsonobj) throws JSONException {
+        Map<String, String> map = new HashMap<String, String>();
+        Iterator<String> keys = jsonobj.keys();
+        while(keys.hasNext()) {
+            String key = keys.next();
+            Object value = jsonobj.get(key);
+            if (value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            } else if (value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            map.put(key, value.toString());
+        }   return map;
+    }
+
+    public static List<Object> toList(JSONArray array) throws JSONException {
+        List<Object> list = new ArrayList<Object>();
+        for(int i = 0; i < array.length(); i++) {
+            Object value = array.get(i);
+            if (value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+            else if (value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            list.add(value);
+        }   return list;
+    }
+
     public static <T> ArrayList<T> listFromJson(String json, Class<T> typeOfT) {
         ArrayList<T> res = new ArrayList<>();
         try {
@@ -226,44 +264,6 @@ public class JsonParser {
 
         }
         return object;
-    }
-
-    public static Map<String, String> toMap(String jsonString) {
-        try {
-            JSONObject jsonObject = new JSONObject(jsonString);
-            return toMap(jsonObject);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static Map<String, String> toMap(JSONObject jsonobj) throws JSONException {
-        Map<String, String> map = new HashMap<String, String>();
-        Iterator<String> keys = jsonobj.keys();
-        while(keys.hasNext()) {
-            String key = keys.next();
-            Object value = jsonobj.get(key);
-            if (value instanceof JSONArray) {
-                value = toList((JSONArray) value);
-            } else if (value instanceof JSONObject) {
-                value = toMap((JSONObject) value);
-            }
-            map.put(key, value.toString());
-        }   return map;
-    }
-
-    public static List<Object> toList(JSONArray array) throws JSONException {
-        List<Object> list = new ArrayList<Object>();
-        for(int i = 0; i < array.length(); i++) {
-            Object value = array.get(i);
-            if (value instanceof JSONArray) {
-                value = toList((JSONArray) value);
-            }
-            else if (value instanceof JSONObject) {
-                value = toMap((JSONObject) value);
-            }
-            list.add(value);
-        }   return list;
     }
 
 }

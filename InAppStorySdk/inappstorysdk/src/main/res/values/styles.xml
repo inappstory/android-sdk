@@ -10,7 +10,7 @@
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
-    <declare-styleable name="RxBlurringView">
+    <declare-styleable name="BlurringView">
         <attr name="cblurRadius" format="integer"/>
         <attr name="cdownsampleFactor" format="integer"/>
         <attr name="coverlayColor" format="color"/>

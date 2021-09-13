@@ -20,13 +20,7 @@ import java.util.List;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.StorySwipeBackEvent;
-import com.inappstory.sdk.stories.events.SwipeDownEvent;
-import com.inappstory.sdk.stories.events.SwipeUpEvent;
 
 /**
  * A {@link FrameLayout} which responds to nested scrolls to create drag-dismissable layouts.
@@ -124,6 +118,22 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         void onDragDropped() {
         }
 
+        void touchPause() {
+
+        }
+
+        void touchResume() {
+
+        }
+
+        void swipeDown() {
+
+        }
+
+        void swipeUp() {
+
+        }
+
     }
 
     @Override
@@ -168,14 +178,13 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
             if (!isPaused) {
                 isPaused = true;
-                CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             }
+            touchPause();
         } else if (mLastActionEvent == MotionEvent.ACTION_UP || mLastActionEvent == MotionEvent.ACTION_CANCEL) {
             if (isPaused) {
                 isPaused = false;
-                CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
             }
-            CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
+            touchResume();
         }
         return super.onInterceptTouchEvent(ev);
     }
@@ -184,9 +193,9 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     public void onStopNestedScroll(View child) {
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         if (totalDisabledDrag > 400) {
-            CsEventBus.getDefault().post(new SwipeUpEvent());
+            swipeUpCallback();
         } else if (st != null && !st.disableClose && totalDisabledDrag < -400) {
-            CsEventBus.getDefault().post(new SwipeDownEvent());
+            swipeDownCallback();
         }
         if (Math.abs(totalDrag) >= dragDismissDistance &&
                 (st != null &&
@@ -200,8 +209,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             } else {
                 if (mLastActionEvent == MotionEvent.ACTION_MOVE) {
                     isPaused = false;
-                    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(false));
-                    CsEventBus.getDefault().post(new StorySwipeBackEvent(InAppStoryService.getInstance().getCurrentId()));
+                    touchResume();
                 }
                 animate()
                         .translationY(0f)
@@ -227,6 +235,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             dragDismissDistance = h * dragDismissFraction;
         }
     }
+
 
     public void addListener(ElasticDragDismissCallback listener) {
         if (callbacks == null) {
@@ -313,6 +322,39 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         }
     }
 
+    private void swipeDownCallback() {
+        if (callbacks != null && !callbacks.isEmpty()) {
+            for (ElasticDragDismissCallback callback : callbacks) {
+                callback.swipeDown();
+            }
+        }
+    }
+
+    private void swipeUpCallback() {
+        if (callbacks != null && !callbacks.isEmpty()) {
+            for (ElasticDragDismissCallback callback : callbacks) {
+                callback.swipeUp();
+            }
+        }
+    }
+
+    private void touchPause() {
+        if (callbacks != null && !callbacks.isEmpty()) {
+            for (ElasticDragDismissCallback callback : callbacks) {
+                callback.touchPause();
+            }
+        }
+    }
+
+    private void touchResume() {
+        if (callbacks != null && !callbacks.isEmpty()) {
+            for (ElasticDragDismissCallback callback : callbacks) {
+                callback.touchResume();
+            }
+        }
+    }
+
+
     private void dispatchDropCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
@@ -372,6 +414,23 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
         public void onDragDropped() {
 
+        }
+
+        @Override
+        public void touchPause() {
+        }
+
+        @Override
+        public void touchResume() {
+        }
+
+
+        @Override
+        public void swipeDown() {
+        }
+
+        @Override
+        public void swipeUp() {
         }
     }
 

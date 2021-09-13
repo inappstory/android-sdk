@@ -1,7 +1,5 @@
 package com.inappstory.sdk.lrudiskcache;
 
-import android.util.Log;
-
 import com.inappstory.sdk.InAppStoryManager;
 
 import java.io.File;
@@ -10,7 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FileManager {
-
     public FileManager(File cacheDir, String subPath) throws IOException {
         this.cacheDir = cacheDir;
         prepare(subPath);
@@ -51,19 +48,20 @@ public class FileManager {
         try {
             cacheDir.mkdirs();
             if (!file.exists()) file.createNewFile();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return file;
     }
 
-    public void delete(String name, boolean ignoreFile) throws IOException {
+    public void delete(String name) throws IOException {
         File file = new File(cacheDir, name);
         if (!file.exists()) {
             file = new File(name);
         }
         if (!file.exists() || !deleteRecursive(file)) {
-            if (ignoreFile) return;
-            throw formatException("Unable to delete file %s", file);
+            return;
+//            throw formatException("Unable to delete file %s", file);
         }
     }
 

@@ -1,24 +1,15 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
-import android.util.Log;
 import android.util.Pair;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.events.PageTaskLoadErrorEvent;
-import com.inappstory.sdk.stories.events.PageTaskLoadedEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.utils.SessionManager;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -225,12 +216,7 @@ class SlidesDownloader {
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
         synchronized (pageTasksLock) {
             pageTasks.get(new Pair<>(storyId, index)).loadType = -1;
-            errorHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(storyId, index));
-                }
-            }, 300);
+            callback.onError(storyId);
         }
     }
 
@@ -245,29 +231,6 @@ class SlidesDownloader {
 
             final Pair<Integer, Integer> key = getMaxPriorityPageTaskKey();
             if (key == null) {
-                handler.postDelayed(queuePageReadRunnable, 100);
-                return;
-            }
-            synchronized (pageTasksLock) {
-              //  firstPriority.remove(key);
-             //   secondPriority.remove(key);
-            }
-            if (StatisticSession.needToUpdate()) {
-                if (!isRefreshing) {
-                    isRefreshing = true;
-                    if (SessionManager.getInstance() != null)
-                        SessionManager.getInstance().openSession(new OpenSessionCallback() {
-                            @Override
-                            public void onSuccess() {
-                                isRefreshing = false;
-                            }
-
-                            @Override
-                            public void onError() {
-                                loadPageError(key.first, key.second);
-                            }
-                        });
-                }
                 handler.postDelayed(queuePageReadRunnable, 100);
                 return;
             }
@@ -293,6 +256,7 @@ class SlidesDownloader {
                 videoUrls.addAll(pageTasks.get(key).videoUrls);
             }
             final String storyId = key.first != null ? Integer.toString(key.first) : null;
+
             for (String url : urls) {
                 if (callback != null) {
                     boolean success = callback.downloadFile(url, storyId, key.second);
@@ -313,7 +277,7 @@ class SlidesDownloader {
                 pageTasks.get(key).loadType = 2;
                 //Log.e("changePriority", key + " ");
             }
-            CsEventBus.getDefault().post(new PageTaskLoadedEvent(key.first, key.second));
+            manager.slideLoaded(key.first, key.second);
             handler.postDelayed(queuePageReadRunnable, 200);
             return null;
 

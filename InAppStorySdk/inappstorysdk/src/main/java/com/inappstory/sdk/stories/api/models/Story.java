@@ -301,7 +301,6 @@ public class Story implements Parcelable {
         if (durations == null) durations = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         id = in.readInt();
-        Log.e("changePriority", "set0 readFromParcel");
         lastIndex = in.readInt();
         title = in.readString();
         source = in.readString();

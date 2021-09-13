@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
-import android.widget.Toast;
 
 import androidx.annotation.WorkerThread;
 
@@ -25,15 +24,12 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.events.DebugEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
 import com.inappstory.sdk.stories.outerevents.SingleLoadError;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.io.IOException;
@@ -155,6 +151,12 @@ public class StoryDownloadManager {
         slidesDownloader.cleanTasks();
     }
 
+    public void cleanTasks() {
+        stories.clear();
+        storyDownloader.cleanTasks();
+        slidesDownloader.cleanTasks();
+    }
+
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
@@ -163,6 +165,43 @@ public class StoryDownloadManager {
             InAppStoryService.getInstance().getFastCache().clearCache();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    List<ReaderPageManager> subscribers = new ArrayList<>();
+    public void addSubscriber(ReaderPageManager manager) {
+        subscribers.add(manager);
+    }
+
+    public void removeSubscriber(ReaderPageManager manager) {
+        subscribers.remove(manager);
+    }
+
+    void slideLoaded(int storyId, int index) {
+        for (ReaderPageManager subscriber : subscribers) {
+            if (subscriber.getStoryId() == storyId) {
+                subscriber.slideLoadedInCache(index);
+                return;
+            }
+        }
+    }
+
+    void storyError(int storyId) {
+        for (ReaderPageManager subscriber : subscribers) {
+            if (subscriber.getStoryId() == storyId) {
+                subscriber.storyLoadError();
+                return;
+            }
+        }
+    }
+
+    void storyLoaded(int storyId) {
+        for (ReaderPageManager subscriber : subscribers) {
+            if (subscriber.getStoryId() == storyId) {
+                subscriber.storyLoadedInCache();
+                return;
+            }
         }
     }
 
@@ -244,12 +283,17 @@ public class StoryDownloadManager {
                 story.isOpened = local.isOpened;
                 stories.set(stories.indexOf(local), story);
                 setStory(story, story.id);
-                CsEventBus.getDefault().post(new StoryCacheLoadedEvent(story.id));
+                storyLoaded(story.id);
                 try {
                     slidesDownloader.addStoryPages(story, loadType);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onError(int storyId) {
+                storyError(storyId);
             }
         }, StoryDownloadManager.this);
 
@@ -264,6 +308,11 @@ public class StoryDownloadManager {
                     return false;
                 }
             }
+
+            @Override
+            public void onError(int storyId) {
+                storyError(storyId);
+            }
         }, StoryDownloadManager.this);
     }
 
@@ -275,6 +324,10 @@ public class StoryDownloadManager {
         }
     }
 
+
+    public void reloadStory(int storyId) {
+        storyDownloader.reloadPage(storyId, new ArrayList<Integer>());
+    }
 
     public void reloadPage(int storyId, int index, ArrayList<Integer> addIds) {
         if (storyDownloader.reloadPage(storyId, addIds)) {
@@ -438,6 +491,12 @@ public class StoryDownloadManager {
                         loadStoriesCallback.storiesLoaded(ids);
                     }
                 }
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                super.onError(code, message);
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             }
         };
 

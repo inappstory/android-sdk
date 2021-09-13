@@ -1,29 +1,15 @@
 package com.inappstory.sdk.stories.api.models;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
@@ -32,7 +18,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static com.inappstory.sdk.InAppStoryManager.disableStatistic;
 
 public class StatisticManager {
     private static StatisticManager INSTANCE;
@@ -69,7 +54,8 @@ public class StatisticManager {
     private ArrayList<StatisticTask> faketasks = new ArrayList<>();
 
     public void addTask(StatisticTask task) {
-        if (disableStatistic) return;
+        if (InAppStoryService.isNotNull() &&
+                !InAppStoryService.getInstance().getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -79,7 +65,8 @@ public class StatisticManager {
 
 
     public void addFakeTask(StatisticTask task) {
-        if (disableStatistic) return;
+        if (InAppStoryService.isNotNull() &&
+                !InAppStoryService.getInstance().getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -111,7 +98,9 @@ public class StatisticManager {
     public static StatisticManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new StatisticManager();
-            if (disableStatistic) return INSTANCE;
+
+            if (InAppStoryService.isNotNull() &&
+                    !InAppStoryService.getInstance().getSendNewStatistic()) return INSTANCE;
             INSTANCE.init();
         }
         return INSTANCE;
@@ -133,11 +122,10 @@ public class StatisticManager {
     private Handler handler = new Handler();
     private HandlerThread thread;
 
-    @CsSubscribe
-    public void pauseStoryEvent(PauseStoryReaderEvent event) {
+    public void pauseStoryEvent(boolean withBg) {
         if (INSTANCE != this) return;
         try {
-            if (event.isWithBackground()) {
+            if (withBg) {
                 isBackgroundPause = true;
                 pauseTimer = System.currentTimeMillis();
             }
@@ -151,10 +139,9 @@ public class StatisticManager {
 
     boolean backPaused = false;
 
-    @CsSubscribe
-    public void resumeStoryEvent(ResumeStoryReaderEvent event) {
+    public void resumeStoryEvent(boolean withBg) {
         if (INSTANCE != this) return;
-        if (event.isWithBackground()) {
+        if (withBg) {
             if (isBackgroundPause) {
                 pauseTime += (System.currentTimeMillis() - pauseTimer);
             }
@@ -170,7 +157,6 @@ public class StatisticManager {
         handler = new Handler(thread.getLooper());
         String tasksJson = SharedPreferencesAPI.getString(TASKS_KEY);
         String fakeTasksJson = SharedPreferencesAPI.getString(FAKE_TASKS_KEY);
-        CsEventBus.getDefault().register(this);
         synchronized (statisticTasksLock) {
             if (tasksJson != null) {
                 tasks = JsonParser.listFromJson(tasksJson, StatisticTask.class);
@@ -464,7 +450,8 @@ public class StatisticManager {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    if (!InAppStoryService.getInstance().getSendStatistic()) return true;
+                    if (!InAppStoryService.getInstance().getSendNewStatistic()) return true;
+
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,
                             task.sessionId,

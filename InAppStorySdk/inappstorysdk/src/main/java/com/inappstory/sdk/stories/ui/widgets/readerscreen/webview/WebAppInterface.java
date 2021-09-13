@@ -2,16 +2,13 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
-import com.inappstory.sdk.stories.events.ChangeIndexEvent;
-import com.inappstory.sdk.stories.events.ClearDurationEvent;
-import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
@@ -26,70 +23,86 @@ public class WebAppInterface {
         this.manager = manager;
     }
 
+    static String getMethodName() {
+        final StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+        return ste[4].getMethodName();
+    }
+
+    private void logMethod(String payload) {
+        Log.e("JS_method_test", manager.storyId + " " + getMethodName() + " " + payload);
+    }
+
     /**
      * Show a toast from the web page
      */
     @JavascriptInterface
     public void storyClick(String payload) {
         manager.storyClick(payload);
+        logMethod(payload);
     }
 
 
     @JavascriptInterface
     public void storyShowSlide(int index) {
         if (manager.index != index) {
-            CsEventBus.getDefault().post(new ChangeIndexEvent(index));
+            manager.changeIndex(index);
         }
+        logMethod("" + index);
     }
 
 
     @JavascriptInterface
     public void openGameReader(String gameFile, String coverFile, String initCode, String gameResources) {
         manager.openGameReader(gameFile, coverFile, initCode, gameResources);
+        logMethod(gameFile);
     }
 
     @JavascriptInterface
     public void resetTimers() {
-        CsEventBus.getDefault().post(new ClearDurationEvent(manager.storyId, manager.index));
+        manager.resetTimers();
+        logMethod("");
     }
 
     @JavascriptInterface
-    public void storyShowNextSlide(final long delay) {
+    public void storyShowNextSlide(long delay) {
         if (delay != 0) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    CsEventBus.getDefault().post(new RestartStoryReaderEvent(manager.storyId, manager.index, delay));
-                }
-            }, 100);
+            Log.e("jsDuration", delay + " showNext");
+            manager.restartStoryWithDuration(delay);
         } else {
-            CsEventBus.getDefault().post(new ChangeIndexEvent(manager.index + 1));
+            manager.changeIndex(manager.index + 1);
         }
+        logMethod("" + delay);
     }
 
     @JavascriptInterface
     public void storyShowTextInput(String id, String data) {
         manager.storyShowTextInput(id, data);
+        logMethod("");
     }
 
     @JavascriptInterface
     public void storyStarted() {
         manager.storyStartedEvent();
+        logMethod("");
     }
 
     @JavascriptInterface
     public void storyStarted(double startTime) {
         manager.storyStartedEvent();
+        logMethod("" + startTime);
     }
 
     @JavascriptInterface
     public void storyResumed(double startTime) {
         manager.storyResumedEvent(startTime);
+
+        logMethod("" + startTime);
     }
 
     @JavascriptInterface
     public void storyLoaded() {
         manager.storyLoaded(-1);
+        logMethod("");
     }
 
     @JavascriptInterface
@@ -100,46 +113,57 @@ public class WebAppInterface {
         } else {
             manager.storyLoaded(-1);
         }
+        logMethod(data + "");
     }
 
 
     @JavascriptInterface
     public void storyStatisticEvent(String name, String data) {
         StatisticManager.getInstance().sendWidgetStoryEvent(name, data);
+        logMethod(name + " " + data);
     }
 
     @JavascriptInterface
     public void emptyLoaded() {
+        logMethod("");
     }
 
     @JavascriptInterface
     public void share(String id, String data) {
         manager.share(id, data);
+        logMethod(id + " " + data);
     }
 
     @JavascriptInterface
     public void storyFreezeUI() {
         manager.freezeUI();
+        logMethod("");
     }
 
 
     @JavascriptInterface
     public void storySendData(String data) {
         manager.storySendData(data);
+        logMethod(data);
     }
 
     @JavascriptInterface
     public void storySetLocalData(String data, boolean sendToServer) {
-        manager.storySetLocalData(data, sendToServer);
-
+        synchronized (manager) {
+            manager.storySetLocalData(data, sendToServer);
+            logMethod(data + " " + sendToServer);
+        }
     }
 
 
     @JavascriptInterface
     public String storyGetLocalData() {
-        String res = KeyValueStorage.getString("story" + manager.storyId
-                + "__" + InAppStoryService.getInstance().getUserId());
-        return res == null ? "" : res;
+        synchronized (manager) {
+            String res = KeyValueStorage.getString("story" + manager.storyId
+                    + "__" + InAppStoryService.getInstance().getUserId());
+            logMethod(res != null ? res : "");
+            return res == null ? "" : res;
+        }
     }
 
 
@@ -147,5 +171,6 @@ public class WebAppInterface {
     public void defaultTap(String val) {
 
 
+        logMethod(val);
     }
 }

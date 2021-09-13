@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -15,28 +16,26 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
@@ -79,7 +78,6 @@ public class ContactDialog {
 
     private int flags = 0;
 
-
     private void setTypeface(AppCompatTextView textView, boolean bold, boolean italic, boolean secondary) {
         Typeface t = AppearanceManager.getCommonInstance().getFont(secondary, bold, italic);
         int boldV = bold ? 1 : 0;
@@ -93,6 +91,12 @@ public class ContactDialog {
         int italicV = italic ? 2 : 0;
         textView.setTypeface(t != null ? t : textView.getTypeface(), boldV + italicV);
     }
+
+    private int getSize(float size) {
+        return (int) (factor * size);
+    }
+
+    float factor = 1;
 
     public void showDialog(final Activity activity) {
         final Dialog dialog = new Dialog(activity, R.style.DialogTheme);
@@ -111,6 +115,12 @@ public class ContactDialog {
         }
         final FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
         FrameLayout contentContainer = dialog.findViewById(R.id.contentContainer);
+        contentContainer.setPadding(
+                getSize(dialogStructure.configV2.main.padding.left),
+                getSize(dialogStructure.configV2.main.padding.top),
+                getSize(dialogStructure.configV2.main.padding.right),
+                getSize(dialogStructure.configV2.main.padding.bottom)
+        );
         //  contentContainer.setUseCompatPadding(true);
         final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
@@ -120,7 +130,7 @@ public class ContactDialog {
             editContainer.setElevation(0f);
         }
         final TextMultiInput editText = dialog.findViewById(R.id.editText);
-        String type = dialogStructure.input.type;
+        String type = dialogStructure.configV2.main.input.type;
         int inttype = TEXT;
         if (type.equals("email")) inttype = MAIL;
         if (type.equals("tel")) inttype = PHONE;
@@ -144,87 +154,167 @@ public class ContactDialog {
         }
         final int dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
         int dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);
-        text.setText(dialogStructure.text.value);
-        setTypeface(text, dialogStructure.text.isBold(),
-                dialogStructure.text.isItalic(),
-                dialogStructure.text.isSecondary());
-        text.setTextColor(hex2color(dialogStructure.text.color));
-        text.setTextSize((int) (coeff * dialogStructure.text.size));
-        editText.setHint(dialogStructure.input.text.placeholder);
 
-        editText.setTextColor(hex2color(dialogStructure.input.text.color));
-        editText.setHintTextColor(hex2color(dialogStructure.input.text.color));
-        editText.setTextSize((int) (coeff * dialogStructure.input.text.size));
-        setTypeface(editText.getMainText(), dialogStructure.input.text.isBold(),
-                dialogStructure.input.text.isItalic(),
-                dialogStructure.input.text.isSecondary());
+        Configuration configuration = activity.getResources().getConfiguration();
+        int screenWidthDp = configuration.screenWidthDp;
+
+        factor = (1f * screenWidthDp) / dialogStructure.configV2.factor;
+        text.setText(dialogStructure.configV2.main.question.text.value);
+        text.setTextColor(hex2color(dialogStructure.configV2.main.question.text.color));
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, getSize(dialogStructure.configV2.main.question.text.size));
+        text.setPadding(
+                getSize(dialogStructure.configV2.main.question.padding.left),
+                getSize(dialogStructure.configV2.main.question.padding.top),
+                getSize(dialogStructure.configV2.main.question.padding.right),
+                getSize(dialogStructure.configV2.main.question.padding.bottom)
+        );
+        text.setLineSpacing(0,
+                dialogStructure.configV2.main.question.text.lineHeight /
+                        dialogStructure.configV2.main.question.text.size);
+        setTypeface(text, dialogStructure.configV2.main.question.text.isBold(),
+                dialogStructure.configV2.main.question.text.isItalic(),
+                dialogStructure.configV2.main.question.text.isSecondary());
+
+        switch (dialogStructure.configV2.main.question.text.align) {
+            case "right":
+                text.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                break;
+            case "center":
+                text.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                break;
+            default:
+                text.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+                break;
+        }
+
+        editText.setHint(dialogStructure.configV2.main.input.text.placeholder);
+        editText.setTextColor(hex2color(dialogStructure.configV2.main.input.text.color));
+        editText.setHintTextColor(hex2color(dialogStructure.configV2.main.input.text.color));
+        editText.setTextSize(getSize(dialogStructure.configV2.main.input.text.size));
+
+        editBorderContainer.setPadding(
+                getSize(dialogStructure.configV2.main.input.padding.left),
+                getSize(dialogStructure.configV2.main.input.padding.top),
+                getSize(dialogStructure.configV2.main.input.padding.right),
+                getSize(dialogStructure.configV2.main.input.padding.bottom)
+        );
+        if (inttype != PHONE) {
+            editText.getMainText().setLineSpacing(0,
+                    dialogStructure.configV2.main.input.text.lineHeight /
+                            dialogStructure.configV2.main.input.text.size);
+            switch (dialogStructure.configV2.main.input.text.align) {
+                case "right":
+                    editText.getMainText().setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                    break;
+                case "center":
+                    editText.getMainText().setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    break;
+                default:
+                    editText.getMainText().setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+                    break;
+            }
+        }
+        setTypeface(editText.getMainText(), dialogStructure.configV2.main.input.text.isBold(),
+                dialogStructure.configV2.main.input.text.isItalic(),
+                dialogStructure.configV2.main.input.text.isSecondary());
 
         if (inttype == PHONE) {
 
-            setTypeface(editText.getCountryCodeText(), dialogStructure.input.text.isBold(),
-                    dialogStructure.input.text.isItalic(),
-                    dialogStructure.input.text.isSecondary());
+            setTypeface(editText.getCountryCodeText(), dialogStructure.configV2.main.input.text.isBold(),
+                    dialogStructure.configV2.main.input.text.isItalic(),
+                    dialogStructure.configV2.main.input.text.isSecondary());
 
-            setTypeface(editText.getPhoneNumberHint(), dialogStructure.input.text.isBold(),
-                    dialogStructure.input.text.isItalic(),
-                    dialogStructure.input.text.isSecondary());
+            setTypeface(editText.getPhoneNumberHint(), dialogStructure.configV2.main.input.text.isBold(),
+                    dialogStructure.configV2.main.input.text.isItalic(),
+                    dialogStructure.configV2.main.input.text.isSecondary());
         }
-
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) editContainer.getLayoutParams();
-        int borderWidth = Sizes.dpToPxExt(dialogStructure.input.border.width);
+        int borderWidth = Sizes.dpToPxExt(getSize(dialogStructure.configV2.main.input.border.width));
         lp.setMargins(borderWidth,
                 borderWidth,
                 borderWidth,
                 borderWidth);
         editContainer.setLayoutParams(lp);
-        buttonText.setText(dialogStructure.button.text.value);
-        buttonText.setTextColor(hex2color(dialogStructure.button.text.color));
-        buttonText.setTextSize((int) (coeff * dialogStructure.button.text.size));
-        setTypeface(buttonText, dialogStructure.button.text.isBold(),
-                dialogStructure.button.text.isItalic(),
-                dialogStructure.button.text.isSecondary());
-        int rad = Sizes.dpToPxExt(dialogStructure.border.radius);
+
+        buttonText.setPadding(
+                getSize(dialogStructure.configV2.main.button.padding.left),
+                getSize(dialogStructure.configV2.main.button.padding.top),
+                getSize(dialogStructure.configV2.main.button.padding.right),
+                getSize(dialogStructure.configV2.main.button.padding.bottom)
+        );
+        buttonText.setText(dialogStructure.configV2.main.button.text.value);
+        buttonText.setTextColor(hex2color(dialogStructure.configV2.main.button.text.color));
+        buttonText.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                getSize(dialogStructure.configV2.main.button.text.size));
+        buttonText.setLineSpacing(0,
+                dialogStructure.configV2.main.button.text.lineHeight /
+                        dialogStructure.configV2.main.button.text.size);
+        setTypeface(buttonText, dialogStructure.configV2.main.button.text.isBold(),
+                dialogStructure.configV2.main.button.text.isItalic(),
+                dialogStructure.configV2.main.button.text.isSecondary());
+        switch (dialogStructure.configV2.main.button.text.align) {
+            case "right":
+                buttonText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                break;
+            case "center":
+                buttonText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                break;
+            default:
+                buttonText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+                break;
+        }
+        int rad = Sizes.dpToPxExt(getSize(dialogStructure.configV2.main.border.radius));
 
         GradientDrawable buttonBackgroundGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.button.background.color), hex2color(dialogStructure.button.background.color)});
+                new int[]{hex2color(dialogStructure.configV2.main.button.background.color),
+                        hex2color(dialogStructure.configV2.main.button.background.color)});
         buttonBackgroundGradient.setCornerRadii(new float[]{0, 0, 0, 0, rad, rad, rad, rad});
 
         buttonBackground.setBackground(buttonBackgroundGradient);
 
         final GradientDrawable editBorderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.input.border.color),
-                        hex2color(dialogStructure.input.border.color)});
-        editBorderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
+                new int[]{hex2color(dialogStructure.configV2.main.input.border.color),
+                        hex2color(dialogStructure.configV2.main.input.border.color)});
+        editBorderContainerGradient.setCornerRadius(Sizes.dpToPxExt(
+                getSize(dialogStructure.configV2.main.input.border.radius)));
 
         final GradientDrawable editBorderContainerErrorGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[]{Color.RED,
                         Color.RED});
-        editBorderContainerErrorGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
+        editBorderContainerErrorGradient.setCornerRadius(Sizes.dpToPxExt(
+                getSize(dialogStructure.configV2.main.input.border.radius)));
 
         GradientDrawable editContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.input.background.color), hex2color(dialogStructure.input.background.color)});
-        editContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.input.border.radius));
+                new int[]{hex2color(dialogStructure.configV2.main.input.background.color),
+                        hex2color(dialogStructure.configV2.main.input.background.color)});
+        editContainerGradient.setCornerRadius(Sizes.dpToPxExt(
+                getSize(dialogStructure.configV2.main.input.border.radius)));
 
         final GradientDrawable borderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.border.color), hex2color(dialogStructure.border.color)});
-        borderContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
+                new int[]{hex2color(dialogStructure.configV2.main.border.color),
+                        hex2color(dialogStructure.configV2.main.border.color)});
+        borderContainerGradient.setCornerRadius(Sizes.dpToPxExt(
+                getSize(dialogStructure.configV2.main.border.radius)));
 
         GradientDrawable contentContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.background.color), hex2color(dialogStructure.background.color)});
-        contentContainerGradient.setCornerRadius(Sizes.dpToPxExt(dialogStructure.border.radius));
+                new int[]{hex2color(dialogStructure.configV2.main.background.color),
+                        hex2color(dialogStructure.configV2.main.background.color)});
+        contentContainerGradient.setCornerRadius(Sizes.dpToPxExt(
+                getSize(dialogStructure.configV2.main.border.radius)));
 
         editBorderContainer.setBackground(editBorderContainerGradient);
         editContainer.setBackground(editContainerGradient);
         borderContainer.setBackground(borderContainerGradient);
         contentContainer.setBackground(contentContainerGradient);
         if (inttype == PHONE) {
-            editText.getDivider().setBackgroundColor(hex2color(dialogStructure.background.color));
+            editText.getDivider().setBackgroundColor(
+                    hex2color(dialogStructure.configV2.main.background.color));
         }
         if (inttype == PHONE) {
             editText.getCountryCodeText().addTextChangedListener(new TextWatcher() {
@@ -236,7 +326,7 @@ public class ContactDialog {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     editBorderContainer.setBackground(editBorderContainerGradient);
-                    editText.setTextColor(hex2color(dialogStructure.input.text.color));
+                    editText.setTextColor(hex2color(dialogStructure.configV2.main.input.text.color));
                 }
 
                 @Override
@@ -257,7 +347,7 @@ public class ContactDialog {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 editBorderContainer.setBackground(editBorderContainerGradient);
-                editText.setTextColor(hex2color(dialogStructure.input.text.color));
+                editText.setTextColor(hex2color(dialogStructure.configV2.main.input.text.color));
             }
 
             @Override
@@ -269,7 +359,8 @@ public class ContactDialog {
                     } else {
                         buttonBackground.setVisibility(View.VISIBLE);
                     }
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
 
                 editText.getMainText().removeTextChangedListener(this);
 
@@ -284,7 +375,7 @@ public class ContactDialog {
         });
         dialog.getWindow().setLayout(dialogWidth, WRAP_CONTENT);
         dialog.show();
-        CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+        StatisticManager.getInstance().pauseStoryEvent(false);
         final AppCompatEditText et;
         if (inttype == PHONE) {
             et = editText.getCountryCodeText();
@@ -298,11 +389,10 @@ public class ContactDialog {
                 View view = activity.getCurrentFocus();
                 editText.clearFocus();
                 if (view != null) {
-                    Log.d("closeKeyboard", "close");
 
                     InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
+                    StatisticManager.getInstance().resumeStoryEvent(true);
                 }
 
 

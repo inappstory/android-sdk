@@ -8,17 +8,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
-import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 
 public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
@@ -34,11 +29,15 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
 
     String readerSettings;
 
-    public ReaderPagerAdapter(@NonNull FragmentManager fm, String readerSettings, List<Integer> ids) {
+    ReaderManager manager;
+
+    public ReaderPagerAdapter(@NonNull FragmentManager fm, String readerSettings, List<Integer> ids,
+                              ReaderManager manager) {
         super(fm);
         this.storiesIds.clear();
         this.storiesIds.addAll(ids);
         this.readerSettings = readerSettings;
+        this.manager = manager;
     }
 
     @Override
@@ -74,6 +73,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
             a.putInt("story_id", storiesIds.get(position));
             a.putString(CS_READER_SETTINGS, readerSettings);
             frag.setArguments(a);
+            frag.parentManager = manager;
             fragMap.put(position, frag);
         }
 

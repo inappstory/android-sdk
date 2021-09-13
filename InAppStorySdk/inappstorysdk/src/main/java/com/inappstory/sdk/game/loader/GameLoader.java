@@ -100,7 +100,6 @@ public class GameLoader {
                 String fileName = resource.key;
                 if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
                     continue;
-
                 Downloader.downloadOrGetGameFile(url, fileName, InAppStoryService.getInstance().getCommonCache(),
                         new File(filePath.getAbsolutePath() + "/" + fileName),
                         null);
@@ -161,7 +160,8 @@ public class GameLoader {
                         if (InAppStoryService.getInstance().getCommonCache().get(directory.getName()) == null) {
                             InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         }
-                    } else if (file.exists()) {
+                    }
+                    else if (file.exists()) {
                         FileUnzipper.unzip(file, directory);
                         InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),

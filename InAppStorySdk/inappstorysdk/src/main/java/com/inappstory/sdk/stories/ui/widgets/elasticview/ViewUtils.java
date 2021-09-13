@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.elasticview;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -24,6 +25,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.palette.graphics.Palette;
 
 /**
@@ -54,6 +56,7 @@ public class ViewUtils {
         return(!canMove || dm.widthPixels < dm.heightPixels);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static RippleDrawable createRipple(@ColorInt int color,
                                               @FloatRange(from = 0f, to = 1f) float alpha,
                                               boolean bounded) {
@@ -62,6 +65,7 @@ public class ViewUtils {
                 bounded ? new ColorDrawable(Color.WHITE) : null);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static RippleDrawable createRipple(@Nullable Palette palette,
                                               @FloatRange(from = 0f, to = 1f) float darkAlpha,
                                               @FloatRange(from = 0f, to = 1f) float lightAlpha,
@@ -194,6 +198,7 @@ public class ViewUtils {
         }
     });
 
+    @RequiresApi(21)
     public static final ViewOutlineProvider CIRCULAR_OUTLINE = new ViewOutlineProvider() {
         @Override
         public void getOutline(View view, Outline outline) {

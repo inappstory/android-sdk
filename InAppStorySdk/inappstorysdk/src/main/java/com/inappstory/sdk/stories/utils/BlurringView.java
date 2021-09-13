@@ -32,11 +32,11 @@ public class BlurringView extends View {
 
         initializeRenderScript(context);
 
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RxBlurringView);
-        setBlurRadius(a.getInt(R.styleable.RxBlurringView_cblurRadius, defaultBlurRadius));
-        setDownsampleFactor(a.getInt(R.styleable.RxBlurringView_cdownsampleFactor,
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BlurringView);
+        setBlurRadius(a.getInt(R.styleable.BlurringView_cblurRadius, defaultBlurRadius));
+        setDownsampleFactor(a.getInt(R.styleable.BlurringView_cdownsampleFactor,
                 defaultDownsampleFactor));
-        setOverlayColor(a.getColor(R.styleable.RxBlurringView_coverlayColor, defaultOverlayColor));
+        setOverlayColor(a.getColor(R.styleable.BlurringView_coverlayColor, defaultOverlayColor));
         a.recycle();
     }
 

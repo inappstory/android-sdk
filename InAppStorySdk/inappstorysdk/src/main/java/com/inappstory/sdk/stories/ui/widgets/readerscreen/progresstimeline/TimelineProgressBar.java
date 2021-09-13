@@ -1,7 +1,11 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,8 +18,12 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.R;
 
+import java.util.Random;
+
 public class TimelineProgressBar extends FrameLayout {
     Context context;
+
+    String id;
 
     public TimelineProgressBar(@NonNull Context context) {
         super(context);
@@ -28,24 +36,11 @@ public class TimelineProgressBar extends FrameLayout {
 
     public void setDuration(Long duration) {
         this.duration = duration;
-        animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
-        animation.setInterpolator(new LinearInterpolator());
-        animation.setDuration(getDuration());
-        animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                setProgress((float)animation.getAnimatedValue());
-            }
-        });
+
     }
 
     Long duration;
 
-    public ValueAnimator getTimelineAnimation() {
-        return animation;
-    }
-
-    ValueAnimator animation;
 
     public Long getDuration() {
         if (duration == null || duration == 0) return 1000L;
@@ -53,14 +48,28 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void clear() {
-        if (progressForeground.getVisibility() == VISIBLE)
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (progressForeground.getVisibility() == VISIBLE) {
+                    progressForeground.setVisibility(INVISIBLE);
+                    progressForeground.setScaleX(0.0001f);
+                }
+            }
+        });
+    }
+
+    public void clearInLooper() {
+        if (progressForeground.getVisibility() == VISIBLE) {
             progressForeground.setVisibility(INVISIBLE);
+            progressForeground.setScaleX(0.0001f);
+        }
     }
 
     public void setMin() {
         if (progressForeground.getVisibility() == INVISIBLE)
             progressForeground.setVisibility(VISIBLE);
-        progressForeground.setScaleX(1f / getDuration());
+        progressForeground.setScaleX(0.0001f);
         //progressForeground.setVisibility(INVISIBLE);
     }
 
@@ -68,7 +77,8 @@ public class TimelineProgressBar extends FrameLayout {
     public void setMax() {
         if (progressForeground.getVisibility() == INVISIBLE)
             progressForeground.setVisibility(VISIBLE);
-        progressForeground.setScaleX(1);
+        progressForeground.setScaleX(1f);
+
         //progressForeground.setVisibility(INVISIBLE);
     }
 
@@ -85,31 +95,176 @@ public class TimelineProgressBar extends FrameLayout {
         init();
     }
 
-    public void setProgress(float progress) {
+    //ValueAnimator currentAnimation;
+
+    boolean isActive = false;
+
+    public void stop() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                progressForeground.clearAnimation();
+                progressForeground.animate().cancel();
+                /*if (currentAnimation != null && currentAnimation.isStarted())
+                    currentAnimation.cancel();
+                currentAnimation = null;
+                Log.e("checkCurrentAnimation", id + " " + (currentAnimation != null) + " stop");*/
+            }
+        });
+    }
+
+    public void stopInLooper() {
+        progressForeground.clearAnimation();
+        progressForeground.animate().cancel();
+  /*      if (currentAnimation != null && currentAnimation.isStarted()) {
+
+            currentAnimation.cancel();
+        }
+       // currentAnimation = null;
+        Log.e("checkCurrentAnimation", id + " " + (currentAnimation != null) + " stop");*/
+    }
+
+    public void start() {
+        if (!isActive) return;
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                progressForeground.clearAnimation();
+                progressForeground.animate().cancel();
+                progressForeground.setScaleX(0.0001f);
+                if (duration == null || duration == 0) return;
+                progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float val = (1f * animation.getCurrentPlayTime()) / animation.getDuration();
+                        if (isActive)
+                            progressForeground.setScaleX(val);
+                        //scaleX(1f).
+                    }
+                }).setDuration(getDuration()).start();
+/*                if (currentAnimation != null) {
+                    currentAnimation.start();
+                    Log.e("checkAnimStart", id + " " + getDuration());
+                }*/
+            }
+        }, 100);
+    }
+
+
+    public void pause() {
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                progressForeground.clearAnimation();
+                progressForeground.animate().cancel();
+                // if (currentAnimation == null) return;
+                // currentAnimation.pause();
+            }
+        });
+    }
+
+    public void restart() {
+        if (!isActive) return;
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              /*  if (currentAnimation == null) return;
+                if (!currentAnimation.isStarted() || currentAnimation.isPaused()) {
+                    currentAnimation.start();
+
+                    Log.e("checkAnimStart", "restart " + id + " " + getDuration());
+                }*/
+                progressForeground.clearAnimation();
+                progressForeground.animate().cancel();
+                progressForeground.setScaleX(0.0001f);
+                if (duration == null || duration == 0) return;
+                progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float val = (1f * animation.getCurrentPlayTime()) / animation.getDuration();
+                        if (isActive)
+                            progressForeground.setScaleX(Math.min(val, 1f));
+                        //scaleX(1f).
+                    }
+                }).setDuration(getDuration()).start();
+            }
+        }, 100);
+    }
+
+    public void resume() {
+        if (!isActive) return;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (duration == null || duration == 0) return;
+                long dur = (long) (getDuration() * Math.max(0f, 1f - progressForeground.getScaleX()));
+                Log.e("jsDuration", getDuration() + " " + (1f - progressForeground.getScaleX()));
+                progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+
+                        float val = 1f - ((1f * animation.getDuration() - animation.getCurrentPlayTime()) / (getDuration()));
+                        if (isActive)
+                            progressForeground.setScaleX(Math.min(Math.max(0f, val), 1f));
+                        //scaleX(1f).
+                    }
+                }).setDuration(dur).start();
+
+               /* if (currentAnimation == null) return;
+                currentAnimation.resume();*/
+            }
+        });
+    }
+
+    public void createAnimation() {
+        // if (currentAnimation != null) currentAnimation.cancel();
+      /*  if (currentAnimation != null && currentAnimation.isStarted()) {
+            try {
+                currentAnimation.cancel();
+            } catch (Exception e) {}
+        }
+        currentAnimation = null;
+        currentAnimation = ValueAnimator.ofFloat(0.0001f, 1f);
+        currentAnimation.setInterpolator(new LinearInterpolator());
+        currentAnimation.setDuration(getDuration());
+        currentAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                Log.e("checkCurrentAnimation", "onAnimationUpdate " + id);
+                setProgress((float) animation.getAnimatedValue());
+            }
+        });
+        Log.e("checkCurrentAnimation", id + " " + (currentAnimation != null) + " create");*/
+    }
+
+    public void setProgress(final float progress) {
         if (duration == null || duration == 0) {
             clear();
         } else {
             if (progress <= 0) {
                 clear();
             } else {
-                progressForeground.setScaleX(progress);
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (progressForeground.getVisibility() == INVISIBLE) {
+                            progressForeground.setVisibility(VISIBLE);
+                        }
+                        progressForeground.setScaleX(progress);
+                    }
+                });
             }
         }
 
     }
 
     private void init() {
+        id = new Random().nextDouble() + "";
         LayoutInflater.from(context).inflate(R.layout.cs_progress_bar, this);
         progressForeground = findViewById(R.id.progress_foreground);
         progressBackground = findViewById(R.id.progress_background);
-        progressForeground.setPivotX(-progressForeground.getWidth()/2);
-        animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
-        animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                setProgress((float)animation.getAnimatedValue());
-            }
-        });
+        progressForeground.setPivotX(-progressForeground.getWidth() / 2);
     }
 
 }

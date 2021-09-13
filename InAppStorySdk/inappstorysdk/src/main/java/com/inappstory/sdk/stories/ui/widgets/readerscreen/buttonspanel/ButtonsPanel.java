@@ -75,7 +75,7 @@ public class ButtonsPanel extends LinearLayout {
 
     public void init() {
         inflate(getContext(), R.layout.cs_buttons_panel, this);
-        manager = new ButtonsPanelManager();
+        manager = new ButtonsPanelManager(this);
         like = findViewById(R.id.likeButton);
         dislike = findViewById(R.id.dislikeButton);
         favorite = findViewById(R.id.favoriteButton);
@@ -209,7 +209,12 @@ public class ButtonsPanel extends LinearLayout {
     public void shareClick() {
         share.setEnabled(false);
         share.setClickable(false);
-        manager.shareClick(new ButtonClickCallback() {
+        manager.shareClick(getContext(), new ButtonsPanelManager.ShareButtonClickCallback() {
+            @Override
+            void onClick() {
+                manager.getParentManager().pauseSlide(false);
+            }
+
             @Override
             public void onSuccess(int val) {
                 share.setEnabled(true);

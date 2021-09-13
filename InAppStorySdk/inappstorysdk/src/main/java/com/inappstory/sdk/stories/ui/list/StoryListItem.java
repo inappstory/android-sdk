@@ -68,16 +68,14 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             v = getListItem.getView();
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
+            View container = v.findViewById(R.id.container);
             if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
                     && manager.csListItemInterface().getVideoView() == null)) {
-                boolean lpC = false;
                 if (manager.csListItemHeight() != null) {
-                    v.findViewById(R.id.container).getLayoutParams().height = manager.csListItemHeight();
-                    lpC = true;
+                    container.getLayoutParams().height = manager.csListItemHeight();
                 }
                 if (manager.csListItemWidth() != null) {
-                    v.findViewById(R.id.container).getLayoutParams().width = manager.csListItemWidth();
-                    lpC = true;
+                    container.getLayoutParams().width = manager.csListItemWidth();
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
@@ -106,14 +104,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_video_inner_item, null, false);
             if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
                     && manager.csListItemInterface().getVideoView() == null)) {
-                boolean lpC = false;
+
+                View container = v.findViewById(R.id.container);
                 if (manager.csListItemHeight() != null) {
-                    v.findViewById(R.id.container).getLayoutParams().height = manager.csListItemHeight();
-                    lpC = true;
+                    container.getLayoutParams().height = manager.csListItemHeight();
                 }
                 if (manager.csListItemWidth() != null) {
-                    v.findViewById(R.id.container).getLayoutParams().width = manager.csListItemWidth();
-                    lpC = true;
+                    container.getLayoutParams().width = manager.csListItemWidth();
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
@@ -192,12 +189,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         }
         RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
         boolean lpC = false;
+        View outerLayout = itemView.findViewById(R.id.outerLayout);
         if (manager.csListItemHeight() != null) {
-            itemView.findViewById(R.id.outerLayout).getLayoutParams().height = manager.csListItemHeight();
+            outerLayout.getLayoutParams().height = manager.csListItemHeight();
             lpC = true;
         }
         if (manager.csListItemWidth() != null) {
-            itemView.findViewById(R.id.outerLayout).getLayoutParams().width = manager.csListItemWidth();
+            outerLayout.getLayoutParams().width = manager.csListItemWidth();
             lpC = true;
         }
         if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();

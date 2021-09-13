@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.exceptions.DataException;
+
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
@@ -27,15 +25,11 @@ import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.events.DebugEvent;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
-import com.inappstory.sdk.stories.serviceevents.DestroyStoriesFragmentEvent;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.StoriesListManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
@@ -129,6 +123,10 @@ public class InAppStoryService {
     }
 
 
+    public boolean getSendNewStatistic() {
+        return getSendStatistic() && false;
+    }
+
     public boolean getSendStatistic() {
         if (InAppStoryManager.getInstance() != null) {
             return InAppStoryManager.getInstance().sendStatistic;
@@ -185,36 +183,11 @@ public class InAppStoryService {
 
 
     public void sendPageOpenStatistic(int storyId, int index) {
+        Log.e("eventCountPlus", "sendPageOpenStatistic " + storyId + " " + index);
         OldStatisticManager.getInstance().addStatisticBlock(storyId, index);
         StatisticManager.getInstance().createCurrentState(storyId, index);
     }
 
-    public boolean isBackgroundPause = false;
-
-    @CsSubscribe
-    public void destroyFragmentEvent(DestroyStoriesFragmentEvent event) {
-        currentId = 0;
-        currentIndex = 0;
-        for (int i = 0; i < InAppStoryService.getInstance().getDownloadManager().getStories().size(); i++) {
-            Log.e("changePriority", "set0 destroy");
-            InAppStoryService.getInstance().getDownloadManager().getStories().get(i).lastIndex = 0;
-        }
-    }
-
-    @CsSubscribe
-    public void pauseStoryEvent(PauseStoryReaderEvent event) {
-        if (timerManager == null) timerManager = new TimerManager();
-        try {
-            if (event.isWithBackground()) {
-                isBackgroundPause = true;
-                timerManager.pauseTimer();
-            } else {
-                timerManager.pauseLocalTimer();
-            }
-        } catch (Exception e) {
-
-        }
-    }
 
     private LruDiskCache fastCache; //use for covers
     private LruDiskCache commonCache; //use for slides, games, etc.
@@ -238,14 +211,7 @@ public class InAppStoryService {
                             IAS_PREFIX + "fastCache",
                             MB_10, true);
                 } catch (IOException e) {
-                    final Throwable e2 = e;
-                    if (handler != null) handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            throw new RuntimeException(e2);
-
-                        }
-                    }, 500);
+                    e.printStackTrace();
                 }
             }
             return fastCache;
@@ -276,13 +242,7 @@ public class InAppStoryService {
                                 cacheType, false);
                     }
                 } catch (IOException e) {
-                    final Throwable e2 = e;
-                    if (handler != null) handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            throw new RuntimeException(e2);
-                        }
-                    }, 500);
+                    e.printStackTrace();
                 }
             }
             return commonCache;
@@ -291,16 +251,6 @@ public class InAppStoryService {
 
     boolean backPaused = false;
 
-    @CsSubscribe
-    public void resumeStoryEvent(ResumeStoryReaderEvent event) {
-        if (timerManager == null) timerManager = new TimerManager();
-        if (event.isWithBackground()) {
-            isBackgroundPause = false;
-            timerManager.resumeTimer();
-        } else {
-            timerManager.resumeLocalTimer();
-        }
-    }
 
     public TimerManager getTimerManager() {
         return timerManager;
@@ -341,19 +291,65 @@ public class InAppStoryService {
 
 
     public void runStatisticThread() {
-        if (handler != null) {
-            try {
-                handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
-            } finally {
-                handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread,
-                        statisticUpdateInterval);
+        OldStatisticManager.getInstance().refreshCallbacks();
+    }
+
+    ListReaderConnector connector = new ListReaderConnector();
+
+    public ListReaderConnector getListReaderConnector() {
+        if (connector == null) connector = new ListReaderConnector();
+        return connector;
+    }
+
+    public class ListReaderConnector {
+        public void changeStory(int storyId) {
+            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+                sub.changeStory(storyId);
+            }
+        }
+
+        public void closeReader() {
+            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+                sub.closeReader();
+            }
+        }
+
+        public void openReader() {
+            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+                sub.openReader();
+            }
+        }
+
+        public void changeUserId() {
+            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+                sub.changeUserId();
+            }
+        }
+
+        public void storyFavorite(int id, boolean favStatus) {
+            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+                sub.storyFavorite(id, favStatus);
             }
         }
     }
 
-    private static final long statisticUpdateInterval = 30000;
+    Set<StoriesListManager> listSubscribers;
 
-    private Handler handler = new Handler();
+    public Set<StoriesListManager> getListSubscribers() {
+        if (listSubscribers == null) listSubscribers = new HashSet<>();
+        return listSubscribers;
+    }
+
+    public void addListSubscriber(StoriesListManager listManager) {
+        if (listSubscribers == null) listSubscribers = new HashSet<>();
+        listSubscribers.add(listManager);
+    }
+
+    public void removeListSubscriber(StoriesListManager listManager) {
+        if (listSubscribers == null) return;
+        listManager.clear();
+        listSubscribers.remove(listManager);
+    }
 
     public static class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
 
@@ -365,9 +361,12 @@ public class InAppStoryService {
 
         @Override
         public void uncaughtException(Thread thread, final Throwable throwable) {
-            if (oldHandler != null) oldHandler.uncaughtException(thread, throwable);
-            Log.d("InAppStoryException", throwable.getCause() + "\n"
+
+            if (oldHandler != null)
+                oldHandler.uncaughtException(thread, throwable);
+            Log.e("InAppStoryException", throwable.getCause() + "\n"
                     + throwable.getMessage());
+
             if (InAppStoryManager.getInstance() != null) {
 
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
@@ -395,17 +394,15 @@ public class InAppStoryService {
     Runnable checkFreeSpace = new Runnable() {
         @Override
         public void run() {
-            if (getCommonCache() != null) {
-                long freeSpace = getCommonCache().getCacheDir().getFreeSpace();
+            long freeSpace = getCommonCache().getCacheDir().getFreeSpace();
+            if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
+                getCommonCache().setCacheSize(MB_50);
                 if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
-                    getCommonCache().setCacheSize(MB_50);
+                    getCommonCache().setCacheSize(MB_10);
+                    getFastCache().setCacheSize(MB_5);
                     if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
                         getCommonCache().setCacheSize(MB_10);
                         getFastCache().setCacheSize(MB_5);
-                        if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
-                            getCommonCache().setCacheSize(MB_10);
-                            getFastCache().setCacheSize(MB_5);
-                        }
                     }
                 }
             }
@@ -433,7 +430,6 @@ public class InAppStoryService {
                 clearOldFiles();
             }
         });
-        CsEventBus.getDefault().register(this);
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         OldStatisticManager.getInstance().statistic = new ArrayList<>();

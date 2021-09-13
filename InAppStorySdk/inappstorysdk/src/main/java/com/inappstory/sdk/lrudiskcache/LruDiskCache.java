@@ -43,8 +43,6 @@ public class LruDiskCache {
         }
     }
 
-    String subPath;
-
     private LruDiskCache(File cacheDir, String subPath, long cacheSize) throws IOException {
         this.manager = new FileManager(cacheDir, subPath);
         this.journal = new CacheJournal(manager);

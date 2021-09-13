@@ -59,10 +59,10 @@ public final class NetworkHandler implements InvocationHandler {
         }
         Log.d("InAppStory_Network", req.getHeaders().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
+            Log.d("InAppStory_Network", req.getBody());
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
             }
-            Log.d("InAppStory_Network", req.getBody());
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
@@ -78,7 +78,6 @@ public final class NetworkHandler implements InvocationHandler {
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
 
             String res = getResponseFromStream(connection.getInputStream());
-            Log.d("InAppStory_Network", "Response: " + res);
             respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
             String res = getResponseFromStream(connection.getErrorStream());

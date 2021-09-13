@@ -17,7 +17,6 @@ public class StoriesReaderSettings {
     public int soundIcon;
     public boolean timerGradient;
 
-
     public StoriesReaderSettings(boolean closeOnSwipe, boolean closeOnOverscroll,
                                  int closePosition,
                                  boolean hasLike, boolean hasFavorite,

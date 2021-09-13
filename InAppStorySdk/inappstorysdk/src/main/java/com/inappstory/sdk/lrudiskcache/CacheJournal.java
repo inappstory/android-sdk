@@ -64,7 +64,7 @@ public class CacheJournal {
         CacheJournalItem item = itemsLinks.remove(key);
         if (item != null) {
             currentSize -= item.getSize();
-            if (withFile) fileManager.delete(item.getName(), withFile);
+            if (withFile) fileManager.delete(item.getName());
         }
         return item;
     }
@@ -97,10 +97,8 @@ public class CacheJournal {
                     stream.writeLong(item.getSize());
                 }
             } catch (IOException ex) {
-            } finally {
                 if (stream != null) {
                     try {
-                        stream.flush();
                         stream.close();
                     } catch (IOException ignored) {
                     }
@@ -115,7 +113,7 @@ public class CacheJournal {
             Collections.sort(items, new Utils.TimeComparator());
             for (int i = items.size() - 1; i > 0; i--) {
                 CacheJournalItem item = items.remove(i);
-                fileManager.delete(item.getName(), true);
+                fileManager.delete(item.getName());
                 itemsLinks.remove(item.getKey());
                 currentSize -= item.getSize();
                 if (currentSize + newFileSize < limitSize) {
@@ -143,6 +141,7 @@ public class CacheJournal {
                         }
                     }
                     return;
+                    //throw new IllegalArgumentException("Invalid journal format version");
                 }
                 int count = stream.readInt();
                 long currentSize = 0;

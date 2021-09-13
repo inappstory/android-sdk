@@ -1,18 +1,32 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
-import android.os.Handler;
-
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryLinkObject;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.outerevents.CallToAction;
+import com.inappstory.sdk.stories.outerevents.ClickOnButton;
+import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.TimelineManager;
+import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReaderPageManager {
     TimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
+    TimerManager timerManager;
+    ReaderPageFragment host;
 
-    void gameComplete(String data) {
+    public void gameComplete(String data) {
         webViewManager.gameComplete(data);
     }
 
@@ -20,102 +34,326 @@ public class ReaderPageManager {
         this.storyId = storyId;
     }
 
-    void shareComplete(String id, boolean isSuccess) {
+    public int getStoryId() {
+        return storyId;
+    }
+
+    private int storyId;
+
+    public int getSlideIndex() {
+        return slideIndex;
+    }
+
+    public void setSlideIndex(int slideIndex) {
+
+        this.slideIndex = slideIndex;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        timelineManager.setCurrentSlide(slideIndex);
+        timerManager.stopTimer();
+        if (story.durations == null || story.durations.size() <= slideIndex) return;
+        timerManager.setCurrentDuration(story.durations.get(slideIndex));
+    }
+
+    int slideIndex;
+
+    public void shareComplete(String id, boolean isSuccess) {
         webViewManager.shareComplete(id, isSuccess);
     }
 
-    int storyId;
+    public void storyClick(String payload, int coordinate, boolean isForbidden) {
+        parentManager.storyClick();
+        if (payload == null || payload.isEmpty()) {
+            int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
+            if (coordinate >= 0.3 * sz && !isForbidden) {
+                nextSlide();
+            } else if (coordinate < 0.3 * sz) {
+                prevSlide();
+            }
+        } else {
+            tapOnLink(payload);
+        }
+    }
+
+    public void reloadStory() {
+        InAppStoryService.getInstance().getDownloadManager().reloadStory(storyId);
+    }
+
+    private void tapOnLink(String link) {
+        StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
+        if (object != null) {
+            switch (object.getLink().getType()) {
+                case "url":
+                    Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                            storyId
+                    );
+                    CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
+                            story.tags, story.slidesCount, story.lastIndex,
+                            object.getLink().getTarget()));
+                    int cta = CallToAction.BUTTON;
+                    if (object.getType() != null && !object.getType().isEmpty()) {
+                        switch (object.getType()) {
+                            case "swipeUpLink":
+                                cta = CallToAction.SWIPE;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
+                            story.tags, story.slidesCount, story.lastIndex,
+                            object.getLink().getTarget(), cta));
+                    OldStatisticManager.getInstance().addLinkOpenStatistic();
+                    if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                        CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
+                                object.getLink().getTarget()
+                        );
+                    } else {
+                        if (!InAppStoryService.isConnected()) {
+                            return;
+                        }
+                        parentManager.defaultTapOnLink(object.getLink().getTarget());
+                    }
+                    break;
+                default:
+                    if (CallbackManager.getInstance().getAppClickCallback() != null) {
+                        CallbackManager.getInstance().getAppClickCallback().onAppClick(
+                                object.getLink().getType(),
+                                object.getLink().getTarget()
+                        );
+                    }
+                    break;
+            }
+        }
+    }
 
     void storyLoaded(int id, int index) {
         webViewManager.storyLoaded(id, index);
     }
 
-    void syncTime(long timeLeft, long eventTimer) {
-        timelineManager.syncTime(timeLeft, eventTimer);
+    public void startStoryTimers() {
+        isPaused = false;
+        timelineManager.start();
+
+        timerManager.setCurrentDuration(durations.get(slideIndex));
+        timerManager.startCurrentTimer();
     }
 
-    void storyOpen(int storyId) {
+    public void storyOpen(int storyId) {
+        isPaused = false;
         if (storyId != this.storyId) {
-            webViewManager.stopVideo();
+            webViewManager.stopStory();
+            timerManager.stopTimer();
+            timelineManager.stop();
         } else {
-            webViewManager.playVideo();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    webViewManager.resumeVideo();
-                }
-            }, 200);
+            webViewManager.playStory();
+            webViewManager.resumeStory();
         }
     }
 
-    void pauseSlide() {
+
+    public void stopStory(int currentId) {
+        if (currentId == storyId) return;
+        webViewManager.stopStory();
+        timelineManager.stop();
+        timerManager.stopTimer();
+        isPaused = false;
+        //stop timers and timelines
+    }
+
+    public void pauseSlide(boolean withBackground) {
+        if (!withBackground && isPaused) return;
+        isPaused = true;
         timelineManager.pause();
+        if (withBackground) {
+            timerManager.pauseTimer();
+        } else {
+            timerManager.pauseLocalTimer();
+        }
         webViewManager.pauseStory();
     }
 
-    void resumeSlide() {
+    boolean isPaused;
+
+    public void resumeSlide(boolean withBackground) {
+        if (!isPaused) return;
+        isPaused = false;
         timelineManager.resume();
+        if (withBackground) {
+            timerManager.resumeTimer();
+        } else {
+            timerManager.resumeLocalTimer();
+        }
         webViewManager.resumeStory();
     }
 
-    void restartSlide() {
-        webViewManager.restartVideo();
+    public void restartSlide() {
+        //webViewManager.restartStory();
+        timelineManager.setStoryDurations(durations, false);
+        timelineManager.restart();
+        timerManager.restartTimer(durations.get(slideIndex));
+
     }
 
-    void setStoryInfo(Story story, boolean full) {
+    List<Integer> durations = new ArrayList<>();
+
+    public void setStoryInfo(Story story) {
         //webViewManager.setIndex(story.lastIndex);
         timelineManager.setSlidesCount(story.slidesCount);
-        if (full)
-            timelineManager.setStoryDurations(story.durations);
+        this.durations = new ArrayList<>();
+        if (story.durations != null)
+            this.durations.addAll(story.durations);
+        timelineManager.setStoryDurations(this.durations, true);
+
         webViewManager.loadStory(story.id, story.lastIndex);
 
     }
 
-    void loadStoryAndSlide(int storyId, int slideIndex) {
+    public void loadStoryAndSlide(int storyId, int slideIndex) {
         webViewManager.loadStory(storyId, slideIndex);
     }
 
-    void openSlideByIndex(int index) {
+    public void openSlideByIndex(int index) {
+
+        InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(storyId).setLastIndex(index);
+        if (slideIndex != index) {
+            slideIndex = index;
+            changeCurrentSlide();
+        }
+    }
+
+    public void restartCurrentWithDuration(long duration) {
+        this.durations.set(slideIndex, (int) duration);
+        if (parentManager != null && parentManager.getCurrentStoryId() == storyId) {
+            restartSlide();
+        } else {
+            timelineManager.setStoryDurations(durations, false);
+        }
+    }
+
+
+    public void resetCurrentDuration() {
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        this.durations.clear();
+        this.durations.addAll(story.durations);
+        //  this.durations.set(slideIndex, story.durations.get(slideIndex));
+        timelineManager.setStoryDurations(durations, false);
+    }
+
+    public void nextSlide() {
+        if (InAppStoryService.isNull()) return;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        timerManager.setTimerDuration(0);
+        if (slideIndex < story.slidesCount - 1) {
+            webViewManager.stopStory();
+            slideIndex++;
+            story.setLastIndex(slideIndex);
+            changeCurrentSlide();
+        } else {
+            parentManager.nextStory();
+        }
+    }
+
+    public void changeCurrentSlide() {
+        isPaused = false;
+        timelineManager.setCurrentSlide(slideIndex);
+        timerManager.stopTimer();
+        timerManager.setCurrentDuration(durations.get(slideIndex));
+        StatisticManager.getInstance().sendCurrentState();
+        InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId);
+        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex);
+        loadStoryAndSlide(storyId, slideIndex);
+    }
+
+    public void setParentManager(ReaderManager parentManager) {
+        this.parentManager = parentManager;
+    }
+
+    ReaderManager parentManager;
+
+    public void prevSlide() {
+        if (InAppStoryService.isNull()) return;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+
+        timerManager.setTimerDuration(0);
+        if (slideIndex > 0) {
+            webViewManager.stopStory();
+            slideIndex--;
+            story.setLastIndex(slideIndex);
+            changeCurrentSlide();
+        } else {
+            parentManager.prevStory();
+        }
+    }
+
+    public void closeReader() {
 
     }
 
-    void nextSlide() {
-        webViewManager.stopVideo();
+    public void changeSoundStatus() {
+        // buttonsPanelManager.refreshSoundStatus();
+        webViewManager.changeSoundStatus();
     }
 
-    void prevSlide() {
-        webViewManager.stopVideo();
-    }
 
-    void closeReader() {
-
-    }
-
-    void changeSoundStatus() {
-
-    }
-
-    void slideLoaded() {
-
+    public void slideLoadedInCache(int index) {
+        if (slideIndex == index) {
+            webViewManager.storyLoaded(storyId, index);
+            host.storyLoadedSuccess();
+        }
     }
 
     void storyInfoLoaded() {
-        this.timelineManager.setSlidesCount(InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).slidesCount);
-        this.timelineManager.setStoryDurations(InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).durations);
+        this.timelineManager.setStoryDurations(InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(storyId).durations, false);
     }
 
     public void setTimelineManager(TimelineManager timelineManager, int storyId) {
+        timelineManager.pageManager = this;
         this.timelineManager = timelineManager;
     }
 
     public void setButtonsPanelManager(ButtonsPanelManager buttonsPanelManager, int storyId) {
+        buttonsPanelManager.setParentManager(this);
         this.buttonsPanelManager = buttonsPanelManager;
         this.buttonsPanelManager.setStoryId(storyId);
     }
 
     public void setWebViewManager(StoriesViewManager webViewManager, int storyId) {
+        webViewManager.setPageManager(this);
         this.webViewManager = webViewManager;
         this.webViewManager.setStoryId(storyId);
+    }
+
+    public void setTimerManager(TimerManager timerManager) {
+        timerManager.setPageManager(this);
+        this.timerManager = timerManager;
+    }
+
+    public void storyLoadStart() {
+        host.storyLoadStart();
+    }
+
+    public void storyLoadError() {
+
+    }
+
+    public void storyLoadedInCache() {
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story.durations != null && !story.durations.isEmpty()) {
+            if (this.durations == null)
+                this.durations = new ArrayList<>();
+            this.durations.clear();
+            this.durations.addAll(story.durations);
+            story.slidesCount = story.durations.size();
+            timerManager.setCurrentDuration(this.durations.get(slideIndex));
+            //timelineManager.setStoryDurations(story.durations);
+        }
+
+        setStoryInfo(story);
+        /*if (story.durations != null && !story.durations.isEmpty()) {
+            timelineManager.createFirstAnimation();
+        }*/
     }
 
 }

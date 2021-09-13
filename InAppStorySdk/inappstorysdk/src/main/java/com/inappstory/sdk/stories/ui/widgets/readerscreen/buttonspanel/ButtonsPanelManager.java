@@ -1,6 +1,9 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -14,16 +17,17 @@ import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.PauseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.SoundOnOffEvent;
 import com.inappstory.sdk.stories.outerevents.ClickOnShareStory;
 import com.inappstory.sdk.stories.outerevents.DislikeStory;
 import com.inappstory.sdk.stories.outerevents.FavoriteStory;
 import com.inappstory.sdk.stories.outerevents.LikeStory;
-import com.inappstory.sdk.stories.serviceevents.LikeDislikeEvent;
-import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
+import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
 import java.lang.reflect.Type;
+
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 public class ButtonsPanelManager {
     public void setStoryId(int storyId) {
@@ -31,6 +35,20 @@ public class ButtonsPanelManager {
     }
 
     int storyId;
+
+    public ReaderPageManager getParentManager() {
+        return parentManager;
+    }
+
+    public void setParentManager(ReaderPageManager parentManager) {
+        this.parentManager = parentManager;
+    }
+
+    public ButtonsPanelManager(ButtonsPanel panel) {
+        this.panel = panel;
+    }
+
+    ReaderPageManager parentManager;
 
     public void likeClick(ButtonClickCallback callback) {
         likeDislikeClick(callback, true);
@@ -77,7 +95,6 @@ public class ButtonsPanelManager {
                             story.like = val;
                         if (callback != null)
                             callback.onSuccess(val);
-                        CsEventBus.getDefault().post(new LikeDislikeEvent(storyId, val));
                     }
 
 
@@ -114,7 +131,8 @@ public class ButtonsPanelManager {
                             story.favorite = res;
                         if (callback != null)
                             callback.onSuccess(res ? 1 : 0);
-                        CsEventBus.getDefault().post(new StoryFavoriteEvent(storyId, res));
+                        if (InAppStoryService.isNotNull())
+                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, res);
                     }
 
                     @Override
@@ -131,21 +149,32 @@ public class ButtonsPanelManager {
                 });
     }
 
+    ButtonsPanel panel;
+
     public void soundClick(ButtonClickCallback callback) {
         if (InAppStoryService.isNull()) return;
         InAppStoryService.getInstance().changeSoundStatus();
-        CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryService.getInstance().isSoundOn(), storyId));
+        parentManager.changeSoundStatus();
+        if (panel != null)
+            panel.refreshSoundStatus();
+        // CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryService.getInstance().isSoundOn(), storyId));
         if (callback != null)
             callback.onSuccess(InAppStoryService.getInstance().isSoundOn() ? 1 : 0);
     }
 
-    public void shareClick(final ButtonClickCallback callback) {
+    public abstract static class ShareButtonClickCallback implements ButtonClickCallback {
+        abstract void onClick();
+    }
+
+    public void shareClick(final Context context, final ShareButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex));
-        CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
+        if (callback != null)
+            callback.onClick();
+        //CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
         NetworkClient.getApi().share(Integer.toString(storyId), StatisticSession.getInstance().id,
                 ApiSettings.getInstance().getApiKey(), null).enqueue(new NetworkCallback<ShareObject>() {
             @Override
@@ -156,7 +185,7 @@ public class ButtonsPanelManager {
                     CallbackManager.getInstance().getShareCallback()
                             .onShare(response.getUrl(), response.getTitle(), response.getDescription(), Integer.toString(storyId));
                 } else {
-                    Intent sendIntent = new Intent();
+                  /*  Intent sendIntent = new Intent();
                     sendIntent.setAction(Intent.ACTION_SEND);
                     sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
                     sendIntent.putExtra(Intent.EXTRA_TEXT, response.getUrl());
@@ -164,7 +193,34 @@ public class ButtonsPanelManager {
                     Intent finalIntent = Intent.createChooser(sendIntent, null);
                     finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+*/
+                    Intent sendIntent = new Intent();
+                    sendIntent.setAction(Intent.ACTION_SEND);
+                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, response.getUrl());
+                    sendIntent.setType("text/plain");
+                    PendingIntent pi = PendingIntent.getBroadcast(context, 989,
+                            new Intent(context, StoryShareBroadcastReceiver.class),
+                            FLAG_UPDATE_CURRENT);
+                    Intent finalIntent = null;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
+                       // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        ScreensManager.getInstance().setTempShareId(null);
+                        ScreensManager.getInstance().setTempShareStoryId(storyId);
+                        context.startActivity(finalIntent);
+                    } else {
+                        finalIntent = Intent.createChooser(sendIntent, null);
+                      //  finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(finalIntent);
+                        ScreensManager.getInstance().setOldTempShareId(null);
+                        ScreensManager.getInstance().setOldTempShareStoryId(storyId);
+                    }
                 }
+
+
+
+
             }
 
             @Override

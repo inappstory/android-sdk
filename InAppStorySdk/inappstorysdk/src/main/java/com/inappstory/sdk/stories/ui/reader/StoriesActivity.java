@@ -8,7 +8,6 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -16,7 +15,6 @@ import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,7 +23,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
@@ -34,15 +31,8 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
-import com.inappstory.sdk.stories.events.DebugEvent;
-import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
-import com.inappstory.sdk.stories.events.ResumeStoryReaderEvent;
-import com.inappstory.sdk.stories.events.SwipeDownEvent;
-import com.inappstory.sdk.stories.events.SwipeLeftEvent;
-import com.inappstory.sdk.stories.events.SwipeRightEvent;
-import com.inappstory.sdk.stories.events.WidgetTapEvent;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
+
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
@@ -80,8 +70,6 @@ public class StoriesActivity extends AppCompatActivity {
         super.onPause();
         if (isFinishing()) {
             StatusBarController.showStatusBar(this);
-
-            OldStatisticManager.getInstance().sendStatistic();
             try {
                 CsEventBus.getDefault().unregister(this);
             } catch (Exception e) {
@@ -182,10 +170,11 @@ public class StoriesActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
-            CsEventBus.getDefault().post(new GameCompleteEvent(
+            storiesFragment.readerManager.gameComplete(
                     data.getStringExtra("gameState"),
                     Integer.parseInt(data.getStringExtra("storyId")),
-                    data.getIntExtra("slideIndex", 0)));
+                    data.getIntExtra("slideIndex", 0)
+            );
         }
     }
 
@@ -227,17 +216,7 @@ public class StoriesActivity extends AppCompatActivity {
         overridePendingTransition(0, 0);
     }
 
-    @CsSubscribe
-    public void widgetTapEvent(WidgetTapEvent event) {
-        if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
-            // StatusBarController.hideStatusBar(this, true);
-        }
-    }
 
-   /* @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void debug(DebugEvent event) {
-        Toast.makeText(StoriesActivity.this, event.getMessage(), Toast.LENGTH_LONG).show();
-    }*/
 
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;
@@ -247,17 +226,16 @@ public class StoriesActivity extends AppCompatActivity {
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
 
+
+    public void shareComplete() {
+        storiesFragment.readerManager.shareComplete();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
 
-      /*  if (destroyed == -1) {
-            isFakeActivity = true;
-            super.onCreate(savedInstanceState1);
-            finishActivityWithoutAnimation();
-            return;
-        }*/
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
@@ -273,11 +251,11 @@ public class StoriesActivity extends AppCompatActivity {
             return;
         }
 
+        ScreensManager.getInstance().currentActivity = this;
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
         }
 
         closeOnSwipe = getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true);
@@ -305,6 +283,31 @@ public class StoriesActivity extends AppCompatActivity {
                 public void onDragDropped() {
                 }
 
+                @Override
+                public void touchPause() {
+                    if (storiesFragment != null && storiesFragment.readerManager != null)
+                        storiesFragment.readerManager.pauseCurrent(false);
+                }
+
+                @Override
+                public void touchResume() {
+                    if (storiesFragment != null && storiesFragment.readerManager != null)
+                        storiesFragment.readerManager.resumeCurrent(false);
+                }
+
+                @Override
+                public void swipeDown() {
+                    if (storiesFragment != null) {
+                        storiesFragment.swipeDownEvent();
+                    }
+                }
+
+                @Override
+                public void swipeUp() {
+                    if (storiesFragment != null) {
+                        storiesFragment.swipeUpEvent();
+                    }
+                }
             };
         }
         draggableFrame.addListener(chromeFader);
@@ -317,10 +320,8 @@ public class StoriesActivity extends AppCompatActivity {
             finish();
             return;
         }
-        final StoriesFragment storiesFragment;
-
         CsEventBus.getDefault().register(StoriesActivity.this);
-        CsEventBus.getDefault().post(new OpenStoriesScreenEvent());
+        InAppStoryService.getInstance().getListReaderConnector().openReader();
         if (savedInstanceState == null) {
             //overridePendingTransition(R.anim.alpha_fade_in, R.anim.alpha_fade_out);
             //Log.e("stories_indexes", getIntent().getIntegerArrayListExtra("stories_ids").toString());
@@ -342,25 +343,24 @@ public class StoriesActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                try {
-                    if (isFinishing()) return;
-                    if (storiesFragment != null) {
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
-                        //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
-                        FragmentTransaction t = fragmentManager.beginTransaction()
-                                .replace(R.id.fragments_layout, storiesFragment);
-                        t.addToBackStack("STORIES_FRAGMENT");
-                        t.commitAllowingStateLoss();
-                    } else {
-                        finish();
-                    }
-                } catch (Exception e) {
-
+                if (storiesFragment != null) {
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
+                    //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
+                    FragmentTransaction t = fragmentManager.beginTransaction()
+                            .replace(R.id.fragments_layout, storiesFragment);
+                    t.addToBackStack("STORIES_FRAGMENT");
+                    t.commit();
+                } else {
+                    finish();
                 }
             }
         }, 300);
+
+        //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
+
+    StoriesFragment storiesFragment;
 
     private void setAppearanceSettings(Bundle bundle) {
         StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(
@@ -394,6 +394,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
         if (closing) return;
         closing = true;
+        InAppStoryService.getInstance().getListReaderConnector().closeReader();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
@@ -435,50 +436,21 @@ public class StoriesActivity extends AppCompatActivity {
     public void cleanReader() {
         if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
+      //  OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        InAppStoryService.getInstance().isBackgroundPause = false;
         if (InAppStoryService.getInstance().getDownloadManager() != null)
             for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {
-                Log.e("changePriority", "set0 cleanReader");
                 story.setLastIndex(0);
             }
         cleaned = true;
     }
 
-    @CsSubscribe
-    public void swipeDownEvent(SwipeDownEvent event) {
-        if (closeOnSwipe) {
-            if (InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId()) == null)
-                return;
-            if (!InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId()).disableClose)
-                CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
-        }
-    }
-
-
-    @CsSubscribe
-    public void swipeLeftEvent(SwipeLeftEvent event) {
-        if (closeOnOverscroll) {
-            // finishActivityWithCustomAnimation(0, R.anim.popup_hide_left);
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
-        }
-    }
-
-    @CsSubscribe
-    public void swipeRightEvent(SwipeRightEvent event) {
-        if (closeOnOverscroll) {
-            //  finishActivityWithCustomAnimation(0, R.anim.popup_hide_right);
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
-        }
-    }
-
 
     @Override
     public void onDestroy() {
+        if (ScreensManager.getInstance().currentActivity == this)
+            ScreensManager.getInstance().currentActivity = null;
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
 

@@ -61,49 +61,33 @@ public class Timeline extends LinearLayout {
     }
 
     void setSlidesCount(int slidesCount) {
-        this.slidesCount = slidesCount;
-        bindViews();
+        if (this.slidesCount != slidesCount) {
+            this.slidesCount = slidesCount;
+            bindViews();
+        }
     }
 
     public void setCurrentSlide(int ind) {
 
     }
 
+    public void setDurations(List<Integer> durations) {
+        this.durations = durations;
+        if (progressBars != null && progressBars.size() == durations.size()) {
+            for (int i = 0; i < progressBars.size(); i++) {
+                setSlideDuration(i);
+            }
+        }
+
+    }
+
+    List<Integer> durations;
+
     ValueAnimator curAnimation;
-    int activeInd = 0;
 
-    public void forceStartProgress() {
-        try {
-            Log.e("Story_VisualTimers", "forceStartProgress");
-            getManager().start(activeInd);
-        } catch (Exception e) {
-        }
-    }
-
-    public void forceRestartProgress() {
-        try {
-      //      if (curAnimation != null) curAnimation.cancel();
-      //      curAnimation = progressBars.get(activeInd).animation;
-      //      Log.e("Story_VisualTimers", "forceRestartProgress");
-            getManager().start(activeInd);
-        } catch (Exception e) {
-        }
-    }
-
-    int current = 0;
-
-    public void setActive(int ind) {
-        if (curAnimation != null) curAnimation.cancel();
-        if (ind >= 0 && ind < progressBars.size()) {
-            curAnimation = progressBars.get(ind).animation;
-            activeInd = ind;
-        }
-        //Log.e("Story_VisualTimers", "setActive " + activeInd);
-        timelineManager.setCurrentSlide(activeInd);
-    }
-
-    public void setSlideDuration(int index, long duration) {
-        progressBars.get(index).setDuration(duration);
+    public void setSlideDuration(int index) {
+        if (durations != null)
+            progressBars.get(index).setDuration(1L * durations.get(index));
     }
 
     List<TimelineProgressBar> progressBars = new ArrayList<>();
@@ -115,10 +99,12 @@ public class Timeline extends LinearLayout {
         for (int i = 0; i < slidesCount; i++) {
             final TimelineProgressBar p = createProgressBar();
             progressBars.add(p);
+            setSlideDuration(i);
             addView(p);
             if ((i + 1) < slidesCount) {
                 addView(createSpace());
             }
+            if (i == 0) p.setMin();
         }
     }
 }

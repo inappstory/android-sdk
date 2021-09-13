@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.inappstory.sdk">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -15,13 +16,15 @@
             android:hardwareAccelerated="true"
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Transparent" />
+            android:theme="@style/Theme.Transparent"
+            tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:hardwareAccelerated="true"
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.NonTransparent" />
+            android:theme="@style/Theme.NonTransparent"
+            tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:hardwareAccelerated="true"

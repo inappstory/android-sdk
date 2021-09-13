@@ -79,7 +79,7 @@ public class AppearanceManager {
     private boolean csHasLike;
     private boolean csHasFavorite;
     private boolean csHasShare;
-    private boolean csTimerGradientEnable = true;
+    private boolean csTimerGradientEnable;
 
     private int csFavoriteIcon;
     private int csLikeIcon;
@@ -184,8 +184,8 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    private boolean csCloseOnSwipe;
-    private boolean csCloseOnOverscroll;
+    private boolean csCloseOnSwipe = true;
+    private boolean csCloseOnOverscroll = true;
 
     private static AppearanceManager commonInstance;
 

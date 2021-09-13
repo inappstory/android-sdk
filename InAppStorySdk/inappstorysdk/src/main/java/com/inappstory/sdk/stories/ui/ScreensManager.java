@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -11,6 +12,10 @@ import androidx.fragment.app.DialogFragment;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.game.reader.GameActivity;
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
@@ -34,6 +39,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class ScreensManager {
 
@@ -87,6 +93,10 @@ public class ScreensManager {
     }
 
 
+    public AppCompatActivity currentActivity;
+
+    public GameActivity currentGameActivity;
+
     int tempShareStoryId;
 
     String tempShareId;
@@ -96,6 +106,28 @@ public class ScreensManager {
     String oldTempShareId;
 
     public Point coordinates = null;
+
+    public void closeGameReader() {
+        if (currentGameActivity != null) {
+            currentGameActivity.close();
+        }
+    }
+
+    public void openGameReader(Context context, int storyId, int index, String gameUrl, String preloadPath, String gameConfig, String resources) {
+        Intent intent2 = new Intent(context, GameActivity.class);
+        intent2.putExtra("gameUrl", gameUrl);
+        intent2.putExtra("storyId", Integer.toString(storyId));
+        intent2.putExtra("slideIndex", index);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        intent2.putExtra("tags", story.tags);
+        intent2.putExtra("slidesCount", story.slidesCount);
+        intent2.putExtra("title", story.title);
+        intent2.putExtra("gameConfig", gameConfig);
+        intent2.putExtra("gameResources", resources);
+        intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
+        CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags, story.slidesCount, index));
+        ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+    }
 
     public void openStoriesReader(Context outerContext, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source) {
@@ -125,7 +157,6 @@ public class ScreensManager {
                 bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
                 bundle.putBoolean(CS_TIMER_GRADIENT, manager.csTimerGradientEnable());
-
             }
             settingsDialogFragment.setArguments(bundle);
             settingsDialogFragment.show(

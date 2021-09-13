@@ -109,7 +109,6 @@ public class ImageLoader {
         }
     }
 
-
     public void displayRemoteColor(String color, int loader, RemoteViews rv, int id, Integer cornerRadius, Float ratio, Context context) {
         try {
             stub_id = loader;

@@ -4,10 +4,7 @@ package com.inappstory.sdk.stories.api.models;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.SerializedName;
-import com.inappstory.sdk.stories.managers.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 /**
  * Created by paperrose on 19.02.2018.
@@ -22,6 +19,8 @@ public class StatisticSession {
 
 
     public ArrayList<Integer> viewed = new ArrayList<>();
+
+    public List<List<Object>> statistic = new ArrayList<>();
 
     public static void setInstance(StatisticSession instance) {
         INSTANCE = instance;
