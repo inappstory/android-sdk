@@ -520,10 +520,11 @@ If the reader is closed, sending an event is not required.
 The library supports work with onboarding stories. 
 The function for loading onboarding stories is follows:
 ```
+InAppStoryManager.getInstance().showOnboardingStories(Context context, AppearanceManager manager);
 InAppStoryManager.getInstance().showOnboardingStories(List<String> tags, Context context, AppearanceManager manager);
 ```
 
-The function is passed a list of tags (if list is empty – it's got from the original builder), context and display manager (used to determine the position of the close button and animation in the reader).
+Functions are passed, context, display manager (used to determine the position of the close button and animation in the reader) and list of tags for second.
 It may be necessary to perform some action in the application immediately after the onboarding stories is loaded (or if they could not appear on screen, since all of them were already displayed earlier or some kind of error occurred). In this case, you need to subscribe to the following `CsEventBus` events:
 
 ```
