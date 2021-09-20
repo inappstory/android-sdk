@@ -567,8 +567,15 @@ InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlCli
     }
 });
 ```
-
-If you need to close the reader when the handler is triggered, you need to add a call to the `CloseStoryReaderEvent` event in `onUrlClick` 
+If you need to close the reader when the handler is triggered, you need to add a call to the `CloseStoryReaderEvent` event in `onUrlClick`:
+```
+InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlClickCallback() {
+    @Override
+    public void onUrlClick(String link) {
+        CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
+    }
+});
+```
 The SDK has a default link handler:
 ```
 Intent i = new Intent(Intent.ACTION_VIEW);
