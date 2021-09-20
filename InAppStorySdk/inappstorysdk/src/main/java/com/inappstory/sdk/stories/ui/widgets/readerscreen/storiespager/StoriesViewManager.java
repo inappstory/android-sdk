@@ -159,8 +159,7 @@ public class StoriesViewManager {
         this.index = index;
         loadedIndex = index;
         loadedId = id;
-        ProfilingManager.getInstance().addTask("slide_show",
-                storyId + "_" + index);
+
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
         if (slideInCache) {
             innerLoad(story);

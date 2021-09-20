@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.reader;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -76,12 +77,15 @@ public class ReaderManager {
         lastPos = position;
 
         currentStoryId = storiesIds.get(position);
-
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId);
         if (story != null)
             CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags,
                     story.slidesCount, source));
         final int pos = position;
+
+        ProfilingManager.getInstance().addTask("slide_show",
+                currentStoryId + "_" +
+                        InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId).lastIndex);
         InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId);
         if (Sizes.isTablet()) {
             if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {

@@ -441,7 +441,7 @@ public class StoryDownloadManager {
                     }
                 }
                 if (loadFavorite) {
-                    final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_list");
+                    final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
                     storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
                         @Override
                         public void onSuccess(List<Story> response2) {

@@ -82,12 +82,14 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyStarted() {
         manager.storyStartedEvent();
+        manager.pageFinished();
         logMethod("");
     }
 
     @JavascriptInterface
     public void storyStarted(double startTime) {
         manager.storyStartedEvent();
+        manager.pageFinished();
         logMethod("" + startTime);
     }
 
@@ -112,7 +114,6 @@ public class WebAppInterface {
         } else {
             manager.storyLoaded(-1);
         }
-        manager.pageFinished();
         logMethod(data + "");
     }
 

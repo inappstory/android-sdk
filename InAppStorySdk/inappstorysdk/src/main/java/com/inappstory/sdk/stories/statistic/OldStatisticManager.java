@@ -126,23 +126,27 @@ public class OldStatisticManager {
         }
         try {
             synchronized (openProcessLock) {
+                final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
                 NetworkClient.getApi().statisticsUpdate(
                         new StatisticSendObject(StatisticSession.getInstance().id,
                                 statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
                     @Override
                     public void onSuccess(StatisticResponse response) {
+                        ProfilingManager.getInstance().setReady(updateUUID);
                         cleanStatistic();
                     }
 
                     @Override
                     public void onError(int code, String message) {
                         super.onError(code, message);
+                        ProfilingManager.getInstance().setReady(updateUUID);
                         cleanStatistic();
                     }
 
                     @Override
                     public void onTimeout() {
                         super.onTimeout();
+                        ProfilingManager.getInstance().setReady(updateUUID);
                         cleanStatistic();
                     }
 
