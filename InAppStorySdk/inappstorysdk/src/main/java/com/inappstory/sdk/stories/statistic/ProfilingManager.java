@@ -60,6 +60,7 @@ public class ProfilingManager {
     public String addTask(String name) {
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
+        task.sessionId = StatisticSession.getInstance().id;
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
@@ -142,9 +143,10 @@ public class ProfilingManager {
 
     private int sendTiming(ProfilingTask task) throws Exception {
         Map<String, String> qParams = new HashMap<>();
-        qParams.put("s", StatisticSession.getInstance().id);
+        qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
+                StatisticSession.getInstance().id);
         qParams.put("u", InAppStoryService.getInstance().getUserId());
-        qParams.put("ts", "" + System.currentTimeMillis()/1000);
+        qParams.put("ts", "" + System.currentTimeMillis() / 1000);
         qParams.put("c", Locale.getDefault().getCountry());
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));

@@ -5,6 +5,7 @@ public class ProfilingTask {
     String name;
     long startTime;
     long endTime;
+    String sessionId;
     boolean isReady;
 
     @Override
