@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.elasticview;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;

@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
@@ -52,10 +53,20 @@ public class Downloader {
     @WorkerThread
     public static File downloadOrGetFile(@NonNull String url,
                                          LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+        return downloadOrGetFile(url, cache, img, callback, null);
+    }
+
+    @NonNull
+    @WorkerThread
+    public static File downloadOrGetFile(@NonNull String url,
+                                         LruDiskCache cache, File img, FileLoadProgressCallback callback, String hash) throws Exception {
         String key = cropUrl(url);
         if (cache.hasKey(key)) {
             return cache.get(key);
         } else {
+            if (hash != null) {
+                ProfilingManager.getInstance().addTask("game_download", hash);
+            }
             if (img == null) {
                 img = cache.getFileFromKey(key);
             }
@@ -68,7 +79,7 @@ public class Downloader {
     @NonNull
     @WorkerThread
     public static File downloadOrGetGameFile(@NonNull String url, @NonNull String hashKey,
-                                         LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+                                             LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
         if (cache.hasKey(key)) {
             return cache.get(key);

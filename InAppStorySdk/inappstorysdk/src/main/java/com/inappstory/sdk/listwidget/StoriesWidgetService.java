@@ -141,8 +141,8 @@ public class StoriesWidgetService extends RemoteViewsService {
         if (NetworkClient.getAppContext() == null) {
             NetworkClient.setContext(context);
         }
-        NetworkClient.getApi().getStories(cachedSessionData.sessionId, cachedSessionData.testKey, 0,
-                cachedSessionData.tags, null, null).enqueue(new NetworkCallback<List<Story>>() {
+        NetworkClient.getApi().getStories(cachedSessionData.testKey, 0,
+                cachedSessionData.tags, null).enqueue(new NetworkCallback<List<Story>>() {
             @Override
             public void onSuccess(List<Story> response) {
                 if (response.size() > 0) {

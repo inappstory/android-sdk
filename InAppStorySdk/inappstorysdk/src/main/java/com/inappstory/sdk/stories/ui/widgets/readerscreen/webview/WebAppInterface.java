@@ -1,13 +1,12 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import android.content.Context;
-import android.os.Handler;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -113,6 +112,7 @@ public class WebAppInterface {
         } else {
             manager.storyLoaded(-1);
         }
+        manager.pageFinished();
         logMethod(data + "");
     }
 

@@ -23,13 +23,16 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import static java.util.UUID.randomUUID;
 
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
@@ -239,9 +242,8 @@ public class StoriesList extends RecyclerView {
                         v.getLocationOnScreen(location);
                         int x = location[0];
                         int y = location[1];
-                        ScreensManager.getInstance().coordinates =
-                                new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
-                                        y + v.getHeight() / 2);
+                        ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
+                                y + v.getHeight() / 2);
                     }
                 }, 950);
             }
@@ -297,10 +299,10 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
+        final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().getDownloadManager()
-                    .loadStories(new LoadStoriesCallback() {
+            InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
@@ -312,6 +314,7 @@ public class StoriesList extends RecyclerView {
                         adapter.refresh(storiesIds);
                         adapter.notifyDataSetChanged();
                     }
+                    ProfilingManager.getInstance().setReady(listUid);
                 }
             }, isFavoriteList, hasFavorite);
 
@@ -320,16 +323,17 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void run() {
                     if (InAppStoryService.isNotNull())
-                        InAppStoryService.getInstance().getDownloadManager()
-                                .loadStories(new LoadStoriesCallback() {
-                            @Override
-                            public void storiesLoaded(List<Integer> storiesIds) {
-                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
-                                setLayoutManager(layoutManager);
-                                setAdapter(adapter);
-                            }
-                        }, isFavoriteList, hasFavorite);
+                        InAppStoryService.getInstance().getDownloadManager().loadStories(
+                                new LoadStoriesCallback() {
+                                    @Override
+                                    public void storiesLoaded(List<Integer> storiesIds) {
+                                        CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
+                                        setLayoutManager(layoutManager);
+                                        setAdapter(adapter);
+                                        ProfilingManager.getInstance().setReady(listUid);
+                                    }
+                                }, isFavoriteList, hasFavorite);
                 }
             }, 1000);
         }

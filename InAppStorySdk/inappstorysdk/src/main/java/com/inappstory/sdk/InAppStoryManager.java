@@ -22,14 +22,14 @@ import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
@@ -566,10 +566,14 @@ public class InAppStoryManager {
                 } else if (getTags() != null) {
                     localTags = TextUtils.join(",", getTags());
                 }
-                NetworkClient.getApi().onboardingStories(StatisticSession.getInstance().id, localTags == null ? getTagsString() : localTags,
-                        getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
+
+                final String onboardUID =
+                        ProfilingManager.getInstance().addTask("api_onboarding");
+                NetworkClient.getApi().onboardingStories(localTags == null ? getTagsString() :
+                        localTags).enqueue(new NetworkCallback<List<Story>>() {
                     @Override
                     public void onSuccess(List<Story> response) {
+                        ProfilingManager.getInstance().setReady(onboardUID);
                         showLoadedOnboardings(response, outerContext, manager);
                     }
 
@@ -581,11 +585,18 @@ public class InAppStoryManager {
                     @Override
                     public void onError(int code, String message) {
 
+                        ProfilingManager.getInstance().setReady(onboardUID);
                         CsEventBus.getDefault().post(new OnboardingLoadError());
                         if (onboardLoadedListener != null) {
                             onboardLoadedListener.onError();
                         }
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        ProfilingManager.getInstance().setReady(onboardUID);
                     }
                 });
             }

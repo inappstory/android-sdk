@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.StartGame;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
@@ -67,7 +68,7 @@ public class StoriesViewManager {
 
     void gameComplete(String data) {
         if (storiesView instanceof SimpleStoriesWebView) {
-            ((SimpleStoriesWebView)storiesView).gameComplete(data);
+            ((SimpleStoriesWebView) storiesView).gameComplete(data);
         }
     }
 
@@ -158,6 +159,8 @@ public class StoriesViewManager {
         this.index = index;
         loadedIndex = index;
         loadedId = id;
+        ProfilingManager.getInstance().addTask("slide_show",
+                storyId + "_" + index);
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
         if (slideInCache) {
             innerLoad(story);
@@ -175,9 +178,9 @@ public class StoriesViewManager {
         WebPageConvertCallback callback = new WebPageConvertCallback() {
             @Override
             public void onConvert(String webData, String webLayout, int lastIndex) {
-             //   Log.e("changePriority", "loadWebData" + storyId + " " + index);
+                //   Log.e("changePriority", "loadWebData" + storyId + " " + index);
                 if (index != lastIndex) return;
-               // Log.e("changePriority", "loadWebData" + storyId + " " + index);
+                // Log.e("changePriority", "loadWebData" + storyId + " " + index);
                 loadWebData(webLayout, webData);
             }
         };
@@ -273,18 +276,18 @@ public class StoriesViewManager {
     public void storyClick(String payload) {
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
             if (InAppStoryService.isConnected()) {
-                pageManager.storyClick(null, (int)getClickCoordinate(), false);
+                pageManager.storyClick(null, (int) getClickCoordinate(), false);
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else if (payload.equals("forbidden")) {
             if (InAppStoryService.isConnected()) {
-                pageManager.storyClick(null, (int)getClickCoordinate(), true);
+                pageManager.storyClick(null, (int) getClickCoordinate(), true);
             } else {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else {
-            pageManager.storyClick(payload, (int)getClickCoordinate(), false);
+            pageManager.storyClick(payload, (int) getClickCoordinate(), false);
         }
     }
 
@@ -304,6 +307,10 @@ public class StoriesViewManager {
         }
     }*/
 
+    public void pageFinished() {
+        ProfilingManager.getInstance().setReady(storyId + "_" + index);
+    }
+
     public void share(String id, String data) {
         ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
@@ -321,7 +328,7 @@ public class StoriesViewManager {
             Intent finalIntent = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-               // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ScreensManager.getInstance().setTempShareId(id);
                 ScreensManager.getInstance().setTempShareStoryId(storyId);
                 storiesView.getContext().startActivity(finalIntent);
@@ -346,6 +353,7 @@ public class StoriesViewManager {
     }
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
+        ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
         ScreensManager.getInstance().openGameReader(context, storyId, index, gameUrl,
                 preloadPath, gameConfig, resources);
     }

@@ -19,7 +19,8 @@ import java.util.Set;
 
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.lrudiskcache.FileManager;
@@ -124,6 +125,9 @@ public class InAppStoryService {
 
 
     public boolean getSendNewStatistic() {
+        if (StatisticSession.getInstance() != null) {
+            return StatisticSession.getInstance().allowProfiling;
+        }
         return getSendStatistic() && false;
     }
 

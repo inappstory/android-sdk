@@ -14,6 +14,8 @@ public class StatisticSession {
     public String id;
     @SerializedName("expire_in")
     public int expireIn;
+    @SerializedName("is_allow_profiling")
+    public boolean allowProfiling;
 
     public long updatedAt;
 

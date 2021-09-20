@@ -23,10 +23,13 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.UUID.randomUUID;
 
 public class SessionManager {
 
@@ -71,6 +74,7 @@ public class SessionManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                response.session.allowProfiling = response.isAllowProfiling;
                 response.session.save();
                 InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
                 synchronized (openProcessLock) {
@@ -132,6 +136,7 @@ public class SessionManager {
             }
             return;
         }
+        final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
         NetworkClient.getApi().statisticsOpen(
                 "cache",
                 InAppStoryService.getInstance().getTagsString(), FEATURES,
@@ -152,6 +157,7 @@ public class SessionManager {
         ).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
+                ProfilingManager.getInstance().setReady(sessionOpenUID);
                 openStatisticSuccess(response);
                 CachedSessionData cachedSessionData = new CachedSessionData();
                 cachedSessionData.userId = InAppStoryService.getInstance().getUserId();
@@ -171,6 +177,7 @@ public class SessionManager {
 
             @Override
             public void onError(int code, String message) {
+                ProfilingManager.getInstance().setReady(sessionOpenUID);
                 synchronized (openProcessLock) {
                     openProcess = false;
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -190,6 +197,7 @@ public class SessionManager {
 
             @Override
             public void onTimeout() {
+                ProfilingManager.getInstance().setReady(sessionOpenUID);
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 synchronized (openProcessLock) {
                     openProcess = false;
@@ -218,11 +226,15 @@ public class SessionManager {
             } catch (Exception e) {
 
             }
+            final String sessionCloseUID =
+                    ProfilingManager.getInstance().addTask("api_session_close");
+
             NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
                     stat)).enqueue(
                     new NetworkCallback<StatisticResponse>() {
                         @Override
                         public void onSuccess(StatisticResponse response) {
+                            ProfilingManager.getInstance().setReady(sessionCloseUID);
                             if (changeUserId && InAppStoryService.isNotNull())
                                 InAppStoryService.getInstance().getListReaderConnector().changeUserId();
                         }
@@ -233,7 +245,14 @@ public class SessionManager {
                         }
 
                         @Override
+                        public void onTimeout() {
+                            super.onTimeout();
+                            ProfilingManager.getInstance().setReady(sessionCloseUID);
+                        }
+
+                        @Override
                         public void onError(int code, String message) {
+                            ProfilingManager.getInstance().setReady(sessionCloseUID);
                             if (changeUserId && InAppStoryService.isNotNull())
                                 InAppStoryService.getInstance().getListReaderConnector().changeUserId();
                         }

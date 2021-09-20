@@ -21,6 +21,9 @@ public class StatisticResponse {
     @SerializedName("cache")
     public List<CacheFontObject> cachedFonts;
 
+    @SerializedName("is_allow_profiling")
+    public boolean isAllowProfiling;
+
     @SerializedName("placeholders")
     public List<StoryPlaceholder> placeholders;
 }

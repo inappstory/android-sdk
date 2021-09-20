@@ -203,13 +203,14 @@ public class ReaderPageFragment extends Fragment {
     void setActions() {
         close.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
+
                 CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CLICK));
             }
         });
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 refresh.setVisibility(View.GONE);
                 if (loader == null) return;
                 loader.setAlpha(1f);

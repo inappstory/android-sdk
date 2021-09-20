@@ -4,7 +4,7 @@ import android.content.Context;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 

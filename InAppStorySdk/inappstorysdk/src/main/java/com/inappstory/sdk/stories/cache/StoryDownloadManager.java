@@ -27,6 +27,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
 import com.inappstory.sdk.stories.outerevents.SingleLoadError;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
@@ -36,6 +37,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.UUID.randomUUID;
 
 public class StoryDownloadManager {
     public List<Story> getStories() {
@@ -78,12 +81,12 @@ public class StoryDownloadManager {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-
-                NetworkClient.getApi().getStoryById(id, StatisticSession.getInstance().id, 1,
-                        ApiSettings.getInstance().getApiKey(), EXPAND_STRING
+                final String storyUID = ProfilingManager.getInstance().addTask("api_story");
+                NetworkClient.getApi().getStoryById(id, 1, EXPAND_STRING
                 ).enqueue(new NetworkCallback<Story>() {
                     @Override
                     public void onSuccess(final Story response) {
+                        ProfilingManager.getInstance().setReady(storyUID);
                         CsEventBus.getDefault().post(new SingleLoad());
                         if (InAppStoryManager.getInstance().getSingleLoadedListener() != null) {
                             InAppStoryManager.getInstance().getSingleLoadedListener().onLoad();
@@ -102,7 +105,15 @@ public class StoryDownloadManager {
                     }
 
                     @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        ProfilingManager.getInstance().setReady(storyUID);
+                    }
+
+                    @Override
                     public void onError(int code, String message) {
+
+                        ProfilingManager.getInstance().setReady(storyUID);
                         if (InAppStoryManager.getInstance().getSingleLoadedListener() != null) {
                             InAppStoryManager.getInstance().getSingleLoadedListener().onError();
                         }
@@ -430,9 +441,11 @@ public class StoryDownloadManager {
                     }
                 }
                 if (loadFavorite) {
+                    final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_list");
                     storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
                         @Override
                         public void onSuccess(List<Story> response2) {
+                            ProfilingManager.getInstance().setReady(loadFavUID);
                             favStories.clear();
                             favStories.addAll(response2);
                             favoriteImages.clear();
@@ -472,7 +485,14 @@ public class StoryDownloadManager {
                         }
 
                         @Override
+                        public void onTimeout() {
+                            ProfilingManager.getInstance().setReady(loadFavUID);
+                            super.onTimeout();
+                        }
+
+                        @Override
                         public void onError(int code, String m) {
+                            ProfilingManager.getInstance().setReady(loadFavUID);
                             if (loadStoriesCallback != null) {
                                 List<Integer> ids = new ArrayList<>();
                                 for (Story story : response) {

@@ -2,6 +2,7 @@ package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
 import android.os.Build;
+import android.provider.Settings;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
@@ -21,6 +22,7 @@ import java.util.Map;
 import static com.inappstory.sdk.network.NetworkClient.getUAString;
 import static com.inappstory.sdk.network.NetworkHandler.GET;
 import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
+import static java.util.UUID.randomUUID;
 
 public class GameNetwork {
 
@@ -64,6 +66,10 @@ public class GameNetwork {
         connection.setRequestProperty("X-APP-PACKAGE-ID", packageName != null ? packageName : "-");
         connection.setRequestProperty("User-Agent", getUAString(context));
         connection.setRequestProperty("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey());
+        connection.setRequestProperty("X-Device-Id", Settings.Secure.getString(context.getContentResolver(),
+                Settings.Secure.ANDROID_ID));
+        connection.setRequestProperty("X-Request-ID", randomUUID().toString());
+        connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
         connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
 
         boolean hasBody = !method.equals(GET) && body != null && !body.isEmpty();

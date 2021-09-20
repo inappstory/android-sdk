@@ -9,36 +9,22 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public interface ApiInterface {
 
-    @GET("v2/story")
-    Request getStories(@Query("session_id") String sessionId,
-                       @Query("tags") String tags,
-                       @Query("test") String test,
-                       @Query("token") String token);
 
     @GET("v2/story")
-    Request getStories(@Query("session_id") String sessionId,
+    Request getStories(
                        @Query("test") String test,
                        @Query("favorite") Integer favorite,
                        @Query("tags") String tags,
-                       @Query("fields") String fields,
-                       @Query("token") String token);
+                       @Query("fields") String fields);
 
-    @GET("v2/story")
-    Request getStories(@Query("session_id") String sessionId,
-                       @Query("tags") String tags,
-                       @Query("favorite") Integer favorite,
-                       @Query("token") String token);
 
     @GET("v2/story-onboarding")
-    Request onboardingStories(@Query("session_id") String sessionId,
-                              @Query("tags") String tags,
-                              @Query("token") String token);
+    Request onboardingStories(@Query("tags") String tags);
 
     @GET("v2/story/{id}")
     Request getStoryById(@Path("id") String id,
-                         @Query("session_id") String sessionId,
+
                          @Query("src_list") Integer srcList,
-                         @Query("token") String token,
                          @Query("expand") String expand
     );
 
@@ -85,21 +71,15 @@ public interface ApiInterface {
 
     @POST("v2/story-like/{id}")
     Request storyLike(@Path("id") String id,
-                      @Query("session_id") String sessionId,
-                      @Query("token") String token,
                       @Query("value") Integer value);
 
     @POST("v2/story-favorite/{id}")
     Request storyFavorite(@Path("id") String id,
-                          @Query("session_id") String sessionId,
-                          @Query("token") String token,
                           @Query("value") Integer value);
 
 
     @GET("v2/story-share/{id}")
     Request share(@Path("id") String id,
-                  @Query("session_id") String sessionId,
-                  @Query("token") String token,
                   @Query("expand") String expand
     );
 

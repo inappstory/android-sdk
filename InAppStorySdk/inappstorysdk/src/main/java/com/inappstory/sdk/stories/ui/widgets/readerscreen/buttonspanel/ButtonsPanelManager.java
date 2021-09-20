@@ -13,7 +13,8 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -85,12 +86,14 @@ public class ButtonsPanelManager {
                 val = -1;
             }
         }
-        NetworkClient.getApi().storyLike(Integer.toString(storyId),
-                StatisticSession.getInstance().id,
-                ApiSettings.getInstance().getApiKey(), val).enqueue(
+        final String likeUID =
+                ProfilingManager.getInstance().addTask("api_like");
+        NetworkClient.getApi().storyLike(Integer.toString(storyId), val).enqueue(
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
+
+                        ProfilingManager.getInstance().setReady(likeUID);
                         if (story != null)
                             story.like = val;
                         if (callback != null)
@@ -100,9 +103,17 @@ public class ButtonsPanelManager {
 
                     @Override
                     public void onError(int code, String message) {
+
+                        ProfilingManager.getInstance().setReady(likeUID);
                         super.onError(code, message);
                         if (callback != null)
                             callback.onError();
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        ProfilingManager.getInstance().setReady(likeUID);
                     }
 
                     @Override
@@ -120,12 +131,12 @@ public class ButtonsPanelManager {
             StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex, !story.favorite));
-        NetworkClient.getApi().storyFavorite(Integer.toString(storyId),
-                StatisticSession.getInstance().id,
-                ApiSettings.getInstance().getApiKey(), val ? 0 : 1).enqueue(
+        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
+        NetworkClient.getApi().storyFavorite(Integer.toString(storyId), val ? 0 : 1).enqueue(
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
+                        ProfilingManager.getInstance().setReady(favUID);
                         boolean res = !val;
                         if (story != null)
                             story.favorite = res;
@@ -137,9 +148,18 @@ public class ButtonsPanelManager {
 
                     @Override
                     public void onError(int code, String message) {
+
+                        ProfilingManager.getInstance().setReady(favUID);
                         super.onError(code, message);
                         if (callback != null)
                             callback.onError();
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+
+                        ProfilingManager.getInstance().setReady(favUID);
                     }
 
                     @Override
@@ -175,10 +195,12 @@ public class ButtonsPanelManager {
         if (callback != null)
             callback.onClick();
         //CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
-        NetworkClient.getApi().share(Integer.toString(storyId), StatisticSession.getInstance().id,
-                ApiSettings.getInstance().getApiKey(), null).enqueue(new NetworkCallback<ShareObject>() {
+
+        final String shareUID = ProfilingManager.getInstance().addTask("api_share");
+        NetworkClient.getApi().share(Integer.toString(storyId), null).enqueue(new NetworkCallback<ShareObject>() {
             @Override
             public void onSuccess(ShareObject response) {
+                ProfilingManager.getInstance().setReady(shareUID);
                 if (callback != null)
                     callback.onSuccess(0);
                 if (CallbackManager.getInstance().getShareCallback() != null) {

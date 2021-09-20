@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.provider.Settings;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.InAppStoryService;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -106,6 +108,8 @@ public class NetworkClient {
                     .baseUrl(ApiSettings.getInstance().getCmsUrl())
                     .addHeader("Accept", "application/json")
                     .addHeader("Accept-Language", language)
+                    .addHeader("X-Device-Id", Settings.Secure.getString(appContext.getContentResolver(),
+                            Settings.Secure.ANDROID_ID))
                     .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
                     .addHeader("User-Agent", getUAString(appContext))
                     .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey()).build();

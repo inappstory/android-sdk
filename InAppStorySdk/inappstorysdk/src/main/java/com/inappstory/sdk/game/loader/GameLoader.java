@@ -8,6 +8,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static java.util.UUID.randomUUID;
 
 public class GameLoader {
 
@@ -142,7 +145,9 @@ public class GameLoader {
                         totalSize += resource.size;
                     }
                     final int fTotalSize = totalSize;
-                    File file = Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(),
+                    String hash = randomUUID().toString();
+                    File file = Downloader.downloadOrGetFile(url,
+                            InAppStoryService.getInstance().getCommonCache(),
                             new File(InAppStoryService.getInstance().getCommonCache().getCacheDir() +
                                     File.separator + "zip" +
                                     File.separator + pathName +
@@ -152,20 +157,30 @@ public class GameLoader {
                                 public void onProgress(int loadedSize, int totalSize) {
                                     callback.onProgress(loadedSize, fTotalSize + totalSize);
                                 }
-                            });
+                            }, hash);
+
+                    ProfilingManager.getInstance().setReady(hash);
                     File directory = new File(file.getParent() + File.separator + url.hashCode());
+                    String resourcesHash;
                     if (directory.exists()) {
+                        resourcesHash = ProfilingManager.getInstance().addTask("game_resources_download");
                         downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
                                 (int) file.length());
+                        ProfilingManager.getInstance().setReady(resourcesHash);
                         if (InAppStoryService.getInstance().getCommonCache().get(directory.getName()) == null) {
                             InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         }
                     }
                     else if (file.exists()) {
+                        String unzipHash = ProfilingManager.getInstance().addTask("game_unzip");
                         FileUnzipper.unzip(file, directory);
+                        ProfilingManager.getInstance().setReady(unzipHash);
                         InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
+                        resourcesHash = ProfilingManager.getInstance().addTask("game_resources_download");
                         downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
                                 (int) file.length());
+
+                        ProfilingManager.getInstance().setReady(resourcesHash);
                     } else {
                         if (callback != null)
                             callback.onError();

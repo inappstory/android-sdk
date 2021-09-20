@@ -15,8 +15,10 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
+import static java.util.UUID.randomUUID;
 
 class StoryDownloader {
     StoryDownloader(DownloadStoryCallback callback, StoryDownloadManager manager) {
@@ -246,10 +249,11 @@ class StoryDownloader {
 
     void loadStory(Integer key) {
         try {
+            String storyUID = ProfilingManager.getInstance().addTask("api_story");
             Response response = NetworkClient.getApi().getStoryById(Integer.toString(key),
-                    StatisticSession.getInstance().id, 1,
-                    ApiSettings.getInstance().getApiKey(),
+                    1,
                     EXPAND_STRING).execute();
+            ProfilingManager.getInstance().setReady(storyUID);
             if (response.body != null) {
                 Story story = JsonParser.fromJson(response.body, Story.class);
                 int loadType;
@@ -280,10 +284,9 @@ class StoryDownloader {
     }
 
     void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
-        NetworkClient.getApi().getStories(StatisticSession.getInstance().id,
+        NetworkClient.getApi().getStories(
                 ApiSettings.getInstance().getTestKey(), 1,
-                null, "id, background_color, image",
-                null).enqueue(callback);
+                null, "id, background_color, image").enqueue(callback);
     }
 
     void loadStoryList(final NetworkCallback<List<Story>> callback, final boolean isFavorite) {
@@ -295,12 +298,34 @@ class StoryDownloader {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
-                    NetworkClient.getApi().getStories(StatisticSession.getInstance().id,
+                    final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
+                            ? "api_favorite_list" : "api_story_list");
+                    NetworkClient.getApi().getStories(
                             ApiSettings.getInstance().getTestKey(),
                             isFavorite ? 1 : 0,
                             InAppStoryService.getInstance().getTagsString(),
-                            null, null)
-                            .enqueue(callback);
+                            null)
+                            .enqueue(new LoadListCallback() {
+                                @Override
+                                public void onSuccess(List<Story> response) {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    callback.onSuccess(response);
+                                }
+
+                                @Override
+                                public void onTimeout() {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    super.onTimeout();
+                                    callback.onTimeout();
+                                }
+
+                                @Override
+                                public void onError(int code, String message) {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    super.onError(code, message);
+                                    callback.onError(code, message);
+                                }
+                            });
                 }
 
                 @Override

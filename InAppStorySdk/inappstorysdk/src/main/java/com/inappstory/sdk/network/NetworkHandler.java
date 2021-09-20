@@ -5,6 +5,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.stories.api.models.StatisticSession;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.UUID.randomUUID;
 
 public final class NetworkHandler implements InvocationHandler {
     /**
@@ -54,8 +59,14 @@ public final class NetworkHandler implements InvocationHandler {
                 connection.setRequestProperty(key.toString(), req.getHeader(key));
             }
         }
+        if (InAppStoryService.getInstance() != null && InAppStoryService.getInstance().getUserId() != null)
+            connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
+        connection.setRequestProperty("X-Request-ID", randomUUID().toString());
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        }
+        if (!StatisticSession.needToUpdate() && !req.getUrl().contains("session/open")) {
+            connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
         }
         Log.d("InAppStory_Network", req.getHeaders().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
@@ -157,7 +168,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (networkClient == null) networkClient = NetworkClient.getInstance();
         //
         HashMap<String, String> vars = new HashMap<>();
-       // String path = ev.value();
+        // String path = ev.value();
         String body = "";
         if (headers == null) {
             headers = networkClient.getHeaders();
@@ -195,7 +206,6 @@ public final class NetworkHandler implements InvocationHandler {
     }
 
     public NetworkClient networkClient;
-
 
 
     public static final String POST = "POST";

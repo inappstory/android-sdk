@@ -1,21 +1,22 @@
 package com.inappstory.sdk.game.reader;
 
+import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
-import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ImageView;
@@ -33,36 +34,14 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.api.models.StatisticManager;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.outerevents.CallToAction;
-import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
-import com.inappstory.sdk.stories.outerevents.FinishGame;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
-import com.inappstory.sdk.stories.utils.TaskRunner;
-
-import org.json.JSONObject;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.Callable;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.inappstory.sdk.network.JsonParser.toMap;
@@ -99,9 +78,21 @@ public class GameActivity extends AppCompatActivity {
 
     void gameReaderGestureBack() {
         if (webView != null) {
-            webView.evaluateJavascript("gameReaderGestureBack();", null);
+            if (manager.gameLoaded) {
+                webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String s) {
+                      //  if (!s.equals("true"))
+                      //      closeGame();
+                    }
+                });
+            } else {
+                gameCompleted(null, null);
+            }
         }
     }
+
+
 
     AudioManager.OnAudioFocusChangeListener audioFocusChangeListener =
             new AudioManager.OnAudioFocusChangeListener() {
@@ -123,6 +114,7 @@ public class GameActivity extends AppCompatActivity {
 
 
     void updateUI() {
+        ProfilingManager.getInstance().setReady("game_" + manager.storyId + "_" + manager.index);
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -131,6 +123,7 @@ public class GameActivity extends AppCompatActivity {
                     loaderContainer.setVisibility(View.GONE);
             }
         });
+
     }
 
     private void setViews() {
@@ -339,11 +332,23 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        }
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
+       /* new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (webView != null) {
+                    webView.evaluateJavascript("Android.gameComplete(\"\", \"\", \"dodo://category/100\");", null);
+                }
+            }
+        }, 10000);*/
         manager = new GameManager(this);
         manager.callback = new GameLoadCallback() {
             @Override
@@ -379,7 +384,13 @@ public class GameActivity extends AppCompatActivity {
                 manager.title, manager.tags,
                 manager.slidesCount, manager.index));
         if (manager.gameLoaded) {
-            webView.loadUrl("javascript:closeGameReader()");
+            webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String s) {
+                  //  if (!s.equals("true"))
+                 //       gameCompleted(null, null);
+                }
+            });
         } else {
             gameCompleted(null, null);
         }

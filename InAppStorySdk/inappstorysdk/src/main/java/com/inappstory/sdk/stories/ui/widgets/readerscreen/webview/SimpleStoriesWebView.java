@@ -332,6 +332,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                         return super.shouldInterceptRequest(view, request);
                 }
 
+
+
                 @Override
                 public void onPageFinished(WebView view, String url) {
 
@@ -355,6 +357,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 public void onProgressChanged(WebView view, int newProgress) {
                     if (getManager().getProgressBar() != null)
                         getManager().getProgressBar().setProgress(newProgress);
+
                 }
 
                 @Override
