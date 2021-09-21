@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static android.content.Context.TELEPHONY_SERVICE;
 import static com.inappstory.sdk.network.NetworkClient.getUAString;
 import static java.util.UUID.randomUUID;
 
@@ -70,7 +72,7 @@ public class ProfilingManager {
         return hash;
     }
 
-    public void setReady(String hash) {
+    public void setReady(String hash, boolean force) {
         synchronized (tasksLock) {
             ProfilingTask readyTask = null;
             for (ProfilingTask task : tasks) {
@@ -84,8 +86,21 @@ public class ProfilingManager {
             if (hash == null || hash.isEmpty()) return;
             readyTask.endTime = System.currentTimeMillis();
             readyTask.isReady = true;
-            readyTasks.add(readyTask);
+
+            if (force) {
+                try {
+                    sendTiming(readyTask);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                readyTasks.add(readyTask);
+            }
         }
+    }
+
+    public void setReady(String hash) {
+        setReady(hash, false);
     }
 
     private Handler handler = new Handler();
@@ -108,7 +123,8 @@ public class ProfilingManager {
         @Override
         public void run() {
             if (getInstance().readyTasks == null || getInstance().readyTasks.size() == 0
-                    || StatisticSession.needToUpdate() || (!StatisticSession.getInstance().allowProfiling)
+                    || StatisticSession.needToUpdate()
+                    || (!StatisticSession.getInstance().allowProfiling)
                     || !InAppStoryService.isConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
@@ -142,12 +158,15 @@ public class ProfilingManager {
     }
 
     private int sendTiming(ProfilingTask task) throws Exception {
+        TelephonyManager tm = (TelephonyManager)InAppStoryManager.getInstance().getContext().getSystemService(TELEPHONY_SERVICE);
+        String countryCodeValue = tm.getNetworkCountryIso();
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 StatisticSession.getInstance().id);
         qParams.put("u", InAppStoryService.getInstance().getUserId());
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
-        qParams.put("c", Locale.getDefault().getCountry());
+        qParams.put("c", (countryCodeValue != null && !countryCodeValue.isEmpty()) ? countryCodeValue :
+                Locale.getDefault().getCountry());
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));
         HttpURLConnection connection = (HttpURLConnection) getURL("timing", qParams).openConnection();
