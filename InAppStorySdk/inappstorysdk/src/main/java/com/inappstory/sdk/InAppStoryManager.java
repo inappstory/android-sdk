@@ -460,6 +460,7 @@ public class InAppStoryManager {
             if (InAppStoryService.isNotNull())
                 InAppStoryService.getInstance().logout();
             InAppStoryService.getInstance().getDownloadManager().cleanTasks();
+            INSTANCE = null;
         }
     }
 

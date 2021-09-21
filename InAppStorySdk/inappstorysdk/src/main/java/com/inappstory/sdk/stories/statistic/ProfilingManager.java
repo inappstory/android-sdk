@@ -166,7 +166,7 @@ public class ProfilingManager {
         return new URL(url + varStr);
     }
 
-    private int sendTiming(ProfilingTask task) throws Exception {
+    private String getCC() {
         TelephonyManager tm = (TelephonyManager)InAppStoryManager.getInstance().getContext().getSystemService(TELEPHONY_SERVICE);
         String countryCodeValue = tm.getNetworkCountryIso();
         if (countryCodeValue == null || countryCodeValue.isEmpty()) {
@@ -178,12 +178,16 @@ public class ProfilingManager {
                         getResources().getConfiguration().locale.getCountry();
             }
         }
+        return countryCodeValue.toUpperCase();
+    }
+
+    private int sendTiming(ProfilingTask task) throws Exception {
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 StatisticSession.getInstance().id);
         qParams.put("u", InAppStoryService.getInstance().getUserId());
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
-        qParams.put("c", countryCodeValue);
+        qParams.put("c", getCC());
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));
         HttpURLConnection connection = (HttpURLConnection) getURL("timing", qParams).openConnection();
