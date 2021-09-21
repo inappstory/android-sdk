@@ -349,6 +349,14 @@ public class InAppStoryService {
         listSubscribers.add(listManager);
     }
 
+
+    public void clearSubscribers() {
+        for (StoriesListManager listManager : listSubscribers) {
+            listManager.clear();
+        }
+        listSubscribers.clear();
+    }
+
     public void removeListSubscriber(StoriesListManager listManager) {
         if (listSubscribers == null) return;
         listManager.clear();

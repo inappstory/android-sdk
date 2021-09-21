@@ -459,6 +459,7 @@ public class InAppStoryManager {
         if (INSTANCE != null) {
             if (InAppStoryService.isNotNull())
                 InAppStoryService.getInstance().logout();
+            InAppStoryService.getInstance().listSubscribers.clear();
             InAppStoryService.getInstance().getDownloadManager().cleanTasks();
             INSTANCE = null;
         }

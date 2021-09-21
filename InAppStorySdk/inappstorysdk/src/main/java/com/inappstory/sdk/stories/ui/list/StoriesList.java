@@ -51,7 +51,6 @@ public class StoriesList extends RecyclerView {
     }
 
 
-
     public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(attrs);
@@ -68,13 +67,15 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        InAppStoryService.getInstance().removeListSubscriber(manager);
+        if (InAppStoryService.getInstance() != null)
+            InAppStoryService.getInstance().removeListSubscriber(manager);
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        InAppStoryService.getInstance().addListSubscriber(manager);
+        if (InAppStoryService.getInstance() != null)
+            InAppStoryService.getInstance().addListSubscriber(manager);
     }
 
     private void init(AttributeSet attributeSet) {
