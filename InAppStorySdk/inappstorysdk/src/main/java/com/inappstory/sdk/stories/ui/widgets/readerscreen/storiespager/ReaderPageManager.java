@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
@@ -255,6 +256,8 @@ public class ReaderPageManager {
     }
 
     public void changeCurrentSlide() {
+        ProfilingManager.getInstance().addTask("slide_show",
+                storyId + "_" + slideIndex);
         isPaused = false;
         timelineManager.setCurrentSlide(slideIndex);
         timerManager.stopTimer();
