@@ -6,6 +6,7 @@ public class ProfilingTask {
     long startTime;
     long endTime;
     String sessionId;
+    String userId;
     boolean isReady;
 
     @Override

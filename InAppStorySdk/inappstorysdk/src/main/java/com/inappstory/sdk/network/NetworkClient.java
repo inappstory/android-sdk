@@ -145,6 +145,8 @@ public class NetworkClient {
     //Test
     public static String getUAString(Context context) {
         String userAgent = "";
+        if (context == null) return "InAppStorySDK/" + BuildConfig.VERSION_CODE
+                + " " + System.getProperty("http.agent");
         String agentString = System.getProperty("http.agent");
         if (agentString != null && !agentString.isEmpty()) {
             int appVersion = BuildConfig.VERSION_CODE;

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.statistic;
 
+import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -29,7 +30,7 @@ public class ProfilingManager {
     ArrayList<ProfilingTask> readyTasks = new ArrayList<>();
     private static ProfilingManager INSTANCE;
 
-
+    Context context;
     private static final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
@@ -64,6 +65,7 @@ public class ProfilingManager {
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = StatisticSession.getInstance().id;
+        task.userId = InAppStoryService.getInstance().getUserId();
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
@@ -124,6 +126,7 @@ public class ProfilingManager {
     public void init() {
         thread = new HandlerThread("ProfilingThread" + System.currentTimeMillis());
         thread.start();
+        context = InAppStoryManager.getInstance().getContext();
         handler = new Handler(thread.getLooper());
         handler.postDelayed(queueTasksRunnable, 100);
     }
@@ -185,13 +188,13 @@ public class ProfilingManager {
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 StatisticSession.getInstance().id);
-        qParams.put("u", InAppStoryService.getInstance().getUserId());
+        qParams.put("u", task.userId != null ? task.userId : "");
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
         qParams.put("c", getCC());
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));
         HttpURLConnection connection = (HttpURLConnection) getURL("timing", qParams).openConnection();
-        connection.setRequestProperty("User-Agent", getUAString(InAppStoryManager.getInstance().getContext()));
+        connection.setRequestProperty("User-Agent", getUAString(context));
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");
