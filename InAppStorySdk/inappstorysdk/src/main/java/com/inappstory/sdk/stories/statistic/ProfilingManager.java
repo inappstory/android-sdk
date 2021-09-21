@@ -89,11 +89,19 @@ public class ProfilingManager {
             readyTask.isReady = true;
 
             if (force) {
-                try {
-                    sendTiming(readyTask);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
+                final ProfilingTask finalReadyTask = readyTask;
+                this.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            sendTiming(finalReadyTask);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
             } else {
                 readyTasks.add(readyTask);
             }
