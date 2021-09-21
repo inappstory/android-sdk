@@ -78,18 +78,18 @@ public class Downloader {
 
     @NonNull
     @WorkerThread
-    public static File downloadOrGetGameFile(@NonNull String url, @NonNull String hashKey,
+    public static boolean downloadOrGetGameFile(@NonNull String url, @NonNull String hashKey,
                                              LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
         if (cache.hasKey(key)) {
-            return cache.get(key);
+            return false;
         } else {
             if (img == null) {
                 img = cache.getFileFromKey(key);
             }
             File file = downloadFile(url, img, callback);
             cache.put(key, file);
-            return file;
+            return true;
         }
     }
 

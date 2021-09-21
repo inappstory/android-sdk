@@ -84,27 +84,28 @@ public class GameLoader {
         }
     }
 
-    private void downloadResources(final List<WebResource> resources,
-                                   final File file,
-                                   final GameLoadCallback callback,
-                                   final int totalSize,
-                                   final int curSize) {
-        if (terminate) return;
-        if (InAppStoryService.isNull()) return;
+    private boolean downloadResources(final List<WebResource> resources,
+                                      final File file,
+                                      final GameLoadCallback callback,
+                                      final int totalSize,
+                                      final int curSize) {
+        if (terminate) return false;
+        if (InAppStoryService.isNull()) return false;
         String pathName = file.getAbsolutePath();
         final File filePath = new File(pathName + "/src/");
         //  if (!filePath.exists()) {
         //      filePath.mkdirs();
         //  }
         int cnt = curSize;
+        boolean downloaded = false;
         for (WebResource resource : resources) {
-            if (terminate) return;
+            if (terminate) return false;
             try {
                 String url = resource.url;
                 String fileName = resource.key;
                 if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
                     continue;
-                Downloader.downloadOrGetGameFile(url, fileName, InAppStoryService.getInstance().getCommonCache(),
+                downloaded |= Downloader.downloadOrGetGameFile(url, fileName, InAppStoryService.getInstance().getCommonCache(),
                         new File(filePath.getAbsolutePath() + "/" + fileName),
                         null);
                 cnt += resource.size;
@@ -128,7 +129,7 @@ public class GameLoader {
                 }
             });
         }
-
+        return downloaded;
     }
 
     public void downloadAndUnzip(final Context context,
@@ -166,23 +167,21 @@ public class GameLoader {
                     String resourcesHash;
                     if (directory.exists()) {
                         resourcesHash = ProfilingManager.getInstance().addTask("game_resources_download");
-                        downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
-                                (int) file.length());
-                        ProfilingManager.getInstance().setReady(resourcesHash);
+                        if (downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
+                                (int) file.length()))
+                            ProfilingManager.getInstance().setReady(resourcesHash);
                         if (InAppStoryService.getInstance().getCommonCache().get(directory.getName()) == null) {
                             InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         }
-                    }
-                    else if (file.exists()) {
+                    } else if (file.exists()) {
                         String unzipHash = ProfilingManager.getInstance().addTask("game_unzip");
                         FileUnzipper.unzip(file, directory);
                         ProfilingManager.getInstance().setReady(unzipHash);
                         InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         resourcesHash = ProfilingManager.getInstance().addTask("game_resources_download");
-                        downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
-                                (int) file.length());
-
-                        ProfilingManager.getInstance().setReady(resourcesHash);
+                        if (downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
+                                (int) file.length()))
+                            ProfilingManager.getInstance().setReady(resourcesHash);
                     } else {
                         if (callback != null)
                             callback.onError();

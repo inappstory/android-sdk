@@ -82,8 +82,8 @@ public class GameActivity extends AppCompatActivity {
                 webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String s) {
-                      //  if (!s.equals("true"))
-                      //      closeGame();
+                        if (!s.equals("true"))
+                            closeGame();
                     }
                 });
             } else {
@@ -388,8 +388,8 @@ public class GameActivity extends AppCompatActivity {
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
-                  //  if (!s.equals("true"))
-                 //       gameCompleted(null, null);
+                    if (!s.equals("true"))
+                        gameCompleted(null, null);
                 }
             });
         } else {
