@@ -90,6 +90,7 @@ public class GameLoader {
                                    final int totalSize,
                                    final int curSize) {
         if (terminate) return;
+        if (InAppStoryService.isNull()) return;
         String pathName = file.getAbsolutePath();
         final File filePath = new File(pathName + "/src/");
         //  if (!filePath.exists()) {
@@ -140,6 +141,7 @@ public class GameLoader {
             @Override
             public Void call() {
                 try {
+                    if (InAppStoryService.isNull()) return null;
                     int totalSize = 0;
                     for (WebResource resource : resources) {
                         totalSize += resource.size;
