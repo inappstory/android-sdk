@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.statistic;
 
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.telephony.TelephonyManager;
@@ -160,13 +161,21 @@ public class ProfilingManager {
     private int sendTiming(ProfilingTask task) throws Exception {
         TelephonyManager tm = (TelephonyManager)InAppStoryManager.getInstance().getContext().getSystemService(TELEPHONY_SERVICE);
         String countryCodeValue = tm.getNetworkCountryIso();
+        if (countryCodeValue == null || countryCodeValue.isEmpty()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                countryCodeValue = InAppStoryManager.getInstance().getContext().
+                        getResources().getConfiguration().getLocales().get(0).getCountry();
+            } else {
+                countryCodeValue = InAppStoryManager.getInstance().getContext().
+                        getResources().getConfiguration().locale.getCountry();
+            }
+        }
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 StatisticSession.getInstance().id);
         qParams.put("u", InAppStoryService.getInstance().getUserId());
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
-        qParams.put("c", (countryCodeValue != null && !countryCodeValue.isEmpty()) ? countryCodeValue :
-                Locale.getDefault().getCountry());
+        qParams.put("c", countryCodeValue);
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));
         HttpURLConnection connection = (HttpURLConnection) getURL("timing", qParams).openConnection();
