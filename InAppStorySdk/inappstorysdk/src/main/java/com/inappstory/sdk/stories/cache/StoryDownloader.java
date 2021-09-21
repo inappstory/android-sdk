@@ -106,28 +106,39 @@ class StoryDownloader {
 
             if (storyTasks == null) storyTasks = new HashMap<>();
             for (Integer storyTaskKey : storyTasks.keySet()) {
-                if (storyTasks.get(storyTaskKey).loadType > 0 && storyTasks.get(storyTaskKey).loadType != 3) {
+                if (storyTasks.get(storyTaskKey).loadType > 0 &&
+                        storyTasks.get(storyTaskKey).loadType != 3
+                        && storyTasks.get(storyTaskKey).loadType != 6) {
                     storyTasks.get(storyTaskKey).loadType += 3;
                 }
             }
-            if (storyTasks.get(storyId) != null) {
-                if (storyTasks.get(storyId).loadType != 3) {
-                    storyTasks.get(storyId).loadType = 1;
-                } else {
-                    return;
-                }
-            } else {
-                storyTasks.put(storyId, new StoryTask(1));
-            }
             for (Integer storyTaskKey : addIds) {
                 if (storyTasks.get(storyTaskKey) != null) {
-                    if (storyTasks.get(storyTaskKey).loadType != 3) {
+                    if (storyTasks.get(storyTaskKey).loadType != 3 &&
+                            storyTasks.get(storyTaskKey).loadType != 6) {
                         storyTasks.get(storyTaskKey).loadType = 4;
                     }
                 } else {
                     StoryTask st = new StoryTask(4);
                     storyTasks.put(storyTaskKey, st);
                 }
+            }
+            if (storyTasks.get(storyId) != null) {
+                if (storyTasks.get(storyId).loadType != 3) {
+                    if (storyTasks.get(storyId).loadType == 6) {
+                        storyTasks.get(storyId).loadType = 3;
+                        if (callback != null)
+                            callback.onDownload(manager.getStoryById(storyId), 3);
+                    } else if (storyTasks.get(storyId).loadType == 5) {
+                        storyTasks.get(storyId).loadType = 2;
+                    } else {
+                        storyTasks.get(storyId).loadType = 1;
+                    }
+                } else {
+                    return;
+                }
+            } else {
+                storyTasks.put(storyId, new StoryTask(1));
             }
             changePriority(storyId, addIds);
         }
