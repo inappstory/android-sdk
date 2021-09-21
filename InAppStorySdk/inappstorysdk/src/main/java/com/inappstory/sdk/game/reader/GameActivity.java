@@ -317,7 +317,8 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void setLoader() {
-        if (manager.loaderPath != null && !manager.loaderPath.isEmpty())
+        if (manager.loaderPath != null && !manager.loaderPath.isEmpty()
+                && InAppStoryService.getInstance() != null)
             ImageLoader.getInstance().displayImage(manager.loaderPath, -1, loader,
                     InAppStoryService.getInstance().getCommonCache());
         else
