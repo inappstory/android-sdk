@@ -234,7 +234,7 @@ public class SessionManager {
                     new NetworkCallback<StatisticResponse>() {
                         @Override
                         public void onSuccess(StatisticResponse response) {
-                            ProfilingManager.getInstance().setReady(sessionCloseUID);
+                            ProfilingManager.getInstance().setReady(sessionCloseUID, true);
                             if (changeUserId && InAppStoryService.isNotNull())
                                 InAppStoryService.getInstance().getListReaderConnector().changeUserId();
                         }
