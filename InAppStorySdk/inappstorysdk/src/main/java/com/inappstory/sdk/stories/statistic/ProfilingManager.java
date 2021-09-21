@@ -170,14 +170,15 @@ public class ProfilingManager {
     }
 
     private String getCC() {
-        TelephonyManager tm = (TelephonyManager)InAppStoryManager.getInstance().getContext().getSystemService(TELEPHONY_SERVICE);
+        if (context == null) return null;
+        TelephonyManager tm = (TelephonyManager) context.getSystemService(TELEPHONY_SERVICE);
         String countryCodeValue = tm.getNetworkCountryIso();
         if (countryCodeValue == null || countryCodeValue.isEmpty()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                countryCodeValue = InAppStoryManager.getInstance().getContext().
+                countryCodeValue = context.
                         getResources().getConfiguration().getLocales().get(0).getCountry();
             } else {
-                countryCodeValue = InAppStoryManager.getInstance().getContext().
+                countryCodeValue = context.
                         getResources().getConfiguration().locale.getCountry();
             }
         }
@@ -189,8 +190,10 @@ public class ProfilingManager {
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 StatisticSession.getInstance().id);
         qParams.put("u", task.userId != null ? task.userId : "");
+        String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);
-        qParams.put("c", getCC());
+        if (cc != null)
+            qParams.put("c", cc);
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));
         HttpURLConnection connection = (HttpURLConnection) getURL("timing", qParams).openConnection();
