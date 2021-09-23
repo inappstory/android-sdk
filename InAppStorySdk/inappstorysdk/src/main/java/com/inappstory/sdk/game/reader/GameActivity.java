@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -277,7 +278,7 @@ public class GameActivity extends AppCompatActivity {
             } else {
                 finalIntent = Intent.createChooser(sendIntent, null);
                 finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                InAppStoryService.getInstance().getContext().startActivity(finalIntent);
+                InAppStoryManager.getInstance().getContext().startActivity(finalIntent);
                 ScreensManager.getInstance().setOldTempShareId(id);
                 ScreensManager.getInstance().setOldTempShareStoryId(-1);
             }
@@ -285,6 +286,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void tapOnLink(String link) {
+        if (InAppStoryService.getInstance() == null) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                 Integer.parseInt(storyId));
         CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
@@ -433,7 +435,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void setLoader() {
-        if (loaderPath != null && !loaderPath.isEmpty())
+        if (loaderPath != null && !loaderPath.isEmpty() && InAppStoryService.isNotNull())
             ImageLoader.getInstance().displayImage(loaderPath, -1, loader, InAppStoryService.getInstance().getCommonCache());
         else
             loader.setBackgroundColor(Color.BLACK);
