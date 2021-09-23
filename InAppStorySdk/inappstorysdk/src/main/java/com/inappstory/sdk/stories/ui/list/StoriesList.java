@@ -38,6 +38,7 @@ public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
         super(context);
         init(null);
+
     }
 
 
