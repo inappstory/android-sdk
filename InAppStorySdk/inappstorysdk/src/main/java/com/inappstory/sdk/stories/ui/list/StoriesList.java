@@ -221,13 +221,14 @@ public class StoriesList extends RecyclerView {
 
 
     public void changeStoryEvent(int storyId) {
-
+        if (adapter == null || adapter.getStoriesIds() == null) return;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
             if (adapter.getStoriesIds().get(i) == storyId) {
                 adapter.notifyItemChanged(i);
                 break;
             }
         }
+        if (layoutManager == null) return;
         if (layoutManager instanceof LinearLayoutManager) {
             final int ind = adapter.getIndexById(storyId);
             if (ind == -1) return;
