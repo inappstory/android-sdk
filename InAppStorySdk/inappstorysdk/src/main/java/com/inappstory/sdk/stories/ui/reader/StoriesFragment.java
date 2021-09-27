@@ -344,6 +344,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentIds.get(lastPos));
             StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.slidesCount);
         }
+        if (story2 == null) return;
         StatisticManager.getInstance().sendViewStory(id, whence);
         StatisticManager.getInstance().sendOpenStory(id, whence);
         StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex);
