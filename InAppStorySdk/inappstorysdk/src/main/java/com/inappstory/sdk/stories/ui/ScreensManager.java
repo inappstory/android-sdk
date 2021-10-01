@@ -15,6 +15,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
@@ -125,18 +126,24 @@ public class ScreensManager {
         intent2.putExtra("gameConfig", gameConfig);
         intent2.putExtra("gameResources", resources);
         intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
-        CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags, story.slidesCount, index));
+        CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags,
+                story.slidesCount, index));
+        if (CallbackManager.getInstance().getGameCallback() != null) {
+            CallbackManager.getInstance().getGameCallback().startGame(storyId, story.title,
+                    story.tags, story.slidesCount, index);
+        }
         ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
     }
 
-    public void openStoriesReader(Context outerContext, AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds, int index, int source) {
 
+    public void openStoriesReader(Context outerContext, AppearanceManager manager,
+                                  ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {
         if (Sizes.isTablet() && outerContext != null && outerContext instanceof AppCompatActivity) {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
             bundle.putInt("source", source);
+            bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
             bundle.putIntegerArrayList("stories_ids", storiesIds);
             if (manager == null) {
                 manager = AppearanceManager.getCommonInstance();
@@ -173,6 +180,7 @@ public class ScreensManager {
             intent2.putExtra("index", index);
             intent2.putExtra("source", source);
             intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
+            intent2.putExtra("slideIndex", slideIndex);
             if (manager != null) {
                 int nightModeFlags =
                         ctx.getResources().getConfiguration().uiMode &
@@ -202,5 +210,10 @@ public class ScreensManager {
                 outerContext.startActivity(intent2);
             }
         }
+    }
+
+    public void openStoriesReader(Context outerContext, AppearanceManager manager,
+                                  ArrayList<Integer> storiesIds, int index, int source) {
+        openStoriesReader(outerContext, manager, storiesIds, index, source, 0);
     }
 }

@@ -18,6 +18,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -37,17 +38,19 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     private List<Integer> storiesIds = new ArrayList<>();
     private boolean isFavoriteList;
     OnFavoriteItemClick favoriteItemClick;
+    ListCallback callback;
 
     boolean hasFavItem = false;
 
     public Context context;
 
     public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
-                          OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList) {
+                          OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback) {
         this.context = context;
         this.storiesIds = storiesIds;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
+        this.callback = callback;
         this.isFavoriteList = isFavoriteList;
         hasFavItem = !isFavoriteList && InAppStoryService.isNotNull()
                 && manager != null && manager.csHasFavorite()
@@ -124,6 +127,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                     notifyItemChanged(index);
                 } else {
                     if (!InAppStoryService.isConnected()) {
+                        if (CallbackManager.getInstance().getErrorCallback() != null) {
+                            CallbackManager.getInstance().getErrorCallback().noConnection();
+                        }
                         CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                         return;
                     }
@@ -141,6 +147,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 return;
             }
             if (current.isHideInReader()) {
+
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().emptyLinkError();
+                }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                 return;
             }
@@ -151,12 +161,21 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        if (current != null)
+        if (current != null) {
             CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.slidesCount,
                     isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
-        else {
+            if (callback != null) {
+                callback.itemClick(current.id, index, current.title, current.tags, current.slidesCount,
+                        isFavoriteList);
+            }
+        } else {
             CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null, null, 0,
                     isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+
+            if (callback != null) {
+                callback.itemClick(storiesIds.get(index), index, null, null, 0,
+                        isFavoriteList);
+            }
         }
         ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),

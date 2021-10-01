@@ -6,6 +6,7 @@ import android.util.Pair;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -213,6 +214,9 @@ class SlidesDownloader {
     DownloadPageCallback callback;
 
     private void loadPageError(final int storyId, final int index) {
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().cacheError();
+        }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
         synchronized (pageTasksLock) {
             pageTasks.get(new Pair<>(storyId, index)).loadType = -1;

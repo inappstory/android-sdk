@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -59,6 +60,7 @@ public class StoriesViewManager {
     public int loadedId = -1;
 
     public void setIndex(int index) {
+        Log.e("setWebIndex", "setIndex " + index);
         this.index = index;
     }
 
@@ -98,12 +100,19 @@ public class StoriesViewManager {
 
     boolean lock = true;
 
-    public void storyLoaded(int oId, int oInd) {
+    public void storyLoaded(int oId, int oInd, boolean alreadyLoaded) {
+
+        Log.e("setWebIndex", "storyLoaded " + oInd);
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
+        if (alreadyLoaded) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         innerLoad(story);
+    }
+
+    public void storyLoaded(int oId, int oInd) {
+        storyLoaded(oId, oInd, false);
     }
 
     public StoriesViewManager() {
@@ -147,6 +156,9 @@ public class StoriesViewManager {
         if (InAppStoryService.isNull())
             return;
         if (!InAppStoryService.isConnected()) {
+            if (CallbackManager.getInstance().getErrorCallback() != null) {
+                CallbackManager.getInstance().getErrorCallback().noConnection();
+            }
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             return;
         }
@@ -156,6 +168,7 @@ public class StoriesViewManager {
         }
         if (story.slidesCount <= index) return;
         storyId = id;
+        Log.e("setWebIndex", "loadStory " + index);
         this.index = index;
         loadedIndex = index;
         loadedId = id;
@@ -163,13 +176,14 @@ public class StoriesViewManager {
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
         if (slideInCache) {
             innerLoad(story);
-            pageManager.slideLoadedInCache(index);
+            pageManager.slideLoadedInCache(index, true);
         } else {
             pageManager.storyLoadStart();
         }
     }
 
     void setWebViewSettings(Story story) throws IOException {
+        Log.e("setWebIndex", "setWebViewSettings " + index);
         String innerWebData = story.pages.get(index);
         String layout = getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
@@ -277,12 +291,18 @@ public class StoriesViewManager {
             if (InAppStoryService.isConnected()) {
                 pageManager.storyClick(null, (int) getClickCoordinate(), false);
             } else {
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().noConnection();
+                }
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else if (payload.equals("forbidden")) {
             if (InAppStoryService.isConnected()) {
                 pageManager.storyClick(null, (int) getClickCoordinate(), true);
             } else {
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().noConnection();
+                }
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else {
@@ -374,6 +394,10 @@ public class StoriesViewManager {
         }
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                 story.tags, story.slidesCount, index));
+        if (CallbackManager.getInstance().getShowSlideCallback() != null) {
+            CallbackManager.getInstance().getShowSlideCallback().showSlide(story.id, story.title,
+                    story.tags, story.slidesCount, index);
+        }
     }
 
     public void freezeUI() {
@@ -443,6 +467,11 @@ public class StoriesViewManager {
 
     public void changeIndex(int index) {
         pageManager.openSlideByIndex(index);
+    }
+
+
+    public void showSingleStory(int storyId, int slideIndex) {
+        pageManager.showSingleStory(storyId, slideIndex);
     }
 
     public void restartStoryWithDuration(long duration) {

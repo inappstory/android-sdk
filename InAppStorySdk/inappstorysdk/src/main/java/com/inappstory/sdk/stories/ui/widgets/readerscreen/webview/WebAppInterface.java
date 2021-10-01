@@ -49,6 +49,16 @@ public class WebAppInterface {
         logMethod("" + index);
     }
 
+    @JavascriptInterface
+    public void showSingleStory(int id, int index) {
+        logMethod("" + id + " " + index);
+        if (manager.storyId != id) {
+            manager.showSingleStory(id, index);
+        } else if (manager.index != index) {
+            manager.changeIndex(index);
+        }
+    }
+
 
     @JavascriptInterface
     public void openGameReader(String gameFile, String coverFile, String initCode, String gameResources) {

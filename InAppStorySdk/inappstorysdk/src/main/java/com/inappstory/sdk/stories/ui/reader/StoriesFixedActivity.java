@@ -30,6 +30,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
@@ -193,6 +195,15 @@ public class StoriesFixedActivity extends AppCompatActivity {
                     story.title, story.tags, story.slidesCount,
                     story.lastIndex, CloseStory.CUSTOM,
                     getIntent().getIntExtra("source", 0)));
+            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                        story.id,
+                        story.title, story.tags, story.slidesCount,
+                        story.lastIndex, CloseReader.CUSTOM,
+                        CallbackManager.getInstance().getSourceFromInt(
+                                getIntent().getIntExtra("source", 0))
+                );
+            }
             String cause = StatisticManager.BACK;
             StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
         }
@@ -306,6 +317,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
+                bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
                 setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
@@ -344,6 +356,16 @@ public class StoriesFixedActivity extends AppCompatActivity {
                     story.title, story.tags, story.slidesCount,
                     story.lastIndex, event.getAction(),
                     getIntent().getIntExtra("source", 0)));
+            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                        story.id,
+                        story.title, story.tags, story.slidesCount,
+                        story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
+                                event.getAction()),
+                        CallbackManager.getInstance().getSourceFromInt(
+                                getIntent().getIntExtra("source", 0))
+                );
+            }
             String cause = StatisticManager.AUTO;
             switch (event.getAction()) {
                 case CloseStory.CLICK:

@@ -35,6 +35,7 @@ import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.api.models.ShareObject;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -384,6 +385,12 @@ public class GameActivity extends AppCompatActivity {
         CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(manager.storyId),
                 manager.title, manager.tags,
                 manager.slidesCount, manager.index));
+        if (CallbackManager.getInstance().getGameCallback() != null) {
+            CallbackManager.getInstance().getGameCallback().closeGame(
+                    Integer.parseInt(manager.storyId),
+                    manager.title, manager.tags,
+                    manager.slidesCount, manager.index);
+        }
         if (manager.gameLoaded) {
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
                 @Override

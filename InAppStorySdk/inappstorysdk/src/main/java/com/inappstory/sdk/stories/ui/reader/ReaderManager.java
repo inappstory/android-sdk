@@ -1,7 +1,14 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -23,6 +30,26 @@ public class ReaderManager {
 
     public void gameComplete(String data, int storyId, int slideIndex) {
         getSubscriberByStoryId(storyId).gameComplete(data);
+    }
+
+    public void showSingleStory(int storyId, int slideIndex) {
+        if (storiesIds.contains(storyId)) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
+                }
+            });
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (getSubscriberByStoryId(storyId) != null)
+                        getSubscriberByStoryId(storyId).openSlideByIndex(slideIndex);
+                }
+            }, 300);
+        } else {
+            InAppStoryManager.getInstance().showStoryWithSlide(storyId + "", parentFragment.getContext(), slideIndex, parentFragment.readerSettings);
+        }
     }
 
     void sendStat(int position, int source) {
@@ -77,10 +104,24 @@ public class ReaderManager {
         lastPos = position;
 
         currentStoryId = storiesIds.get(position);
+        if (firstStoryId > 0 && startedSlideInd > 0) {
+            if (InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(currentStoryId).slidesCount > startedSlideInd)
+                InAppStoryService.getInstance().getDownloadManager()
+                        .getStoryById(currentStoryId).lastIndex = startedSlideInd;
+            cleanFirst();
+        }
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId);
-        if (story != null)
+        if (story != null) {
             CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags,
                     story.slidesCount, source));
+
+            if (CallbackManager.getInstance().getShowStoryCallback() != null) {
+                CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, story.title,
+                        story.tags, story.slidesCount,
+                        CallbackManager.getInstance().getSourceFromInt(source));
+            }
+        }
         final int pos = position;
 
         ProfilingManager.getInstance().addTask("slide_show",
@@ -89,7 +130,7 @@ public class ReaderManager {
         InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId);
         if (Sizes.isTablet()) {
             if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {
-                ((StoriesDialogFragment)parentFragment.getParentFragment()).changeStory(position);
+                ((StoriesDialogFragment) parentFragment.getParentFragment()).changeStory(position);
             }
         }
         InAppStoryService.getInstance().setCurrentId(currentStoryId);
@@ -201,6 +242,18 @@ public class ReaderManager {
 
     public void setParentFragment(StoriesFragment parentFragment) {
         this.parentFragment = parentFragment;
+    }
+
+
+    public int startedSlideInd;
+    public int firstStoryId = -1;
+
+    public void cleanFirst() {
+        Bundle bundle = parentFragment.getArguments();
+        bundle.remove("slideIndex");
+        parentFragment.setArguments(bundle);
+        startedSlideInd = 0;
+        firstStoryId = -1;
     }
 
     private StoriesFragment parentFragment;

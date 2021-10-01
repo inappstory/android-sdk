@@ -24,6 +24,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
+import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
@@ -41,6 +42,11 @@ public class StoriesList extends RecyclerView {
 
     }
 
+    public void setCallback(ListCallback callback) {
+        this.callback = callback;
+    }
+
+    ListCallback callback;
 
     StoriesListManager manager;
     boolean isFavoriteList = false;
@@ -289,6 +295,8 @@ public class StoriesList extends RecyclerView {
     }
 
 
+
+
     public void loadStories() throws DataException {
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getCommonInstance();
@@ -309,8 +317,9 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                    if (callback != null) callback.storiesLoaded(storiesIds.size());
                     if (adapter == null) {
-                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
+                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
                         setAdapter(adapter);
                     } else {
@@ -331,7 +340,8 @@ public class StoriesList extends RecyclerView {
                                     @Override
                                     public void storiesLoaded(List<Integer> storiesIds) {
                                         CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList);
+                                        if (callback != null) callback.storiesLoaded(storiesIds.size());
+                                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                                         setLayoutManager(layoutManager);
                                         setAdapter(adapter);
                                         ProfilingManager.getInstance().setReady(listUid);

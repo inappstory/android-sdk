@@ -13,6 +13,7 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -193,6 +194,9 @@ class StoryDownloader {
     }
 
     private void loadStoryError(final int key) {
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().cacheError();
+        }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
         synchronized (storyTasksLock) {
             if (storyTasks != null)
@@ -302,6 +306,9 @@ class StoryDownloader {
 
     void loadStoryList(final NetworkCallback<List<Story>> callback, final boolean isFavorite) {
         if (InAppStoryService.isNull()) {
+            if (CallbackManager.getInstance().getErrorCallback() != null) {
+                CallbackManager.getInstance().getErrorCallback().loadListError();
+            }
             CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             return;
         }
@@ -341,10 +348,16 @@ class StoryDownloader {
 
                 @Override
                 public void onError() {
+                    if (CallbackManager.getInstance().getErrorCallback() != null) {
+                        CallbackManager.getInstance().getErrorCallback().loadListError();
+                    }
                     CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
                 }
             });
         } else {
+            if (CallbackManager.getInstance().getErrorCallback() != null) {
+                CallbackManager.getInstance().getErrorCallback().noConnection();
+            }
             CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LOAD_LIST));
         }
     }

@@ -19,12 +19,23 @@ import java.util.Map;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
@@ -47,6 +58,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
+import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
@@ -120,6 +132,51 @@ public class InAppStoryManager {
      */
     public static void closeStoryReader() {
         CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
+    }
+
+
+    public void setErrorCallback(ErrorCallback errorCallback) {
+        CallbackManager.getInstance().setErrorCallback(errorCallback);
+    }
+
+    public void setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback) {
+        CallbackManager.getInstance().setClickOnShareStoryCallback(clickOnShareStoryCallback);
+    }
+
+    public void setStartGameCallback(GameCallback startGameCallback) {
+        CallbackManager.getInstance().setGameCallback(startGameCallback);
+    }
+
+    public void setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback) {
+        CallbackManager.getInstance().setOnboardingLoadCallback(onboardingLoadCallback);
+    }
+
+    public void setCallToActionCallback(CallToActionCallback callToActionCallback) {
+        CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
+    }
+
+    public void setCloseStoryCallback(CloseStoryCallback closeStoryCallback) {
+        CallbackManager.getInstance().setCloseStoryCallback(closeStoryCallback);
+    }
+
+    public void setFavoriteStoryCallback(FavoriteStoryCallback favoriteStoryCallback) {
+        CallbackManager.getInstance().setFavoriteStoryCallback(favoriteStoryCallback);
+    }
+
+    public void setLikeDislikeStoryCallback(LikeDislikeStoryCallback likeDislikeStoryCallback) {
+        CallbackManager.getInstance().setLikeDislikeStoryCallback(likeDislikeStoryCallback);
+    }
+
+    public void setShowSlideCallback(ShowSlideCallback showSlideCallback) {
+        CallbackManager.getInstance().setShowSlideCallback(showSlideCallback);
+    }
+
+    public void setShowStoryCallback(ShowStoryCallback showStoryCallback) {
+        CallbackManager.getInstance().setShowStoryCallback(showStoryCallback);
+    }
+
+    public void setSingleLoadCallback(SingleLoadCallback singleLoadCallback) {
+        CallbackManager.getInstance().setSingleLoadCallback(singleLoadCallback);
     }
 
     /**
@@ -600,6 +657,9 @@ public class InAppStoryManager {
                         if (onboardLoadedListener != null) {
                             onboardLoadedListener.onError();
                         }
+                        if (CallbackManager.getInstance().getErrorCallback() != null) {
+                            CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
+                        }
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
                     }
 
@@ -613,6 +673,9 @@ public class InAppStoryManager {
 
             @Override
             public void onError() {
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
+                }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
             }
 
@@ -644,12 +707,12 @@ public class InAppStoryManager {
 
     private String lastSingleOpen = null;
 
-    private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
+    private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide) {
         if (InAppStoryService.isNull()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStoryInner(storyId, context, manager, callback);
+                    showStoryInner(storyId, context, manager, callback, slide);
                 }
             }, 1000);
             return;
@@ -665,7 +728,7 @@ public class InAppStoryManager {
                 @Override
                 public void run() {
                     lastSingleOpen = null;
-                    showStoryInner(storyId, context, manager, callback);
+                    showStoryInner(storyId, context, manager, callback, slide);
                     // StoriesActivity.destroyed = 0;
                 }
             }, 500);
@@ -674,7 +737,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStoryInner(storyId, context, manager, callback);
+                    showStoryInner(storyId, context, manager, callback, slide);
                     StoriesActivity.destroyed = 0;
                 }
             }, 350);
@@ -703,6 +766,10 @@ public class InAppStoryManager {
                         } else {
 
                             if (!InAppStoryService.isConnected()) {
+
+                                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                                    CallbackManager.getInstance().getErrorCallback().noConnection();
+                                }
                                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                                 return;
                             }
@@ -717,6 +784,9 @@ public class InAppStoryManager {
                         return;
                     }
                     if (story.isHideInReader()) {
+                        if (CallbackManager.getInstance().getErrorCallback() != null) {
+                            CallbackManager.getInstance().getErrorCallback().emptyLinkError();
+                        }
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                         return;
                     }
@@ -724,7 +794,7 @@ public class InAppStoryManager {
                             InAppStoryService.getInstance().getDownloadManager().getStories());
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
-                    ScreensManager.getInstance().openStoriesReader(context, manager, stIds, 0, ShowStory.SINGLE);
+                    ScreensManager.getInstance().openStoriesReader(context, manager, stIds, 0, ShowStory.SINGLE, slide);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -749,6 +819,10 @@ public class InAppStoryManager {
         }, storyId);
     }
 
+    private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback) {
+        showStoryInner(storyId, context, manager, callback, null);
+    }
+
     /**
      * use to show single story in reader by id
      *
@@ -761,6 +835,10 @@ public class InAppStoryManager {
         showStoryInner(storyId, context, manager, callback);
     }
 
+    public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback, Integer slide) {
+        showStoryInner(storyId, context, manager, callback, slide);
+    }
+
     /**
      * use to show single story in reader by id
      *
@@ -770,6 +848,30 @@ public class InAppStoryManager {
      */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
         showStoryInner(storyId, context, manager, null);
+    }
+
+    public void showStoryWithSlide(String storyId, Context context, Integer slide, String managerSettings) {
+        AppearanceManager appearanceManager = new AppearanceManager();
+        if (managerSettings != null) {
+            StoriesReaderSettings settings = JsonParser.fromJson(managerSettings, StoriesReaderSettings.class);
+            appearanceManager.csHasLike(settings.hasLike);
+            appearanceManager.csHasFavorite(settings.hasFavorite);
+            appearanceManager.csHasShare(settings.hasShare);
+            appearanceManager.csClosePosition(settings.closePosition);
+            appearanceManager.csCloseOnOverscroll(settings.closeOnOverscroll);
+            appearanceManager.csCloseOnSwipe(settings.closeOnSwipe);
+            appearanceManager.csIsDraggable(true);
+            appearanceManager.csTimerGradientEnable(settings.timerGradient);
+            appearanceManager.csStoryReaderAnimation(settings.readerAnimation);
+            appearanceManager.csCloseIcon(settings.closeIcon);
+            appearanceManager.csDislikeIcon(settings.dislikeIcon);
+            appearanceManager.csLikeIcon(settings.likeIcon);
+            appearanceManager.csRefreshIcon(settings.refreshIcon);
+            appearanceManager.csFavoriteIcon(settings.favoriteIcon);
+            appearanceManager.csShareIcon(settings.shareIcon);
+            appearanceManager.csSoundIcon(settings.soundIcon);
+        }
+        showStoryInner(storyId, context, appearanceManager, null, slide);
     }
 
     public static class Builder {

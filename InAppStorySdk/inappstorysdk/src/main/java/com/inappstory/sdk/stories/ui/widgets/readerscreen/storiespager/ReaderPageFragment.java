@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -130,6 +131,7 @@ public class ReaderPageFragment extends Fragment {
                 story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
         buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
         setOffsets(view);
+        Log.e("setWebIndex", "setViews " + story.lastIndex);
         storiesView.getManager().setIndex(story.lastIndex);
 
     }
@@ -467,13 +469,17 @@ public class ReaderPageFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         manager = new ReaderPageManager();
+        setStoryId();
         manager.host = this;
         manager.parentManager = parentManager;
         parentManager.addSubscriber(manager);
-        setStoryId();
         bindViews(view);
         setActions();
         setManagers();
+        if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) != null)
+            manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(storyId).lastIndex);
+
         manager.setStoryId(storyId);
         setViews(view);
         InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);

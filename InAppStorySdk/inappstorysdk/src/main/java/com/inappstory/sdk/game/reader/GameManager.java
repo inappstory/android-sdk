@@ -18,6 +18,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outerevents.CallToAction;
 import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
@@ -97,6 +98,11 @@ public class GameManager {
     void gameCompleted(String gameState, String link, String eventData) {
         CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
                 slidesCount, index, eventData));
+        if (CallbackManager.getInstance().getGameCallback() != null) {
+            CallbackManager.getInstance().getGameCallback().finishGame(
+                    Integer.parseInt(storyId), title, tags,
+                    slidesCount, index, eventData);
+        }
         host.gameCompleted(gameState, link);
     }
 
@@ -110,6 +116,11 @@ public class GameManager {
         CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex,
                 link, cta));
+        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+            CallbackManager.getInstance().getCallToActionCallback().callToAction(story.id, story.title,
+                    story.tags, story.slidesCount, story.lastIndex,
+                    link, ClickAction.GAME);
+        }
         // OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(

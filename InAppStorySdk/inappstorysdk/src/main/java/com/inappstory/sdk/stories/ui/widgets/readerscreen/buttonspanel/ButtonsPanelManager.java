@@ -67,10 +67,22 @@ public class ButtonsPanelManager {
             if (story.liked()) {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
+                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
+                    CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
+                            story.id, story.title,
+                            story.tags, story.slidesCount,
+                            story.lastIndex, false);
+                }
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, true));
+                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
+                    CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
+                            story.id, story.title,
+                            story.tags, story.slidesCount,
+                            story.lastIndex, true);
+                }
                 StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex);
                 val = 1;
             }
@@ -78,10 +90,22 @@ public class ButtonsPanelManager {
             if (story.disliked()) {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, false));
+                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
+                    CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
+                            story.id, story.title,
+                            story.tags, story.slidesCount,
+                            story.lastIndex, false);
+                }
                 val = 0;
             } else {
                 CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
                         story.tags, story.slidesCount, story.lastIndex, true));
+                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
+                    CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
+                            story.id, story.title,
+                            story.tags, story.slidesCount,
+                            story.lastIndex, true);
+                }
                 StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
                 val = -1;
             }
@@ -131,6 +155,12 @@ public class ButtonsPanelManager {
             StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex, !story.favorite));
+        if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
+            CallbackManager.getInstance().getFavoriteStoryCallback().favoriteStory(
+                    story.id, story.title,
+                    story.tags, story.slidesCount,
+                    story.lastIndex, !story.favorite);
+        }
         final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
         NetworkClient.getApi().storyFavorite(Integer.toString(storyId), val ? 0 : 1).enqueue(
                 new NetworkCallback<Response>() {
@@ -192,6 +222,12 @@ public class ButtonsPanelManager {
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                 story.tags, story.slidesCount, story.lastIndex));
+
+        if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
+            CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, story.title,
+                    story.tags, story.slidesCount, story.lastIndex);
+        }
+
         if (callback != null)
             callback.onClick();
         //CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));

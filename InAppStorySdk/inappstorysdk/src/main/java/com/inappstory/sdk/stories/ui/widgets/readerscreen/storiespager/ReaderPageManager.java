@@ -1,8 +1,12 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -45,14 +49,20 @@ public class ReaderPageManager {
         return slideIndex;
     }
 
+    public void showSingleStory(int storyId, int slideIndex) {
+        parentManager.showSingleStory(storyId, slideIndex);
+    }
+
     public void setSlideIndex(int slideIndex) {
 
         this.slideIndex = slideIndex;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         timelineManager.setCurrentSlide(slideIndex);
         timerManager.stopTimer();
-        if (story.durations == null || story.durations.size() <= slideIndex) return;
-        timerManager.setCurrentDuration(story.durations.get(slideIndex));
+        if (story != null) {
+            if (story.durations == null || story.durations.size() <= slideIndex) return;
+            timerManager.setCurrentDuration(story.durations.get(slideIndex));
+        }
     }
 
     int slideIndex;
@@ -91,18 +101,27 @@ public class ReaderPageManager {
                             story.tags, story.slidesCount, story.lastIndex,
                             object.getLink().getTarget()));
                     int cta = CallToAction.BUTTON;
+                    ClickAction action = ClickAction.BUTTON;
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         switch (object.getType()) {
                             case "swipeUpLink":
                                 cta = CallToAction.SWIPE;
+                                action = ClickAction.SWIPE;
                                 break;
                             default:
                                 break;
                         }
                     }
+
                     CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
                             story.tags, story.slidesCount, story.lastIndex,
                             object.getLink().getTarget(), cta));
+                    if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                        CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                                story.id, story.title,
+                                story.tags, story.slidesCount, story.lastIndex,
+                                object.getLink().getTarget(), action);
+                    }
                     OldStatisticManager.getInstance().addLinkOpenStatistic();
                     if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                         CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
@@ -133,6 +152,7 @@ public class ReaderPageManager {
 
     public void startStoryTimers() {
         isPaused = false;
+        timelineManager.setCurrentSlide(slideIndex);
         timelineManager.start();
 
         timerManager.setCurrentDuration(durations.get(slideIndex));
@@ -214,9 +234,10 @@ public class ReaderPageManager {
     }
 
     public void openSlideByIndex(int index) {
-
-        InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).setLastIndex(index);
+        Story story = InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(storyId);
+        if (story.slidesCount <= index) index = 0;
+        story.setLastIndex(index);
         if (slideIndex != index) {
             slideIndex = index;
             changeCurrentSlide();
@@ -300,11 +321,16 @@ public class ReaderPageManager {
 
 
     public void slideLoadedInCache(int index) {
+        slideLoadedInCache(index, false);
+    }
+
+    public void slideLoadedInCache(int index, boolean alreadyLoaded) {
         if (slideIndex == index) {
-            webViewManager.storyLoaded(storyId, index);
+            webViewManager.storyLoaded(storyId, index, alreadyLoaded);
             host.storyLoadedSuccess();
         }
     }
+
 
     void storyInfoLoaded() {
         this.timelineManager.setStoryDurations(InAppStoryService.getInstance().getDownloadManager()
@@ -349,9 +375,13 @@ public class ReaderPageManager {
             this.durations.clear();
             this.durations.addAll(story.durations);
             story.slidesCount = story.durations.size();
+
             timerManager.setCurrentDuration(this.durations.get(slideIndex));
             //timelineManager.setStoryDurations(story.durations);
         }
+
+
+
 
         setStoryInfo(story);
         /*if (story.durations != null && !story.durations.isEmpty()) {

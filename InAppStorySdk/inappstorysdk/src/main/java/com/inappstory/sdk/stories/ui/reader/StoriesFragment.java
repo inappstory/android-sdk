@@ -72,6 +72,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public void onPageSelected(int position) {
         if (isDestroyed) return;
+
         readerManager.onPageSelected(getArguments().getInt("source", 0), position);
         if (getArguments() != null) {
             getArguments().putInt("index", position);
@@ -88,6 +89,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
 
+    String readerSettings;
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -99,6 +102,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         readerManager.setParentFragment(this);
         if (isDestroyed) return;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        readerSettings = getArguments().getString(CS_READER_SETTINGS);
         storiesViewPager.setParameters(
                 getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
         currentIds = getArguments().getIntegerArrayList("stories_ids");
@@ -110,11 +114,13 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         outerViewPagerAdapter =
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
-                        getArguments().getString(CS_READER_SETTINGS),
+                        readerSettings,
                         currentIds, readerManager);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
         int ind = getArguments().getInt("index", 0);
+        readerManager.firstStoryId = currentIds.get(ind);
+        readerManager.startedSlideInd = getArguments().getInt("slideIndex", 0);
         if (ind > 0) {
             storiesViewPager.setCurrentItem(ind);
         } else {
@@ -258,6 +264,13 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }
         readerManager.setCurrentSlideIndex(getCurIndexById(readerManager.getCurrentStoryId()));
 
+    }
+
+    public void setCurrentItem(int ind) {
+        if (storiesViewPager.getAdapter() != null &&
+                storiesViewPager.getAdapter().getCount() > ind) {
+            storiesViewPager.setCurrentItem(ind);
+        }
     }
 
     @Override

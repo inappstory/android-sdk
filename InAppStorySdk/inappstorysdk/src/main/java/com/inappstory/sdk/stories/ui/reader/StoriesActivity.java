@@ -28,6 +28,9 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
@@ -187,11 +190,21 @@ public class StoriesActivity extends AppCompatActivity {
 
         if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
-            if (story != null)
+            if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.slidesCount,
                         story.lastIndex, CloseStory.CUSTOM,
                         getIntent().getIntExtra("source", 0)));
+                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                            story.id,
+                            story.title, story.tags, story.slidesCount,
+                            story.lastIndex, CloseReader.CUSTOM,
+                            CallbackManager.getInstance().getSourceFromInt(
+                                    getIntent().getIntExtra("source", 0))
+                    );
+                }
+            }
             String cause = StatisticManager.BACK;
             if (story != null)
                 StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
@@ -215,7 +228,6 @@ public class StoriesActivity extends AppCompatActivity {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         overridePendingTransition(0, 0);
     }
-
 
 
     ElasticDragDismissFrameLayout draggableFrame;
@@ -330,6 +342,7 @@ public class StoriesActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
+                bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
                 setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
@@ -361,9 +374,10 @@ public class StoriesActivity extends AppCompatActivity {
     }
 
     StoriesFragment storiesFragment;
+    StoriesReaderSettings storiesReaderSettings;
 
     private void setAppearanceSettings(Bundle bundle) {
-        StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(
+        storiesReaderSettings = new StoriesReaderSettings(
                 getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
                 getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
                 getIntent().getIntExtra(CS_CLOSE_POSITION, 1),
@@ -405,6 +419,16 @@ public class StoriesActivity extends AppCompatActivity {
                     story.title, story.tags, story.slidesCount,
                     story.lastIndex, event.getAction(),
                     getIntent().getIntExtra("source", 0)));
+            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                        story.id,
+                        story.title, story.tags, story.slidesCount,
+                        story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
+                                event.getAction()),
+                        CallbackManager.getInstance().getSourceFromInt(
+                                getIntent().getIntExtra("source", 0))
+                );
+            }
             String cause = StatisticManager.AUTO;
             switch (event.getAction()) {
                 case CloseStory.CLICK:
@@ -436,7 +460,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void cleanReader() {
         if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-      //  OldStatisticManager.getInstance().closeStatisticEvent();
+        //  OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         if (InAppStoryService.getInstance().getDownloadManager() != null)

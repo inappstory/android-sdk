@@ -1,8 +1,9 @@
 package com.inappstory.sdk.stories.cache;
 
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
@@ -13,18 +14,19 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.listwidget.ListLoadedEvent;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallbackAdapter;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
 import com.inappstory.sdk.stories.outerevents.SingleLoadError;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -37,8 +39,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.UUID.randomUUID;
 
 public class StoryDownloadManager {
     public List<Story> getStories() {
@@ -118,6 +118,10 @@ public class StoryDownloadManager {
                             InAppStoryManager.getInstance().getSingleLoadedListener().onError();
                         }
                         CsEventBus.getDefault().post(new SingleLoadError());
+
+                        if (CallbackManager.getInstance().getErrorCallback() != null) {
+                            CallbackManager.getInstance().getErrorCallback().loadSingleError();
+                        }
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                         if (storyByIdCallback != null)
                             storyByIdCallback.loadError(-1);
@@ -127,6 +131,10 @@ public class StoryDownloadManager {
 
             @Override
             public void onError() {
+
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().loadSingleError();
+                }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                 if (storyByIdCallback != null)
                     storyByIdCallback.loadError(-1);
@@ -147,7 +155,6 @@ public class StoryDownloadManager {
     }
 
     public void initDownloaders() {
-
         storyDownloader.init();
         slidesDownloader.init();
     }
@@ -292,6 +299,7 @@ public class StoryDownloadManager {
             public void onDownload(Story story, int loadType) {
                 Story local = getStoryById(story.id);
                 story.isOpened = local.isOpened;
+                story.lastIndex = local.lastIndex;
                 stories.set(stories.indexOf(local), story);
                 setStory(story, story.id);
                 storyLoaded(story.id);
@@ -516,6 +524,10 @@ public class StoryDownloadManager {
             @Override
             public void onError(int code, String message) {
                 super.onError(code, message);
+
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().loadListError();
+                }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             }
         };
