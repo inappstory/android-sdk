@@ -37,16 +37,11 @@ public class ReaderManager {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
+                    InAppStoryService.getInstance().getDownloadManager()
+                            .getStoryById(storyId).setLastIndex(slideIndex);
                     parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
                 }
             });
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (getSubscriberByStoryId(storyId) != null)
-                        getSubscriberByStoryId(storyId).openSlideByIndex(slideIndex);
-                }
-            }, 300);
         } else {
             InAppStoryManager.getInstance().showStoryWithSlide(storyId + "", parentFragment.getContext(), slideIndex, parentFragment.readerSettings);
         }
@@ -162,13 +157,14 @@ public class ReaderManager {
         ArrayList<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
         OldStatisticManager.getInstance().previewStatisticEvent(lst);
-
-        for (ReaderPageManager pageManager : subscribers) {
-            if (pageManager.getStoryId() != currentStoryId) {
-                pageManager.stopStory(currentStoryId);
-            } else {
-                pageManager.setSlideIndex(currentSlideIndex);
-                pageManager.storyOpen(currentStoryId);
+        synchronized (subscribers) {
+            for (ReaderPageManager pageManager : subscribers) {
+                if (pageManager.getStoryId() != currentStoryId) {
+                    pageManager.stopStory(currentStoryId);
+                } else {
+                    pageManager.setSlideIndex(currentSlideIndex);
+                    pageManager.storyOpen(currentStoryId);
+                }
             }
         }
     }
@@ -260,14 +256,18 @@ public class ReaderManager {
     private HashSet<ReaderPageManager> subscribers = new HashSet<>();
 
     public void addSubscriber(ReaderPageManager manager) {
-        for (ReaderPageManager readerPageManager : subscribers) {
-            if (readerPageManager.getStoryId() == manager.getStoryId()) return;
+        synchronized (subscribers) {
+            for (ReaderPageManager readerPageManager : subscribers) {
+                if (readerPageManager.getStoryId() == manager.getStoryId()) return;
+            }
+            subscribers.add(manager);
         }
-        subscribers.add(manager);
     }
 
     public void removeSubscriber(ReaderPageManager manager) {
-        subscribers.remove(manager);
+        synchronized (subscribers) {
+            subscribers.remove(manager);
+        }
     }
 
     private ReaderPageManager getSubscriberByStoryId(int storyId) {
