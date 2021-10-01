@@ -32,7 +32,7 @@ public class ReaderManager {
         getSubscriberByStoryId(storyId).gameComplete(data);
     }
 
-    public void showSingleStory(int storyId, int slideIndex) {
+    public void showSingleStory(final int storyId, final int slideIndex) {
         if (storiesIds.contains(storyId)) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
