@@ -37,8 +37,14 @@ public class ReaderManager {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    InAppStoryService.getInstance().getDownloadManager()
-                            .getStoryById(storyId).setLastIndex(slideIndex);
+                    if (InAppStoryService.getInstance().getDownloadManager()
+                            .getStoryById(storyId).slidesCount <= slideIndex) {
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .getStoryById(storyId).setLastIndex(0);
+                    }else  {
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .getStoryById(storyId).setLastIndex(slideIndex);
+                    }
                     parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
                 }
             });

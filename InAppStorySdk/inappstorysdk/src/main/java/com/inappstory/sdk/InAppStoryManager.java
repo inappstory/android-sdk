@@ -722,31 +722,35 @@ public class InAppStoryManager {
                 lastSingleOpen.equals(storyId)) return;
         lastSingleOpen = storyId;
 
-        if (StoriesActivity.destroyed == -1) {
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    lastSingleOpen = null;
-                    showStoryInner(storyId, context, manager, callback, slide);
-                    // StoriesActivity.destroyed = 0;
-                }
-            }, 500);
-            return;
-        } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStoryInner(storyId, context, manager, callback, slide);
-                    StoriesActivity.destroyed = 0;
-                }
-            }, 350);
-            return;
-        }
+
         InAppStoryService.getInstance().getDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
+
+                    if (StoriesActivity.destroyed == -1) {
+                        CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                lastSingleOpen = null;
+                                showStoryInner(storyId, context, manager, callback, slide);
+                                // StoriesActivity.destroyed = 0;
+                            }
+                        }, 500);
+                        return;
+                    } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                showStoryInner(storyId, context, manager, callback, slide);
+                                StoriesActivity.destroyed = 0;
+                            }
+                        }, 350);
+                        return;
+                    }
+
+
                     try {
                         int c = Integer.parseInt(lastSingleOpen);
                         if (c != story.id)
