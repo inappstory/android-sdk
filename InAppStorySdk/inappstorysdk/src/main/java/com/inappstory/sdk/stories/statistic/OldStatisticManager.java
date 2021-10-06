@@ -4,12 +4,14 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.events.DebugEvent;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -126,6 +128,7 @@ public class OldStatisticManager {
         }
         try {
             synchronized (openProcessLock) {
+                CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
                 final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
                 NetworkClient.getApi().statisticsUpdate(
                         new StatisticSendObject(StatisticSession.getInstance().id,

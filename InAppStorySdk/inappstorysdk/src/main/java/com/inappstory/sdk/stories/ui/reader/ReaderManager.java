@@ -54,6 +54,7 @@ public class ReaderManager {
     }
 
     public void showSingleStory(final int storyId, final int slideIndex) {
+        OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (storiesIds.contains(storyId)) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
