@@ -236,6 +236,7 @@ public class ReaderPageManager {
     public void openSlideByIndex(int index) {
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(storyId);
+        if (index < 0) index = 0;
         if (story.slidesCount <= index) index = 0;
         story.setLastIndex(index);
         if (slideIndex != index) {
@@ -260,6 +261,20 @@ public class ReaderPageManager {
         this.durations.addAll(story.durations);
         //  this.durations.set(slideIndex, story.durations.get(slideIndex));
         timelineManager.setStoryDurations(durations, false);
+    }
+
+    public void showGoods() {
+        parentManager.showGoods();
+    }
+
+    public void nextStory() {
+        timerManager.setTimerDuration(0);
+        parentManager.nextStory();
+    }
+
+    public void prevStory() {
+        timerManager.setTimerDuration(0);
+        parentManager.prevStory();
     }
 
     public void nextSlide() {
@@ -379,8 +394,6 @@ public class ReaderPageManager {
             timerManager.setCurrentDuration(this.durations.get(slideIndex));
             //timelineManager.setStoryDurations(story.durations);
         }
-
-
 
 
         setStoryInfo(story);

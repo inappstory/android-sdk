@@ -66,6 +66,19 @@ public class WebAppInterface {
         logMethod(gameFile);
     }
 
+
+    @JavascriptInterface
+    public void storyShowNext() {
+        manager.storyShowNext();
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void storyShowPrev() {
+        manager.storyShowPrev();
+        logMethod("");
+    }
+
     @JavascriptInterface
     public void resetTimers() {
         manager.resetTimers();

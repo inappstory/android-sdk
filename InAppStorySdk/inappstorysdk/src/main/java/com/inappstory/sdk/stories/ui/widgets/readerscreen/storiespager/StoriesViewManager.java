@@ -306,6 +306,7 @@ public class StoriesViewManager {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else {
+           // pageManager.showGoods();
             pageManager.storyClick(payload, (int) getClickCoordinate(), false);
         }
     }
@@ -366,9 +367,19 @@ public class StoriesViewManager {
         pageManager.startStoryTimers();
     }
 
+    public void showGoods() {
+        pageManager.showGoods();
+    }
 
     public void storyResumedEvent(double startTime) {
         if (InAppStoryService.isNull()) return;
+    }
+
+    public void storyShowNext() {
+        pageManager.nextStory();
+    }
+    public void storyShowPrev() {
+        pageManager.prevStory();
     }
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {

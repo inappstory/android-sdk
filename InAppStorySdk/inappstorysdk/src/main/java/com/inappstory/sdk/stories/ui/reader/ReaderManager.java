@@ -1,11 +1,19 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.LayoutInflater;
+import android.view.View;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
@@ -26,6 +34,19 @@ public class ReaderManager {
 
     public void close() {
         parentFragment.getActivity().finish();
+    }
+
+    public void showGoods() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(parentFragment.getActivity(), R.style.GoodsDialog);
+        LayoutInflater inflater = parentFragment.getActivity().getLayoutInflater();
+
+        View dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
+        builder.setView(dialogView);
+        Dialog dialog = builder.create();
+        //dialog.setContentView(R.layout.cs_goods_recycler);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.show();
+
     }
 
     public void gameComplete(String data, int storyId, int slideIndex) {
