@@ -22,6 +22,7 @@ import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.events.DebugEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -238,6 +239,7 @@ public class SessionManager {
             final String sessionCloseUID =
                     ProfilingManager.getInstance().addTask("api_session_close");
 
+            CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
             NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
                     stat)).enqueue(
                     new NetworkCallback<StatisticResponse>() {
