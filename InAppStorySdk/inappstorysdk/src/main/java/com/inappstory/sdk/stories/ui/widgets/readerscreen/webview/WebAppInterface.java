@@ -11,6 +11,8 @@ import com.inappstory.sdk.stories.api.models.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.events.ChangeIndexEvent;
 import com.inappstory.sdk.stories.events.ClearDurationEvent;
+import com.inappstory.sdk.stories.events.NextStoryReaderEvent;
+import com.inappstory.sdk.stories.events.PrevStoryReaderEvent;
 import com.inappstory.sdk.stories.events.RestartStoryReaderEvent;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -40,6 +42,18 @@ public class WebAppInterface {
         if (manager.index != index) {
             CsEventBus.getDefault().post(new ChangeIndexEvent(index));
         }
+    }
+
+    @JavascriptInterface
+    public void storyShowNext() {
+        StatisticManager.getInstance().sendCurrentState();
+        CsEventBus.getDefault().post(new NextStoryReaderEvent());
+    }
+
+    @JavascriptInterface
+    public void storyShowPrev() {
+        StatisticManager.getInstance().sendCurrentState();
+        CsEventBus.getDefault().post(new PrevStoryReaderEvent());
     }
 
 
