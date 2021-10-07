@@ -54,8 +54,8 @@ public class ReaderManager {
     }
 
     public void showSingleStory(final int storyId, final int slideIndex) {
-        OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (storiesIds.contains(storyId)) {
+            OldStatisticManager.getInstance().addLinkOpenStatistic();
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
@@ -71,7 +71,18 @@ public class ReaderManager {
                 }
             });
         } else {
-            InAppStoryManager.getInstance().showStoryWithSlide(storyId + "", parentFragment.getContext(), slideIndex, parentFragment.readerSettings);
+            InAppStoryManager.getInstance().showStoryWithSlide(storyId + "", parentFragment.getContext(),
+                    slideIndex, parentFragment.readerSettings, new IShowStoryCallback() {
+                        @Override
+                        public void onShow() {
+                            OldStatisticManager.getInstance().addLinkOpenStatistic();
+                        }
+
+                        @Override
+                        public void onError() {
+
+                        }
+                    });
         }
     }
 
