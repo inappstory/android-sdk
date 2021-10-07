@@ -8,14 +8,16 @@ public class GoodsItemData {
 
     public String price;
     public String oldPrice;
+    public Object raw;
 
-    public GoodsItemData(String sku, String title, String description, String image, String price, String oldPrice) {
+    public GoodsItemData(String sku, String title, String description, String image, String price, String oldPrice, Object raw) {
         this.sku = sku;
         this.title = title;
         this.description = description;
         this.image = image;
         this.price = price;
         this.oldPrice = oldPrice;
+        this.raw = raw;
     }
 
     @Override
