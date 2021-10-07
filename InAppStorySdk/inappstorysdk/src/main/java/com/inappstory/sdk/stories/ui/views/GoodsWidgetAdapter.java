@@ -37,6 +37,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         if (items != null) {
             this.items.clear();
             this.items.addAll(items);
+            notifyDataSetChanged();
         }
     }
 
