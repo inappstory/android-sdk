@@ -27,15 +27,12 @@ public class GoodsWidget extends RecyclerView {
 
 
     public void setItems(ArrayList<GoodsItemData> items) {
-        if (adapter != null)
-            adapter.setItems(items);
+        setAdapter(new GoodsWidgetAdapter(items, context));
     }
 
     private void init(Context context) {
         this.context = context;
         setLayoutManager(new LinearLayoutManager(context, HORIZONTAL, false));
-        adapter = new GoodsWidgetAdapter(context);
-        setAdapter(adapter);
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getDecoration() != null) {
             addItemDecoration(AppearanceManager.getCommonInstance().csCustomGoodsWidget().getDecoration());
         } else {
