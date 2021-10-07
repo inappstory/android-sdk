@@ -159,6 +159,11 @@ public class OldStatisticManager {
                     }
                 });
             }
+
+            synchronized (openProcessLock) {
+                if (statistic != null)
+                    statistic.clear();
+            }
         } catch (Exception e) {
         }
         return true;
