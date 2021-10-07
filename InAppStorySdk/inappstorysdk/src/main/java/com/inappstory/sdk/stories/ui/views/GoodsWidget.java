@@ -47,7 +47,7 @@ public class GoodsWidget extends RecyclerView {
                     outRect.right = Sizes.dpToPxExt(8);
                     if (position == 0) {
                         outRect.left = Sizes.dpToPxExt(16);
-                    } else if (position == adapter.getItemCount() - 1) {
+                    } else if (position == getAdapter().getItemCount() - 1) {
                         outRect.right = Sizes.dpToPxExt(16);
                     }
                 }
