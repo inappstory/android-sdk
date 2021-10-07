@@ -239,7 +239,7 @@ public class SessionManager {
             final String sessionCloseUID =
                     ProfilingManager.getInstance().addTask("api_session_close");
 
-            CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
+         //   CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
             NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
                     stat)).enqueue(
                     new NetworkCallback<StatisticResponse>() {

@@ -128,7 +128,7 @@ public class OldStatisticManager {
         }
         try {
             synchronized (openProcessLock) {
-                CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
+            //    CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
                 final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
                 NetworkClient.getApi().statisticsUpdate(
                         new StatisticSendObject(StatisticSession.getInstance().id,
