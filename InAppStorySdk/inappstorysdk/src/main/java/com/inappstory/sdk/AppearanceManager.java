@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
+import com.inappstory.sdk.stories.ui.views.ICustomGoodsItem;
+import com.inappstory.sdk.stories.ui.views.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
@@ -76,6 +78,9 @@ public class AppearanceManager {
     private StoryTouchListener storyTouchListener;
     private static WidgetAppearance csWidgetAppearance;
 
+    private ICustomGoodsWidget csCustomGoodsWidget;
+    private ICustomGoodsItem csCustomGoodsItem;
+
     private boolean csHasLike;
     private boolean csHasFavorite;
     private boolean csHasShare;
@@ -106,8 +111,8 @@ public class AppearanceManager {
      * use to set quality for story covers
      *
      * @param csCoverQuality (csCoverQuality) quality for covers
-     * {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_MEDIUM}
-     * {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_HIGH}
+     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_MEDIUM}
+     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_HIGH}
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csCoverQuality(int csCoverQuality) {
@@ -220,6 +225,7 @@ public class AppearanceManager {
     public Typeface csCustomFont() {
         return csCustomFont;
     }
+
 
 
     public Typeface csCustomBoldFont() {
@@ -377,7 +383,7 @@ public class AppearanceManager {
      * use to turn on/off gradient under timer (available in stories reader)
      *
      * @param gradientEnable (gradientEnable) true - to use this feature
-     *                false by default
+     *                       false by default
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csTimerGradientEnable(boolean gradientEnable) {
@@ -751,7 +757,6 @@ public class AppearanceManager {
     }
 
 
-
     public IGetFavoriteListItem csFavoriteListItemInterface() {
         return csFavoriteListItemInterface;
     }
@@ -761,6 +766,17 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+
+    public ICustomGoodsWidget csCustomGoodsWidget() {
+        return csCustomGoodsWidget;
+    }
+
+
+
+    public AppearanceManager csCustomGoodsWidget(ICustomGoodsWidget csCustomGoodsWidget) {
+        this.csCustomGoodsWidget = csCustomGoodsWidget;
+        return AppearanceManager.this;
+    }
 
     public AppearanceManager csLoaderView(ILoaderView csLoaderView) {
         this.csLoaderView = csLoaderView;

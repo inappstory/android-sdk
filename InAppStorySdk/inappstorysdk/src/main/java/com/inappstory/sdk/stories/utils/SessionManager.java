@@ -93,7 +93,7 @@ public class SessionManager {
     }
 
     private static final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader";
+            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems";
 
     public void openSession(final OpenSessionCallback callback) {
         synchronized (openProcessLock) {
@@ -236,10 +236,11 @@ public class SessionManager {
             } catch (Exception e) {
 
             }
+
+          //  CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
             final String sessionCloseUID =
                     ProfilingManager.getInstance().addTask("api_session_close");
 
-         //   CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
             NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
                     stat)).enqueue(
                     new NetworkCallback<StatisticResponse>() {

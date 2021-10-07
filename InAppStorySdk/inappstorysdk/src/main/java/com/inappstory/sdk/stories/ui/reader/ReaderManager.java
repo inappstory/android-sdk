@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -8,13 +9,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -23,6 +29,10 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.list.StoriesList;
+import com.inappstory.sdk.stories.ui.views.GetGoodsDataCallback;
+import com.inappstory.sdk.stories.ui.views.GoodsItemData;
+import com.inappstory.sdk.stories.ui.views.GoodsWidget;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -36,46 +46,37 @@ public class ReaderManager {
         parentFragment.getActivity().finish();
     }
 
-    public void showGoods() {
+    Dialog goodsDialog;
+
+    public void showGoods(String skusString) {
+        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) return;
+        if (goodsDialog != null) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(parentFragment.getActivity(), R.style.GoodsDialog);
         LayoutInflater inflater = parentFragment.getActivity().getLayoutInflater();
-
-        View dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
-        builder.setView(dialogView);
-        Dialog dialog = builder.create();
-        //dialog.setContentView(R.layout.cs_goods_recycler);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        dialog.show();
-
-    }
-
-    public void gameComplete(String data, int storyId, int slideIndex) {
-        getSubscriberByStoryId(storyId).gameComplete(data);
-    }
-
-    public void showSingleStory(final int storyId, final int slideIndex) {
-        if (storiesIds.contains(storyId)) {
-            OldStatisticManager.getInstance().addLinkOpenStatistic();
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+        View dialogView;
+        ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
+        parentFragment.pause();
+        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
+            dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
+            builder.setView(dialogView);
+            goodsDialog = builder.create();
+            //dialog.setContentView(R.layout.cs_goods_recycler);
+            goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
-                public void run() {
-                    if (InAppStoryService.getInstance().getDownloadManager()
-                            .getStoryById(storyId).slidesCount <= slideIndex) {
-                        InAppStoryService.getInstance().getDownloadManager()
-                                .getStoryById(storyId).setLastIndex(0);
-                    }else  {
-                        InAppStoryService.getInstance().getDownloadManager()
-                                .getStoryById(storyId).setLastIndex(slideIndex);
-                    }
-                    parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
+                public void onDismiss(DialogInterface dialog) {
+                    parentFragment.resume();
                 }
             });
-        } else {
-            InAppStoryManager.getInstance().showStoryWithSlide(storyId + "", parentFragment.getContext(),
-                    slideIndex, parentFragment.readerSettings, new IShowStoryCallback() {
+            goodsDialog.show();
+            ((RelativeLayout) goodsDialog.findViewById(R.id.container))
+                    .addView(AppearanceManager.getCommonInstance()
+                            .csCustomGoodsWidget().getWidgetView());
+            AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
+                    new GetGoodsDataCallback() {
                         @Override
-                        public void onShow() {
-                            OldStatisticManager.getInstance().addLinkOpenStatistic();
+                        public void onSuccess(ArrayList<GoodsItemData> data) {
+                            if (data == null || data.isEmpty()) return;
                         }
 
                         @Override
@@ -83,6 +84,73 @@ public class ReaderManager {
 
                         }
                     });
+        } else {
+            dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
+            builder.setView(dialogView);
+            goodsDialog = builder.create();
+            goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    parentFragment.resume();
+                }
+            });
+            goodsDialog.show();
+            final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
+            AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
+                    new GetGoodsDataCallback() {
+                        @Override
+                        public void onSuccess(ArrayList<GoodsItemData> data) {
+                            if (data == null || data.isEmpty()) return;
+                            if (goodsList != null)
+                                goodsList.setItems(data);
+                        }
+
+                        @Override
+                        public void onError() {
+
+                        }
+                    });
+            goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideGoods();
+                }
+            });
+        }
+
+
+    }
+
+    public void hideGoods() {
+        if (goodsDialog != null) goodsDialog.dismiss();
+        goodsDialog = null;
+    }
+
+    public void gameComplete(String data, int storyId, int slideIndex) {
+        getSubscriberByStoryId(storyId).gameComplete(data);
+    }
+
+    public void showSingleStory(final int storyId, final int slideIndex) {
+
+        OldStatisticManager.getInstance().addLinkOpenStatistic();
+        if (storiesIds.contains(storyId)) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (InAppStoryService.getInstance().getDownloadManager()
+                            .getStoryById(storyId).slidesCount <= slideIndex) {
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .getStoryById(storyId).setLastIndex(0);
+                    } else {
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .getStoryById(storyId).setLastIndex(slideIndex);
+                    }
+                    parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
+                }
+            });
+        } else {
+            InAppStoryManager.getInstance().showStoryWithSlide(storyId + "", parentFragment.getContext(), slideIndex, parentFragment.readerSettings);
         }
     }
 

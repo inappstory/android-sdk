@@ -306,7 +306,7 @@ public class StoriesViewManager {
                 CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
             }
         } else {
-           // pageManager.showGoods();
+            //pageManager.showGoods();
             pageManager.storyClick(payload, (int) getClickCoordinate(), false);
         }
     }
@@ -365,10 +365,6 @@ public class StoriesViewManager {
     public void storyStartedEvent() {
         if (InAppStoryService.isNull()) return;
         pageManager.startStoryTimers();
-    }
-
-    public void showGoods() {
-        pageManager.showGoods();
     }
 
     public void storyResumedEvent(double startTime) {

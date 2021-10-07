@@ -92,16 +92,17 @@ public class ReaderPageManager {
     private void tapOnLink(String link) {
         StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         if (object != null) {
+
+            int cta = CallToAction.BUTTON;
+            ClickAction action = ClickAction.BUTTON;
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                    storyId
+            );
             switch (object.getLink().getType()) {
                 case "url":
-                    Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                            storyId
-                    );
                     CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
                             story.tags, story.slidesCount, story.lastIndex,
                             object.getLink().getTarget()));
-                    int cta = CallToAction.BUTTON;
-                    ClickAction action = ClickAction.BUTTON;
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         switch (object.getType()) {
                             case "swipeUpLink":
@@ -132,6 +133,17 @@ public class ReaderPageManager {
                             return;
                         }
                         parentManager.defaultTapOnLink(object.getLink().getTarget());
+                    }
+                    break;
+                case "json":
+                    if (object.getType() != null && !object.getType().isEmpty()) {
+                        switch (object.getType()) {
+                            case "swipeUpItems":
+                                showGoods(object.getLink().getTarget());
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     break;
                 default:
@@ -263,8 +275,13 @@ public class ReaderPageManager {
         timelineManager.setStoryDurations(durations, false);
     }
 
-    public void showGoods() {
-        parentManager.showGoods();
+    public void showGoods(final String skus) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                parentManager.showGoods(skus);
+            }
+        });
     }
 
     public void nextStory() {

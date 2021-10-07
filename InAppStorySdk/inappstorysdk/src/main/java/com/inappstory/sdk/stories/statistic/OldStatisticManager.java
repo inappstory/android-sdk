@@ -127,8 +127,10 @@ public class OldStatisticManager {
             return true;
         }
         try {
+
             synchronized (openProcessLock) {
-            //    CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
+
+             //   CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
                 final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
                 NetworkClient.getApi().statisticsUpdate(
                         new StatisticSendObject(StatisticSession.getInstance().id,
@@ -158,8 +160,8 @@ public class OldStatisticManager {
                         return StatisticResponse.class;
                     }
                 });
-            }
 
+            }
             synchronized (openProcessLock) {
                 if (statistic != null)
                     statistic.clear();

@@ -146,13 +146,28 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         super.onDestroyView();
     }
 
-
-    @Override
-    public void onPause() {
+    public void pause() {
         if (!isDestroyed) {
             backPaused = true;
             readerManager.pauseCurrent(true);
         }
+    }
+
+    public void resume() {
+        if (!isDestroyed) {
+            backPaused = false;
+            if (!created)
+                readerManager.resumeCurrent(true);
+            if (!Sizes.isTablet())
+                StatusBarController.hideStatusBar(getActivity(), true);
+            created = false;
+            readerManager.resumeWithShareId();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        pause();
         super.onPause();
     }
 
@@ -173,7 +188,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         closeOnSwipe = getArguments().getBoolean(CS_CLOSE_ON_SWIPE, true);
         closeOnOverscroll = getArguments().getBoolean(CS_CLOSE_ON_OVERSCROLL, true);
         RelativeLayout resView = new RelativeLayout(getContext());
-     //   resView.setBackgroundColor(getResources().getColor(R.color.black));
+        //   resView.setBackgroundColor(getResources().getColor(R.color.black));
         storiesViewPager = new ReaderPager(getContext());
         storiesViewPager.setHost(this);
         storiesViewPager.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -232,15 +247,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Override
     public void onResume() {
-        if (!isDestroyed) {
-            backPaused = false;
-            if (!created)
-                readerManager.resumeCurrent(true);
-            if (!Sizes.isTablet())
-                StatusBarController.hideStatusBar(getActivity(), true);
-            created = false;
-            readerManager.resumeWithShareId();
-        }
+        resume();
         super.onResume();
     }
 

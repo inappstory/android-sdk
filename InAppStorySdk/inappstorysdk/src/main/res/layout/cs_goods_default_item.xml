@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="210dp"
+    android:layout_margin="8dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image"
+        android:scaleType="centerCrop"
+        android:layout_width="210dp"
+        android:layout_height="210dp" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        tools:text="СОВЕРШЕННЫЙ КРЕМ ДЛЯ ЛИЦА" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="Valmont essence of gold sturgeon" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:textColor="@color/black"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            tools:text="от 5 рублей" />
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/oldPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:textColor="#40000000"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            tools:text="от 10 рублей" />
+    </LinearLayout>
+</LinearLayout>

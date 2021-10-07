@@ -57,7 +57,8 @@ public class TimerManager {
         OldStatisticManager.getInstance().currentEvent.eventType = 1;
         OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
         pauseTime += System.currentTimeMillis() - startPauseTime;
-        StatisticManager.getInstance().currentState.storyPause = pauseTime;
+        if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
+            StatisticManager.getInstance().currentState.storyPause = pauseTime;
         startPauseTime = 0;
     }
 

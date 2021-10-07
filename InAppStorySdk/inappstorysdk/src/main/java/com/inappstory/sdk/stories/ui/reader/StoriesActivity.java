@@ -72,6 +72,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         if (isFinishing()) {
+            if (storiesFragment != null) storiesFragment.readerManager.hideGoods();
             StatusBarController.showStatusBar(this);
             try {
                 CsEventBus.getDefault().unregister(this);

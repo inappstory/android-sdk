@@ -854,7 +854,7 @@ public class InAppStoryManager {
         showStoryInner(storyId, context, manager, null);
     }
 
-    public void showStoryWithSlide(String storyId, Context context, Integer slide, String managerSettings, IShowStoryCallback callback) {
+    public void showStoryWithSlide(String storyId, Context context, Integer slide, String managerSettings) {
         AppearanceManager appearanceManager = new AppearanceManager();
         if (managerSettings != null) {
             StoriesReaderSettings settings = JsonParser.fromJson(managerSettings, StoriesReaderSettings.class);
@@ -875,7 +875,7 @@ public class InAppStoryManager {
             appearanceManager.csShareIcon(settings.shareIcon);
             appearanceManager.csSoundIcon(settings.soundIcon);
         }
-        showStoryInner(storyId, context, appearanceManager, callback, slide);
+        showStoryInner(storyId, context, appearanceManager, null, slide);
     }
 
     public static class Builder {
