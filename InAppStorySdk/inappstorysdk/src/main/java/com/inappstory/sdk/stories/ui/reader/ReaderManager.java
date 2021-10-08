@@ -1,14 +1,21 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
@@ -97,10 +104,16 @@ public class ReaderManager {
             });
             goodsDialog.show();
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
+            final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
+            final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
+            loaderContainer.addView(getLoader(goodsDialog.getContext()));
+            loaderContainer.setVisibility(View.VISIBLE);
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                     new GetGoodsDataCallback() {
                         @Override
                         public void onSuccess(ArrayList<GoodsItemData> data) {
+                            bottomLine.setVisibility(View.VISIBLE);
+                            loaderContainer.setVisibility(View.GONE);
                             if (data == null || data.isEmpty()) return;
                             if (goodsList != null)
                                 goodsList.setItems(data);
@@ -108,7 +121,8 @@ public class ReaderManager {
 
                         @Override
                         public void onError() {
-
+                            bottomLine.setVisibility(View.VISIBLE);
+                            loaderContainer.setVisibility(View.GONE);
                         }
                     });
             goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
@@ -121,6 +135,26 @@ public class ReaderManager {
 
 
     }
+
+    private View getLoader(Context context) {
+        View v = null;
+        RelativeLayout.LayoutParams relativeParams;
+        if (AppearanceManager.getCommonInstance() != null
+                && AppearanceManager.getCommonInstance().csLoaderView() != null) {
+            v = AppearanceManager.getCommonInstance().csLoaderView().getView();
+        } else {
+            v = new ProgressBar(context) {{
+                setIndeterminate(true);
+                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            }};
+        }
+        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        v.setLayoutParams(relativeParams);
+        return v;
+    }
+    
 
     public void hideGoods() {
         if (goodsDialog != null) goodsDialog.dismiss();
