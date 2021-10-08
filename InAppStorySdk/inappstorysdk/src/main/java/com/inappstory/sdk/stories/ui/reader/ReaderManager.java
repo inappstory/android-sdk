@@ -73,6 +73,7 @@ public class ReaderManager {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
                     parentFragment.resume();
+                    goodsDialog = null;
                 }
             });
             goodsDialog.show();
