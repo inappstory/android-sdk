@@ -76,7 +76,7 @@ public class ReaderManager {
                 }
             });
             goodsDialog.show();
-            ((RelativeLayout) goodsDialog.findViewById(R.id.container))
+            ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
                     .addView(AppearanceManager.getCommonInstance()
                             .csCustomGoodsWidget().getWidgetView());
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,

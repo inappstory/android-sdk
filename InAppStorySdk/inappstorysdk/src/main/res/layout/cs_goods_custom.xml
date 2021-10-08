@@ -6,6 +6,6 @@
     android:layout_height="match_parent">
     <RelativeLayout
         android:layout_width="match_parent"
-        android:id="@+id/widgetContainer"
+        android:id="@+id/cs_widget_container"
         android:layout_height="match_parent"/>
 </RelativeLayout>
