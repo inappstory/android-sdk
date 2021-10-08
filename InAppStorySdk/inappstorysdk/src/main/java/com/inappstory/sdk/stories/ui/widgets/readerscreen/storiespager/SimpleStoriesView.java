@@ -7,6 +7,7 @@ public interface SimpleStoriesView {
     void playVideo();
     void restartVideo();
     void stopVideo();
+    void swipeUp();
     void resumeVideo();
     Context getContext();
     void changeSoundStatus();

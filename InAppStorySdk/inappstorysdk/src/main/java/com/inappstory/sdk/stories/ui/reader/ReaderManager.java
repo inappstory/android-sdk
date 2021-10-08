@@ -136,6 +136,13 @@ public class ReaderManager {
 
     }
 
+    public void swipeUp(int position) {
+        int storyId = storiesIds.get(position);
+        ReaderPageManager manager = getSubscriberByStoryId(storyId);
+        if (manager != null)
+            manager.swipeUp();
+    }
+
     private View getLoader(Context context) {
         View v = null;
         RelativeLayout.LayoutParams relativeParams;

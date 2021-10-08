@@ -215,7 +215,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
     public void swipeUpEvent(int position) {
-
+        readerManager.swipeUp(position);
     }
 
     public void swipeDownEvent() {

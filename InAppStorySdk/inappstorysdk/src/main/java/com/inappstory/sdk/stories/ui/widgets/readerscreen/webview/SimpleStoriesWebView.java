@@ -124,6 +124,13 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         logMethod("story_slide_stop");
     }
 
+    @Override
+    public void swipeUp() {
+
+        loadUrl("javascript:window.story_slide_swipe_up()");
+        logMethod("story_slide_swipe_up");
+    }
+
     public void resumeVideo() {
         loadUrl("javascript:(function(){story_slide_resume();})()");
         logMethod("story_slide_resume");

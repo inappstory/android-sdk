@@ -64,6 +64,12 @@ public class StoriesViewManager {
         this.index = index;
     }
 
+    public void swipeUp() {
+        if (storiesView != null)
+            storiesView.swipeUp();
+    }
+
+
     public void setStoryId(int storyId) {
         this.storyId = storyId;
     }

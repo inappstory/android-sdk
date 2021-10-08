@@ -31,6 +31,11 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
+
+    public void swipeUp() {
+        webViewManager.swipeUp();
+    }
+
     public void gameComplete(String data) {
         webViewManager.gameComplete(data);
     }
