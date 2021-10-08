@@ -139,6 +139,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
+    public void sendSwipeUp() {
+
+    }
+
+    @Override
     public void resumeVideo() {
         for (GeneratedVideoView videoView : tempVideos) {
             videoView.startPlay();

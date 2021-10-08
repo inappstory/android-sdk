@@ -29,6 +29,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -57,6 +58,7 @@ import com.inappstory.sdk.stories.events.StoryCacheLoadedEvent;
 import com.inappstory.sdk.stories.events.StoryOpenEvent;
 import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryPageOpenEvent;
+import com.inappstory.sdk.stories.events.SwipeUpEvent;
 import com.inappstory.sdk.stories.events.SyncTimerEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -344,6 +346,8 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
+
+
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void resetTimers(ClearDurationEvent event) {
         if (storyId == event.getId()) {
@@ -369,6 +373,14 @@ public class ReaderPageFragment extends Fragment {
             }
         }
     }
+
+    @CsSubscribe(threadMode = CsThreadMode.MAIN)
+    public void swipeUpEvent(SwipeUpEvent event) {
+        if (InAppStoryService.getInstance() != null &&
+                storyId == InAppStoryService.getInstance().getCurrentId())
+            storiesView.sendSwipeUp();
+    }
+
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void storyCacheLoaded(StoryCacheLoadedEvent event) {
