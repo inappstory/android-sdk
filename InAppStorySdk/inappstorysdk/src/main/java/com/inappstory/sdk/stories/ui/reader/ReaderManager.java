@@ -106,6 +106,12 @@ public class ReaderManager {
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
             final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
             final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
+            goodsDialog.findViewById(R.id.close_area).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    hideGoods();
+                }
+            });
             loaderContainer.addView(getLoader(goodsDialog.getContext()));
             loaderContainer.setVisibility(View.VISIBLE);
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
@@ -161,7 +167,7 @@ public class ReaderManager {
         v.setLayoutParams(relativeParams);
         return v;
     }
-    
+
 
     public void hideGoods() {
         if (goodsDialog != null) goodsDialog.dismiss();
