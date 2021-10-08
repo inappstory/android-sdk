@@ -91,6 +91,11 @@ public class ReaderManager {
                         public void onError() {
 
                         }
+
+                        @Override
+                        public void onClose() {
+                            hideGoods();
+                        }
                     });
         } else {
             dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
@@ -130,6 +135,11 @@ public class ReaderManager {
                         public void onError() {
                             bottomLine.setVisibility(View.VISIBLE);
                             loaderContainer.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onClose() {
+                            hideGoods();
                         }
                     });
             goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
