@@ -2,7 +2,12 @@ package com.inappstory.sdk;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
@@ -805,5 +810,22 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    public static View getLoader(Context context) {
+        View v = null;
+        RelativeLayout.LayoutParams relativeParams;
+        if (commonInstance != null
+                && commonInstance.csLoaderView() != null) {
+            v = commonInstance.csLoaderView().getView();
+        } else {
+            v = new ProgressBar(context) {{
+                setIndeterminate(true);
+                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            }};
+        }
+        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        v.setLayoutParams(relativeParams);
+        return v;
+    }
 
 }

@@ -144,24 +144,6 @@ public class ReaderPageFragment extends Fragment {
         hideLoader();
     }
 
-    private View getLoader(Context context) {
-        View v = null;
-        RelativeLayout.LayoutParams relativeParams;
-        if (AppearanceManager.getCommonInstance() != null
-                && AppearanceManager.getCommonInstance().csLoaderView() != null) {
-            v = AppearanceManager.getCommonInstance().csLoaderView().getView();
-        } else {
-            v = new ProgressBar(context) {{
-                setIndeterminate(true);
-                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-            }};
-        }
-        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-        v.setLayoutParams(relativeParams);
-        return v;
-    }
-
     private void setOffsets(View view) {
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
@@ -365,7 +347,7 @@ public class ReaderPageFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             loader.setElevation(8);
         }
-        ((ViewGroup) loader).addView(getLoader(context));
+        ((ViewGroup) loader).addView(AppearanceManager.getLoader(context));
     }
 
 

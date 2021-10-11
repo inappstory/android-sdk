@@ -121,7 +121,7 @@ public class ReaderManager {
                     hideGoods();
                 }
             });
-            loaderContainer.addView(getLoader(goodsDialog.getContext()));
+            loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
             loaderContainer.setVisibility(View.VISIBLE);
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                     new GetGoodsDataCallback() {
@@ -162,26 +162,7 @@ public class ReaderManager {
         if (manager != null)
             manager.swipeUp();
     }
-
-    private View getLoader(Context context) {
-        View v = null;
-        RelativeLayout.LayoutParams relativeParams;
-        if (AppearanceManager.getCommonInstance() != null
-                && AppearanceManager.getCommonInstance().csLoaderView() != null) {
-            v = AppearanceManager.getCommonInstance().csLoaderView().getView();
-        } else {
-            v = new ProgressBar(context) {{
-                setIndeterminate(true);
-                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-            }};
-        }
-        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-        v.setLayoutParams(relativeParams);
-        return v;
-    }
-
+    
 
     public void hideGoods() {
         if (goodsDialog != null) goodsDialog.dismiss();
