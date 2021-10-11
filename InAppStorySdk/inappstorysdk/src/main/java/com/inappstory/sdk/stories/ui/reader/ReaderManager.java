@@ -107,6 +107,7 @@ public class ReaderManager {
             goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
+                    goodsDialog = null;
                     parentFragment.resume();
                 }
             });
