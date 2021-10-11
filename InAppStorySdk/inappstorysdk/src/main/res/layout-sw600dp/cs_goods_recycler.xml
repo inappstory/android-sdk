@@ -13,6 +13,12 @@
         android:clickable="true"
         android:layout_centerInParent="true">
 
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/loader_container"
+            android:clickable="true"
+            android:layout_height="wrap_content"/>
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
