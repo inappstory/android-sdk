@@ -3,25 +3,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
     <View
-        android:id="@+id/close_area"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
+        android:id="@+id/close_area"
+        android:clickable="true"
+        android:layout_height="match_parent"/>
     <RelativeLayout
         android:layout_width="@dimen/cs_tablet_width"
-        android:layout_height="@dimen/cs_tablet_height">
+        android:layout_height="@dimen/cs_tablet_height"
+        android:id="@+id/layout"
+        android:clickable="true"
+        android:layout_centerInParent="true">
 
         <FrameLayout
-            android:id="@+id/loader_container"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:clickable="true" />
-
+            android:id="@+id/loader_container"
+            android:clickable="true"
+            android:layout_height="wrap_content"/>
         <RelativeLayout
-            android:id="@+id/bottom_line"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_alignParentBottom="true"
@@ -32,10 +32,9 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-
+            android:clickable="true"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:clickable="true"
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
