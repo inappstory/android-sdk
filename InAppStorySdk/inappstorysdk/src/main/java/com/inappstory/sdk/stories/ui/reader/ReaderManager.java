@@ -58,12 +58,12 @@ public class ReaderManager {
     public void showGoods(String skusString) {
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) return;
         if (goodsDialog != null) return;
-        AlertDialog.Builder builder = new AlertDialog.Builder(parentFragment.getActivity(), R.style.GoodsDialog);
         LayoutInflater inflater = parentFragment.getActivity().getLayoutInflater();
         View dialogView;
         ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
         parentFragment.pause();
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(parentFragment.getActivity(), R.style.GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
             builder.setView(dialogView);
             goodsDialog = builder.create();
@@ -98,6 +98,8 @@ public class ReaderManager {
                         }
                     });
         } else {
+            AlertDialog.Builder builder = Sizes.isTablet() ? new AlertDialog.Builder(parentFragment.getActivity()) :
+                    new AlertDialog.Builder(parentFragment.getActivity(), R.style.GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
             builder.setView(dialogView);
             goodsDialog = builder.create();
