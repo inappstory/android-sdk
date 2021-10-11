@@ -568,7 +568,8 @@ public class InAppStoryManager {
 
     private OnboardingLoadedListener singleLoadedListener;
 
-    private void showLoadedOnboardings(List<Story> response, Context outerContext, final AppearanceManager manager) {
+    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager) {
+
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0));
             if (onboardLoadedListener != null) {
@@ -576,6 +577,29 @@ public class InAppStoryManager {
             }
             return;
         }
+
+        if (StoriesActivity.destroyed == -1) {
+
+            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showLoadedOnboardings(response, outerContext, manager);
+                    StoriesActivity.destroyed = 0;
+                }
+            }, 350);
+            return;
+        } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showLoadedOnboardings(response, outerContext, manager);
+                    StoriesActivity.destroyed = 0;
+                }
+            }, 350);
+            return;
+        }
+
         ArrayList<Story> stories = new ArrayList<Story>();
         ArrayList<Integer> storiesIds = new ArrayList<>();
         stories.addAll(response);
@@ -600,27 +624,6 @@ public class InAppStoryManager {
                     showOnboardingStoriesInner(tags, outerContext, manager);
                 }
             }, 1000);
-            return;
-        }
-        if (StoriesActivity.destroyed == -1) {
-
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showOnboardingStoriesInner(tags, outerContext, manager);
-                    StoriesActivity.destroyed = 0;
-                }
-            }, 350);
-            return;
-        } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showOnboardingStoriesInner(tags, outerContext, manager);
-                    StoriesActivity.destroyed = 0;
-                }
-            }, 350);
             return;
         }
 

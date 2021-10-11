@@ -94,7 +94,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (InAppStoryService.isNull()) {
+        if (InAppStoryService.isNull() && !Sizes.isTablet()) {
             if (getActivity() != null) getActivity().finish();
             return;
         }
@@ -107,7 +107,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
         currentIds = getArguments().getIntegerArrayList("stories_ids");
         if (currentIds == null || currentIds.isEmpty()) {
-            if (getActivity() != null) getActivity().finish();
+            if (getActivity() != null && !Sizes.isTablet()) getActivity().finish();
             return;
         }
         readerManager.setStoriesIds(currentIds);
