@@ -36,6 +36,7 @@ import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
+import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
@@ -453,8 +454,13 @@ public class ReaderPageFragment extends Fragment {
         manager = new ReaderPageManager();
         setStoryId();
         manager.host = this;
+        if (parentManager == null && getParentFragment() instanceof StoriesFragment) {
+            parentManager = ((StoriesFragment)getParentFragment()).readerManager;
+        }
         manager.parentManager = parentManager;
-        parentManager.addSubscriber(manager);
+        if (parentManager != null) {
+            parentManager.addSubscriber(manager);
+        }
         bindViews(view);
         setActions();
         setManagers();

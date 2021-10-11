@@ -162,7 +162,7 @@ public class ReaderManager {
         if (manager != null)
             manager.swipeUp();
     }
-    
+
 
     public void hideGoods() {
         if (goodsDialog != null) goodsDialog.dismiss();

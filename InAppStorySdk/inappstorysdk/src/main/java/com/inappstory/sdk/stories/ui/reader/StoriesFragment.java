@@ -80,7 +80,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     }
 
-    ReaderManager readerManager;
+    public ReaderManager readerManager;
 
     ReaderPagerAdapter outerViewPagerAdapter;
     View invMask;
