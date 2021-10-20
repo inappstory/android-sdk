@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
@@ -241,12 +242,12 @@ public class ScreensManager {
     }
 
     public void showGoods(String skusString, Activity activity, final ShowGoodsCallback showGoodsCallback,
-                          boolean fullScreen) {
+                          boolean fullScreen, final String widgetId) {
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) return;
         if (goodsDialog != null) return;
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView;
-        ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
+        final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
         showGoodsCallback.onPause();
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.GoodsDialog);
@@ -258,7 +259,7 @@ public class ScreensManager {
             goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    showGoodsCallback.onResume();
+                    showGoodsCallback.onResume(widgetId);
                     goodsDialog = null;
                 }
             });
@@ -294,13 +295,14 @@ public class ScreensManager {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
                     goodsDialog = null;
-                    showGoodsCallback.onResume();
+                    showGoodsCallback.onResume(widgetId);
                 }
             });
             goodsDialog.show();
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
             final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
             final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
+            final ImageView refresh = goodsDialog.findViewById(R.id.refresh_button);
             goodsDialog.findViewById(R.id.close_area).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -309,32 +311,41 @@ public class ScreensManager {
             });
             loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
             loaderContainer.setVisibility(View.VISIBLE);
+            final GetGoodsDataCallback callback = new GetGoodsDataCallback() {
+                @Override
+                public void onSuccess(ArrayList<GoodsItemData> data) {
+                    bottomLine.setVisibility(View.VISIBLE);
+                    loaderContainer.setVisibility(View.GONE);
+                    if (data == null || data.isEmpty()) return;
+                    if (goodsList != null)
+                        goodsList.setItems(data);
+                }
+
+                @Override
+                public void onError() {
+                    bottomLine.setVisibility(View.VISIBLE);
+                    loaderContainer.setVisibility(View.GONE);
+                    refresh.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onClose() {
+                    hideGoods();
+                }
+            };
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
-                    new GetGoodsDataCallback() {
-                        @Override
-                        public void onSuccess(ArrayList<GoodsItemData> data) {
-                            bottomLine.setVisibility(View.VISIBLE);
-                            loaderContainer.setVisibility(View.GONE);
-                            if (data == null || data.isEmpty()) return;
-                            if (goodsList != null)
-                                goodsList.setItems(data);
-                        }
-
-                        @Override
-                        public void onError() {
-                            bottomLine.setVisibility(View.VISIBLE);
-                            loaderContainer.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onClose() {
-                            hideGoods();
-                        }
-                    });
+                    callback);
             goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     hideGoods();
+                }
+            });
+            refresh.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
+                            callback);
                 }
             });
         }

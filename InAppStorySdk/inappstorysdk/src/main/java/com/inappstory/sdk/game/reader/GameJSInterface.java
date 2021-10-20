@@ -73,6 +73,11 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
+    public void showGoodsWidget(String id, String skus) {
+        manager.showGoods(skus, id);
+    }
+
+    @JavascriptInterface
     public void emptyLoaded() {
     }
 

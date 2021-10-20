@@ -3,98 +3,91 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center">
+    android:layout_height="wrap_content">
 
-    <FrameLayout
-        android:id="@+id/contentContainer"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:layout_gravity="center">
+        android:id="@+id/close_area"
+        android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/parentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="8dp"
-                android:gravity="center"
-                android:text="На какой ты стороне?"
-                android:textSize="24dp" />
-
-            <FrameLayout
-                android:id="@+id/editBorderContainer"
+            <LinearLayout
+                android:id="@+id/contentContainer"
                 android:layout_width="match_parent"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="16dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center">
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="На какой ты стороне?"
+                    android:textSize="24dp" />
 
                 <FrameLayout
-                    android:id="@+id/editContainer"
+                    android:id="@+id/editBorderContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center">
-                    <com.inappstory.sdk.stories.ui.widgets.TextMultiInput
+                    android:layout_height="wrap_content">
+
+                    <FrameLayout
+                        android:id="@+id/editContainer"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/editText"/>
-                 <!--   <androidx.appcompat.widget.AppCompatEditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/editText"
-                        android:inputType="textMultiLine"
-                        android:textSize="18sp"
-                        android:background="@android:color/transparent"
-                        android:gravity="center"
-                        android:hint="Напишите что-нибудь..."
-                        android:maxLines="3" />-->
+                        android:layout_height="wrap_content">
+
+                        <com.inappstory.sdk.stories.ui.widgets.TextMultiInput
+                            android:id="@+id/editText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                        <!--   <androidx.appcompat.widget.AppCompatEditText
+                               android:layout_width="match_parent"
+                               android:layout_height="wrap_content"
+                               android:id="@+id/editText"
+                               android:inputType="textMultiLine"
+                               android:textSize="18sp"
+                               android:background="@android:color/transparent"
+                               android:gravity="center"
+                               android:hint="Напишите что-нибудь..."
+                               android:maxLines="3" />-->
+                    </FrameLayout>
                 </FrameLayout>
-            </FrameLayout>
+
+
+            </LinearLayout>
 
             <FrameLayout
                 android:id="@+id/buttonBackground"
                 android:layout_width="match_parent"
-                android:visibility="gone"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center">
+                android:layout_gravity="center"
+                android:visibility="gone">
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/buttonText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:singleLine="true"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginBottom="8dp"
                     android:gravity="center"
+                    android:singleLine="true"
                     android:text="Отправить"
                     android:textSize="18dp" />
             </FrameLayout>
 
         </LinearLayout>
-    </FrameLayout>
 
-    <FrameLayout
-        android:id="@+id/borderContainer"
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
+        <FrameLayout
+            android:id="@+id/borderContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone">
 
-    </FrameLayout>
+        </FrameLayout>
 
-
+    </RelativeLayout>
 </RelativeLayout>

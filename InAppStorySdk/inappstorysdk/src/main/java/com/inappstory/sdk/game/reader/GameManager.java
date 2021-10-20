@@ -95,8 +95,8 @@ public class GameManager {
 
     GameActivity host;
 
-    void showGoods(String skusString) {
-        host.showGoods(skusString);
+    void showGoods(String skusString, String widgetId) {
+        host.showGoods(skusString, widgetId);
     }
 
     void gameCompleted(String gameState, String link, String eventData) {

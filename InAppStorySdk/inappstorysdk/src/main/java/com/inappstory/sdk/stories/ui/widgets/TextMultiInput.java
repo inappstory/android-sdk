@@ -77,6 +77,14 @@ public class TextMultiInput extends LinearLayout {
 
     }
 
+    public void setTextSize(int type, int size) {
+        if (inputType == PHONE) {
+            getCountryCodeText().setTextSize(type, size);
+            phoneNumberHint.setTextSize(type, size);
+        }
+        getMainText().setTextSize(type, size);
+    }
+
     public void setTextSize(int size) {
         if (inputType == PHONE) {
             getCountryCodeText().setTextSize(TypedValue.COMPLEX_UNIT_SP, size);

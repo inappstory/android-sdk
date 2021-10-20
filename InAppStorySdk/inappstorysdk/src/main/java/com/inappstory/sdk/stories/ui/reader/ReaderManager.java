@@ -75,11 +75,11 @@ public class ReaderManager {
             }
 
             @Override
-            public void onResume() {
+            public void onResume(String widgetId) {
                 if (parentFragment != null)
                     parentFragment.resume();
             }
-        }, false);
+        }, false, null);
     }
 
     public void gameComplete(String data, int storyId, int slideIndex) {

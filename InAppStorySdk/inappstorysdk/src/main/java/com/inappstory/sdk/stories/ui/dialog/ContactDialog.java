@@ -21,6 +21,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
@@ -28,6 +30,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
@@ -112,13 +115,7 @@ public class ContactDialog {
             dialog.getWindow().setDimAmount(0.5f);
         }
         final FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
-        FrameLayout contentContainer = dialog.findViewById(R.id.contentContainer);
-        contentContainer.setPadding(
-                getSize(dialogStructure.configV2.main.padding.left),
-                getSize(dialogStructure.configV2.main.padding.top),
-                getSize(dialogStructure.configV2.main.padding.right),
-                getSize(dialogStructure.configV2.main.padding.bottom)
-        );
+
         //  contentContainer.setUseCompatPadding(true);
         final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
@@ -153,22 +150,31 @@ public class ContactDialog {
         final int dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
         int dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);
 
-        Configuration configuration = activity.getResources().getConfiguration();
-        int screenWidthDp = configuration.screenWidthDp;
 
-        factor = (1f * screenWidthDp) / dialogStructure.configV2.factor;
-        text.setText(dialogStructure.configV2.main.question.text.value);
-        text.setTextColor(hex2color(dialogStructure.configV2.main.question.text.color));
-        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, getSize(dialogStructure.configV2.main.question.text.size));
-        text.setPadding(
-                getSize(dialogStructure.configV2.main.question.padding.left),
-                getSize(dialogStructure.configV2.main.question.padding.top),
-                getSize(dialogStructure.configV2.main.question.padding.right),
-                getSize(dialogStructure.configV2.main.question.padding.bottom)
-        );
-        text.setLineSpacing(0,
-                dialogStructure.configV2.main.question.text.lineHeight /
-                        dialogStructure.configV2.main.question.text.size);
+        factor = (1f * fullWidth) / dialogStructure.configV2.factor;
+        LinearLayout parentContainer = dialog.findViewById(R.id.parentContainer);
+        LinearLayout contentContainer = dialog.findViewById(R.id.contentContainer);
+        contentContainer.setPadding(
+                getSize(dialogStructure.configV2.main.padding.left),
+                getSize(dialogStructure.configV2.main.padding.top),
+                getSize(dialogStructure.configV2.main.padding.right),
+                getSize(dialogStructure.configV2.main.padding.bottom));
+        if (dialogStructure.configV2.main.question.text.value.isEmpty()) {
+            text.setVisibility(View.GONE);
+        } else {
+            text.setText(dialogStructure.configV2.main.question.text.value);
+            text.setTextColor(hex2color(dialogStructure.configV2.main.question.text.color));
+            text.setTextSize(TypedValue.COMPLEX_UNIT_PX, getSize(dialogStructure.configV2.main.question.text.size));
+            text.setPadding(
+                    getSize(dialogStructure.configV2.main.question.padding.left),
+                    getSize(dialogStructure.configV2.main.question.padding.top),
+                    getSize(dialogStructure.configV2.main.question.padding.right),
+                    getSize(dialogStructure.configV2.main.question.padding.bottom)
+            );
+            text.setLineSpacing(0,
+                    dialogStructure.configV2.main.question.text.lineHeight /
+                            dialogStructure.configV2.main.question.text.size);
+        }
         setTypeface(text, dialogStructure.configV2.main.question.text.isBold(),
                 dialogStructure.configV2.main.question.text.isItalic(),
                 dialogStructure.configV2.main.question.text.isSecondary());
@@ -188,7 +194,8 @@ public class ContactDialog {
         editText.setHint(dialogStructure.configV2.main.input.text.placeholder);
         editText.setTextColor(hex2color(dialogStructure.configV2.main.input.text.color));
         editText.setHintTextColor(hex2color(dialogStructure.configV2.main.input.text.color));
-        editText.setTextSize(getSize(dialogStructure.configV2.main.input.text.size));
+        editText.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                getSize(dialogStructure.configV2.main.input.text.size));
 
         editBorderContainer.setPadding(
                 getSize(dialogStructure.configV2.main.input.padding.left),
@@ -227,13 +234,21 @@ public class ContactDialog {
                     dialogStructure.configV2.main.input.text.isSecondary());
         }
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) editContainer.getLayoutParams();
-        int borderWidth = Sizes.dpToPxExt(getSize(dialogStructure.configV2.main.input.border.width));
+        int borderWidth = getSize(dialogStructure.configV2.main.input.border.width);
         lp.setMargins(borderWidth,
                 borderWidth,
                 borderWidth,
                 borderWidth);
         editContainer.setLayoutParams(lp);
-
+        CenterStructure centerStructure = dialogStructure.size.center;
+        if (centerStructure == null) centerStructure = new CenterStructure(50, 50);
+        RelativeLayout.LayoutParams parentParams = new RelativeLayout.LayoutParams(dialogWidth, WRAP_CONTENT);
+        int topMargin = (int) (fullHeight * centerStructure.y / 100 - dialogHeight / 2);
+        int bottomMargin = (int) (fullHeight * (100 - centerStructure.y) / 100 - dialogHeight / 2);
+        int leftMargin = (int) (fullWidth * centerStructure.x / 100 - dialogWidth / 2);
+        int rightMargin = (int) (fullWidth * (100 - centerStructure.x) / 100 - dialogWidth / 2);
+        parentParams.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+        //parentContainer.setLayoutParams(parentParams);
         buttonText.setPadding(
                 getSize(dialogStructure.configV2.main.button.padding.left),
                 getSize(dialogStructure.configV2.main.button.padding.top),
@@ -242,7 +257,7 @@ public class ContactDialog {
         );
         buttonText.setText(dialogStructure.configV2.main.button.text.value);
         buttonText.setTextColor(hex2color(dialogStructure.configV2.main.button.text.color));
-        buttonText.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+        buttonText.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 getSize(dialogStructure.configV2.main.button.text.size));
         buttonText.setLineSpacing(0,
                 dialogStructure.configV2.main.button.text.lineHeight /
@@ -261,7 +276,7 @@ public class ContactDialog {
                 buttonText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                 break;
         }
-        int rad = Sizes.dpToPxExt(getSize(dialogStructure.configV2.main.border.radius));
+        int rad = getSize(dialogStructure.configV2.main.border.radius);
 
         GradientDrawable buttonBackgroundGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
@@ -275,41 +290,39 @@ public class ContactDialog {
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[]{hex2color(dialogStructure.configV2.main.input.border.color),
                         hex2color(dialogStructure.configV2.main.input.border.color)});
-        editBorderContainerGradient.setCornerRadius(Sizes.dpToPxExt(
-                getSize(dialogStructure.configV2.main.input.border.radius)));
+        editBorderContainerGradient.setCornerRadius(getSize(dialogStructure.configV2.main.input.border.radius));
 
         final GradientDrawable editBorderContainerErrorGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[]{Color.RED,
                         Color.RED});
-        editBorderContainerErrorGradient.setCornerRadius(Sizes.dpToPxExt(
-                getSize(dialogStructure.configV2.main.input.border.radius)));
+        editBorderContainerErrorGradient.setCornerRadius(
+                getSize(dialogStructure.configV2.main.input.border.radius));
 
         GradientDrawable editContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[]{hex2color(dialogStructure.configV2.main.input.background.color),
                         hex2color(dialogStructure.configV2.main.input.background.color)});
-        editContainerGradient.setCornerRadius(Sizes.dpToPxExt(
-                getSize(dialogStructure.configV2.main.input.border.radius)));
+        editContainerGradient.setCornerRadius(getSize(dialogStructure.configV2.main.input.border.radius));
 
         final GradientDrawable borderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[]{hex2color(dialogStructure.configV2.main.border.color),
                         hex2color(dialogStructure.configV2.main.border.color)});
-        borderContainerGradient.setCornerRadius(Sizes.dpToPxExt(
-                getSize(dialogStructure.configV2.main.border.radius)));
+        borderContainerGradient.setCornerRadius(
+                getSize(dialogStructure.configV2.main.border.radius));
 
-        GradientDrawable contentContainerGradient = new GradientDrawable(
+        GradientDrawable parentContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[]{hex2color(dialogStructure.configV2.main.background.color),
                         hex2color(dialogStructure.configV2.main.background.color)});
-        contentContainerGradient.setCornerRadius(Sizes.dpToPxExt(
-                getSize(dialogStructure.configV2.main.border.radius)));
+        parentContainerGradient.setCornerRadius(
+                getSize(dialogStructure.configV2.main.border.radius));
 
         editBorderContainer.setBackground(editBorderContainerGradient);
         editContainer.setBackground(editContainerGradient);
         borderContainer.setBackground(borderContainerGradient);
-        contentContainer.setBackground(contentContainerGradient);
+        parentContainer.setBackground(parentContainerGradient);
         if (inttype == PHONE) {
             editText.getDivider().setBackgroundColor(
                     hex2color(dialogStructure.configV2.main.background.color));
@@ -371,6 +384,7 @@ public class ContactDialog {
                 editText.getMainText().addTextChangedListener(this);
             }
         });
+
         dialog.getWindow().setLayout(dialogWidth, WRAP_CONTENT);
         dialog.show();
         StatisticManager.getInstance().pauseStoryEvent(false);
@@ -412,6 +426,7 @@ public class ContactDialog {
             }
         });
         final int finalInttype = inttype;
+
         buttonBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

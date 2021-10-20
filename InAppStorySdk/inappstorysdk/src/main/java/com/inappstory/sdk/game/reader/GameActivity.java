@@ -95,7 +95,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    void showGoods(final String skusString) {
+    void showGoods(final String skusString, final String widgetId) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -106,12 +106,19 @@ public class GameActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onResume() {
+                    public void onResume(String widgetId) {
+                        goodsWidgetComplete(widgetId);
                         resumeGame();
                     }
-                }, true);
+                }, true, widgetId);
             }
         });
+    }
+
+    void goodsWidgetComplete(String widgetId) {
+        if (manager.gameLoaded) {
+            webView.evaluateJavascript("goodsWidgetComplete(\"" + widgetId + "\");", null);
+        }
     }
 
     AudioManager.OnAudioFocusChangeListener audioFocusChangeListener =
@@ -351,7 +358,6 @@ public class GameActivity extends AppCompatActivity {
             ScreensManager.getInstance().currentGameActivity = null;
         super.onDestroy();
     }
-
 
 
     @Override
