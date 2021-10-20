@@ -515,7 +515,7 @@ public class InAppStoryManager {
     public static void logout() {
         if (INSTANCE != null) {
             if (InAppStoryService.isNotNull()) {
-                InAppStoryService.getInstance().listSubscribers.clear();
+                InAppStoryService.getInstance().getListSubscribers().clear();
                 InAppStoryService.getInstance().getDownloadManager().cleanTasks();
                 InAppStoryService.getInstance().logout();
             }

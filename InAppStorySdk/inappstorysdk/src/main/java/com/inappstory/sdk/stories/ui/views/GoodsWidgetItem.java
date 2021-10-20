@@ -8,12 +8,13 @@ import com.inappstory.sdk.AppearanceManager;
 
 public class GoodsWidgetItem extends RecyclerView.ViewHolder {
     GoodsItemData data;
-
+    GoodsWidgetAdapter adapter;
     ICustomGoodsItem customGoodsItem;
 
-    public GoodsWidgetItem(ICustomGoodsItem customGoodsItem) {
+    public GoodsWidgetItem(ICustomGoodsItem customGoodsItem, GoodsWidgetAdapter adapter) {
         super(customGoodsItem.getView());
         this.customGoodsItem = customGoodsItem;
+        this.adapter = adapter;
     }
 
     public void bind(GoodsItemData data) {
@@ -22,6 +23,8 @@ public class GoodsWidgetItem extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View v) {
                 AppearanceManager.getCommonInstance().csCustomGoodsWidget().onItemClick(GoodsWidgetItem.this.data);
+                if (adapter != null)
+                    adapter.onItemClick(GoodsWidgetItem.this.data);
             }
         });
         if (customGoodsItem != null)

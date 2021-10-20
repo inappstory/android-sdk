@@ -95,6 +95,10 @@ public class GameManager {
 
     GameActivity host;
 
+    void showGoods(String skusString) {
+        host.showGoods(skusString);
+    }
+
     void gameCompleted(String gameState, String link, String eventData) {
         CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
                 slidesCount, index, eventData));

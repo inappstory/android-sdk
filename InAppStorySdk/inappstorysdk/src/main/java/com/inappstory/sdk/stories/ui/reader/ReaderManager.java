@@ -41,6 +41,7 @@ import com.inappstory.sdk.stories.ui.views.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.GoodsWidget;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
@@ -53,108 +54,6 @@ public class ReaderManager {
         parentFragment.getActivity().finish();
     }
 
-    Dialog goodsDialog;
-
-    public void showGoods(String skusString) {
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) return;
-        if (goodsDialog != null) return;
-        LayoutInflater inflater = parentFragment.getActivity().getLayoutInflater();
-        View dialogView;
-        ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
-        parentFragment.pause();
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(parentFragment.getActivity(), R.style.GoodsDialog);
-            dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
-            builder.setView(dialogView);
-            goodsDialog = builder.create();
-            //dialog.setContentView(R.layout.cs_goods_recycler);
-            goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    parentFragment.resume();
-                    goodsDialog = null;
-                }
-            });
-            goodsDialog.show();
-            ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
-                    .addView(AppearanceManager.getCommonInstance()
-                            .csCustomGoodsWidget().getWidgetView());
-            AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
-                    new GetGoodsDataCallback() {
-                        @Override
-                        public void onSuccess(ArrayList<GoodsItemData> data) {
-                            if (data == null || data.isEmpty()) return;
-                        }
-
-                        @Override
-                        public void onError() {
-
-                        }
-
-                        @Override
-                        public void onClose() {
-                            hideGoods();
-                        }
-                    });
-        } else {
-            AlertDialog.Builder builder = Sizes.isTablet() ? new AlertDialog.Builder(parentFragment.getActivity()) :
-                    new AlertDialog.Builder(parentFragment.getActivity(), R.style.GoodsDialog);
-            dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
-            builder.setView(dialogView);
-            goodsDialog = builder.create();
-            goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    goodsDialog = null;
-                    parentFragment.resume();
-                }
-            });
-            goodsDialog.show();
-            final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
-            final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
-            final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
-            goodsDialog.findViewById(R.id.close_area).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    hideGoods();
-                }
-            });
-            loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
-            loaderContainer.setVisibility(View.VISIBLE);
-            AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
-                    new GetGoodsDataCallback() {
-                        @Override
-                        public void onSuccess(ArrayList<GoodsItemData> data) {
-                            bottomLine.setVisibility(View.VISIBLE);
-                            loaderContainer.setVisibility(View.GONE);
-                            if (data == null || data.isEmpty()) return;
-                            if (goodsList != null)
-                                goodsList.setItems(data);
-                        }
-
-                        @Override
-                        public void onError() {
-                            bottomLine.setVisibility(View.VISIBLE);
-                            loaderContainer.setVisibility(View.GONE);
-                        }
-
-                        @Override
-                        public void onClose() {
-                            hideGoods();
-                        }
-                    });
-            goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    hideGoods();
-                }
-            });
-        }
-
-
-    }
 
     public void swipeUp(int position) {
         int storyId = storiesIds.get(position);
@@ -163,10 +62,24 @@ public class ReaderManager {
             manager.swipeUp();
     }
 
-
     public void hideGoods() {
-        if (goodsDialog != null) goodsDialog.dismiss();
-        goodsDialog = null;
+        ScreensManager.getInstance().hideGoods();
+    }
+
+    public void showGoods(String skusString) {
+        ScreensManager.getInstance().showGoods(skusString, parentFragment.getActivity(), new ShowGoodsCallback() {
+            @Override
+            public void onPause() {
+                if (parentFragment != null)
+                    parentFragment.pause();
+            }
+
+            @Override
+            public void onResume() {
+                if (parentFragment != null)
+                    parentFragment.resume();
+            }
+        }, false);
     }
 
     public void gameComplete(String data, int storyId, int slideIndex) {

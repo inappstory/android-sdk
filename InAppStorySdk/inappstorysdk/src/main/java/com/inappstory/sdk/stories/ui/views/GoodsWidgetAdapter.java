@@ -41,12 +41,16 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         }
     }
 
+    public void onItemClick(GoodsItemData data) {
+
+    }
+
     @NonNull
     @Override
     public GoodsWidgetItem onCreateViewHolder(@NonNull ViewGroup nParent, int viewType) {
         ICustomGoodsItem customGoodsItem = AppearanceManager.getCommonInstance().csCustomGoodsWidget().getItem();
         if (customGoodsItem != null) {
-            return new GoodsWidgetItem(customGoodsItem);
+            return new GoodsWidgetItem(customGoodsItem, this);
         } else {
             final ViewGroup parent = nParent;
             return new GoodsWidgetItem(new ICustomGoodsItem() {
@@ -85,7 +89,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
                             ImageLoader.getInstance().displayImage(data.image, -1, (AppCompatImageView)view.findViewById(R.id.image),
                                     InAppStoryService.getInstance().getCommonCache());
                 }
-            });
+            }, this);
         }
     }
 

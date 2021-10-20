@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
@@ -41,6 +42,7 @@ import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
@@ -93,7 +95,24 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    void showGoods(final String skusString) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                ScreensManager.getInstance().showGoods(skusString, GameActivity.this, new ShowGoodsCallback() {
+                    @Override
+                    public void onPause() {
+                        pauseGame();
+                    }
 
+                    @Override
+                    public void onResume() {
+                        resumeGame();
+                    }
+                }, true);
+            }
+        });
+    }
 
     AudioManager.OnAudioFocusChangeListener audioFocusChangeListener =
             new AudioManager.OnAudioFocusChangeListener() {
