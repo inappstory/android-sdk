@@ -70,6 +70,13 @@ public class StoriesViewManager {
     }
 
 
+    void goodsWidgetComplete(String widgetId) {
+
+        if (storiesView != null)
+            storiesView.goodsWidgetComplete(widgetId);
+    }
+
+
     public void setStoryId(int storyId) {
         this.storyId = storyId;
     }

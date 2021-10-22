@@ -6,6 +6,13 @@ public class StoryLinkObject {
         this.link = link;
     }
 
+    public StoryLinkObject(String type, StoryLink link,
+                           String elementId) {
+        this.type = type;
+        this.link = link;
+        this.elementId = elementId;
+    }
+
 
     public StoryLinkObject() {
 
@@ -18,6 +25,11 @@ public class StoryLinkObject {
     public StoryLink getLink() {
         return link;
     }
+
+    public String getElementId() {
+        return elementId;
+    }
+    String elementId;
 
     String type;
     StoryLink link;

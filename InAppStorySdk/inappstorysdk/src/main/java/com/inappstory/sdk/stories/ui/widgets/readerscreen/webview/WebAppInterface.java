@@ -31,9 +31,9 @@ public class WebAppInterface {
         Log.e("JS_method_test", manager.storyId + " " + getMethodName() + " " + payload);
     }
 
-    /**
-     * Show a toast from the web page
-     */
+
+
+
     @JavascriptInterface
     public void storyClick(String payload) {
         manager.storyClick(payload);
@@ -101,6 +101,7 @@ public class WebAppInterface {
         manager.storyShowTextInput(id, data);
         logMethod("");
     }
+
 
     @JavascriptInterface
     public void storyStarted() {

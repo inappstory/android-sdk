@@ -19,5 +19,7 @@ public interface SimpleStoriesView {
     void freezeUI();
     void setStoriesView(SimpleStoriesView storiesView);
     void checkIfClientIsSet();
+
+    void goodsWidgetComplete(String widgetId);
     StoriesViewManager getManager();
 }

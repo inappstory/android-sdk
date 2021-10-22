@@ -375,6 +375,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     }
 
+    @Override
+    public void goodsWidgetComplete(String widgetId) {
+
+    }
+
 
     StoriesViewManager manager;
 

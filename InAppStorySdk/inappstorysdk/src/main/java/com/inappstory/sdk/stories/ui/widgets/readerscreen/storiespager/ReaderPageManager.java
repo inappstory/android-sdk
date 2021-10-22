@@ -19,6 +19,7 @@ import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.TimelineManager;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
@@ -144,7 +145,7 @@ public class ReaderPageManager {
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         switch (object.getType()) {
                             case "swipeUpItems":
-                                showGoods(object.getLink().getTarget());
+                                showGoods(object.getLink().getTarget(), object.getElementId());
                                 break;
                             default:
                                 break;
@@ -280,11 +281,22 @@ public class ReaderPageManager {
         timelineManager.setStoryDurations(durations, false);
     }
 
-    public void showGoods(final String skus) {
+    public void showGoods(final String skus, final String widgetId) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                parentManager.showGoods(skus);
+                parentManager.showGoods(skus, widgetId, new ShowGoodsCallback() {
+                    @Override
+                    public void onPause() {
+                        parentManager.pause();
+                    }
+
+                    @Override
+                    public void onResume(String widgetId) {
+                        parentManager.resume();
+                        webViewManager.goodsWidgetComplete(widgetId);
+                    }
+                });
             }
         });
     }

@@ -146,6 +146,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         });
     }
 
+
+    @Override
+    public void goodsWidgetComplete(String widgetId) {
+        evaluateJavascript("goods_widget_complete(\"" + widgetId + "\");", null);
+
+        logMethod("goods_widget_complete " + widgetId);
+    }
+
     public void changeSoundStatus() {
         if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");

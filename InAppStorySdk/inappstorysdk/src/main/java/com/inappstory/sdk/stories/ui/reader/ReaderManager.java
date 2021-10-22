@@ -66,20 +66,20 @@ public class ReaderManager {
         ScreensManager.getInstance().hideGoods();
     }
 
-    public void showGoods(String skusString) {
-        ScreensManager.getInstance().showGoods(skusString, parentFragment.getActivity(), new ShowGoodsCallback() {
-            @Override
-            public void onPause() {
-                if (parentFragment != null)
-                    parentFragment.pause();
-            }
 
-            @Override
-            public void onResume(String widgetId) {
-                if (parentFragment != null)
-                    parentFragment.resume();
-            }
-        }, false, null);
+
+    public void showGoods(String skusString, String widgetId, ShowGoodsCallback showGoodsCallback) {
+        ScreensManager.getInstance().showGoods(skusString, parentFragment.getActivity(), showGoodsCallback, false, widgetId);
+    }
+
+    public void pause() {
+        if (parentFragment != null)
+            parentFragment.pause();
+    }
+
+    public void resume() {
+        if (parentFragment != null)
+            parentFragment.resume();
     }
 
     public void gameComplete(String data, int storyId, int slideIndex) {
