@@ -255,6 +255,7 @@ public class ScreensManager {
         View dialogView;
         final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
         showGoodsCallback.onPause();
+        ProfilingManager.getInstance().addTask("goods_resources", widgetId);
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
@@ -278,6 +279,7 @@ public class ScreensManager {
                     new GetGoodsDataCallback() {
                         @Override
                         public void onSuccess(ArrayList<GoodsItemData> data) {
+                            ProfilingManager.getInstance().setReady(widgetId);
                             if (data == null || data.isEmpty()) return;
                         }
 
@@ -344,7 +346,6 @@ public class ScreensManager {
                     showGoodsCallback.onResume(widgetId);
                 }
             });
-            ProfilingManager.getInstance().addTask("goods_resources", widgetId);
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                     callback);
             goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
