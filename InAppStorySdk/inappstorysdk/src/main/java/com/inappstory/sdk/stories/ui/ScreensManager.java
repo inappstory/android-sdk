@@ -286,6 +286,7 @@ public class ScreensManager {
                         @Override
                         public void onError() {
 
+                            ProfilingManager.getInstance().setReady(widgetId);
                         }
 
                         @Override
