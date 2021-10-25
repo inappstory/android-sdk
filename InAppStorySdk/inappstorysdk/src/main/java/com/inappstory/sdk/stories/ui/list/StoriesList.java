@@ -284,7 +284,7 @@ public class StoriesList extends RecyclerView {
             adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
             // adapter.refresh();
             adapter.notifyDataSetChanged();
-        } else if (!isEmpty && favImages.isEmpty()) {
+        } else if ((!isEmpty && favImages.isEmpty()) || (adapter.hasFavItem && favImages.isEmpty())) {
             adapter.hasFavItem = false;
             adapter.notifyDataSetChanged();
             // adapter.refresh();
