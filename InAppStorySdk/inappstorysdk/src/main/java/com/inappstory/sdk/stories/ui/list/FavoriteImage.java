@@ -46,7 +46,7 @@ public class FavoriteImage {
     private int id;
 
     public String getUrl() {
-        if (!image.isEmpty()) return image.get(0).getUrl();
+        if (image != null && !image.isEmpty()) return image.get(0).getUrl();
         return "";
     }
 
