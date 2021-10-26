@@ -14,6 +14,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.media.ThumbnailUtils;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
@@ -361,8 +363,7 @@ public class ImageLoader {
             if (imageViewReused(photoToLoad))
                 return;
             BitmapDisplayer bd = new BitmapDisplayer(bmp, photoToLoad);
-            Activity a = (Activity) photoToLoad.imageView.getContext();
-            a.runOnUiThread(bd);
+            new Handler(Looper.getMainLooper()).post(bd);
         }
     }
 
