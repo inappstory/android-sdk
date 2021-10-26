@@ -1,8 +1,12 @@
 package com.inappstory.sdk.game.reader;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.media.AudioManager;
@@ -17,6 +21,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -24,8 +29,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
@@ -42,6 +51,7 @@ import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
+import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
@@ -59,11 +69,13 @@ public class GameActivity extends AppCompatActivity {
     private View blackBottom;
     private View baseContainer;
     GameManager manager;
+    private PermissionRequest audioRequest;
 
     public static final int GAME_READER_REQUEST = 878;
 
     private boolean closing = false;
     boolean showClose = true;
+
 
     @Override
     public void onBackPressed() {
@@ -189,8 +201,8 @@ public class GameActivity extends AppCompatActivity {
 
                 }
 
-                blackBottom.setLayoutParams(lp);
-                blackTop.setLayoutParams(lp);
+                //    blackBottom.setLayoutParams(lp);
+                //    blackTop.setLayoutParams(lp);
                 if (Build.VERSION.SDK_INT >= 28) {
                     new Handler(getMainLooper()).post(new Runnable() {
                         @Override
@@ -240,6 +252,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public static final int SHARE_EVENT = 909;
+    private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 101;
 
     @Override
     public void onResume() {
@@ -248,6 +261,49 @@ public class GameActivity extends AppCompatActivity {
         resumeGame();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_RECORD_AUDIO: {
+                if (audioRequest != null && grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    audioRequest.grant(audioRequest.getResources());
+                } else {
+                    audioRequest.deny();
+                }
+            }
+        }
+    }
+
+
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void askForPermission(String origin, String permission, int requestCode) {
+        Log.d("WebView", "inside askForPermission for" + origin + "with" + permission);
+
+        if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                permission)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(GameActivity.this,
+                    permission)) {
+                ActivityCompat.requestPermissions(GameActivity.this,
+                        new String[]{permission},
+                        requestCode);
+            } else {
+
+                ActivityCompat.requestPermissions(GameActivity.this,
+                        new String[]{permission},
+                        requestCode);
+            }
+        } else {
+            if (audioRequest != null)
+                audioRequest.grant(audioRequest.getResources());
+        }
+    }
 
     @Override
     protected void onPause() {
@@ -310,7 +366,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-    void loadGameResponse(String gameResponse, String cb) {
+    void loadJsApiResponse(String gameResponse, String cb) {
         webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
     }
 
@@ -337,6 +393,24 @@ public class GameActivity extends AppCompatActivity {
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId());
                 return super.onConsoleMessage(consoleMessage);
+            }
+
+
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onPermissionRequest(PermissionRequest request) {
+               // super.onPermissionRequest(request);
+                for (String permission : request.getResources()) {
+                    switch (permission) {
+                        case "android.webkit.resource.AUDIO_CAPTURE": {
+                            audioRequest = request;
+                            askForPermission(request.getOrigin().toString(),
+                                    Manifest.permission.RECORD_AUDIO,
+                                    PERMISSIONS_REQUEST_RECORD_AUDIO);
+                            break;
+                        }
+                    }
+                }
             }
         });
         webView.addJavascriptInterface(new GameJSInterface(GameActivity.this,
@@ -368,11 +442,11 @@ public class GameActivity extends AppCompatActivity {
         }
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
-       /* new Handler().postDelayed(new Runnable() {
+      /*  new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (webView != null) {
-                    webView.evaluateJavascript("Android.gameComplete(\"\", \"\", \"dodo://category/100\");", null);
+                    webView.evaluateJavascript("window.showGoodsWidget(['sku_1', 'sku_2', 'sku_3']);", null);
                 }
             }
         }, 10000);*/
@@ -427,6 +501,12 @@ public class GameActivity extends AppCompatActivity {
         } else {
             gameCompleted(null, null);
         }
+    }
+
+    void setAudioManagerMode(String mode) {
+        AudioManager audioManager = (AudioManager)
+                getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setMode(AudioModes.getModeVal(mode));
     }
 
 

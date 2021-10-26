@@ -12,11 +12,13 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.network.jsapiclient.JsApiRequestConfig;
+import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outerevents.CallToAction;
@@ -24,10 +26,6 @@ import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.SessionManager;
-import com.inappstory.sdk.stories.utils.TaskRunner;
-
-import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -99,6 +97,11 @@ public class GameManager {
         host.showGoods(skusString, widgetId);
     }
 
+
+    void setAudioManagerMode(String mode) {
+        host.setAudioManagerMode(mode);
+    }
+
     void gameCompleted(String gameState, String link, String eventData) {
         CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
                 slidesCount, index, eventData));
@@ -108,6 +111,15 @@ public class GameManager {
                     slidesCount, index, eventData);
         }
         host.gameCompleted(gameState, link);
+    }
+
+    void sendApiRequest(String data) {
+        new JsApiClient(host).sendApiRequest(data, new JsApiResponseCallback() {
+            @Override
+            public void onJsApiResponse(String result, String cb) {
+                host.loadJsApiResponse(result, cb);
+            }
+        });
     }
 
     void tapOnLink(String link) {
@@ -153,84 +165,7 @@ public class GameManager {
         host.updateUI();
     }
 
-    void sendApiRequest(String data) {
-        GameRequestConfig config = JsonParser.fromJson(data, GameRequestConfig.class);
-        Map<String, String> headers = null;
-        if (config.headers != null && !config.headers.isEmpty()) {
-            headers = toMap(config.headers);
-        }
-        Map<String, String> getParams = null;
-        if (config.params != null && !config.params.isEmpty()) {
-            getParams = toMap(config.params);
-        }
-        checkAndSendRequest(config.method, config.url, headers, getParams,
-                config.data, config.id, config.cb);
-    }
 
-    public void checkAndSendRequest(final String method,
-                                    final String path,
-                                    final Map<String, String> headers,
-                                    final Map<String, String> getParams,
-                                    final String body,
-                                    final String requestId,
-                                    final String cb) {
-        if (StatisticSession.needToUpdate()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess() {
-                    sendRequest(method, path, headers, getParams, body, requestId, cb);
-                }
-
-                @Override
-                public void onError() {
-
-                }
-            });
-        } else {
-            sendRequest(method, path, headers, getParams, body, requestId, cb);
-        }
-    }
-
-
-    TaskRunner taskRunner = new TaskRunner();
-
-
-    private String oldEscape(String raw) {
-        String escaped = JSONObject.quote(raw)
-                .replaceFirst("^\"(.*)\"$", "$1")
-                .replaceAll("\n", " ")
-                .replaceAll("\r", " ");
-        return escaped;
-    }
-
-    void sendRequest(final String method,
-                     final String path,
-                     final Map<String, String> headers,
-                     final Map<String, String> getParams,
-                     final String body,
-                     final String requestId,
-                     final String cb) {
-        taskRunner.executeAsync(new GameRequestAsync(method, path,
-                headers, getParams, body, requestId,
-                host), new TaskRunner.Callback<GameResponse>() {
-            @Override
-            public void onComplete(GameResponse result) {
-                try {
-                    JSONObject resultJson = new JSONObject();
-                    resultJson.put("requestId", result.requestId);
-                    resultJson.put("status", result.status);
-                    resultJson.put("data", oldEscape(result.data));
-                    try {
-                        resultJson.put("headers", new JSONObject(result.headers));
-                    } catch (Exception e) {
-                    }
-                    host.loadGameResponse(resultJson.toString(), cb);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
 
     void onResume() {
         ScreensManager.getInstance().setTempShareStoryId(0);

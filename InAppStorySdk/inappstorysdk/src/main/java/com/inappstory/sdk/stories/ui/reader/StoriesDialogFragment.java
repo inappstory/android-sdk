@@ -27,6 +27,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
@@ -59,6 +60,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
+        ScreensManager.getInstance().hideGoods();
+        ScreensManager.getInstance().closeGameReader();
         if (InAppStoryService.isNotNull()) {
             OldStatisticManager.getInstance().sendStatistic();
             Story story = InAppStoryService.getInstance().getDownloadManager()

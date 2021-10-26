@@ -6,13 +6,13 @@ public class StoryLinkObject {
         this.link = link;
     }
 
+
     public StoryLinkObject(String type, StoryLink link,
                            String elementId) {
         this.type = type;
         this.link = link;
         this.elementId = elementId;
     }
-
 
     public StoryLinkObject() {
 

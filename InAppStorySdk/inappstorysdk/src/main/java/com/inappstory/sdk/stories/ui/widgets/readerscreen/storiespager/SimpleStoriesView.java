@@ -8,6 +8,7 @@ public interface SimpleStoriesView {
     void restartVideo();
     void stopVideo();
     void swipeUp();
+    void loadJsApiResponse(String result, String cb);
     void resumeVideo();
     Context getContext();
     void changeSoundStatus();
@@ -19,7 +20,6 @@ public interface SimpleStoriesView {
     void freezeUI();
     void setStoriesView(SimpleStoriesView storiesView);
     void checkIfClientIsSet();
-
     void goodsWidgetComplete(String widgetId);
     StoriesViewManager getManager();
 }

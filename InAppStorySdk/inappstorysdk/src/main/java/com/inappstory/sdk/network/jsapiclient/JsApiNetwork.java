@@ -1,4 +1,4 @@
-package com.inappstory.sdk.game.reader;
+package com.inappstory.sdk.network.jsapiclient;
 
 import android.content.Context;
 import android.os.Build;
@@ -24,7 +24,7 @@ import static com.inappstory.sdk.network.NetworkHandler.GET;
 import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
 import static java.util.UUID.randomUUID;
 
-public class GameNetwork {
+public class JsApiNetwork {
 
     static URL getURL(String path, Map<String, String> queryParams) throws Exception {
         String url = NetworkClient.getInstance().getBaseUrl() + "v2/" + path;
@@ -38,13 +38,13 @@ public class GameNetwork {
         return new URL(url + varStr);
     }
 
-    public static GameResponse sendRequest(String method,
-                                           String path,
-                                           Map<String, String> headers,
-                                           Map<String, String> getParams,
-                                           String body,
-                                           String requestId, Context context) throws Exception {
-        GameResponse response = new GameResponse();
+    public static JsApiResponse sendRequest(String method,
+                                            String path,
+                                            Map<String, String> headers,
+                                            Map<String, String> getParams,
+                                            String body,
+                                            String requestId, Context context) throws Exception {
+        JsApiResponse response = new JsApiResponse();
         response.requestId = requestId;
         if (!InAppStoryService.isConnected()) {
             response.status = 12163;

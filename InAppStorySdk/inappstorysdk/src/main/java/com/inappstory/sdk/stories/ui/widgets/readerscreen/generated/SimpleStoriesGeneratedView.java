@@ -144,6 +144,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
+    public void loadJsApiResponse(String result, String cb) {
+
+    }
+
+    @Override
     public void resumeVideo() {
         for (GeneratedVideoView videoView : tempVideos) {
             videoView.startPlay();

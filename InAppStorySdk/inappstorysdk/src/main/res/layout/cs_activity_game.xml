@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:fitsSystemWindows="false"
     android:layout_height="match_parent"
     android:background="@android:color/black"
     tools:context=".game.reader.GameActivity">
@@ -20,13 +19,12 @@
         <View
             android:id="@+id/blackTop"
             android:layout_width="match_parent"
-            android:layout_height="0px"
+            android:layout_height="1px"
             android:background="#000000" />
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_height="match_parent">
 
             <WebView
                 android:id="@+id/gameWebview"

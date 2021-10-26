@@ -31,9 +31,9 @@ public class WebAppInterface {
         Log.e("JS_method_test", manager.storyId + " " + getMethodName() + " " + payload);
     }
 
-
-
-
+    /**
+     * Show a toast from the web page
+     */
     @JavascriptInterface
     public void storyClick(String payload) {
         manager.storyClick(payload);
@@ -59,11 +59,22 @@ public class WebAppInterface {
         }
     }
 
+    @JavascriptInterface
+    public void sendApiRequest(String data) {
+        manager.sendApiRequest(data);
+    }
 
     @JavascriptInterface
     public void openGameReader(String gameFile, String coverFile, String initCode, String gameResources) {
         manager.openGameReader(gameFile, coverFile, initCode, gameResources);
         logMethod(gameFile);
+    }
+
+
+    @JavascriptInterface
+    public void setAudioManagerMode(String mode) {
+        manager.setAudioManagerMode(mode);
+        logMethod(mode);
     }
 
 
@@ -101,7 +112,6 @@ public class WebAppInterface {
         manager.storyShowTextInput(id, data);
         logMethod("");
     }
-
 
     @JavascriptInterface
     public void storyStarted() {

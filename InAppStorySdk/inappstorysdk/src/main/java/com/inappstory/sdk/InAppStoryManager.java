@@ -132,6 +132,8 @@ public class InAppStoryManager {
      */
     public static void closeStoryReader() {
         CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
+        ScreensManager.getInstance().hideGoods();
+        ScreensManager.getInstance().closeGameReader();
     }
 
 

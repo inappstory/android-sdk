@@ -1,11 +1,11 @@
-package com.inappstory.sdk.game.reader;
+package com.inappstory.sdk.network.jsapiclient;
 
 import android.content.Context;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class GameRequestAsync implements Callable<GameResponse> {
+public class JsApiRequestAsync implements Callable<JsApiResponse> {
 
         String method;
         String path;
@@ -15,11 +15,11 @@ public class GameRequestAsync implements Callable<GameResponse> {
         String requestId;
         Context context;
 
-        public GameRequestAsync(String method, String path,
-                                Map<String, String> headers,
-                                Map<String, String> getParams,
-                                String body, String requestId,
-                                Context context) {
+        public JsApiRequestAsync(String method, String path,
+                                 Map<String, String> headers,
+                                 Map<String, String> getParams,
+                                 String body, String requestId,
+                                 Context context) {
             this.method = method;
             this.path = path;
             this.headers = headers;
@@ -30,13 +30,13 @@ public class GameRequestAsync implements Callable<GameResponse> {
         }
 
         @Override
-        public GameResponse call() throws Exception {
+        public JsApiResponse call() throws Exception {
             try {
-                GameResponse s = GameNetwork.sendRequest(method, path, headers,
+                JsApiResponse s = JsApiNetwork.sendRequest(method, path, headers,
                         getParams, body, requestId, context);
                 return s;
             } catch (Exception e) {
-                GameResponse response = new GameResponse();
+                JsApiResponse response = new JsApiResponse();
                 response.status = 12002;
                 return response;
             }

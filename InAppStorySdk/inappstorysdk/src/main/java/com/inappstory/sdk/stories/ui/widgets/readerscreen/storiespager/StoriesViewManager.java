@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +20,8 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -35,6 +38,7 @@ import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStoriesGeneratedView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
+import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
@@ -69,7 +73,6 @@ public class StoriesViewManager {
             storiesView.swipeUp();
     }
 
-
     void goodsWidgetComplete(String widgetId) {
 
         if (storiesView != null)
@@ -85,6 +88,15 @@ public class StoriesViewManager {
         if (storiesView instanceof SimpleStoriesWebView) {
             ((SimpleStoriesWebView) storiesView).gameComplete(data);
         }
+    }
+
+    public void sendApiRequest(String data) {
+        new JsApiClient(storiesView.getContext()).sendApiRequest(data, new JsApiResponseCallback() {
+            @Override
+            public void onJsApiResponse(String result, String cb) {
+                storiesView.loadJsApiResponse(result, cb);
+            }
+        });
     }
 
     public void changeSoundStatus() {
@@ -382,6 +394,13 @@ public class StoriesViewManager {
 
     public void storyResumedEvent(double startTime) {
         if (InAppStoryService.isNull()) return;
+    }
+
+    public void setAudioManagerMode(String mode) {
+        if (context == null) return;
+        AudioManager audioManager = (AudioManager)
+                context.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setMode(AudioModes.getModeVal(mode));
     }
 
     public void storyShowNext() {

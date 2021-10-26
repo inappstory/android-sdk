@@ -72,7 +72,6 @@ public class StoriesActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         if (isFinishing()) {
-            if (storiesFragment != null) storiesFragment.readerManager.hideGoods();
             StatusBarController.showStatusBar(this);
             try {
                 CsEventBus.getDefault().unregister(this);
@@ -97,6 +96,9 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
+
+        ScreensManager.getInstance().hideGoods();
+        ScreensManager.getInstance().closeGameReader();
         if (animateFirst &&
                 android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             animateFirst = false;
@@ -477,6 +479,7 @@ public class StoriesActivity extends AppCompatActivity {
         if (ScreensManager.getInstance().currentActivity == this)
             ScreensManager.getInstance().currentActivity = null;
         if (!pauseDestroyed) {
+
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();

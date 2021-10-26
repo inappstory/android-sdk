@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -26,11 +28,6 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.StatisticResponse;
-import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.StartGame;
@@ -133,6 +130,7 @@ public class ScreensManager {
     public void closeGameReader() {
         if (currentGameActivity != null) {
             currentGameActivity.close();
+            currentGameActivity = null;
         }
     }
 
@@ -240,11 +238,13 @@ public class ScreensManager {
     }
 
 
-    Dialog goodsDialog;
+    public Dialog goodsDialog;
 
     public void hideGoods() {
-        if (goodsDialog != null) goodsDialog.dismiss();
-        goodsDialog = null;
+        if (goodsDialog != null) {
+            goodsDialog.dismiss();
+            goodsDialog = null;
+        }
     }
 
     public void showGoods(String skusString, Activity activity, final ShowGoodsCallback showGoodsCallback,
@@ -255,7 +255,6 @@ public class ScreensManager {
         View dialogView;
         final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
         showGoodsCallback.onPause();
-        ProfilingManager.getInstance().addTask("goods_resources", widgetId);
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
@@ -279,14 +278,12 @@ public class ScreensManager {
                     new GetGoodsDataCallback() {
                         @Override
                         public void onSuccess(ArrayList<GoodsItemData> data) {
-                            ProfilingManager.getInstance().setReady(widgetId);
                             if (data == null || data.isEmpty()) return;
                         }
 
                         @Override
                         public void onError() {
 
-                            ProfilingManager.getInstance().setReady(widgetId);
                         }
 
                         @Override
@@ -306,6 +303,7 @@ public class ScreensManager {
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
             final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
             final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
+            final View goodsContainer = goodsDialog.findViewById(R.id.goods_container);
             final ImageView refresh = goodsDialog.findViewById(R.id.refresh_button);
             goodsDialog.findViewById(R.id.close_area).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -316,7 +314,7 @@ public class ScreensManager {
             loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
             loaderContainer.setVisibility(View.VISIBLE);
 
-            //   goodsContainer.animate().translationY(0).setDuration(600).start();
+         //   goodsContainer.animate().translationY(0).setDuration(600).start();
             final GetGoodsDataCallback callback = new GetGoodsDataCallback() {
                 @Override
                 public void onSuccess(ArrayList<GoodsItemData> data) {
@@ -347,6 +345,7 @@ public class ScreensManager {
                     showGoodsCallback.onResume(widgetId);
                 }
             });
+            ProfilingManager.getInstance().addTask("goods_resources", widgetId);
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                     callback);
             goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {

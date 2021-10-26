@@ -18,13 +18,10 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
@@ -283,13 +280,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public boolean onBackPressed() {
         return false;
-    }
-
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void closeReaderEvent(CloseStoryReaderEvent event) {
-        isDestroyed = true;
-        ScreensManager.getInstance().closeGameReader();
     }
 
 

@@ -131,6 +131,11 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         logMethod("story_slide_swipe_up");
     }
 
+    @Override
+    public void loadJsApiResponse(String result, String cb) {
+        evaluateJavascript(cb + "('" + result + "');", null);
+    }
+
     public void resumeVideo() {
         loadUrl("javascript:(function(){story_slide_resume();})()");
         logMethod("story_slide_resume");
@@ -144,14 +149,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 SimpleStoriesWebView.super.loadUrl(url);
             }
         });
-    }
-
-
-    @Override
-    public void goodsWidgetComplete(String widgetId) {
-        evaluateJavascript("goods_widget_complete(\"" + widgetId + "\");", null);
-
-        logMethod("goods_widget_complete " + widgetId);
     }
 
     public void changeSoundStatus() {
@@ -385,6 +382,13 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
             });
 
         }
+    }
+
+    @Override
+    public void goodsWidgetComplete(String widgetId) {
+        evaluateJavascript("goods_widget_complete(\"" + widgetId + "\");", null);
+
+        logMethod("goods_widget_complete " + widgetId);
     }
 
     @Override

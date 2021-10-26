@@ -1,6 +1,6 @@
-package com.inappstory.sdk.game.reader;
+package com.inappstory.sdk.network.jsapiclient;
 
-public class GameRequestConfig {
+public class JsApiRequestConfig {
     String id;
     String url;
     String method;

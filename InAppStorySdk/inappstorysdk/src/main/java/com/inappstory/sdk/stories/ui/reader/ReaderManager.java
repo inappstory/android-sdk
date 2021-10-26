@@ -66,8 +66,6 @@ public class ReaderManager {
         ScreensManager.getInstance().hideGoods();
     }
 
-
-
     public void showGoods(String skusString, String widgetId, ShowGoodsCallback showGoodsCallback) {
         ScreensManager.getInstance().showGoods(skusString, parentFragment.getActivity(), showGoodsCallback, false, widgetId);
     }
@@ -351,6 +349,8 @@ public class ReaderManager {
     public void prevStory() {
         parentFragment.prevStory();
     }
+
+
 
     public void defaultTapOnLink(String url) {
         parentFragment.defaultUrlClick(url);

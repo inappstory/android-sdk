@@ -1,6 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -60,6 +61,12 @@ public class GameJSInterface {
     @JavascriptInterface
     public void gameComplete(String data) {
         manager.gameCompleted(data, null, null);
+    }
+
+    @JavascriptInterface
+    public void setAudioManagerMode(String mode) {
+        Log.e("setAudioManagerMode", mode);
+        manager.setAudioManagerMode(mode);
     }
 
     @JavascriptInterface

@@ -4,53 +4,65 @@
     android:layout_height="match_parent"
     android:background="#50000000"
     android:orientation="vertical">
+
     <View
-        android:layout_width="match_parent"
         android:id="@+id/close_area"
-        android:layout_height="match_parent"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_centerInParent="true"
         android:id="@+id/loader_container"
-        android:clickable="true"
-        android:layout_height="wrap_content"/>
-    <ImageView
         android:layout_width="wrap_content"
-        android:visibility="gone"
-        android:id="@+id/refresh_button"
-        android:src="@drawable/ic_refresh"
-        android:scaleType="fitCenter"
-        android:layout_height="wrap_content"/>
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:clickable="true"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/bottom_line"
-        android:background="@color/white"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-
         android:layout_height="wrap_content"
-        android:clickable="true"
-        android:gravity="center_horizontal"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical">
+        android:layout_centerInParent="true"
+        android:clickable="true" />
 
-        <com.inappstory.sdk.stories.ui.views.GoodsWidget
-            android:id="@+id/goods_list"
+    <ImageView
+        android:id="@+id/refresh_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerInParent="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_refresh"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:id="@+id/goods_container"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/bottom_line"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <androidx.appcompat.widget.AppCompatImageView
-            android:layout_width="52dp"
-            android:layout_margin="8dp"
-            android:padding="8dp"
-            android:textSize="16sp"
-            android:id="@+id/hide_goods"
-            android:src="@drawable/cs_swipe_down_arrow"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+            android:layout_height="200dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/white"
+            android:clickable="true"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:clickable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <com.inappstory.sdk.stories.ui.views.GoodsWidget
+                android:id="@+id/goods_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/hide_goods"
+                android:layout_width="52dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:padding="8dp"
+                android:src="@drawable/cs_swipe_down_arrow"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </RelativeLayout>
 </RelativeLayout>

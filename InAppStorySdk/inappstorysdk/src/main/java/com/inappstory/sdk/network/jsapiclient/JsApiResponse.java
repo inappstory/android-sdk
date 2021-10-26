@@ -1,6 +1,6 @@
-package com.inappstory.sdk.game.reader;
+package com.inappstory.sdk.network.jsapiclient;
 
-public class GameResponse {
+public class JsApiResponse {
     String requestId;
     String data;
     Integer status;

@@ -83,6 +83,9 @@ public class StoriesFixedActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         if (isFinishing()) {
+
+            ScreensManager.getInstance().hideGoods();
+            ScreensManager.getInstance().closeGameReader();
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
@@ -118,6 +121,9 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
+
+        ScreensManager.getInstance().hideGoods();
+        ScreensManager.getInstance().closeGameReader();
         switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
             case 0:
                 finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
