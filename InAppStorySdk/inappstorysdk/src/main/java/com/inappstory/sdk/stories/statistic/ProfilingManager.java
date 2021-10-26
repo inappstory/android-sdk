@@ -79,7 +79,7 @@ public class ProfilingManager {
         synchronized (tasksLock) {
             ProfilingTask readyTask = null;
             for (ProfilingTask task : tasks) {
-                if (task.uniqueHash.equals(hash)) {
+                if (task.uniqueHash != null && task.uniqueHash.equals(hash)) {
                     readyTask = task;
                     break;
                 }

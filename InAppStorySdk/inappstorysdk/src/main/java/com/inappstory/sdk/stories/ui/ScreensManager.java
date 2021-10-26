@@ -60,6 +60,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
+import static java.util.UUID.randomUUID;
 
 public class ScreensManager {
 
@@ -255,6 +256,10 @@ public class ScreensManager {
         View dialogView;
         final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
         showGoodsCallback.onPause();
+
+        final String localTaskId;
+        if (widgetId != null) localTaskId = widgetId;
+        else localTaskId = randomUUID().toString();
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
@@ -318,7 +323,7 @@ public class ScreensManager {
             final GetGoodsDataCallback callback = new GetGoodsDataCallback() {
                 @Override
                 public void onSuccess(ArrayList<GoodsItemData> data) {
-                    ProfilingManager.getInstance().setReady(widgetId);
+                    ProfilingManager.getInstance().setReady(localTaskId);
                     bottomLine.setVisibility(View.VISIBLE);
                     loaderContainer.setVisibility(View.GONE);
                     if (data == null || data.isEmpty()) return;
@@ -328,7 +333,7 @@ public class ScreensManager {
 
                 @Override
                 public void onError() {
-                    ProfilingManager.getInstance().setReady(widgetId);
+                    ProfilingManager.getInstance().setReady(localTaskId);
                     loaderContainer.setVisibility(View.GONE);
                     refresh.setVisibility(View.VISIBLE);
                 }
@@ -345,7 +350,7 @@ public class ScreensManager {
                     showGoodsCallback.onResume(widgetId);
                 }
             });
-            ProfilingManager.getInstance().addTask("goods_resources", widgetId);
+            ProfilingManager.getInstance().addTask("goods_resources", localTaskId);
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                     callback);
             goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
@@ -359,7 +364,7 @@ public class ScreensManager {
                 public void onClick(View view) {
                     refresh.setVisibility(View.GONE);
                     loaderContainer.setVisibility(View.VISIBLE);
-                    ProfilingManager.getInstance().addTask("goods_resources", widgetId);
+                    ProfilingManager.getInstance().addTask("goods_resources", localTaskId);
                     AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                             callback);
                 }
