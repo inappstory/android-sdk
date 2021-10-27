@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.views;
+package com.inappstory.sdk.stories.ui.views.goodswidget;
 
 public class GoodsItemData {
     public String sku;
@@ -10,7 +10,13 @@ public class GoodsItemData {
     public String oldPrice;
     public Object raw;
 
-    public GoodsItemData(String sku, String title, String description, String image, String price, String oldPrice, Object raw) {
+    public GoodsItemData(String sku,
+                         String title,
+                         String description,
+                         String image,
+                         String price,
+                         String oldPrice,
+                         Object raw) {
         this.sku = sku;
         this.title = title;
         this.description = description;

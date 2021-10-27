@@ -136,53 +136,86 @@ public class InAppStoryManager {
         ScreensManager.getInstance().closeGameReader();
     }
 
-
+    /**
+     * use to set callback on different errors
+     */
     public void setErrorCallback(ErrorCallback errorCallback) {
         CallbackManager.getInstance().setErrorCallback(errorCallback);
     }
 
+    /**
+     * use to set callback on share click
+     */
     public void setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback) {
         CallbackManager.getInstance().setClickOnShareStoryCallback(clickOnShareStoryCallback);
     }
 
-    public void setStartGameCallback(GameCallback startGameCallback) {
-        CallbackManager.getInstance().setGameCallback(startGameCallback);
+    /**
+     * use to set callback on game start/close/finish
+     */
+    public void setGameCallback(GameCallback gameCallback) {
+        CallbackManager.getInstance().setGameCallback(gameCallback);
     }
 
+    /**
+     * use to set callback on onboardings load
+     */
     public void setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback) {
         CallbackManager.getInstance().setOnboardingLoadCallback(onboardingLoadCallback);
     }
 
+    /**
+     * use to set callback on click on buttons in stories (with info)
+     */
     public void setCallToActionCallback(CallToActionCallback callToActionCallback) {
         CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
     }
 
+
+    /**
+     * use to set callback on stories reader closing
+     */
     public void setCloseStoryCallback(CloseStoryCallback closeStoryCallback) {
         CallbackManager.getInstance().setCloseStoryCallback(closeStoryCallback);
     }
 
+    /**
+     * use to set callback on favorite action
+     */
     public void setFavoriteStoryCallback(FavoriteStoryCallback favoriteStoryCallback) {
         CallbackManager.getInstance().setFavoriteStoryCallback(favoriteStoryCallback);
     }
 
+    /**
+     * use to set callback on like/dislike action
+     */
     public void setLikeDislikeStoryCallback(LikeDislikeStoryCallback likeDislikeStoryCallback) {
         CallbackManager.getInstance().setLikeDislikeStoryCallback(likeDislikeStoryCallback);
     }
 
+    /**
+     * use to set callback on slide shown in reader
+     */
     public void setShowSlideCallback(ShowSlideCallback showSlideCallback) {
         CallbackManager.getInstance().setShowSlideCallback(showSlideCallback);
     }
 
+    /**
+     * use to set callback on story shown in reader
+     */
     public void setShowStoryCallback(ShowStoryCallback showStoryCallback) {
         CallbackManager.getInstance().setShowStoryCallback(showStoryCallback);
     }
 
+    /**
+     * use to set callback on single story loading
+     */
     public void setSingleLoadCallback(SingleLoadCallback singleLoadCallback) {
         CallbackManager.getInstance().setSingleLoadCallback(singleLoadCallback);
     }
 
     /**
-     * use to customize click on buttons in reader
+     * use to set callback on click on buttons in stories (without additional info)
      */
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
@@ -554,28 +587,12 @@ public class InAppStoryManager {
 
     public boolean soundOn = false;
 
-    public void setOnboardLoadedListener(OnboardingLoadedListener onboardLoadedListener) {
-        this.onboardLoadedListener = onboardLoadedListener;
-    }
-
-    private OnboardingLoadedListener onboardLoadedListener;
-
-    public OnboardingLoadedListener getSingleLoadedListener() {
-        return singleLoadedListener;
-    }
-
-    public void setSingleLoadedListener(OnboardingLoadedListener singleLoadedListener) {
-        this.singleLoadedListener = singleLoadedListener;
-    }
-
-    private OnboardingLoadedListener singleLoadedListener;
-
     private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager) {
 
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0));
-            if (onboardLoadedListener != null) {
-                onboardLoadedListener.onEmpty();
+            if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0);
             }
             return;
         }
@@ -613,8 +630,8 @@ public class InAppStoryManager {
                 InAppStoryService.getInstance().getDownloadManager().getStories());
         ScreensManager.getInstance().openStoriesReader(outerContext, manager, storiesIds, 0, ShowStory.ONBOARDING);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
-        if (onboardLoadedListener != null) {
-            onboardLoadedListener.onLoad();
+        if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size());
         }
     }
 
@@ -659,9 +676,6 @@ public class InAppStoryManager {
 
                         ProfilingManager.getInstance().setReady(onboardUID);
                         CsEventBus.getDefault().post(new OnboardingLoadError());
-                        if (onboardLoadedListener != null) {
-                            onboardLoadedListener.onError();
-                        }
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
                             CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
                         }

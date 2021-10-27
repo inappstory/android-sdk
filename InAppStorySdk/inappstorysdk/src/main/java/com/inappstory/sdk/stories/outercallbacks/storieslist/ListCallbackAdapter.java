@@ -8,6 +8,11 @@ public class ListCallbackAdapter implements ListCallback {
     }
 
     @Override
+    public void loadError() {
+
+    }
+
+    @Override
     public void itemClick(int id, int listIndex, String title, String tags, int slidesCount,
                           boolean isFavoriteList) {
 

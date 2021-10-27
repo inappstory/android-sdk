@@ -328,6 +328,11 @@ public class StoriesList extends RecyclerView {
                     }
                     ProfilingManager.getInstance().setReady(listUid);
                 }
+
+                @Override
+                public void onError() {
+                    if (callback != null) callback.loadError();
+                }
             }, isFavoriteList, hasFavorite);
 
         } else {
@@ -345,6 +350,11 @@ public class StoriesList extends RecyclerView {
                                         setLayoutManager(layoutManager);
                                         setAdapter(adapter);
                                         ProfilingManager.getInstance().setReady(listUid);
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        if (callback != null) callback.loadError();
                                     }
                                 }, isFavoriteList, hasFavorite);
                 }

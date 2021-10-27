@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -10,6 +8,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +21,8 @@ import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -36,9 +38,11 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
-import com.inappstory.sdk.stories.ui.views.GetGoodsDataCallback;
-import com.inappstory.sdk.stories.ui.views.GoodsItemData;
-import com.inappstory.sdk.stories.ui.views.GoodsWidget;
+import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
+import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
+import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
+import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdapter;
+import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -197,7 +201,8 @@ public class ScreensManager {
             Context ctx = (InAppStoryService.isNotNull() ?
                     InAppStoryService.getInstance().getContext() : outerContext);
             Intent intent2 = new Intent(ctx,
-                    AppearanceManager.getCommonInstance().csIsDraggable() ?
+                    (manager != null ? manager.csIsDraggable()
+                            : AppearanceManager.getCommonInstance().csIsDraggable()) ?
                             StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", index);
             intent2.putExtra("source", source);
@@ -312,7 +317,17 @@ public class ScreensManager {
             goodsDialog.show();
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
             final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
+            IGoodsWidgetAppearance iGoodsWidgetAppearance = AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetAppearance();
+            if (iGoodsWidgetAppearance == null) {
+                iGoodsWidgetAppearance = new GoodsWidgetAppearanceAdapter();
+            }
+            if (iGoodsWidgetAppearance instanceof GoodsWidgetAppearanceAdapter) {
+                ((GoodsWidgetAppearanceAdapter) iGoodsWidgetAppearance).context = activity;
+            }
             final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
+            bottomLine.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
+            bottomLine.getLayoutParams().height = iGoodsWidgetAppearance.getBackgroundHeight();
+            bottomLine.requestLayout();
             final View goodsContainer = goodsDialog.findViewById(R.id.goods_container);
             final ImageView refresh = goodsDialog.findViewById(R.id.refresh_button);
             goodsDialog.findViewById(R.id.close_area).setOnClickListener(new View.OnClickListener() {
@@ -324,7 +339,7 @@ public class ScreensManager {
             loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
             loaderContainer.setVisibility(View.VISIBLE);
 
-         //   goodsContainer.animate().translationY(0).setDuration(600).start();
+            //   goodsContainer.animate().translationY(0).setDuration(600).start();
             final GetGoodsDataCallback callback = new GetGoodsDataCallback() {
                 @Override
                 public void onSuccess(ArrayList<GoodsItemData> data) {
@@ -358,7 +373,12 @@ public class ScreensManager {
             ProfilingManager.getInstance().addTask("goods_resources", localTaskId);
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                     callback);
-            goodsDialog.findViewById(R.id.hide_goods).setOnClickListener(new View.OnClickListener() {
+            AppCompatImageView hideGoods = goodsDialog.findViewById(R.id.hide_goods);
+            hideGoods.setImageDrawable(iGoodsWidgetAppearance.getCloseButtonImage());
+            hideGoods.setColorFilter(
+                    new PorterDuffColorFilter(iGoodsWidgetAppearance.getCloseButtonColor(),
+                            PorterDuff.Mode.SRC_ATOP));
+            hideGoods.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     hideGoods();

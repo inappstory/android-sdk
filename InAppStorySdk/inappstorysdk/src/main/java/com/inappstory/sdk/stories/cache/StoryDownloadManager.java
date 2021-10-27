@@ -87,9 +87,9 @@ public class StoryDownloadManager {
                     @Override
                     public void onSuccess(final Story response) {
                         ProfilingManager.getInstance().setReady(storyUID);
-                        CsEventBus.getDefault().post(new SingleLoad());
-                        if (InAppStoryManager.getInstance().getSingleLoadedListener() != null) {
-                            InAppStoryManager.getInstance().getSingleLoadedListener().onLoad();
+                        CsEventBus.getDefault().post(new SingleLoad(id));
+                        if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
+                            CallbackManager.getInstance().getSingleLoadCallback().singleLoad(id);
                         }
                         ArrayList<Story> st = new ArrayList<>();
                         st.add(response);
@@ -114,8 +114,8 @@ public class StoryDownloadManager {
                     public void onError(int code, String message) {
 
                         ProfilingManager.getInstance().setReady(storyUID);
-                        if (InAppStoryManager.getInstance().getSingleLoadedListener() != null) {
-                            InAppStoryManager.getInstance().getSingleLoadedListener().onError();
+                        if (CallbackManager.getInstance().getErrorCallback() != null) {
+                            CallbackManager.getInstance().getErrorCallback().loadSingleError();
                         }
                         CsEventBus.getDefault().post(new SingleLoadError());
 
@@ -188,6 +188,7 @@ public class StoryDownloadManager {
 
 
     List<ReaderPageManager> subscribers = new ArrayList<>();
+
     public void addSubscriber(ReaderPageManager manager) {
         subscribers.add(manager);
     }
@@ -406,6 +407,11 @@ public class StoryDownloadManager {
             }
 
             @Override
+            public void onTimeout() {
+                onError(-1, "Timeout");
+            }
+
+            @Override
             public void onSuccess(final List<Story> response) {
                 final ArrayList<Story> stories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
@@ -527,6 +533,9 @@ public class StoryDownloadManager {
 
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().loadListError();
+                }
+                if (loadStoriesCallback != null) {
+                    loadStoriesCallback.onError();
                 }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
             }

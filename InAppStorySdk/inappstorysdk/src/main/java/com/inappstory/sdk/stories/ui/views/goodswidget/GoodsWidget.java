@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.views;
+package com.inappstory.sdk.stories.ui.views.goodswidget;
 
 import android.content.Context;
 import android.graphics.Rect;

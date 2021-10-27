@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.views;
+package com.inappstory.sdk.stories.ui.views.goodswidget;
 
 import android.content.Context;
 import android.graphics.Paint;
@@ -16,7 +16,6 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.ui.list.StoryListItem;
 
 import java.util.ArrayList;
 
