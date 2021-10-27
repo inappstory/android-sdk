@@ -866,8 +866,6 @@ globalAppearanceManager.csCustomGoodsWidget(new ICustomGoodsWidget() {
                 ...
             }
         });
-
-
 ```
 If you want use default implementation (RecyclerView) than method `getWidgetView()` should return null. In that case you override other methods like `getItem()`, `getWidgetAppearance()`, `getDecoration()`, `onItemClick()` as you need. Otherwise that methods won't be called and could return null values. 
 Method `getItem()` returns next interface:
