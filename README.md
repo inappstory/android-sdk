@@ -829,43 +829,45 @@ public class GoodsItemData {
 public interface GetGoodsDataCallback {
     void onSuccess(ArrayList<GoodsItemData> data);
     void onError();
-    void onClose();
+    void onClose(); //Use if you want to close goods widget.
 }
 
 globalAppearanceManager.csCustomGoodsWidget(new ICustomGoodsWidget() {
-            @Override
-            public View getWidgetView() {
-                ...
-            }
+    @Override
+    public View getWidgetView() {
+        ...
+    }
 
-            @Override
-            public ICustomGoodsItem getItem() {
-                ...
-            }
+    @Override
+    public ICustomGoodsItem getItem() {
+        ...
+    }
 
-            @Override
-            public IGoodsWidgetAppearance getWidgetAppearance() {
-                ...
-            }
+    @Override
+    public IGoodsWidgetAppearance getWidgetAppearance() {
+        ...
+    }
 
-            @Override
-            public RecyclerView.ItemDecoration getDecoration() {
-                ...
-            }
+    @Override
+    public RecyclerView.ItemDecoration getDecoration() {
+        ...
+    }
 
-            @Override
-            public void getSkus(ArrayList<String> skus, GetGoodsDataCallback callback) {
-                //In this method you should always call 
-                //callback.onSuccess(ArrayList<GoodsItemData> data)
-                //or callback.onError();
-                ...
-            }
+    @Override
+    public void getSkus(ArrayList<String> skus, GetGoodsDataCallback callback) {
+        //In this method you should always call 
+        //callback.onSuccess(ArrayList<GoodsItemData> data)
+        //or callback.onError();
+        ...
+    }
 
-            @Override
-            public void onItemClick(GoodsItemData sku) {
-                ...
-            }
-        });
+    @Override
+    public void onItemClick(GoodsItemData sku) {
+        ...
+        //This action does not close stories reader and game reader. 
+        //If you want to close readers, you should call `InAppStoryManager.closeStoryReader()` for closing all readers and widget
+    }
+});
 ```
 If you want use default implementation (RecyclerView) than method `getWidgetView()` should return null. In that case you override other methods like `getItem()`, `getWidgetAppearance()`, `getDecoration()`, `onItemClick()` as you need. Otherwise that methods won't be called and could return null values. 
 Method `getItem()` returns next interface:
@@ -897,7 +899,6 @@ public ICustomGoodsItem getItem() {
     };
 }
 ```
-
 Also you can use method `getWidgetAppearance()` if you want customize other parts of widget (background line, close button). Also for simple usage you can override GoodsWidgetAppearanceAdapter() instead of interface. Method returns next interface:
 ```
 public interface IGoodsWidgetAppearance {
@@ -937,7 +938,6 @@ public void getSkus(ArrayList<String> skus, GetGoodsDataCallback callback) {
     callback.onSuccess(goodsItemData);
 }
 ```
-
 If you want to fully customize your widget, you should override `getWidgetView()` to return NonNull view. In that case all binding logic should be in `getSkus()` method. For example:
 ```
 globalAppearanceManager.csCustomGoodsWidget(new ICustomGoodsWidget() {
