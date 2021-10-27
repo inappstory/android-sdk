@@ -122,6 +122,11 @@ public class GameActivity extends AppCompatActivity {
                         goodsWidgetComplete(widgetId);
                         resumeGame();
                     }
+
+                    @Override
+                    public void onEmptyResume(String widgetId) {
+                        goodsWidgetComplete(widgetId);
+                    }
                 }, true, widgetId);
             }
         });

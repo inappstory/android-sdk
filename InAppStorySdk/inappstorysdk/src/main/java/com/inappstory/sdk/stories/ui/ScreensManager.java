@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -250,7 +251,11 @@ public class ScreensManager {
 
     public void showGoods(String skusString, Activity activity, final ShowGoodsCallback showGoodsCallback,
                           boolean fullScreen, final String widgetId) {
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) return;
+        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
+            showGoodsCallback.onEmptyResume(widgetId);
+            Log.e("ias_warn", "Empty goods widget");
+            return;
+        }
         if (goodsDialog != null) return;
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView;

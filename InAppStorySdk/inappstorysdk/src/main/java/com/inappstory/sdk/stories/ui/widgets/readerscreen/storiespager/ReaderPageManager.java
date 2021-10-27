@@ -297,6 +297,11 @@ public class ReaderPageManager {
                         parentManager.resume();
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
+
+                    @Override
+                    public void onEmptyResume(String widgetId) {
+                        webViewManager.goodsWidgetComplete(widgetId);
+                    }
                 });
             }
         });
