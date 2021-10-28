@@ -287,8 +287,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         i.setData(Uri.parse(url));
-        getActivity().startActivity(i);
-        getActivity().overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+        try {
+            getActivity().startActivity(i);
+            getActivity().overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+        } catch (Exception e) {
+
+        }
     }
 
 
