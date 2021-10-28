@@ -5,6 +5,7 @@ import android.content.Context;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.TaskRunner;
 
@@ -34,7 +35,7 @@ public class JsApiClient {
             getParams = toMap(config.params);
         }
         checkSessionAndSendRequest(config.method, config.url, headers, getParams,
-                config.data, config.id, config.cb, callback);
+                config.data, config.id, config.cb, config.profilingKey, callback);
     }
 
     void checkSessionAndSendRequest(final String method,
@@ -44,12 +45,13 @@ public class JsApiClient {
                                     final String body,
                                     final String requestId,
                                     final String cb,
+                                    final String profilingKey,
                                     final JsApiResponseCallback callback) {
         if (StatisticSession.needToUpdate()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
-                    sendRequest(method, path, headers, getParams, body, requestId, cb, callback);
+                    sendRequest(method, path, headers, getParams, body, requestId, cb, profilingKey, callback);
                 }
 
                 @Override
@@ -58,7 +60,7 @@ public class JsApiClient {
                 }
             });
         } else {
-            sendRequest(method, path, headers, getParams, body, requestId, cb, callback);
+            sendRequest(method, path, headers, getParams, body, requestId, cb, profilingKey, callback);
         }
     }
 
@@ -78,12 +80,20 @@ public class JsApiClient {
                      final String body,
                      final String requestId,
                      final String cb,
+                     final String profilingKey,
                      final JsApiResponseCallback callback) {
+        final String sarHash;
+        if (profilingKey != null && !profilingKey.isEmpty()) {
+            sarHash = ProfilingManager.getInstance().addTask(profilingKey);
+        } else {
+            sarHash = null;
+        }
         taskRunner.executeAsync(new JsApiRequestAsync(method, path,
                 headers, getParams, body, requestId,
                 context), new TaskRunner.Callback<JsApiResponse>() {
             @Override
             public void onComplete(JsApiResponse result) {
+                ProfilingManager.getInstance().setReady(sarHash);
                 try {
                     JSONObject resultJson = new JSONObject();
                     resultJson.put("requestId", result.requestId);
