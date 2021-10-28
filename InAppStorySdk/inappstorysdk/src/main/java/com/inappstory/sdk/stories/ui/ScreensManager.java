@@ -336,6 +336,8 @@ public class ScreensManager {
                     hideGoods();
                 }
             });
+            goodsDialog.findViewById(R.id.close_area)
+                    .setBackgroundColor(iGoodsWidgetAppearance.getDimColor());
             loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
             loaderContainer.setVisibility(View.VISIBLE);
 
