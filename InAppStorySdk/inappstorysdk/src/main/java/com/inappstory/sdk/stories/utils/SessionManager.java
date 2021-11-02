@@ -93,7 +93,7 @@ public class SessionManager {
     }
 
     private static final String FEATURES =
-            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems";
+            "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi";
 
     public void openSession(final OpenSessionCallback callback) {
         synchronized (openProcessLock) {
