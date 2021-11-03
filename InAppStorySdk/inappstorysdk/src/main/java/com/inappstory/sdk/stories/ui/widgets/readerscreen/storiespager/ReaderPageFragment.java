@@ -124,6 +124,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     void setViews(View view) {
+        if (InAppStoryService.getInstance() == null) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         if (story.disableClose)

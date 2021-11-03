@@ -117,6 +117,7 @@ class SlidesDownloader {
             }
             firstPriority.clear();
             Story currentStory = manager.getStoryById(storyId);
+            if (currentStory == null) return;
             int sc = currentStory.slidesCount;
             for (int i = 0; i < sc; i++) {
                 Pair<Integer, Integer> kv = new Pair<>(storyId, i);
