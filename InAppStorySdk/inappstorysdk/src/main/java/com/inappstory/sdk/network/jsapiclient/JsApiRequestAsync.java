@@ -30,7 +30,7 @@ public class JsApiRequestAsync implements Callable<JsApiResponse> {
         }
 
         @Override
-        public JsApiResponse call() throws Exception {
+        public JsApiResponse call() {
             try {
                 JsApiResponse s = JsApiNetwork.sendRequest(method, path, headers,
                         getParams, body, requestId, context);
@@ -38,6 +38,7 @@ public class JsApiRequestAsync implements Callable<JsApiResponse> {
             } catch (Exception e) {
                 JsApiResponse response = new JsApiResponse();
                 response.status = 12002;
+                response.requestId = requestId;
                 return response;
             }
         }
