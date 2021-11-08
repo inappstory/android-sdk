@@ -6,4 +6,5 @@ public interface GetGoodsDataCallback {
     void onSuccess(ArrayList<GoodsItemData> data);
     void onError();
     void onClose();
+    void itemClick(String sku);
 }

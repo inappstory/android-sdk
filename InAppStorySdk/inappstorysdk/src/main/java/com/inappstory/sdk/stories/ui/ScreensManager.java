@@ -305,6 +305,11 @@ public class ScreensManager {
                         public void onClose() {
                             hideGoods();
                         }
+
+                        @Override
+                        public void itemClick(String sku) {
+
+                        }
                     });
         } else {
             AlertDialog.Builder builder = (Sizes.isTablet() && !fullScreen) ? new AlertDialog.Builder(activity) :
@@ -363,6 +368,11 @@ public class ScreensManager {
                 @Override
                 public void onClose() {
                     hideGoods();
+                }
+
+                @Override
+                public void itemClick(String sku) {
+
                 }
             };
             goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
