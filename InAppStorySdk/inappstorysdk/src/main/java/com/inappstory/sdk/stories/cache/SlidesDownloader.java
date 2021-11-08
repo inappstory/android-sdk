@@ -145,6 +145,7 @@ class SlidesDownloader {
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
                 Story adjacentStory = manager.getStoryById(adjacent);
+                if (adjacentStory == null) continue;
                 if (adjacentStory.lastIndex < adjacentStory.slidesCount - 1) {
                     Pair<Integer, Integer> nk = new Pair<>(adjacent, adjacentStory.lastIndex + 1);
                     secondPriority.remove(nk);
@@ -166,6 +167,7 @@ class SlidesDownloader {
       //  Log.e("changePriority", "single");
         synchronized (pageTasksLock) {
             Story currentStory = manager.getStoryById(storyId);
+            if (currentStory == null) return;
             int sc = currentStory.slidesCount;
             for (int i = 0; i < sc; i++) {
                 Pair<Integer, Integer> kv = new Pair<>(storyId, i);
