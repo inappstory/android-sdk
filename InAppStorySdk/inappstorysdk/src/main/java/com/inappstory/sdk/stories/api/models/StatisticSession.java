@@ -15,7 +15,7 @@ public class StatisticSession {
     @SerializedName("expire_in")
     public int expireIn;
     @SerializedName("is_allow_profiling")
-    public boolean allowProfiling;
+    public StatisticPermissions statisticPermissions;
 
     public long updatedAt;
 

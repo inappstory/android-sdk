@@ -16,15 +16,19 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 
 import java.util.ArrayList;
 
 public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     ArrayList<GoodsItemData> items = new ArrayList<>();
-
-    public GoodsWidgetAdapter(ArrayList<GoodsItemData> items, Context context) {
+    GoodsWidget.GoodsWidgetConfig config;
+    public GoodsWidgetAdapter(ArrayList<GoodsItemData> items,
+                              GoodsWidget.GoodsWidgetConfig config,
+                              Context context) {
         if (items != null)
             this.items.addAll(items);
+        this.config = config;
     }
 
 
@@ -41,7 +45,14 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     }
 
     public void onItemClick(GoodsItemData data) {
-
+        if (data != null) {
+            if (config != null) {
+                if (StatisticManager.getInstance() != null) {
+                    StatisticManager.getInstance().sendGoodsClick(config.storyId,
+                            config.slideIndex, config.widgetId, data.sku);
+                }
+            }
+        }
     }
 
     @NonNull

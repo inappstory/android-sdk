@@ -125,18 +125,23 @@ public class InAppStoryService {
 
 
     public boolean getSendNewStatistic() {
-        if (StatisticSession.getInstance() != null) {
-            return StatisticSession.getInstance().allowProfiling;
+        if (InAppStoryManager.getInstance() == null) return false;
+        if (!StatisticSession.needToUpdate()) {
+            if (StatisticSession.getInstance().statisticPermissions == null) return false;
+            return InAppStoryManager.getInstance().sendStatistic
+                    && StatisticSession.getInstance().statisticPermissions.allowStatV2;
         }
-        return getSendStatistic() && false;
+        return false;
     }
 
     public boolean getSendStatistic() {
-        if (InAppStoryManager.getInstance() != null) {
-            return InAppStoryManager.getInstance().sendStatistic;
-        } else {
-            return true;
+        if (InAppStoryManager.getInstance() == null) return false;
+        if (!StatisticSession.needToUpdate()) {
+            if (StatisticSession.getInstance().statisticPermissions == null) return false;
+            return InAppStoryManager.getInstance().sendStatistic
+                    && StatisticSession.getInstance().statisticPermissions.allowStatV1;
         }
+        return false;
     }
 
     public InAppStoryService(String userId) {

@@ -112,22 +112,24 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void run() {
                 ScreensManager.getInstance().showGoods(skusString, GameActivity.this, new ShowGoodsCallback() {
-                    @Override
-                    public void onPause() {
-                        pauseGame();
-                    }
+                            @Override
+                            public void onPause() {
+                                pauseGame();
+                            }
 
-                    @Override
-                    public void onResume(String widgetId) {
-                        goodsWidgetComplete(widgetId);
-                        resumeGame();
-                    }
+                            @Override
+                            public void onResume(String widgetId) {
+                                goodsWidgetComplete(widgetId);
+                                resumeGame();
+                            }
 
-                    @Override
-                    public void onEmptyResume(String widgetId) {
-                        goodsWidgetComplete(widgetId);
-                    }
-                }, true, widgetId);
+                            @Override
+                            public void onEmptyResume(String widgetId) {
+                                goodsWidgetComplete(widgetId);
+                            }
+                        }, true, widgetId,
+                        Integer.parseInt(manager.storyId),
+                        manager.index);
             }
         });
     }
@@ -284,7 +286,6 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void askForPermission(String origin, String permission, int requestCode) {
         Log.d("WebView", "inside askForPermission for" + origin + "with" + permission);
@@ -404,7 +405,7 @@ public class GameActivity extends AppCompatActivity {
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onPermissionRequest(PermissionRequest request) {
-               // super.onPermissionRequest(request);
+                // super.onPermissionRequest(request);
                 for (String permission : request.getResources()) {
                     switch (permission) {
                         case "android.webkit.resource.AUDIO_CAPTURE": {

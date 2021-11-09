@@ -54,8 +54,12 @@ public class StatisticManager {
     private ArrayList<StatisticTask> faketasks = new ArrayList<>();
 
     public void addTask(StatisticTask task) {
-        if (InAppStoryService.isNotNull() &&
-                !InAppStoryService.getInstance().getSendNewStatistic()) return;
+        addTask(task, false);
+    }
+
+    public void addTask(StatisticTask task, boolean force) {
+        if (!force && InAppStoryService.isNotNull() &&
+                 !InAppStoryService.getInstance().getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -98,9 +102,7 @@ public class StatisticManager {
     public static StatisticManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new StatisticManager();
-
-            if (InAppStoryService.isNotNull() &&
-                    !InAppStoryService.getInstance().getSendNewStatistic()) return INSTANCE;
+            if (InAppStoryService.isNotNull()) return INSTANCE;
             INSTANCE.init();
         }
         return INSTANCE;
@@ -189,7 +191,9 @@ public class StatisticManager {
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.isNull()
+            if (getInstance().tasks == null
+                    || getInstance().tasks.size() == 0
+                    || InAppStoryService.isNull()
                     || !InAppStoryService.isConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
@@ -222,6 +226,7 @@ public class StatisticManager {
             viewed.add(i);
         }
     }
+
 
     public void sendViewStory(ArrayList<Integer> ids, final String w) {
         ArrayList<String> localIds = new ArrayList<>();
@@ -450,7 +455,7 @@ public class StatisticManager {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    if (!InAppStoryService.getInstance().getSendNewStatistic()) return true;
+                    //   if (!InAppStoryService.getInstance().getSendNewStatistic()) return true;
 
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,

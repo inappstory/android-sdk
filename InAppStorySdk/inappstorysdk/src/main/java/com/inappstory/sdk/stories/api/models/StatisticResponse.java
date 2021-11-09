@@ -23,6 +23,10 @@ public class StatisticResponse {
 
     @SerializedName("is_allow_profiling")
     public boolean isAllowProfiling;
+    @SerializedName("is_allow_statistic_v1")
+    public boolean isAllowStatV1;
+    @SerializedName("is_allow_statistic_v2")
+    public boolean isAllowStatV2;
 
     @SerializedName("placeholders")
     public List<StoryPlaceholder> placeholders;

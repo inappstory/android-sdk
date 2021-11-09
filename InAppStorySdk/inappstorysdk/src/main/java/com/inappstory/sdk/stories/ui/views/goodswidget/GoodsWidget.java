@@ -25,9 +25,26 @@ public class GoodsWidget extends RecyclerView {
         return adapter;
     }
 
+    public static class GoodsWidgetConfig {
+        public String widgetId;
+        public int storyId;
+        public int slideIndex;
 
+        public GoodsWidgetConfig(String widgetId, int storyId, int slideIndex) {
+            this.widgetId = widgetId;
+            this.storyId = storyId;
+            this.slideIndex = slideIndex;
+        }
+    }
+
+
+    public void setConfig(GoodsWidgetConfig config) {
+        this.config = config;
+    }
+
+    GoodsWidgetConfig config;
     public void setItems(ArrayList<GoodsItemData> items) {
-        adapter = new GoodsWidgetAdapter(items, context);
+        adapter = new GoodsWidgetAdapter(items, config, context);
         setAdapter(adapter);
     }
 

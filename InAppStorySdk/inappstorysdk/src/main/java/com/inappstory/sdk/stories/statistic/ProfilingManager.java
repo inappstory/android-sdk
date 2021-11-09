@@ -16,7 +16,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -136,7 +135,10 @@ public class ProfilingManager {
         public void run() {
             if (getInstance().readyTasks == null || getInstance().readyTasks.size() == 0
                     || StatisticSession.needToUpdate()
-                    || (!StatisticSession.getInstance().allowProfiling)
+                    || (StatisticSession.getInstance()
+                    .statisticPermissions == null)
+                    || (!StatisticSession.getInstance()
+                    .statisticPermissions.allowProfiling)
                     || !InAppStoryService.isConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;

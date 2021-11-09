@@ -35,6 +35,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
@@ -255,7 +256,8 @@ public class ScreensManager {
     }
 
     public void showGoods(String skusString, Activity activity, final ShowGoodsCallback showGoodsCallback,
-                          boolean fullScreen, final String widgetId) {
+                          boolean fullScreen, final String widgetId,
+                          final int storyId, final int slideIndex) {
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
             showGoodsCallback.onEmptyResume(widgetId);
             Log.e("ias_warn", "Empty goods widget");
@@ -308,7 +310,10 @@ public class ScreensManager {
 
                         @Override
                         public void itemClick(String sku) {
-
+                            if (StatisticManager.getInstance() != null) {
+                                StatisticManager.getInstance().sendGoodsClick(storyId,
+                                        slideIndex, widgetId, sku);
+                            }
                         }
                     });
         } else {
@@ -320,7 +325,9 @@ public class ScreensManager {
             goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             goodsDialog.show();
+
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
+            goodsList.setConfig(new GoodsWidget.GoodsWidgetConfig(widgetId, storyId, slideIndex));
             final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
             IGoodsWidgetAppearance iGoodsWidgetAppearance = AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetAppearance();
             if (iGoodsWidgetAppearance == null) {

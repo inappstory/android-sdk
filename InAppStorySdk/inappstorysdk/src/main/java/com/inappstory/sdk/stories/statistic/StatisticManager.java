@@ -54,8 +54,14 @@ public class StatisticManager {
     private ArrayList<StatisticTask> tasks = new ArrayList<>();
     private ArrayList<StatisticTask> faketasks = new ArrayList<>();
 
+
     public void addTask(StatisticTask task) {
-        if (InAppStoryService.isNotNull() &&
+        addTask(task, false);
+    }
+
+
+    public void addTask(StatisticTask task, boolean force) {
+        if (!force && InAppStoryService.isNotNull() &&
                 !InAppStoryService.getInstance().getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
@@ -99,9 +105,6 @@ public class StatisticManager {
     public static StatisticManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new StatisticManager();
-
-            if (InAppStoryService.isNotNull() &&
-                    !InAppStoryService.getInstance().getSendNewStatistic()) return INSTANCE;
             INSTANCE.init();
         }
         return INSTANCE;
@@ -150,6 +153,8 @@ public class StatisticManager {
         } else {
         }
     }
+
+
 
 
     public void init() {
@@ -222,6 +227,29 @@ public class StatisticManager {
             addTask(task);
             viewed.add(i);
         }
+    }
+
+
+    public void sendGoodsOpen(final int i, final int si, final String wi) {
+        StatisticTask task = new StatisticTask();
+        task.event = prefix + "w-goods-open";
+        task.storyId = Integer.toString(i);
+        task.slideIndex = si;
+        task.widgetId = wi;
+        generateBase(task);
+        addTask(task, true);
+    }
+
+    public void sendGoodsClick(final int i, final int si,
+                               final String wi, final String sku) {
+        StatisticTask task = new StatisticTask();
+        task.event = prefix + "w-goods-click";
+        task.storyId = Integer.toString(i);
+        task.slideIndex = si;
+        task.widgetId = wi;
+        task.widgetValue = sku;
+        generateBase(task);
+        addTask(task, true);
     }
 
     public void sendViewStory(ArrayList<Integer> ids, final String w) {
@@ -451,8 +479,6 @@ public class StatisticManager {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    if (!InAppStoryService.getInstance().getSendNewStatistic()) return true;
-
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,
                             task.sessionId,
