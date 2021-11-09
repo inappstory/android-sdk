@@ -40,8 +40,10 @@ public class ReaderManager {
         ScreensManager.getInstance().hideGoods();
     }
 
-    public void showGoods(String skusString, String widgetId, ShowGoodsCallback showGoodsCallback) {
-        ScreensManager.getInstance().showGoods(skusString, parentFragment.getActivity(), showGoodsCallback, false, widgetId);
+    public void showGoods(String skusString, String widgetId, ShowGoodsCallback showGoodsCallback, int storyId, int slideIndex) {
+        ScreensManager.getInstance().showGoods(skusString,
+                parentFragment.getActivity(), showGoodsCallback, false,
+                widgetId, storyId, slideIndex);
     }
 
     public void pause() {

@@ -146,7 +146,7 @@ public class ReaderPageManager {
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         switch (object.getType()) {
                             case "swipeUpItems":
-                                showGoods(object.getLink().getTarget(), object.getElementId());
+                                showGoods(object.getLink().getTarget(), object.getElementId(), story.id,story.lastIndex);
                                 break;
                             default:
                                 break;
@@ -282,7 +282,7 @@ public class ReaderPageManager {
         timelineManager.setStoryDurations(durations, false);
     }
 
-    public void showGoods(final String skus, final String widgetId) {
+    public void showGoods(final String skus, final String widgetId, final int storyId, final int slideIndex) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -302,7 +302,7 @@ public class ReaderPageManager {
                     public void onEmptyResume(String widgetId) {
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
-                });
+                }, storyId, slideIndex);
             }
         });
     }
