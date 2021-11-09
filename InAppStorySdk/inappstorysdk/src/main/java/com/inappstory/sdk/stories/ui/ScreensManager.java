@@ -264,6 +264,7 @@ public class ScreensManager {
             return;
         }
         if (goodsDialog != null) return;
+
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView;
         final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
@@ -288,6 +289,11 @@ public class ScreensManager {
             });
             //goodsDialog.getWindow().getAttributes().windowAnimations = R.style.SlidingDialogAnimation;
             goodsDialog.show();
+
+            if (StatisticManager.getInstance() != null) {
+                StatisticManager.getInstance().sendGoodsOpen(storyId,
+                        slideIndex, widgetId);
+            }
             ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
                     .addView(AppearanceManager.getCommonInstance()
                             .csCustomGoodsWidget().getWidgetView());
@@ -326,6 +332,10 @@ public class ScreensManager {
 
             goodsDialog.show();
 
+            if (StatisticManager.getInstance() != null) {
+                StatisticManager.getInstance().sendGoodsOpen(storyId,
+                        slideIndex, widgetId);
+            }
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
             goodsList.setConfig(new GoodsWidget.GoodsWidgetConfig(widgetId, storyId, slideIndex));
             final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
