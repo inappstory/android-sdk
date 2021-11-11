@@ -128,13 +128,9 @@ public class StatisticManager {
 
     public void pauseStoryEvent(boolean withBg) {
         if (INSTANCE != this) return;
-        try {
-            if (withBg) {
-                isBackgroundPause = true;
-                pauseTimer = System.currentTimeMillis();
-            }
-        } catch (Exception e) {
-
+        if (withBg) {
+            isBackgroundPause = true;
+            pauseTimer = System.currentTimeMillis();
         }
     }
 
