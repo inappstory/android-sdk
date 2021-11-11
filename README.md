@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```
-implementation 'com.github.inappstory:android-sdk:1.4.1'
+implementation 'com.github.inappstory:android-sdk:1.4.2'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -830,6 +830,7 @@ public interface GetGoodsDataCallback {
     void onSuccess(ArrayList<GoodsItemData> data);
     void onError();
     void onClose(); //Use if you want to close goods widget.
+    void itemClick(String sku); //Use to send click statistic in custom widget
 }
 
 globalAppearanceManager.csCustomGoodsWidget(new ICustomGoodsWidget() {
@@ -972,6 +973,7 @@ globalAppearanceManager.csCustomGoodsWidget(new ICustomGoodsWidget() {
                             textView.setLayoutParams(lp);
                             textView.setText(sku);
                             textView.setOnClickListener(v1 -> {
+                                getGoodsDataCallback.onItemClick(sku);
                                 Toast.makeText(context, textView.getText(), Toast.LENGTH_LONG).show();
                             });
                             ((LinearLayout) container.findViewById(R.id.container)).addView(textView);
