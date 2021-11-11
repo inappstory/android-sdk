@@ -973,6 +973,7 @@ globalAppearanceManager.csCustomGoodsWidget(new ICustomGoodsWidget() {
                             textView.setLayoutParams(lp);
                             textView.setText(sku);
                             textView.setOnClickListener(v1 -> {
+                                getGoodsDataCallback.onItemClick(sku);
                                 Toast.makeText(context, textView.getText(), Toast.LENGTH_LONG).show();
                             });
                             ((LinearLayout) container.findViewById(R.id.container)).addView(textView);
