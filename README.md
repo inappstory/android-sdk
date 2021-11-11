@@ -830,6 +830,7 @@ public interface GetGoodsDataCallback {
     void onSuccess(ArrayList<GoodsItemData> data);
     void onError();
     void onClose(); //Use if you want to close goods widget.
+    void itemClick(String sku); //Use to send click statistic in custom widget
 }
 
 globalAppearanceManager.csCustomGoodsWidget(new ICustomGoodsWidget() {
