@@ -27,7 +27,7 @@ implementation 'com.github.inappstory:android-sdk:1.4.3'
 
 Also for correct work in `dependencies` you need to add:
 ```
-implementation 'androidx.recyclerview:recyclerview:1.1.0'
+implementation 'androidx.recyclerview:recyclerview:1.2.1'
 implementation 'androidx.webkit:webkit:1.4.0'
 ```
 
