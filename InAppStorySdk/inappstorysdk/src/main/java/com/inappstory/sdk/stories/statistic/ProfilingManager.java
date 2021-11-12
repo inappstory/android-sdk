@@ -41,7 +41,7 @@ public class ProfilingManager {
         return INSTANCE;
     }
 
-    private Object tasksLock = new Object();
+    private final Object tasksLock = new Object();
 
     public String addTask(String name, String hash) {
         ProfilingTask task = new ProfilingTask();
@@ -50,7 +50,7 @@ public class ProfilingManager {
         task.startTime = System.currentTimeMillis();
         synchronized (tasksLock) {
             for (ProfilingTask hasTask : tasks) {
-                if (hasTask.uniqueHash == hash) {
+                if (hasTask.uniqueHash.equals(hash)) {
                     hasTask.startTime = System.currentTimeMillis();
                     return hash;
                 }

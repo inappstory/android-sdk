@@ -30,7 +30,7 @@ public class StatisticTask {
     public String widgetId;
     @SerializedName("wl")
     public String widgetLabel;
-    @SerializedName("wt")
+    @SerializedName("wv")
     public String widgetValue;
     @SerializedName("wa")
     public Integer widgetAnswer;

@@ -175,8 +175,9 @@ public class TextMultiInput extends LinearLayout {
                 mainText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
                 mainText.setSingleLine(false);
                 mainText.setMaxLines(3);
+                mainText.setPadding(0, 0, 0, 0);
                 mainText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
-                mainTextLp.setMargins(Sizes.dpToPxExt(4), 0, Sizes.dpToPxExt(4), 0);
+                mainTextLp.setMargins(0, 0, 0, 0);
                 mainText.setLayoutParams(mainTextLp);
                 addView(mainText);
                 break;
@@ -222,7 +223,7 @@ public class TextMultiInput extends LinearLayout {
                         mask = PhoneFormats.getMaskByCode(fs.toString());
                         if (mask != null) {
                             mainText.setFilters(new InputFilter[]{});
-                           // mainText.setKeyListener(null);
+                            // mainText.setKeyListener(null);
                             mainText.setHint("");
                             String text = mainText.getText().toString();
                             mainText.setText("");
@@ -238,7 +239,7 @@ public class TextMultiInput extends LinearLayout {
                             mainText.setInputType(InputType.TYPE_CLASS_PHONE);
                         } else {
                             mainText.setFilters(new InputFilter[]{filter});
-                           // mainText.setKeyListener(new CustomDigitsKeyListener());
+                            // mainText.setKeyListener(new CustomDigitsKeyListener());
                             String text = mainText.getText().toString();
                             text = text.replaceAll(" ", "");
                             mainText.setText(text);
