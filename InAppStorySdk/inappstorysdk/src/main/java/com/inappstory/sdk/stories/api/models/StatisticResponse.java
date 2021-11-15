@@ -15,18 +15,15 @@ public class StatisticResponse {
     @SerializedName("server_timestamp")
     public Long serverTimestamp;
 
-   /* @SerializedName("share")
-    public boolean share = false;*/
-
     @SerializedName("cache")
     public List<CacheFontObject> cachedFonts;
 
     @SerializedName("is_allow_profiling")
     public boolean isAllowProfiling;
     @SerializedName("is_allow_statistic_v1")
-    public boolean isAllowStatV1;
+    public Boolean isAllowStatV1;
     @SerializedName("is_allow_statistic_v2")
-    public boolean isAllowStatV2;
+    public Boolean isAllowStatV2;
 
     @SerializedName("placeholders")
     public List<StoryPlaceholder> placeholders;
