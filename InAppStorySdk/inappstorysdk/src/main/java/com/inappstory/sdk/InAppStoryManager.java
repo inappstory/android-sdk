@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
@@ -85,6 +86,7 @@ public class InAppStoryManager {
 
     /**
      * use set custom callback in case of uncaught exceptions.
+     *
      * @param callback (callback). Has {@link ExceptionCallback} type
      */
     public void setCallback(ExceptionCallback callback) {
@@ -96,8 +98,6 @@ public class InAppStoryManager {
     }
 
     private ExceptionCallback exceptionCallback;
-
-
 
 
     public static boolean disableStatistic = true;
@@ -148,6 +148,7 @@ public class InAppStoryManager {
     }
 
     //Test
+
     /**
      * @return {@link String} with tags joined by comma
      */
@@ -158,6 +159,7 @@ public class InAppStoryManager {
 
     /**
      * use to customize tags in runtime. Replace tags array.
+     *
      * @param tags (tags)
      */
     //Test
@@ -167,6 +169,7 @@ public class InAppStoryManager {
 
     /**
      * use to customize tags in runtime. Adds tags to array.
+     *
      * @param newTags (newTags) - list of additional tags
      */
     //Test
@@ -180,6 +183,7 @@ public class InAppStoryManager {
 
     /**
      * use to customize tags in runtime. Removes tags from array.
+     *
      * @param removedTags (removedTags) - list of removing tags
      */
     //Test
@@ -192,6 +196,7 @@ public class InAppStoryManager {
 
     /**
      * use to customize tags in runtime. Adds tag to array.
+     *
      * @param tag (tag) - single additional tag
      */
     private void addTag(String tag) {
@@ -200,6 +205,7 @@ public class InAppStoryManager {
 
     /**
      * use to customize tags in runtime. Removes tag from array.
+     *
      * @param tag (tag) - single removing tags
      */
     private void removeTag(String tag) {
@@ -208,7 +214,8 @@ public class InAppStoryManager {
 
     /**
      * use to customize default string in stories runtime.
-     * @param key (key) - what we replace
+     *
+     * @param key   (key) - what we replace
      * @param value (value) - replacement result
      */
     public void setPlaceholder(String key, String value) {
@@ -228,6 +235,7 @@ public class InAppStoryManager {
 
     /**
      * use to customize default strings in stories runtime.
+     *
      * @param placeholders (placeholders) - key-value map (key - what we replace, value - replacement result)
      */
     public void setPlaceholders(@NonNull Map<String, String> placeholders) {
@@ -390,6 +398,7 @@ public class InAppStoryManager {
 
     /**
      * use to change user id in runtime
+     *
      * @param userId (userId)
      * @throws DataException 'userId' can't be longer than 255 characters
      */
@@ -467,7 +476,7 @@ public class InAppStoryManager {
         if (localOpensKey == null && userId != null) {
             localOpensKey = "opened" + userId;
         }
-        return localOpensKey;
+        return localOpensKey != null ? localOpensKey : "opened";
     }
 
     /**
@@ -571,7 +580,18 @@ public class InAppStoryManager {
                         getApiKey()).enqueue(new NetworkCallback<List<Story>>() {
                     @Override
                     public void onSuccess(List<Story> response) {
-                        showLoadedOnboardings(response, outerContext, manager);
+                        List<Story> notOpened = new ArrayList<>();
+                        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                        for (Story story : response) {
+                            boolean add = true;
+                            for (String opened : opens) {
+                                if (Integer.toString(story.id).equals(opened)) {
+                                    add = false;
+                                }
+                            }
+                            if (add) notOpened.add(story);
+                        }
+                        showLoadedOnboardings(notOpened, outerContext, manager);
                     }
 
                     @Override
@@ -602,9 +622,10 @@ public class InAppStoryManager {
 
     /**
      * Function for loading onboarding stories with custom tags
-     * @param tags (tags)
+     *
+     * @param tags         (tags)
      * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
         showOnboardingStoriesInner(tags, outerContext, manager);
@@ -613,6 +634,7 @@ public class InAppStoryManager {
 
     /**
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
      * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
@@ -644,7 +666,7 @@ public class InAppStoryManager {
                 public void run() {
                     lastSingleOpen = null;
                     showStoryInner(storyId, context, manager, callback);
-                   // StoriesActivity.destroyed = 0;
+                    // StoriesActivity.destroyed = 0;
                 }
             }, 500);
             return;
@@ -729,9 +751,10 @@ public class InAppStoryManager {
 
     /**
      * use to show single story in reader by id
-     * @param storyId (storyId)
-     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
-     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     *
+     * @param storyId  (storyId)
+     * @param context  (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager  (manager) {@link AppearanceManager} for reader. May be null
      * @param callback (callback) custom action when story is loaded
      */
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
@@ -740,6 +763,7 @@ public class InAppStoryManager {
 
     /**
      * use to show single story in reader by id
+     *
      * @param storyId (storyId)
      * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
@@ -809,10 +833,11 @@ public class InAppStoryManager {
 
         /**
          * use to set available space for file caching (slide images, videos, games, etc.)
+         *
          * @param cacheSize (cacheSize) - size of available space for cache. Can be set with {@link CacheSize} constants
-         * {@link com.inappstory.sdk.lrudiskcache.CacheSize#SMALL} - 10mb for stories, 5mb fo story covers
-         * {@link com.inappstory.sdk.lrudiskcache.CacheSize#MEDIUM} - (by default) 100mb for stories, 10mb fo story covers
-         * {@link com.inappstory.sdk.lrudiskcache.CacheSize#LARGE} -  200mb for stories, 10mb fo story covers
+         *                  {@link com.inappstory.sdk.lrudiskcache.CacheSize#SMALL} - 10mb for stories, 5mb fo story covers
+         *                  {@link com.inappstory.sdk.lrudiskcache.CacheSize#MEDIUM} - (by default) 100mb for stories, 10mb fo story covers
+         *                  {@link com.inappstory.sdk.lrudiskcache.CacheSize#LARGE} -  200mb for stories, 10mb fo story covers
          * @return {@link Builder}
          */
         public Builder cacheSize(int cacheSize) {
@@ -827,8 +852,9 @@ public class InAppStoryManager {
 
         /**
          * use to set api key in runtime (or as alternate to csApiKey string constant)
+         *
          * @param apiKey (apiKey) value for api key
-         *                 false by default
+         *               false by default
          * @return {@link Builder}
          */
         public Builder apiKey(String apiKey) {
@@ -843,6 +869,7 @@ public class InAppStoryManager {
 
         /**
          * use to set user id.
+         *
          * @param userId (userId) value for user id. Can't be longer than 255 characters.
          * @return {@link Builder}
          */
@@ -885,7 +912,9 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
-        /** main method to create {@link InAppStoryManager} instance.
+        /**
+         * main method to create {@link InAppStoryManager} instance.
+         *
          * @return {@link InAppStoryManager}
          * @throws DataException 'context' can't be null
          */
