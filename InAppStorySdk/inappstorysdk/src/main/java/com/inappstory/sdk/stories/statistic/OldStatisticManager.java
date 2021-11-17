@@ -55,7 +55,7 @@ public class OldStatisticManager {
         //CsEventBus.getDefault().register(this);
     }
 
-    private static final long statisticUpdateInterval = 30000;
+    private static final long statisticUpdateInterval = 15000;
 
     private Handler handler = new Handler();
 
