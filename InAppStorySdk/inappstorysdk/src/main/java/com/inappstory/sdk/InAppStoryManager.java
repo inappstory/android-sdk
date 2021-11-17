@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
@@ -663,7 +664,18 @@ public class InAppStoryManager {
                     @Override
                     public void onSuccess(List<Story> response) {
                         ProfilingManager.getInstance().setReady(onboardUID);
-                        showLoadedOnboardings(response, outerContext, manager);
+                        List<Story> notOpened = new ArrayList<>();
+                        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                        for (Story story : response) {
+                            boolean add = true;
+                            for (String opened : opens) {
+                                if (Integer.toString(story.id).equals(opened)) {
+                                    add = false;
+                                }
+                            }
+                            if (add) notOpened.add(story);
+                        }
+                        showLoadedOnboardings(notOpened, outerContext, manager);
                     }
 
                     @Override
