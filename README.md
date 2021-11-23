@@ -516,7 +516,7 @@ CsEventBus.getDefault().post(new SoundOnOffEvent());
 
 If the reader is closed, sending an event is not required.
 
-### Onboarding stories and open sigle story
+### Onboarding stories
 
 The library supports work with onboarding stories. 
 The function for loading onboarding stories is follows:
@@ -533,7 +533,10 @@ OnboardingLoad - sent when the onboarding list is uploaded.
 OnboardingLoadError - sent when loading the onboarding list in case of an error. 
 ```    
 
-In addition, it is possible to open one story by its id or slug.
+### Single stories
+    
+SDK allows to open one story by its id or slug.
+    
 ```
 InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback /*optional, may be null*/);
 
@@ -543,7 +546,7 @@ interface IShowStoryCallback {
 }
 ```
 
-Also in case of a successful / unsuccessful attempt to load stories, events are raised that the developer can subscribe to change the states of any external elements in the application:
+In case of a successful / unsuccessful attempt to load stories, events are raised that the developer can subscribe to change the states of any external elements in the application:
 ```
 SingleLoad - sent when loading a single story by id (by `InAppStoryManager.getInstance().showStory` method). 
 SingleLoadError - sent when loading a single story by id in case of some error. 
