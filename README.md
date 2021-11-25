@@ -187,7 +187,7 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csRefreshIcon                    | Integer(id)         | R.drawable.ic_refresh					| icon for refresh button in reader.	|
 | csSoundIcon                      | Integer(id)         | R.drawable.ic_stories_status_sound		| icon for sound button in reader.		|
 | csCoverQuality                   | Integer             | 0 	  | quality for stories list covers. If not set - sdk uses medium image quality (`QUALITY_MEDIUM = 1; QUALITY_HIGH = 2;`)|
-| csTimerGradientEnable 		   | Boolean             | true   | Flag that is responsible for show dark gradient behind timer in reader  |
+| csTimerGradientEnable 		   | Boolean             | false   | Flag that is responsible for show dark gradient behind timer in reader  |
 
 
 The example of set parameters:
