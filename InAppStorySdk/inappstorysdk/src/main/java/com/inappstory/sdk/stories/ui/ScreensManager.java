@@ -197,8 +197,16 @@ public class ScreensManager {
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
-            if (StoriesActivity.destroyed == -1) return;
-            StoriesActivity.destroyed = -1;
+            if (System.currentTimeMillis() - StoriesActivity.destroyed < 5000) return;
+            StoriesActivity.destroyed = System.currentTimeMillis();
+            if (currentActivity != null) {
+                if (currentActivity
+                        instanceof StoriesActivity) {
+                    ((StoriesActivity)currentActivity).finishActivityWithoutAnimation();
+                } else if (currentActivity instanceof StoriesFixedActivity) {
+                    ((StoriesFixedActivity)currentActivity).finishActivityWithoutAnimation();
+                }
+            }
             Context ctx = (InAppStoryService.isNotNull() ?
                     InAppStoryService.getInstance().getContext() : outerContext);
             Intent intent2 = new Intent(ctx,

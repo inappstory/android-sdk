@@ -37,7 +37,6 @@ public class ReaderPager extends ViewPager {
         return childCount - res - 1;
     }
 
-    private long pressStartTime;
     private float pressedX;
     private float pressedY;
     boolean startMove;
@@ -99,25 +98,26 @@ public class ReaderPager extends ViewPager {
         if (cubeAnimation) {
             return true;
         }
-       // Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        // Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         float pressedEndX = 0f;
         float pressedEndY = 0f;
         boolean distance = false;
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-            pressStartTime = System.currentTimeMillis();
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
             //CsEventBus.getDefault().post(new WidgetTapEvent());
-        } else if (!(motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL)) {
+        } else if (!(motionEvent.getAction() == MotionEvent.ACTION_UP
+                || motionEvent.getAction() == MotionEvent.ACTION_CANCEL)) {
             pressedEndX = motionEvent.getX() - pressedX;
             pressedEndY = motionEvent.getY() - pressedY;
             distance = (float) Math.sqrt(pressedEndX * pressedEndX + pressedEndY * pressedEndY) > 20;
-        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP
+                || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             pressedEndY = motionEvent.getY() - pressedY;
             pressedEndX = motionEvent.getX() - pressedX;
             if (pressedEndY > 400) {
                 host.swipeDownEvent(getCurrentItem());
-               // CsEventBus.getDefault().post(new SwipeDownEvent());
+                // CsEventBus.getDefault().post(new SwipeDownEvent());
                 return true;
             }
             if (pressedEndY < -400) {
@@ -139,7 +139,8 @@ public class ReaderPager extends ViewPager {
             }
         }
         if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-            if (pressedEndX * pressedEndX < pressedEndY * pressedEndY && (float) Math.sqrt(pressedEndY * pressedEndY) > 20) {
+            if (pressedEndX * pressedEndX < pressedEndY * pressedEndY
+                    && (float) Math.sqrt(pressedEndY * pressedEndY) > 20) {
                 return false;
             }
             if (distance && !(
@@ -155,8 +156,7 @@ public class ReaderPager extends ViewPager {
                 return false;
             }
         }
-        boolean c = super.onInterceptTouchEvent(motionEvent);
-        return c;
+        return super.onInterceptTouchEvent(motionEvent);
     }
 
     @Override

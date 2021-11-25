@@ -127,6 +127,14 @@ public class InAppStoryManager {
     public void clearCache() {
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
+    //Test
+
+    /**
+     * use to clear downloaded files and in-app cache without manager
+     */
+    public void clearCache(Context context) {
+        InAppStoryService.getInstance().getDownloadManager().clearCache();
+    }
 
     /**
      * use to force close story reader
