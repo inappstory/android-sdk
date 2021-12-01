@@ -562,6 +562,8 @@ public class InAppStoryManager {
                 InAppStoryService.getInstance().getListSubscribers().clear();
                 InAppStoryService.getInstance().getDownloadManager().cleanTasks();
                 InAppStoryService.getInstance().logout();
+            } else {
+
             }
             INSTANCE = null;
         }
@@ -606,23 +608,23 @@ public class InAppStoryManager {
             return;
         }
 
-        if (StoriesActivity.destroyed == -1) {
+        if (StoriesActivity.created == -1) {
 
             CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showLoadedOnboardings(response, outerContext, manager);
-                    StoriesActivity.destroyed = 0;
+                    StoriesActivity.created = 0;
                 }
             }, 350);
             return;
-        } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
+        } else if (System.currentTimeMillis() - StoriesActivity.created < 1000) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showLoadedOnboardings(response, outerContext, manager);
-                    StoriesActivity.destroyed = 0;
+                    StoriesActivity.created = 0;
                 }
             }, 350);
             return;
@@ -767,7 +769,7 @@ public class InAppStoryManager {
             public void getStory(Story story) {
                 if (story != null) {
 
-                    if (StoriesActivity.destroyed == -1) {
+                    if (StoriesActivity.created == -1) {
                         CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -778,12 +780,12 @@ public class InAppStoryManager {
                             }
                         }, 500);
                         return;
-                    } else if (System.currentTimeMillis() - StoriesActivity.destroyed < 1000) {
+                    } else if (System.currentTimeMillis() - StoriesActivity.created < 1000) {
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 showStoryInner(storyId, context, manager, callback, slide);
-                                StoriesActivity.destroyed = 0;
+                                StoriesActivity.created = 0;
                             }
                         }, 350);
                         return;

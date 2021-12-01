@@ -353,7 +353,6 @@ public class StoriesViewManager {
     }*/
 
     public void pageFinished() {
-        ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 
     public void share(String id, String data) {
@@ -388,8 +387,9 @@ public class StoriesViewManager {
     }
 
     public void storyStartedEvent() {
-        if (InAppStoryService.isNull()) return;
-        pageManager.startStoryTimers();
+        if (InAppStoryService.isNotNull())
+            pageManager.startStoryTimers();
+        ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 
     public void storyResumedEvent(double startTime) {
@@ -406,6 +406,7 @@ public class StoriesViewManager {
     public void storyShowNext() {
         pageManager.nextStory();
     }
+
     public void storyShowPrev() {
         pageManager.prevStory();
     }

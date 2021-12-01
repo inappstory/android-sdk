@@ -137,7 +137,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         CsEventBus.getDefault().unregister(this);
 
         OldStatisticManager.getInstance().sendStatistic();
-        StoriesActivity.destroyed = System.currentTimeMillis();
+        StoriesActivity.created = System.currentTimeMillis();
         super.onDestroyView();
     }
 
@@ -176,7 +176,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         super.onViewCreated(view, savedInstanceState);
 
         cleaned = false;
-        StoriesActivity.destroyed = -1;
+        StoriesActivity.created = -1;
         StoriesFragment fragment = new StoriesFragment();
 
         Bundle args = new Bundle();

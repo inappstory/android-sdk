@@ -30,7 +30,6 @@ import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
@@ -64,7 +63,7 @@ import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesActivity extends AppCompatActivity {
 
-    public static long destroyed = 0;
+    public static long created = 0;
     public boolean pauseDestroyed = false;
 
 
@@ -78,7 +77,7 @@ public class StoriesActivity extends AppCompatActivity {
             } catch (Exception e) {
 
             }
-            destroyed = 0;
+            created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -489,7 +488,7 @@ public class StoriesActivity extends AppCompatActivity {
 
             }
 
-            destroyed = 0;
+            created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;

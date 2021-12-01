@@ -22,7 +22,6 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -165,7 +164,7 @@ public class ScreensManager {
 
     public void openStoriesReader(Context outerContext, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {
-        if (Sizes.isTablet() && outerContext != null && outerContext instanceof AppCompatActivity) {
+        if (Sizes.isTablet() && outerContext instanceof AppCompatActivity) {
             DialogFragment settingsDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
@@ -197,8 +196,8 @@ public class ScreensManager {
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
-            if (System.currentTimeMillis() - StoriesActivity.destroyed < 5000) return;
-            StoriesActivity.destroyed = System.currentTimeMillis();
+            if (StoriesActivity.created == -1) return;
+            StoriesActivity.created = -1;
             if (currentActivity != null) {
                 if (currentActivity
                         instanceof StoriesActivity) {

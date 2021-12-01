@@ -64,7 +64,7 @@ import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesFixedActivity extends AppCompatActivity {
 
-    public static long destroyed = 0;
+    public static long created = 0;
     public boolean pauseDestroyed = false;
 
 
@@ -95,7 +95,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
             }
             if (!isFakeActivity) {
-                destroyed = 0;
+                created = 0;
                 cleanReader();
             }
             System.gc();
@@ -274,7 +274,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
         cleaned = false;
 
-        destroyed = -1;
+        created = -1;
         if (Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
@@ -427,7 +427,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
             }
             if (!isFakeActivity) {
-                destroyed = 0;
+                created = 0;
                 cleanReader();
             }
             System.gc();
