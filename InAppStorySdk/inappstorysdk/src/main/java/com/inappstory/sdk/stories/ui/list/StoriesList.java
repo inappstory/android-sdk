@@ -74,8 +74,9 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (InAppStoryService.getInstance() != null)
+        if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().removeListSubscriber(manager);
+        }
         else
             manager.clear();
     }
@@ -298,7 +299,7 @@ public class StoriesList extends RecyclerView {
     }
 
 
-
+    LoadStoriesCallback lcallback;
 
     public void loadStories() throws DataException {
         if (appearanceManager == null) {
@@ -316,7 +317,7 @@ public class StoriesList extends RecyclerView {
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
+            lcallback = new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
@@ -336,30 +337,33 @@ public class StoriesList extends RecyclerView {
                 public void onError() {
                     if (callback != null) callback.loadError();
                 }
-            }, isFavoriteList, hasFavorite);
+            };
+            InAppStoryService.getInstance().getDownloadManager().loadStories(lcallback, isFavoriteList, hasFavorite);
 
         } else {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (InAppStoryService.isNotNull())
-                        InAppStoryService.getInstance().getDownloadManager().loadStories(
-                                new LoadStoriesCallback() {
-                                    @Override
-                                    public void storiesLoaded(List<Integer> storiesIds) {
-                                        CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                        if (callback != null) callback.storiesLoaded(storiesIds.size());
-                                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
-                                        setLayoutManager(layoutManager);
-                                        setAdapter(adapter);
-                                        ProfilingManager.getInstance().setReady(listUid);
-                                    }
+                    if (InAppStoryService.isNotNull()) {
+                        new LoadStoriesCallback() {
+                            @Override
+                            public void storiesLoaded(List<Integer> storiesIds) {
+                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                                if (callback != null) callback.storiesLoaded(storiesIds.size());
+                                adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+                                setLayoutManager(layoutManager);
+                                setAdapter(adapter);
+                                ProfilingManager.getInstance().setReady(listUid);
+                            }
 
-                                    @Override
-                                    public void onError() {
-                                        if (callback != null) callback.loadError();
-                                    }
-                                }, isFavoriteList, hasFavorite);
+                            @Override
+                            public void onError() {
+                                if (callback != null) callback.loadError();
+                            }
+                        };
+                        InAppStoryService.getInstance().getDownloadManager().loadStories(
+                                lcallback, isFavoriteList, hasFavorite);
+                    }
                 }
             }, 1000);
         }

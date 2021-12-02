@@ -38,6 +38,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class StoryDownloadManager {
@@ -396,8 +397,7 @@ public class StoryDownloadManager {
     private SlidesDownloader slidesDownloader;
 
 
-    public void loadStories(LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
-        loadStoriesCallback = callback;
+    public void loadStories(final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
         NetworkCallback loadCallback = new LoadListCallback() {
             @Override
@@ -478,20 +478,20 @@ public class StoryDownloadManager {
                                 for (Story story : response2) {
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                                 }
-                                if (loadStoriesCallback != null) {
+                                if (callback != null) {
                                     List<Integer> ids = new ArrayList<>();
                                     for (Story story : response) {
                                         ids.add(story.id);
                                     }
-                                    loadStoriesCallback.storiesLoaded(ids);
+                                    callback.storiesLoaded(ids);
                                 }
                             } else {
-                                if (loadStoriesCallback != null) {
+                                if (callback != null) {
                                     List<Integer> ids = new ArrayList<>();
                                     for (Story story : response) {
                                         ids.add(story.id);
                                     }
-                                    loadStoriesCallback.storiesLoaded(ids);
+                                    callback.storiesLoaded(ids);
                                 }
                             }
                         }
@@ -510,22 +510,22 @@ public class StoryDownloadManager {
                         @Override
                         public void onError(int code, String m) {
                             ProfilingManager.getInstance().setReady(loadFavUID);
-                            if (loadStoriesCallback != null) {
+                            if (callback != null) {
                                 List<Integer> ids = new ArrayList<>();
                                 for (Story story : response) {
                                     ids.add(story.id);
                                 }
-                                loadStoriesCallback.storiesLoaded(ids);
+                                callback.storiesLoaded(ids);
                             }
                         }
                     });
                 } else {
-                    if (loadStoriesCallback != null) {
+                    if (callback != null) {
                         List<Integer> ids = new ArrayList<>();
                         for (Story story : response) {
                             ids.add(story.id);
                         }
-                        loadStoriesCallback.storiesLoaded(ids);
+                        callback.storiesLoaded(ids);
                     }
                 }
             }
@@ -537,10 +537,46 @@ public class StoryDownloadManager {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().loadListError();
                 }
-                if (loadStoriesCallback != null) {
-                    loadStoriesCallback.onError();
+                if (callback != null) {
+                    callback.onError();
                 }
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+            }
+        };
+        NetworkCallback loadCallbackWithoutFav = new LoadListCallback() {
+            @Override
+            protected void error424(String message) {
+                super.error424(message);
+                storyDownloader.loadStoryList(this, false);
+            }
+
+
+            @Override
+            public void onSuccess(final List<Story> response) {
+                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
+                List<Story> newStories = new ArrayList<>();
+                if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
+                    for (Story story : response) {
+                        if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
+                            newStories.add(story);
+                        }
+                    }
+                }
+                if (newStories.size() > 0) {
+                    try {
+                        setLocalsOpened(newStories);
+                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (callback != null) {
+                    List<Integer> ids = new ArrayList<>();
+                    for (Story story : response) {
+                        ids.add(story.id);
+                    }
+                    callback.storiesLoaded(ids);
+                }
             }
         };
 
@@ -561,44 +597,6 @@ public class StoryDownloadManager {
     }
 
 
-    LoadStoriesCallback loadStoriesCallback;
-
-    NetworkCallback loadCallbackWithoutFav = new LoadListCallback() {
-        @Override
-        protected void error424(String message) {
-            super.error424(message);
-            storyDownloader.loadStoryList(this, false);
-        }
-
-
-        @Override
-        public void onSuccess(final List<Story> response) {
-            InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
-            List<Story> newStories = new ArrayList<>();
-            if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
-                for (Story story : response) {
-                    if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
-                        newStories.add(story);
-                    }
-                }
-            }
-            if (newStories.size() > 0) {
-                try {
-                    setLocalsOpened(newStories);
-                    InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (loadStoriesCallback != null) {
-                List<Integer> ids = new ArrayList<>();
-                for (Story story : response) {
-                    ids.add(story.id);
-                }
-                loadStoriesCallback.storiesLoaded(ids);
-            }
-        }
-    };
 
 
     private List<Story> stories;
