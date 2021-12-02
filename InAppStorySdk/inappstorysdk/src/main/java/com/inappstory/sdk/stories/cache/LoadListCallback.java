@@ -22,12 +22,11 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
 
     @Override
     public void onError(int code, String message) {
-
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError();
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-        super.onError(code, message);
+       // super.onError(code, message);
     }
 
     @Override

@@ -597,8 +597,6 @@ public class StoryDownloadManager {
     }
 
 
-
-
     private List<Story> stories;
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();

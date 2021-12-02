@@ -186,22 +186,24 @@ public class ReaderPageFragment extends Fragment {
     View loader;
 
     void setActions() {
-        close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                InAppStoryManager.closeStoryReader(CloseStory.CLICK);
-            }
-        });
-        refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                refresh.setVisibility(View.GONE);
-                if (loader == null) return;
-                loader.setAlpha(1f);
-                loader.setVisibility(View.VISIBLE);
-                manager.reloadStory();
-            }
-        });
+        if (close != null)
+            close.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    InAppStoryManager.closeStoryReader(CloseStory.CLICK);
+                }
+            });
+        if (refresh != null)
+            refresh.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    view.setVisibility(View.GONE);
+                    if (loader == null) return;
+                    loader.setAlpha(1f);
+                    loader.setVisibility(View.VISIBLE);
+                    manager.reloadStory();
+                }
+            });
     }
 
     private void showLoader() {
@@ -454,7 +456,7 @@ public class ReaderPageFragment extends Fragment {
         setStoryId();
         manager.host = this;
         if (parentManager == null && getParentFragment() instanceof StoriesFragment) {
-            parentManager = ((StoriesFragment)getParentFragment()).readerManager;
+            parentManager = ((StoriesFragment) getParentFragment()).readerManager;
         }
         manager.parentManager = parentManager;
         if (parentManager != null) {
