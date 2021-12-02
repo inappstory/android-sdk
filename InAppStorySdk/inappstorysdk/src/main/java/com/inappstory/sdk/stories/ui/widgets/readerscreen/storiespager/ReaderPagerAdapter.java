@@ -67,23 +67,25 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     @NonNull
     @Override
     public Fragment getItem(int position) {
-        if (fragMap.get(position) == null) {
-            ReaderPageFragment frag = new ReaderPageFragment();
-            Bundle a = new Bundle();
-            a.putInt("story_id", storiesIds.get(position));
-            a.putString(CS_READER_SETTINGS, readerSettings);
-            frag.setArguments(a);
-            frag.parentManager = manager;
+        ReaderPageFragment frag = new ReaderPageFragment();
+        Bundle a = new Bundle();
+        a.putInt("story_id", storiesIds.get(position));
+        a.putString(CS_READER_SETTINGS, readerSettings);
+        frag.setArguments(a);
+        frag.parentManager = manager;
+        return frag;
+       /* if (fragMap.get(position) == null) {
+
             fragMap.put(position, frag);
         }
 
-        return fragMap.get(position);
+        return fragMap.get(position);*/
     }
 
 
-    public ReaderPageFragment getFragment(int position) {
+   /* public ReaderPageFragment getFragment(int position) {
         return fragMap.get(position);
-    }
+    }*/
 
 
     @Override
