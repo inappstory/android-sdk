@@ -52,7 +52,6 @@ public class OldStatisticManager {
     public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
 
     public OldStatisticManager() {
-        //CsEventBus.getDefault().register(this);
     }
 
     private static final long statisticUpdateInterval = 15000;

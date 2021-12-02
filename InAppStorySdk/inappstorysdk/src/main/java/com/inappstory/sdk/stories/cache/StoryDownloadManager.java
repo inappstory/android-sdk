@@ -422,6 +422,9 @@ public class StoryDownloadManager {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                if (StoriesWidgetService.getInstance() != null) {
+                    StoriesWidgetService.getInstance().refreshFactory();
+                }
                 CsEventBus.getDefault().post(new ListLoadedEvent());
                 if (response == null || response.size() == 0) {
                     if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {

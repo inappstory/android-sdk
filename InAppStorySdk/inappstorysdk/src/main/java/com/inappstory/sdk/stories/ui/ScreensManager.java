@@ -120,6 +120,31 @@ public class ScreensManager {
 
 
     public AppCompatActivity currentActivity;
+    public StoriesDialogFragment currentFragment;
+
+    public void closeStoryReader(int action) {
+        if (Sizes.isTablet()) {
+            if (currentFragment != null) {
+                currentFragment.closeStoryReaderEvent();
+            }
+        } else if (currentActivity != null) {
+            if (currentActivity instanceof StoriesActivity) {
+                ((StoriesActivity)currentActivity).closeStoryReaderEvent(action);
+            } else if (currentActivity instanceof StoriesFixedActivity) {
+                ((StoriesFixedActivity)currentActivity).closeStoryReaderEvent(action);
+            }
+        }
+    }
+
+    public void clearCurrentFragment(StoriesDialogFragment fragment) {
+        if (currentFragment == fragment)
+            currentFragment = null;
+    }
+
+    public void clearCurrentActivity(AppCompatActivity activity) {
+        if (activity == currentActivity)
+            currentActivity = null;
+    }
 
     public GameActivity currentGameActivity;
 

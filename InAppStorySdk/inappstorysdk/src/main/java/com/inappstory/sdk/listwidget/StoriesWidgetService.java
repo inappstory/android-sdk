@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -158,7 +159,12 @@ public class StoriesWidgetService extends RemoteViewsService {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    CsEventBus.getDefault().post(new ListLoadedEvent());
+
+
+                    if (INSTANCE != null) {
+                        INSTANCE.refreshFactory();
+                    }
+
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -184,6 +190,11 @@ public class StoriesWidgetService extends RemoteViewsService {
         });
     }
 
+    public void refreshFactory() {
+        if (factory != null && factory.get() != null) {
+            factory.get().refreshData();
+        }
+    }
 
     private static StoriesWidgetService INSTANCE;
 
@@ -193,10 +204,19 @@ public class StoriesWidgetService extends RemoteViewsService {
         INSTANCE = this;
     }
 
+    WeakReference<StoriesWidgetFactory> factory;
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        INSTANCE = null;
+    }
+
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         // TODO Auto-generated method stub
-        return new StoriesWidgetFactory(this.getApplicationContext(), intent);
+        factory = new WeakReference<>(new StoriesWidgetFactory(this.getApplicationContext(), intent));
+        return factory.get();
     }
 
 }

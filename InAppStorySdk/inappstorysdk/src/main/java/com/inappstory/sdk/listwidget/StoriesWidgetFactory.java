@@ -4,44 +4,21 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.WidgetAppearance;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Image;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.utils.SessionManager;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.lang.ref.SoftReference;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,11 +36,9 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
         if (ImageLoader.getInstance() == null) {
             new ImageLoader(mContext);
         }
-        CsEventBus.getDefault().register(this);
     }
 
-    @CsSubscribe
-    public void refreshData(ListLoadedEvent event) {
+    public void refreshData() {
         setStories();
     }
 

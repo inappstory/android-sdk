@@ -52,10 +52,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        View v = inflater.inflate(R.layout.cs_stories_dialog_fragment, null);
-        CsEventBus.getDefault().register(this);
-        return v;
+        return inflater.inflate(R.layout.cs_stories_dialog_fragment, null);
     }
 
     @Override
@@ -83,11 +80,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             }
             String cause = StatisticManager.CLICK;
             StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
-        }
-        try {
-            CsEventBus.getDefault().unregister(this);
-        } catch (Exception e) {
-
         }
         cleanReader();
         super.onDismiss(dialogInterface);
@@ -134,8 +126,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     public void onDestroyView() {
-        CsEventBus.getDefault().unregister(this);
-
         OldStatisticManager.getInstance().sendStatistic();
         StoriesActivity.created = System.currentTimeMillis();
         super.onDestroyView();
@@ -159,7 +149,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
+    public void closeStoryReaderEvent() {
         InAppStoryService.getInstance().getListReaderConnector().closeReader();
         dismiss();
     }

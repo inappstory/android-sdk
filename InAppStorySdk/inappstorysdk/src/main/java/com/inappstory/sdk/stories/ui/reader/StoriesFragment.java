@@ -15,11 +15,10 @@ import android.widget.RelativeLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -237,7 +236,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(currentIds.get(position));
             if (story == null || story.disableClose) return;
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.SWIPE));
+            InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
         }
     }
 
@@ -319,7 +318,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
-                    CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+                    InAppStoryManager.closeStoryReader(CloseStory.AUTO);
                 }
             }
         });

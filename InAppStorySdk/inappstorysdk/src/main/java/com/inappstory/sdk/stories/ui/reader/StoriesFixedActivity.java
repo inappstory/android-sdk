@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -89,11 +90,6 @@ public class StoriesFixedActivity extends AppCompatActivity {
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            try {
-                CsEventBus.getDefault().unregister(this);
-            } catch (Exception e) {
-
-            }
             if (!isFakeActivity) {
                 created = 0;
                 cleanReader();
@@ -313,7 +309,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
             finish();
             return;
         }
-        CsEventBus.getDefault().register(StoriesFixedActivity.this);
+        //CsEventBus.getDefault().register(StoriesFixedActivity.this);
         InAppStoryService.getInstance().getListReaderConnector().openReader();
         if (savedInstanceState == null) {
             //overridePendingTransition(R.anim.alpha_fade_in, R.anim.alpha_fade_out);
@@ -350,8 +346,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void closeStoryReaderEvent(CloseStoryReaderEvent event) {
+    public void closeStoryReaderEvent(int action) {
         if (InAppStoryService.isNotNull()) {
 
             InAppStoryService.getInstance().getListReaderConnector().closeReader();
@@ -360,20 +355,20 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
                     story.title, story.tags, story.slidesCount,
-                    story.lastIndex, event.getAction(),
+                    story.lastIndex, action,
                     getIntent().getIntExtra("source", 0)));
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         story.id,
                         story.title, story.tags, story.slidesCount,
                         story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
-                                event.getAction()),
+                                action),
                         CallbackManager.getInstance().getSourceFromInt(
                                 getIntent().getIntExtra("source", 0))
                 );
             }
             String cause = StatisticManager.AUTO;
-            switch (event.getAction()) {
+            switch (action) {
                 case CloseStory.CLICK:
                     cause = StatisticManager.CLICK;
                     break;
@@ -387,15 +382,19 @@ public class StoriesFixedActivity extends AppCompatActivity {
             StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
         }
         cleanReader();
-        CsEventBus.getDefault().unregister(this);
 
         if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            finishAfterTransition();
-        } else {
-            finish();
-        }
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    finishAfterTransition();
+                } else {
+                    finish();
+                }
+            }
+        });
     }
 
     boolean cleaned = false;
@@ -421,11 +420,6 @@ public class StoriesFixedActivity extends AppCompatActivity {
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            try {
-                CsEventBus.getDefault().unregister(this);
-            } catch (Exception e) {
-
-            }
             if (!isFakeActivity) {
                 created = 0;
                 cleanReader();

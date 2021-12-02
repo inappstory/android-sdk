@@ -76,17 +76,20 @@ public class StoriesList extends RecyclerView {
         super.onDetachedFromWindow();
         if (InAppStoryService.getInstance() != null)
             InAppStoryService.getInstance().removeListSubscriber(manager);
+        else
+            manager.clear();
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+        manager.list = this;
         if (InAppStoryService.getInstance() != null)
             InAppStoryService.getInstance().addListSubscriber(manager);
     }
 
     private void init(AttributeSet attributeSet) {
-        manager = new StoriesListManager(this);
+        manager = new StoriesListManager();
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);

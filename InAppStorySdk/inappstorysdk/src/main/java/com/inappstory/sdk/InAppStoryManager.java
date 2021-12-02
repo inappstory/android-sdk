@@ -140,7 +140,15 @@ public class InAppStoryManager {
      * use to force close story reader
      */
     public static void closeStoryReader() {
-        CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
+        closeStoryReader(CloseStory.CUSTOM);
+    }
+
+    /**
+     * use to force close story reader
+     */
+    public static void closeStoryReader(int action) {
+        ScreensManager.getInstance().closeStoryReader(action);
+        //CsEventBus.getDefault().post(new CloseStoryReaderEvent(action));
         ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
     }
@@ -484,7 +492,7 @@ public class InAppStoryManager {
             if (InAppStoryService.getInstance().getFavoriteImages() != null)
                 InAppStoryService.getInstance().getFavoriteImages().clear();
             InAppStoryService.getInstance().getDownloadManager().refreshLocals();
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+            closeStoryReader(CloseStory.AUTO);
             SessionManager.getInstance().closeSession(sendStatistic, true);
             OldStatisticManager.getInstance().eventCount = 0;
             InAppStoryService.getInstance().getDownloadManager().cleanTasks();
@@ -609,8 +617,7 @@ public class InAppStoryManager {
         }
 
         if (StoriesActivity.created == -1) {
-
-            CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+            InAppStoryManager.closeStoryReader(CloseStory.AUTO);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -770,7 +777,7 @@ public class InAppStoryManager {
                 if (story != null) {
 
                     if (StoriesActivity.created == -1) {
-                        CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.AUTO));
+                        InAppStoryManager.closeStoryReader(CloseStory.AUTO);
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {

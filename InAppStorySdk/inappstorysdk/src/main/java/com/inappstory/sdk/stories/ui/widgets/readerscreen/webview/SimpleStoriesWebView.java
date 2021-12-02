@@ -178,10 +178,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public void destroyView() {
         final Runtime runtime = Runtime.getRuntime();
-        try {
-            CsEventBus.getDefault().unregister(this);
-        } catch (Exception e) {
-        }
         final long usedMemInMB = (runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
         final long maxHeapSizeInMB = runtime.maxMemory() / 1048576L;
         final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
@@ -435,7 +431,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
             }
             getManager().getPageManager().pauseSlide(false);
 
-            //CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             touchSlider = false;

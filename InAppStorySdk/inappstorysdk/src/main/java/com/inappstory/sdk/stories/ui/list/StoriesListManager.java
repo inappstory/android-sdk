@@ -15,8 +15,8 @@ public class StoriesListManager {
         list = null;
     }
 
-    public StoriesListManager(StoriesList list) {
-        this.list = list;
+    public StoriesListManager() {
+      //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
     }
 
@@ -82,6 +82,7 @@ public class StoriesListManager {
         post(new Runnable() {
             @Override
             public void run() {
+                if (list == null) return;
                 List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
                 boolean isEmpty = favImages.isEmpty();
                 Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);

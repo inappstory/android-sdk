@@ -27,12 +27,11 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
@@ -190,8 +189,7 @@ public class ReaderPageFragment extends Fragment {
         close.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CLICK));
+                InAppStoryManager.closeStoryReader(CloseStory.CLICK);
             }
         });
         refresh.setOnClickListener(new View.OnClickListener() {

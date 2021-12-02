@@ -48,7 +48,6 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     private void init() {
         manager = new StoriesViewManager(getContext());
         manager.setStoriesView(this);
-        CsEventBus.getDefault().register(this);
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
