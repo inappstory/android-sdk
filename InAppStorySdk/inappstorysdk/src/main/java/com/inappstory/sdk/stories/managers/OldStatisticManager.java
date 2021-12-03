@@ -112,10 +112,10 @@ public class OldStatisticManager {
         }
         synchronized (openProcessLock) {
 
-            Log.e("sendStatPlace", place);
             if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
                 return true;
             }
+            Log.e("sendStatPlace", place);
             NetworkClient.getApi().statisticsUpdate(
                     new StatisticSendObject(StatisticSession.getInstance().id,
                             statistic)).enqueue(new NetworkCallback<StatisticResponse>() {

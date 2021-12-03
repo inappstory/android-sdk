@@ -177,8 +177,10 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public void onPause() {
         if (!isDestroyed) {
-            backPaused = true;
-            CsEventBus.getDefault().post(new PauseStoryReaderEvent(true));
+            if (getActivity() == null || !getActivity().isFinishing()) {
+                backPaused = true;
+                CsEventBus.getDefault().post(new PauseStoryReaderEvent(true));
+            }
         }
         super.onPause();
     }
