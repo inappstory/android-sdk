@@ -81,7 +81,7 @@ public class StoriesActivity extends AppCompatActivity {
         if (isFinishing()) {
             pauseDestroyed = true;
             StatusBarController.showStatusBar(this);
-
+            OldStatisticManager.getInstance().closeStatisticEvent(null, false);
             OldStatisticManager.getInstance().sendStatistic(this.toString());
             try {
                 CsEventBus.getDefault().unregister(this);
@@ -481,6 +481,7 @@ public class StoriesActivity extends AppCompatActivity {
     public void onDestroy() {
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
+            OldStatisticManager.getInstance().closeStatisticEvent(null, false);
             OldStatisticManager.getInstance().sendStatistic(this.toString());
             try {
                 CsEventBus.getDefault().unregister(this);
