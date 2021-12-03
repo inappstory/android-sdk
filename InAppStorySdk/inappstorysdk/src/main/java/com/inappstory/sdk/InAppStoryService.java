@@ -177,6 +177,13 @@ public class InAppStoryService {
 
 
     public void onDestroy() {
+        try {
+            CsEventBus.getDefault().unregister(this);
+        } catch (Exception e) {
+
+        }
+        if (timerManager != null) timerManager.destroy();
+        timerManager = null;
         getDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;

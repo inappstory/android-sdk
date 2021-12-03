@@ -461,6 +461,7 @@ public class InAppStoryManager {
             if (InAppStoryService.isNotNull()) {
                 InAppStoryService.getInstance().getDownloadManager().cleanTasks();
                 InAppStoryService.getInstance().logout();
+                InAppStoryService.getInstance().onDestroy();
             }
             INSTANCE = null;
         }

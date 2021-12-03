@@ -17,6 +17,14 @@ public class TimerManager {
     private long totalTimerDuration;
     private long pauseShift;
 
+    public void destroy() {
+        try {
+            timerHandler.removeCallbacks(timerTask);
+        } catch (Exception e) {
+
+        }
+    }
+
     Runnable timerTask = new Runnable() {
         @Override
         public void run() {
