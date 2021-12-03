@@ -132,6 +132,8 @@ public class OldStatisticManager {
                         return StatisticResponse.class;
                     }
                 });
+                if (statistic != null)
+                    statistic.clear();
             }
         } catch (Exception e) {
         }
