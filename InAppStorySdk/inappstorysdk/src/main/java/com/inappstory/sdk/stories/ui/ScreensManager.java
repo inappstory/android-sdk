@@ -23,6 +23,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -32,6 +33,7 @@ import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -47,6 +49,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
@@ -165,9 +168,18 @@ public class ScreensManager {
         }
     }
 
+
+    HashMap<String, MutableLiveData<GameCompleteEvent>> gameObservables = new HashMap<>();
+
+    public MutableLiveData<GameCompleteEvent> getGameObserver(String id) {
+        return gameObservables.get(id);
+    }
+
+
     public void openGameReader(Context context, int storyId, int index, String gameUrl, String preloadPath, String gameConfig, String resources) {
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
+
         intent2.putExtra("storyId", Integer.toString(storyId));
         intent2.putExtra("slideIndex", index);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
@@ -183,9 +195,18 @@ public class ScreensManager {
             CallbackManager.getInstance().getGameCallback().startGame(storyId, story.title,
                     story.tags, story.slidesCount, index);
         }
-        ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+        if (Sizes.isTablet()) {
+            if (currentFragment != null) {
+                String observableUID = randomUUID().toString();
+                intent2.putExtra("observableUID", observableUID);
+                gameObservables.put(observableUID,
+                        new MutableLiveData<GameCompleteEvent>());
+                currentFragment.observeGameReader(observableUID);
+            }
+        } else {
+            ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+        }
     }
-
 
     public void openStoriesReader(Context outerContext, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {

@@ -1,10 +1,10 @@
 package com.inappstory.sdk.stories.events;
 
 public class GameCompleteEvent {
-    String data;
+    String gameState;
 
-    public String getData() {
-        return data;
+    public String getGameState() {
+        return gameState;
     }
 
     public int getStoryId() {
@@ -17,8 +17,8 @@ public class GameCompleteEvent {
 
     int storyId;
 
-    public GameCompleteEvent(String data, int storyId, int slideIndex) {
-        this.data = data;
+    public GameCompleteEvent(String gameState, int storyId, int slideIndex) {
+        this.gameState = gameState;
         this.storyId = storyId;
         this.slideIndex = slideIndex;
     }

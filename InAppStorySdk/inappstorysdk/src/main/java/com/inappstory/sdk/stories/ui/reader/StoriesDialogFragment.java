@@ -13,6 +13,8 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryService;
@@ -21,14 +23,16 @@ import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
+
+import java.util.HashSet;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
@@ -53,6 +57,15 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.cs_stories_dialog_fragment, null);
+    }
+
+    private void removeGameObservables() {
+        for (String observableID: observerIDs) {
+            MutableLiveData<GameCompleteEvent> observableData =
+                    ScreensManager.getInstance().getGameObserver(observableID);
+            if (observableData == null) continue;
+            observableData.removeObserver(gameCompleteObserver);
+        }
     }
 
     @Override
@@ -82,6 +95,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
         }
         cleanReader();
+        removeGameObservables();
         super.onDismiss(dialogInterface);
     }
 
@@ -98,6 +112,26 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         cleaned = true;
     }
 
+    Observer<GameCompleteEvent> gameCompleteObserver = new Observer<GameCompleteEvent>() {
+        @Override
+        public void onChanged(GameCompleteEvent event) {
+            storiesFragment.readerManager.gameComplete(
+                    event.getGameState(),
+                    event.getStoryId(),
+                    event.getSlideIndex()
+            );
+        }
+    };
+
+    HashSet<String> observerIDs = new HashSet<>();
+
+    public void observeGameReader(String observableID) {
+        MutableLiveData<GameCompleteEvent> observableData =
+                ScreensManager.getInstance().getGameObserver(observableID);
+        if (observableData == null) return;
+        observableData.observe(getViewLifecycleOwner(), gameCompleteObserver);
+        observerIDs.add(observableID);
+    }
 
     @Override
     public void onStart()
@@ -164,27 +198,32 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         cleaned = false;
-        StoriesActivity.created = -1;
-        StoriesFragment fragment = new StoriesFragment();
-
-        Bundle args = new Bundle();
-        args.putBoolean("isDialogFragment", true);
-        args.putInt("index", getArguments().getInt("index", 0));
-        setAppearanceSettings(args);
-        args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));
-
-
-        fragment.setArguments(args);
-        FragmentManager fragmentManager = getChildFragmentManager();
-        FragmentTransaction t = fragmentManager.beginTransaction()
-                .replace(R.id.dialog_fragment, fragment);
-        t.addToBackStack("STORIES_FRAGMENT");
-        t.commit();
-
+        if (savedInstanceState == null) {
+            storiesFragment = new StoriesFragment();
+            Bundle args = new Bundle();
+            args.putBoolean("isDialogFragment", true);
+            args.putInt("index", getArguments().getInt("index", 0));
+            setAppearanceSettings(args);
+            args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));
+            storiesFragment.setArguments(args);
+        } else {
+            storiesFragment =
+                    (StoriesFragment) getChildFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
+        }
+        if (storiesFragment != null) {
+            FragmentManager fragmentManager = getChildFragmentManager();
+            FragmentTransaction t = fragmentManager.beginTransaction()
+                    .replace(R.id.dialog_fragment, storiesFragment);
+            t.addToBackStack("STORIES_FRAGMENT");
+            t.commit();
+        } else {
+            dismiss();
+        }
 
     }
+
+    StoriesFragment storiesFragment;
 
     private void setAppearanceSettings(Bundle bundle) {
         StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(

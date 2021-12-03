@@ -11,7 +11,6 @@ import com.inappstory.sdk.stories.api.models.StatisticResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.events.DebugEvent;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

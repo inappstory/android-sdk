@@ -35,6 +35,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
@@ -520,10 +521,17 @@ public class GameActivity extends AppCompatActivity {
         try {
             Intent intent = new Intent();
             if (Sizes.isTablet()) {
-                CsEventBus.getDefault().post(new GameCompleteEvent(
-                        gameState,
-                        Integer.parseInt(manager.storyId),
-                        manager.index));
+                String observableUID = intent.getStringExtra("observableUID");
+                if (observableUID != null) {
+                    MutableLiveData<GameCompleteEvent> liveData =
+                            ScreensManager.getInstance().getGameObserver(observableUID);
+                    if (liveData != null) {
+                        liveData.postValue(new GameCompleteEvent(
+                                gameState,
+                                Integer.parseInt(manager.storyId),
+                                manager.index));
+                    }
+                }
             } else {
                 intent.putExtra("storyId", manager.storyId);
                 intent.putExtra("slideIndex", manager.index);
@@ -539,6 +547,7 @@ public class GameActivity extends AppCompatActivity {
             closing = false;
         }
     }
+
 
 
     private void initGame(String data) {

@@ -27,14 +27,11 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -73,7 +70,11 @@ public class StoriesActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         if (isFinishing()) {
+            ScreensManager.getInstance().hideGoods();
+            ScreensManager.getInstance().closeGameReader();
             StatusBarController.showStatusBar(this);
+
+            OldStatisticManager.getInstance().sendStatistic();
             created = 0;
             cleanReader();
             System.gc();
@@ -324,7 +325,7 @@ public class StoriesActivity extends AppCompatActivity {
         draggableFrame.addListener(chromeFader);
         final Bundle savedInstanceState = savedInstanceState1;
         try {
-            if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
+            if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {
                 StatusBarController.hideStatusBar(StoriesActivity.this, true);
             }
         } catch (Exception e) {

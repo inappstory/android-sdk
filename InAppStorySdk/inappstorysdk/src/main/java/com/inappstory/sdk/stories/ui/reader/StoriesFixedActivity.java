@@ -35,7 +35,6 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -90,16 +89,12 @@ public class StoriesFixedActivity extends AppCompatActivity {
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            if (!isFakeActivity) {
-                created = 0;
-                cleanReader();
-            }
+            created = 0;
+            cleanReader();
             System.gc();
             pauseDestroyed = true;
         }
     }
-
-    public boolean isFakeActivity = false;
 
     @Override
     protected void onStop() {
@@ -235,7 +230,6 @@ public class StoriesFixedActivity extends AppCompatActivity {
     }
 
 
-
     ElasticDragDismissFrameLayout draggableFrame;
 
     private void setAppearanceSettings(Bundle bundle) {
@@ -269,8 +263,6 @@ public class StoriesFixedActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
-
-        created = -1;
         if (Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
@@ -302,7 +294,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
         final Bundle savedInstanceState = savedInstanceState1;
         try {
-            if (!getIntent().getBooleanExtra("statusBarVisibility", false) && !Sizes.isTablet()) {
+            if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {
                 StatusBarController.hideStatusBar(StoriesFixedActivity.this, true);
             }
         } catch (Exception e) {
@@ -420,10 +412,8 @@ public class StoriesFixedActivity extends AppCompatActivity {
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            if (!isFakeActivity) {
-                created = 0;
-                cleanReader();
-            }
+            created = 0;
+            cleanReader();
             System.gc();
             pauseDestroyed = true;
         }
