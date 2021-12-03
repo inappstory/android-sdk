@@ -265,7 +265,7 @@ public class StoriesList extends RecyclerView {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) {
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.getInstance().sendStatistic("onWindowFocusChanged");
         }
     }
 

@@ -59,7 +59,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         if (InAppStoryService.isNotNull()) {
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.getInstance().sendStatistic(this.toString());
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
@@ -124,7 +124,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void onDestroyView() {
         CsEventBus.getDefault().unregister(this);
 
-        OldStatisticManager.getInstance().sendStatistic();
+        OldStatisticManager.getInstance().sendStatistic(this.toString());
         StoriesActivity.destroyed = System.currentTimeMillis();
         super.onDestroyView();
     }

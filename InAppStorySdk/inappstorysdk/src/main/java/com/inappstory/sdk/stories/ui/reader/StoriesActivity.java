@@ -79,9 +79,10 @@ public class StoriesActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         if (isFinishing()) {
+            pauseDestroyed = true;
             StatusBarController.showStatusBar(this);
 
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.getInstance().sendStatistic(this.toString());
             try {
                 CsEventBus.getDefault().unregister(this);
             } catch (Exception e) {
@@ -90,7 +91,6 @@ public class StoriesActivity extends AppCompatActivity {
             destroyed = 0;
             cleanReader();
             System.gc();
-            pauseDestroyed = true;
         }
     }
 
@@ -481,14 +481,12 @@ public class StoriesActivity extends AppCompatActivity {
     public void onDestroy() {
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
-
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.getInstance().sendStatistic(this.toString());
             try {
                 CsEventBus.getDefault().unregister(this);
             } catch (Exception e) {
 
             }
-
             destroyed = 0;
             cleanReader();
             System.gc();

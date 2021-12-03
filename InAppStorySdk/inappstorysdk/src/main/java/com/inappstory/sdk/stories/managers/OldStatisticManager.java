@@ -63,7 +63,7 @@ public class OldStatisticManager {
                 handler.removeCallbacks(statisticUpdateThread);
                 return;
             }
-            if (sendStatistic()) {
+            if (sendStatistic("statisticUpdateThread")) {
                 handler.postDelayed(statisticUpdateThread, statisticUpdateInterval);
             }
         }
@@ -88,11 +88,11 @@ public class OldStatisticManager {
             eventCount++;
         }
         if (count > 2) {
-            sendStatistic();
+            sendStatistic("previewStatisticEvent");
         }
     }
 
-    public boolean sendStatistic() {
+    public boolean sendStatistic(String place) {
         if (!InAppStoryService.isConnected()) return true;
         if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
             return false;
@@ -101,6 +101,7 @@ public class OldStatisticManager {
                 return true;
             }
         }
+        Log.e("sendStatPlace", place);
         if (!InAppStoryService.getInstance().getSendStatistic()) {
             cleanStatistic();
         }

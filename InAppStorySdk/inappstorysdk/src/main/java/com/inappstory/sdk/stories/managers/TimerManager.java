@@ -111,7 +111,7 @@ public class TimerManager {
         pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        OldStatisticManager.getInstance().sendStatistic();
+        OldStatisticManager.getInstance().sendStatistic("pauseTimer");
         OldStatisticManager.getInstance().eventCount++;
     }
 

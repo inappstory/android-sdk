@@ -113,7 +113,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
         if (isFinishing()) {
             StatusBarController.showStatusBar(this);
 
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.getInstance().sendStatistic(this.toString());
             try {
                 CsEventBus.getDefault().unregister(this);
             } catch (Exception e) {
@@ -413,7 +413,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
 
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.getInstance().sendStatistic(this.toString());
             try {
                 CsEventBus.getDefault().unregister(this);
             } catch (Exception e) {
