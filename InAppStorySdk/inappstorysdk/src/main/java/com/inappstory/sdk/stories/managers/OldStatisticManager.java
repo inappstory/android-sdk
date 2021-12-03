@@ -69,6 +69,16 @@ public class OldStatisticManager {
         }
     };
 
+    public void destroy() {
+        if (handler != null) {
+            try {
+                handler.removeCallbacks(statisticUpdateThread);
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
     public void previewStatisticEvent(ArrayList<Integer> vals) {
         ArrayList<Object> sendObject = new ArrayList<Object>();
         sendObject.add(5);

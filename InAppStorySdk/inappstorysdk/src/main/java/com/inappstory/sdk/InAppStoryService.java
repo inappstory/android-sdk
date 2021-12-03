@@ -179,11 +179,13 @@ public class InAppStoryService {
     public void onDestroy() {
         try {
             CsEventBus.getDefault().unregister(this);
+            handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
         } catch (Exception e) {
 
         }
         if (timerManager != null) timerManager.destroy();
         timerManager = null;
+        OldStatisticManager.getInstance().destroy();
         getDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;
@@ -351,6 +353,7 @@ public class InAppStoryService {
             try {
                 handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
             } finally {
+                OldStatisticManager.getInstance().destroy();
                 handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread,
                         statisticUpdateInterval);
             }
