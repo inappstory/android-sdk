@@ -4,6 +4,8 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,7 +62,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     private void removeGameObservables() {
-        for (String observableID: observerIDs) {
+        for (String observableID : observerIDs) {
             MutableLiveData<GameCompleteEvent> observableData =
                     ScreensManager.getInstance().getGameObserver(observableID);
             if (observableData == null) continue;
@@ -97,6 +99,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         cleanReader();
         removeGameObservables();
         super.onDismiss(dialogInterface);
+        if (ScreensManager.getInstance().currentFragment == this)
+            ScreensManager.getInstance().currentFragment = null;
     }
 
     boolean cleaned = false;
@@ -125,17 +129,23 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     HashSet<String> observerIDs = new HashSet<>();
 
-    public void observeGameReader(String observableID) {
-        MutableLiveData<GameCompleteEvent> observableData =
-                ScreensManager.getInstance().getGameObserver(observableID);
-        if (observableData == null) return;
-        observableData.observe(getViewLifecycleOwner(), gameCompleteObserver);
-        observerIDs.add(observableID);
+    public void observeGameReader(String observableId) {
+        final String localObservableId = observableId;
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                MutableLiveData<GameCompleteEvent> observableData =
+                        ScreensManager.getInstance().getGameObserver(localObservableId);
+                if (observableData == null) return;
+                observableData.observe(getViewLifecycleOwner(), gameCompleteObserver);
+                observerIDs.add(localObservableId);
+            }
+        });
+
     }
 
     @Override
-    public void onStart()
-    {
+    public void onStart() {
         super.onStart();
 
         // safety check

@@ -37,6 +37,7 @@ public class GameManager {
     String storyId;
     String path;
     String resources;
+    String observableId;
     String loaderPath;
     String title;
     String tags;

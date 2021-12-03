@@ -211,7 +211,7 @@ public class ScreensManager {
     public void openStoriesReader(Context outerContext, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {
         if (Sizes.isTablet() && outerContext instanceof AppCompatActivity) {
-            DialogFragment settingsDialogFragment = new StoriesDialogFragment();
+            StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
             bundle.putInt("source", source);
@@ -237,8 +237,12 @@ public class ScreensManager {
                 bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
                 bundle.putBoolean(CS_TIMER_GRADIENT, manager.csTimerGradientEnable());
             }
-            settingsDialogFragment.setArguments(bundle);
-            settingsDialogFragment.show(
+            storiesDialogFragment.setArguments(bundle);
+            if (ScreensManager.getInstance().currentFragment != null) {
+                ScreensManager.getInstance().currentFragment.dismissAllowingStateLoss();
+            }
+            ScreensManager.getInstance().currentFragment = storiesDialogFragment;
+            storiesDialogFragment.show(
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {

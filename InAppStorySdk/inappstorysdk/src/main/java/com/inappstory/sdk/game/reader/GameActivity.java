@@ -361,6 +361,7 @@ public class GameActivity extends AppCompatActivity {
 
     private void getIntentValues() {
         manager.path = getIntent().getStringExtra("gameUrl");
+        manager.observableId = getIntent().getStringExtra("observableId");
         manager.resources = getIntent().getStringExtra("gameResources");
         manager.storyId = getIntent().getStringExtra("storyId");
         manager.index = getIntent().getIntExtra("slideIndex", 0);
@@ -521,7 +522,7 @@ public class GameActivity extends AppCompatActivity {
         try {
             Intent intent = new Intent();
             if (Sizes.isTablet()) {
-                String observableUID = intent.getStringExtra("observableUID");
+                String observableUID = manager.observableId;
                 if (observableUID != null) {
                     MutableLiveData<GameCompleteEvent> liveData =
                             ScreensManager.getInstance().getGameObserver(observableUID);
