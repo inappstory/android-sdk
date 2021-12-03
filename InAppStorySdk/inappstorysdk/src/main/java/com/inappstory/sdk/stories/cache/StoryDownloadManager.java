@@ -145,12 +145,18 @@ public class StoryDownloadManager {
         slidesDownloader.init();
     }
 
+
+    public void cleanTasks() {
+        stories.clear();
+        storyDownloader.cleanTasks();
+        slidesDownloader.cleanTasks();
+    }
+
     public void destroy() {
         storyDownloader.destroy();
         slidesDownloader.destroy();
-        if (stories == null)
-            return;
-        stories.clear();
+        if (stories != null)
+            stories.clear();
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }

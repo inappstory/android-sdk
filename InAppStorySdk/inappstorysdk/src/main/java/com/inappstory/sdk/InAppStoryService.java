@@ -152,7 +152,6 @@ public class InAppStoryService {
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         SessionManager.getInstance().closeSession(true, false);
         OldStatisticManager.getInstance().statistic.clear();
-        OldStatisticManager.getInstance().statistic = null;
     }
 
 
