@@ -417,18 +417,6 @@ public void onStop() {
 }
 ```
 
-The method `post(Event event)`is used to send events to the SDK.
-2 events can be sent to the SDK:
-```
-CloseStoryReaderEvent - used to close the story reader (for example, when you override a click on buttons, sharing, etc.)
-SoundOnOffEvent - called after changing the sound on / off flag (InAppStoryManager.getInstance().SoundOn). If the reader is closed, there is no need to call the event.
-```
-
-Example:
-```
-CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
-```
-
 Below are the events that you can subscribe to:
 
 1) `StoriesLoaded` - the list of stories has been loaded, the widget is ready to work (triggered every time when the list is loaded, including at refresh). The event contains the `int getCount()` method - the number of stories
@@ -509,13 +497,6 @@ Example:
 InAppStoryManager.getInstance().soundOn = true;
 ```
 
-If the value changes while the reader is open, you have to send the `SoundOnOffEvent` event.
-```
-CsEventBus.getDefault().post(new SoundOnOffEvent());
-```    
-
-If the reader is closed, sending an event is not required.
-
 ### Onboarding stories
 
 The library supports work with onboarding stories. 
@@ -571,12 +552,12 @@ InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlCli
     }
 });
 ```
-If you need to close the reader when the handler is triggered, you need to add a call to the `CloseStoryReaderEvent` event in `onUrlClick`:
+If you need to close the reader when the handler is triggered, you need to call static method ` InAppStoryManager.closeStoryReader()` in `onUrlClick`:
 ```
 InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlClickCallback() {
     @Override
     public void onUrlClick(String link) {
-        CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM));
+        InAppStoryManager.closeStoryReader();
     }
 });
 ```
@@ -1207,7 +1188,7 @@ The global `AppearanceManager` uses customization via `csLoaderView`.
 
 Use the `InAppStoryManager.getInstance().setUrlClickCallback(InAppStoryManager.UrlClickCallback callback)` method. Also in the callback, it may be necessary to add the closure of the story reader via:
 ```
-CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM)).
+InAppStoryManager.closeStoryReader();
 ```
 
 #### 6) Changing user's account in the application
@@ -1259,10 +1240,6 @@ Example:
 ```
 InAppStoryManager.getInstance().soundOn = true;
 ```
-If the value changes while the reader is open, you must also send the `SoundOnOffEvent` event.
-```
-CsEventBus.getDefault().post(new SoundOnOffEvent());
-``` 
-
+    
 ### Samples
 You can find more basic code samples in [this repository](https://github.com/inappstory/Android-Example)
