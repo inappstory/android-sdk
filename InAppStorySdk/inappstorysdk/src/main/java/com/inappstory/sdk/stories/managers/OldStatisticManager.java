@@ -216,6 +216,11 @@ public class OldStatisticManager {
         closeStatisticEvent(null, false);
     }
 
+    public void closeStatisticEventInc() {
+        closeStatisticEvent(null, false);
+        eventCount++;
+    }
+
     public void addStatisticBlock(int storyId, int index) {
         //if (currentEvent != null)
         closeStatisticEvent();

@@ -367,7 +367,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
     public void cleanReader() {
         if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
+        OldStatisticManager.getInstance().closeStatisticEventInc();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         InAppStoryService.getInstance().isBackgroundPause = false;
