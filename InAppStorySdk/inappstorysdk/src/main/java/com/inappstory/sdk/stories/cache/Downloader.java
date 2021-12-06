@@ -36,7 +36,7 @@ public class Downloader {
      * @param url ссылка
      */
     public static String cropUrl(String url) {
-        return url.split("\\?")[0];
+        return url;//.split("\\?")[0];
     }
 
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
