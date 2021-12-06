@@ -153,6 +153,7 @@ public class SessionManager {
         ).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
+                OldStatisticManager.getInstance().eventCount = 0;
                 openStatisticSuccess(response);
                 CachedSessionData cachedSessionData = new CachedSessionData();
                 cachedSessionData.userId = InAppStoryService.getInstance().getUserId();

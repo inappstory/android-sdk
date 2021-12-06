@@ -34,11 +34,14 @@ import com.inappstory.sdk.stories.events.ChangeStoryEvent;
 import com.inappstory.sdk.stories.events.ChangeUserIdForListEvent;
 import com.inappstory.sdk.stories.events.CloseStoryReaderEvent;
 import com.inappstory.sdk.stories.events.OpenStoriesScreenEvent;
+import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.managers.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.serviceevents.StoryFavoriteEvent;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import static com.inappstory.sdk.stories.events.StoriesErrorEvent.LOAD_LIST;
 
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
@@ -358,6 +361,9 @@ public class StoriesList extends RecyclerView {
                                 setAdapter(adapter);
                             }
                         }, isFavoriteList, hasFavorite);
+                    else {
+                        CsEventBus.getDefault().post(new StoriesErrorEvent(LOAD_LIST));
+                    }
                 }
             }, 1000);
         }
