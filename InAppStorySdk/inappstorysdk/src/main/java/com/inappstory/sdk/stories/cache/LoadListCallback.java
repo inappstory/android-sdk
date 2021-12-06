@@ -27,7 +27,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
             CallbackManager.getInstance().getErrorCallback().loadListError();
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-        super.onError(code, message);
+       // super.onError(code, message);
     }
 
     @Override
