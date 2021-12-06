@@ -161,6 +161,7 @@ public class SessionManager {
         ).enqueue(new NetworkCallback<StatisticResponse>() {
             @Override
             public void onSuccess(StatisticResponse response) {
+                OldStatisticManager.getInstance().eventCount = 0;
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
                 openStatisticSuccess(response);
                 CachedSessionData cachedSessionData = new CachedSessionData();
