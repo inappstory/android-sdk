@@ -472,6 +472,7 @@ public class InAppStoryService {
         spaceHandler = new Handler();
         if (tempListSubscribers != null) {
             if (listSubscribers == null) listSubscribers = new HashSet<>();
+            InAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());
             listSubscribers.addAll(tempListSubscribers);
             tempListSubscribers.clear();
         }
