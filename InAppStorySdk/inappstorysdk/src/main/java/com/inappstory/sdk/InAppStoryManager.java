@@ -14,6 +14,7 @@ import androidx.core.util.Pair;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,7 @@ public class InAppStoryManager {
 
     @SuppressLint(DEBUG_API)
     public static void debugSDKCalls(String methodName, String args) {
-        Log.d("IAS_SDK_Calls", System.currentTimeMillis()
+        Log.d("IAS_SDK_Calls", new Date(System.currentTimeMillis()).toString()
                 + " "
                 + methodName + " " + args);
     }
