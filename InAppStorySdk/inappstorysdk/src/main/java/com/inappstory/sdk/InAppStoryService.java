@@ -475,6 +475,11 @@ public class InAppStoryService {
             listSubscribers.addAll(tempListSubscribers);
             tempListSubscribers.clear();
         }
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         synchronized (lock) {
             INSTANCE = this;
         }
