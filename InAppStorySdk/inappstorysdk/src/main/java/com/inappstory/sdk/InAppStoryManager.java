@@ -1,11 +1,13 @@
 package com.inappstory.sdk;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -92,6 +94,37 @@ public class InAppStoryManager {
     public Context getContext() {
         return context;
     }
+
+    private static final String DEBUG_API = "IAS debug api";
+
+
+    @SuppressLint(DEBUG_API)
+    public static void debugSDKCalls(String methodName, String args) {
+        Log.e("IAS_SDK_Calls", System.currentTimeMillis()
+                + " "
+                + methodName + " " + args);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static IASLogger logger;
+
+    @SuppressLint(DEBUG_API)
+    public interface IASLogger {
+        void showELog(String tag, String message);
+
+        void showDLog(String tag, String message);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void showELog(String tag, String message) {
+        if (logger != null) logger.showELog(tag, message);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void showDLog(String tag, String message) {
+        if (logger != null) logger.showELog(tag, message);
+    }
+
 
     Context context;
 
@@ -261,6 +294,8 @@ public class InAppStoryManager {
      */
     //Test
     public void setTags(ArrayList<String> tags) {
+        InAppStoryManager.debugSDKCalls("IASManager_setTags",
+                "tags:" + (tags != null ? TextUtils.join(",", tags): "[]"));
         this.tags = tags;
     }
 
@@ -276,6 +311,8 @@ public class InAppStoryManager {
         for (String tag : newTags) {
             addTag(tag);
         }
+        InAppStoryManager.debugSDKCalls("IASManager_addTags",
+                "tags:" + (tags != null ? TextUtils.join(",", tags): "[]"));
     }
 
     /**
@@ -503,6 +540,8 @@ public class InAppStoryManager {
      * @throws DataException 'userId' can't be longer than 255 characters
      */
     public void setUserId(String userId) throws DataException {
+        InAppStoryManager.debugSDKCalls("IASManager_setUserId",
+                "userID:" + userId);
         setUserIdInner(userId);
     }
 
@@ -529,8 +568,12 @@ public class InAppStoryManager {
                              ArrayList<String> tags,
                              Map<String, String> placeholders,
                              boolean sendStatistic) {
+
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
+        InAppStoryManager.debugSDKCalls("IASManager_create",
+                "userID:" + userId +
+                        " tags:" + (tags != null ? TextUtils.join(",", tags): "[]"));
         this.tags = tags;
         if (placeholders != null)
             setPlaceholders(placeholders);
@@ -549,6 +592,7 @@ public class InAppStoryManager {
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
                 .apiKey(this.API_KEY)
+                .testKey(this.TEST_KEY)
                 .setWebUrl(cmsUrl)
                 .cmsUrl(cmsUrl);
         if (InAppStoryService.isNotNull()) {
@@ -581,6 +625,7 @@ public class InAppStoryManager {
         }
         return localOpensKey;
     }
+
 
     /**
      * @return current instance of {@link InAppStoryManager}

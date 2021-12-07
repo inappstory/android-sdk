@@ -133,7 +133,6 @@ public class ReaderPageFragment extends Fragment {
                 story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
         buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
         setOffsets(view);
-        Log.e("setWebIndex", "setViews " + story.lastIndex);
         storiesView.getManager().setIndex(story.lastIndex);
 
     }

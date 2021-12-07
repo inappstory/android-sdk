@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -65,7 +66,6 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void setAudioManagerMode(String mode) {
-        Log.e("setAudioManagerMode", mode);
         manager.setAudioManagerMode(mode);
     }
 

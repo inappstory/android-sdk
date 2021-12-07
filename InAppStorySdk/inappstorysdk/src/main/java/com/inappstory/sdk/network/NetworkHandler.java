@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 
@@ -68,9 +69,9 @@ public final class NetworkHandler implements InvocationHandler {
         if (!StatisticSession.needToUpdate() && !req.getUrl().contains("session/open")) {
             connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
         }
-        Log.d("InAppStory_Network", req.getHeaders().toString());
+        InAppStoryManager.showDLog("InAppStory_Network", req.getHeaders().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
-            Log.d("InAppStory_Network", req.getBody());
+            InAppStoryManager.showDLog("InAppStory_Network", req.getBody());
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
             }
@@ -84,15 +85,16 @@ public final class NetworkHandler implements InvocationHandler {
         }
         int statusCode = connection.getResponseCode();
         Response respObject = null;
-        Log.d("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
 
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
 
             String res = getResponseFromStream(connection.getInputStream());
+            InAppStoryManager.showDLog("InAppStory_Network", res);
             respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
             String res = getResponseFromStream(connection.getErrorStream());
-            Log.d("InAppStory_Network", "Error: " + res);
+            InAppStoryManager.showDLog("InAppStory_Network", "Error: " + res);
             respObject = new Response.Builder().code(statusCode).errorBody(res).build();
         }
         connection.disconnect();

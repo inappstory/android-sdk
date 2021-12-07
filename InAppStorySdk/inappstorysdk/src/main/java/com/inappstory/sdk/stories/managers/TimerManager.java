@@ -83,7 +83,6 @@ public class TimerManager {
 
 
     public void startTimer(long timerDuration, boolean clearDuration) {
-        Log.e("startTimer_test", timerDuration + " " + clearDuration);
         if (timerDuration == 0) {
             try {
                 timerHandler.removeCallbacks(timerTask);

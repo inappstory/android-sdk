@@ -267,7 +267,7 @@ public class ScreensManager {
                           final int storyId, final int slideIndex) {
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
             showGoodsCallback.onEmptyResume(widgetId);
-            Log.e("ias_warn", "Empty goods widget");
+            Log.d("InAppStory_SDK_error", "Empty goods widget");
             return;
         }
         if (goodsDialog != null) return;

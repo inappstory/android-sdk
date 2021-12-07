@@ -160,6 +160,11 @@ public class GameLoader {
                                 public void onProgress(int loadedSize, int totalSize) {
                                     callback.onProgress(loadedSize, fTotalSize + totalSize);
                                 }
+
+                                @Override
+                                public void onSuccess(File downloadedFile) {
+
+                                }
                             }, hash);
 
                     ProfilingManager.getInstance().setReady(hash);

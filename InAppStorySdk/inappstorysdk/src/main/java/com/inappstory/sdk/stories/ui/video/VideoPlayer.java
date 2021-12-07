@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,12 +100,32 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     File file = null;
 
+    private void downloadCoverVideo(String url) {
+        Downloader.downloadCoverVideo(url, InAppStoryService.getInstance().getFastCache(),
+                new FileLoadProgressCallback() {
+                    @Override
+                    public void onProgress(int loadedSize, int totalSize) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(File file) {
+                        if (mp == null) return;
+                        try {
+                            mp.setDataSource(file.getAbsolutePath());
+                            mp.prepareAsync();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+    }
+
     public void prepareVideo(SurfaceTexture t) {
         this.surface = new Surface(t);
         if (mp == null)
             mp = new MediaPlayer();
         mp.setSurface(this.surface);
-
         try {
             if (file == null)
                 file = Downloader.getCoverVideo(url, InAppStoryService.getInstance().getFastCache());
@@ -112,14 +133,11 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 boolean fileIsNotLocked = file.renameTo(file);
                 if (file.length() > 10 && fileIsNotLocked) {
                     mp.setDataSource(file.getAbsolutePath());
-                } else {
-                    mp.setDataSource(url);
+                    mp.prepareAsync();
                 }
             } else {
-                mp.setDataSource(url);
-                Downloader.downloadCoverVideo(url, InAppStoryService.getInstance().getFastCache());
+                downloadCoverVideo(url);
             }
-            mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
                     isMpPrepared = true;

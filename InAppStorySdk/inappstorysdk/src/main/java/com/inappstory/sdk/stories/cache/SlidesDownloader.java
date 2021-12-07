@@ -108,7 +108,6 @@ class SlidesDownloader {
 
     //adjacent - for next and prev story
     void changePriority(Integer storyId, List<Integer> adjacents) {
-       // Log.e("changePriority", "multiple");
         synchronized (pageTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
                 if (!secondPriority.contains(firstPriority.get(i))) {
@@ -155,7 +154,6 @@ class SlidesDownloader {
     }
 
     void changePriorityForSingle(Integer storyId) {
-      //  Log.e("changePriority", "single");
         synchronized (pageTasksLock) {
             Story currentStory = manager.getStoryById(storyId);
             int sc = currentStory.slidesCount;
@@ -280,7 +278,6 @@ class SlidesDownloader {
             }
             synchronized (pageTasksLock) {
                 pageTasks.get(key).loadType = 2;
-                //Log.e("changePriority", key + " ");
             }
             manager.slideLoaded(key.first, key.second);
             handler.postDelayed(queuePageReadRunnable, 200);

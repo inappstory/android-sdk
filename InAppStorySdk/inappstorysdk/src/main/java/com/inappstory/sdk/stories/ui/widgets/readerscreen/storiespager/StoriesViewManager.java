@@ -64,7 +64,6 @@ public class StoriesViewManager {
     public int loadedId = -1;
 
     public void setIndex(int index) {
-        Log.e("setWebIndex", "setIndex " + index);
         this.index = index;
     }
 
@@ -126,8 +125,6 @@ public class StoriesViewManager {
     boolean lock = true;
 
     public void storyLoaded(int oId, int oInd, boolean alreadyLoaded) {
-
-        Log.e("setWebIndex", "storyLoaded " + oInd);
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
@@ -193,7 +190,6 @@ public class StoriesViewManager {
         }
         if (story.slidesCount <= index) return;
         storyId = id;
-        Log.e("setWebIndex", "loadStory " + index);
         this.index = index;
         loadedIndex = index;
         loadedId = id;
@@ -208,7 +204,6 @@ public class StoriesViewManager {
     }
 
     void setWebViewSettings(Story story) throws IOException {
-        Log.e("setWebIndex", "setWebViewSettings " + index);
         String innerWebData = story.pages.get(index);
         String layout = getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
@@ -216,9 +211,7 @@ public class StoriesViewManager {
         WebPageConvertCallback callback = new WebPageConvertCallback() {
             @Override
             public void onConvert(String webData, String webLayout, int lastIndex) {
-                //   Log.e("changePriority", "loadWebData" + storyId + " " + index);
                 if (index != lastIndex) return;
-                // Log.e("changePriority", "loadWebData" + storyId + " " + index);
                 loadWebData(webLayout, webData);
             }
         };

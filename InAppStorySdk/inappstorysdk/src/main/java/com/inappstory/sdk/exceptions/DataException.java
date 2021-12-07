@@ -32,6 +32,6 @@ public class DataException extends Exception {
         this.cause = cause;
         this.message = message;
         if (message != null)
-            Log.d("InAppStory_Exception", message);
+            Log.d("InAppStory_SDK_error", message);
     }
 }

@@ -337,8 +337,6 @@ public class StoriesActivity extends AppCompatActivity {
         CsEventBus.getDefault().register(StoriesActivity.this);
         InAppStoryService.getInstance().getListReaderConnector().openReader();
         if (savedInstanceState == null) {
-            //overridePendingTransition(R.anim.alpha_fade_in, R.anim.alpha_fade_out);
-            //Log.e("stories_indexes", getIntent().getIntegerArrayListExtra("stories_ids").toString());
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();

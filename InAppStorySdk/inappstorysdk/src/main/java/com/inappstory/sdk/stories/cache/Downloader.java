@@ -18,6 +18,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -61,8 +62,11 @@ public class Downloader {
     public static File downloadOrGetFile(@NonNull String url,
                                          LruDiskCache cache, File img, FileLoadProgressCallback callback, String hash) throws Exception {
         String key = cropUrl(url);
+
         if (cache.hasKey(key)) {
-            return cache.get(key);
+            File file = cache.get(key);
+            callback.onSuccess(file);
+            return file;
         } else {
             if (hash != null) {
                 ProfilingManager.getInstance().addTask("game_download", hash);
@@ -72,6 +76,7 @@ public class Downloader {
             }
             File file = downloadFile(url, img, callback);
             cache.put(key, file);
+            callback.onSuccess(file);
             return file;
         }
     }
@@ -117,11 +122,11 @@ public class Downloader {
         });
     }
 
-    public static void downloadCoverVideo(final String url, final LruDiskCache cache) {
+    public static void downloadCoverVideo(final String url, final LruDiskCache cache, final FileLoadProgressCallback callback) {
         tmpFileDownloader.submit(new Callable() {
             @Override
             public File call() throws Exception {
-                return downloadOrGetFile(url, cache, null, null);
+                return downloadOrGetFile(url, cache, null, callback);
             }
         });
     }
@@ -145,6 +150,7 @@ public class Downloader {
 
     private static File downloadFile(String url, File outputFile, FileLoadProgressCallback callback) throws Exception {
 
+        InAppStoryManager.showDLog("InAppStory_File", url);
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();

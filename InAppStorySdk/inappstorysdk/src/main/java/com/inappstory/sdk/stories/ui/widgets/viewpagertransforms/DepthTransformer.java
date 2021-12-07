@@ -12,7 +12,6 @@ import androidx.viewpager.widget.ViewPager;
 public class DepthTransformer implements ViewPager.PageTransformer {
     @Override
     public void transformPage(View view, float position) {
-       // Log.e("ViewTransform", view.toString() + " " + position);
         float MIN_SCALE = 0.85f;
         if (position <= -1.0) {
             view.setTranslationX(0f);

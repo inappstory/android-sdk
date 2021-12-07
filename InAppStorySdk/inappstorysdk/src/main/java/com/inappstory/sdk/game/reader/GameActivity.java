@@ -38,6 +38,7 @@ import androidx.core.content.ContextCompat;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -288,8 +289,6 @@ public class GameActivity extends AppCompatActivity {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void askForPermission(String origin, String permission, int requestCode) {
-        Log.d("WebView", "inside askForPermission for" + origin + "with" + permission);
-
         if (ContextCompat.checkSelfPermission(getApplicationContext(),
                 permission)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -395,7 +394,7 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.e("MyApplication", consoleMessage.message() + " -- From line "
+                Log.d("InAppStory_SDK_Web", consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId());
                 return super.onConsoleMessage(consoleMessage);

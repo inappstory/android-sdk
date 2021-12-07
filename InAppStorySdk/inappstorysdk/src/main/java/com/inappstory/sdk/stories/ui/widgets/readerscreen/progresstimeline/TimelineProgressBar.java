@@ -105,10 +105,6 @@ public class TimelineProgressBar extends FrameLayout {
             public void run() {
                 progressForeground.clearAnimation();
                 progressForeground.animate().cancel();
-                /*if (currentAnimation != null && currentAnimation.isStarted())
-                    currentAnimation.cancel();
-                currentAnimation = null;
-                Log.e("checkCurrentAnimation", id + " " + (currentAnimation != null) + " stop");*/
             }
         });
     }
@@ -116,12 +112,6 @@ public class TimelineProgressBar extends FrameLayout {
     public void stopInLooper() {
         progressForeground.clearAnimation();
         progressForeground.animate().cancel();
-  /*      if (currentAnimation != null && currentAnimation.isStarted()) {
-
-            currentAnimation.cancel();
-        }
-       // currentAnimation = null;
-        Log.e("checkCurrentAnimation", id + " " + (currentAnimation != null) + " stop");*/
     }
 
     public void start() {
@@ -142,10 +132,6 @@ public class TimelineProgressBar extends FrameLayout {
                         //scaleX(1f).
                     }
                 }).setDuration(getDuration()).start();
-/*                if (currentAnimation != null) {
-                    currentAnimation.start();
-                    Log.e("checkAnimStart", id + " " + getDuration());
-                }*/
             }
         }, 100);
     }
@@ -169,12 +155,6 @@ public class TimelineProgressBar extends FrameLayout {
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-              /*  if (currentAnimation == null) return;
-                if (!currentAnimation.isStarted() || currentAnimation.isPaused()) {
-                    currentAnimation.start();
-
-                    Log.e("checkAnimStart", "restart " + id + " " + getDuration());
-                }*/
                 progressForeground.clearAnimation();
                 progressForeground.animate().cancel();
                 progressForeground.setScaleX(0.0001f);
@@ -199,7 +179,6 @@ public class TimelineProgressBar extends FrameLayout {
             public void run() {
                 if (duration == null || duration == 0) return;
                 long dur = (long) (getDuration() * Math.max(0f, 1f - progressForeground.getScaleX()));
-                Log.e("jsDuration", getDuration() + " " + (1f - progressForeground.getScaleX()));
                 progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
@@ -207,35 +186,15 @@ public class TimelineProgressBar extends FrameLayout {
                         float val = 1f - ((1f * animation.getDuration() - animation.getCurrentPlayTime()) / (getDuration()));
                         if (isActive)
                             progressForeground.setScaleX(Math.min(Math.max(0f, val), 1f));
-                        //scaleX(1f).
                     }
                 }).setDuration(dur).start();
 
-               /* if (currentAnimation == null) return;
-                currentAnimation.resume();*/
             }
         });
     }
 
     public void createAnimation() {
-        // if (currentAnimation != null) currentAnimation.cancel();
-      /*  if (currentAnimation != null && currentAnimation.isStarted()) {
-            try {
-                currentAnimation.cancel();
-            } catch (Exception e) {}
-        }
-        currentAnimation = null;
-        currentAnimation = ValueAnimator.ofFloat(0.0001f, 1f);
-        currentAnimation.setInterpolator(new LinearInterpolator());
-        currentAnimation.setDuration(getDuration());
-        currentAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                Log.e("checkCurrentAnimation", "onAnimationUpdate " + id);
-                setProgress((float) animation.getAnimatedValue());
-            }
-        });
-        Log.e("checkCurrentAnimation", id + " " + (currentAnimation != null) + " create");*/
+
     }
 
     public void setProgress(final float progress) {

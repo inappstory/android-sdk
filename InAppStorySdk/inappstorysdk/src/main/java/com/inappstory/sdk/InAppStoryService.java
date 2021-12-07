@@ -192,7 +192,6 @@ public class InAppStoryService {
 
 
     public void sendPageOpenStatistic(int storyId, int index) {
-        Log.e("eventCountPlus", "sendPageOpenStatistic " + storyId + " " + index);
         OldStatisticManager.getInstance().addStatisticBlock(storyId, index);
         StatisticManager.getInstance().createCurrentState(storyId, index);
     }
@@ -386,7 +385,7 @@ public class InAppStoryService {
 
             if (oldHandler != null)
                 oldHandler.uncaughtException(thread, throwable);
-            Log.e("InAppStoryException", throwable.getCause() + "\n"
+            Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
 
             if (InAppStoryManager.getInstance() != null) {

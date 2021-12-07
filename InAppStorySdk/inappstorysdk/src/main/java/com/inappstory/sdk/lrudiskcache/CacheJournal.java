@@ -132,7 +132,7 @@ public class CacheJournal {
                 stream = new DataInputStream(new FileInputStream(journalFile));
                 int version = stream.readShort();
                 if (version != VERSION) {
-                    Log.e("InAppStory_SDK", "Invalid journal " +
+                    Log.d("InAppStory_SDK_error", "Invalid journal " +
                             journalFile.getCanonicalPath() + " format version");
                     if (stream != null) {
                         try {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -28,7 +29,7 @@ public class WebAppInterface {
     }
 
     private void logMethod(String payload) {
-        Log.e("JS_method_test", manager.storyId + " " + getMethodName() + " " + payload);
+        InAppStoryManager.showDLog("JS_method_test", manager.storyId + " " + getMethodName() + " " + payload);
     }
 
     /**
@@ -99,7 +100,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyShowNextSlide(long delay) {
         if (delay != 0) {
-            Log.e("jsDuration", delay + " showNext");
+            InAppStoryManager.showDLog("jsDuration", delay + " showNext");
             manager.restartStoryWithDuration(delay);
         } else {
             manager.changeIndex(manager.index + 1);

@@ -81,6 +81,7 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", "" + InAppStoryService.isNotNull());
         if (InAppStoryService.getInstance() != null)
             InAppStoryService.getInstance().addListSubscriber(manager);
     }
@@ -169,7 +170,7 @@ public class StoriesList extends RecyclerView {
     void refreshList() {
         try {
             adapter = null;
-            loadStories();
+            loadStoriesInner();
         } catch (DataException e) {
             e.printStackTrace();
         }
@@ -295,9 +296,13 @@ public class StoriesList extends RecyclerView {
     }
 
 
-
-
     public void loadStories() throws DataException {
+        InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
+        loadStoriesInner();
+    }
+
+
+    public void loadStoriesInner() throws DataException {
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getCommonInstance();
         }
@@ -310,6 +315,7 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
+        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
@@ -345,7 +351,8 @@ public class StoriesList extends RecyclerView {
                                     @Override
                                     public void storiesLoaded(List<Integer> storiesIds) {
                                         CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                        if (callback != null) callback.storiesLoaded(storiesIds.size());
+                                        if (callback != null)
+                                            callback.storiesLoaded(storiesIds.size());
                                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                                         setLayoutManager(layoutManager);
                                         setAdapter(adapter);
