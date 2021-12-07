@@ -45,11 +45,11 @@ public class ProfilingManager {
 
     public String addTask(String name, String hash) {
         if (InAppStoryService.isNull()) return "";
-        if (!isAllowToSend()) return "";
         ProfilingTask task = new ProfilingTask();
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
+        task.isAllowToForceSend = isAllowToSend();
         synchronized (tasksLock) {
             for (ProfilingTask hasTask : tasks) {
                 if (hasTask.uniqueHash.equals(hash)) {
@@ -64,10 +64,10 @@ public class ProfilingManager {
 
     public String addTask(String name) {
         if (InAppStoryService.isNull()) return "";
-        if (!isAllowToSend()) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = StatisticSession.getInstance().id;
+        task.isAllowToForceSend = isAllowToSend();
         task.userId = InAppStoryService.getInstance().getUserId();
         task.uniqueHash = hash;
         task.name = name;
@@ -93,7 +93,7 @@ public class ProfilingManager {
             readyTask.endTime = System.currentTimeMillis();
             readyTask.isReady = true;
 
-            if (force) {
+            if (force && readyTask.isAllowToForceSend) {
                 final ProfilingTask finalReadyTask = readyTask;
                 this.handler.post(new Runnable() {
                     @Override

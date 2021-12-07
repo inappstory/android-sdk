@@ -8,6 +8,7 @@ public class ProfilingTask {
     String sessionId;
     String userId;
     boolean isReady;
+    boolean isAllowToForceSend;
 
     @Override
     public String toString() {
