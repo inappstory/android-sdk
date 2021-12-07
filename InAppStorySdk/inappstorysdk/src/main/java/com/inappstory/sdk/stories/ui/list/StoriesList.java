@@ -322,8 +322,6 @@ public class StoriesList extends RecyclerView {
             InAppStoryService.getInstance().getDownloadManager().loadStories(new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
-                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                    if (callback != null) callback.storiesLoaded(storiesIds.size());
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
@@ -332,6 +330,8 @@ public class StoriesList extends RecyclerView {
                         adapter.refresh(storiesIds);
                         adapter.notifyDataSetChanged();
                     }
+                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                    if (callback != null) callback.storiesLoaded(storiesIds.size());
                     ProfilingManager.getInstance().setReady(listUid);
                 }
 

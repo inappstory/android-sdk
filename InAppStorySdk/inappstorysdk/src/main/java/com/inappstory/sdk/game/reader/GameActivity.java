@@ -57,6 +57,8 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
+import java.util.UUID;
+
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.inappstory.sdk.network.JsonParser.toMap;
 
@@ -254,8 +256,14 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SHARE_EVENT && resultCode == RESULT_CANCELED) {
-            closeGame();
+        if (requestCode == SHARE_EVENT) {
+            String id = "";
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                id = ScreensManager.getInstance().getTempShareId();
+            } else {
+                id = ScreensManager.getInstance().getOldTempShareId();
+            }
+            shareComplete(id, resultCode == RESULT_OK);
         }
     }
 
