@@ -101,7 +101,7 @@ public class InAppStoryManager {
 
     @SuppressLint(DEBUG_API)
     public static void debugSDKCalls(String methodName, String args) {
-        Log.d("IAS_SDK_Calls", new Date(System.currentTimeMillis()).toString()
+        Log.d("InAppStory_SDKCalls", new Date(System.currentTimeMillis()).toString()
                 + " "
                 + methodName + " " + args);
     }
