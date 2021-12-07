@@ -44,6 +44,7 @@ public class ProfilingManager {
     private final Object tasksLock = new Object();
 
     public String addTask(String name, String hash) {
+        if (InAppStoryService.isNull()) return "";
         ProfilingTask task = new ProfilingTask();
         task.uniqueHash = hash;
         task.name = name;
@@ -61,6 +62,7 @@ public class ProfilingManager {
     }
 
     public String addTask(String name) {
+        if (InAppStoryService.isNull()) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = StatisticSession.getInstance().id;
@@ -90,19 +92,19 @@ public class ProfilingManager {
             readyTask.isReady = true;
 
             if (force) {
-
-                final ProfilingTask finalReadyTask = readyTask;
-                this.handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            sendTiming(finalReadyTask);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                if (isAllowToSend()) {
+                    final ProfilingTask finalReadyTask = readyTask;
+                    this.handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                sendTiming(finalReadyTask);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                });
-
+                    });
+                }
             } else {
                 readyTasks.add(readyTask);
             }
@@ -130,16 +132,18 @@ public class ProfilingManager {
         handler.postDelayed(queueTasksRunnable, 100);
     }
 
+    private boolean isAllowToSend() {
+        return InAppStoryService.isConnected() && !StatisticSession.needToUpdate()
+                && StatisticSession.getInstance()
+                .statisticPermissions != null && StatisticSession.getInstance()
+                .statisticPermissions.allowProfiling;
+    }
+
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
             if (getInstance().readyTasks == null || getInstance().readyTasks.size() == 0
-                    || StatisticSession.needToUpdate()
-                    || (StatisticSession.getInstance()
-                    .statisticPermissions == null)
-                    || (!StatisticSession.getInstance()
-                    .statisticPermissions.allowProfiling)
-                    || !InAppStoryService.isConnected()) {
+                    || !isAllowToSend()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
             }

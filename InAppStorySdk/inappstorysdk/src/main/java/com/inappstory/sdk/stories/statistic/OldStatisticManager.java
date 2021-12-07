@@ -72,7 +72,6 @@ public class OldStatisticManager {
     public Runnable statisticUpdateThread = new Runnable() {
         @Override
         public void run() {
-            Log.e("statUpdate", this.toString());
             if (InAppStoryService.isNull()
                     || InAppStoryService.getInstance().getContext() == null) {
                 handler.removeCallbacks(statisticUpdateThread);

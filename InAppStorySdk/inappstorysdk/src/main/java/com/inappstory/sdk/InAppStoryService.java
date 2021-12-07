@@ -312,30 +312,35 @@ public class InAppStoryService {
 
     public class ListReaderConnector {
         public void changeStory(int storyId) {
+            if (InAppStoryService.isNull()) return;
             for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.changeStory(storyId);
             }
         }
 
         public void closeReader() {
+            if (InAppStoryService.isNull()) return;
             for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.closeReader();
             }
         }
 
         public void openReader() {
+            if (InAppStoryService.isNull()) return;
             for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.openReader();
             }
         }
 
         public void changeUserId() {
+            if (InAppStoryService.isNull()) return;
             for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.changeUserId();
             }
         }
 
         public void storyFavorite(int id, boolean favStatus) {
+            if (InAppStoryService.isNull()) return;
             for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.storyFavorite(id, favStatus);
             }
