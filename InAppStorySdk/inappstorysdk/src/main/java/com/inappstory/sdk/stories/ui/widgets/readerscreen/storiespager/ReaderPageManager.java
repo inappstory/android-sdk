@@ -423,7 +423,9 @@ public class ReaderPageManager {
     }
 
     public void storyLoadedInCache() {
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         if (story.durations != null && !story.durations.isEmpty()) {
             if (this.durations == null)
                 this.durations = new ArrayList<>();

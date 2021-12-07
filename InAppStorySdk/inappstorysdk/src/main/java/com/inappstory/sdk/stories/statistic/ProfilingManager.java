@@ -44,6 +44,7 @@ public class ProfilingManager {
     private final Object tasksLock = new Object();
 
     public String addTask(String name, String hash) {
+        if (InAppStoryService.isNull()) return "";
         ProfilingTask task = new ProfilingTask();
         task.uniqueHash = hash;
         task.name = name;
@@ -61,6 +62,7 @@ public class ProfilingManager {
     }
 
     public String addTask(String name) {
+        if (InAppStoryService.isNull()) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = StatisticSession.getInstance().id;
@@ -134,12 +136,7 @@ public class ProfilingManager {
         @Override
         public void run() {
             if (getInstance().readyTasks == null || getInstance().readyTasks.size() == 0
-                    || StatisticSession.needToUpdate()
-                    || (StatisticSession.getInstance()
-                    .statisticPermissions == null)
-                    || (!StatisticSession.getInstance()
-                    .statisticPermissions.allowProfiling)
-                    || !InAppStoryService.isConnected()) {
+                    || !isAllowToSend()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
             }
@@ -171,6 +168,13 @@ public class ProfilingManager {
         return new URL(url + varStr);
     }
 
+    private boolean isAllowToSend() {
+        return InAppStoryService.isConnected() && !StatisticSession.needToUpdate()
+                && StatisticSession.getInstance()
+                .statisticPermissions != null && StatisticSession.getInstance()
+                .statisticPermissions.allowProfiling;
+    }
+
     private String getCC() {
         if (context == null) return null;
         TelephonyManager tm = (TelephonyManager) context.getSystemService(TELEPHONY_SERVICE);
@@ -187,7 +191,10 @@ public class ProfilingManager {
         return countryCodeValue.toUpperCase();
     }
 
+
+
     private int sendTiming(ProfilingTask task) throws Exception {
+        if (!isAllowToSend()) return -1;
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 StatisticSession.getInstance().id);
