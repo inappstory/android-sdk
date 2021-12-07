@@ -82,8 +82,8 @@ public class StoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", "" + InAppStoryService.isNotNull());
-        if (InAppStoryService.getInstance() != null)
-            InAppStoryService.getInstance().addListSubscriber(manager);
+        InAppStoryService.checkAndAddListSubscriber(manager);
+
     }
 
     private void init(AttributeSet attributeSet) {
