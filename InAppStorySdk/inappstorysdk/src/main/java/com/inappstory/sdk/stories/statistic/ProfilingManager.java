@@ -45,6 +45,7 @@ public class ProfilingManager {
 
     public String addTask(String name, String hash) {
         if (InAppStoryService.isNull()) return "";
+        if (!isAllowToSend()) return "";
         ProfilingTask task = new ProfilingTask();
         task.uniqueHash = hash;
         task.name = name;
@@ -63,6 +64,7 @@ public class ProfilingManager {
 
     public String addTask(String name) {
         if (InAppStoryService.isNull()) return "";
+        if (!isAllowToSend()) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = StatisticSession.getInstance().id;
@@ -92,7 +94,6 @@ public class ProfilingManager {
             readyTask.isReady = true;
 
             if (force) {
-
                 final ProfilingTask finalReadyTask = readyTask;
                 this.handler.post(new Runnable() {
                     @Override
@@ -136,7 +137,7 @@ public class ProfilingManager {
         @Override
         public void run() {
             if (getInstance().readyTasks == null || getInstance().readyTasks.size() == 0
-                    || !isAllowToSend()) {
+                    || !InAppStoryService.isConnected() || !isAllowToSend()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
             }
@@ -169,7 +170,7 @@ public class ProfilingManager {
     }
 
     private boolean isAllowToSend() {
-        return InAppStoryService.isConnected() && !StatisticSession.needToUpdate()
+        return !StatisticSession.needToUpdate()
                 && StatisticSession.getInstance()
                 .statisticPermissions != null && StatisticSession.getInstance()
                 .statisticPermissions.allowProfiling;
@@ -192,9 +193,8 @@ public class ProfilingManager {
     }
 
 
-
     private int sendTiming(ProfilingTask task) throws Exception {
-        if (!isAllowToSend()) return -1;
+
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
                 StatisticSession.getInstance().id);
