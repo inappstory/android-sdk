@@ -65,7 +65,8 @@ public class Downloader {
 
         if (cache.hasKey(key)) {
             File file = cache.get(key);
-            callback.onSuccess(file);
+            if (callback != null)
+                callback.onSuccess(file);
             return file;
         } else {
             if (hash != null) {
@@ -76,7 +77,8 @@ public class Downloader {
             }
             File file = downloadFile(url, img, callback);
             cache.put(key, file);
-            callback.onSuccess(file);
+            if (callback != null)
+                callback.onSuccess(file);
             return file;
         }
     }
@@ -84,7 +86,7 @@ public class Downloader {
     @NonNull
     @WorkerThread
     public static boolean downloadOrGetGameFile(@NonNull String url, @NonNull String hashKey,
-                                             LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+                                                LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
         if (cache.hasKey(key)) {
             return false;
