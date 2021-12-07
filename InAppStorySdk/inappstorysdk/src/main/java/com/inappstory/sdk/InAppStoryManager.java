@@ -123,7 +123,7 @@ public class InAppStoryManager {
 
     @SuppressLint(DEBUG_API)
     public static void showDLog(String tag, String message) {
-        if (logger != null) logger.showELog(tag, message);
+        if (logger != null) logger.showDLog(tag, message);
     }
 
 
