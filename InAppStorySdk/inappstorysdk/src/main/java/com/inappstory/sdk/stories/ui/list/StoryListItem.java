@@ -321,7 +321,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
             if (imageUrl != null) {
-                Downloader.downloadFileBackground(videoUrl, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+                Downloader.downloadFileBackground(imageUrl, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
                     @Override
                     public void onProgress(int loadedSize, int totalSize) {
 
