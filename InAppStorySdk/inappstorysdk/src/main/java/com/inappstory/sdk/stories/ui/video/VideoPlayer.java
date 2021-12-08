@@ -126,7 +126,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         if (mp == null)
             mp = new MediaPlayer();
         mp.setSurface(this.surface);
-
         try {
             if (file == null)
                 file = Downloader.getCoverVideo(url, InAppStoryService.getInstance().getFastCache());
@@ -139,7 +138,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             } else {
                 downloadCoverVideo(url);
             }
-            mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
                     isMpPrepared = true;
