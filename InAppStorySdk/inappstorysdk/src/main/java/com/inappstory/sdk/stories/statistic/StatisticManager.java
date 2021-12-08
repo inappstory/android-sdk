@@ -84,7 +84,6 @@ public class StatisticManager {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
             ltasks.addAll(getInstance().tasks);
-            // Log.e("saveTask", JsonParser.getJson(ltasks));
             SharedPreferencesAPI.saveString(TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();
@@ -95,7 +94,6 @@ public class StatisticManager {
         try {
             ArrayList<StatisticTask> ltasks = new ArrayList<>();
             ltasks.addAll(getInstance().faketasks);
-            // Log.e("saveTask", JsonParser.getJson(ltasks));
             SharedPreferencesAPI.saveString(FAKE_TASKS_KEY, JsonParser.getJson(ltasks));
         } catch (Exception e) {
             e.printStackTrace();

@@ -33,8 +33,6 @@ import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import static java.util.UUID.randomUUID;
-
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
         super(context);
@@ -85,8 +83,9 @@ public class StoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         manager.list = this;
-        if (InAppStoryService.getInstance() != null)
-            InAppStoryService.getInstance().addListSubscriber(manager);
+        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
+                + InAppStoryService.isNotNull());
+        InAppStoryService.checkAndAddListSubscriber(manager);
     }
 
     private void init(AttributeSet attributeSet) {
@@ -173,7 +172,7 @@ public class StoriesList extends RecyclerView {
     void refreshList() {
         try {
             adapter = null;
-            loadStories();
+            loadStoriesInner();
         } catch (DataException e) {
             e.printStackTrace();
         }
@@ -302,6 +301,11 @@ public class StoriesList extends RecyclerView {
     LoadStoriesCallback lcallback;
 
     public void loadStories() throws DataException {
+        InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
+        loadStoriesInner();
+    }
+
+    public void loadStoriesInner() throws DataException {
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getCommonInstance();
         }
@@ -314,14 +318,13 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
+        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
             lcallback = new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
-                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                    if (callback != null) callback.storiesLoaded(storiesIds.size());
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
@@ -331,6 +334,8 @@ public class StoriesList extends RecyclerView {
                         adapter.notifyDataSetChanged();
                     }
                     ProfilingManager.getInstance().setReady(listUid);
+                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                    if (callback != null) callback.storiesLoaded(storiesIds.size());
                 }
 
                 @Override
@@ -348,12 +353,12 @@ public class StoriesList extends RecyclerView {
                         new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
-                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                if (callback != null) callback.storiesLoaded(storiesIds.size());
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
                                 ProfilingManager.getInstance().setReady(listUid);
+                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                                if (callback != null) callback.storiesLoaded(storiesIds.size());
                             }
 
                             @Override

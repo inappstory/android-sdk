@@ -192,7 +192,6 @@ public class InAppStoryService {
 
 
     public void sendPageOpenStatistic(int storyId, int index) {
-        Log.e("eventCountPlus", "sendPageOpenStatistic " + storyId + " " + index);
         OldStatisticManager.getInstance().addStatisticBlock(storyId, index);
         StatisticManager.getInstance().createCurrentState(storyId, index);
     }
@@ -348,10 +347,20 @@ public class InAppStoryService {
     }
 
     Set<StoriesListManager> listSubscribers;
+    public static Set<StoriesListManager> tempListSubscribers;
 
     public Set<StoriesListManager> getListSubscribers() {
         if (listSubscribers == null) listSubscribers = new HashSet<>();
         return listSubscribers;
+    }
+
+    public static void checkAndAddListSubscriber(StoriesListManager listManager) {
+        if (isNotNull()) {
+            getInstance().addListSubscriber(listManager);
+        } else {
+            if (tempListSubscribers == null) tempListSubscribers = new HashSet<>();
+            tempListSubscribers.add(listManager);
+        }
     }
 
     public void addListSubscriber(StoriesListManager listManager) {
@@ -364,6 +373,7 @@ public class InAppStoryService {
         for (StoriesListManager listManager : listSubscribers) {
             listManager.clear();
         }
+        tempListSubscribers.clear();
         listSubscribers.clear();
     }
 
@@ -372,6 +382,8 @@ public class InAppStoryService {
     public void removeListSubscriber(StoriesListManager listManager) {
         if (listSubscribers == null) return;
         listManager.clear();
+        if (tempListSubscribers != null)
+            tempListSubscribers.remove(listManager);
         listSubscribers.remove(listManager);
     }
 
@@ -388,7 +400,7 @@ public class InAppStoryService {
 
             if (oldHandler != null)
                 oldHandler.uncaughtException(thread, throwable);
-            Log.e("InAppStoryException", throwable.getCause() + "\n"
+            Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
 
             if (InAppStoryManager.getInstance() != null) {
@@ -460,6 +472,12 @@ public class InAppStoryService {
         createDownloadManager(exceptionCache);
         timerManager = new TimerManager();
         spaceHandler = new Handler();
+        if (tempListSubscribers != null) {
+            if (listSubscribers == null) listSubscribers = new HashSet<>();
+            InAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());
+            listSubscribers.addAll(tempListSubscribers);
+            tempListSubscribers.clear();
+        }
         synchronized (lock) {
             INSTANCE = this;
         }

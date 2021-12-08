@@ -40,6 +40,5 @@ public class CloseStory extends BaseOuterEvent {
         this.index = index;
         this.action = action;
         this.source = source;
-       // Log.e("CloseStory", source + "");
     }
 }

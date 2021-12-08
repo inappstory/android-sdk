@@ -98,7 +98,6 @@ public class OldStatisticManager {
         }
         if (sendObject.size() > 2) {
             putStatistic(sendObject);
-            Log.e("eventCountPlus", "previewEvent " + eventCount);
             eventCount++;
         }
 
@@ -232,7 +231,6 @@ public class OldStatisticManager {
 
     public void closeStatisticEvent() {
         closeStatisticEvent(null, false);
-        Log.e("eventCountPlus", "closeStatEvent " + eventCount);
         eventCount++;
     }
 
@@ -263,7 +261,6 @@ public class OldStatisticManager {
         closeStatisticEvent();
         addStatisticEvent(1, id, 0);
         closeStatisticEvent(0, false);
-        Log.e("eventCountPlus", "deeplinkEvent " + eventCount);
         eventCount++;
         addStatisticEvent(2, id, 0);
         closeStatisticEvent(0, false);

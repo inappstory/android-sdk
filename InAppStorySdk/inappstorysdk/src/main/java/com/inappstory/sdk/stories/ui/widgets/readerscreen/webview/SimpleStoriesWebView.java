@@ -22,6 +22,7 @@ import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -65,7 +66,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
 
     private void logMethod(String payload) {
-        Log.e("JS_method_call", manager.storyId + " " + payload);
+        InAppStoryManager.showDLog("JS_method_call", manager.storyId + " " + payload);
     }
 
     public void gameComplete(String data) {
@@ -370,7 +371,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    Log.d("MyApplication", consoleMessage.message() + " -- From line "
+                    Log.d("InAppStory_SDK_Web", consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());
                     return super.onConsoleMessage(consoleMessage);

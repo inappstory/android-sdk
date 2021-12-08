@@ -62,7 +62,10 @@ public class Downloader {
                                          LruDiskCache cache, File img, FileLoadProgressCallback callback, String hash) throws Exception {
         String key = cropUrl(url);
         if (cache.hasKey(key)) {
-            return cache.get(key);
+            File file = cache.get(key);
+            if (callback != null)
+                callback.onSuccess(file);
+            return file;
         } else {
             if (hash != null) {
                 ProfilingManager.getInstance().addTask("game_download", hash);
@@ -72,6 +75,8 @@ public class Downloader {
             }
             File file = downloadFile(url, img, callback);
             cache.put(key, file);
+            if (callback != null)
+                callback.onSuccess(file);
             return file;
         }
     }
@@ -117,11 +122,12 @@ public class Downloader {
         });
     }
 
-    public static void downloadCoverVideo(final String url, final LruDiskCache cache) {
+    public static void downloadCoverVideo(final String url, final LruDiskCache cache,
+                                          final FileLoadProgressCallback callback) {
         tmpFileDownloader.submit(new Callable() {
             @Override
             public File call() throws Exception {
-                return downloadOrGetFile(url, cache, null, null);
+                return downloadOrGetFile(url, cache, null, callback);
             }
         });
     }

@@ -1,11 +1,13 @@
 package com.inappstory.sdk;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -93,6 +95,37 @@ public class InAppStoryManager {
     }
 
     Context context;
+
+
+    private static final String DEBUG_API = "IAS debug api";
+
+
+    @SuppressLint(DEBUG_API)
+    public static void debugSDKCalls(String methodName, String args) {
+        Log.d("InAppStory_SDKCalls", System.currentTimeMillis()
+                + " "
+                + methodName + " " + args);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static IASLogger logger;
+
+    @SuppressLint(DEBUG_API)
+    public interface IASLogger {
+        void showELog(String tag, String message);
+
+        void showDLog(String tag, String message);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void showELog(String tag, String message) {
+        if (logger != null) logger.showELog(tag, message);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void showDLog(String tag, String message) {
+        if (logger != null) logger.showDLog(tag, message);
+    }
 
 
     /**

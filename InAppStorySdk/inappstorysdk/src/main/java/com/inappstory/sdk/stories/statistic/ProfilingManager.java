@@ -211,7 +211,7 @@ public class ProfilingManager {
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");
         int statusCode = connection.getResponseCode();
-        Log.d("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
         connection.disconnect();
         return statusCode;
 

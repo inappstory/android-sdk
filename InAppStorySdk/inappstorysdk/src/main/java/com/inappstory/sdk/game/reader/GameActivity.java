@@ -254,8 +254,14 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SHARE_EVENT && resultCode == RESULT_CANCELED) {
-            closeGame();
+        if (requestCode == SHARE_EVENT) {
+            String id = "";
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                id = ScreensManager.getInstance().getTempShareId();
+            } else {
+                id = ScreensManager.getInstance().getOldTempShareId();
+            }
+            shareComplete(id, resultCode == RESULT_OK);
         }
     }
 
@@ -289,7 +295,6 @@ public class GameActivity extends AppCompatActivity {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void askForPermission(String origin, String permission, int requestCode) {
-        Log.d("WebView", "inside askForPermission for" + origin + "with" + permission);
 
         if (ContextCompat.checkSelfPermission(getApplicationContext(),
                 permission)
@@ -397,7 +402,7 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.e("MyApplication", consoleMessage.message() + " -- From line "
+                Log.d("InAppStory_SDK_Web", consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId());
                 return super.onConsoleMessage(consoleMessage);

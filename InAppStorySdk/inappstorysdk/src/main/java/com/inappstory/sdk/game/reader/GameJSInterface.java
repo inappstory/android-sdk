@@ -65,7 +65,6 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void setAudioManagerMode(String mode) {
-        Log.e("setAudioManagerMode", mode);
         manager.setAudioManagerMode(mode);
     }
 

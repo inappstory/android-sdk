@@ -4,34 +4,26 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdapter;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
-import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import java.util.ArrayList;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
- * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
+ * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStoriesInner()}.
  * For a global setting, you must call the static method of the class {@link #setCommonInstance(AppearanceManager)}.
  */
 public class AppearanceManager {
