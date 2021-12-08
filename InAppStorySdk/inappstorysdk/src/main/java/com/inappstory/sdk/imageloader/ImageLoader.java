@@ -65,26 +65,10 @@ public class ImageLoader {
     }
 
     int stub_id = R.drawable.ic_stories_close;
-
-    public void displayImage(String url, int loader, ImageView imageView, LruDiskCache cache) {
-        try {
-            stub_id = loader;
-            imageViews.put(imageView, url);
-            Bitmap bitmap = memoryCache.get(url);
-            if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                if (imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView) imageView).onLoaded();
-                }
-            } else {
-                queuePhoto(url, imageView, cache);
-            }
-        } catch (Exception e) {
-
-        }
-    }
-
     public void displayImage(String path, int loader, ImageView imageView) {
+        displayImage(path, loader, imageView, null);
+    }
+    public void displayImage(String path, int loader, ImageView imageView, LruDiskCache cache) {
         try {
             stub_id = loader;
             imageViews.put(imageView, path);
@@ -95,11 +79,7 @@ public class ImageLoader {
                     ((GeneratedImageView) imageView).onLoaded();
                 }
             } else {
-                bitmap = decodeFile(new File(path));
-                if (bitmap != null) {
-                    imageView.setImageBitmap(bitmap);
-                    memoryCache.put(path, bitmap);
-                }
+                queuePhoto(path, imageView, cache);
             }
         } catch (Exception e) {
 
@@ -377,7 +357,11 @@ public class ImageLoader {
         public void run() {
             if (imageViewReused(photoToLoad))
                 return;
-            Bitmap bmp = getBitmap(photoToLoad.url, photoToLoad.cache);
+            Bitmap bmp = null;
+            if (photoToLoad.cache != null)
+                bmp = getBitmap(photoToLoad.url, photoToLoad.cache);
+            else
+                bmp = decodeFile(new File(photoToLoad.url));
             if (bmp != null)
                 memoryCache.put(photoToLoad.url, bmp);
             if (imageViewReused(photoToLoad))
