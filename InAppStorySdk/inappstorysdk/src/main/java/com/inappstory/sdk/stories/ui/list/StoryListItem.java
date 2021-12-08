@@ -329,9 +329,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
 
                     @Override
                     public void onSuccess(File file) {
-                        final String path = file.getAbsolutePath();
                         if (getListItem != null) {
-                            getListItem.setImage(itemView, path, bColor);
+                            getListItem.setImage(itemView, file.getAbsolutePath(), bColor);
                         }
                     }
                 });
