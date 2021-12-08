@@ -328,15 +328,11 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     }
 
                     @Override
-                    public void onSuccess(final File file) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (getListItem != null) {
-                                    getListItem.setImage(itemView, file.getAbsolutePath(), bColor);
-                                }
-                            }
-                        });
+                    public void onSuccess(File file) {
+                        final String path = file.getAbsolutePath();
+                        if (getListItem != null) {
+                            getListItem.setImage(itemView, path, bColor);
+                        }
                     }
                 });
             }
