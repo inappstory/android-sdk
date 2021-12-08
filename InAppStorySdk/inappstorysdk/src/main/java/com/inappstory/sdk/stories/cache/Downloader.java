@@ -18,6 +18,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -151,6 +152,7 @@ public class Downloader {
 
     private static File downloadFile(String url, File outputFile, FileLoadProgressCallback callback) throws Exception {
 
+        InAppStoryManager.showDLog("InAppStory_File", url);
         outputFile.getParentFile().mkdirs();
         if (!outputFile.exists())
             outputFile.createNewFile();
