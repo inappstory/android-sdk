@@ -2,6 +2,8 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import java.io.File;
 import java.util.List;
 
 import com.inappstory.sdk.R;
@@ -22,6 +25,8 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
@@ -312,12 +317,49 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                      boolean hasAudio,
                      String videoUrl) {
         if (getListItem != null) {
+            final int bColor = backgroundColor;
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
-            getListItem.setImage(itemView, imageUrl, backgroundColor);
+            if (imageUrl != null) {
+                Downloader.downloadFileBackground(videoUrl, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+                    @Override
+                    public void onProgress(int loadedSize, int totalSize) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(final File file) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (getListItem != null) {
+                                    getListItem.setImage(itemView, file.getAbsolutePath(), bColor);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
             getListItem.setOpened(itemView, isOpened);
             if (videoUrl != null) {
-                getListItem.setVideo(itemView, videoUrl, imageUrl, backgroundColor);
+                Downloader.downloadFileBackground(videoUrl, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+                    @Override
+                    public void onProgress(int loadedSize, int totalSize) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(final File file) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (getListItem != null) {
+                                    getListItem.setVideo(itemView, file.getAbsolutePath());
+                                }
+                            }
+                        });
+                    }
+                });
             }
             return;
         }
@@ -357,7 +399,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
             if (video != null) {
                 video.release();
-                video.loadVideo(videoUrl);
+                video.loadVideoByUrl(videoUrl);
             }
         } else {
             if (video != null) {

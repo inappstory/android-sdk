@@ -48,10 +48,8 @@ public interface IStoriesListItem {
      * Use to set video cover for custom list cell. Use only if getVideoView is set.
      * @param itemView (itemView) contains a view that was initialized in getVideoView() method.
      * @param videoUrl (videoUrl) check if current story has audio content.
-     * @param url (url) check if current story has audio content.
-     * @param backgroundColor (backgroundColor) check if current story has audio content.
      */
-    void setVideo(View itemView, String videoUrl, String url, int backgroundColor);
+    void setVideo(View itemView, String videoUrl);
 
     /**
      * Use to check and set sound status if necessary for custom list cell

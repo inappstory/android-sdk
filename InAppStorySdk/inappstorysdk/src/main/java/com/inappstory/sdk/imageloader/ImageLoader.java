@@ -84,6 +84,28 @@ public class ImageLoader {
         }
     }
 
+    public void displayImage(String path, int loader, ImageView imageView) {
+        try {
+            stub_id = loader;
+            imageViews.put(imageView, path);
+            Bitmap bitmap = memoryCache.get(path);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+                if (imageView instanceof GeneratedImageView) {
+                    ((GeneratedImageView) imageView).onLoaded();
+                }
+            } else {
+                bitmap = decodeFile(new File(path));
+                if (bitmap != null) {
+                    imageView.setImageBitmap(bitmap);
+                    memoryCache.put(path, bitmap);
+                }
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
     LruDiskCache cache;
 
     public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio, Context context) {
