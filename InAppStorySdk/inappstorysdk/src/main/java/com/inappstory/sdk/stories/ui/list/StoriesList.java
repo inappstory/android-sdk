@@ -81,6 +81,20 @@ public class StoriesList extends RecyclerView {
     }
 
     @Override
+    protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        if (visibility == VISIBLE) {
+            InAppStoryManager.debugSDKCalls("StoriesList_onVisibilityChanged",
+                    toString() + " " + InAppStoryService.isNotNull() + " VISIBLE " + manager);
+        //    InAppStoryService.checkAndAddListSubscriber(manager);
+        } else {
+            InAppStoryManager.debugSDKCalls("StoriesList_onVisibilityChanged",
+                    toString() + " " + InAppStoryService.isNotNull() + " INVISIBLE " + manager);
+        //    InAppStoryService.checkAndRemoveListSubscriber(manager);
+        }
+    }
+
+    @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", toString() + " " + InAppStoryService.isNotNull() + manager);
