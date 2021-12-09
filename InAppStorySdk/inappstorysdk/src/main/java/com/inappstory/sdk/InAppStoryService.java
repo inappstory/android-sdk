@@ -363,6 +363,15 @@ public class InAppStoryService {
         }
     }
 
+
+    public static void checkAndRemoveListSubscriber(StoriesListManager listManager) {
+        if (isNotNull()) {
+            getInstance().removeListSubscriber(listManager);
+        }
+        if (tempListSubscribers == null) return;
+        tempListSubscribers.remove(listManager);
+    }
+
     public void addListSubscriber(StoriesListManager listManager) {
         if (listSubscribers == null) listSubscribers = new HashSet<>();
         listSubscribers.add(listManager);

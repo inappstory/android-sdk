@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -74,14 +75,15 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (InAppStoryService.getInstance() != null)
-            InAppStoryService.getInstance().removeListSubscriber(manager);
+        InAppStoryManager.debugSDKCalls("StoriesList_onDetachedFromWindow",
+                toString() + " " + InAppStoryService.isNotNull() + " " + manager);
+        InAppStoryService.checkAndRemoveListSubscriber(manager);
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", "" + InAppStoryService.isNotNull());
+        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", toString() + " " + InAppStoryService.isNotNull() + manager);
         InAppStoryService.checkAndAddListSubscriber(manager);
 
     }
@@ -297,7 +299,7 @@ public class StoriesList extends RecyclerView {
 
 
     public void loadStories() throws DataException {
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
+        InAppStoryManager.debugSDKCalls("StoriesList_loadStories", toString() + "");
         loadStoriesInner();
     }
 
@@ -315,7 +317,7 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
+        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", toString() + "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {

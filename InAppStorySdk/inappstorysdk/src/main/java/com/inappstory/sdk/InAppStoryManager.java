@@ -295,7 +295,7 @@ public class InAppStoryManager {
      */
     //Test
     public void setTags(ArrayList<String> tags) {
-        debugSDKCalls("IASManager_setTags",
+        debugSDKCalls("IASManager_setTags",toString() + " " +
                 "tags:" + (tags != null ? TextUtils.join(",", tags): "[]"));
         this.tags = tags;
     }
@@ -312,7 +312,7 @@ public class InAppStoryManager {
         for (String tag : newTags) {
             addTag(tag);
         }
-        debugSDKCalls("IASManager_addTags",
+        debugSDKCalls("IASManager_addTags",toString() + " " +
                 "tags:" + (tags != null ? TextUtils.join(",", tags): "[]"));
     }
 
@@ -541,7 +541,7 @@ public class InAppStoryManager {
      * @throws DataException 'userId' can't be longer than 255 characters
      */
     public void setUserId(String userId) throws DataException {
-        debugSDKCalls("IASManager_setUserId",
+        debugSDKCalls("IASManager_setUserId",toString() + " " +
                 "userID:" + userId);
         setUserIdInner(userId);
     }
@@ -572,7 +572,7 @@ public class InAppStoryManager {
 
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
-        debugSDKCalls("IASManager_create",
+        debugSDKCalls("IASManager_create",toString() + " " +
                 "userID:" + userId +
                         " tags:" + (tags != null ? TextUtils.join(",", tags): "[]"));
         this.tags = tags;
@@ -780,7 +780,7 @@ public class InAppStoryManager {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
-        debugSDKCalls("IASManager_showOnboardingStories",
+        debugSDKCalls("IASManager_showOnboardingStories",toString() + " " +
                 "tags:" + (tags != null ? TextUtils.join(",", tags): "[]"));
         showOnboardingStoriesInner(tags, outerContext, manager);
     }
@@ -927,13 +927,13 @@ public class InAppStoryManager {
      * @param callback (callback) custom action when story is loaded
      */
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
-        debugSDKCalls("IASManager_showStory",
+        debugSDKCalls("IASManager_showStory",toString() + " " +
                 "storyId:" + storyId);
         showStoryInner(storyId, context, manager, callback);
     }
 
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback, Integer slide) {
-        debugSDKCalls("IASManager_showStory",
+        debugSDKCalls("IASManager_showStory",toString() + " " +
                 "storyId:" + storyId);
         showStoryInner(storyId, context, manager, callback, slide);
     }
@@ -946,7 +946,7 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
-        debugSDKCalls("IASManager_showStory",
+        debugSDKCalls("IASManager_showStory",toString() + " " +
                 "storyId:" + storyId);
         showStoryInner(storyId, context, manager, null);
     }
