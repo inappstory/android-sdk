@@ -378,10 +378,10 @@ public class InAppStoryService {
     }
 
     public void removeListSubscriber(StoriesListManager listManager) {
-        if (listSubscribers == null) return;
-        listManager.clear();
         if (tempListSubscribers != null)
             tempListSubscribers.remove(listManager);
+        if (listSubscribers == null) return;
+        listManager.clear();
         listSubscribers.remove(listManager);
     }
 
