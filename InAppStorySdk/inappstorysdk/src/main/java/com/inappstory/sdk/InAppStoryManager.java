@@ -589,6 +589,7 @@ public class InAppStoryManager {
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
                 .apiKey(this.API_KEY)
+                .testKey(this.TEST_KEY)
                 .setWebUrl(cmsUrl)
                 .cmsUrl(cmsUrl);
         if (InAppStoryService.isNotNull()) {
