@@ -158,8 +158,8 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csHasLike            			   | Boolean             | false  | Flag that is responsible for connecting the like / dislike functionality|
 | csHasShare           			   | Boolean             | false  | Flag that is responsible for connecting the sharing functionality       |       
 | csHasFavorite        			   | Boolean             | false  | Flag that is responsible for connecting the functionality of favorite stories |
-| closeOnSwipe                     | Boolean             | true   | Flag that is responsible for closing stories by swiping down            |
-| closeOnOverscroll                | Boolean             | true   | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
+| csCloseOnSwipe                   | Boolean             | true   | Flag that is responsible for closing stories by swiping down            |
+| csCloseOnOverscroll              | Boolean             | true   | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
 | csListItemWidth                  | Integer             | null   | the width of the list cell in pixels                                    |
 | csListItemHeight                 | Integer             | null   | the height of the list cell in pixels                                   |
 | csListItemTitleSize              | Integer             |        | size of the title                                                       |
