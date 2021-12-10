@@ -111,7 +111,7 @@ public class InAppStoryService {
 
     public boolean isSoundOn() {
         if (InAppStoryManager.getInstance() != null) {
-            return InAppStoryManager.getInstance().soundOn;
+            return InAppStoryManager.getInstance().soundOn();
         } else {
             return true;
         }
@@ -119,7 +119,7 @@ public class InAppStoryService {
 
     public void changeSoundStatus() {
         if (InAppStoryManager.getInstance() != null) {
-            InAppStoryManager.getInstance().soundOn = !InAppStoryManager.getInstance().soundOn;
+            InAppStoryManager.getInstance().soundOn(!InAppStoryManager.getInstance().soundOn());
         }
     }
 

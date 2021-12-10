@@ -1,6 +1,5 @@
 package com.inappstory.sdk.eventbus;
 
-import android.util.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -10,8 +9,11 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 
-import com.inappstory.sdk.network.JsonParser;
-
+/**
+* @deprecated will be removed in SDK 2.0
+ * Switch to InAppStoryManager and StoriesList callbacks
+* */
+@Deprecated
 public class CsEventBus {
 
     private final ExecutorService executorService;
