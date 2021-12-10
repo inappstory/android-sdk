@@ -572,15 +572,15 @@ It is not used during overriding, so if you want to keep the processing of links
 
 You can also override the handler for clicking on the sharing button as follows:
 ```
-InAppStoryManager.getInstance().shareCallback = new InAppStoryManager.ShareCallback() {
+InAppStoryManager.getInstance().setShareCallback(new InAppStoryManager.ShareCallback() {
     @Override
     public void onShare(String url, String title, String description, String shareId) {
         doAction(url, title, description);
     }
-};
+});
 ```
 
-You also can use callbacks instead of events. There are 2 types of callbacks - for InAppStoryManager and for StoriesList.
+From version 1.4 or above you should use callbacks instead of events. There are 2 types of callbacks - for InAppStoryManager and for StoriesList.
 #### InAppStoryManager callbacks:
 1) 
 ```
