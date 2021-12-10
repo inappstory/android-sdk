@@ -472,9 +472,6 @@ public class InAppStoryManager {
 
 
     private InAppStoryManager(final Builder builder) throws DataException {
-        KeyValueStorage.setContext(builder.context);
-        SharedPreferencesAPI.setContext(builder.context);
-        createServiceThread(builder.context, builder.userId);
         if (builder.apiKey == null &&
                 (builder.context.getResources().getString(R.string.csApiKey).isEmpty()
                         || builder.context.getResources().getString(R.string.csApiKey).equals("1"))) {
@@ -484,6 +481,11 @@ public class InAppStoryManager {
         if (freeSpace < MB_5 + MB_10 + MB_10) {
             throw new DataException("there is no free space on device", new Throwable("initialization error"));
         }
+        KeyValueStorage.setContext(builder.context);
+        SharedPreferencesAPI.setContext(builder.context);
+        createServiceThread(builder.context, builder.userId);
+
+
         if (InAppStoryService.isNotNull()) {
             long commonCacheSize = MB_100;
             long fastCacheSize = MB_10;
@@ -507,8 +509,8 @@ public class InAppStoryManager {
                 builder.testKey != null ? builder.testKey : null,
                 (builder.userId != null && !builder.userId.isEmpty()) ? builder.userId :
                         "",
-                builder.tags != null ? builder.tags : null,
-                builder.placeholders != null ? builder.placeholders : null,
+                builder.tags != null ? builder.tags : new ArrayList<String>(),
+                builder.placeholders != null ? builder.placeholders : new HashMap<String, String>(),
                 builder.sendStatistic);
 
     }
@@ -589,6 +591,7 @@ public class InAppStoryManager {
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
                 .apiKey(this.API_KEY)
+                .testKey(this.TEST_KEY)
                 .setWebUrl(cmsUrl)
                 .cmsUrl(cmsUrl);
         if (InAppStoryService.isNotNull()) {
@@ -1003,9 +1006,9 @@ public class InAppStoryManager {
         public Builder() {
         }
 
-        public Builder context(Context context) throws DataException {
-            if (context == null)
-                throw new DataException("Context must not be null", new Throwable("InAppStoryManager.Builder data is not valid"));
+        public Builder context(@NonNull Context context) {
+           /* if (context == null)
+                throw new DataException("Context must not be null", new Throwable("InAppStoryManager.Builder data is not valid"));*/
             Builder.this.context = context;
 
             return Builder.this;
@@ -1043,12 +1046,12 @@ public class InAppStoryManager {
          *               false by default
          * @return {@link Builder}
          */
-        public Builder apiKey(String apiKey) {
+        public Builder apiKey(@NonNull  String apiKey) {
             Builder.this.apiKey = apiKey;
             return Builder.this;
         }
 
-        public Builder testKey(String testKey) {
+        public Builder testKey(@NonNull String testKey) {
             Builder.this.testKey = testKey;
             return Builder.this;
         }
@@ -1056,10 +1059,10 @@ public class InAppStoryManager {
         /**
          * use to set user id.
          *
-         * @param userId (userId) value for user id. Can't be longer than 255 characters.
+         * @param userId (userId) value for user id. Can't be null or longer than 255 characters.
          * @return {@link Builder}
          */
-        public Builder userId(String userId) throws DataException {
+        public Builder userId(@NonNull String userId) throws DataException {
             if (userId.length() < 255) {
                 Builder.this.userId = userId;
             } else {
