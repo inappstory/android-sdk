@@ -67,8 +67,6 @@ To initialize the library in the `Application`, `Activity`, `View` class (or any
 | userId             | String              | no       |        | Unique text user identifier (id, login, etc ...) that refers to stories |
 | apiKey             | String              | no       |        | By default, the key is set in the csApiKey string. You can change it on runtime, using this parameter. Non-empty csApiKey in `res/values/constants.xml` still needed |
 | testKey            | String              | no       |        | Test integration key for testing stories on the device                  |
-| closeOnSwipe       | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping down            |
-| closeOnOverscroll  | Boolean             | no       | true   | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
 | cacheSize			 | Integer             | no       | 0	   | Defines amount of space which SDK can use for caching files (`CacheSize.SMALL = 15mb; CacheSize.MEDIUM = 110mb; CacheSize.LARGE = 210mb;`)|
 | tags               | ArrayList<String>   | no       |        | Tags for targeting stories                                              |
 | placeholders       | Map<String, String> | no       |        | Placeholders for replacing special variables in the story content       |
@@ -160,6 +158,8 @@ The `AppearanceManager` contains the following parameters (and their correspondi
 | csHasLike            			   | Boolean             | false  | Flag that is responsible for connecting the like / dislike functionality|
 | csHasShare           			   | Boolean             | false  | Flag that is responsible for connecting the sharing functionality       |       
 | csHasFavorite        			   | Boolean             | false  | Flag that is responsible for connecting the functionality of favorite stories |
+| closeOnSwipe                     | Boolean             | true   | Flag that is responsible for closing stories by swiping down            |
+| closeOnOverscroll                | Boolean             | true   | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
 | csListItemWidth                  | Integer             | null   | the width of the list cell in pixels                                    |
 | csListItemHeight                 | Integer             | null   | the height of the list cell in pixels                                   |
 | csListItemTitleSize              | Integer             |        | size of the title                                                       |
