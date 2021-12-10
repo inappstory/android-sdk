@@ -473,9 +473,8 @@ public class InAppStoryManager {
 
     private InAppStoryManager(final Builder builder) throws DataException {
         if (builder.apiKey == null &&
-                (builder.context.getResources().getString(R.string.csApiKey).isEmpty()
-                        || builder.context.getResources().getString(R.string.csApiKey).equals("1"))) {
-            throw new DataException("'apiKey' can't be empty. Set 'csApiKey' in 'constants.xml' or put use 'builder.apiKey()'", new Throwable("config is not valid"));
+                (builder.context.getResources().getString(R.string.csApiKey).isEmpty())) {
+            throw new DataException("'apiKey' can't be empty. Set 'csApiKey' in 'constants.xml' or use 'builder.apiKey()'", new Throwable("config is not valid"));
         }
         long freeSpace = builder.context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
