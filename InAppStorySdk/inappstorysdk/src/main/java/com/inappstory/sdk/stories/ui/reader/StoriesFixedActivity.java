@@ -189,20 +189,20 @@ public class StoriesFixedActivity extends AppCompatActivity {
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.slidesCount,
+                    story.title, story.tags, story.getSlidesCount(),
                     story.lastIndex, CloseStory.CUSTOM,
                     getIntent().getIntExtra("source", 0)));
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         story.id,
-                        story.title, story.tags, story.slidesCount,
+                        story.title, story.tags, story.getSlidesCount(),
                         story.lastIndex, CloseReader.CUSTOM,
                         CallbackManager.getInstance().getSourceFromInt(
                                 getIntent().getIntExtra("source", 0))
                 );
             }
             String cause = StatisticManager.BACK;
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
+            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
         }
         finish();
     }
@@ -343,13 +343,13 @@ public class StoriesFixedActivity extends AppCompatActivity {
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.slidesCount,
+                    story.title, story.tags, story.getSlidesCount(),
                     story.lastIndex, action,
                     getIntent().getIntExtra("source", 0)));
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         story.id,
-                        story.title, story.tags, story.slidesCount,
+                        story.title, story.tags, story.getSlidesCount(),
                         story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
                                 action),
                         CallbackManager.getInstance().getSourceFromInt(
@@ -368,7 +368,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
                     cause = StatisticManager.SWIPE;
                     break;
             }
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
+            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
         }
         cleanReader();
 

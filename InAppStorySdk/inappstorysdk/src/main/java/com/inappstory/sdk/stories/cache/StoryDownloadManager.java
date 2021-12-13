@@ -241,7 +241,7 @@ public class StoryDownloadManager {
                     if (tmp.durations == null & this.stories.get(ind).durations != null) {
                         tmp.durations = new ArrayList<>();
                         tmp.durations.addAll(this.stories.get(ind).durations);
-                        tmp.slidesCount = tmp.durations.size();
+                        tmp.setSlidesCount(tmp.durations.size());
                     }
                     if (tmp.layout == null & this.stories.get(ind).layout != null) {
                         tmp.layout = this.stories.get(ind).layout;
@@ -387,9 +387,9 @@ public class StoryDownloadManager {
         cur.srcList = new ArrayList<>(story.getSrcList());
         cur.durations = new ArrayList<>(story.durations);
         if (!cur.durations.isEmpty()) {
-            cur.slidesCount = story.durations.size();
+            cur.setSlidesCount(story.durations.size());
         } else {
-            cur.slidesCount = story.slidesCount;
+            cur.setSlidesCount(story.getSlidesCount());
         }
     }
 

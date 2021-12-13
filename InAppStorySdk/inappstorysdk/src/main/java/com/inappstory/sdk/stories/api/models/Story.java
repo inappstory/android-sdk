@@ -144,8 +144,17 @@ public class Story implements Parcelable {
     @SerializedName("like")
     public Integer like;
 
+    public int getSlidesCount() {
+        if (slidesCount == 0 && durations != null) return durations.size();
+        return slidesCount;
+    }
+
+    public void setSlidesCount(int slidesCount) {
+        this.slidesCount = slidesCount;
+    }
+
     @SerializedName("slides_count")
-    public int slidesCount;
+    private int slidesCount;
 
     public boolean isFavorite() {
         return favorite;

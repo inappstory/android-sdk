@@ -68,7 +68,7 @@ public class ReaderManager {
                 @Override
                 public void run() {
                     if (InAppStoryService.getInstance().getDownloadManager()
-                            .getStoryById(storyId).slidesCount <= slideIndex) {
+                            .getStoryById(storyId).getSlidesCount() <= slideIndex) {
                         InAppStoryService.getInstance().getDownloadManager()
                                 .getStoryById(storyId).setLastIndex(0);
                     } else {
@@ -137,7 +137,7 @@ public class ReaderManager {
         currentStoryId = storiesIds.get(position);
         if (firstStoryId > 0 && startedSlideInd > 0) {
             if (InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentStoryId).slidesCount > startedSlideInd)
+                    .getStoryById(currentStoryId).getSlidesCount() > startedSlideInd)
                 InAppStoryService.getInstance().getDownloadManager()
                         .getStoryById(currentStoryId).lastIndex = startedSlideInd;
             cleanFirst();
@@ -145,11 +145,11 @@ public class ReaderManager {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId);
         if (story != null) {
             CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags,
-                    story.slidesCount, source));
+                    story.getSlidesCount(), source));
 
             if (CallbackManager.getInstance().getShowStoryCallback() != null) {
                 CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, story.title,
-                        story.tags, story.slidesCount,
+                        story.tags, story.getSlidesCount(),
                         CallbackManager.getInstance().getSourceFromInt(source));
             }
         }
@@ -212,7 +212,7 @@ public class ReaderManager {
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(lastPos));
-            StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.slidesCount);
+            StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount());
         }
         StatisticManager.getInstance().sendViewStory(id, whence);
         StatisticManager.getInstance().sendOpenStory(id, whence);

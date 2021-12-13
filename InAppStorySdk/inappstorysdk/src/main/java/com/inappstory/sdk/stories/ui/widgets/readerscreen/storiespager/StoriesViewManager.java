@@ -188,7 +188,7 @@ public class StoriesViewManager {
         if (story == null || story.checkIfEmpty()) {
             return;
         }
-        if (story.slidesCount <= index) return;
+        if (story.getSlidesCount() <= index) return;
         storyId = id;
         this.index = index;
         loadedIndex = index;
@@ -426,10 +426,10 @@ public class StoriesViewManager {
             }, 200);
         }
         CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-                story.tags, story.slidesCount, index));
+                story.tags, story.getSlidesCount(), index));
         if (CallbackManager.getInstance().getShowSlideCallback() != null) {
             CallbackManager.getInstance().getShowSlideCallback().showSlide(story.id, story.title,
-                    story.tags, story.slidesCount, index);
+                    story.tags, story.getSlidesCount(), index);
         }
     }
 

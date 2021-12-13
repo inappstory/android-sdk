@@ -136,7 +136,7 @@ public class TimerManager {
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(InAppStoryService.getInstance().getCurrentId());
         if (story != null) {
-            StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.slidesCount);
+            StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount());
         }
         pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
