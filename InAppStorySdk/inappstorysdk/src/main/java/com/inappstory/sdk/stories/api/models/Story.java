@@ -154,7 +154,7 @@ public class Story implements Parcelable {
     }
 
     @SerializedName("slides_count")
-    private int slidesCount;
+    public int slidesCount;
 
     public boolean isFavorite() {
         return favorite;
