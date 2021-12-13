@@ -118,10 +118,6 @@ public class StoryDownloadManager {
                             CallbackManager.getInstance().getErrorCallback().loadSingleError();
                         }
                         CsEventBus.getDefault().post(new SingleLoadError());
-
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadSingleError();
-                        }
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                         if (storyByIdCallback != null)
                             storyByIdCallback.loadError(-1);
@@ -529,19 +525,21 @@ public class StoryDownloadManager {
 
             @Override
             public void onError(int code, String message) {
-                super.onError(code, message);
-
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadListError();
-                }
-                if (loadStoriesCallback != null) {
-                    loadStoriesCallback.onError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                generateLoadStoriesError();
             }
         };
 
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+    }
+
+    private void generateLoadStoriesError() {
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().loadListError();
+        }
+        if (loadStoriesCallback != null) {
+            loadStoriesCallback.onError();
+        }
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
     }
 
     public void refreshLocals() {
@@ -594,6 +592,11 @@ public class StoryDownloadManager {
                 }
                 loadStoriesCallback.storiesLoaded(ids);
             }
+        }
+
+        @Override
+        public void onError(int code, String message) {
+            generateLoadStoriesError();
         }
     };
 
