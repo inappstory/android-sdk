@@ -40,12 +40,6 @@ public class ReaderPageManager {
         if (storyId != this.storyId) {
             webViewManager.stopVideo();
         } else {
-
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-            if (story != null) {
-                CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-                        story.tags, story.slidesCount, story.lastIndex));
-            }
             webViewManager.playVideo();
             new Handler().postDelayed(new Runnable() {
                 @Override

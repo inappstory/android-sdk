@@ -311,6 +311,11 @@ public class StoriesViewManager {
 
     public void storyStartedEvent() {
         if (InAppStoryService.isNull()) return;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story != null) {
+            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+                    story.tags, story.slidesCount, story.lastIndex));
+        }
         CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
     }
 
@@ -342,8 +347,6 @@ public class StoriesViewManager {
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             storiesView.stopVideo();
         } else {
-            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-                    story.tags, story.slidesCount, index));
             storiesView.playVideo();
             new Handler().postDelayed(new Runnable() {
                 @Override
