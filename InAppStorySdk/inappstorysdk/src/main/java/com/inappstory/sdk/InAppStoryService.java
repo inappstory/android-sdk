@@ -204,7 +204,6 @@ public class InAppStoryService {
         currentId = 0;
         currentIndex = 0;
         for (int i = 0; i < InAppStoryService.getInstance().getDownloadManager().getStories().size(); i++) {
-            Log.e("changePriority", "set0 destroy");
             InAppStoryService.getInstance().getDownloadManager().getStories().get(i).lastIndex = 0;
         }
     }

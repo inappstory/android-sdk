@@ -298,7 +298,6 @@ public class ContactDialog {
                 View view = activity.getCurrentFocus();
                 editText.clearFocus();
                 if (view != null) {
-                    Log.d("closeKeyboard", "close");
 
                     InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);

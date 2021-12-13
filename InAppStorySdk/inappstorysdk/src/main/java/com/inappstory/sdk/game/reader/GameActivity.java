@@ -431,7 +431,7 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.e("MyApplication", consoleMessage.message() + " -- From line "
+                Log.d("MyApplication", consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId());
                 return super.onConsoleMessage(consoleMessage);
@@ -574,7 +574,6 @@ public class GameActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void sendApiRequest(String data) {
-            Log.e("gameJS", "sendApiRequest | " + data);
             GameRequestConfig config = JsonParser.fromJson(data, GameRequestConfig.class);
             Map<String, String> headers = null;
             if (config.headers != null && !config.headers.isEmpty()) {

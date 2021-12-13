@@ -86,13 +86,11 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("check_mask", "onPageScrolled mask is gone");
                     invMask.setVisibility(View.GONE);
                 }
             }, 400);
         } else {
             if (invMask.getVisibility() != View.VISIBLE) {
-                Log.e("check_mask", "onPageScrolled mask is visible");
                 invMask.setVisibility(View.VISIBLE);
             }
         }
@@ -207,7 +205,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         invMask = new View(getContext());
         invMask.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        Log.e("check_mask", "mask is gone");
         invMask.setVisibility(View.GONE);
         storiesViewPager.setId(R.id.ias_stories_pager);
         invMask.setId(R.id.ias_inv_mask);
@@ -402,12 +399,10 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void storyReaderTap(StoryReaderTapEvent event) {
         if (!isDestroyed) {
             Handler handler = new Handler(Looper.getMainLooper());
-            Log.e("check_mask", "storyReaderTap mask is visible");
             invMask.setVisibility(View.VISIBLE);
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("check_mask", "storyReaderTap mask is gone");
                     invMask.setVisibility(View.GONE);
                 }
             }, 300);
@@ -483,7 +478,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void setCurrentIndexEvent(ChangeIndexEvent event) {
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
-            Log.e("changePriority", "set0 setCurrentIndexEvent " + event.getIndex());
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(currentIds.get(curItem));
             story.setLastIndex(Math.max(Math.min(event.getIndex(), story.slidesCount), 0));
@@ -508,12 +502,10 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         InAppStoryService.getInstance().setCurrentId(currentIds.get(event.getIndex()));
         currentIndex = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(currentIds.get(event.getIndex())).lastIndex;
-        Log.e("check_mask", "ChangeStoryEvent mask is visible");
         invMask.setVisibility(View.VISIBLE);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Log.e("check_mask", "ChangeStoryEvent mask is gone");
                 invMask.setVisibility(View.GONE);
             }
         }, 600);

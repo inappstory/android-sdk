@@ -441,7 +441,6 @@ public class StoriesActivity extends AppCompatActivity {
         InAppStoryService.getInstance().isBackgroundPause = false;
         if (InAppStoryService.getInstance().getDownloadManager() != null)
             for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {
-                Log.e("changePriority", "set0 cleanReader");
                 story.setLastIndex(0);
             }
         cleaned = true;

@@ -13,7 +13,6 @@ public class NextStoryPageEvent {
     }
 
     public NextStoryPageEvent(int storyId) {
-        Log.e("Story_Events", "NextStoryPageEvent " + storyId);
         this.storyId = storyId;
     }
 

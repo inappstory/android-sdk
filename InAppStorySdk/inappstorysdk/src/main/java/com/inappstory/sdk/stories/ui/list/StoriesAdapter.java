@@ -117,9 +117,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         if (InAppStoryService.isNull()) return;
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
+            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.slidesCount,
+                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
+
                 if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
@@ -147,19 +150,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                 return;
             }
+        } else {
+            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null, null, 0,
+                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
-        }
-        if (current != null)
-            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.slidesCount,
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
-        else {
-            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null, null, 0,
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
         }
         ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),

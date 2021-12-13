@@ -74,7 +74,6 @@ public class Timeline extends LinearLayout {
 
     public void forceStartProgress() {
         try {
-            Log.e("Story_VisualTimers", "forceStartProgress");
             getManager().start(activeInd);
         } catch (Exception e) {
         }

@@ -19,7 +19,7 @@ public abstract class NetworkCallback<T> implements Callback<T> {
 
 
     protected void error402(String message) {
-        Log.e("InAppStory_Network",
+        Log.d("InAppStory_Network",
                 "Access was terminated. Check the management console for details.");
     }
 

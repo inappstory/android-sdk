@@ -86,7 +86,6 @@ public class StoriesViewManager {
 
     public void storyLoaded(int oId, int oInd) {
         if (storyId != oId || index != oInd) return;
-        Log.e("checkSlidesLoading", "storyLoaded" + oId + " " + oInd);
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
@@ -148,7 +147,6 @@ public class StoriesViewManager {
         loadedIndex = index;
         loadedId = id;
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
-        Log.e("changePriority", "loadStory slideInCache " + id + " " + index + " " + slideInCache);
         if (!slideInCache) {
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false)); //animation
         } else {
@@ -344,6 +342,8 @@ public class StoriesViewManager {
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             storiesView.stopVideo();
         } else {
+            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+                    story.tags, story.slidesCount, index));
             storiesView.playVideo();
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -352,8 +352,7 @@ public class StoriesViewManager {
                 }
             }, 200);
         }
-        CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-                story.tags, story.slidesCount, index));
+
         //   CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
         CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, true));
     }
