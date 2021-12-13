@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
@@ -432,6 +433,8 @@ public class ReaderPageManager {
             this.durations.addAll(story.durations);
             story.slidesCount = story.durations.size();
 
+            InAppStoryManager.showDLog("IAS_SlidesCount",
+                    "ReaderPageManager storyLoadedInCache " + story.id + " " + story.slidesCount);
             timerManager.setCurrentDuration(this.durations.get(slideIndex));
             //timelineManager.setStoryDurations(story.durations);
         }

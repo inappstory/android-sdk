@@ -81,6 +81,13 @@ public class Timeline extends LinearLayout {
 
     }
 
+    public void setActive(int index, boolean status) {
+        synchronized (clearLock) {
+            if (progressBars != null && progressBars.size() > index)
+                progressBars.get(index).isActive = status;
+        }
+    }
+
     List<Integer> durations;
 
     ValueAnimator curAnimation;
@@ -90,21 +97,32 @@ public class Timeline extends LinearLayout {
             progressBars.get(index).setDuration(1L * durations.get(index));
     }
 
-    List<TimelineProgressBar> progressBars = new ArrayList<>();
+    private List<TimelineProgressBar> progressBars = new ArrayList<>();
+
+    public List<TimelineProgressBar> getProgressBars() {
+        synchronized (clearLock) {
+            if (progressBars == null) progressBars = new ArrayList<>();
+            return progressBars;
+        }
+    }
+
+    private final Object clearLock = new Object();
 
     private void bindViews() {
-        progressBars.clear();
-        removeAllViews();
+        synchronized (clearLock) {
+            progressBars.clear();
+            removeAllViews();
 
-        for (int i = 0; i < slidesCount; i++) {
-            final TimelineProgressBar p = createProgressBar();
-            progressBars.add(p);
-            setSlideDuration(i);
-            addView(p);
-            if ((i + 1) < slidesCount) {
-                addView(createSpace());
+            for (int i = 0; i < slidesCount; i++) {
+                final TimelineProgressBar p = createProgressBar();
+                progressBars.add(p);
+                setSlideDuration(i);
+                addView(p);
+                if ((i + 1) < slidesCount) {
+                    addView(createSpace());
+                }
+                if (i == 0) p.setMin();
             }
-            if (i == 0) p.setMin();
         }
     }
 }

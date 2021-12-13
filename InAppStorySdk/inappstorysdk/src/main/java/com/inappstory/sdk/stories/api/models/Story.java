@@ -287,6 +287,7 @@ public class Story implements Parcelable {
             story.durations.addAll(durations);
             story.slidesCount = durations.size();
         }
+
         story.favorite = favorite;
         //nar.pages = pages;
         return story;

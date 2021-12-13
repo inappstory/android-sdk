@@ -237,6 +237,9 @@ public class StoryDownloadManager {
                         tmp.durations = new ArrayList<>();
                         tmp.durations.addAll(this.stories.get(ind).durations);
                         tmp.slidesCount = tmp.durations.size();
+                        InAppStoryManager.showDLog("IAS_SlidesCount",
+                                "StoryDownloadManager addStories " + tmp.id + " " + tmp.slidesCount);
+
                     }
                     if (tmp.layout == null & this.stories.get(ind).layout != null) {
                         tmp.layout = this.stories.get(ind).layout;
@@ -386,6 +389,8 @@ public class StoryDownloadManager {
         } else {
             cur.slidesCount = story.slidesCount;
         }
+        InAppStoryManager.showDLog("IAS_SlidesCount",
+                "StoryDownloadManager setStory " + cur.id + " " + cur.slidesCount);
     }
 
     private StoryDownloader storyDownloader;
