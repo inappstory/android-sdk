@@ -410,8 +410,11 @@ public class StoriesViewManager {
                 preloadPath, gameConfig, resources);
     }
 
+    private boolean storyIsLoaded = false;
+
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
+        storyIsLoaded = true;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
@@ -425,11 +428,17 @@ public class StoriesViewManager {
                 }
             }, 200);
         }
-        CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-                story.tags, story.getSlidesCount(), index));
-        if (CallbackManager.getInstance().getShowSlideCallback() != null) {
-            CallbackManager.getInstance().getShowSlideCallback().showSlide(story.id, story.title,
-                    story.tags, story.getSlidesCount(), index);
+    }
+
+    public void sendShowSlideEvents() {
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story != null) {
+            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+                    story.tags, story.getSlidesCount(), index));
+            if (CallbackManager.getInstance().getShowSlideCallback() != null) {
+                CallbackManager.getInstance().getShowSlideCallback().showSlide(story.id, story.title,
+                        story.tags, story.getSlidesCount(), index);
+            }
         }
     }
 
@@ -483,7 +492,10 @@ public class StoriesViewManager {
     }
 
     public void playStory() {
-        storiesView.playVideo();
+        if (storyIsLoaded) {
+            sendShowSlideEvents();
+            storiesView.playVideo();
+        }
     }
 
     public void pauseByClick() {

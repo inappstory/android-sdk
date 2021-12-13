@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -41,6 +42,7 @@ public class StoriesListManager {
             @Override
             public void run() {
                 if (list == null) return;
+                if (list.getVisibility() != View.VISIBLE) return;
                 list.changeStoryEvent(storyId);
             }
         });
@@ -99,6 +101,7 @@ public class StoriesListManager {
                     }
                 }
                 if (list == null) return;
+                if (list.getVisibility() != View.VISIBLE) return;
                 list.favStory(id, favStatus, favImages, isEmpty);
             }
         });

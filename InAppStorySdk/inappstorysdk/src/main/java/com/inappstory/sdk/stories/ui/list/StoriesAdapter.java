@@ -117,6 +117,13 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         if (InAppStoryService.isNull()) return;
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
+            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title,
+                    current.tags, current.getSlidesCount(),
+                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+            if (callback != null) {
+                callback.itemClick(current.id, index, current.title, current.tags,
+                        current.getSlidesCount(), isFavoriteList);
+            }
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
@@ -141,7 +148,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         i.setData(Uri.parse(current.deeplink));
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(i);
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
                     }
                 }
                 return;
@@ -154,28 +161,20 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                 return;
             }
+        } else {
+            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null,
+                    null, 0, isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+
+            if (callback != null) {
+                callback.itemClick(storiesIds.get(index), index, null, null, 0,
+                        isFavoriteList);
+            }
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
-        }
-        if (current != null) {
-            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.getSlidesCount(),
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
-            if (callback != null) {
-                callback.itemClick(current.id, index, current.title, current.tags, current.getSlidesCount(),
-                        isFavoriteList);
-            }
-        } else {
-            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null, null, 0,
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
-
-            if (callback != null) {
-                callback.itemClick(storiesIds.get(index), index, null, null, 0,
-                        isFavoriteList);
-            }
         }
         ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),

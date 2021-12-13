@@ -120,9 +120,6 @@ public class StoryDownloadManager {
                         }
                         CsEventBus.getDefault().post(new SingleLoadError());
 
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadSingleError();
-                        }
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                         if (storyByIdCallback != null)
                             storyByIdCallback.loadError(-1);
@@ -532,15 +529,7 @@ public class StoryDownloadManager {
 
             @Override
             public void onError(int code, String message) {
-                super.onError(code, message);
-
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadListError();
-                }
-                if (callback != null) {
-                    callback.onError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                generateLoadStoriesError(callback);
             }
         };
         NetworkCallback loadCallbackWithoutFav = new LoadListCallback() {
@@ -578,9 +567,24 @@ public class StoryDownloadManager {
                     callback.storiesLoaded(ids);
                 }
             }
+
+            @Override
+            public void onError(int code, String message) {
+                generateLoadStoriesError(callback);
+            }
         };
 
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+    }
+
+    public void generateLoadStoriesError(LoadStoriesCallback callback) {
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().loadListError();
+        }
+        if (callback != null) {
+            callback.onError();
+        }
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
     }
 
     public void refreshLocals() {
