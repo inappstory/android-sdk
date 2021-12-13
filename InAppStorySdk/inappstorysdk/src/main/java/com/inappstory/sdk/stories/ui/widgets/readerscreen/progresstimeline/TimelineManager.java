@@ -62,17 +62,18 @@ public class TimelineManager {
             @Override
             public void run() {
 
-                for (int i = 0; i < timeline.slidesCount; i++) {
+                for (int i = 0; i < timeline.getProgressBars().size(); i++) {
                     timeline.getProgressBars().get(i).stopInLooper();
                 }
                 //createCurrentAnimation(ind);
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        if (timeline.getProgressBars().size() <= activeInd) return;
                         for (int i = 0; i < activeInd; i++) {
                             timeline.getProgressBars().get(i).setMax();
                         }
-                        for (int i = activeInd + 1; i < timeline.slidesCount; i++) {
+                        for (int i = activeInd + 1; i < timeline.getProgressBars().size(); i++) {
                             timeline.getProgressBars().get(i).clearInLooper();
                         }
                         timeline.getProgressBars().get(activeInd).setMin();
@@ -96,6 +97,8 @@ public class TimelineManager {
     public ReaderPageManager pageManager;
 
     TimelineProgressBar getCurrentBar() {
+        if (timeline.getProgressBars().size() <= pageManager.getSlideIndex())
+            return new TimelineProgressBar(timeline.getContext());
         return timeline.getProgressBars().get(pageManager.getSlideIndex());
     }
 

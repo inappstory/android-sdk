@@ -144,6 +144,8 @@ public class Story implements Parcelable {
     @SerializedName("like")
     public Integer like;
 
+
+
     @SerializedName("slides_count")
     public int slidesCount;
 
@@ -179,6 +181,11 @@ public class Story implements Parcelable {
     public List<ResourceMappingObject> getSrcList() {
         if (srcList == null) srcList = new ArrayList<>();
         return srcList;
+    }
+
+    public int getSlidesCount() {
+        if (slidesCount == 0 && durations != null) return durations.size();
+        return slidesCount;
     }
 
     public List<String> getSrcListKeys(int index, String type) {

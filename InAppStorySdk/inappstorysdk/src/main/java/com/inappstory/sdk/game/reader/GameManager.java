@@ -126,15 +126,15 @@ public class GameManager {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                 Integer.parseInt(storyId));
         CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
-                story.tags, story.slidesCount, story.lastIndex,
+                story.tags, story.getSlidesCount(), story.lastIndex,
                 link));
         int cta = CallToAction.GAME;
         CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
-                story.tags, story.slidesCount, story.lastIndex,
+                story.tags, story.getSlidesCount(), story.lastIndex,
                 link, cta));
         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
             CallbackManager.getInstance().getCallToActionCallback().callToAction(story.id, story.title,
-                    story.tags, story.slidesCount, story.lastIndex,
+                    story.tags, story.getSlidesCount(), story.lastIndex,
                     link, ClickAction.GAME);
         }
         // OldStatisticManager.getInstance().addLinkOpenStatistic();

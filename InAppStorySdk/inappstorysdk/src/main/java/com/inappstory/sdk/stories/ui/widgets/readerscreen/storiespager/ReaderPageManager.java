@@ -109,7 +109,7 @@ public class ReaderPageManager {
             switch (object.getLink().getType()) {
                 case "url":
                     CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
-                            story.tags, story.slidesCount, story.lastIndex,
+                            story.tags, story.getSlidesCount(), story.lastIndex,
                             object.getLink().getTarget()));
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         switch (object.getType()) {
@@ -123,12 +123,12 @@ public class ReaderPageManager {
                     }
 
                     CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
-                            story.tags, story.slidesCount, story.lastIndex,
+                            story.tags, story.getSlidesCount(), story.lastIndex,
                             object.getLink().getTarget(), cta));
                     if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                         CallbackManager.getInstance().getCallToActionCallback().callToAction(
                                 story.id, story.title,
-                                story.tags, story.slidesCount, story.lastIndex,
+                                story.tags, story.getSlidesCount(), story.lastIndex,
                                 object.getLink().getTarget(), action);
                     }
                     OldStatisticManager.getInstance().addLinkOpenStatistic();
@@ -239,7 +239,7 @@ public class ReaderPageManager {
 
     public void setStoryInfo(Story story) {
         //webViewManager.setIndex(story.lastIndex);
-        timelineManager.setSlidesCount(story.slidesCount);
+        timelineManager.setSlidesCount(story.getSlidesCount());
         this.durations = new ArrayList<>();
         if (story.durations != null)
             this.durations.addAll(story.durations);
@@ -257,7 +257,7 @@ public class ReaderPageManager {
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(storyId);
         if (index < 0) index = 0;
-        if (story.slidesCount <= index) index = 0;
+        if (story.getSlidesCount() <= index) index = 0;
         story.setLastIndex(index);
         if (slideIndex != index) {
             slideIndex = index;
@@ -322,7 +322,7 @@ public class ReaderPageManager {
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         timerManager.setTimerDuration(0);
-        if (slideIndex < story.slidesCount - 1) {
+        if (slideIndex < story.getSlidesCount() - 1) {
             webViewManager.stopStory();
             slideIndex++;
             story.setLastIndex(slideIndex);

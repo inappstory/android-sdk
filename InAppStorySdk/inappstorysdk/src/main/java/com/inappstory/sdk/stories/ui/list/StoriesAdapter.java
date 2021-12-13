@@ -117,10 +117,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         if (InAppStoryService.isNull()) return;
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
-            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.slidesCount,
+            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.getSlidesCount(),
                     isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
             if (callback != null) {
-                callback.itemClick(current.id, index, current.title, current.tags, current.slidesCount,
+                callback.itemClick(current.id, index, current.title, current.tags, current.getSlidesCount(),
                         isFavoriteList);
             }
             if (current.deeplink != null) {
