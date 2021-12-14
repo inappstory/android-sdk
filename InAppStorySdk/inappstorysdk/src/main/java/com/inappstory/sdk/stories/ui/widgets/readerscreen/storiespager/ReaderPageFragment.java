@@ -111,7 +111,7 @@ public class ReaderPageFragment extends Fragment {
                 @Override
                 public void run() {
                     Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-
+                    if (story == null) return;
                     if (localDurations.isEmpty() && story.durations != null)
                         localDurations.addAll(story.durations);
                     if (timeline != null) {
@@ -126,6 +126,7 @@ public class ReaderPageFragment extends Fragment {
         } else {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
 
+            if (story == null) return;
             if (localDurations.isEmpty() && story.durations != null)
                 localDurations.addAll(story.durations);
             InAppStoryService.getInstance().setCurrentIndex(story.lastIndex);
@@ -268,6 +269,7 @@ public class ReaderPageFragment extends Fragment {
         final int ind = event.index;
         if (story != null)
             story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         if (InAppStoryService.getInstance().getCurrentId() == storyId
                 && story.lastIndex == ind) {
             // timeline.setActive(story.lastIndex);

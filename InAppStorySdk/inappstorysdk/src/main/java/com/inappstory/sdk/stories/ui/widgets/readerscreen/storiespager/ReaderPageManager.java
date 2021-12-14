@@ -102,8 +102,10 @@ public class ReaderPageManager {
     }
 
     void storyInfoLoaded() {
-        this.timelineManager.setSlidesCount(InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).slidesCount);
-        this.timelineManager.setStoryDurations(InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId).durations);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
+        this.timelineManager.setSlidesCount(story.slidesCount);
+        this.timelineManager.setStoryDurations(story.durations);
     }
 
     public void setTimelineManager(TimelineManager timelineManager, int storyId) {

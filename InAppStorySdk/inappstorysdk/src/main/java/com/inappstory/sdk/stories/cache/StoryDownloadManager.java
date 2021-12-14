@@ -248,7 +248,8 @@ public class StoryDownloadManager {
             public void onDownload(Story story, int loadType) {
                 Story local = getStoryById(story.id);
                 story.isOpened = local.isOpened;
-                stories.set(stories.indexOf(local), story);
+                if (local != null)
+                    stories.set(stories.indexOf(local), story);
                 setStory(story, story.id);
                 CsEventBus.getDefault().post(new StoryCacheLoadedEvent(story.id));
                 try {
@@ -292,6 +293,14 @@ public class StoryDownloadManager {
         slidesDownloader.setCurrentSlide(storyId, slideIndex);
     }
 
+    public Story getStoryByIdWithEmpty(int id) {
+        if (stories != null) {
+            for (Story story : stories) {
+                if (story.id == id) return story;
+            }
+        }
+        return new Story();
+    }
 
     public Story getStoryById(int id) {
         if (stories != null) {

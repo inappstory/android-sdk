@@ -90,6 +90,7 @@ public class StoriesViewManager {
         loadedIndex = oInd;
         loadedId = oId;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         innerLoad(story);
     }
 
@@ -309,13 +310,19 @@ public class StoriesViewManager {
         }
     }
 
-    public void storyStartedEvent() {
-        if (InAppStoryService.isNull()) return;
+    boolean storyIsLoaded = false;
+
+    public void sendShowSlideEvents() {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story != null) {
             CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                     story.tags, story.slidesCount, story.lastIndex));
         }
+    }
+
+    public void storyStartedEvent() {
+        if (InAppStoryService.isNull()) return;
+
         CsEventBus.getDefault().post(new StoryPageStartedEvent(storyId, index));
     }
 
@@ -330,6 +337,7 @@ public class StoriesViewManager {
         intent2.putExtra("storyId", Integer.toString(storyId));
         intent2.putExtra("slideIndex", index);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         intent2.putExtra("tags", story.tags);
         intent2.putExtra("slidesCount", story.slidesCount);
         intent2.putExtra("title", story.title);
@@ -342,12 +350,14 @@ public class StoriesViewManager {
 
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
+        storyIsLoaded = true;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             storiesView.stopVideo();
         } else {
-            storiesView.playVideo();
+            playVideo();
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -410,6 +420,7 @@ public class StoriesViewManager {
     }
 
     public void playVideo() {
+        if (storyIsLoaded) sendShowSlideEvents();
         storiesView.playVideo();
     }
 

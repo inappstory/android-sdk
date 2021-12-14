@@ -317,8 +317,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
 
                 if (currentIds != null && currentIds.size() > position) {
-                    OldStatisticManager.getInstance().addStatisticBlock(currentIds.get(position),
-                            InAppStoryService.getInstance().getDownloadManager().getStoryById(currentIds.get(position)).lastIndex);
+                    Story threadStory = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentIds.get(position));
+                    if (threadStory != null)
+                        OldStatisticManager.getInstance().addStatisticBlock(currentIds.get(position), threadStory.lastIndex);
                     CsEventBus.getDefault().post(new ChangeStoryEvent(currentIds.get(position), position));
                 }
                 final int pos = position;

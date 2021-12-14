@@ -175,6 +175,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         try {
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(storiesIds.get(position));
+            if (story == null) return 0;
             if (story.getVideoUrl() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {

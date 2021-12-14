@@ -229,6 +229,7 @@ public class StoriesList extends RecyclerView {
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
+        if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened();
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
@@ -277,6 +278,7 @@ public class StoriesList extends RecyclerView {
         List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
         boolean isEmpty = favImages.isEmpty();
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
+        if (story == null) return;
         if (event.favStatus) {
             FavoriteImage favoriteImage = new FavoriteImage(Integer.valueOf(event.getId()), story.getImage(), story.getBackgroundColor());
             if (!favImages.contains(favoriteImage))

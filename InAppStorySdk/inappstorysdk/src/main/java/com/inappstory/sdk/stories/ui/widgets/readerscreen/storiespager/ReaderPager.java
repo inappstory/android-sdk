@@ -222,6 +222,7 @@ public class ReaderPager extends ViewPager {
             int storyId = ((ReaderPagerAdapter)getAdapter()).
                     getItemId(getCurrentItem());
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+            if (story == null) return;
             CsEventBus.getDefault().post(new RestartStoryReaderEvent(storyId, story.getDurations().get(0)));
         }
     }

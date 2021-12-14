@@ -95,7 +95,7 @@ public class Story implements Parcelable {
         this.lastIndex = lastIndex;
         try {
             InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(id).lastIndex = lastIndex;
+                    .getStoryByIdWithEmpty(id).lastIndex = lastIndex;
         } catch (Exception e) {
 
         }
