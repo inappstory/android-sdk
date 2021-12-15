@@ -299,6 +299,7 @@ public class StoryDownloadManager {
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
             public void onDownload(Story story, int loadType) {
+                if (story == null) return;
                 Story local = getStoryById(story.id);
                 story.isOpened = local.isOpened;
                 story.lastIndex = local.lastIndex;
@@ -360,6 +361,15 @@ public class StoryDownloadManager {
         slidesDownloader.setCurrentSlide(storyId, slideIndex);
     }
 
+    public Story getStoryByIdWithEmpty(int id) {
+        if (stories != null) {
+            for (Story story : stories) {
+                if (story.id == id) return story;
+            }
+        }
+        return null;
+    }
+
 
     public Story getStoryById(int id) {
         if (stories != null) {
@@ -371,6 +381,7 @@ public class StoryDownloadManager {
     }
 
     public void setStory(final Story story, int id) {
+        if (story == null) return;
         Story cur = getStoryById(id);
         if (cur == null) {
             stories.add(story);
@@ -389,7 +400,7 @@ public class StoryDownloadManager {
         if (!cur.durations.isEmpty()) {
             cur.slidesCount = story.durations.size();
         } else {
-            cur.slidesCount = story.slidesCount;
+            cur.slidesCount = story.getSlidesCount();
         }
     }
 
@@ -532,15 +543,7 @@ public class StoryDownloadManager {
 
             @Override
             public void onError(int code, String message) {
-                super.onError(code, message);
-
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadListError();
-                }
-                if (callback != null) {
-                    callback.onError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+                generateLoadStoriesError(callback);
             }
         };
         NetworkCallback loadCallbackWithoutFav = new LoadListCallback() {
@@ -578,9 +581,24 @@ public class StoryDownloadManager {
                     callback.storiesLoaded(ids);
                 }
             }
+
+            @Override
+            public void onError(int code, String message) {
+                generateLoadStoriesError(callback);
+            }
         };
 
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+    }
+
+    public void generateLoadStoriesError(LoadStoriesCallback callback) {
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().loadListError();
+        }
+        if (callback != null) {
+            callback.onError();
+        }
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
     }
 
     public void refreshLocals() {

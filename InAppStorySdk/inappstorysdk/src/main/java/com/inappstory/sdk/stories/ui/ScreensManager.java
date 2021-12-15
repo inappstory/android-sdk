@@ -177,23 +177,25 @@ public class ScreensManager {
 
 
     public void openGameReader(Context context, int storyId, int index, String gameUrl, String preloadPath, String gameConfig, String resources) {
+
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
 
         intent2.putExtra("storyId", Integer.toString(storyId));
         intent2.putExtra("slideIndex", index);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         intent2.putExtra("tags", story.tags);
-        intent2.putExtra("slidesCount", story.slidesCount);
+        intent2.putExtra("slidesCount", story.getSlidesCount());
         intent2.putExtra("title", story.title);
         intent2.putExtra("gameConfig", gameConfig);
         intent2.putExtra("gameResources", resources);
         intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
         CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags,
-                story.slidesCount, index));
+                story.getSlidesCount(), index));
         if (CallbackManager.getInstance().getGameCallback() != null) {
             CallbackManager.getInstance().getGameCallback().startGame(storyId, story.title,
-                    story.tags, story.slidesCount, index);
+                    story.tags, story.getSlidesCount(), index);
         }
         if (Sizes.isTablet()) {
             if (currentFragment != null) {

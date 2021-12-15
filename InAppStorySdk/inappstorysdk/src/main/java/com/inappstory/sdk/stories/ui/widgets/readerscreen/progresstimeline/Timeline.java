@@ -20,6 +20,19 @@ public class Timeline extends LinearLayout {
         init();
     }
 
+
+    public void setActiveProgressBar(int index, boolean active) {
+        if (progressBars == null) progressBars = new ArrayList<>();
+        if (progressBars.size() > index) {
+            progressBars.get(index).isActive = active;
+        }
+    }
+
+    public List<TimelineProgressBar> getProgressBars() {
+        if (progressBars == null) progressBars = new ArrayList<>();
+        return progressBars;
+    }
+
     public TimelineManager getManager() {
         return timelineManager;
     }
@@ -86,7 +99,7 @@ public class Timeline extends LinearLayout {
     ValueAnimator curAnimation;
 
     public void setSlideDuration(int index) {
-        if (durations != null)
+        if (durations != null && progressBars.size() > index && durations.size() > index)
             progressBars.get(index).setDuration(1L * durations.get(index));
     }
 
@@ -97,7 +110,7 @@ public class Timeline extends LinearLayout {
         removeAllViews();
 
         for (int i = 0; i < slidesCount; i++) {
-            final TimelineProgressBar p = createProgressBar();
+            TimelineProgressBar p = createProgressBar();
             progressBars.add(p);
             setSlideDuration(i);
             addView(p);

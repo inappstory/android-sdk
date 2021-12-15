@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -34,6 +35,7 @@ public class StoriesListManager {
 
     public void changeStory(final int storyId) {
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened();
         checkHandler();
@@ -41,6 +43,7 @@ public class StoriesListManager {
             @Override
             public void run() {
                 if (list == null) return;
+                if (list.getVisibility() != View.VISIBLE) return;
                 list.changeStoryEvent(storyId);
             }
         });
@@ -86,6 +89,7 @@ public class StoriesListManager {
                 List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
                 boolean isEmpty = favImages.isEmpty();
                 Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+                if (story == null) return;
                 if (favStatus) {
                     FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
                     if (!favImages.contains(favoriteImage))
@@ -99,6 +103,7 @@ public class StoriesListManager {
                     }
                 }
                 if (list == null) return;
+                if (list.getVisibility() != View.VISIBLE) return;
                 list.favStory(id, favStatus, favImages, isEmpty);
             }
         });

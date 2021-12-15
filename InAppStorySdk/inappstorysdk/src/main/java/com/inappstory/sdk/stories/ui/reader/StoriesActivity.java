@@ -190,24 +190,24 @@ public class StoriesActivity extends AppCompatActivity {
 
         if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+
+            String cause = StatisticManager.BACK;
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.title, story.tags, story.slidesCount,
+                        story.title, story.tags, story.getSlidesCount(),
                         story.lastIndex, CloseStory.CUSTOM,
                         getIntent().getIntExtra("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
-                            story.title, story.tags, story.slidesCount,
+                            story.title, story.tags, story.getSlidesCount(),
                             story.lastIndex, CloseReader.CUSTOM,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getIntent().getIntExtra("source", 0))
                     );
                 }
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
             }
-            String cause = StatisticManager.BACK;
-            if (story != null)
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -410,21 +410,6 @@ public class StoriesActivity extends AppCompatActivity {
         blockView.setVisibility(View.VISIBLE);
         if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
-
-            CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.slidesCount,
-                    story.lastIndex, action,
-                    getIntent().getIntExtra("source", 0)));
-            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                        story.id,
-                        story.title, story.tags, story.slidesCount,
-                        story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
-                                action),
-                        CallbackManager.getInstance().getSourceFromInt(
-                                getIntent().getIntExtra("source", 0))
-                );
-            }
             String cause = StatisticManager.AUTO;
             switch (action) {
                 case CloseStory.CLICK:
@@ -437,7 +422,24 @@ public class StoriesActivity extends AppCompatActivity {
                     cause = StatisticManager.SWIPE;
                     break;
             }
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.slidesCount);
+            if (story != null) {
+                CsEventBus.getDefault().post(new CloseStory(story.id,
+                        story.title, story.tags, story.getSlidesCount(),
+                        story.lastIndex, action,
+                        getIntent().getIntExtra("source", 0)));
+                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                            story.id,
+                            story.title, story.tags, story.getSlidesCount(),
+                            story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
+                                    action),
+                            CallbackManager.getInstance().getSourceFromInt(
+                                    getIntent().getIntExtra("source", 0))
+                    );
+                }
+
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
+            }
         }
         cleanReader();
 

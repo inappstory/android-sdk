@@ -147,6 +147,8 @@ public class StoriesViewManager {
     }
 
     void innerLoad(Story story) {
+
+        if (story == null) return;
         if (InAppStoryService.isConnected()) {
             if (testGenerated) {
                 initViews(story.slidesStructure.get(index));
@@ -188,7 +190,7 @@ public class StoriesViewManager {
         if (story == null || story.checkIfEmpty()) {
             return;
         }
-        if (story.slidesCount <= index) return;
+        if (story.getSlidesCount() <= index) return;
         storyId = id;
         this.index = index;
         loadedIndex = index;
@@ -409,10 +411,12 @@ public class StoriesViewManager {
         ScreensManager.getInstance().openGameReader(context, storyId, index, gameUrl,
                 preloadPath, gameConfig, resources);
     }
-
+    private boolean storyIsLoaded = false;
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
+        storyIsLoaded = true;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopStory();
@@ -425,11 +429,17 @@ public class StoriesViewManager {
                 }
             }, 200);
         }
-        CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
-                story.tags, story.slidesCount, index));
-        if (CallbackManager.getInstance().getShowSlideCallback() != null) {
-            CallbackManager.getInstance().getShowSlideCallback().showSlide(story.id, story.title,
-                    story.tags, story.slidesCount, index);
+    }
+
+    public void sendShowSlideEvents() {
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story != null) {
+            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+                    story.tags, story.getSlidesCount(), index));
+            if (CallbackManager.getInstance().getShowSlideCallback() != null) {
+                CallbackManager.getInstance().getShowSlideCallback().showSlide(story.id, story.title,
+                        story.tags, story.getSlidesCount(), index);
+            }
         }
     }
 
@@ -483,7 +493,10 @@ public class StoriesViewManager {
     }
 
     public void playStory() {
-        storiesView.playVideo();
+        if (storyIsLoaded) {
+            sendShowSlideEvents();
+            storiesView.playVideo();
+        }
     }
 
     public void pauseByClick() {

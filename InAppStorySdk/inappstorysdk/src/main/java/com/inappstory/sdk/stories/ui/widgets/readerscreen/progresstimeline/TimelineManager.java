@@ -34,6 +34,7 @@ public class TimelineManager {
 
     Timeline timeline;
 
+
     public void setSlidesCount(int slidesCount) {
         timeline.setSlidesCount(slidesCount);
     }
@@ -47,7 +48,7 @@ public class TimelineManager {
         if (activeInd == 0) {
             // timeline.progressBars.get(0).setMin();
            // timeline.progressBars.get(0).createAnimation();
-            timeline.progressBars.get(0).isActive = true;
+            timeline.setActiveProgressBar(0, true);
         }
     }
 
@@ -55,28 +56,29 @@ public class TimelineManager {
         if (ind < 0) return;
         if (ind > timeline.slidesCount) return;
         activeInd = ind;
-        for (int i = 0; i < timeline.slidesCount; i++) {
-            timeline.progressBars.get(i).isActive = (i == activeInd);
+        for (int i = 0; i < timeline.getProgressBars().size(); i++) {
+            timeline.setActiveProgressBar(i, (i == activeInd));
         }
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
 
-                for (int i = 0; i < timeline.slidesCount; i++) {
-                    timeline.progressBars.get(i).stopInLooper();
+                for (int i = 0; i < timeline.getProgressBars().size(); i++) {
+                    timeline.getProgressBars().get(i).stopInLooper();
                 }
                 //createCurrentAnimation(ind);
+                if (timeline.getProgressBars().size() < activeInd) return;
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         for (int i = 0; i < activeInd; i++) {
-                            timeline.progressBars.get(i).setMax();
+                            timeline.getProgressBars().get(i).setMax();
                         }
                         for (int i = activeInd + 1; i < timeline.slidesCount; i++) {
-                            timeline.progressBars.get(i).clearInLooper();
+                            timeline.getProgressBars().get(i).clearInLooper();
                         }
-                        timeline.progressBars.get(activeInd).setMin();
-                        timeline.progressBars.get(activeInd).createAnimation();
+                        timeline.getProgressBars().get(activeInd).setMin();
+                        timeline.getProgressBars().get(activeInd).createAnimation();
                     }
                 }, 100);
 
@@ -96,7 +98,9 @@ public class TimelineManager {
     public ReaderPageManager pageManager;
 
     TimelineProgressBar getCurrentBar() {
-        return timeline.progressBars.get(pageManager.getSlideIndex());
+        if (timeline.getProgressBars().size() < pageManager.getSlideIndex())
+            return timeline.getProgressBars().get(pageManager.getSlideIndex());
+        return new TimelineProgressBar(timeline.getContext());
     }
 
     public void restart() {
