@@ -16,6 +16,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -727,6 +728,7 @@ public class InAppStoryManager {
                         ProfilingManager.getInstance().setReady(onboardUID);
                         List<Story> notOpened = new ArrayList<>();
                         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                        if (opens == null) opens = new HashSet<>();
                         for (Story story : response) {
                             boolean add = true;
                             for (String opened : opens) {
