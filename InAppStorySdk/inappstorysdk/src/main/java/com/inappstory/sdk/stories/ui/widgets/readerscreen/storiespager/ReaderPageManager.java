@@ -147,7 +147,7 @@ public class ReaderPageManager {
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         switch (object.getType()) {
                             case "swipeUpItems":
-                                showGoods(object.getLink().getTarget(), object.getElementId(), story.id,story.lastIndex);
+                                showGoods(object.getLink().getTarget(), object.getElementId(), story.id, story.lastIndex);
                                 break;
                             default:
                                 break;
@@ -421,11 +421,13 @@ public class ReaderPageManager {
     }
 
     public void storyLoadStart() {
-        host.storyLoadStart();
+        if (host != null)
+            host.storyLoadStart();
     }
 
     public void storyLoadError() {
-
+        if (host != null)
+            host.storyLoadError();
     }
 
     public void storyLoadedInCache() {
