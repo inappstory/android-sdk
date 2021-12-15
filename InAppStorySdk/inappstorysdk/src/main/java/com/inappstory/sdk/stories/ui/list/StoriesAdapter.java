@@ -18,7 +18,9 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
+import com.inappstory.sdk.stories.outerevents.CallToAction;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -127,6 +129,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
+                CsEventBus.getDefault().post(new CallToAction(current.id, current.title,
+                        current.tags, current.getSlidesCount(), 0,
+                        current.deeplink, CallToAction.DEEPLINK));
+                if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                    CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                            current.id, current.title,
+                            current.tags, current.getSlidesCount(), 0,
+                            current.deeplink, ClickAction.DEEPLINK);
+                }
                 if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
