@@ -196,14 +196,16 @@ public class ReaderPageFragment extends Fragment {
         if (story == null) return;
         if (story.disableClose)
             close.setVisibility(View.GONE);
-        buttonsPanel.setButtonsVisibility(readerSettings,
-                story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
-        buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+        if (buttonsPanel != null) {
+            buttonsPanel.setButtonsVisibility(readerSettings,
+                    story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
+            buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+        }
         setOffsets(view);
         if (story.durations != null && !story.durations.isEmpty())
             story.slidesCount = story.durations.size();
-
-        storiesView.getManager().setIndex(story.lastIndex);
+        if (storiesView != null)
+            storiesView.getManager().setIndex(story.lastIndex);
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -348,8 +350,6 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-
-
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void resetTimers(ClearDurationEvent event) {
         if (storyId == event.getId()) {
@@ -487,19 +487,18 @@ public class ReaderPageFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         readerSettings = JsonParser.fromJson(getArguments().getString(CS_READER_SETTINGS),
                 StoriesReaderSettings.class);
+        View v = null;
         try {
-            if (testGenerated) {
-                return inflater.inflate(R.layout.cs_fragment_generated_story, container, false);
-            } else {
-                return createFragmentView(container);
-            }
+            v = createFragmentView(container);
         } catch (Exception e) {
-            e.printStackTrace();
-            return new View(getContext());
+            v = new View(getContext());
         }
+        return v;
     }
 
     View createFragmentView(ViewGroup root) {
