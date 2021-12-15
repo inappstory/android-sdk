@@ -137,6 +137,7 @@ public class GameLoader {
                                  final String url,
                                  final String pathName,
                                  final GameLoadCallback callback) {
+        if (InAppStoryService.isNull()) return;
         terminate = false;
         gameFileThread.submit(new Callable() {
             @Override

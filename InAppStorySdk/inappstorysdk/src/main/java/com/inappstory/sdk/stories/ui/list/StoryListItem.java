@@ -169,6 +169,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     }
 
     private void setImage(AppCompatImageView imageView, FavoriteImage image) {
+        if (InAppStoryService.isNull()) return;
         if (image.getImage() != null) {
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
@@ -344,6 +345,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
         if (border != null)
             border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
+        if (InAppStoryService.isNull()) return;
         if (videoUrl != null) {
             if (image != null) {
                 if (imageUrl != null) {

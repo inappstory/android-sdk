@@ -354,6 +354,7 @@ public class GameActivity extends AppCompatActivity {
             //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivityForResult(finalIntent, SHARE_EVENT);
         } else {
+            if (InAppStoryService.isNull()) return;
             finalIntent = Intent.createChooser(sendIntent, null);
             finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             InAppStoryService.getInstance().getContext().startActivity(finalIntent);

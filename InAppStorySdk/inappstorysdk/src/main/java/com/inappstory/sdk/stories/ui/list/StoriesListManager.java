@@ -34,7 +34,9 @@ public class StoriesListManager {
     }
 
     public void changeStory(final int storyId) {
+        if (InAppStoryService.isNull()) return;
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened();
         checkHandler();
@@ -84,6 +86,7 @@ public class StoriesListManager {
         post(new Runnable() {
             @Override
             public void run() {
+                if (InAppStoryService.isNull()) return;
                 List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
                 boolean isEmpty = favImages.isEmpty();
                 Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);

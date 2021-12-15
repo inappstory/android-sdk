@@ -46,7 +46,7 @@ public class JsApiNetwork {
                                             String requestId, Context context) throws Exception {
         JsApiResponse response = new JsApiResponse();
         response.requestId = requestId;
-        if (!InAppStoryService.isConnected()) {
+        if (InAppStoryService.isNull() || !InAppStoryService.isConnected()) {
             response.status = 12163;
             return response;
         }

@@ -42,6 +42,7 @@ public class Downloader {
     }
 
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
+        if (InAppStoryService.isNull()) return;
         if (cachedFonts != null) {
             for (CacheFontObject cacheFontObject : cachedFonts) {
                 downFontFile(cacheFontObject.url, InAppStoryService.getInstance().getCommonCache());
@@ -135,6 +136,7 @@ public class Downloader {
 
 
     public static String getFontFile(String url) {
+        if (InAppStoryService.isNull()) return null;
         if (url == null || url.isEmpty()) return null;
         File img = null;
         if (InAppStoryService.getInstance().getCommonCache().hasKey(url)) {

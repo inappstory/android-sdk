@@ -45,7 +45,7 @@ public class GameJSInterface {
     @JavascriptInterface
     public String storyGetLocalData(int storyId) {
         String res = KeyValueStorage.getString("story" + storyId
-                + "__" + InAppStoryService.getInstance().getUserId());
+                + "__" + (InAppStoryService.isNull() ? "" : InAppStoryService.getInstance().getUserId()));
         return res == null ? "" : res;
     }
 

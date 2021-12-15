@@ -86,6 +86,7 @@ public class StoryDownloadManager {
                 ).enqueue(new NetworkCallback<Story>() {
                     @Override
                     public void onSuccess(final Story response) {
+                        if (InAppStoryService.isNull()) return;
                         ProfilingManager.getInstance().setReady(storyUID);
                         CsEventBus.getDefault().post(new SingleLoad(id));
                         if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
@@ -175,6 +176,8 @@ public class StoryDownloadManager {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
         try {
+
+            if (InAppStoryService.isNull()) return;
             InAppStoryService.getInstance().getCommonCache().clearCache();
             InAppStoryService.getInstance().getFastCache().clearCache();
         } catch (IOException e) {
@@ -414,6 +417,7 @@ public class StoryDownloadManager {
 
             @Override
             public void onSuccess(final List<Story> response) {
+                if (InAppStoryService.isNull()) return;
                 final ArrayList<Story> stories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     stories.add(response.get(i));
@@ -573,6 +577,7 @@ public class StoryDownloadManager {
 
         @Override
         public void onSuccess(final List<Story> response) {
+            if (InAppStoryService.isNull()) return;
             InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
             List<Story> newStories = new ArrayList<>();
             if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {

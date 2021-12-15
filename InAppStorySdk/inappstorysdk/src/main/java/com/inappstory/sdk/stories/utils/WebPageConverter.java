@@ -27,6 +27,7 @@ public class WebPageConverter {
 
     public void replaceImagesAndLoad(String innerWebData, Story story, final int index, String layout,
                                      WebPageConvertCallback callback) throws IOException {
+        if (InAppStoryService.isNull()) return;
         List<String> imgs = story.getSrcListUrls(index, null);
         List<String> imgKeys = story.getSrcListKeys(index, null);
         for (int i = 0; i < imgs.size(); i++) {
@@ -73,6 +74,7 @@ public class WebPageConverter {
 
     public void replaceVideoAndLoad(String innerWebData, Story story, final int index, String layout,
                                     WebPageConvertCallback callback) throws IOException {
+        if (InAppStoryService.isNull()) return;
         List<String> videos = story.getSrcListUrls(index, "video");
         List<String> videosKeys = story.getSrcListKeys(index, "video");
         LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();

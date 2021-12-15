@@ -335,7 +335,8 @@ public class StoriesActivity extends AppCompatActivity {
             return;
         }
         CsEventBus.getDefault().register(StoriesActivity.this);
-        InAppStoryService.getInstance().getListReaderConnector().openReader();
+        if (InAppStoryService.isNull())
+            InAppStoryService.getInstance().getListReaderConnector().openReader();
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {

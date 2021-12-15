@@ -72,8 +72,8 @@ public class GameManager {
 
     void storySetData(String data, boolean sendToServer) {
         KeyValueStorage.saveString("story" + storyId
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
-
+                + "__" + (InAppStoryService.isNull() ? "" : InAppStoryService.getInstance().getUserId()), data);
+        if (InAppStoryService.isNull()) return;
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             NetworkClient.getApi().sendStoryData(storyId, data, StatisticSession.getInstance().id)
@@ -123,6 +123,7 @@ public class GameManager {
     }
 
     void tapOnLink(String link) {
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                 Integer.parseInt(storyId));
         CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,

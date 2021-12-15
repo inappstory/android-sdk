@@ -71,6 +71,10 @@ public class SessionManager {
     public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
 
     public void openStatisticSuccess(final StatisticResponse response) {
+        if (InAppStoryService.isNull()) return;
+        if (response == null || response.session == null) {
+            return;
+        }
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -162,6 +166,8 @@ public class SessionManager {
             @Override
             public void onSuccess(StatisticResponse response) {
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
+                if (response == null || response.session == null) return;
+                if (InAppStoryService.isNull()) return;
                 openStatisticSuccess(response);
                 CachedSessionData cachedSessionData = new CachedSessionData();
                 cachedSessionData.userId = InAppStoryService.getInstance().getUserId();
