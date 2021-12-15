@@ -129,11 +129,14 @@ public class ReaderPageFragment extends Fragment {
         if (story == null) return;
         if (story.disableClose)
             close.setVisibility(View.GONE);
-        buttonsPanel.setButtonsVisibility(readerSettings,
-                story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
-        buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+        if (buttonsPanel != null) {
+            buttonsPanel.setButtonsVisibility(readerSettings,
+                    story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
+            buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+        }
         setOffsets(view);
-        storiesView.getManager().setIndex(story.lastIndex);
+        if (storiesView != null)
+            storiesView.getManager().setIndex(story.lastIndex);
 
     }
 
@@ -258,11 +261,8 @@ public class ReaderPageFragment extends Fragment {
         readerSettings = JsonParser.fromJson(getArguments().getString(CS_READER_SETTINGS),
                 StoriesReaderSettings.class);
         try {
-            if (testGenerated) {
-                return inflater.inflate(R.layout.cs_fragment_generated_story, container, false);
-            } else {
-                return createFragmentView(container);
-            }
+
+            return createFragmentView(container);
         } catch (Exception e) {
             e.printStackTrace();
             return new View(getContext());
