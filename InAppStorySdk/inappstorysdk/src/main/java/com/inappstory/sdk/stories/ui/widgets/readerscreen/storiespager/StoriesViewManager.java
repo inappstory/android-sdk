@@ -169,13 +169,7 @@ public class StoriesViewManager {
 
         if (InAppStoryService.isNull())
             return;
-        if (!InAppStoryService.isConnected()) {
-            if (CallbackManager.getInstance().getErrorCallback() != null) {
-                CallbackManager.getInstance().getErrorCallback().noConnection();
-            }
-            CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            return;
-        }
+
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
         if (story == null || story.checkIfEmpty()) {
             return;
@@ -191,6 +185,13 @@ public class StoriesViewManager {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
         } else {
+            if (!InAppStoryService.isConnected()) {
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().noConnection();
+                }
+                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
+                return;
+            }
             pageManager.storyLoadStart();
         }
     }
