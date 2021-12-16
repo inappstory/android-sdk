@@ -21,6 +21,13 @@ public class LruDiskCache {
     public static final long MB_100 = 100 * MB_1;
     public static final long MB_200 = 200 * MB_1;
 
+    public static void clear() throws IOException {
+        if (fastCache != null) fastCache.clearCache();
+        if (commonCache != null) commonCache.clearCache();
+        fastCache = null;
+        commonCache = null;
+    }
+
     public File getCacheDir() {
         return manager.getCacheDir();
     }
