@@ -299,23 +299,9 @@ public class StoriesViewManager {
 
     public void storyClick(String payload) {
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
-            if (InAppStoryService.isConnected()) {
-                pageManager.storyClick(null, (int) getClickCoordinate(), false);
-            } else {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().noConnection();
-                }
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            }
+            pageManager.storyClick(null, (int) getClickCoordinate(), false);
         } else if (payload.equals("forbidden")) {
-            if (InAppStoryService.isConnected()) {
-                pageManager.storyClick(null, (int) getClickCoordinate(), true);
-            } else {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().noConnection();
-                }
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            }
+            pageManager.storyClick(null, (int) getClickCoordinate(), true);
         } else {
             //pageManager.showGoods();
             pageManager.storyClick(payload, (int) getClickCoordinate(), false);

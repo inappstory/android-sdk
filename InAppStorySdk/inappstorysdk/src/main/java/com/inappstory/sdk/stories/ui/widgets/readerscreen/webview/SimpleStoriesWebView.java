@@ -391,7 +391,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
-        if (!InAppStoryService.isConnected()) return true;
+        //if (!InAppStoryService.isConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();

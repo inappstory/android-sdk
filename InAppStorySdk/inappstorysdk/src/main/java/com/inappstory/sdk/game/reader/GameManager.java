@@ -146,9 +146,6 @@ public class GameManager {
                     link
             );
         } else {
-            if (!InAppStoryService.isConnected()) {
-                return;
-            }
             host.tapOnLinkDefault(link);
         }
     }
