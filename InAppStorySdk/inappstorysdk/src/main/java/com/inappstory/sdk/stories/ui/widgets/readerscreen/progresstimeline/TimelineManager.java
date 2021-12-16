@@ -96,10 +96,11 @@ public class TimelineManager {
 
     public ReaderPageManager pageManager;
 
+
     TimelineProgressBar getCurrentBar() {
-        if (timeline.getProgressBars().size() < pageManager.getSlideIndex())
-            return timeline.getProgressBars().get(pageManager.getSlideIndex());
-        return new TimelineProgressBar(timeline.getContext());
+        if (timeline.getProgressBars().size() <= pageManager.getSlideIndex())
+            return new TimelineProgressBar(timeline.getContext());
+        return timeline.getProgressBars().get(pageManager.getSlideIndex());
     }
 
     public void restart() {
