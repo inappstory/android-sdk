@@ -69,7 +69,8 @@ public class JsApiNetwork {
         connection.setRequestProperty("X-Device-Id", Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID));
         connection.setRequestProperty("X-Request-ID", randomUUID().toString());
-        connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
+        if (InAppStoryService.isNotNull())
+            connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
         connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
 
         boolean hasBody = !method.equals(GET) && body != null && !body.isEmpty();

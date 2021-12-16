@@ -353,6 +353,7 @@ public class GameActivity extends AppCompatActivity {
             //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivityForResult(finalIntent, SHARE_EVENT);
         } else {
+            if (InAppStoryService.isNull()) return;
             finalIntent = Intent.createChooser(sendIntent, null);
             finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             InAppStoryService.getInstance().getContext().startActivity(finalIntent);
@@ -432,7 +433,7 @@ public class GameActivity extends AppCompatActivity {
 
     private void setLoader() {
         if (manager.loaderPath != null && !manager.loaderPath.isEmpty()
-                && InAppStoryService.getInstance() != null)
+                && InAppStoryService.isNotNull())
             ImageLoader.getInstance().displayImage(manager.loaderPath, -1, loader,
                     InAppStoryService.getInstance().getCommonCache());
         else

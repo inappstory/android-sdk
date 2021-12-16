@@ -316,6 +316,7 @@ class StoryDownloader {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
+                    if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
                             ? "api_favorite_list" : "api_story_list");
                     NetworkClient.getApi().getStories(

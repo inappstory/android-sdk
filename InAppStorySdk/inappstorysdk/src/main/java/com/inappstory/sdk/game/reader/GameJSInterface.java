@@ -43,6 +43,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public String storyGetLocalData(int storyId) {
+        if (InAppStoryService.isNull()) return "";
         String res = KeyValueStorage.getString("story" + storyId
                 + "__" + InAppStoryService.getInstance().getUserId());
         return res == null ? "" : res;

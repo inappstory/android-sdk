@@ -15,6 +15,7 @@ import androidx.core.util.Pair;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -157,6 +158,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
+        if (InAppStoryService.isNull()) return;
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
     //Test
@@ -165,6 +167,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache without manager
      */
     public void clearCache(Context context) {
+        if (InAppStoryService.isNull()) return;
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
 
@@ -649,6 +652,7 @@ public class InAppStoryManager {
             return;
         }
 
+        if (InAppStoryService.isNull()) return;
         if (StoriesActivity.created == -1) {
             InAppStoryManager.closeStoryReader(CloseStory.AUTO);
             new Handler().postDelayed(new Runnable() {
@@ -716,6 +720,7 @@ public class InAppStoryManager {
                         ProfilingManager.getInstance().setReady(onboardUID);
                         List<Story> notOpened = new ArrayList<>();
                         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                        if (opens == null) opens = new HashSet<>();
                         for (Story story : response) {
                             boolean add = true;
                             for (String opened : opens) {

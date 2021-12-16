@@ -133,6 +133,9 @@ public class TimerManager {
     }
 
     public void pauseTimer() {
+        if (InAppStoryService.isNull()) {
+            return;
+        }
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(InAppStoryService.getInstance().getCurrentId());
         if (story != null) {

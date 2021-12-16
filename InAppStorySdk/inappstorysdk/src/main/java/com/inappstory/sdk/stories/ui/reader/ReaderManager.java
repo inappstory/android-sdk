@@ -61,7 +61,7 @@ public class ReaderManager {
     }
 
     public void showSingleStory(final int storyId, final int slideIndex) {
-
+        if (InAppStoryService.isNull()) return;
         OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (storiesIds.contains(storyId)) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -130,6 +130,7 @@ public class ReaderManager {
     }
 
     void onPageSelected(int source, int position) {
+        if (InAppStoryService.isNull()) return;
         sendStat(position, source);
 
         lastPos = position;
@@ -208,6 +209,7 @@ public class ReaderManager {
     int lastPos = -1;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
+        if (InAppStoryService.isNull()) return;
         Story story2 = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {

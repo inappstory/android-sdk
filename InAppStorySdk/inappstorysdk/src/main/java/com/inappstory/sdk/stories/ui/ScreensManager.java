@@ -177,6 +177,9 @@ public class ScreensManager {
 
 
     public void openGameReader(Context context, int storyId, int index, String gameUrl, String preloadPath, String gameConfig, String resources) {
+        if (InAppStoryService.isNull()) {
+            return;
+        }
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
 

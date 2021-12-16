@@ -34,6 +34,9 @@ public class StoriesListManager {
     }
 
     public void changeStory(final int storyId) {
+        if (InAppStoryService.isNull()) {
+            return;
+        }
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         st.isOpened = true;
         st.saveStoryOpened();
@@ -81,6 +84,9 @@ public class StoriesListManager {
 
     //StoryFavoriteEvent
     public void storyFavorite(final int id, final boolean favStatus) {
+        if (InAppStoryService.isNull()) {
+            return;
+        }
         post(new Runnable() {
             @Override
             public void run() {
