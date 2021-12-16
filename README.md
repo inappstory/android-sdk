@@ -43,7 +43,7 @@ If your project uses proguard obfuscation, then in the `proguard-rules.pro` file
 
 -keep enum com.inappstory.sdk.eventbus.CsThreadMode { *; }
 
-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+-keepclassmembers class fqcn.of.javascript.interface.for.webview {
     public *;
 }
 
