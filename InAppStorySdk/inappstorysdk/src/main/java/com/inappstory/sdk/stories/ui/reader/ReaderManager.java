@@ -172,6 +172,11 @@ public class ReaderManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 newStoryTask(pos);
 
                 if (storiesIds != null && storiesIds.size() > pos) {

@@ -147,18 +147,10 @@ public class StoriesViewManager {
     }
 
     void innerLoad(Story story) {
-        if (InAppStoryService.isConnected()) {
-            if (testGenerated) {
-                initViews(story.slidesStructure.get(index));
-            } else {
-                try {
-                    setWebViewSettings(story);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-
+        try {
+            setWebViewSettings(story);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
