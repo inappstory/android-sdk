@@ -202,9 +202,9 @@ class StoryDownloader {
             if (storyTasks != null)
                 storyTasks.remove(key);
             if (firstPriority != null)
-                firstPriority.remove(key);
+                firstPriority.remove(Integer.valueOf(key));
             if (secondPriority != null)
-                secondPriority.remove(key);
+                secondPriority.remove(Integer.valueOf(key));
             setStoryLoadType(key, -1);
             callback.onError(key);
         }
