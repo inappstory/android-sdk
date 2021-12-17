@@ -439,13 +439,15 @@ public class ReaderPageFragment extends Fragment {
             refresh.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    refresh.setVisibility(View.GONE);
-
-                    if (mask == null) return;
-                    mask.setAlpha(1f);
-                    mask.setVisibility(View.VISIBLE);
                     if (InAppStoryService.isNull()) return;
-                    InAppStoryService.getInstance().getDownloadManager().addStoryTask(storyId, new ArrayList<Integer>());
+                    if (InAppStoryService.isConnected()) {
+                        refresh.setVisibility(View.GONE);
+
+                        if (mask == null) return;
+                        mask.setAlpha(1f);
+                        mask.setVisibility(View.VISIBLE);
+                        InAppStoryService.getInstance().getDownloadManager().addStoryTask(storyId, new ArrayList<Integer>());
+                    }
                     // manager.loadStoryAndSlide(storyId, story.lastIndex);
                 }
             });
