@@ -280,10 +280,14 @@ public class ReaderPageFragment extends Fragment {
             // timeline.setActive(story.lastIndex);
             if (localDurations.isEmpty() && story.durations != null)
                 localDurations.addAll(story.durations);
-
-            timeline.getManager().setStoryDurations(localDurations);
-            timeline.getManager().start(story.lastIndex);
-            InAppStoryService.getInstance().getTimerManager().startTimer(localDurations.get(ind), true);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    timeline.getManager().setStoryDurations(localDurations);
+                    timeline.getManager().start(story.lastIndex);
+                    InAppStoryService.getInstance().getTimerManager().startTimer(localDurations.get(ind), true);
+                }
+            }, 150);
             if (OldStatisticManager.getInstance().currentEvent != null)
                 OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
         }
