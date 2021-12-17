@@ -137,9 +137,6 @@ public class ReaderPageManager {
                                 object.getLink().getTarget()
                         );
                     } else {
-                        if (!InAppStoryService.isConnected()) {
-                            return;
-                        }
                         parentManager.defaultTapOnLink(object.getLink().getTarget());
                     }
                     break;

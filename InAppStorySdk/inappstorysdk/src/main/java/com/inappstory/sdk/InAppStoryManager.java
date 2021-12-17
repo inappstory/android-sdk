@@ -866,14 +866,6 @@ public class InAppStoryManager {
                             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
                         } else {
 
-                            if (!InAppStoryService.isConnected()) {
-
-                                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                                    CallbackManager.getInstance().getErrorCallback().noConnection();
-                                }
-                                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
-                                return;
-                            }
                             try {
                                 Intent i = new Intent(Intent.ACTION_VIEW);
                                 i.setData(Uri.parse(story.deeplink));

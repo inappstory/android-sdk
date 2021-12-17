@@ -78,7 +78,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
+    public void onBindViewHolder(@NonNull final StoryListItem holder, int position) {
         if (holder == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
@@ -106,7 +106,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClick(position);
+                    onItemClick(holder.getAbsoluteAdapterPosition());
                 }
             });
         }
@@ -115,6 +115,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     public void onItemClick(int index) {
         if (InAppStoryService.isNull()) return;
+        if (index < 0) return;
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
             CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.getSlidesCount(),
@@ -132,13 +133,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                     current.saveStoryOpened();
                     notifyItemChanged(index);
                 } else {
-                    if (!InAppStoryService.isConnected()) {
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().noConnection();
-                        }
-                        CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
-                        return;
-                    }
+
                     current.isOpened = true;
                     current.saveStoryOpened();
                     notifyItemChanged(index);
