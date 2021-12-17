@@ -81,6 +81,7 @@ public class StoryDownloadManager {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
+                if (InAppStoryService.isNull()) return;
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
                 NetworkClient.getApi().getStoryById(id, 1, EXPAND_STRING
                 ).enqueue(new NetworkCallback<Story>() {
