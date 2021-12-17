@@ -38,7 +38,7 @@ public class TimelineProgressBar extends FrameLayout {
                 setProgress((float)animation.getAnimatedValue());
             }
         });
-        Log.d("cur_animation", animation.toString() + " setDuration");
+        Log.d("cur_animation", animation.toString() + " setDuration " + getDuration());
     }
 
     Long duration;
