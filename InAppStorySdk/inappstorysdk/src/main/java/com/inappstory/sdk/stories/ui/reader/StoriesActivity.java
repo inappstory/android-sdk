@@ -448,6 +448,8 @@ public class StoriesActivity extends AppCompatActivity {
 
     @CsSubscribe
     public void swipeDownEvent(SwipeDownEvent event) {
+
+        if (InAppStoryService.isNull()) return;
         if (closeOnSwipe) {
             if (InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId()) == null)

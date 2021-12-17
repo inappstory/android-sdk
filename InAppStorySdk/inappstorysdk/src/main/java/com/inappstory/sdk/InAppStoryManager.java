@@ -116,6 +116,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
+        if (InAppStoryService.isNull()) return;
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
 
@@ -523,9 +524,11 @@ public class InAppStoryManager {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
-        InAppStoryService.getInstance().getDownloadManager().putStories(
-                InAppStoryService.getInstance().getDownloadManager().getStories());
+        if (InAppStoryService.isNotNull()) {
+            InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
+            InAppStoryService.getInstance().getDownloadManager().putStories(
+                    InAppStoryService.getInstance().getDownloadManager().getStories());
+        }
         ScreensManager.getInstance().openStoriesReader(outerContext, manager, storiesIds, 0, ShowStory.ONBOARDING);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
         if (onboardLoadedListener != null) {

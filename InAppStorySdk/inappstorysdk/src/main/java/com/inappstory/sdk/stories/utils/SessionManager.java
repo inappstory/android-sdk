@@ -72,6 +72,7 @@ public class SessionManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                if (InAppStoryService.isNull()) return;
                 response.session.save();
                 InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
                 synchronized (openProcessLock) {

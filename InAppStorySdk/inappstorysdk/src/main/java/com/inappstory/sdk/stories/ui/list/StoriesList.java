@@ -228,6 +228,7 @@ public class StoriesList extends RecyclerView {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStoryEvent(final ChangeStoryEvent event) {
+        if (InAppStoryService.isNull()) return;
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(event.getId());
         if (st == null) return;
         st.isOpened = true;

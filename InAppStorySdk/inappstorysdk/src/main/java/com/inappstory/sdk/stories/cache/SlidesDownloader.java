@@ -87,6 +87,7 @@ class SlidesDownloader {
 
     boolean checkIfPageLoaded(Pair<Integer, Integer> key) {
         boolean remove = false;
+        if (InAppStoryService.isNull()) return false;
         if (pageTasks.get(key) != null && pageTasks.get(key).loadType == 2) {
             for (String url : pageTasks.get(key).urls) {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {

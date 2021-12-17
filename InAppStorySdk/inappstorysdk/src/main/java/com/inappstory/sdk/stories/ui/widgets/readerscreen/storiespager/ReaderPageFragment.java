@@ -104,6 +104,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pageByIdSelected(PageByIdSelectedEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (event.getStoryId() != storyId) return;
         Handler handler = new Handler(Looper.getMainLooper());
         if (event.isOnlyResume()) {
@@ -192,6 +193,7 @@ public class ReaderPageFragment extends Fragment {
     Story story;
 
     void setViews(View view) {
+        if (InAppStoryService.isNull()) return;
         story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         if (story.disableClose)
@@ -267,6 +269,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void storyPageStartedEvent(StoryPageStartedEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (this.storyId != event.getStoryId()) return;
         final int ind = event.index;
         if (story != null)
@@ -288,6 +291,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void prevStoryPage(PrevStoryPageEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (event.getStoryId() != storyId) return;
         if (story == null)
             story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
@@ -306,6 +310,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void nextStoryPage(NextStoryPageEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (event.getStoryId() != storyId) return;
         if (story == null)
             story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
@@ -326,6 +331,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void openNextSlide(Story st) {
+        if (InAppStoryService.isNull()) return;
         if (st.lastIndex >= st.slidesCount - 1) return;
         st.setLastIndex(st.lastIndex + 1);
         InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId);
@@ -335,6 +341,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void openPrevSlide(Story st) {
+        if (InAppStoryService.isNull()) return;
         if (st.lastIndex <= 0) return;
         st.setLastIndex(st.lastIndex - 1);
         timeline.getManager().setCurrentSlide(st.lastIndex);
@@ -362,6 +369,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void restartEvent(RestartStoryReaderEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (storyId == event.getId()) {
             if (event.getIndex() > 0) {
                 localDurations.set(event.getIndex(), (int) event.getNewDuration());
@@ -392,6 +400,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void pauseStoryEvent(PauseStoryReaderEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (InAppStoryService.getInstance().getCurrentId() != storyId) return;
         final boolean isWithBackground = event.isWithBackground();
         manager.pauseSlide();
@@ -400,6 +409,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void resumeStoryEvent(ResumeStoryReaderEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (InAppStoryService.getInstance().getCurrentId() != storyId) return;
         if (event.isWithBackground() && OldStatisticManager.getInstance().currentEvent != null) {
             OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
@@ -430,6 +440,7 @@ public class ReaderPageFragment extends Fragment {
                     if (mask == null) return;
                     mask.setAlpha(1f);
                     mask.setVisibility(View.VISIBLE);
+                    if (InAppStoryService.isNull()) return;
                     InAppStoryService.getInstance().getDownloadManager().addStoryTask(storyId, new ArrayList<Integer>());
                     // manager.loadStoryAndSlide(storyId, story.lastIndex);
                 }
@@ -755,6 +766,7 @@ public class ReaderPageFragment extends Fragment {
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void syncTimer(SyncTimerEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (InAppStoryService.getInstance().getCurrentId() != storyId) return;
         manager.syncTime(event.getCurrentTimeLeft(), event.getEventTimer());
     }

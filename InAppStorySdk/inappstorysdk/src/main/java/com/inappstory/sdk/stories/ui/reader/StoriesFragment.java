@@ -243,6 +243,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe
     public void refreshPageEvent(PageByIndexRefreshEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (isDestroyed) return;
         ArrayList<Integer> adds = new ArrayList<>();
         int position = currentIds.indexOf(event.getStoryId());
@@ -264,6 +265,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Override
     public void onPageSelected(int pos0) {
+        if (InAppStoryService.isNull()) return;
         if (isDestroyed) return;
         final int position = pos0;
         if (lastPos < pos0 && lastPos > -1) {
@@ -338,6 +340,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
+        if (InAppStoryService.isNull()) return;
         Story story2 = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
@@ -352,6 +355,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
 
     private int getCurIndexById(int id) {
+        if (InAppStoryService.isNull()) return 0;
         if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
         return st == null ? 0 : st.lastIndex;
@@ -424,6 +428,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
 
     private void tapOnLink(String link) {
+        if (InAppStoryService.isNull()) return;
         StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         if (object != null) {
             switch (object.getLink().getType()) {
@@ -477,6 +482,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void setCurrentIndexEvent(ChangeIndexEvent event) {
+        if (InAppStoryService.isNull()) return;
         if (!isDestroyed) {
             int curItem = storiesViewPager.getCurrentItem();
             Story story = InAppStoryService.getInstance().getDownloadManager()

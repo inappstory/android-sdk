@@ -85,6 +85,7 @@ public class StoriesViewManager {
     boolean lock = true;
 
     public void storyLoaded(int oId, int oInd) {
+        if (InAppStoryService.isNull()) return;
         if (storyId != oId || index != oInd) return;
         this.index = oInd;
         loadedIndex = oInd;
@@ -217,7 +218,7 @@ public class StoriesViewManager {
     public File getCurrentFile(String img) {
         try {
             return InAppStoryService.getInstance().getCommonCache().get(img);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -313,6 +314,7 @@ public class StoriesViewManager {
     boolean storyIsLoaded = false;
 
     public void sendShowSlideEvents() {
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story != null) {
             CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
@@ -332,6 +334,8 @@ public class StoriesViewManager {
     }
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
+
+        if (InAppStoryService.isNull()) return;
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
         intent2.putExtra("storyId", Integer.toString(storyId));
@@ -375,6 +379,7 @@ public class StoriesViewManager {
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {
+        if (InAppStoryService.isNull()) return;
         KeyValueStorage.saveString("story" + storyId
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
 
@@ -396,6 +401,7 @@ public class StoriesViewManager {
     }
 
     public void storySendData(String data) {
+        if (InAppStoryService.isNull()) return;
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
                 .enqueue(new NetworkCallback<Response>() {

@@ -94,6 +94,8 @@ public class StoryDownloadManager {
                         }
                         ArrayList<Story> st = new ArrayList<>();
                         st.add(response);
+
+                        if (InAppStoryService.isNull()) return;
                         InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(st);
                         InAppStoryService.getInstance().getDownloadManager().setStory(response, response.id);
                         if (storyByIdCallback != null)
@@ -165,6 +167,7 @@ public class StoryDownloadManager {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
         try {
+            if (InAppStoryService.isNull()) return;
             InAppStoryService.getInstance().getCommonCache().clearCache();
             InAppStoryService.getInstance().getFastCache().clearCache();
         } catch (IOException e) {
@@ -375,20 +378,23 @@ public class StoryDownloadManager {
                     }
                 }
                 setLocalsOpened(response);
-                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
-                List<Story> newStories = new ArrayList<>();
-                if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
-                    for (Story story : response) {
-                        if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
-                            newStories.add(story);
+
+                if (InAppStoryService.isNotNull()) {
+                    InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
+                    List<Story> newStories = new ArrayList<>();
+                    if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
+                        for (Story story : response) {
+                            if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
+                                newStories.add(story);
+                            }
                         }
                     }
-                }
-                if (newStories.size() > 0) {
-                    try {
-                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (newStories.size() > 0) {
+                        try {
+                            InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
                 if (loadFavorite) {

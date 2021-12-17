@@ -102,6 +102,7 @@ public class ReaderPageManager {
     }
 
     void storyInfoLoaded() {
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         this.timelineManager.setSlidesCount(story.slidesCount);

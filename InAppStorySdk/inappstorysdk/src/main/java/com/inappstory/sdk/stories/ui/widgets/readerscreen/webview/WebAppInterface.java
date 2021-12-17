@@ -151,6 +151,7 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public String storyGetLocalData() {
+        if (InAppStoryService.isNull()) return "";
         String res = KeyValueStorage.getString("story" + manager.storyId
                 + "__" + InAppStoryService.getInstance().getUserId());
         return res == null ? "" : res;

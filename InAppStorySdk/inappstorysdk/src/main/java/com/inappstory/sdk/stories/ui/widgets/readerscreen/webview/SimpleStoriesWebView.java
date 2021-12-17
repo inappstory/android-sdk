@@ -107,6 +107,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
 
     public void playVideo() {
+        if (InAppStoryService.isNull()) return;
         if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
         } else {
@@ -134,6 +135,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
     public void changeSoundStatus() {
+        if (InAppStoryService.isNull()) return;
         if (InAppStoryService.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
@@ -185,6 +187,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     boolean notFirstLoading = false;
 
     public void loadWebData(String outerLayout, String outerData) {
+
+        if (InAppStoryService.isNull()) return;
         getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         String tmpData = outerData;
         String tmpLayout = outerLayout;

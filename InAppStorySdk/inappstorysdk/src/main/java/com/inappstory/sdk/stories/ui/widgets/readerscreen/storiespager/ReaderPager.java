@@ -121,6 +121,7 @@ public class ReaderPager extends ViewPager {
         if (cubeAnimation) {
             return true;
         }
+        if (InAppStoryService.isNull()) return true;
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         float pressedEndX = 0f;
         float pressedEndY = 0f;
@@ -205,6 +206,7 @@ public class ReaderPager extends ViewPager {
     }
 
     public void onPrevStory() {
+        if (InAppStoryService.isNull()) return;
         if (getCurrentItem() > 0) {
 
             StatisticManager.getInstance().sendCurrentState();

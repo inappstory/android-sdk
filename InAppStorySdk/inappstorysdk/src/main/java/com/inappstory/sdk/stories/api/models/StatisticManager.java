@@ -464,6 +464,7 @@ public class StatisticManager {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
+                    if (InAppStoryService.isNull()) return true;
                     if (!InAppStoryService.getInstance().getSendStatistic()) return true;
                     Response response = NetworkClient.getStatApi().sendStat(
                             task.event,

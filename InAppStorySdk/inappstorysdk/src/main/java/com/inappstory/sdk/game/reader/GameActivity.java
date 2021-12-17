@@ -292,7 +292,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void tapOnLink(String link) {
-        if (InAppStoryService.getInstance() == null) return;
+        if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                 Integer.parseInt(storyId));
         CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,

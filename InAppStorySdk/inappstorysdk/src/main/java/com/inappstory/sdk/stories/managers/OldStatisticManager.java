@@ -103,6 +103,7 @@ public class OldStatisticManager {
     }
 
     public boolean sendStatistic(String place) {
+        if (InAppStoryService.isNull()) return true;
         if (!InAppStoryService.isConnected()) return true;
         if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
             return false;

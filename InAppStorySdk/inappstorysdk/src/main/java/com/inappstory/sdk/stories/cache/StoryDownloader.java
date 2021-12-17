@@ -306,6 +306,7 @@ class StoryDownloader {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
+                    if (InAppStoryService.isNull()) return;
                     NetworkClient.getApi().getStories(StatisticSession.getInstance().id,
                             ApiSettings.getInstance().getTestKey(),
                             isFavorite ? 1 : 0,
