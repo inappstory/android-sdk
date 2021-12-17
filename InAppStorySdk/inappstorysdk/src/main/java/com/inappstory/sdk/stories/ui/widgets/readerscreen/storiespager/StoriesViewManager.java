@@ -105,18 +105,10 @@ public class StoriesViewManager {
     }
 
     void innerLoad(Story story) {
-        if (InAppStoryService.isConnected()) {
-            if (testGenerated) {
-                initViews(story.slidesStructure.get(index));
-            } else {
-                try {
-                    setWebViewSettings(story);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-
+        try {
+            setWebViewSettings(story);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -135,10 +127,6 @@ public class StoriesViewManager {
 
         if (InAppStoryService.isNull())
             return;
-        if (!InAppStoryService.isConnected()) {
-            CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            return;
-        }
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
         if (story == null || story.checkIfEmpty()) {
             return;
@@ -152,6 +140,10 @@ public class StoriesViewManager {
         if (!slideInCache) {
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false)); //animation
         } else {
+            if (!InAppStoryService.isConnected()) {
+                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
+                return;
+            }
             innerLoad(story);
         }
     }

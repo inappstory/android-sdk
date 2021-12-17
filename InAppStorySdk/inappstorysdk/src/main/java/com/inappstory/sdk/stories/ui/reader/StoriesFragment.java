@@ -457,9 +457,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                                 object.getLink().getTarget()
                         );
                     } else {
-                        if (!InAppStoryService.isConnected()) {
-                            return;
-                        }
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         i.setData(Uri.parse(object.getLink().getTarget()));
