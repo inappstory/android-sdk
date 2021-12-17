@@ -129,10 +129,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                     current.saveStoryOpened();
                     notifyItemChanged(index);
                 } else {
-                    if (!InAppStoryService.isConnected()) {
-                        CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
-                        return;
-                    }
                     current.isOpened = true;
                     current.saveStoryOpened();
                     notifyItemChanged(index);

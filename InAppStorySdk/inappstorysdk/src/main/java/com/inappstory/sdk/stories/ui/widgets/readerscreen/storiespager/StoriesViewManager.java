@@ -252,17 +252,9 @@ public class StoriesViewManager {
 
     public void storyClick(String payload) {
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
-            if (InAppStoryService.isConnected()) {
-                CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate()));
-            } else {
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            }
+            CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate()));
         } else if (payload.equals("forbidden")) {
-            if (InAppStoryService.isConnected()) {
-                CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate(), true));
-            } else {
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            }
+            CsEventBus.getDefault().post(new StoryReaderTapEvent((int) getClickCoordinate(), true));
         } else {
             CsEventBus.getDefault().post(new StoryReaderTapEvent(payload));
         }
