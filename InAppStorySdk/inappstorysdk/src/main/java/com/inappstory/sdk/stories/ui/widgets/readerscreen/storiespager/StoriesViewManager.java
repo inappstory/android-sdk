@@ -25,6 +25,7 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
+import com.inappstory.sdk.stories.events.PageTaskLoadErrorEvent;
 import com.inappstory.sdk.stories.events.PageTaskToLoadEvent;
 import com.inappstory.sdk.stories.events.StoryPageStartedEvent;
 import com.inappstory.sdk.stories.events.StoryReaderTapEvent;
@@ -125,6 +126,11 @@ public class StoriesViewManager {
     public void loadStory(final int id, final int index) {
         if (loadedId == id && loadedIndex == index) return;
 
+        if (!InAppStoryService.isConnected()) {
+            CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
+            CsEventBus.getDefault().post(new PageTaskLoadErrorEvent(id, index));
+            return;
+        }
         if (InAppStoryService.isNull())
             return;
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
@@ -140,10 +146,6 @@ public class StoriesViewManager {
         if (!slideInCache) {
             CsEventBus.getDefault().post(new PageTaskToLoadEvent(storyId, index, false)); //animation
         } else {
-            if (!InAppStoryService.isConnected()) {
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-                return;
-            }
             innerLoad(story);
         }
     }
