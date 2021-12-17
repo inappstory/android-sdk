@@ -55,6 +55,9 @@ public class TimelineProgressBar extends FrameLayout {
     }
 
     public void clear() {
+        if (animation != null)
+            Log.d("cur_animation", animation.toString() + " clear");
+
         if (progressForeground.getVisibility() == VISIBLE)
             progressForeground.setVisibility(INVISIBLE);
     }
