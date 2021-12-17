@@ -82,13 +82,19 @@ public class StoryDownloadManager {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                storyByIdCallback.loadError(-1);
+                if (InAppStoryService.isNull()) {
+                    storyByIdCallback.loadError(-1);
+                    return;
+                }
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
                 NetworkClient.getApi().getStoryById(id, 1, EXPAND_STRING
                 ).enqueue(new NetworkCallback<Story>() {
                     @Override
                     public void onSuccess(final Story response) {
-                        storyByIdCallback.loadError(-1);
+                        if (InAppStoryService.isNull()) {
+                            storyByIdCallback.loadError(-1);
+                            return;
+                        }
                         ProfilingManager.getInstance().setReady(storyUID);
                         CsEventBus.getDefault().post(new SingleLoad(id));
                         if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
