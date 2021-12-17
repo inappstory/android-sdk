@@ -287,7 +287,7 @@ public class ReaderPageFragment extends Fragment {
                     timeline.getManager().start(story.lastIndex);
                     InAppStoryService.getInstance().getTimerManager().startTimer(localDurations.get(ind), true);
                 }
-            }, 150);
+            }, 300);
             if (OldStatisticManager.getInstance().currentEvent != null)
                 OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
         }
