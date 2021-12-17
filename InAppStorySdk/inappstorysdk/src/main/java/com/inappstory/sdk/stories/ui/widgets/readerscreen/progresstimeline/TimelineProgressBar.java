@@ -29,13 +29,13 @@ public class TimelineProgressBar extends FrameLayout {
     public void setDuration(Long duration) {
         this.duration = duration;
 
-        animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
+        animation = ValueAnimator.ofFloat(1f / getDuration(), 1f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(getDuration());
         animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                setProgress((float)animation.getAnimatedValue());
+                setProgress((float) animation.getAnimatedValue());
             }
         });
         Log.d("cur_animation", animation.toString() + " setDuration " + getDuration());
@@ -63,6 +63,8 @@ public class TimelineProgressBar extends FrameLayout {
         if (progressForeground.getVisibility() == INVISIBLE)
             progressForeground.setVisibility(VISIBLE);
         progressForeground.setScaleX(1f / getDuration());
+        if (animation != null)
+            Log.d("cur_animation", animation.toString() + " setMin");
         //progressForeground.setVisibility(INVISIBLE);
     }
 
@@ -71,6 +73,8 @@ public class TimelineProgressBar extends FrameLayout {
         if (progressForeground.getVisibility() == INVISIBLE)
             progressForeground.setVisibility(VISIBLE);
         progressForeground.setScaleX(1);
+        if (animation != null)
+            Log.d("cur_animation", animation.toString() + " setMax");
         //progressForeground.setVisibility(INVISIBLE);
     }
 
@@ -104,12 +108,12 @@ public class TimelineProgressBar extends FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.cs_progress_bar, this);
         progressForeground = findViewById(R.id.progress_foreground);
         progressBackground = findViewById(R.id.progress_background);
-        progressForeground.setPivotX(-progressForeground.getWidth()/2);
-        animation = ValueAnimator.ofFloat(1f/getDuration(), 1f);
+        progressForeground.setPivotX(-progressForeground.getWidth() / 2);
+        animation = ValueAnimator.ofFloat(1f / getDuration(), 1f);
         animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                setProgress((float)animation.getAnimatedValue());
+                setProgress((float) animation.getAnimatedValue());
             }
         });
     }
