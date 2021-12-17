@@ -318,7 +318,6 @@ public class ReaderPageFragment extends Fragment {
         if (event.getStoryId() != storyId) return;
         if (story == null)
             story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        //storiesProgressView.skip();
         if (story == null) return;
         if (story.durations != null && !story.durations.isEmpty())
             story.slidesCount = story.durations.size();
