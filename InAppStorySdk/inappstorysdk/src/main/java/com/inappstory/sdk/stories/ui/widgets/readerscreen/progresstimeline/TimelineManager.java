@@ -31,6 +31,7 @@ public class TimelineManager {
     public void start(int ind) {
         mAnimationRest = -1;
         timeline.setActive(ind);
+        Log.d("cur_animation", timeline.curAnimation.toString() + " start");
         timeline.curAnimation.start();
     }
 
@@ -55,11 +56,13 @@ public class TimelineManager {
     private long mAnimationRest;
 
     public void pause() {
+        Log.d("cur_animation", timeline.curAnimation.toString() + " pause");
         timeline.curAnimation.pause();
         mAnimationRest = timeline.curAnimation.getDuration() - timeline.curAnimation.getCurrentPlayTime();
     }
 
     public void resume() {
+        Log.d("cur_animation", timeline.curAnimation.toString() + " resume");
         timeline.curAnimation.resume();
     }
 
