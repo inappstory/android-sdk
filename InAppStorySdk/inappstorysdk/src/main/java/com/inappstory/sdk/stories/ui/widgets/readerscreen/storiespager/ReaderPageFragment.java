@@ -145,6 +145,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadedSuccess() {
+        refresh.setVisibility(View.GONE);
         hideLoader();
     }
 
