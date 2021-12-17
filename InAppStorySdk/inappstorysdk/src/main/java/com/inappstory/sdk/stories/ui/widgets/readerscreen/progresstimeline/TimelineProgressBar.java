@@ -38,7 +38,6 @@ public class TimelineProgressBar extends FrameLayout {
                 setProgress((float) animation.getAnimatedValue());
             }
         });
-        Log.d("cur_animation", animation.toString() + " setDuration " + getDuration());
     }
 
     Long duration;
@@ -56,7 +55,6 @@ public class TimelineProgressBar extends FrameLayout {
 
     public void clear() {
         if (animation != null)
-            Log.d("cur_animation", animation.toString() + " clear");
 
         if (progressForeground.getVisibility() == VISIBLE)
             progressForeground.setVisibility(INVISIBLE);
@@ -66,9 +64,6 @@ public class TimelineProgressBar extends FrameLayout {
         if (progressForeground.getVisibility() == INVISIBLE)
             progressForeground.setVisibility(VISIBLE);
         progressForeground.setScaleX(1f / getDuration());
-        if (animation != null)
-            Log.d("cur_animation", animation.toString() + " setMin");
-        //progressForeground.setVisibility(INVISIBLE);
     }
 
 
@@ -76,9 +71,6 @@ public class TimelineProgressBar extends FrameLayout {
         if (progressForeground.getVisibility() == INVISIBLE)
             progressForeground.setVisibility(VISIBLE);
         progressForeground.setScaleX(1);
-        if (animation != null)
-            Log.d("cur_animation", animation.toString() + " setMax");
-        //progressForeground.setVisibility(INVISIBLE);
     }
 
     public TimelineProgressBar(@NonNull Context context, @Nullable AttributeSet attrs) {

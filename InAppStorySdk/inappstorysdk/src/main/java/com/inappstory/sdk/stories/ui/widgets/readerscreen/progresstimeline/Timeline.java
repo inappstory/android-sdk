@@ -94,12 +94,9 @@ public class Timeline extends LinearLayout {
     public void setActive(int ind) {
         if (curAnimation != null) {
             curAnimation.cancel();
-            Log.d("cur_animation", curAnimation.toString() + " cancel");
         }
         if (ind >= 0 && ind < progressBars.size()) {
             curAnimation = progressBars.get(ind).animation;
-
-            Log.d("cur_animation", curAnimation.toString() + " assign " + progressBars.get(ind).animation.toString());
             activeInd = ind;
         }
         //Log.e("Story_VisualTimers", "setActive " + activeInd);
