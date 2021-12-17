@@ -81,9 +81,9 @@ public class Timeline extends LinearLayout {
 
     public void forceRestartProgress() {
         try {
-      //      if (curAnimation != null) curAnimation.cancel();
-      //      curAnimation = progressBars.get(activeInd).animation;
-      //      Log.e("Story_VisualTimers", "forceRestartProgress");
+            //      if (curAnimation != null) curAnimation.cancel();
+            //      curAnimation = progressBars.get(activeInd).animation;
+            //      Log.e("Story_VisualTimers", "forceRestartProgress");
             getManager().start(activeInd);
         } catch (Exception e) {
         }
@@ -92,8 +92,10 @@ public class Timeline extends LinearLayout {
     int current = 0;
 
     public void setActive(int ind) {
-        Log.d("cur_animation", curAnimation.toString() + " cancel");
-        if (curAnimation != null) curAnimation.cancel();
+        if (curAnimation != null) {
+            curAnimation.cancel();
+            Log.d("cur_animation", curAnimation.toString() + " cancel");
+        }
         if (ind >= 0 && ind < progressBars.size()) {
             curAnimation = progressBars.get(ind).animation;
 
