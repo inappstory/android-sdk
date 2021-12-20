@@ -151,7 +151,11 @@ public class FlutterManager {
 
     }
 
-    public void sendPreviewStatistic(int[] ids, boolean isFavoriteList) {
+
+    public void sendListPreviewStat(int[] ids) {
+        sendPreviewStat(ids, false);
+    }
+    private void sendPreviewStat(int[] ids, boolean isFavoriteList) {
         ArrayList<Integer> indexes = new ArrayList<>();
         for (int id : ids) {
             indexes.add(id);
