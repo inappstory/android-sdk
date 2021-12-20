@@ -484,7 +484,8 @@ public class ReaderPageFragment extends Fragment {
             storiesView.destroyView();
 
         parentManager.removeSubscriber(manager);
-        InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
+        if (InAppStoryService.getInstance() != null)
+            InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
         super.onDestroyView();
     }
 }
