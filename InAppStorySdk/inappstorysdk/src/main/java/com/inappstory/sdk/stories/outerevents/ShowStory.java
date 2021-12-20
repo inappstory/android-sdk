@@ -7,6 +7,7 @@ public class ShowStory extends BaseOuterEvent {
     public static final int ONBOARDING = 1;
     public static final int LIST = 2;
     public static final int FAVORITE = 3;
+    public static final int CUSTOM = 4;
 
     public int getSource() {
         return source;
