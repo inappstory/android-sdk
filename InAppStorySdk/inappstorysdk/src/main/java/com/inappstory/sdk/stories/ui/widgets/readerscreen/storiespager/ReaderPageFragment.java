@@ -467,15 +467,15 @@ public class ReaderPageFragment extends Fragment {
         bindViews(view);
         setActions();
         setManagers();
-        if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) != null)
-            manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(storyId).lastIndex);
-
-        manager.setStoryId(storyId);
-        setViews(view);
-        InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
-        manager.storyLoadedInCache();
-
+        if (InAppStoryService.getInstance() != null) {
+            if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) != null)
+                manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
+                        .getStoryById(storyId).lastIndex);
+            manager.setStoryId(storyId);
+            setViews(view);
+            InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
+            manager.storyLoadedInCache();
+        }
     }
 
 
