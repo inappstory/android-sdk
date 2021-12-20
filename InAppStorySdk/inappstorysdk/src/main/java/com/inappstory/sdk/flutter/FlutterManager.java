@@ -8,15 +8,21 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.flutter.adapters.ErrorCallback;
 import com.inappstory.sdk.flutter.adapters.SuccessCallback;
 import com.inappstory.sdk.network.ApiSettings;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 public class FlutterManager {
     private void checkAndApplyRequest(OpenSessionCallback openSessionCallback,
@@ -32,19 +38,45 @@ public class FlutterManager {
         SessionManager.getInstance().useOrOpenSession(openSessionCallback);
     }
 
-    public void getStoriesList(final SuccessCallback successCallback,
-                               final ErrorCallback errorCallback) {
+    private void localCaching(String json) {
+        List<Story> stories = JsonParser.listFromJson(json, Story.class);
+        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
+        List<Story> newStories = new ArrayList<>();
+        if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
+            for (Story story : stories) {
+                if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
+                    newStories.add(story);
+                }
+            }
+        }
+        if (newStories.size() > 0) {
+            InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+        }
+    }
+
+    private void getStories(final SuccessCallback successCallback,
+                            final ErrorCallback errorCallback, final boolean isFavorite,
+                            final boolean simple) {
+
         checkAndApplyRequest(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
+                final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
+                        ? "api_favorite_list" : "api_story_list");
                 NetworkClient.getApi().getStories(
                         ApiSettings.getInstance().getTestKey(),
-                        0,
+                        isFavorite ? 1 : 0,
                         InAppStoryService.getInstance().getTagsString(),
-                        null)
+                        simple ? "id, background_color, image" : null)
                         .enqueue(new NetworkCallback<String>() {
                             @Override
                             public void onSuccess(String response) {
+                                ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                try {
+                                    localCaching(response);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                                 successCallback.onSuccess(response);
                             }
 
@@ -55,11 +87,14 @@ public class FlutterManager {
 
                             @Override
                             public void onError(int code, String message) {
+                                ProfilingManager.getInstance().setReady(loadStoriesUID);
                                 errorCallback.onError();
                             }
 
                             @Override
                             public void onTimeout() {
+
+                                ProfilingManager.getInstance().setReady(loadStoriesUID);
                                 errorCallback.onError();
                             }
                         });
@@ -70,6 +105,21 @@ public class FlutterManager {
                 errorCallback.onError();
             }
         }, errorCallback);
+    }
+
+    public void getStoriesList(SuccessCallback successCallback,
+                               ErrorCallback errorCallback) {
+        getStories(successCallback, errorCallback, false, false);
+    }
+
+    private void getStoriesListFavoriteItem(SuccessCallback successCallback,
+                                        ErrorCallback errorCallback) {
+        getStories(successCallback, errorCallback, true, true);
+    }
+
+    private void getStoriesFavoriteList(SuccessCallback successCallback,
+                                        ErrorCallback errorCallback) {
+        getStories(successCallback, errorCallback, true, false);
     }
 
     public void openStoriesReader(final Context context,
@@ -99,5 +149,17 @@ public class FlutterManager {
             }
         }, errorCallback);
 
+    }
+
+    public void sendPreviewStatistic(int[] ids, boolean isFavoriteList) {
+        ArrayList<Integer> indexes = new ArrayList<>();
+        for (int id : ids) {
+            indexes.add(id);
+        }
+        OldStatisticManager.getInstance().previewStatisticEvent(indexes);
+        if (StatisticManager.getInstance() != null) {
+            StatisticManager.getInstance().sendViewStory(indexes,
+                    isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST);
+        }
     }
 }
