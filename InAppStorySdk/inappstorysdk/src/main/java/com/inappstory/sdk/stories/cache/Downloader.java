@@ -124,11 +124,15 @@ public class Downloader {
         });
     }
 
-    public static void downloadCoverVideo(final String url, final LruDiskCache cache,
-                                          final FileLoadProgressCallback callback) {
+    public static void downloadFileBackground(final String url, final LruDiskCache cache,
+                                              final FileLoadProgressCallback callback) {
         tmpFileDownloader.submit(new Callable() {
             @Override
             public File call() throws Exception {
+                if (cache == null) {
+                    callback.onError();
+                    return null;
+                }
                 return downloadOrGetFile(url, cache, null, callback);
             }
         });

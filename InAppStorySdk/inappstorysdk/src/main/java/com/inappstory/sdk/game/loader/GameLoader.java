@@ -165,6 +165,11 @@ public class GameLoader {
                                 public void onSuccess(File file) {
 
                                 }
+
+                                @Override
+                                public void onError() {
+                                    
+                                }
                             }, hash);
 
                     ProfilingManager.getInstance().setReady(hash);

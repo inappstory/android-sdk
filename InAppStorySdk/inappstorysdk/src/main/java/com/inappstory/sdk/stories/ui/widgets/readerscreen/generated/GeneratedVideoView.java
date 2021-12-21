@@ -183,7 +183,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
                 }
             } else {
                 mp.setDataSource(url);
-                Downloader.downloadCoverVideo(url, cache, null);
+                Downloader.downloadFileBackground(url, cache, null);
             }
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

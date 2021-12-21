@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -66,18 +65,22 @@ public class ImageLoader {
 
     int stub_id = R.drawable.ic_stories_close;
 
-    public void displayImage(String url, int loader, ImageView imageView, LruDiskCache cache) {
+    public void displayImage(String path, int loader, ImageView imageView) {
+        displayImage(path, loader, imageView, null);
+    }
+
+    public void displayImage(String path, int loader, ImageView imageView, LruDiskCache cache) {
         try {
             stub_id = loader;
-            imageViews.put(imageView, url);
-            Bitmap bitmap = memoryCache.get(url);
+            imageViews.put(imageView, path);
+            Bitmap bitmap = memoryCache.get(path);
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
                 if (imageView instanceof GeneratedImageView) {
                     ((GeneratedImageView) imageView).onLoaded();
                 }
             } else {
-                queuePhoto(url, imageView, cache);
+                queuePhoto(path, imageView, cache);
             }
         } catch (Exception e) {
 
@@ -332,12 +335,12 @@ public class ImageLoader {
     }
 
     private class PhotoToLoad {
-        public String url;
+        public String path;
         public ImageView imageView;
         public LruDiskCache cache;
 
         public PhotoToLoad(String u, ImageView i, LruDiskCache c) {
-            url = u;
+            path = u;
             imageView = i;
             cache = c;
         }
@@ -355,9 +358,13 @@ public class ImageLoader {
         public void run() {
             if (imageViewReused(photoToLoad))
                 return;
-            Bitmap bmp = getBitmap(photoToLoad.url, photoToLoad.cache);
+            Bitmap bmp = null;
+            if (photoToLoad.cache != null)
+                bmp = getBitmap(photoToLoad.path, photoToLoad.cache);
+            else
+                bmp = decodeFile(new File(photoToLoad.path));
             if (bmp != null)
-                memoryCache.put(photoToLoad.url, bmp);
+                memoryCache.put(photoToLoad.path, bmp);
             if (imageViewReused(photoToLoad))
                 return;
             BitmapDisplayer bd = new BitmapDisplayer(bmp, photoToLoad);
@@ -367,7 +374,7 @@ public class ImageLoader {
 
     public boolean imageViewReused(PhotoToLoad photoToLoad) {
         String tag = imageViews.get(photoToLoad.imageView);
-        if (tag == null || !tag.equals(photoToLoad.url))
+        if (tag == null || !tag.equals(photoToLoad.path))
             return true;
         return false;
     }

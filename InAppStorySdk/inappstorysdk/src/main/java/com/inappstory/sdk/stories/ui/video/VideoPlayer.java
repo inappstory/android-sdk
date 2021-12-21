@@ -33,6 +33,17 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     }
 
     public void loadVideo(String path) {
+        file = new File(path);
+        isLoaded = true;
+
+        if (this.isAvailable()) {
+            prepareVideo(getSurfaceTexture());
+        }
+
+        setSurfaceTextureListener(this);
+    }
+
+    public void loadVideoByUrl(String path) {
         if (this.url == null || !this.url.equals(path)) {
             file = null;
         }
@@ -102,7 +113,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     private void downloadCoverVideo(String url) {
         if (InAppStoryService.isNull()) return;
-        Downloader.downloadCoverVideo(url, InAppStoryService.getInstance().getFastCache(),
+        Downloader.downloadFileBackground(url, InAppStoryService.getInstance().getFastCache(),
                 new FileLoadProgressCallback() {
                     @Override
                     public void onProgress(int loadedSize, int totalSize) {
@@ -119,6 +130,11 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                             e.printStackTrace();
                         }
                     }
+
+                    @Override
+                    public void onError() {
+
+                    }
                 });
     }
 
@@ -128,8 +144,10 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
             mp = new MediaPlayer();
         mp.setSurface(this.surface);
         try {
-            if (file == null)
+            if (file == null) {
+                if (url == null) return;
                 file = Downloader.getCoverVideo(url, InAppStoryService.getInstance().getFastCache());
+            }
             if (file != null && file.exists()) {
                 boolean fileIsNotLocked = file.renameTo(file);
                 if (file.length() > 10 && fileIsNotLocked) {
@@ -137,6 +155,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                     mp.prepareAsync();
                 }
             } else {
+                if (url == null) return;
                 downloadCoverVideo(url);
             }
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

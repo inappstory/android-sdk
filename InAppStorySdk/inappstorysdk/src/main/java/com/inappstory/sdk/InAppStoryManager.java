@@ -475,18 +475,21 @@ public class InAppStoryManager {
 
 
     private InAppStoryManager(final Builder builder) throws DataException {
-        KeyValueStorage.setContext(builder.context);
-        SharedPreferencesAPI.setContext(builder.context);
-        createServiceThread(builder.context, builder.userId);
         if (builder.apiKey == null &&
-                (builder.context.getResources().getString(R.string.csApiKey).isEmpty()
-                        || builder.context.getResources().getString(R.string.csApiKey).equals("1"))) {
-            throw new DataException("'apiKey' can't be empty. Set 'csApiKey' in 'constants.xml' or put use 'builder.apiKey()'", new Throwable("config is not valid"));
+                builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
+            throw new DataException("'apiKey' can't be null or empty. Set 'csApiKey' in 'constants.xml' or use 'builder.apiKey(<api_key>)'", new Throwable("config is not valid"));
+        }
+        if (builder.userId == null || builder.userId.length() > 255) {
+            throw new DataException("'userId' can't be null or longer than 255 characters. Use 'builder.userId(<user_id>)'", new Throwable("config is not valid"));
         }
         long freeSpace = builder.context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
             throw new DataException("there is no free space on device", new Throwable("initialization error"));
         }
+
+        KeyValueStorage.setContext(builder.context);
+        SharedPreferencesAPI.setContext(builder.context);
+        createServiceThread(builder.context, builder.userId);
         if (InAppStoryService.isNotNull()) {
             long commonCacheSize = MB_100;
             long fastCacheSize = MB_10;
@@ -508,8 +511,7 @@ public class InAppStoryManager {
                 builder.apiKey != null ? builder.apiKey : builder.context
                         .getResources().getString(R.string.csApiKey),
                 builder.testKey != null ? builder.testKey : null,
-                (builder.userId != null && !builder.userId.isEmpty()) ? builder.userId :
-                        "",
+                builder.userId,
                 builder.tags != null ? builder.tags : null,
                 builder.placeholders != null ? builder.placeholders : null,
                 builder.sendStatistic);
@@ -640,7 +642,14 @@ public class InAppStoryManager {
         return new Pair<>(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
     }
 
-    public boolean soundOn = false;
+    private boolean soundOn = false;
+    public void soundOn(boolean isSoundOn) {
+        this.soundOn = soundOn;
+    }
+
+    public boolean soundOn() {
+        return soundOn;
+    }
 
     private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager) {
 

@@ -32,10 +32,10 @@ public interface IStoriesListItem {
     /**
      * Use to set image cover for custom list cell
      * @param itemView (itemView) contains a view that was initialized in getView() method.
-     * @param url (url) contains a link to story's cover image.
+     * @param path (path) contains a local path to story's cover image.
      * @param backgroundColor (backgroundColor) contains background color to story's cover.
      */
-    void setImage(View itemView, String url, int backgroundColor);
+    void setImage(View itemView, String path, int backgroundColor);
 
     /**
      * Use to check and set sound status if necessary for custom list cell
@@ -47,11 +47,9 @@ public interface IStoriesListItem {
     /**
      * Use to set video cover for custom list cell. Use only if getVideoView is set.
      * @param itemView (itemView) contains a view that was initialized in getVideoView() method.
-     * @param videoUrl (videoUrl) check if current story has audio content.
-     * @param url (url) check if current story has audio content.
-     * @param backgroundColor (backgroundColor) check if current story has audio content.
+     * @param videoPath (videoPath) contains a local path to story's cover video.
      */
-    void setVideo(View itemView, String videoUrl, String url, int backgroundColor);
+    void setVideo(View itemView, String videoPath);
 
     /**
      * Use to check and set sound status if necessary for custom list cell
