@@ -399,12 +399,16 @@ public class ContactDialog {
             public void onDismiss(DialogInterface dialogInterface) {
 
                 View view = activity.getCurrentFocus();
-                editText.clearFocus();
                 if (view != null) {
-
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                    StatisticManager.getInstance().resumeStoryEvent(true);
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            editText.clearFocus();
+                            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                            StatisticManager.getInstance().resumeStoryEvent(true);
+                        }
+                    });
                 }
 
 
@@ -444,7 +448,7 @@ public class ContactDialog {
         });
 
         if (!isTablet()) {
-            new Handler().postDelayed(new Runnable() {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     et.requestFocus();
