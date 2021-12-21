@@ -82,6 +82,18 @@ public class StoriesListManager {
         });
     }
 
+    public void clearAllFavorites() {
+
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (list == null) return;
+                if (list.getVisibility() != View.VISIBLE) return;
+                list.clearAllFavorites();
+            }
+        });
+    }
+
     //StoryFavoriteEvent
     public void storyFavorite(final int id, final boolean favStatus) {
         if (InAppStoryService.isNull()) {
@@ -90,10 +102,10 @@ public class StoriesListManager {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
                 List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
                 boolean isEmpty = favImages.isEmpty();
                 Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+                if (story == null) return;
                 if (favStatus) {
                     FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
                     if (!favImages.contains(favoriteImage))

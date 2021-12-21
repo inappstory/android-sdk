@@ -106,6 +106,11 @@ public final class Request<T> {
             return this;
         }
 
+        public Builder delete() {
+            this.method = NetworkHandler.DELETE;
+            return this;
+        }
+
         public Builder put() {
             this.method = NetworkHandler.PUT;
             return this;

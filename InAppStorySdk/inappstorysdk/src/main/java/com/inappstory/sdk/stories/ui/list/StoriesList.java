@@ -270,6 +270,15 @@ public class StoriesList extends RecyclerView {
         }
     }
 
+    public void clearAllFavorites() {
+        if (InAppStoryService.isNull()) return;
+        if (adapter == null) return;
+        if (isFavoriteList) {
+            adapter.getStoriesIds().clear();
+            adapter.notifyDataSetChanged();
+        }
+    }
+
     public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
         if (InAppStoryService.isNull()) return;
         if (adapter == null) return;

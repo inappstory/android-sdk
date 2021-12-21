@@ -80,7 +80,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
+    public void onBindViewHolder(@NonNull final StoryListItem holder, int position) {
         if (holder == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
@@ -96,19 +96,22 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             if (InAppStoryService.isNotNull()) {
                 final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
                 if (story == null) return;
-                holder.bind(story.getTitle(),
+                holder.bind(story.id,
+                        story.getTitle(),
                         story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                         story.getSource(),
                         (story.getImage() != null && story.getImage().size() > 0) ?
                                 story.getProperImage(manager.csCoverQuality()).getUrl() : null,
                         Color.parseColor(story.getBackgroundColor()),
-                        story.isOpened || isFavoriteList, story.hasAudio(),
+                        story.isOpened || isFavoriteList,
+                        story.hasAudio(),
                         story.getVideoUrl());
             }
+
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClick(position);
+                    onItemClick(holder.getAbsoluteAdapterPosition());
                 }
             });
         }

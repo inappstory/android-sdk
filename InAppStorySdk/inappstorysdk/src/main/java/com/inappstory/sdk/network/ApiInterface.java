@@ -77,6 +77,8 @@ public interface ApiInterface {
     Request storyFavorite(@Path("id") String id,
                           @Query("value") Integer value);
 
+    @DELETE("v2/story-favorite")
+    Request removeAllFavorites();
 
     @GET("v2/story-share/{id}")
     Request share(@Path("id") String id,

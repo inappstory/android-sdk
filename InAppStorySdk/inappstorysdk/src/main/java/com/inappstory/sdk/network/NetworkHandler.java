@@ -128,8 +128,11 @@ public final class NetworkHandler implements InvocationHandler {
         if (networkClient == null) networkClient = NetworkClient.getInstance();
         GET get = method.getAnnotation(GET.class);
         POST post = method.getAnnotation(POST.class);
+        DELETE delete = method.getAnnotation(DELETE.class);
         PUT put = method.getAnnotation(PUT.class);
-        if (get != null) {
+        if (delete != null) {
+            return generateRequest(delete.value(), method.getParameterAnnotations(), args, (new Request.Builder()).delete());
+        } else if (get != null) {
             return generateRequest(get.value(), method.getParameterAnnotations(), args, (new Request.Builder()).get());
         } else {
             boolean encoded = (method.getAnnotation(FormUrlEncoded.class) != null);
@@ -211,6 +214,7 @@ public final class NetworkHandler implements InvocationHandler {
 
     public static final String POST = "POST";
     public static final String GET = "GET";
+    public static final String DELETE = "DELETE";
     public static final String HEAD = "HEAD";
     public static final String PUT = "PUT";
 

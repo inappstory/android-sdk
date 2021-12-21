@@ -26,6 +26,7 @@ import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
@@ -473,6 +474,104 @@ public class InAppStoryManager {
 
     private ExceptionCache exceptionCache;
 
+    public void removeFromFavorite(final int storyId) {
+        if (InAppStoryService.isNull()) return;
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess() {
+                favoriteOrRemoveStory(storyId, false);
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+    }
+
+    public void removeAllFavorites() {
+        if (InAppStoryService.isNull()) return;
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess() {
+                favoriteRemoveAll();
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+    }
+
+    private void favoriteRemoveAll() {
+        if (InAppStoryService.isNull()) return;
+        final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
+        NetworkClient.getApi().removeAllFavorites().enqueue(new NetworkCallback<Response>() {
+            @Override
+            public void onSuccess(Response response) {
+                ProfilingManager.getInstance().setReady(favUID);
+                if (InAppStoryService.isNotNull()) {
+                    InAppStoryService.getInstance().getDownloadManager().clearAllFavoriteStatus();
+                    InAppStoryService.getInstance().getFavoriteImages().clear();
+                    InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
+                }
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                ProfilingManager.getInstance().setReady(favUID);
+                super.onError(code, message);
+            }
+
+            @Override
+            public void onTimeout() {
+                super.onTimeout();
+                ProfilingManager.getInstance().setReady(favUID);
+            }
+
+            @Override
+            public Type getType() {
+                return null;
+            }
+        });
+    }
+
+
+    private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
+        if (InAppStoryService.isNull()) return;
+        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
+        NetworkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0).enqueue(
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        ProfilingManager.getInstance().setReady(favUID);
+                        if (InAppStoryService.isNotNull()) {
+                            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+                            if (story != null)
+                                story.favorite = favorite;
+                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
+                        }
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        ProfilingManager.getInstance().setReady(favUID);
+                        super.onError(code, message);
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        ProfilingManager.getInstance().setReady(favUID);
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                });
+    }
 
     private InAppStoryManager(final Builder builder) throws DataException {
         if (builder.apiKey == null &&

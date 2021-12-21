@@ -344,6 +344,13 @@ public class InAppStoryService {
                 sub.storyFavorite(id, favStatus);
             }
         }
+
+        public void clearAllFavorites() {
+            if (InAppStoryService.isNull()) return;
+            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+                sub.clearAllFavorites();
+            }
+        }
     }
 
     Set<StoriesListManager> listSubscribers;

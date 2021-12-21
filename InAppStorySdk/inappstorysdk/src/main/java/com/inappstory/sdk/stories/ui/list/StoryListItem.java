@@ -339,7 +339,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         });
     }
 
-    public void bind(String titleText,
+    public void bind(Integer id,
+                     String titleText,
                      Integer titleColor,
                      String sourceText,
                      String imageUrl,
@@ -349,6 +350,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                      String videoUrl) {
         if (getListItem != null) {
             final int bColor = backgroundColor;
+            getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
             if (imageUrl != null) {

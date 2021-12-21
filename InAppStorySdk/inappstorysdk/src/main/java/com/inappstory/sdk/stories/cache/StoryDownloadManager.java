@@ -367,6 +367,14 @@ public class StoryDownloadManager {
     }
 
 
+    public void clearAllFavoriteStatus() {
+        if (stories != null) {
+            for (Story story : stories) {
+                story.favorite = false;
+            }
+        }
+    }
+
     public Story getStoryById(int id) {
         if (stories != null) {
             for (Story story : stories) {

@@ -22,6 +22,13 @@ public interface IStoriesListItem {
     View getVideoView();
 
     /**
+     * Use to get id for custom list cell (can be useful to do something with current story)
+     * @param itemView (itemView) contains a view that was initialized in getView() method.
+     * @param id (id) contains a story id
+     */
+    void setId(View itemView, int id);
+
+    /**
      * Use to set title for custom list cell
      * @param itemView (itemView) contains a view that was initialized in getView() method.
      * @param title (title) contains a title string from story
