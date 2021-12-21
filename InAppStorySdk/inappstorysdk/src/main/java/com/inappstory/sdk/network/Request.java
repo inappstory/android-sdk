@@ -161,7 +161,9 @@ public final class Request<T> {
                         if (callback.getType() == null) {
                             callback.onSuccess(result);
                         } else {
-                            if (callback.getType() instanceof ParameterizedType) {
+                            if (callback.getType() == String.class) {
+                                callback.onSuccess(result.body);
+                            } else if (callback.getType() instanceof ParameterizedType) {
                                 ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
                                 Object obj = JsonParser.listFromJson(result.body,
                                         (Class)(parameterizedType.getActualTypeArguments()[0]));
