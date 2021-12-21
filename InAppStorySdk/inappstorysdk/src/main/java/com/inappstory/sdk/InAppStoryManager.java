@@ -20,11 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.inappstory.sdk.directapi.adapters.ApiErrorCallback;
+import com.inappstory.sdk.directapi.adapters.ApiSuccessCallback;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
-import com.inappstory.sdk.flutter.FlutterManager;
-import com.inappstory.sdk.flutter.adapters.FlErrorCallback;
-import com.inappstory.sdk.flutter.adapters.FlSuccessCallback;
+import com.inappstory.sdk.directapi.DirectApiManager;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -131,29 +131,29 @@ public class InAppStoryManager {
         if (logger != null) logger.showDLog(tag, message);
     }
 
-    FlutterManager flutterManager = new FlutterManager();
+    private DirectApiManager directApiManager = new DirectApiManager();
 
-    public FlutterManager getFlutterManager() {
-        if (flutterManager == null) flutterManager = new FlutterManager();
-        return flutterManager;
+    private DirectApiManager getDirectApiManager() {
+        if (directApiManager == null) directApiManager = new DirectApiManager();
+        return directApiManager;
     }
 
-    /*public void flGetStoriesList(FlSuccessCallback successCallback, FlErrorCallback errorCallback) {
-        (new FlutterManager()).getStoriesList(successCallback, errorCallback);
+    public void getStoriesList(ApiSuccessCallback successCallback, ApiErrorCallback errorCallback) {
+        getDirectApiManager().getStoriesList(successCallback, errorCallback);
     }
 
-    public void flOpenStoriesReader(Context context,
+    public void openStoriesReader(Context context,
                                     String[] ids,
                                     AppearanceManager manager,
                                     int openFromIndex,
-                                    FlErrorCallback errorCallback) {
-        (new FlutterManager()).openStoriesReader(context, ids, manager, openFromIndex, errorCallback);
+                                    ApiErrorCallback errorCallback) {
+        getDirectApiManager().openStoriesReader(context, ids, manager, openFromIndex, errorCallback);
     }
 
-    public void flSendListStat(String[] ids) {
-        (new FlutterManager()).sendListPreviewStat(ids);
+    public void sendListPreviewStat(String[] ids) {
+        getDirectApiManager().sendListPreviewStat(ids);
     }
-    */
+
     /**
      * use set custom callback in case of uncaught exceptions.
      *

@@ -1,12 +1,12 @@
-package com.inappstory.sdk.flutter;
+package com.inappstory.sdk.directapi;
 
 import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.flutter.adapters.FlErrorCallback;
-import com.inappstory.sdk.flutter.adapters.FlSuccessCallback;
+import com.inappstory.sdk.directapi.adapters.ApiErrorCallback;
+import com.inappstory.sdk.directapi.adapters.ApiSuccessCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -24,9 +24,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlutterManager {
+public class DirectApiManager {
     private void checkAndApplyRequest(OpenSessionCallback openSessionCallback,
-                                      FlErrorCallback errorCallback) {
+                                      ApiErrorCallback errorCallback) {
         if (InAppStoryService.isNull()) {
             errorCallback.onError();
             return;
@@ -54,8 +54,8 @@ public class FlutterManager {
         }
     }
 
-    private void getStories(final FlSuccessCallback successCallback,
-                            final FlErrorCallback errorCallback, final boolean isFavorite,
+    private void getStories(final ApiSuccessCallback successCallback,
+                            final ApiErrorCallback errorCallback, final boolean isFavorite,
                             final boolean simple) {
 
         checkAndApplyRequest(new OpenSessionCallback() {
@@ -107,25 +107,25 @@ public class FlutterManager {
         }, errorCallback);
     }
 
-    public void getStoriesList(FlSuccessCallback successCallback,
-                               FlErrorCallback errorCallback) {
+    public void getStoriesList(ApiSuccessCallback successCallback,
+                               ApiErrorCallback errorCallback) {
         getStories(successCallback, errorCallback, false, false);
     }
 
-    private void getStoriesListFavoriteItem(FlSuccessCallback successCallback,
-                                            FlErrorCallback errorCallback) {
+    private void getStoriesListFavoriteItem(ApiSuccessCallback successCallback,
+                                            ApiErrorCallback errorCallback) {
         getStories(successCallback, errorCallback, true, true);
     }
 
-    private void getStoriesFavoriteList(FlSuccessCallback successCallback,
-                                        FlErrorCallback errorCallback) {
+    private void getStoriesFavoriteList(ApiSuccessCallback successCallback,
+                                        ApiErrorCallback errorCallback) {
         getStories(successCallback, errorCallback, true, false);
     }
 
     public void openStoriesReader(final Context context,
                                   final String[] ids,
                                   final AppearanceManager manager,
-                                  final int openFromIndex, final FlErrorCallback errorCallback) {
+                                  final int openFromIndex, final ApiErrorCallback errorCallback) {
         checkAndApplyRequest(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
