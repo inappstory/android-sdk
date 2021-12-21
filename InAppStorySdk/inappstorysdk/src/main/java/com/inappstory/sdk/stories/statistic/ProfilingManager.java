@@ -1,11 +1,14 @@
 package com.inappstory.sdk.stories.statistic;
 
+import static android.content.Context.TELEPHONY_SERVICE;
+import static com.inappstory.sdk.network.NetworkClient.getUAString;
+import static java.util.UUID.randomUUID;
+
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -19,10 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static android.content.Context.TELEPHONY_SERVICE;
-import static com.inappstory.sdk.network.NetworkClient.getUAString;
-import static java.util.UUID.randomUUID;
 
 public class ProfilingManager {
     ArrayList<ProfilingTask> tasks = new ArrayList<>();

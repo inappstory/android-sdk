@@ -32,7 +32,7 @@ import com.inappstory.sdk.stories.outerevents.ClickOnStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 
-public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
+public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implements ClickCallback {
     public List<Integer> getStoriesIds() {
         return storiesIds;
     }
@@ -80,7 +80,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final StoryListItem holder, int position) {
+    public void onBindViewHolder(@NonNull StoryListItem holder, int position) {
         if (holder == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
@@ -105,19 +105,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         Color.parseColor(story.getBackgroundColor()),
                         story.isOpened || isFavoriteList,
                         story.hasAudio(),
-                        story.getVideoUrl());
+                        story.getVideoUrl(), this);
             }
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onItemClick(holder.getAbsoluteAdapterPosition());
-                }
-            });
         }
-
     }
 
+    @Override
     public void onItemClick(int index) {
         if (InAppStoryService.isNull()) return;
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));

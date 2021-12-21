@@ -9,7 +9,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.inappstory.sdk.BuildConfig;
-import com.inappstory.sdk.InAppStoryService;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;

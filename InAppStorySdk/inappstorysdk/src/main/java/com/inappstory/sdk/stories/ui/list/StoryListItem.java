@@ -347,7 +347,13 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                      Integer backgroundColor,
                      boolean isOpened,
                      boolean hasAudio,
-                     String videoUrl) {
+                     String videoUrl, final ClickCallback callback) {
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (callback != null) callback.onItemClick(getAbsoluteAdapterPosition());
+            }
+        });
         if (getListItem != null) {
             final int bColor = backgroundColor;
             getListItem.setId(itemView, id);
