@@ -22,6 +22,9 @@ import java.util.Set;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.flutter.FlutterManager;
+import com.inappstory.sdk.flutter.adapters.FlErrorCallback;
+import com.inappstory.sdk.flutter.adapters.FlSuccessCallback;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -128,7 +131,29 @@ public class InAppStoryManager {
         if (logger != null) logger.showDLog(tag, message);
     }
 
+    FlutterManager flutterManager = new FlutterManager();
 
+    public FlutterManager getFlutterManager() {
+        if (flutterManager == null) flutterManager = new FlutterManager();
+        return flutterManager;
+    }
+
+    /*public void flGetStoriesList(FlSuccessCallback successCallback, FlErrorCallback errorCallback) {
+        (new FlutterManager()).getStoriesList(successCallback, errorCallback);
+    }
+
+    public void flOpenStoriesReader(Context context,
+                                    String[] ids,
+                                    AppearanceManager manager,
+                                    int openFromIndex,
+                                    FlErrorCallback errorCallback) {
+        (new FlutterManager()).openStoriesReader(context, ids, manager, openFromIndex, errorCallback);
+    }
+
+    public void flSendListStat(String[] ids) {
+        (new FlutterManager()).sendListPreviewStat(ids);
+    }
+    */
     /**
      * use set custom callback in case of uncaught exceptions.
      *

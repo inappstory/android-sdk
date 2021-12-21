@@ -5,8 +5,8 @@ import android.content.Context;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.flutter.adapters.ErrorCallback;
-import com.inappstory.sdk.flutter.adapters.SuccessCallback;
+import com.inappstory.sdk.flutter.adapters.FlErrorCallback;
+import com.inappstory.sdk.flutter.adapters.FlSuccessCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -26,7 +26,7 @@ import java.util.List;
 
 public class FlutterManager {
     private void checkAndApplyRequest(OpenSessionCallback openSessionCallback,
-                                      ErrorCallback errorCallback) {
+                                      FlErrorCallback errorCallback) {
         if (InAppStoryService.isNull()) {
             errorCallback.onError();
             return;
@@ -54,8 +54,8 @@ public class FlutterManager {
         }
     }
 
-    private void getStories(final SuccessCallback successCallback,
-                            final ErrorCallback errorCallback, final boolean isFavorite,
+    private void getStories(final FlSuccessCallback successCallback,
+                            final FlErrorCallback errorCallback, final boolean isFavorite,
                             final boolean simple) {
 
         checkAndApplyRequest(new OpenSessionCallback() {
@@ -107,25 +107,25 @@ public class FlutterManager {
         }, errorCallback);
     }
 
-    public void getStoriesList(SuccessCallback successCallback,
-                               ErrorCallback errorCallback) {
+    public void getStoriesList(FlSuccessCallback successCallback,
+                               FlErrorCallback errorCallback) {
         getStories(successCallback, errorCallback, false, false);
     }
 
-    private void getStoriesListFavoriteItem(SuccessCallback successCallback,
-                                        ErrorCallback errorCallback) {
+    private void getStoriesListFavoriteItem(FlSuccessCallback successCallback,
+                                            FlErrorCallback errorCallback) {
         getStories(successCallback, errorCallback, true, true);
     }
 
-    private void getStoriesFavoriteList(SuccessCallback successCallback,
-                                        ErrorCallback errorCallback) {
+    private void getStoriesFavoriteList(FlSuccessCallback successCallback,
+                                        FlErrorCallback errorCallback) {
         getStories(successCallback, errorCallback, true, false);
     }
 
     public void openStoriesReader(final Context context,
                                   final String[] ids,
                                   final AppearanceManager manager,
-                                  final int openFromIndex, final ErrorCallback errorCallback) {
+                                  final int openFromIndex, final FlErrorCallback errorCallback) {
         checkAndApplyRequest(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
@@ -152,13 +152,17 @@ public class FlutterManager {
     }
 
 
-    public void sendListPreviewStat(int[] ids) {
+    public void sendListPreviewStat(String[] ids) {
         sendPreviewStat(ids, false);
     }
-    private void sendPreviewStat(int[] ids, boolean isFavoriteList) {
+    private void sendPreviewStat(String[] ids, boolean isFavoriteList) {
         ArrayList<Integer> indexes = new ArrayList<>();
-        for (int id : ids) {
-            indexes.add(id);
+        for (String id : ids) {
+            try {
+                indexes.add(Integer.parseInt(id));
+            } catch (NumberFormatException e) {
+
+            }
         }
         OldStatisticManager.getInstance().previewStatisticEvent(indexes);
         if (StatisticManager.getInstance() != null) {
