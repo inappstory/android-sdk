@@ -115,6 +115,10 @@ public class StoriesViewManager {
 
     public void loadWebData(String layout, String webdata) {
         if (!(storiesView instanceof SimpleStoriesWebView)) return;
+        if (storyId == 11350) {
+            Log.d("IAS_Calls", layout);
+            Log.d("IAS_Calls", webdata);
+        }
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
     }
 

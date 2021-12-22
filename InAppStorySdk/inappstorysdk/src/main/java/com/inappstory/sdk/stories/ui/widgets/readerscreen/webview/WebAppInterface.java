@@ -34,7 +34,7 @@ public class WebAppInterface {
      */
     @JavascriptInterface
     public void storyClick(String payload) {
-        Log.d("IAS_Calls", "storyClick");
+        Log.d("IAS_Calls", "storyClick " + manager.storyId);
         manager.storyClick(payload);
     }
 
@@ -49,7 +49,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyShowNext() {
 
-        Log.d("IAS_Calls", "storyShowNext");
+        Log.d("IAS_Calls", "storyShowNext " + manager.storyId);
         StatisticManager.getInstance().sendCurrentState();
         CsEventBus.getDefault().post(new NextStoryReaderEvent());
     }
@@ -73,6 +73,7 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyShowNextSlide(final long delay) {
+        Log.d("IAS_Calls", "storyShowNextSlide " + manager.storyId);
         if (delay != 0) {
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -87,7 +88,7 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyShowTextInput(String id, String data) {
-        Log.d("IAS_Calls", "storyShowTextInput " + id + " " + data);
+        Log.d("IAS_Calls", "storyShowTextInput " + manager.storyId + " " + id + " " + data);
         manager.storyShowTextInput(id, data);
     }
 
