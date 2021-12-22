@@ -756,8 +756,9 @@ public class AppearanceManager {
         return csIsDraggable;
     }
 
-    public void csIsDraggable(boolean csIsDraggable) {
+    public AppearanceManager csIsDraggable(boolean csIsDraggable) {
         this.csIsDraggable = csIsDraggable;
+        return AppearanceManager.this;
     }
 
 
