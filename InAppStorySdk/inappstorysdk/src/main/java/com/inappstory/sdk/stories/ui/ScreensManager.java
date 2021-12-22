@@ -22,7 +22,6 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
-import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -37,6 +36,7 @@ import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
@@ -122,31 +122,20 @@ public class ScreensManager {
     }
 
 
-    public AppCompatActivity currentActivity;
-    public StoriesDialogFragment currentFragment;
+    public BaseReaderScreen currentScreen;
 
     public void closeStoryReader(int action) {
-        if (Sizes.isTablet()) {
-            if (currentFragment != null) {
-                currentFragment.closeStoryReaderEvent();
-            }
-        } else if (currentActivity != null) {
-            if (currentActivity instanceof StoriesActivity) {
-                ((StoriesActivity)currentActivity).closeStoryReaderEvent(action);
-            } else if (currentActivity instanceof StoriesFixedActivity) {
-                ((StoriesFixedActivity)currentActivity).closeStoryReaderEvent(action);
-            }
-        }
+        currentScreen.closeStoryReader(action);
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
-        if (currentFragment == fragment)
-            currentFragment = null;
+        if (currentScreen == fragment)
+            currentScreen = null;
     }
 
     public void clearCurrentActivity(AppCompatActivity activity) {
-        if (activity == currentActivity)
-            currentActivity = null;
+        if (activity == currentScreen)
+            currentScreen = null;
     }
 
     public GameActivity currentGameActivity;
@@ -199,12 +188,12 @@ public class ScreensManager {
                     story.tags, story.getSlidesCount(), index);
         }
         if (Sizes.isTablet()) {
-            if (currentFragment != null) {
+            if (currentScreen != null) {
                 String observableUID = randomUUID().toString();
                 intent2.putExtra("observableUID", observableUID);
                 gameObservables.put(observableUID,
                         new MutableLiveData<GameCompleteEvent>());
-                currentFragment.observeGameReader(observableUID);
+                currentScreen.observeGameReader(observableUID);
             }
         } else {
             ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
@@ -241,23 +230,18 @@ public class ScreensManager {
                 bundle.putBoolean(CS_TIMER_GRADIENT, manager.csTimerGradientEnable());
             }
             storiesDialogFragment.setArguments(bundle);
-            if (ScreensManager.getInstance().currentFragment != null) {
-                ScreensManager.getInstance().currentFragment.dismissAllowingStateLoss();
+            if (currentScreen != null) {
+                currentScreen.forceFinish();
             }
-            ScreensManager.getInstance().currentFragment = storiesDialogFragment;
+            ScreensManager.getInstance().currentScreen = storiesDialogFragment;
             storiesDialogFragment.show(
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
             if (StoriesActivity.created == -1) return;
             StoriesActivity.created = -1;
-            if (currentActivity != null) {
-                if (currentActivity
-                        instanceof StoriesActivity) {
-                    ((StoriesActivity)currentActivity).finishActivityWithoutAnimation();
-                } else if (currentActivity instanceof StoriesFixedActivity) {
-                    ((StoriesFixedActivity)currentActivity).finishActivityWithoutAnimation();
-                }
+            if (currentScreen != null) {
+                currentScreen.forceFinish();
             }
             Context ctx = (InAppStoryService.isNotNull() ?
                     InAppStoryService.getInstance().getContext() : outerContext);

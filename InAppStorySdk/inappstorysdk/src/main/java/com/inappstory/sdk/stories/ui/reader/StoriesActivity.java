@@ -60,7 +60,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
-public class StoriesActivity extends AppCompatActivity {
+public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
     public static long created = 0;
     public boolean pauseDestroyed = false;
@@ -103,13 +103,13 @@ public class StoriesActivity extends AppCompatActivity {
         } else {
             switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
                 case 0:
-                    finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
+                    finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
                     break;
                 case 1:
                     super.finish();
                     break;
                 case 2:
-                    finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
+                    finishWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
                     break;
                 default:
                     super.finish();
@@ -164,7 +164,7 @@ public class StoriesActivity extends AppCompatActivity {
             });
             draggableFrame.startAnimation(animationSet);
         } catch (Exception e) {
-            finishActivityWithoutAnimation();
+            finishWithoutAnimation();
         }
 
     }
@@ -218,13 +218,13 @@ public class StoriesActivity extends AppCompatActivity {
         }
     }
 
-    public void finishActivityWithCustomAnimation(int enter, int exit) {
+    public void finishWithCustomAnimation(int enter, int exit) {
         super.finish();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         overridePendingTransition(enter, exit);
     }
 
-    public void finishActivityWithoutAnimation() {
+    public void finishWithoutAnimation() {
         super.finish();
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         overridePendingTransition(0, 0);
@@ -260,11 +260,11 @@ public class StoriesActivity extends AppCompatActivity {
                 getWindow().setNavigationBarColor(navColor);
         }
         if (InAppStoryService.isNull()) {
-            finishActivityWithoutAnimation();
+            finishWithoutAnimation();
             return;
         }
 
-        ScreensManager.getInstance().currentActivity = this;
+        ScreensManager.getInstance().currentScreen = this;
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -402,7 +402,8 @@ public class StoriesActivity extends AppCompatActivity {
 
     boolean closing = false;
 
-    public void closeStoryReaderEvent(int action) {
+    @Override
+    public void closeStoryReader(int action) {
         if (closing) return;
         closing = true;
         InAppStoryService.getInstance().getListReaderConnector().closeReader();
@@ -457,6 +458,16 @@ public class StoriesActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void forceFinish() {
+        finishWithoutAnimation();
+    }
+
+    @Override
+    public void observeGameReader(String observableUID) {
+
+    }
+
     boolean cleaned = false;
 
     public void cleanReader() {
@@ -475,8 +486,8 @@ public class StoriesActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        if (ScreensManager.getInstance().currentActivity == this)
-            ScreensManager.getInstance().currentActivity = null;
+        if (ScreensManager.getInstance().currentScreen == this)
+            ScreensManager.getInstance().currentScreen = null;
         if (!pauseDestroyed) {
 
             StatusBarController.showStatusBar(this);

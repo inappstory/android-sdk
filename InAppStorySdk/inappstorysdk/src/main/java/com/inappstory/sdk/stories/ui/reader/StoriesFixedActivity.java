@@ -28,8 +28,6 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
@@ -62,7 +60,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
-public class StoriesFixedActivity extends AppCompatActivity {
+public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen{
 
     public static long created = 0;
     public boolean pauseDestroyed = false;
@@ -117,13 +115,13 @@ public class StoriesFixedActivity extends AppCompatActivity {
         ScreensManager.getInstance().closeGameReader();
         switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
             case 0:
-                finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
+                finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
                 break;
             case 1:
                 super.finish();
                 break;
             case 2:
-                finishActivityWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
+                finishWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
                 break;
             default:
                 super.finish();
@@ -173,7 +171,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
             });
             draggableFrame.startAnimation(animationSet);
         } catch (Exception e) {
-            finishActivityWithoutAnimation();
+            finishWithoutAnimation();
         }
 
     }
@@ -219,12 +217,12 @@ public class StoriesFixedActivity extends AppCompatActivity {
         }
     }
 
-    public void finishActivityWithCustomAnimation(int enter, int exit) {
+    public void finishWithCustomAnimation(int enter, int exit) {
         super.finish();
         overridePendingTransition(enter, exit);
     }
 
-    public void finishActivityWithoutAnimation() {
+    public void finishWithoutAnimation() {
         super.finish();
         overridePendingTransition(0, 0);
     }
@@ -269,9 +267,11 @@ public class StoriesFixedActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState1);
         if (InAppStoryService.isNull()) {
-            finishActivityWithoutAnimation();
+            finishWithoutAnimation();
             return;
         }
+
+        ScreensManager.getInstance().currentScreen = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         if (Build.VERSION.SDK_INT >= 21) {
             int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
@@ -335,7 +335,8 @@ public class StoriesFixedActivity extends AppCompatActivity {
         //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
-    public void closeStoryReaderEvent(int action) {
+    @Override
+    public void closeStoryReader(int action) {
         if (InAppStoryService.isNotNull()) {
 
             InAppStoryService.getInstance().getListReaderConnector().closeReader();
@@ -384,6 +385,16 @@ public class StoriesFixedActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void forceFinish() {
+        finishWithoutAnimation();
+    }
+
+    @Override
+    public void observeGameReader(String observableUID) {
+
     }
 
     boolean cleaned = false;

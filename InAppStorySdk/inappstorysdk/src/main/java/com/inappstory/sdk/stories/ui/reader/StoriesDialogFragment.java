@@ -21,8 +21,6 @@ import androidx.lifecycle.Observer;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -53,7 +51,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
-public class StoriesDialogFragment extends DialogFragment implements BackPressHandler {
+public class StoriesDialogFragment extends DialogFragment implements BackPressHandler, BaseReaderScreen {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -100,8 +98,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         cleanReader();
         removeGameObservables();
         super.onDismiss(dialogInterface);
-        if (ScreensManager.getInstance().currentFragment == this)
-            ScreensManager.getInstance().currentFragment = null;
+        if (ScreensManager.getInstance().currentScreen == this)
+            ScreensManager.getInstance().currentScreen = null;
     }
 
     boolean cleaned = false;
@@ -130,6 +128,18 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     HashSet<String> observerIDs = new HashSet<>();
 
+    @Override
+    public void closeStoryReader(int action) {
+        InAppStoryService.getInstance().getListReaderConnector().closeReader();
+        dismiss();
+    }
+
+    @Override
+    public void forceFinish() {
+        dismissAllowingStateLoss();
+    }
+
+    @Override
     public void observeGameReader(String observableId) {
         final String localObservableId = observableId;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -142,6 +152,11 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 observerIDs.add(localObservableId);
             }
         });
+
+    }
+
+    @Override
+    public void shareComplete() {
 
     }
 
@@ -193,14 +208,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         return false;
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void closeStoryReaderEvent() {
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
-        dismiss();
-    }
 
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStory(int index) {
         getArguments().putInt("index", index);
     }

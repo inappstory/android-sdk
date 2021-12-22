@@ -20,10 +20,9 @@ public class StoryShareBroadcastReceiver extends BroadcastReceiver {
                 ScreensManager.getInstance().currentGameActivity.shareComplete(
                         ScreensManager.getInstance().getTempShareId(),
                         true);
-            } else if (ScreensManager.getInstance().currentActivity instanceof StoriesActivity) {
-                ((StoriesActivity) ScreensManager.getInstance().currentActivity).shareComplete();
-            } else if (ScreensManager.getInstance().currentActivity instanceof StoriesFixedActivity) {
-                ((StoriesFixedActivity) ScreensManager.getInstance().currentActivity).shareComplete();
+            } else {
+                if (ScreensManager.getInstance().currentScreen != null)
+                    ScreensManager.getInstance().currentScreen.shareComplete();
             }
           /*  CsEventBus.getDefault().post(new ShareCompleteEvent(
                     ScreensManager.getInstance().getTempShareStoryId(),
