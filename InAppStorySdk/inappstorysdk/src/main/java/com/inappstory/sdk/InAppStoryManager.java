@@ -768,22 +768,22 @@ public class InAppStoryManager {
         }
 
         if (InAppStoryService.isNull()) return;
-        if (StoriesActivity.created == -1) {
+        if (ScreensManager.created == -1) {
             InAppStoryManager.closeStoryReader(CloseStory.AUTO);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showLoadedOnboardings(response, outerContext, manager);
-                    StoriesActivity.created = 0;
+                    ScreensManager.created = 0;
                 }
             }, 350);
             return;
-        } else if (System.currentTimeMillis() - StoriesActivity.created < 1000) {
+        } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showLoadedOnboardings(response, outerContext, manager);
-                    StoriesActivity.created = 0;
+                    ScreensManager.created = 0;
                 }
             }, 350);
             return;
@@ -929,7 +929,7 @@ public class InAppStoryManager {
             public void getStory(Story story) {
                 if (story != null) {
 
-                    if (StoriesActivity.created == -1) {
+                    if (ScreensManager.created == -1) {
                         InAppStoryManager.closeStoryReader(CloseStory.AUTO);
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -940,12 +940,12 @@ public class InAppStoryManager {
                             }
                         }, 500);
                         return;
-                    } else if (System.currentTimeMillis() - StoriesActivity.created < 1000) {
+                    } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 showStoryInner(storyId, context, manager, callback, slide);
-                                StoriesActivity.created = 0;
+                                ScreensManager.created = 0;
                             }
                         }, 350);
                         return;

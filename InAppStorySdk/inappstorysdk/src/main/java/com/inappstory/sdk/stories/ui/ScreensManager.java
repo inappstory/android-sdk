@@ -88,6 +88,9 @@ public class ScreensManager {
         return INSTANCE;
     }
 
+
+    public static long created = 0;
+
     public void setOldTempShareId(String tempShareId) {
         this.oldTempShareId = tempShareId;
     }
@@ -238,8 +241,8 @@ public class ScreensManager {
                     ((AppCompatActivity) outerContext).getSupportFragmentManager(),
                     "DialogFragment");
         } else {
-            if (StoriesActivity.created == -1) return;
-            StoriesActivity.created = -1;
+            if (created == -1) return;
+            created = -1;
             if (currentScreen != null) {
                 currentScreen.forceFinish();
             }

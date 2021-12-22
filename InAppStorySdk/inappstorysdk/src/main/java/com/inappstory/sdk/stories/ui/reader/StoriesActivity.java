@@ -62,7 +62,6 @@ import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
-    public static long created = 0;
     public boolean pauseDestroyed = false;
 
 
@@ -75,7 +74,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            created = 0;
+            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -505,7 +504,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            created = 0;
+            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;

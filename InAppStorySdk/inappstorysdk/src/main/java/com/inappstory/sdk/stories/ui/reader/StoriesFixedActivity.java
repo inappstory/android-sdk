@@ -62,7 +62,6 @@ import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen{
 
-    public static long created = 0;
     public boolean pauseDestroyed = false;
 
 
@@ -87,7 +86,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            created = 0;
+            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -428,11 +427,13 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void onDestroy() {
+        if (ScreensManager.getInstance().currentScreen == this)
+            ScreensManager.getInstance().currentScreen = null;
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            created = 0;
+            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;

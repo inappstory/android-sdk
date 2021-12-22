@@ -199,7 +199,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     public void onDestroyView() {
         OldStatisticManager.getInstance().sendStatistic();
-        StoriesActivity.created = System.currentTimeMillis();
+        ScreensManager.created = System.currentTimeMillis();
         super.onDestroyView();
     }
 
