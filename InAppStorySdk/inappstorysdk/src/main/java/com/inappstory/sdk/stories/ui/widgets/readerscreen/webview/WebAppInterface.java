@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -33,6 +34,7 @@ public class WebAppInterface {
      */
     @JavascriptInterface
     public void storyClick(String payload) {
+        Log.d("IAS_Calls", "storyClick");
         manager.storyClick(payload);
     }
 
@@ -46,6 +48,8 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyShowNext() {
+
+        Log.d("IAS_Calls", "storyShowNext");
         StatisticManager.getInstance().sendCurrentState();
         CsEventBus.getDefault().post(new NextStoryReaderEvent());
     }
@@ -83,6 +87,7 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyShowTextInput(String id, String data) {
+        Log.d("IAS_Calls", "storyShowTextInput " + id + " " + data);
         manager.storyShowTextInput(id, data);
     }
 
