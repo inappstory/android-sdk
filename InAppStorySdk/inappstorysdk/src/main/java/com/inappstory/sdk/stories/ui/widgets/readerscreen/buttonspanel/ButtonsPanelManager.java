@@ -8,14 +8,12 @@ import android.os.Build;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.ClickOnShareStory;
@@ -147,6 +145,11 @@ public class ButtonsPanelManager {
                 });
     }
 
+    public void removeStoryFromFavorite() {
+        if (panel != null)
+            panel.forceRemoveFromFavorite();
+    }
+
     public void favoriteClick(final ButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
@@ -263,20 +266,18 @@ public class ButtonsPanelManager {
                     Intent finalIntent = null;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                         finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-                       // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         ScreensManager.getInstance().setTempShareId(null);
                         ScreensManager.getInstance().setTempShareStoryId(storyId);
                         context.startActivity(finalIntent);
                     } else {
                         finalIntent = Intent.createChooser(sendIntent, null);
-                      //  finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        //  finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(finalIntent);
                         ScreensManager.getInstance().setOldTempShareId(null);
                         ScreensManager.getInstance().setOldTempShareStoryId(storyId);
                     }
                 }
-
-
 
 
             }

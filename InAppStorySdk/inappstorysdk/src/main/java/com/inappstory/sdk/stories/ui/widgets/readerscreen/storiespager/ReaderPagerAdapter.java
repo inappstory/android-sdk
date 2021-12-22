@@ -74,19 +74,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         frag.setArguments(a);
         frag.parentManager = manager;
         return frag;
-       /* if (fragMap.get(position) == null) {
-
-            fragMap.put(position, frag);
-        }
-
-        return fragMap.get(position);*/
     }
-
-
-   /* public ReaderPageFragment getFragment(int position) {
-        return fragMap.get(position);
-    }*/
-
 
     @Override
     public int getCount() {

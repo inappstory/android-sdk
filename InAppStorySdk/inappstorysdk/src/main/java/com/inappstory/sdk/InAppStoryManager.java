@@ -516,6 +516,10 @@ public class InAppStoryManager {
                     InAppStoryService.getInstance().getFavoriteImages().clear();
                     InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
                 }
+
+                if (ScreensManager.getInstance().currentScreen != null) {
+                    ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
+                }
             }
 
             @Override
@@ -551,6 +555,9 @@ public class InAppStoryManager {
                             if (story != null)
                                 story.favorite = favorite;
                             InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
+                        }
+                        if (ScreensManager.getInstance().currentScreen != null) {
+                            ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
                         }
                     }
 

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -164,6 +166,19 @@ public class ButtonsPanel extends LinearLayout {
             public void onError() {
                 dislike.setEnabled(true);
                 dislike.setClickable(true);
+            }
+        });
+    }
+
+    public void forceRemoveFromFavorite() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (favorite != null) {
+                    favorite.setEnabled(true);
+                    favorite.setClickable(true);
+                    favorite.setActivated(false);
+                }
             }
         });
     }

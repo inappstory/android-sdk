@@ -5,4 +5,6 @@ public interface BaseReaderScreen {
     void forceFinish();
     void observeGameReader(String observableUID);
     void shareComplete();
+    void removeStoryFromFavorite(int id);
+    void removeAllStoriesFromFavorite();
 }

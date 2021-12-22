@@ -57,7 +57,21 @@ public class ReaderManager {
     }
 
     public void gameComplete(String data, int storyId, int slideIndex) {
-        getSubscriberByStoryId(storyId).gameComplete(data);
+        ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
+        if (pageManager != null) pageManager.gameComplete(data);
+    }
+
+
+    public void removeAllStoriesFromFavorite() {
+        if (subscribers == null) return;
+        for (ReaderPageManager subscriber : subscribers) {
+            subscriber.removeStoryFromFavorite();
+        }
+    }
+
+    public void removeStoryFromFavorite(int storyId) {
+        ReaderPageManager pageManager = getSubscriberByStoryId(storyId);
+        if (pageManager != null) pageManager.removeStoryFromFavorite();
     }
 
     public void showSingleStory(final int storyId, final int slideIndex) {

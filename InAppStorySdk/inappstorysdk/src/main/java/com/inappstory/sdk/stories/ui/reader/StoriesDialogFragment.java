@@ -161,6 +161,18 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     @Override
+    public void removeStoryFromFavorite(int id) {
+        if (storiesFragment != null)
+            storiesFragment.removeStoryFromFavorite(id);
+    }
+
+    @Override
+    public void removeAllStoriesFromFavorite() {
+        if (storiesFragment != null)
+            storiesFragment.removeAllStoriesFromFavorite();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
 

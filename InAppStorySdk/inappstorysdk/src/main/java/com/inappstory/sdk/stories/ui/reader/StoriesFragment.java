@@ -64,6 +64,17 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         storiesViewPager.pageScrolled(positionOffset);
     }
 
+    public void removeStoryFromFavorite(int id) {
+        if (readerManager != null)
+            readerManager.removeStoryFromFavorite(id);
+    }
+
+
+    public void removeAllStoriesFromFavorite() {
+        if (readerManager != null)
+            readerManager.removeAllStoriesFromFavorite();
+    }
+
 
     @Override
     public void onPageSelected(int position) {

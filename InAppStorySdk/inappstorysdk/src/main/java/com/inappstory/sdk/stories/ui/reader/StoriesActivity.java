@@ -245,6 +245,18 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
+    public void removeStoryFromFavorite(int id) {
+        if (storiesFragment != null)
+            storiesFragment.removeStoryFromFavorite(id);
+    }
+
+    @Override
+    public void removeAllStoriesFromFavorite() {
+        if (storiesFragment != null)
+            storiesFragment.removeAllStoriesFromFavorite();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;

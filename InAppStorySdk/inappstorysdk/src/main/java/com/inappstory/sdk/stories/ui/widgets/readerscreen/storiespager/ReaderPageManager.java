@@ -34,6 +34,11 @@ public class ReaderPageManager {
     ReaderPageFragment host;
 
 
+    public void removeStoryFromFavorite() {
+        if (buttonsPanelManager != null)
+            buttonsPanelManager.removeStoryFromFavorite();
+    }
+
     public void swipeUp() {
         webViewManager.swipeUp();
     }
