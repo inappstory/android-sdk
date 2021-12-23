@@ -129,13 +129,9 @@ public class ScreensManager {
 
     public BaseReaderScreen currentScreen;
 
-    public void closeStoryReader(final int action) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                currentScreen.closeStoryReader(action);
-            }
-        });
+    public void closeStoryReader(int action) {
+
+        currentScreen.closeStoryReader(action);
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
