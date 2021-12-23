@@ -274,7 +274,10 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryService.isNull()) return;
         if (adapter == null) return;
         if (isFavoriteList) {
+            adapter.hasFavItem = false;
             adapter.getStoriesIds().clear();
+        } else {
+            adapter.hasFavItem = false;
         }
         adapter.notifyDataSetChanged();
     }
