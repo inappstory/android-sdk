@@ -12,6 +12,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -127,8 +129,13 @@ public class ScreensManager {
 
     public BaseReaderScreen currentScreen;
 
-    public void closeStoryReader(int action) {
-        currentScreen.closeStoryReader(action);
+    public void closeStoryReader(final int action) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                currentScreen.closeStoryReader(action);
+            }
+        });
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
