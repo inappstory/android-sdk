@@ -181,11 +181,16 @@ public class InAppStoryManager {
     /**
      * use to force close story reader
      */
-    public static void closeStoryReader(int action) {
-        ScreensManager.getInstance().closeStoryReader(action);
-        //CsEventBus.getDefault().post(new CloseStoryReaderEvent(action));
-        ScreensManager.getInstance().hideGoods();
-        ScreensManager.getInstance().closeGameReader();
+    public static void closeStoryReader(final int action) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                ScreensManager.getInstance().closeStoryReader(action);
+                //CsEventBus.getDefault().post(new CloseStoryReaderEvent(action));
+                ScreensManager.getInstance().hideGoods();
+                ScreensManager.getInstance().closeGameReader();
+            }
+        });
     }
 
     /**
