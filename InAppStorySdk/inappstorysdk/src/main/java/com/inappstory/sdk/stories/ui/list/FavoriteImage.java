@@ -74,6 +74,8 @@ public class FavoriteImage {
         this.backgroundColor = backgroundColor;
     }
 
+
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof FavoriteImage) {

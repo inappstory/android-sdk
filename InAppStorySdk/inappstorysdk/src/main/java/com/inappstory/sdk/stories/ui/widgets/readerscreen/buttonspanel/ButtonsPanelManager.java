@@ -59,7 +59,7 @@ public class ButtonsPanelManager {
 
     private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
         if (InAppStoryManager.isNull()) return;
-        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         final int val;
         if (like) {
             if (story.liked()) {
@@ -114,8 +114,8 @@ public class ButtonsPanelManager {
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-
                         ProfilingManager.getInstance().setReady(likeUID);
+                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
                         if (story != null)
                             story.like = val;
                         if (callback != null)
@@ -152,7 +152,7 @@ public class ButtonsPanelManager {
 
     public void favoriteClick(final ButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
-        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         final boolean val = story.favorite;
         if (!story.favorite)
             StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex);
@@ -170,6 +170,7 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(favUID);
+                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
                         boolean res = !val;
                         if (story != null)
                             story.favorite = res;

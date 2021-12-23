@@ -65,6 +65,9 @@ public class AppearanceManager {
     private int csListItemTitleSize = -1;
     private int csListItemTitleColor = Color.WHITE;
 
+
+    private int csListItemRadius = Sizes.dpToPxExt(16);
+
     private boolean csListItemSourceVisibility = false;
     private int csListItemSourceSize = -1;
     private int csListItemSourceColor = Color.WHITE;
@@ -544,6 +547,14 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    public AppearanceManager csListItemRadius(int csListItemRadius) {
+        this.csListItemRadius = csListItemRadius;
+        return AppearanceManager.this;
+    }
+
+    public int csListItemRadius() {
+        return csListItemRadius;
+    }
 
     public AppearanceManager csCustomBoldItalicFont(Typeface csCustomFont) {
         this.csCustomBoldItalicFont = csCustomFont;

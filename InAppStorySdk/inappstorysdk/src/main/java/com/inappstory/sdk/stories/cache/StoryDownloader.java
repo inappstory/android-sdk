@@ -322,7 +322,7 @@ class StoryDownloader {
                     NetworkClient.getApi().getStories(
                             ApiSettings.getInstance().getTestKey(),
                             isFavorite ? 1 : 0,
-                            InAppStoryService.getInstance().getTagsString(),
+                            isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
                             null)
                             .enqueue(new LoadListCallback() {
                                 @Override

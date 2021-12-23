@@ -88,7 +88,6 @@ public interface ApiInterface {
     @FormUrlEncoded
     @POST("v2/session/open")
     Request statisticsOpen(@Query("expand") String expand,
-                           @Field("tags") String tags,
                            @Field("features") String features,
                            @Field("platform") String platform,
                            @Field("device_id") String deviceId,

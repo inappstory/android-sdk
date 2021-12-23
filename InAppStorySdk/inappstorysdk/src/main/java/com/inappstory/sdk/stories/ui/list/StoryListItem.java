@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.inappstory.sdk.R;
@@ -48,9 +49,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
     protected View getDefaultFavoriteCell() {
         int count = InAppStoryService.isNotNull() ?
                 InAppStoryService.getInstance().getFavoriteImages().size() : 0;
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
-                InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
-            return getFavoriteListItem.getFavoriteItem(InAppStoryService.getInstance().getFavoriteImages(), count);
+        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem() != null) {
+            return getFavoriteListItem.getFavoriteItem();
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
@@ -85,7 +85,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(Sizes.dpToPxExt(16));
+            cv.setRadius(manager.csListItemRadius());
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
@@ -120,7 +120,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(Sizes.dpToPxExt(16));
+            cv.setRadius(manager.csListItemRadius());
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
@@ -183,13 +183,62 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         }
     }
 
-    public void bindFavorite() {
-        int count = InAppStoryService.isNotNull() ?
-                InAppStoryService.getInstance().getFavoriteImages().size() : 0;
+    private void loadFavoriteImages(final LoadFavoriteImagesCallback callback, final int count) {
+        final List<String> downloadImages = new ArrayList<>();
+        final int[] i = {0};
+        RunnableCallback runnableCallback = new RunnableCallback() {
+            @Override
+            public void run(String path) {
+                if (InAppStoryService.isNull()) return;
+                downloadImages.add(path);
+                i[0]++;
+                if (i[0] >= count)
+                    callback.onLoad(downloadImages);
+                else {
+                    downloadFileAndSendToInterface(InAppStoryService.getInstance()
+                            .getFavoriteImages().get(i[0]).getUrl(), this);
+                }
+            }
 
-        if (getFavoriteListItem != null && InAppStoryService.isNotNull() && getFavoriteListItem.getFavoriteItem(
-                InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
-            getFavoriteListItem.bindFavoriteItem(itemView, InAppStoryService.getInstance().getFavoriteImages(), count);
+            @Override
+            public void error() {
+                if (InAppStoryService.isNull()) return;
+                downloadImages.add(null);
+                i[0]++;
+                if (i[0] >= count)
+                    callback.onLoad(downloadImages);
+                else {
+                    downloadFileAndSendToInterface(InAppStoryService.getInstance()
+                            .getFavoriteImages().get(i[0]).getUrl(), this);
+                }
+            }
+        };
+        downloadFileAndSendToInterface(InAppStoryService.getInstance()
+                .getFavoriteImages().get(0).getUrl(), runnableCallback);
+    }
+
+    interface LoadFavoriteImagesCallback {
+        void onLoad(List<String> downloadImages);
+    }
+
+    public void bindFavorite() {
+
+        if (getFavoriteListItem != null
+                && InAppStoryService.isNotNull()
+                && getFavoriteListItem.getFavoriteItem() != null) {
+            int count = Math.min(InAppStoryService.getInstance().getFavoriteImages().size(), 4);
+            final List<Integer> backgroundColors = new ArrayList<>();
+            for (int j = 0; j < count; j++) {
+                backgroundColors.add(InAppStoryService.getInstance().getFavoriteImages().get(j).getBackgroundColor());
+            }
+            getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
+            loadFavoriteImages(new LoadFavoriteImagesCallback() {
+                @Override
+                public void onLoad(List<String> downloadImages) {
+                    getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,
+                            downloadImages.size());
+                }
+            }, count);
             return;
         }
         RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
@@ -309,6 +358,8 @@ public class StoryListItem extends RecyclerView.ViewHolder {
 
     interface RunnableCallback {
         void run(String path);
+
+        void error();
     }
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
@@ -365,6 +416,11 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     public void run(String path) {
                         getListItem.setImage(itemView, path, bColor);
                     }
+
+                    @Override
+                    public void error() {
+                        getListItem.setImage(itemView, null, bColor);
+                    }
                 });
             }
             getListItem.setOpened(itemView, isOpened);
@@ -373,6 +429,11 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     @Override
                     public void run(String path) {
                         getListItem.setVideo(itemView, path);
+                    }
+
+                    @Override
+                    public void error() {
+                        getListItem.setVideo(itemView, null);
                     }
                 });
             }

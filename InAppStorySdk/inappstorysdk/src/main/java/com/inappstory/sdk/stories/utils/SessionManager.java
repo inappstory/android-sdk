@@ -142,8 +142,7 @@ public class SessionManager {
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
         NetworkClient.getApi().statisticsOpen(
-                "cache",
-                InAppStoryService.getInstance().getTagsString(), FEATURES,
+                "cache", FEATURES,
                 platform,
                 deviceId,
                 model,
