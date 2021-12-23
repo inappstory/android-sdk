@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
@@ -131,6 +132,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int)(1.25 * manager.csListItemRadius()));
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
