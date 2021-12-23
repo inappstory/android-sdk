@@ -275,8 +275,8 @@ public class StoriesList extends RecyclerView {
         if (adapter == null) return;
         if (isFavoriteList) {
             adapter.getStoriesIds().clear();
-            adapter.notifyDataSetChanged();
         }
+        adapter.notifyDataSetChanged();
     }
 
     public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
