@@ -11,6 +11,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -239,26 +240,28 @@ public class StoriesList extends RecyclerView {
             }
         }
         if (layoutManager == null) return;
+        final int ind = adapter.getIndexById(storyId);
+        if (ind == -1) return;
         if (layoutManager instanceof LinearLayoutManager) {
-            final int ind = adapter.getIndexById(storyId);
-            if (ind == -1) return;
-            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
+            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);            
+        } else if (layoutManager instanceof GridLayoutManager) {
+            ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
+        }
+        if (ind >= 0) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    int[] location = new int[2];
+                    View v = layoutManager.findViewByPosition(ind);
+                    if (v == null) return;
+                    v.getLocationOnScreen(location);
+                    int x = location[0];
+                    int y = location[1];
+                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
+                            y + v.getHeight() / 2);
 
-            if (ind >= 0) {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        int[] location = new int[2];
-                        View v = layoutManager.findViewByPosition(ind);
-                        if (v == null) return;
-                        v.getLocationOnScreen(location);
-                        int x = location[0];
-                        int y = location[1];
-                        ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
-                                y + v.getHeight() / 2);
-                    }
-                }, 950);
-            }
+                }
+            }, 950);
         }
     }
 
