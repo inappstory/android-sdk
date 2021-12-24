@@ -130,8 +130,8 @@ public class ScreensManager {
     public BaseReaderScreen currentScreen;
 
     public void closeStoryReader(int action) {
-
-        currentScreen.closeStoryReader(action);
+        if (currentScreen != null)
+            currentScreen.closeStoryReader(action);
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
