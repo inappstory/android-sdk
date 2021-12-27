@@ -226,6 +226,7 @@ public class ReaderPageManager {
 
     public void restartSlide() {
         //webViewManager.restartStory();
+        if (durations == null || durations.size() <= slideIndex) return;
         timelineManager.setStoryDurations(durations, false);
         timelineManager.restart();
         timerManager.restartTimer(durations.get(slideIndex));
