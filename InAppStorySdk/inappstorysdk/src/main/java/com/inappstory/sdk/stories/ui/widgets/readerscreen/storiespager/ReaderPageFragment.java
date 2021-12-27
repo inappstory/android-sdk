@@ -62,14 +62,22 @@ public class ReaderPageFragment extends Fragment {
     AppCompatImageView close;
     int storyId;
 
-    void setManagers() {
+    boolean setManagers() {
+        boolean readerInitSuccess = true;
         if (buttonsPanel != null)
             manager.setButtonsPanelManager(buttonsPanel.getManager(), storyId);
+        else
+            readerInitSuccess = false;
         if (timeline != null)
             manager.setTimelineManager(timeline.getManager(), storyId);
+        else
+            readerInitSuccess = false;
         if (storiesView != null)
             manager.setWebViewManager(storiesView.getManager(), storyId);
+        else
+            readerInitSuccess = false;
         manager.setTimerManager(new TimerManager());
+        return readerInitSuccess;
     }
 
 
@@ -463,8 +471,7 @@ public class ReaderPageFragment extends Fragment {
         }
         bindViews(view);
         setActions();
-        setManagers();
-        if (InAppStoryService.getInstance() != null) {
+        if (setManagers() && InAppStoryService.getInstance() != null) {
             if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) != null)
                 manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
                         .getStoryById(storyId).lastIndex);
@@ -473,6 +480,8 @@ public class ReaderPageFragment extends Fragment {
             setViews(view);
             InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
             manager.storyLoadedInCache();
+        } else {
+            InAppStoryManager.closeStoryReader();
         }
 
     }

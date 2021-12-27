@@ -390,7 +390,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
+        if (getParentForAccessibility() instanceof ReaderPager &&
+                ((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         //if (!InAppStoryService.isConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -408,7 +409,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
+        if (getParentForAccessibility() instanceof ReaderPager &&
+                ((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
@@ -424,7 +426,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
+        if (getParentForAccessibility() instanceof ReaderPager &&
+                ((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
