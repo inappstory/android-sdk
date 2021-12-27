@@ -55,7 +55,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
-        cv.setRadius(Sizes.dpToPxExt(16));
+        cv.setRadius(manager.csListItemRadius());
         cv.setBackgroundColor(Color.WHITE);
         title = v.findViewById(R.id.title);
         return v;
@@ -442,7 +442,11 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             return;
         }
 
-
+        RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
+        cv.setBackgroundColor(Color.TRANSPARENT);
+        cv.setRadius(manager.csListItemRadius());
+        if (border != null)
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int)(1.25 * manager.csListItemRadius()));
         if (title != null) {
             title.setText(titleText);
             if (titleColor != null) {

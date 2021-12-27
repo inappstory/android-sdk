@@ -66,7 +66,7 @@ public class AppearanceManager {
     private int csListItemTitleColor = Color.WHITE;
 
 
-    private int csListItemRadius = Sizes.dpToPxExt(16);
+    private int csListItemRadius = -1;
 
     private boolean csListItemSourceVisibility = false;
     private int csListItemSourceSize = -1;
@@ -553,6 +553,7 @@ public class AppearanceManager {
     }
 
     public int csListItemRadius() {
+        if (csListItemRadius == -1) return Sizes.dpToPxExt(16);
         return csListItemRadius;
     }
 
