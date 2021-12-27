@@ -358,15 +358,17 @@ public class StoriesActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (storiesFragment != null) {
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    Fragment f = fragmentManager.findFragmentById(R.id.fragments_layout);
-                    //     if (f != null && f.getFragmentTag().equals(newFragment.getFragmentTag())) return;
-                    FragmentTransaction t = fragmentManager.beginTransaction()
-                            .replace(R.id.fragments_layout, storiesFragment);
-                    t.addToBackStack("STORIES_FRAGMENT");
-                    t.commit();
+                    try {
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        FragmentTransaction t = fragmentManager.beginTransaction()
+                                .replace(R.id.fragments_layout, storiesFragment);
+                        t.addToBackStack("STORIES_FRAGMENT");
+                        t.commit();
+                    } catch (IllegalStateException e) {
+                        finishActivityWithoutAnimation();
+                    }
                 } else {
-                    finish();
+                    finishActivityWithoutAnimation();
                 }
             }
         }, 300);

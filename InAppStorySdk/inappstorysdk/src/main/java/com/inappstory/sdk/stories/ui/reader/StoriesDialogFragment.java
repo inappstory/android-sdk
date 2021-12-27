@@ -191,7 +191,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         FragmentTransaction t = fragmentManager.beginTransaction()
                 .replace(R.id.dialog_fragment, fragment);
         t.addToBackStack("STORIES_FRAGMENT");
-        t.commit();
+        t.commitAllowingStateLoss();
 
 
     }

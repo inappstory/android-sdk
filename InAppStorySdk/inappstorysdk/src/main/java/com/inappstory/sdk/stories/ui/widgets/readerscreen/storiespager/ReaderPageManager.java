@@ -321,7 +321,8 @@ public class ReaderPageManager {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         timerManager.setTimerDuration(0);
         if (slideIndex < story.getSlidesCount() - 1) {
-            webViewManager.stopStory();
+            if (webViewManager != null)
+                webViewManager.stopStory();
             slideIndex++;
             story.setLastIndex(slideIndex);
             changeCurrentSlide();
@@ -355,7 +356,8 @@ public class ReaderPageManager {
 
         timerManager.setTimerDuration(0);
         if (slideIndex > 0) {
-            webViewManager.stopStory();
+            if (webViewManager != null)
+                webViewManager.stopStory();
             slideIndex--;
             story.setLastIndex(slideIndex);
             changeCurrentSlide();
@@ -380,7 +382,8 @@ public class ReaderPageManager {
 
     public void slideLoadedInCache(int index, boolean alreadyLoaded) {
         if (slideIndex == index) {
-            webViewManager.storyLoaded(storyId, index, alreadyLoaded);
+            if (webViewManager != null)
+                webViewManager.storyLoaded(storyId, index, alreadyLoaded);
             host.storyLoadedSuccess();
         }
     }
