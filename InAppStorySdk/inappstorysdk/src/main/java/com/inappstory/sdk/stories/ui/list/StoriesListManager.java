@@ -33,7 +33,7 @@ public class StoriesListManager {
         handler.post(runnable);
     }
 
-    public void changeStory(final int storyId) {
+    public void changeStory(final int storyId, final String listID) {
         if (InAppStoryService.isNull()) {
             return;
         }
@@ -46,7 +46,7 @@ public class StoriesListManager {
             public void run() {
                 if (list == null) return;
                 if (list.getVisibility() != View.VISIBLE) return;
-                list.changeStoryEvent(storyId);
+                list.changeStoryEvent(storyId, listID);
             }
         });
     }

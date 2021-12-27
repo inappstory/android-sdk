@@ -350,6 +350,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
+                bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
                 setAppearanceSettings(bundle);

@@ -206,7 +206,7 @@ public class ScreensManager {
         }
     }
 
-    public void openStoriesReader(Context outerContext, AppearanceManager manager,
+    public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {
         if (Sizes.isTablet() && outerContext instanceof AppCompatActivity) {
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
@@ -257,6 +257,8 @@ public class ScreensManager {
                             StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", index);
             intent2.putExtra("source", source);
+            if (listID != null)
+                intent2.putExtra("listID", listID);
             intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
             intent2.putExtra("slideIndex", slideIndex);
             if (manager != null) {
@@ -290,9 +292,9 @@ public class ScreensManager {
         }
     }
 
-    public void openStoriesReader(Context outerContext, AppearanceManager manager,
+    public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source) {
-        openStoriesReader(outerContext, manager, storiesIds, index, source, 0);
+        openStoriesReader(outerContext, listID, manager, storiesIds, index, source, 0);
     }
 
 

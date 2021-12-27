@@ -803,7 +803,7 @@ public class InAppStoryManager {
         InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
         InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
-        ScreensManager.getInstance().openStoriesReader(outerContext, manager, storiesIds, 0, ShowStory.ONBOARDING);
+        ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size());
@@ -1004,7 +1004,7 @@ public class InAppStoryManager {
                             InAppStoryService.getInstance().getDownloadManager().getStories());
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
-                    ScreensManager.getInstance().openStoriesReader(context, manager, stIds, 0, ShowStory.SINGLE, slide);
+                    ScreensManager.getInstance().openStoriesReader(context, null, manager, stIds, 0, ShowStory.SINGLE, slide);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {

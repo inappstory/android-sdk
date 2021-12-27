@@ -45,10 +45,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
     boolean hasFavItem = false;
 
     public Context context;
+    private String listID;
 
-    public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
+    public StoriesAdapter(Context context, String listID, List<Integer> storiesIds, AppearanceManager manager,
                           OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback) {
         this.context = context;
+        this.listID = listID;
         this.storiesIds = storiesIds;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
@@ -183,7 +185,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
+        ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
                 isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
         InAppStoryService.getInstance().getDownloadManager().putStories(

@@ -24,6 +24,13 @@ import java.util.List;
 
 public class ReaderManager {
 
+    private String listID;
+    public ReaderManager() {}
+
+    public ReaderManager(String listID) {
+        this.listID = listID;
+    }
+
     public void close() {
         parentFragment.getActivity().finish();
     }
@@ -173,7 +180,7 @@ public class ReaderManager {
         ProfilingManager.getInstance().addTask("slide_show",
                 currentStoryId + "_" +
                         InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId).lastIndex);
-        InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId);
+        InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId, listID);
         if (Sizes.isTablet()) {
             if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {
                 ((StoriesDialogFragment) parentFragment.getParentFragment()).changeStory(position);

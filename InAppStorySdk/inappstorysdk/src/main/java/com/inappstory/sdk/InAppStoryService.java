@@ -310,10 +310,10 @@ public class InAppStoryService {
     }
 
     public class ListReaderConnector {
-        public void changeStory(int storyId) {
+        public void changeStory(int storyId, String listID) {
             if (InAppStoryService.isNull()) return;
             for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.changeStory(storyId);
+                sub.changeStory(storyId, listID);
             }
         }
 

@@ -317,6 +317,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
+                bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));

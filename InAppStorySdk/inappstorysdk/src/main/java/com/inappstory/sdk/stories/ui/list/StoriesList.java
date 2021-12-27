@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import static java.util.UUID.randomUUID;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
@@ -40,6 +42,12 @@ public class StoriesList extends RecyclerView {
         init(null);
 
     }
+
+    public String getUniqueID() {
+        return uniqueID;
+    }
+
+    private String uniqueID;
 
     public void setCallback(ListCallback callback) {
         this.callback = callback;
@@ -90,6 +98,7 @@ public class StoriesList extends RecyclerView {
     }
 
     private void init(AttributeSet attributeSet) {
+        uniqueID = randomUUID().toString();
         manager = new StoriesListManager();
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
@@ -231,7 +240,7 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    public void changeStoryEvent(int storyId) {
+    public void changeStoryEvent(int storyId, String listID) {
         if (adapter == null || adapter.getStoriesIds() == null) return;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
             if (adapter.getStoriesIds().get(i) == storyId) {
@@ -247,7 +256,7 @@ public class StoriesList extends RecyclerView {
         } else if (layoutManager instanceof GridLayoutManager) {
             ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
         }
-        if (ind >= 0) {
+        if (ind >= 0 && listID != null && this.uniqueID != null && this.uniqueID.equals(listID)) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -341,7 +350,7 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
                     if (adapter == null) {
-                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+                        adapter = new StoriesAdapter(getContext(), uniqueID, storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
                         setAdapter(adapter);
                     } else {
@@ -368,7 +377,7 @@ public class StoriesList extends RecyclerView {
                         new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
-                                adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+                                adapter = new StoriesAdapter(getContext(), uniqueID, storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
                                 ProfilingManager.getInstance().setReady(listUid);
