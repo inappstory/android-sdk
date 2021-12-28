@@ -224,6 +224,20 @@ public class AppearanceManager {
         }
     }
 
+    /**
+     * use to set common {@link AppearanceManager}
+     *
+     * @param manager (manager) {@link AppearanceManager} instance
+     * @deprecated will be removed in SDK 2.0
+     * Switch to {@link AppearanceManager#setCommonInstance(AppearanceManager)})
+     */
+    @Deprecated
+    public static void setInstance(AppearanceManager manager) {
+        synchronized (lock) {
+            commonInstance = manager;
+        }
+    }
+
 
     public boolean csTimerGradientEnable() {
         return csTimerGradientEnable;

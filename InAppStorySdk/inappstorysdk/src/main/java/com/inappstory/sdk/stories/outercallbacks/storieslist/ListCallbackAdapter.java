@@ -16,5 +16,6 @@ public class ListCallbackAdapter implements ListCallback {
     public void itemClick(int id, int listIndex, String title, String tags, int slidesCount,
                           boolean isFavoriteList) {
 
+
     }
 }
