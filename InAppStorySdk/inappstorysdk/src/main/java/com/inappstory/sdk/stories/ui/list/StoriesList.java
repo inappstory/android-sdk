@@ -70,6 +70,18 @@ public class StoriesList extends RecyclerView {
         init(attrs);
     }
 
+    public void setStoryTouchListener(StoryTouchListener storyTouchListener) {
+        this.storyTouchListener = storyTouchListener;
+        try {
+            removeOnItemTouchListener(itemTouchListener);
+        } catch (Exception e) {
+
+        }
+        itemTouchListener = new RecyclerTouchListener(storyTouchListener,
+                getContext());
+        addOnItemTouchListener(itemTouchListener);
+    }
+
     StoryTouchListener storyTouchListener = null;
 
 
@@ -114,11 +126,14 @@ public class StoriesList extends RecyclerView {
 
             }
         });
-        addOnItemTouchListener(
-                new RecyclerTouchListener(
-                        getContext()));
+        itemTouchListener = new RecyclerTouchListener(
+                getContext());
+        addOnItemTouchListener(itemTouchListener);
+
         //getRecycledViewPool().setMaxRecycledViews(6, 0);
     }
+
+    OnItemTouchListener itemTouchListener;
 
     void sendIndexes() {
         ArrayList<Integer> indexes = new ArrayList<>();
@@ -194,6 +209,11 @@ public class StoriesList extends RecyclerView {
         View lastChild = null;
 
         public RecyclerTouchListener(Context context) {
+            this(null, context);
+        }
+
+        public RecyclerTouchListener(StoryTouchListener touchListener, Context context) {
+            this.touchListener = touchListener;
             gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onSingleTapUp(MotionEvent e) {

@@ -451,9 +451,7 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
       /*  new Handler().postDelayed(new Runnable() {
@@ -558,11 +556,7 @@ public class GameActivity extends AppCompatActivity {
 
 
     private void initGame(String data) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript(data, null);
-        } else {
-            webView.loadUrl("javascript:" + data);
-        }
+        webView.evaluateJavascript(data, null);
     }
 
 }

@@ -311,7 +311,10 @@ public class AppearanceManager {
      *
      * @param storyTouchListener (storyTouchListener) {@link StoryTouchListener}
      * @return {@link AppearanceManager}
+     * @deprecated will be removed in 2.0
+     * Use {@link StoriesList#setStoryTouchListener(StoryTouchListener)} instead
      */
+    @Deprecated
     public AppearanceManager csStoryTouchListener(StoryTouchListener storyTouchListener) {
         this.storyTouchListener = storyTouchListener;
         return AppearanceManager.this;

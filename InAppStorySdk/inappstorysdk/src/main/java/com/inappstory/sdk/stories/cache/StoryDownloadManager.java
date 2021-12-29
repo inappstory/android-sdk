@@ -115,8 +115,7 @@ public class StoryDownloadManager {
 
                     @Override
                     public void onTimeout() {
-                        super.onTimeout();
-                        ProfilingManager.getInstance().setReady(storyUID);
+                        onError(-1, "Timeout");
                     }
 
                     @Override

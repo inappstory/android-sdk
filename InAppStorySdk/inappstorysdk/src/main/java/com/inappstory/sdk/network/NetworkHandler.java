@@ -157,11 +157,9 @@ public final class NetworkHandler implements InvocationHandler {
 
     //Test
     public String encode(String var) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try {
-                return URLEncoder.encode(var, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException e) {
-            }
+        try {
+            return URLEncoder.encode(var, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
         }
         return var;
     }
