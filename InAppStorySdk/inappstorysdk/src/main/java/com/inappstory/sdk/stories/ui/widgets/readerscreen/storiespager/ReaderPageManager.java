@@ -177,6 +177,7 @@ public class ReaderPageManager {
 
     public void storyOpen(int storyId) {
         isPaused = false;
+        if (webViewManager == null) return;
         if (storyId != this.storyId) {
 
             webViewManager.stopStory();
@@ -210,6 +211,7 @@ public class ReaderPageManager {
         } else {
             timerManager.pauseLocalTimer();
         }
+        if (webViewManager == null) return;
         webViewManager.pauseStory();
     }
 
@@ -226,6 +228,7 @@ public class ReaderPageManager {
         } else {
             timerManager.resumeLocalTimer();
         }
+        if (webViewManager == null) return;
         webViewManager.resumeStory();
     }
 

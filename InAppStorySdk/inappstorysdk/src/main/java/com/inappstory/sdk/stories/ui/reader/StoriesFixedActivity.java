@@ -211,6 +211,7 @@ public class StoriesFixedActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
+            if (storiesFragment == null || storiesFragment.readerManager == null) return;
             storiesFragment.readerManager.gameComplete(
                     data.getStringExtra("gameState"),
                     Integer.parseInt(data.getStringExtra("storyId")),
