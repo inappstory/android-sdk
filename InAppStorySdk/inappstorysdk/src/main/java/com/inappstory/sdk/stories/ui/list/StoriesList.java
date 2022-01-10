@@ -350,17 +350,18 @@ public class StoriesList extends RecyclerView {
     }
 
     public void loadStoriesInner() throws DataException {
-        if (appearanceManager == null) {
-            appearanceManager = AppearanceManager.getCommonInstance();
-        }
-        if (appearanceManager == null) {
-            throw new DataException("Need to set an AppearanceManager", new Throwable("StoriesList data is not valid"));
-        }
+
         if (InAppStoryManager.getInstance() == null) {
             throw new DataException("'InAppStoryManager' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
+        }
+        if (appearanceManager == null) {
+            appearanceManager = AppearanceManager.getCommonInstance();
+        }
+        if (appearanceManager == null) {
+            appearanceManager = new AppearanceManager();
         }
         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");

@@ -414,17 +414,6 @@ public class InAppStoryManager {
 
     Map<String, String> defaultPlaceholders = new HashMap<>();
 
-    public boolean closeOnOverscroll() {
-        return closeOnOverscroll;
-    }
-
-    public boolean closeOnSwipe() {
-        return closeOnSwipe;
-    }
-
-    boolean closeOnOverscroll = true;
-    boolean closeOnSwipe = true;
-
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
     private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
 

@@ -688,6 +688,7 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csShowStatusBar(boolean csShowStatusBar) {
         this.csShowStatusBar = csShowStatusBar;
         return AppearanceManager.this;
