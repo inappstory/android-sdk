@@ -471,7 +471,8 @@ public class ReaderPageFragment extends Fragment {
         }
         bindViews(view);
         setActions();
-        if (setManagers() && InAppStoryService.getInstance() != null) {
+        if (setManagers() && InAppStoryService.getInstance() != null
+                && InAppStoryService.getInstance().getDownloadManager() != null) {
             if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) != null)
                 manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
                         .getStoryById(storyId).lastIndex);
