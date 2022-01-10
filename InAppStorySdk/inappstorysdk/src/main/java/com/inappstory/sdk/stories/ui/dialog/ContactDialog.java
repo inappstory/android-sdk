@@ -294,14 +294,18 @@ public class ContactDialog {
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-
                 View view = activity.getCurrentFocus();
-                editText.clearFocus();
                 if (view != null) {
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            editText.clearFocus();
+                            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                            CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
+                        }
+                    });
 
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                    CsEventBus.getDefault().post(new ResumeStoryReaderEvent(true));
                 }
 
 

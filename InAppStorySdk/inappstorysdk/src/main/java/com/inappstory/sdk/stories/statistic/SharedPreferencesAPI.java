@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.statistic;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class SharedPreferencesAPI {
@@ -77,8 +78,8 @@ public class SharedPreferencesAPI {
      * Получение массива строк
      */
     public static Set<String> getStringSet(String key) {
-        if (getDefaultPreferences() == null) return null;
-        return getDefaultPreferences().getStringSet(key, null);
+        if (getDefaultPreferences() == null) return new HashSet<>();
+        return getDefaultPreferences().getStringSet(key, new HashSet<String>());
     }
 
 

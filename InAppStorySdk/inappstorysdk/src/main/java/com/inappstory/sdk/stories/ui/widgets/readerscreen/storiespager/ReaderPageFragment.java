@@ -192,28 +192,35 @@ public class ReaderPageFragment extends Fragment {
 
     Story story;
 
-    void setViews(View view) {
-        if (InAppStoryService.isNull()) return;
+    boolean setViews(View view) {
+        if (InAppStoryService.isNull()) return false;
         story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        if (story == null) return;
+        if (story == null) return false;
         if (story.disableClose)
             close.setVisibility(View.GONE);
         if (buttonsPanel != null) {
             buttonsPanel.setButtonsVisibility(readerSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+        } else {
+            return false;
         }
         setOffsets(view);
         if (story.durations != null && !story.durations.isEmpty())
             story.slidesCount = story.durations.size();
-        if (storiesView != null)
+        if (storiesView != null) {
             storiesView.getManager().setIndex(story.lastIndex);
+        }
+        else {
+            return false;
+        }
         new Handler().post(new Runnable() {
             @Override
             public void run() {
                 manager.setStoryInfo(story, true);
             }
         });
+        return true;
     }
 
     List<Integer> localDurations = new ArrayList<>();
@@ -760,7 +767,9 @@ public class ReaderPageFragment extends Fragment {
         setActions();
         setManagers();
         manager.setStoryId(storyId);
-        setViews(view);
+        if (!setViews(view)) {
+            InAppStoryManager.closeStoryReader();
+        }
     }
 
 

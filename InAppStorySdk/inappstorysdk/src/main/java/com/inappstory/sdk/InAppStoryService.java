@@ -85,15 +85,7 @@ public class InAppStoryService {
     }
 
     public void saveStoriesOpened(List<Story> stories) {
-  /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-        if (opens == null) opens = new HashSet<>();
-        for (Story story : stories) {
-            opens.add(Integer.toString(story.id));
-        }
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
 
-
-*/
         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
         if (opens == null) opens = new HashSet<>();
         for (Story story : stories) {
