@@ -437,15 +437,19 @@ public class InAppStoryService {
     Runnable checkFreeSpace = new Runnable() {
         @Override
         public void run() {
-            long freeSpace = getCommonCache().getCacheDir().getFreeSpace();
-            if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
-                getCommonCache().setCacheSize(MB_50);
-                if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
-                    getCommonCache().setCacheSize(MB_10);
-                    getFastCache().setCacheSize(MB_5);
-                    if (freeSpace < getCommonCache().getCacheSize() + getFastCache().getCacheSize() + MB_10) {
-                        getCommonCache().setCacheSize(MB_10);
-                        getFastCache().setCacheSize(MB_5);
+            LruDiskCache commonCache = getCommonCache();
+            LruDiskCache fastCache = getFastCache();
+            if (commonCache != null && fastCache != null) {
+                long freeSpace = commonCache.getCacheDir().getFreeSpace();
+                if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                    commonCache.setCacheSize(MB_50);
+                    if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                        commonCache.setCacheSize(MB_10);
+                        fastCache.setCacheSize(MB_5);
+                        if (freeSpace < commonCache.getCacheSize() + fastCache.getCacheSize() + MB_10) {
+                            commonCache.setCacheSize(MB_10);
+                            fastCache.setCacheSize(MB_5);
+                        }
                     }
                 }
             }
