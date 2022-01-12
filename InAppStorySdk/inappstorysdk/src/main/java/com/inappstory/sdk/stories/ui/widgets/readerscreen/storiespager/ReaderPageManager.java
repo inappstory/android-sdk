@@ -66,10 +66,14 @@ public class ReaderPageManager {
 
     void setStoryInfo(Story story, boolean full) {
         //webViewManager.setIndex(story.lastIndex);
-        timelineManager.setSlidesCount(story.slidesCount);
-        if (full)
-            timelineManager.setStoryDurations(story.durations);
-        webViewManager.loadStory(story.id, story.lastIndex);
+        if (timelineManager != null) {
+            timelineManager.setSlidesCount(story.slidesCount);
+            if (full)
+                timelineManager.setStoryDurations(story.durations);
+        }
+        if (webViewManager != null) {
+            webViewManager.loadStory(story.id, story.lastIndex);
+        }
 
     }
 

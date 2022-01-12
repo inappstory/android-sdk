@@ -21,6 +21,10 @@ public class Timeline extends LinearLayout {
     }
 
     public TimelineManager getManager() {
+        if (timelineManager == null) {
+            timelineManager = new TimelineManager();
+            timelineManager.setTimeline(this);
+        }
         return timelineManager;
     }
 
@@ -54,9 +58,9 @@ public class Timeline extends LinearLayout {
     }
 
     private void init() {
+        timelineManager = new TimelineManager();
         setOrientation(LinearLayout.HORIZONTAL);
         bindViews();
-        timelineManager = new TimelineManager();
         timelineManager.setTimeline(this);
     }
 

@@ -92,13 +92,20 @@ public class ReaderPageFragment extends Fragment {
     AppCompatImageView close;
     int storyId;
 
-    void setManagers() {
+    boolean setManagers() {
         if (buttonsPanel != null)
             manager.setButtonsPanelManager(buttonsPanel.getManager(), storyId);
+        else
+            return false;
         if (timeline != null)
             manager.setTimelineManager(timeline.getManager(), storyId);
+        else
+            return false;
         if (storiesView != null)
             manager.setWebViewManager(storiesView.getManager(), storyId);
+        else
+            return false;
+        return true;
     }
 
 
@@ -210,8 +217,7 @@ public class ReaderPageFragment extends Fragment {
             story.slidesCount = story.durations.size();
         if (storiesView != null) {
             storiesView.getManager().setIndex(story.lastIndex);
-        }
-        else {
+        } else {
             return false;
         }
         new Handler().post(new Runnable() {
@@ -765,9 +771,8 @@ public class ReaderPageFragment extends Fragment {
         setStoryId();
         bindViews(view);
         setActions();
-        setManagers();
         manager.setStoryId(storyId);
-        if (!setViews(view)) {
+        if (!setManagers() || !setViews(view)) {
             InAppStoryManager.closeStoryReader();
         }
     }
