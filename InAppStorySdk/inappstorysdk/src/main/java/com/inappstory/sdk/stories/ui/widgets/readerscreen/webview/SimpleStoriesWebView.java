@@ -329,11 +329,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             String ctType = response.headers.get("Content-Type");
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
-                        } catch (FileNotFoundException e) {
-                            return super.shouldInterceptRequest(view, request);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return super.shouldInterceptRequest(view, request);
                         } catch (Exception e) {
                             return super.shouldInterceptRequest(view, request);
                         }
