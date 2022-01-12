@@ -28,6 +28,11 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
+import com.inappstory.sdk.stories.api.models.logs.BaseLog;
+import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
@@ -120,6 +125,20 @@ public class InAppStoryManager {
     }
 
     @SuppressLint(DEBUG_API)
+    interface IAS_QA_Log {
+        void getApiRequestLog(ApiLogRequest request);
+
+        void getApiResponseLog(ApiLogResponse response);
+
+        void getExceptionLog(ExceptionLog exceptionLog);
+
+        void getWebConsoleLog(WebConsoleLog webConsoleLog);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static IAS_QA_Log iasQaLog;
+
+    @SuppressLint(DEBUG_API)
     public static void showELog(String tag, String message) {
         if (logger != null) logger.showELog(tag, message);
     }
@@ -129,6 +148,25 @@ public class InAppStoryManager {
         if (logger != null) logger.showDLog(tag, message);
     }
 
+    @SuppressLint(DEBUG_API)
+    public static void sendApiRequestLog(ApiLogRequest log) {
+        if (iasQaLog != null) iasQaLog.getApiRequestLog(log);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendApiResponseLog(ApiLogResponse log) {
+        if (iasQaLog != null) iasQaLog.getApiResponseLog(log);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendExceptionLog(ExceptionLog log) {
+        if (iasQaLog != null) iasQaLog.getExceptionLog(log);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendWebConsoleLog(WebConsoleLog log) {
+        if (iasQaLog != null) iasQaLog.getWebConsoleLog(log);
+    }
 
     /**
      * use set custom callback in case of uncaught exceptions.
