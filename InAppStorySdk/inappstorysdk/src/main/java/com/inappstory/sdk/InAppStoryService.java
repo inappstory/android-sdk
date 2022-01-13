@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 
@@ -387,7 +388,6 @@ public class InAppStoryService {
     }
 
 
-
     public void removeListSubscriber(StoriesListManager listManager) {
         if (listSubscribers == null) return;
         listManager.clear();
@@ -409,6 +409,7 @@ public class InAppStoryService {
 
             if (oldHandler != null)
                 oldHandler.uncaughtException(thread, throwable);
+
             ExceptionLog log = new ExceptionLog();
             log.id = UUID.randomUUID().toString();
             log.cause = throwable.getCause().toString();
@@ -418,6 +419,13 @@ public class InAppStoryService {
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
 
+            try {
+                if (Looper.getMainLooper().getThread() == thread) {
+                    return;
+                }
+            } catch (Exception e) {
+
+            }
             if (InAppStoryManager.getInstance() != null) {
 
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
@@ -431,6 +439,7 @@ public class InAppStoryService {
                 if (getInstance() != null)
                     getInstance().onDestroy();
             }
+
             if (InAppStoryManager.getInstance() != null) {
                 InAppStoryManager.getInstance().createServiceThread(
                         InAppStoryManager.getInstance().context,
