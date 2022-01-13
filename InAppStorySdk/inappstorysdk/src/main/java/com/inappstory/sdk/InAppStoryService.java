@@ -419,15 +419,10 @@ public class InAppStoryService {
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
 
-            try {
-                if (Looper.getMainLooper().getThread() == thread) {
+            if (InAppStoryManager.getInstance() != null) {
+                if (thread != InAppStoryManager.getInstance().serviceThread) {
                     return;
                 }
-            } catch (Exception e) {
-
-            }
-            if (InAppStoryManager.getInstance() != null) {
-
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
                         getInstance().getDownloadManager().getStories(),
                         getInstance().getDownloadManager().favStories,
@@ -439,7 +434,6 @@ public class InAppStoryService {
                 if (getInstance() != null)
                     getInstance().onDestroy();
             }
-
             if (InAppStoryManager.getInstance() != null) {
                 InAppStoryManager.getInstance().createServiceThread(
                         InAppStoryManager.getInstance().context,
