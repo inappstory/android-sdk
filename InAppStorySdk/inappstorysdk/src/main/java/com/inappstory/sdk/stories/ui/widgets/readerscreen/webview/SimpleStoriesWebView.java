@@ -28,6 +28,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -366,6 +368,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                    sendWebConsoleLog(consoleMessage);
                     Log.d("InAppStory_SDK_Web", consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());
@@ -374,6 +377,16 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
             });
 
         }
+    }
+
+    private void sendWebConsoleLog(ConsoleMessage consoleMessage) {
+        WebConsoleLog log = new WebConsoleLog();
+        log.timestamp =  System.currentTimeMillis();
+        log.id = UUID.randomUUID().toString();
+        log.message = consoleMessage.message();
+        log.sourceId = consoleMessage.sourceId();
+        log.lineNumber = consoleMessage.lineNumber();
+        InAppStoryManager.sendWebConsoleLog(log);
     }
 
     @Override

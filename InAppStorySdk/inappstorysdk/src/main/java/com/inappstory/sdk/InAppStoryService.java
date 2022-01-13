@@ -15,10 +15,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -407,6 +409,12 @@ public class InAppStoryService {
 
             if (oldHandler != null)
                 oldHandler.uncaughtException(thread, throwable);
+            ExceptionLog log = new ExceptionLog();
+            log.id = UUID.randomUUID().toString();
+            log.cause = throwable.getCause().toString();
+            log.message = throwable.getMessage();
+            log.stacktrace = throwable.getStackTrace().toString();
+            InAppStoryManager.sendExceptionLog(log);
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
 
@@ -477,7 +485,7 @@ public class InAppStoryService {
                 clearOldFiles();
             }
         });
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+        //Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         createDownloadManager(exceptionCache);

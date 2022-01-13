@@ -104,7 +104,7 @@ public class InAppStoryManager {
     Context context;
 
 
-    private static final String DEBUG_API = "IAS debug api";
+    static final String DEBUG_API = "IAS debug api";
 
 
     @SuppressLint(DEBUG_API)
@@ -122,17 +122,6 @@ public class InAppStoryManager {
         void showELog(String tag, String message);
 
         void showDLog(String tag, String message);
-    }
-
-    @SuppressLint(DEBUG_API)
-    interface IAS_QA_Log {
-        void getApiRequestLog(ApiLogRequest request);
-
-        void getApiResponseLog(ApiLogResponse response);
-
-        void getExceptionLog(ExceptionLog exceptionLog);
-
-        void getWebConsoleLog(WebConsoleLog webConsoleLog);
     }
 
     @SuppressLint(DEBUG_API)
