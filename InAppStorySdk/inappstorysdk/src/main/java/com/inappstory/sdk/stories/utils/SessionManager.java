@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -110,6 +111,13 @@ public class SessionManager {
             openProcess = true;
             if (callback != null)
                 callbacks.add(callback);
+        }
+        if (InAppStoryService.getInstance() == null) {
+            Log.e("InAppStory_SDK_error", "InAppStory instance is null");
+            if (callback != null) {
+                callback.onError();
+            }
+            return;
         }
         Context context = InAppStoryService.getInstance().getContext();
         String platform = "android";

@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
 import java.lang.reflect.Type;
@@ -630,6 +631,7 @@ public class InAppStoryManager {
     /**
      * @return current instance of {@link InAppStoryManager}
      */
+    @Nullable
     public static InAppStoryManager getInstance() {
         return INSTANCE;
     }
@@ -726,7 +728,10 @@ public class InAppStoryManager {
                     public void onSuccess(List<Story> response) {
                         ProfilingManager.getInstance().setReady(onboardUID);
                         List<Story> notOpened = new ArrayList<>();
-                        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                        Set<String> opens = null;
+                        if (InAppStoryManager.getInstance() != null) {
+                            opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                        }
                         if (opens == null) opens = new HashSet<>();
                         for (Story story : response) {
                             boolean add = true;
