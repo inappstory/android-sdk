@@ -100,6 +100,15 @@ public class ContactDialog {
     float factor = 1;
 
     public void showDialog(final Activity activity) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                showDialogInner(activity);
+            }
+        });
+    }
+
+    private void showDialogInner(final Activity activity) {
         final Dialog dialog = new Dialog(activity, R.style.DialogTheme);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -448,14 +457,17 @@ public class ContactDialog {
         });
 
         if (!isTablet()) {
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    et.requestFocus();
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
-                }
-            }, 200);
+            View view = activity.getCurrentFocus();
+            if (view != null) {
+                view.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        et.requestFocus();
+                        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
+                    }
+                }, 200);
+            }
         }
     }
 
