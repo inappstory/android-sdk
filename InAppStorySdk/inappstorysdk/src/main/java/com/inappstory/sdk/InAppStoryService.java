@@ -369,10 +369,12 @@ public class InAppStoryService {
             if (oldHandler != null) oldHandler.uncaughtException(thread, throwable);
             Log.d("InAppStoryException", throwable.getCause() + "\n"
                     + throwable.getMessage());
-            if (InAppStoryManager.getInstance() != null) {
+            try {
                 if (thread == Looper.getMainLooper().getThread()) {
                     return;
                 }
+            } catch (Exception ignored) {}
+            if (InAppStoryManager.getInstance() != null) {
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
                         getInstance().getDownloadManager().getStories(),
                         getInstance().getDownloadManager().favStories,
