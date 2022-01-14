@@ -454,6 +454,11 @@ public class InAppStoryService {
         return currentId;
     }
 
+    public void generateCrash() {
+        String c = null;
+        c.length();
+    }
+
     public void setCurrentId(int currentId) {
         this.currentId = currentId;
     }
