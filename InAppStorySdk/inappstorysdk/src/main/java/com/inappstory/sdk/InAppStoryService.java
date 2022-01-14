@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 
@@ -369,7 +370,7 @@ public class InAppStoryService {
             Log.d("InAppStoryException", throwable.getCause() + "\n"
                     + throwable.getMessage());
             if (InAppStoryManager.getInstance() != null) {
-                if (thread != InAppStoryManager.getInstance().serviceThread) {
+                if (thread == Looper.getMainLooper().getThread()) {
                     return;
                 }
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
@@ -436,7 +437,7 @@ public class InAppStoryService {
             }
         });
         CsEventBus.getDefault().register(this);
-        //Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         createDownloadManager(exceptionCache);
