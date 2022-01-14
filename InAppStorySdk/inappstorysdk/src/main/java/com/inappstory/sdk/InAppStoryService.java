@@ -369,7 +369,9 @@ public class InAppStoryService {
             Log.d("InAppStoryException", throwable.getCause() + "\n"
                     + throwable.getMessage());
             if (InAppStoryManager.getInstance() != null) {
-
+                if (thread != InAppStoryManager.getInstance().serviceThread) {
+                    return;
+                }
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
                         getInstance().getDownloadManager().getStories(),
                         getInstance().getDownloadManager().favStories,
@@ -434,7 +436,7 @@ public class InAppStoryService {
             }
         });
         CsEventBus.getDefault().register(this);
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+        //Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         createDownloadManager(exceptionCache);
