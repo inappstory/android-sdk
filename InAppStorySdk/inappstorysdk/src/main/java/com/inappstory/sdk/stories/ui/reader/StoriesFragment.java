@@ -195,7 +195,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        isDestroyed = getArguments().getBoolean("isDestroyed");
+        isDestroyed = (getArguments() == null || getArguments().getBoolean("isDestroyed"));
         created = true;
         RelativeLayout resView = new RelativeLayout(getContext());
         resView.setBackgroundColor(getResources().getColor(R.color.black));
