@@ -375,6 +375,7 @@ public class InAppStoryService {
                 }
             } catch (Exception ignored) {}
             if (InAppStoryManager.getInstance() != null) {
+                if (thread != InAppStoryManager.getInstance().serviceThread) return;
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
                         getInstance().getDownloadManager().getStories(),
                         getInstance().getDownloadManager().favStories,
