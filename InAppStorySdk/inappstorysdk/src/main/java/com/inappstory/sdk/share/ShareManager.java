@@ -46,7 +46,7 @@ public class ShareManager {
             sendIntent(context, sendIntent);
         } else {
             sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            sendIntent.setType("image/*");
+            sendIntent.setType("*/*");
             new TaskRunner().executeAsync(new UriFromBase64(context, shareObject.getFiles()),
                     new TaskRunner.Callback<ArrayList<Uri>>() {
                         @Override
