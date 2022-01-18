@@ -32,7 +32,6 @@ public class UriFromBase64 implements Callable<Uri> {
     }
 
     private Uri saveImage(Context context, Bitmap image, String name, String type) {
-        //TODO - Should be processed in another thread
         File imagesFolder = new File(context.getCacheDir(), "images");
         Uri uri = null;
         if (image == null) return null;
