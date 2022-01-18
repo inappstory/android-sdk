@@ -2,8 +2,6 @@ package com.inappstory.sdk.game.reader;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,7 +16,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
@@ -31,7 +28,6 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -45,7 +41,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.api.models.ShareObject;
+import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
@@ -55,9 +52,8 @@ import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
 import static com.inappstory.sdk.network.JsonParser.toMap;
 
 public class GameActivity extends AppCompatActivity {
@@ -265,7 +261,6 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    public static final int SHARE_EVENT = 909;
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 101;
 
     @Override
@@ -338,27 +333,8 @@ public class GameActivity extends AppCompatActivity {
 
     boolean gameReaderGestureBack = false;
 
-    public void shareDefault(ShareObject shareObject) {
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());
-        sendIntent.putExtra(Intent.EXTRA_TEXT, shareObject.getUrl());
-        sendIntent.setType("text/plain");
-        PendingIntent pi = PendingIntent.getBroadcast(GameActivity.this, SHARE_EVENT,
-                new Intent(GameActivity.this, StoryShareBroadcastReceiver.class),
-                FLAG_UPDATE_CURRENT);
-        Intent finalIntent = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-            //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivityForResult(finalIntent, SHARE_EVENT);
-        } else {
-            if (InAppStoryService.isNull()) return;
-            finalIntent = Intent.createChooser(sendIntent, null);
-            finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            InAppStoryService.getInstance().getContext().startActivity(finalIntent);
-
-        }
+    public void shareDefault(JSShareModel shareObject) {
+        new ShareManager().shareDefault(GameActivity.this, shareObject);
     }
 
     public void shareComplete(String id, boolean success) {

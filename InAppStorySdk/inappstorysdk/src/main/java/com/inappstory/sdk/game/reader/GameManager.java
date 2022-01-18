@@ -13,9 +13,8 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
-import com.inappstory.sdk.network.jsapiclient.JsApiRequestConfig;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.stories.api.models.ShareObject;
+import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -29,7 +28,6 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Map;
 
 import static com.inappstory.sdk.network.JsonParser.toMap;
 
@@ -178,10 +176,10 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
+        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             CallbackManager.getInstance().getShareCallback()
-                    .onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
+                    .onShare(shareObj.getText(), shareObj.getTitle(), data, id);
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 ScreensManager.getInstance().setTempShareId(id);
