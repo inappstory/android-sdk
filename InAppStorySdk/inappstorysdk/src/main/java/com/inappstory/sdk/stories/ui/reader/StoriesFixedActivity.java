@@ -60,7 +60,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
-public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen{
+public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen {
 
     public boolean pauseDestroyed = false;
 
@@ -196,22 +196,23 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
-
-            CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.getSlidesCount(),
-                    story.lastIndex, CloseStory.CUSTOM,
-                    getIntent().getIntExtra("source", 0)));
-            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                        story.id,
+            if (story != null) {
+                CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.getSlidesCount(),
-                        story.lastIndex, CloseReader.CUSTOM,
-                        CallbackManager.getInstance().getSourceFromInt(
-                                getIntent().getIntExtra("source", 0))
-                );
+                        story.lastIndex, CloseStory.CUSTOM,
+                        getIntent().getIntExtra("source", 0)));
+                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                            story.id,
+                            story.title, story.tags, story.getSlidesCount(),
+                            story.lastIndex, CloseReader.CUSTOM,
+                            CallbackManager.getInstance().getSourceFromInt(
+                                    getIntent().getIntExtra("source", 0))
+                    );
+                }
+                String cause = StatisticManager.BACK;
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
             }
-            String cause = StatisticManager.BACK;
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
         }
         finish();
     }

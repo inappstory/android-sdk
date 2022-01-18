@@ -239,10 +239,14 @@ public class ScreensManager {
             if (currentScreen != null) {
                 currentScreen.forceFinish();
             }
-            ScreensManager.getInstance().currentScreen = storiesDialogFragment;
-            storiesDialogFragment.show(
-                    ((AppCompatActivity) outerContext).getSupportFragmentManager(),
-                    "DialogFragment");
+            try {
+                storiesDialogFragment.show(
+                        ((AppCompatActivity) outerContext).getSupportFragmentManager(),
+                        "DialogFragment");
+                ScreensManager.getInstance().currentScreen = storiesDialogFragment;
+            } catch (IllegalStateException e) {
+
+            }
         } else {
             if (created == -1) return;
             created = -1;

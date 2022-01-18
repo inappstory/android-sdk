@@ -853,6 +853,7 @@ public class InAppStoryManager {
                         localTags).enqueue(new NetworkCallback<List<Story>>() {
                     @Override
                     public void onSuccess(List<Story> response) {
+                        if (InAppStoryManager.isNull()) return;
                         ProfilingManager.getInstance().setReady(onboardUID);
                         List<Story> notOpened = new ArrayList<>();
                         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());

@@ -36,6 +36,7 @@ public class ShareManager {
         final Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());
+
         if (shareObject.getText() != null)
             sendIntent.putExtra(Intent.EXTRA_TEXT, shareObject.getText());
         if (shareObject.getFiles().isEmpty()) {
