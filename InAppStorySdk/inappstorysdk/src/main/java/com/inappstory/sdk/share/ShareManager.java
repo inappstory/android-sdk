@@ -51,7 +51,12 @@ public class ShareManager {
                     new TaskRunner.Callback<ArrayList<Uri>>() {
                         @Override
                         public void onComplete(ArrayList<Uri> result) {
-                            sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, result);
+                            if (result.size() > 1) {
+                                sendIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                                sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, result);
+                            } else if (!result.isEmpty()) {
+                                sendIntent.putExtra(Intent.EXTRA_STREAM, result.get(0));
+                            }
                             sendIntent(context, sendIntent);
                         }
                     });
