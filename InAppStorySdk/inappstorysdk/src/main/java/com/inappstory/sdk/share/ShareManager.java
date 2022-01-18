@@ -34,7 +34,7 @@ public class ShareManager {
         }
     }
 
-    public void shareDefault(final Activity context, JSShareModel shareObject) {
+    public void shareDefault(final Activity context, final JSShareModel shareObject) {
         final Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());
@@ -45,8 +45,8 @@ public class ShareManager {
             sendIntent.setType("text/plain");
             sendIntent(context, sendIntent);
         } else {
-            sendIntent.setType(shareObject.getFiles().get(0).getType());
             sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            sendIntent.setType("image/*");
             new TaskRunner().executeAsync(new UriFromBase64(context, shareObject.getFiles()),
                     new TaskRunner.Callback<ArrayList<Uri>>() {
                         @Override
