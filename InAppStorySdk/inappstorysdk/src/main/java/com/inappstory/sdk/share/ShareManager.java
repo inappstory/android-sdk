@@ -12,6 +12,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.TaskRunner;
 
+import java.util.ArrayList;
+
 public class ShareManager {
 
     public static final int SHARE_EVENT = 909;
@@ -45,11 +47,11 @@ public class ShareManager {
         } else {
             sendIntent.setType(shareObject.getFiles().get(0).getType());
             sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            new TaskRunner().executeAsync(new UriFromBase64(context, shareObject.getFiles().get(0)),
-                    new TaskRunner.Callback<Uri>() {
+            new TaskRunner().executeAsync(new UriFromBase64(context, shareObject.getFiles()),
+                    new TaskRunner.Callback<ArrayList<Uri>>() {
                         @Override
-                        public void onComplete(Uri result) {
-                            sendIntent.putExtra(Intent.EXTRA_STREAM, result);
+                        public void onComplete(ArrayList<Uri> result) {
+                            sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, result);
                             sendIntent(context, sendIntent);
                         }
                     });

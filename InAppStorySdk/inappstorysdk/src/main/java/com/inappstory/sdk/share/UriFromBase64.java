@@ -12,17 +12,18 @@ import androidx.core.content.FileProvider;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-public class UriFromBase64 implements Callable<Uri> {
+public class UriFromBase64 implements Callable<ArrayList<Uri>> {
     Context context;
-    JSShareFile shareFile;
+    ArrayList<JSShareFile> shareFiles;
 
 
     public UriFromBase64(Context context,
-                         JSShareFile shareFile) {
+                         ArrayList<JSShareFile> shareFiles) {
         this.context = context;
-        this.shareFile = shareFile;
+        this.shareFiles = shareFiles;
     }
 
 
@@ -34,25 +35,26 @@ public class UriFromBase64 implements Callable<Uri> {
     private Uri saveImage(Context context, Bitmap image, String name, String type) {
         File imagesFolder = new File(context.getCacheDir(), "images");
         Uri uri = null;
+        Bitmap.CompressFormat compressFormat;
+        switch (type) {
+            case "image/jpg":
+            case "image/jpeg":
+                compressFormat = Bitmap.CompressFormat.JPEG;
+                break;
+            case "image/png":
+                compressFormat = Bitmap.CompressFormat.PNG;
+                break;
+            case "image/webp":
+                compressFormat = Bitmap.CompressFormat.WEBP;
+                break;
+            default:
+                return null;
+        }
         if (image == null) return null;
         try {
             imagesFolder.mkdirs();
             File file = new File(imagesFolder, name);
-
             FileOutputStream stream = new FileOutputStream(file);
-            Bitmap.CompressFormat compressFormat;
-            switch (type) {
-                case "image/jpg":
-                case "image/jpeg":
-                    compressFormat = Bitmap.CompressFormat.JPEG;
-                    break;
-                case "image/png":
-                    compressFormat = Bitmap.CompressFormat.PNG;
-                    break;
-                default:
-                    compressFormat = Bitmap.CompressFormat.WEBP;
-                    break;
-            }
             image.compress(compressFormat, 100, stream);
             stream.flush();
             stream.close();
@@ -63,10 +65,17 @@ public class UriFromBase64 implements Callable<Uri> {
     }
 
     @Override
-    public Uri call() throws Exception {
-        return saveImage(context,
-                getBitmapFromBase64String(shareFile.getFile()),
-                shareFile.getName(),
-                shareFile.getType());
+    public ArrayList<Uri> call() throws Exception {
+        ArrayList<Uri> response = new ArrayList<>();
+        for (JSShareFile shareFile : shareFiles) {
+            Uri uri = saveImage(context,
+                    getBitmapFromBase64String(shareFile.getFile()),
+                    shareFile.getName(),
+                    shareFile.getType());
+            if (uri != null) {
+                response.add(uri);
+            }
+        }
+        return response;
     }
 }
