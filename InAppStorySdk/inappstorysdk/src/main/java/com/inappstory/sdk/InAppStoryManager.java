@@ -468,7 +468,7 @@ public class InAppStoryManager {
                 Looper.loop();
             }
         });
-        serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
+        //serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
         serviceThread.start();
     }
 
@@ -722,6 +722,7 @@ public class InAppStoryManager {
                         localTags).enqueue(new NetworkCallback<List<Story>>() {
                     @Override
                     public void onSuccess(List<Story> response) {
+                        if (InAppStoryManager.isNull()) return;
                         ProfilingManager.getInstance().setReady(onboardUID);
                         List<Story> notOpened = new ArrayList<>();
                         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());

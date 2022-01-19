@@ -45,6 +45,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.loader.GameLoader;
 import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.share.ShareManager;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -338,27 +340,8 @@ public class GameActivity extends AppCompatActivity {
 
     boolean gameReaderGestureBack = false;
 
-    public void shareDefault(ShareObject shareObject) {
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());
-        sendIntent.putExtra(Intent.EXTRA_TEXT, shareObject.getUrl());
-        sendIntent.setType("text/plain");
-        PendingIntent pi = PendingIntent.getBroadcast(GameActivity.this, SHARE_EVENT,
-                new Intent(GameActivity.this, StoryShareBroadcastReceiver.class),
-                FLAG_UPDATE_CURRENT);
-        Intent finalIntent = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-            //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivityForResult(finalIntent, SHARE_EVENT);
-        } else {
-            if (InAppStoryService.isNull()) return;
-            finalIntent = Intent.createChooser(sendIntent, null);
-            finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            InAppStoryService.getInstance().getContext().startActivity(finalIntent);
-
-        }
+    public void shareDefault(JSShareModel shareObject) {
+        new ShareManager().shareDefault(GameActivity.this, shareObject);
     }
 
     public void shareComplete(String id, boolean success) {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 
@@ -402,9 +403,13 @@ public class InAppStoryService {
                 oldHandler.uncaughtException(thread, throwable);
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
-
+            try {
+                if (thread == Looper.getMainLooper().getThread()) {
+                    return;
+                }
+            } catch (Exception ignored) {}
             if (InAppStoryManager.getInstance() != null) {
-
+                if (thread != InAppStoryManager.getInstance().serviceThread) return;
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
                         getInstance().getDownloadManager().getStories(),
                         getInstance().getDownloadManager().favStories,

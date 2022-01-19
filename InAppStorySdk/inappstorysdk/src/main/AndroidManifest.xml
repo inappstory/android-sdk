@@ -11,24 +11,33 @@
         android:hardwareAccelerated="true"
         android:largeHeap="true"
         android:supportsRtl="true">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.inappstory.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/inappstory_file_path" />
+        </provider>
 
         <activity
-            android:hardwareAccelerated="true"
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
+            android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
-            android:hardwareAccelerated="true"
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity"
+            android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.NonTransparent"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
-            android:hardwareAccelerated="true"
             android:name=".game.reader.GameActivity"
+            android:hardwareAccelerated="true"
             android:theme="@style/Theme.GameActivity" />
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />

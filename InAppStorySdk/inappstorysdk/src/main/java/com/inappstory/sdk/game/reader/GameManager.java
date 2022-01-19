@@ -15,6 +15,7 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiRequestConfig;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -178,10 +179,10 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
+        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             CallbackManager.getInstance().getShareCallback()
-                    .onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
+                    .onShare(shareObj.getText(), shareObj.getTitle(), data, id);
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 ScreensManager.getInstance().setTempShareId(id);

@@ -414,35 +414,36 @@ public class StoriesActivity extends AppCompatActivity {
         blockView.setVisibility(View.VISIBLE);
         if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
-
-            CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.getSlidesCount(),
-                    story.lastIndex, action,
-                    getIntent().getIntExtra("source", 0)));
-            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                        story.id,
+            if (story != null) {
+                CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.getSlidesCount(),
-                        story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
-                                action),
-                        CallbackManager.getInstance().getSourceFromInt(
-                                getIntent().getIntExtra("source", 0))
-                );
+                        story.lastIndex, action,
+                        getIntent().getIntExtra("source", 0)));
+                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                            story.id,
+                            story.title, story.tags, story.getSlidesCount(),
+                            story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
+                                    action),
+                            CallbackManager.getInstance().getSourceFromInt(
+                                    getIntent().getIntExtra("source", 0))
+                    );
+                }
+                String cause = StatisticManager.AUTO;
+                switch (action) {
+                    case CloseStory.CLICK:
+                        cause = StatisticManager.CLICK;
+                        break;
+                    case CloseStory.CUSTOM:
+                        cause = StatisticManager.CUSTOM;
+                        break;
+                    case CloseStory.SWIPE:
+                        cause = StatisticManager.SWIPE;
+                        break;
+                }
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                        story.getSlidesCount());
             }
-            String cause = StatisticManager.AUTO;
-            switch (action) {
-                case CloseStory.CLICK:
-                    cause = StatisticManager.CLICK;
-                    break;
-                case CloseStory.CUSTOM:
-                    cause = StatisticManager.CUSTOM;
-                    break;
-                case CloseStory.SWIPE:
-                    cause = StatisticManager.SWIPE;
-                    break;
-            }
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                    story.getSlidesCount());
         }
         cleanReader();
 

@@ -179,7 +179,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        isDestroyed = getArguments().getBoolean("isDestroyed");
+        isDestroyed = (getArguments() == null || getArguments().getBoolean("isDestroyed"));
         created = true;
         closeOnSwipe = getArguments().getBoolean(CS_CLOSE_ON_SWIPE, true);
         closeOnOverscroll = getArguments().getBoolean(CS_CLOSE_ON_OVERSCROLL, true);

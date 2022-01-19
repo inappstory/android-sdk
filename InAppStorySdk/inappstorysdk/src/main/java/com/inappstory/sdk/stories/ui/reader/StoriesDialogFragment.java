@@ -79,23 +79,25 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
 
-            if (story == null) return;
-            CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.getSlidesCount(),
-                    story.lastIndex, CloseStory.CLICK,
-                    getArguments().getInt("source", 0)));
-            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                        story.id,
+            if (story != null) {
+
+                CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.getSlidesCount(),
-                        story.lastIndex, CloseReader.CLICK,
-                        CallbackManager.getInstance().getSourceFromInt(
-                                getArguments().getInt("source", 0))
-                );
+                        story.lastIndex, CloseStory.CLICK,
+                        getArguments().getInt("source", 0)));
+                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                            story.id,
+                            story.title, story.tags, story.getSlidesCount(),
+                            story.lastIndex, CloseReader.CLICK,
+                            CallbackManager.getInstance().getSourceFromInt(
+                                    getArguments().getInt("source", 0))
+                    );
+                }
+                String cause = StatisticManager.CLICK;
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                        story.getSlidesCount());
             }
-            String cause = StatisticManager.CLICK;
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                    story.getSlidesCount());
         }
         cleanReader();
         removeGameObservables();
