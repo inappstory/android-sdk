@@ -18,6 +18,13 @@ public class JSShareModel {
     @SerializedName("title")
     public String title;
 
+    public String getUrl() {
+        return url;
+    }
+
+    @SerializedName("url")
+    String url;
+
     public ArrayList<JSShareFile> getFiles() {
         return files != null ? files : new ArrayList<JSShareFile>();
     }

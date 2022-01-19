@@ -38,11 +38,16 @@ public class ShareManager {
         final Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());
-
-        if (shareObject.getText() != null)
+        boolean newScheme = false;
+        if (shareObject.getText() != null) {
             sendIntent.putExtra(Intent.EXTRA_TEXT, shareObject.getText());
+            newScheme = true;
+        }
         if (shareObject.getFiles().isEmpty()) {
             sendIntent.setType("text/plain");
+            if (!newScheme) {
+                sendIntent.putExtra(Intent.EXTRA_TEXT, shareObject.getUrl());
+            }
             sendIntent(context, sendIntent);
         } else {
             sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
