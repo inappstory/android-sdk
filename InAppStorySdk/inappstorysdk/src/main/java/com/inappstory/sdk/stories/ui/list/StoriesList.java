@@ -318,13 +318,14 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
+        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", toString() + "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
-        final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
+        boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
             lcallback = new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
+                    InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded");
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
@@ -333,9 +334,12 @@ public class StoriesList extends RecyclerView {
                         adapter.refresh(storiesIds);
                         adapter.notifyDataSetChanged();
                     }
+                    InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter");
                     ProfilingManager.getInstance().setReady(listUid);
+                    InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager");
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                     if (callback != null) callback.storiesLoaded(storiesIds.size());
+                    InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback " + (callback != null));
                 }
 
                 @Override
@@ -350,15 +354,22 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void run() {
                     if (InAppStoryService.isNotNull()) {
-                        new LoadStoriesCallback() {
+                        boolean hasFav = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
+                        lcallback = new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
+                                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded delay");
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
+
+                                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter delay");
                                 ProfilingManager.getInstance().setReady(listUid);
+                                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager delay");
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                                 if (callback != null) callback.storiesLoaded(storiesIds.size());
+                                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback delay " + (callback != null));
+
                             }
 
                             @Override
@@ -367,7 +378,7 @@ public class StoriesList extends RecyclerView {
                             }
                         };
                         InAppStoryService.getInstance().getDownloadManager().loadStories(
-                                lcallback, isFavoriteList, hasFavorite);
+                                lcallback, isFavoriteList, hasFav);
                     }
                 }
             }, 1000);
