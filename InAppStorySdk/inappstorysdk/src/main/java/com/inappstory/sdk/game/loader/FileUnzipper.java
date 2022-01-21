@@ -27,6 +27,10 @@ public class FileUnzipper {
                             dir.getAbsolutePath());
                 if (ze.isDirectory())
                     continue;
+                String canonicalPath = file.getCanonicalPath();
+                if (!canonicalPath.startsWith(targetDirectory.getCanonicalPath())) {
+                    continue;
+                }
                 FileOutputStream fout = new FileOutputStream(file);
                 try {
                     while ((count = zis.read(buffer)) != -1)
