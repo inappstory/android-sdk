@@ -155,7 +155,7 @@ public class GameLoader {
                             File.separator + pathName +
                             File.separator + url.hashCode() + ".zip");
                     if (pathName.contains("\\") || pathName.contains("/")) return null;
-                    if (!getFile.getCanonicalPath().startsWith(
+                    if (!getFile.getAbsolutePath().startsWith(
                             InAppStoryService.getInstance().getCommonCache().getCacheDir() +
                             File.separator + "zip")) return null;
                     File file = Downloader.downloadOrGetFile(url,
