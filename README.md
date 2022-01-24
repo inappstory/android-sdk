@@ -22,7 +22,7 @@ allprojects {
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```
-implementation 'com.github.inappstory:android-sdk:1.5.5'
+implementation 'com.github.inappstory:android-sdk:1.5.9'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -141,11 +141,7 @@ If the application supports multiple accounts, then you can implement switch use
 InAppStoryManager.getInstance().setUserId(userId)
 ```
 
-To change the `apiKey` parameter, you will need to reinitialize the `InAppStoryManager` (see the initialization example). This will remove the old instance.
-To change the `testKey` parameter, you can use the method:
-```
-InAppStoryManager.getInstance().setTestKey(String testKey).
-```
+To change the `apiKey` or `testKey` parameters, you will need to reinitialize the `InAppStoryManager` (see the initialization example). This will remove the old instance.
 
 ## Parameters
 
