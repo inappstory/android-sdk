@@ -150,12 +150,19 @@ public class GameLoader {
                     }
                     final int fTotalSize = totalSize;
                     String hash = randomUUID().toString();
-                    File file = Downloader.downloadOrGetFile(url,
-                            InAppStoryService.getInstance().getCommonCache(),
-                            new File(InAppStoryService.getInstance().getCommonCache().getCacheDir() +
+
+                    File getFile = new File(
+                            InAppStoryService.getInstance().getCommonCache().getCacheDir() +
                                     File.separator + "zip" +
                                     File.separator + pathName +
-                                    File.separator + url.hashCode() + ".zip"),
+                                    File.separator + url.hashCode() + ".zip");
+                    if (pathName.contains("\\") || pathName.contains("/")) return null;
+                    if (!getFile.getCanonicalPath().startsWith(
+                            InAppStoryService.getInstance().getCommonCache().getCacheDir() +
+                                    File.separator + "zip")) return null;
+                    File file = Downloader.downloadOrGetFile(url,
+                            InAppStoryService.getInstance().getCommonCache(),
+                            getFile,
                             new FileLoadProgressCallback() {
                                 @Override
                                 public void onProgress(int loadedSize, int totalSize) {

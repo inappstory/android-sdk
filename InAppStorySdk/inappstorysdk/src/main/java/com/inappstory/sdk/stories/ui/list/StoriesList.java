@@ -371,14 +371,16 @@ public class StoriesList extends RecyclerView {
                                     @Override
                                     public void storiesLoaded(List<Integer> storiesIds) {
                                         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded delay");
-                                        CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                        if (callback != null)
-                                            callback.storiesLoaded(storiesIds.size());
-                                        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback delay " + (callback != null));
                                         adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                                         setLayoutManager(layoutManager);
                                         setAdapter(adapter);
                                         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter delay");
+
+                                        CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                                        if (callback != null)
+                                            callback.storiesLoaded(storiesIds.size());
+                                        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback delay " + (callback != null));
+
                                         ProfilingManager.getInstance().setReady(listUid);
                                         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager delay");
                                     }

@@ -25,6 +25,10 @@ public class FileUnzipper {
                 if (!dir.isDirectory() && !dir.mkdirs())
                     throw new FileNotFoundException("Failed to ensure directory: " +
                             dir.getAbsolutePath());
+                String canonicalPath = file.getCanonicalPath();
+                if (!canonicalPath.startsWith(targetDirectory.getCanonicalPath())) {
+                    continue;
+                }
                 if (ze.isDirectory())
                     continue;
                 FileOutputStream fout = new FileOutputStream(file);
