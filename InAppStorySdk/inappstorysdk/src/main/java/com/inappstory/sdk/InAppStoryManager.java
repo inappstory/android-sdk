@@ -454,10 +454,6 @@ public class InAppStoryManager {
 
     String API_KEY = "";
 
-    public void setTestKey(String testKey) {
-        this.TEST_KEY = testKey;
-    }
-
     String TEST_KEY = null;
 
     public InAppStoryManager() {

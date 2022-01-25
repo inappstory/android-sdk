@@ -365,7 +365,7 @@ public class StoriesList extends RecyclerView {
         }
         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
-        final boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
+        boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
             lcallback = new LoadStoriesCallback() {
                 @Override
@@ -395,7 +395,8 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void run() {
                     if (InAppStoryService.isNotNull()) {
-                        new LoadStoriesCallback() {
+                        boolean hasFav = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
+                        lcallback = new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 adapter = new StoriesAdapter(getContext(), uniqueID, storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
@@ -412,7 +413,7 @@ public class StoriesList extends RecyclerView {
                             }
                         };
                         InAppStoryService.getInstance().getDownloadManager().loadStories(
-                                lcallback, isFavoriteList, hasFavorite);
+                                lcallback, isFavoriteList, hasFav);
                     }
                 }
             }, 1000);

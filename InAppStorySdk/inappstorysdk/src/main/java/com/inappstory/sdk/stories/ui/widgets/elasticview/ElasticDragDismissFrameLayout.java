@@ -139,8 +139,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
-       // if (st != null && (st.disableClose || st.hasSwipeUp()))
-       //     return true;
+        // if (st != null && (st.disableClose || st.hasSwipeUp()))
+        //     return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
     }
 
@@ -308,8 +308,9 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
                                       float rawOffset, float rawOffsetPixels) {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.onDrag(elasticOffset, elasticOffsetPixels,
-                        rawOffset, rawOffsetPixels);
+                if (callback != null)
+                    callback.onDrag(elasticOffset, elasticOffsetPixels,
+                            rawOffset, rawOffsetPixels);
             }
         }
     }
@@ -317,7 +318,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void dispatchDismissCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.onDragDismissed();
+                if (callback != null)
+                    callback.onDragDismissed();
             }
         }
     }
@@ -325,7 +327,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void swipeDownCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.swipeDown();
+                if (callback != null)
+                    callback.swipeDown();
             }
         }
     }
@@ -333,7 +336,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void swipeUpCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.swipeUp();
+                if (callback != null)
+                    callback.swipeUp();
             }
         }
     }
@@ -341,7 +345,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void touchPause() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.touchPause();
+                if (callback != null)
+                    callback.touchPause();
             }
         }
     }
@@ -349,7 +354,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void touchResume() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.touchResume();
+                if (callback != null)
+                    callback.touchResume();
             }
         }
     }
@@ -358,7 +364,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void dispatchDropCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.onDragDropped();
+                if (callback != null)
+                    callback.onDragDropped();
             }
         }
     }
