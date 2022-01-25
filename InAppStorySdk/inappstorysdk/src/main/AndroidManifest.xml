@@ -13,7 +13,7 @@
         android:supportsRtl="true">
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.inappstory.fileprovider"
+            android:authorities="${applicationId}.com.inappstory.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
