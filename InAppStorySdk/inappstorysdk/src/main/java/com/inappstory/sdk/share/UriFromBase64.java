@@ -58,7 +58,7 @@ public class UriFromBase64 implements Callable<ArrayList<Uri>> {
             image.compress(compressFormat, 100, stream);
             stream.flush();
             stream.close();
-            uri = FileProvider.getUriForFile(context, "com.inappstory.fileprovider", file);
+            uri = FileProvider.getUriForFile(context, context.getPackageName() + ".com.inappstory.fileprovider", file);
         } catch (IOException e) {
         }
         return uri;
