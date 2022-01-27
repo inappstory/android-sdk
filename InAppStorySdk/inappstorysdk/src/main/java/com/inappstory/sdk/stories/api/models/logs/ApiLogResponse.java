@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.api.models.logs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ApiLogResponse {
     public long timestamp;
@@ -9,7 +10,7 @@ public class ApiLogResponse {
     public boolean isJson = false;
     public boolean isError = false;
     public String body;
-    public ArrayList<ApiLogRequestHeader> responseHeaders = new ArrayList<>();
+    public List<ApiLogRequestHeader> responseHeaders = new ArrayList<>();
     public int status;
     public String errorBody;
     public long duration;
