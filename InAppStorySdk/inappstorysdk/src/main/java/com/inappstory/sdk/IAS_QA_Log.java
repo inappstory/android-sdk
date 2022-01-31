@@ -15,6 +15,9 @@ public interface IAS_QA_Log {
 
     void getApiResponseLog(ApiLogResponse response);
 
+    void getApiRequestResponseLog(ApiLogRequest request,
+                                  ApiLogResponse response);
+
     void getExceptionLog(ExceptionLog exceptionLog);
 
     void getWebConsoleLog(WebConsoleLog webConsoleLog);

@@ -144,7 +144,15 @@ public class InAppStoryManager {
 
     @SuppressLint(DEBUG_API)
     public static void sendApiResponseLog(ApiLogResponse log) {
-        if (iasQaLog != null) iasQaLog.getApiResponseLog(log);
+        if (iasQaLog != null)
+            iasQaLog.getApiResponseLog(log);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendApiRequestResponseLog(ApiLogRequest logRequest,
+                                                 ApiLogResponse logResponse) {
+        if (iasQaLog != null)
+            iasQaLog.getApiRequestResponseLog(logRequest, logResponse);
     }
 
     @SuppressLint(DEBUG_API)
@@ -766,6 +774,7 @@ public class InAppStoryManager {
     }
 
     private boolean soundOn = false;
+
     public void soundOn(boolean isSoundOn) {
         this.soundOn = soundOn;
     }

@@ -79,17 +79,16 @@ public class Downloader {
         String key = cropUrl(url);
         HashMap<String, String> headers = new HashMap<>();
 
-        InAppStoryManager.sendApiRequestLog(requestLog);
         if (cache.hasKey(key)) {
             File file = cache.get(key);
             if (callback != null)
                 callback.onSuccess(file);
             headers.put("From Cache", "true");
             responseLog.generateFile(200, file.getAbsolutePath(), headers);
-
-            InAppStoryManager.sendApiResponseLog(responseLog);
+            InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
             return file;
         } else {
+            InAppStoryManager.sendApiRequestLog(requestLog);
             if (hash != null) {
                 ProfilingManager.getInstance().addTask("game_download", hash);
             }
