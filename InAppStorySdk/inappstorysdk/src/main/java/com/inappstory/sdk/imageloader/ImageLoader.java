@@ -157,22 +157,14 @@ public class ImageLoader {
 
     public Bitmap getBitmap(String url, LruDiskCache cache) {
         if (url == null) return null;
-        File file = null;
-        try {
-            file = cache.get(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
         Bitmap bitmap = null;
-        if (file != null)
+        try {
+            File file = Downloader.downloadOrGetFile(url, cache, null, null);
+            if (file == null) return null;
             bitmap = decodeFile(file);
-        else {
-            try {
-                file = Downloader.downloadOrGetFile(url, cache, null, null);
-                bitmap = decodeFile(file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return bitmap;
     }
@@ -214,31 +206,9 @@ public class ImageLoader {
                 bmp = getRoundedCornerBitmap(bmp, pixels);
             return bmp;
         }
-        File f = null;
         try {
-            f = lruDiskCache.get(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //from SD cache
-        Bitmap b = null;
-        if (f != null)
-            b = decodeFile(f);
-        if (b != null) {
-            if (getThumbnail) {
-                if (ratio != null && ratio > 0) {
-                    b = ThumbnailUtils.extractThumbnail(b, (int) (ratio * 300), 300);
-                } else {
-                    b = ThumbnailUtils.extractThumbnail(b, 300, 300);
-                }
-            }
-            addDarkGradient(b);
-            if (pixels != null)
-                b = getRoundedCornerBitmap(b, pixels);
-            return b;
-        }
-        try {
-            f = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
+            File f = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
+            if (f == null) return null;
             Bitmap bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
