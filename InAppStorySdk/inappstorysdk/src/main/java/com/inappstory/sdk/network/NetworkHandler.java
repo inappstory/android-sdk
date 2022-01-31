@@ -103,6 +103,7 @@ public final class NetworkHandler implements InvocationHandler {
                         new ApiLogRequestHeader("Content-Type", "application/json"));
             }
             InAppStoryManager.sendApiRequestLog(requestLog);
+
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");

@@ -8,6 +8,7 @@ public class ApiLogResponse {
     public long timestamp;
     public String id;
     public boolean isJson = false;
+    public boolean isFile = false;
     public boolean isError = false;
     public String body;
     public List<ApiLogRequestHeader> responseHeaders = new ArrayList<>();
@@ -19,6 +20,19 @@ public class ApiLogResponse {
         isError = true;
         this.status = statusCode;
         this.errorBody = errorBody;
+        generateHeaders(headers);
+    }
+
+    public void generateFile(int statusCode, String filePath, HashMap<String, String> headers) {
+        isFile = true;
+        this.status = statusCode;
+        if (statusCode > 350) {
+            isError = true;
+            this.errorBody = filePath;
+        } else {
+            this.body = filePath;
+        }
+
         generateHeaders(headers);
     }
 
