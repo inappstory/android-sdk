@@ -210,6 +210,7 @@ public class Downloader {
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
         for (String headerKey : urlConnection.getHeaderFields().keySet()) {
+            if (headerKey == null) continue;
             if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
             headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
         }

@@ -48,7 +48,8 @@ public class ApiLogResponse {
     private void generateHeaders(HashMap<String, String> headers) {
         if (headers != null) {
             for (String key : headers.keySet()) {
-                responseHeaders.add(new ApiLogRequestHeader(key, headers.get(key)));
+                if (key != null)
+                    responseHeaders.add(new ApiLogRequestHeader(key, headers.get(key)));
             }
         }
     }
