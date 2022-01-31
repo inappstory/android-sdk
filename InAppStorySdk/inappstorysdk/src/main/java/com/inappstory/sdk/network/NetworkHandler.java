@@ -96,6 +96,7 @@ public final class NetworkHandler implements InvocationHandler {
         InAppStoryManager.showDLog("InAppStory_Network", req.getHeaders().toString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
             InAppStoryManager.showDLog("InAppStory_Network", req.getBody());
+            requestLog.body = req.getBody();
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
                 requestLog.headers.add(
