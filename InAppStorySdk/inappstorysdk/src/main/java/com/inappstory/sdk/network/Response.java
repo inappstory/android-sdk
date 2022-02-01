@@ -10,6 +10,7 @@ public final class Response {
     public HashMap<String, String> headers;
     public int code;
     public String logId;
+    public long contentLength;
 
     Response(Builder builder) {
         this.code = builder.code;
@@ -17,6 +18,7 @@ public final class Response {
         this.headers = builder.headers;
         this.body = builder.body;
         this.logId = builder.logId;
+        this.contentLength = builder.contentLength;
     }
 
     public static class Builder {
@@ -25,6 +27,12 @@ public final class Response {
         public String logId;
         public HashMap<String, String> headers;
         public int code;
+        public long contentLength;
+
+        public Builder contentLength(long contentLength) {
+            this.contentLength = contentLength;
+            return this;
+        }
 
         public Builder body(String body) {
             this.body = body;

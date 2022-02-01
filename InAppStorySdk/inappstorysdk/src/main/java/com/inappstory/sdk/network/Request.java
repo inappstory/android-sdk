@@ -154,6 +154,7 @@ public final class Request<T> {
         ApiLogResponse responseLog = new ApiLogResponse();
         responseLog.id = requestId;
         responseLog.timestamp = System.currentTimeMillis();
+        responseLog.contentLength = s.contentLength;
         if (s.body != null) {
             responseLog.generateJsonResponse(s.code, s.body, s.headers);
         } else {

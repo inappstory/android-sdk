@@ -10,4 +10,5 @@ public class ApiLogRequest {
     public String method;
     public String url;
     public String body;
+    public boolean isStatic;
 }

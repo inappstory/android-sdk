@@ -118,13 +118,21 @@ public final class NetworkHandler implements InvocationHandler {
         Response respObject = null;
         InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
         //apiLog.duration = System.currentTimeMillis() - start;
+        long contentLength = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            contentLength = connection.getContentLengthLong();
+        } else {
+            contentLength = connection.getContentLength();
+        }
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
             String res = getResponseFromStream(connection.getInputStream());
-            respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).body(res).build();
+            respObject = new Response.Builder().contentLength(contentLength).
+                    headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
             String res = getResponseFromStream(connection.getErrorStream());
             InAppStoryManager.showDLog("InAppStory_Network", "Error: " + res);
-            respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).errorBody(res).build();
+            respObject = new Response.Builder().contentLength(contentLength).
+                    headers(getHeaders(connection)).code(statusCode).errorBody(res).build();
         }
         connection.disconnect();
         return respObject;

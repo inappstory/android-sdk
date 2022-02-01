@@ -74,6 +74,7 @@ public class Downloader {
         ApiLogResponse responseLog = new ApiLogResponse();
         requestLog.method = "GET";
         requestLog.url = url;
+        requestLog.isStatic = true;
         requestLog.id = requestId;
         responseLog.id = requestId;
         String key = cropUrl(url);
