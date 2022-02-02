@@ -89,17 +89,24 @@ To initialize the library in the `Application`, `Activity`, `View` class (or any
 
 An example of initializing an `InAppStoryManager`:
 ```
-new InAppStoryManager.Builder()
-    .context(context)
-    .closeOnSwipe(true)
-    .closeOnOverscroll(true)
-    .userId(userId)
-    .apiKey(apiKey)
-    .testKey(testKey)
-    .tags(tags)
-    .placeholders(placeholders)
-    .create();
+try {
+    new InAppStoryManager.Builder()
+        .context(context)
+        .closeOnSwipe(true)
+        .closeOnOverscroll(true)
+        .userId(userId)
+        .apiKey(apiKey)
+        .testKey(testKey)
+        .tags(tags)
+        .placeholders(placeholders)
+        .create();
+} catch (DataException dataEx) {
+    
+}
 ```
+    
+>**Attention!**  
+>Method `create()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
     
 Add the following code to the layout where you need to display stories list:
 ```
