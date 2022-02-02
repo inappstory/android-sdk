@@ -59,7 +59,7 @@ public final class NetworkHandler implements InvocationHandler {
             throws Exception {
         ApiLogRequest requestLog = new ApiLogRequest();
         URL url = getURL(req);
-        HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod(req.getMethod());
@@ -119,10 +119,9 @@ public final class NetworkHandler implements InvocationHandler {
         InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
         //apiLog.duration = System.currentTimeMillis() - start;
         long contentLength = 0;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            contentLength = connection.getContentLengthLong();
-        } else {
-            contentLength = connection.getContentLength();
+        String contentLengthStr = connection.getHeaderField("Content-Length");
+        if (!(contentLengthStr == null || contentLengthStr.isEmpty())) {
+            contentLength = Long.parseLong(contentLengthStr);
         }
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
             String res = getResponseFromStream(connection.getInputStream());
