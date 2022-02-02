@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
 import static com.inappstory.sdk.InAppStoryManager.testGenerated;
@@ -338,9 +339,13 @@ public class StoriesViewManager {
             sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObj.getTitle());
             sendIntent.putExtra(Intent.EXTRA_TEXT, shareObj.getUrl());
             sendIntent.setType("text/plain");
+            int shareFlag = FLAG_UPDATE_CURRENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                shareFlag |= FLAG_IMMUTABLE;
+            }
             PendingIntent pi = PendingIntent.getBroadcast(storiesView.getContext(), 989,
                     new Intent(storiesView.getContext(), StoryShareBroadcastReceiver.class),
-                    FLAG_UPDATE_CURRENT);
+                    shareFlag);
             Intent finalIntent = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());

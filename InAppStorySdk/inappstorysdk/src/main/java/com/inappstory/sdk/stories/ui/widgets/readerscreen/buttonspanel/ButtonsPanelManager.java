@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
 import java.lang.reflect.Type;
 
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 public class ButtonsPanelManager {
@@ -256,6 +257,10 @@ public class ButtonsPanelManager {
                     finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     InAppStoryService.getInstance().getContext().startActivity(finalIntent);
 */
+                    int shareFlag = FLAG_UPDATE_CURRENT;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        shareFlag |= FLAG_IMMUTABLE;
+                    }
                     Intent sendIntent = new Intent();
                     sendIntent.setAction(Intent.ACTION_SEND);
                     sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
@@ -263,7 +268,7 @@ public class ButtonsPanelManager {
                     sendIntent.setType("text/plain");
                     PendingIntent pi = PendingIntent.getBroadcast(context, 989,
                             new Intent(context, StoryShareBroadcastReceiver.class),
-                            FLAG_UPDATE_CURRENT);
+                            shareFlag);
                     Intent finalIntent = null;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                         finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
