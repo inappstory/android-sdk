@@ -209,6 +209,9 @@ public class Downloader {
         String contentType = urlConnection.getHeaderField("Content-Type");
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
+
+        int sz = urlConnection.getContentLength();
+        apiLogResponse.contentLength = sz;
         for (String headerKey : urlConnection.getHeaderFields().keySet()) {
             if (headerKey == null) continue;
             if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
@@ -226,7 +229,6 @@ public class Downloader {
         else
             KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
 
-        int sz = urlConnection.getContentLength();
 
         byte[] buffer = new byte[1024];
         int bufferLength = 0;
