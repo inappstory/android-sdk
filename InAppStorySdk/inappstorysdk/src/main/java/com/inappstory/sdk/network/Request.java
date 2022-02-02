@@ -189,6 +189,7 @@ public final class Request<T> {
                     ApiLogResponse responseLog = new ApiLogResponse();
                     responseLog.id = result.logId;
                     responseLog.timestamp = System.currentTimeMillis();
+                    responseLog.contentLength = result.contentLength;
                     if (result.body != null) {
                         responseLog.generateJsonResponse(result.code, result.body, result.headers);
                         InAppStoryManager.sendApiResponseLog(responseLog);
