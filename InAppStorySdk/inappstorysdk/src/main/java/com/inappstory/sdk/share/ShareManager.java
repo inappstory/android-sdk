@@ -1,5 +1,6 @@
 package com.inappstory.sdk.share;
 
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 import android.app.Activity;
@@ -19,9 +20,13 @@ public class ShareManager {
     public static final int SHARE_EVENT = 909;
 
     private void sendIntent(Activity context, Intent sendIntent) {
+        int shareFlag = FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            shareFlag |= FLAG_IMMUTABLE;
+        }
         PendingIntent pi = PendingIntent.getBroadcast(context, SHARE_EVENT,
                 new Intent(context, StoryShareBroadcastReceiver.class),
-                FLAG_UPDATE_CURRENT);
+                shareFlag);
         Intent finalIntent = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());

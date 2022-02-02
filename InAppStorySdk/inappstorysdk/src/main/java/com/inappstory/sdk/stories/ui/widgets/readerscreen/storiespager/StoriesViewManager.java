@@ -42,7 +42,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStorie
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
@@ -54,10 +53,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
-import static com.inappstory.sdk.InAppStoryManager.testGenerated;
-import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesViewManager {
     public int index = -1;
