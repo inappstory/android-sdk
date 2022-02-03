@@ -2,20 +2,16 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -29,9 +25,7 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
-import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
@@ -54,9 +48,6 @@ import java.util.regex.Pattern;
 
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
-import static com.inappstory.sdk.InAppStoryManager.testGenerated;
-import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesViewManager {
     public int index = -1;
@@ -123,14 +114,14 @@ public class StoriesViewManager {
 
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
 
-    boolean lock = true;
 
     public void storyLoaded(int oId, int oInd, boolean alreadyLoaded) {
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
         if (alreadyLoaded) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance() != null ?
+                InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) : null;
         innerLoad(story);
     }
 
@@ -258,7 +249,7 @@ public class StoriesViewManager {
     public File getCurrentFile(String img) {
         try {
             return InAppStoryService.getInstance().getCommonCache().get(img);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -314,16 +305,7 @@ public class StoriesViewManager {
         storiesView.shareComplete(stId, success);
     }
 
-    /*public class StoryShareBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            ComponentName clickedComponent = intent.getParcelableExtra(EXTRA_CHOSEN_COMPONENT);
-            if (clickedComponent != null && ScreensManager.getInstance().getTempShareId() != null) {
-                shareComplete(Integer.toString(ScreensManager.getInstance().getTempShareStoryId()),
-                        true);
-            }
-        }
-    }*/
+
 
     public void pageFinished() {
     }

@@ -20,6 +20,7 @@ import java.util.UUID;
 
 
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -407,14 +408,23 @@ public class InAppStoryService {
         @Override
         public void uncaughtException(Thread thread, final Throwable throwable) {
 
-            if (oldHandler != null)
-                oldHandler.uncaughtException(thread, throwable);
 
             ExceptionLog log = new ExceptionLog();
             log.id = UUID.randomUUID().toString();
             log.cause = throwable.getCause().toString();
-            log.message = throwable.getMessage();
+            log.message = throwable.getClass().getName() + ": " + throwable.getMessage();
             log.stacktrace = throwable.getStackTrace().toString();
+            StackTraceElement[] stackTraceElements = throwable.getStackTrace();
+            if (stackTraceElements.length > 0) {
+                log.file = stackTraceElements[0].getFileName();
+                log.line = stackTraceElements[0].getLineNumber();
+
+            }
+            try {
+                SharedPreferencesAPI.saveString("last_error", JsonParser.getJson(log));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             InAppStoryManager.sendExceptionLog(log);
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
@@ -430,18 +440,29 @@ public class InAppStoryService {
                 ));
 
             }
-            synchronized (lock) {
-                if (getInstance() != null)
-                    getInstance().onDestroy();
-            }
-            if (InAppStoryManager.getInstance() != null) {
-                InAppStoryManager.getInstance().createServiceThread(
-                        InAppStoryManager.getInstance().context,
-                        InAppStoryManager.getInstance().getUserId());
-                if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
-                    InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
+            try {
+                synchronized (lock) {
+                    if (getInstance() != null)
+                        getInstance().onDestroy();
                 }
+                if (InAppStoryManager.getInstance() != null) {
+                    InAppStoryManager.getInstance().createServiceThread(
+                            InAppStoryManager.getInstance().context,
+                            InAppStoryManager.getInstance().getUserId());
+                    if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
+                        InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
+                    }
+                }
+            } catch (Exception ignored) {
+
             }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (oldHandler != null)
+                oldHandler.uncaughtException(thread, throwable);
         }
     }
 
