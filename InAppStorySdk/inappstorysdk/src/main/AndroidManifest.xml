@@ -12,7 +12,7 @@
         android:largeHeap="true"
         android:supportsRtl="true">
         <provider
-            android:name="androidx.core.content.FileProvider"
+            android:name=".share.InAppStoryFileProvider"
             android:authorities="${applicationId}.com.inappstory.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
