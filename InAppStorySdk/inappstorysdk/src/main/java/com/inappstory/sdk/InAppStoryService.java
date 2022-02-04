@@ -23,6 +23,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -407,25 +408,10 @@ public class InAppStoryService {
 
         @Override
         public void uncaughtException(Thread thread, final Throwable throwable) {
-
-
-            ExceptionLog log = new ExceptionLog();
-            log.id = UUID.randomUUID().toString();
-            log.cause = throwable.getCause().toString();
-            log.message = throwable.getClass().getName() + ": " + throwable.getMessage();
-            log.stacktrace = throwable.getStackTrace().toString();
-            StackTraceElement[] stackTraceElements = throwable.getStackTrace();
-            if (stackTraceElements.length > 0) {
-                log.file = stackTraceElements[0].getFileName();
-                log.line = stackTraceElements[0].getLineNumber();
-
-            }
-            try {
-                SharedPreferencesAPI.saveString("last_error", JsonParser.getJson(log));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            InAppStoryManager.sendExceptionLog(log);
+            ExceptionManager em = new ExceptionManager();
+            ExceptionLog el = em.generateExceptionLog(throwable);
+            em.saveException(el);
+            em.sendException(el);
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
 

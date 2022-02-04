@@ -41,6 +41,15 @@ public interface ApiInterface {
                          @Query("d") Long durationMs,
                          @Query("spend_ms") Long spendMs);
 
+    @FormUrlEncoded
+    @POST("exception")
+    Request sendException(@Query("s") String session,
+                         @Query("ts") Long timestamp,
+                         @Field("m") String message,
+                         @Field("f") String file,
+                         @Field("l") Integer line,
+                         @Field("t") String trace);
+
 
     @GET("stat/{event_name}")
     Request sendStat(@Path("event_name") String eventName,

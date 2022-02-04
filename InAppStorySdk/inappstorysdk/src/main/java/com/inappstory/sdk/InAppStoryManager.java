@@ -33,6 +33,7 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.BaseLog;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
@@ -646,7 +647,7 @@ public class InAppStoryManager {
                 builder.tags != null ? builder.tags : null,
                 builder.placeholders != null ? builder.placeholders : null,
                 builder.sendStatistic);
-
+        new ExceptionManager().sendSavedException();
     }
 
     private void setUserIdInner(String userId) throws DataException {

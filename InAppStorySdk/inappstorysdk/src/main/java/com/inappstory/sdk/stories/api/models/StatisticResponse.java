@@ -24,6 +24,9 @@ public class StatisticResponse {
     public Boolean isAllowStatV1;
     @SerializedName("is_allow_statistic_v2")
     public Boolean isAllowStatV2;
+    @SerializedName("is_allow_crash")
+    public Boolean isAllowCrash;
+
 
     @SerializedName("placeholders")
     public List<StoryPlaceholder> placeholders;

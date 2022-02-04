@@ -77,7 +77,8 @@ public class SessionManager {
                 response.session.statisticPermissions = new StatisticPermissions(
                         response.isAllowProfiling,
                         response.isAllowStatV1,
-                        response.isAllowStatV2
+                        response.isAllowStatV2,
+                        response.isAllowCrash
                 );
                 response.session.save();
                 InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
