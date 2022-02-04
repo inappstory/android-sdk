@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.utils;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -28,7 +29,7 @@ public class TaskRunner {
                         }
                     });
                 } catch (Exception e) {
-
+                    Log.d("InAppStory_Task", e.getCause() + " " + e.getMessage());
                 }
             }
         });
