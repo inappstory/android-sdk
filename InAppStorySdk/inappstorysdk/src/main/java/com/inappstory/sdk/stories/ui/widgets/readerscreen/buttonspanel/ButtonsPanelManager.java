@@ -233,6 +233,8 @@ public class ButtonsPanelManager {
         }
         if (story.isScreenshotShare(story.lastIndex)) {
             parentManager.screenshotShare();
+            if (callback != null)
+                callback.onSuccess(0);
             return;
         }
 
