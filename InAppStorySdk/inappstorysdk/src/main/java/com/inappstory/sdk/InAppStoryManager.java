@@ -650,6 +650,12 @@ public class InAppStoryManager {
         new ExceptionManager().sendSavedException();
     }
 
+    public static void generateException() {
+        if (InAppStoryService.getInstance() != null) {
+            InAppStoryService.getInstance().generateException();
+        }
+    }
+
     private void setUserIdInner(String userId) throws DataException {
         if (InAppStoryService.isNull()) return;
         if (userId == null)

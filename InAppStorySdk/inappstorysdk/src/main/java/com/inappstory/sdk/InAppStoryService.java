@@ -84,6 +84,15 @@ public class InAppStoryService {
         }
     }
 
+    public void generateException() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                throw new RuntimeException("test exception");
+            }
+        }).start();
+    }
+
     public void saveStoriesOpened(List<Story> stories) {
   /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
         if (opens == null) opens = new HashSet<>();
