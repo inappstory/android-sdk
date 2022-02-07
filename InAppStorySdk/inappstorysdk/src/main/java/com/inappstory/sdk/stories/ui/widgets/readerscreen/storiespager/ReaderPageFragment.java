@@ -148,12 +148,22 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadStart() {
-        showLoader();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                showLoader();
+            }
+        });
     }
 
     public void storyLoadedSuccess() {
-        refresh.setVisibility(View.GONE);
-        hideLoader();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                refresh.setVisibility(View.GONE);
+                hideLoader();
+            }
+        });
     }
 
     private void setOffsets(View view) {
