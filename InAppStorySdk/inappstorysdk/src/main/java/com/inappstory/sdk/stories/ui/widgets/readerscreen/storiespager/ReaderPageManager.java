@@ -33,7 +33,6 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
-
     public void swipeUp() {
         webViewManager.swipeUp();
     }
@@ -58,6 +57,10 @@ public class ReaderPageManager {
 
     public void showSingleStory(int storyId, int slideIndex) {
         parentManager.showSingleStory(storyId, slideIndex);
+    }
+
+    public void screenshotShare() {
+        webViewManager.screenshotShare();
     }
 
     public void setSlideIndex(int slideIndex) {

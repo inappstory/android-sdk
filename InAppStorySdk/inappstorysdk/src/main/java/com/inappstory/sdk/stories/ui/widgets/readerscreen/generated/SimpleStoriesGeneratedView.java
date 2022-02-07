@@ -380,6 +380,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
+    public void screenshotShare() {
+
+    }
+
+    @Override
     public void goodsWidgetComplete(String widgetId) {
 
     }

@@ -220,6 +220,11 @@ public class ButtonsPanelManager {
     public void shareClick(final Context context, final ShareButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
+        if (story.isScreenshotShare(story.lastIndex)) {
+            parentManager.screenshotShare();
+            return;
+        }
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                 story.tags, story.getSlidesCount(), story.lastIndex));
