@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.utils;
 
-import android.content.Context;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
