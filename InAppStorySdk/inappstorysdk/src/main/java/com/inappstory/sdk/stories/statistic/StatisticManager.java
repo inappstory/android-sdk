@@ -442,11 +442,12 @@ public class StatisticManager {
 
     }
 
-    public void sendShareStory(final int i, final int si) {
+    public void sendShareStory(final int i, final int si, int mode) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "share";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
+        task.mode = mode;
         generateBase(task);
         addTask(task);
 
@@ -491,7 +492,8 @@ public class StatisticManager {
                             task.widgetAnswerLabel,
                             task.widgetAnswerScore,
                             task.layoutIndex,
-                            task.target).execute();
+                            task.target,
+                            task.mode).execute();
                     if (response.code > 199 && response.code < 210) {
                         return true;
                     } else {

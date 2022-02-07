@@ -74,12 +74,18 @@ public class Story implements Parcelable {
     }
 
     public boolean isScreenshotShare(int index) {
-        if (slidesShare == null) return false;
-        if (slidesShare.size() <= index) return false;
-        if (slidesShare.get(index) != null)
-            return slidesShare.get(index) == 1;
-        return false;
+        return shareType(index) == 1;
     }
+
+
+    public int shareType(int index) {
+        if (slidesShare == null) return 0;
+        if (slidesShare.size() <= index) return 0;
+        if (slidesShare.get(index) != null)
+            return slidesShare.get(index);
+        return 0;
+    }
+
 
     public List<String> getPages() {
         return pages;

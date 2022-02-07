@@ -221,17 +221,19 @@ public class ButtonsPanelManager {
         if (InAppStoryManager.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
-        if (story.isScreenshotShare(story.lastIndex)) {
-            parentManager.screenshotShare();
-            return;
-        }
-        StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
+
+        StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex,
+                story.shareType(story.lastIndex));
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                 story.tags, story.getSlidesCount(), story.lastIndex));
 
         if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
             CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, story.title,
                     story.tags, story.getSlidesCount(), story.lastIndex);
+        }
+        if (story.isScreenshotShare(story.lastIndex)) {
+            parentManager.screenshotShare();
+            return;
         }
 
         if (callback != null)
@@ -273,20 +275,18 @@ public class ButtonsPanelManager {
                     Intent finalIntent = null;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                         finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-                       // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         ScreensManager.getInstance().setTempShareId(null);
                         ScreensManager.getInstance().setTempShareStoryId(storyId);
                         context.startActivity(finalIntent);
                     } else {
                         finalIntent = Intent.createChooser(sendIntent, null);
-                      //  finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        //  finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(finalIntent);
                         ScreensManager.getInstance().setOldTempShareId(null);
                         ScreensManager.getInstance().setOldTempShareStoryId(storyId);
                     }
                 }
-
-
 
 
             }

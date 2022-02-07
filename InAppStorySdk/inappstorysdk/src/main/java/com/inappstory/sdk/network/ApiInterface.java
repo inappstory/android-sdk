@@ -60,7 +60,8 @@ public interface ApiInterface {
                      @Query("wal") String widgetAnswerLabel,
                      @Query("was") Integer widgetAnswerScore,
                      @Query("li") Integer layoutIndex,
-                     @Query("t") String t);
+                     @Query("t") String t,
+                     @Query("m") Integer type);
 
 
     @FormUrlEncoded
