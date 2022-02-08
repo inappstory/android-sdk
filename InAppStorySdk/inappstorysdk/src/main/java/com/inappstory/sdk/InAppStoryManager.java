@@ -490,7 +490,7 @@ public class InAppStoryManager {
                 Looper.loop();
             }
         });
-        serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
+        //serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
         serviceThread.start();
     }
 
