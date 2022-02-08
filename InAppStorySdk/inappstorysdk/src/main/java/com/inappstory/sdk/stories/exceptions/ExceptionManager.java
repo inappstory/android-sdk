@@ -70,7 +70,6 @@ public class ExceptionManager {
     public ExceptionLog generateExceptionLog(Throwable throwable) {
         ExceptionLog log = new ExceptionLog();
         log.id = UUID.randomUUID().toString();
-        log.cause = throwable.getCause().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
         log.session = StatisticSession.getInstance().id;
