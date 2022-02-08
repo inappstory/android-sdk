@@ -520,7 +520,7 @@ public class InAppStoryService {
                 clearOldFiles();
             }
         });
-        //Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         createDownloadManager(exceptionCache);
@@ -537,7 +537,7 @@ public class InAppStoryService {
         }
         spaceHandler.postDelayed(checkFreeSpace, 60000);
 
-        
+
         if (exHandler == null) exHandler = new Handler();
         exHandler.postDelayed(exHandlerThread, 100);
     }
