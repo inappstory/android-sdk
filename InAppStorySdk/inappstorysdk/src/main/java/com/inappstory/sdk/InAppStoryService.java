@@ -84,6 +84,10 @@ public class InAppStoryService {
         }
     }
 
+    public boolean genException = false;
+
+
+
     public void generateException() {
         new Thread(new Runnable() {
             @Override
@@ -92,6 +96,18 @@ public class InAppStoryService {
             }
         }).start();
     }
+
+    Handler exHandler = new Handler();
+
+    public Runnable exHandlerThread = new Runnable() {
+        @Override
+        public void run() {
+            if (genException) {
+                generateException();
+            }
+            exHandler.postDelayed(exHandlerThread, 3000);
+        }
+    };
 
     public void saveStoriesOpened(List<Story> stories) {
   /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
@@ -520,6 +536,10 @@ public class InAppStoryService {
             INSTANCE = this;
         }
         spaceHandler.postDelayed(checkFreeSpace, 60000);
+
+        
+        if (exHandler == null) exHandler = new Handler();
+        exHandler.postDelayed(exHandlerThread, 100);
     }
 
     private static Object lock = new Object();

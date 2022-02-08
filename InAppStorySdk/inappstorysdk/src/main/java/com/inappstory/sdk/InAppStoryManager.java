@@ -652,7 +652,7 @@ public class InAppStoryManager {
 
     public static void generateException() {
         if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().generateException();
+            InAppStoryService.getInstance().genException = true;
         }
     }
 
