@@ -103,6 +103,7 @@ public class InAppStoryService {
         @Override
         public void run() {
             if (genException) {
+                genException = false;
                 generateException();
             }
             exHandler.postDelayed(exHandlerThread, 3000);
