@@ -449,7 +449,7 @@ public class StatisticManager {
         task.slideIndex = si;
         task.mode = mode;
         generateBase(task);
-        addTask(task);
+        addTask(task, true);
 
     }
 
