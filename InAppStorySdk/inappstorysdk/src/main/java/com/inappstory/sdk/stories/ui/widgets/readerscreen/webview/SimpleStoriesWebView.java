@@ -339,7 +339,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 }
 
 
-
                 @Override
                 public void onPageFinished(WebView view, String url) {
 
@@ -368,8 +367,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    sendWebConsoleLog(consoleMessage);
-                    Log.d("InAppStory_SDK_Web", consoleMessage.message() + " -- From line "
+
+                    if (manager != null) {
+                        sendWebConsoleLog(consoleMessage);
+                    }
+                    Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
+                            + consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());
                     return super.onConsoleMessage(consoleMessage);
@@ -381,11 +384,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     private void sendWebConsoleLog(ConsoleMessage consoleMessage) {
         WebConsoleLog log = new WebConsoleLog();
-        log.timestamp =  System.currentTimeMillis();
+        log.timestamp = System.currentTimeMillis();
         log.id = UUID.randomUUID().toString();
+        log.logType = consoleMessage.messageLevel().name();
         log.message = consoleMessage.message();
         log.sourceId = consoleMessage.sourceId();
         log.lineNumber = consoleMessage.lineNumber();
+        log.storyId = Integer.toString(manager.storyId);
+        log.slideIndex = manager.index;
         InAppStoryManager.sendWebConsoleLog(log);
     }
 
