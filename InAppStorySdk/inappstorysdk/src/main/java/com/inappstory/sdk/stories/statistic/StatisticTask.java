@@ -41,4 +41,7 @@ public class StatisticTask {
     public Integer widgetAnswerScore;
     @SerializedName("li")
     public Integer layoutIndex;
+    @SerializedName("m")
+    public Integer mode;
+
 }

@@ -144,6 +144,29 @@ public class Story implements Parcelable {
     @SerializedName("like")
     public Integer like;
 
+    @SerializedName("slides_screenshot_share")
+    public List<Integer> slidesShare;
+
+    public List<Integer> getSlidesShare() {
+        if (slidesShare == null) {
+            slidesShare = new ArrayList<>();
+        }
+        return slidesShare;
+    }
+
+    public boolean isScreenshotShare(int index) {
+        return shareType(index) == 1;
+    }
+
+
+    public int shareType(int index) {
+        if (slidesShare == null) return 0;
+        if (slidesShare.size() <= index) return 0;
+        if (slidesShare.get(index) != null)
+            return slidesShare.get(index);
+        return 0;
+    }
+
     public int getSlidesCount() {
         if (slidesCount == 0 && durations != null) return durations.size();
         return slidesCount;
@@ -296,6 +319,9 @@ public class Story implements Parcelable {
             story.durations.addAll(durations);
             story.slidesCount = durations.size();
         }
+        if (slidesShare != null) {
+            story.slidesShare.addAll(slidesShare);
+        }
         story.favorite = favorite;
         //nar.pages = pages;
         return story;
@@ -308,6 +334,7 @@ public class Story implements Parcelable {
 
     public void readFromParcel(Parcel in) {
         if (durations == null) durations = new ArrayList<>();
+        if (slidesShare == null) slidesShare = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         id = in.readInt();
         lastIndex = in.readInt();
@@ -326,11 +353,13 @@ public class Story implements Parcelable {
         in.readList(pages, String.class.getClassLoader());
         favorite = (in.readInt() == 1);
         layout = in.readString();
+        in.readList(slidesShare, Boolean.class.getClassLoader());
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         if (durations == null) durations = new ArrayList<>();
+        if (slidesShare == null) slidesShare = new ArrayList<>();
         if (pages == null) pages = new ArrayList<>();
         dest.writeInt(id);
         dest.writeInt(lastIndex);
@@ -346,6 +375,7 @@ public class Story implements Parcelable {
         dest.writeList(pages);
         dest.writeInt(favorite ? 1 : 0);
         dest.writeString(layout);
+        dest.writeList(slidesShare);
 
     }
 

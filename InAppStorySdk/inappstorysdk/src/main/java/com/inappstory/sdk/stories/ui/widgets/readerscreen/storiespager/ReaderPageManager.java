@@ -39,6 +39,10 @@ public class ReaderPageManager {
             buttonsPanelManager.removeStoryFromFavorite();
     }
 
+    public void screenshotShare() {
+        webViewManager.screenshotShare();
+    }
+
     public void swipeUp() {
         webViewManager.swipeUp();
     }

@@ -379,6 +379,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
 
+    @Override
+    public void screenshotShare() {
+
+    }
+
     StoriesViewManager manager;
 
     @Override

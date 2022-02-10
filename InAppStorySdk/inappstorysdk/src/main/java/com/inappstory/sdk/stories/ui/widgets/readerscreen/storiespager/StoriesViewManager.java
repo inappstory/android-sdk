@@ -64,6 +64,11 @@ public class StoriesViewManager {
             storiesView.swipeUp();
     }
 
+    void screenshotShare() {
+        if (storiesView != null)
+            storiesView.screenshotShare();
+    }
+
     void goodsWidgetComplete(String widgetId) {
 
         if (storiesView != null)

@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -149,8 +150,6 @@ public class StatisticManager {
     }
 
 
-
-
     public void init() {
         thread = new HandlerThread("SSMThread" + System.currentTimeMillis());
         thread.start();
@@ -231,7 +230,8 @@ public class StatisticManager {
         task.slideIndex = si;
         task.widgetId = wi;
         generateBase(task);
-        addTask(task, true);
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendGoodsClick(final int i, final int si,
@@ -243,7 +243,8 @@ public class StatisticManager {
         task.widgetId = wi;
         task.widgetValue = sku;
         generateBase(task);
-        addTask(task, true);
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendViewStory(ArrayList<Integer> ids, final String w) {
@@ -442,13 +443,15 @@ public class StatisticManager {
 
     }
 
-    public void sendShareStory(final int i, final int si) {
+    public void sendShareStory(final int i, final int si, int mode) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "share";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
+        task.mode = mode;
         generateBase(task);
-        addTask(task);
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
 
     }
 
@@ -491,7 +494,8 @@ public class StatisticManager {
                             task.widgetAnswerLabel,
                             task.widgetAnswerScore,
                             task.layoutIndex,
-                            task.target).execute();
+                            task.target,
+                            task.mode).execute();
                     if (response.code > 199 && response.code < 210) {
                         return true;
                     } else {

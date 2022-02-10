@@ -285,6 +285,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
     @Override
+    public void screenshotShare() {
+        evaluateJavascript("share_slide_screenshot();", null);
+        logMethod("share_slide_screenshot");
+    }
+
+    @Override
     public void setStoriesView(SimpleStoriesView storiesView) {
 
     }

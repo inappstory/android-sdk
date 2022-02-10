@@ -159,7 +159,7 @@ public class InAppStoryService {
         if (InAppStoryManager.getInstance() == null) return false;
         if (!StatisticSession.needToUpdate()) {
             if (StatisticSession.getInstance().statisticPermissions == null) return false;
-            return InAppStoryManager.getInstance().sendStatistic
+            return InAppStoryManager.getInstance().isSendStatistic()
                     && StatisticSession.getInstance().statisticPermissions.allowStatV2;
         }
         return false;
@@ -169,7 +169,7 @@ public class InAppStoryService {
         if (InAppStoryManager.getInstance() == null) return false;
         if (!StatisticSession.needToUpdate()) {
             if (StatisticSession.getInstance().statisticPermissions == null) return false;
-            return InAppStoryManager.getInstance().sendStatistic
+            return InAppStoryManager.getInstance().isSendStatistic()
                     && StatisticSession.getInstance().statisticPermissions.allowStatV1;
         }
         return false;

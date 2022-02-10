@@ -58,7 +58,7 @@ public class StoryDownloadManager {
         putStories(stories);
     }
 
-    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list";
+    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,slides_screenshot_share";
 
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
         for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {

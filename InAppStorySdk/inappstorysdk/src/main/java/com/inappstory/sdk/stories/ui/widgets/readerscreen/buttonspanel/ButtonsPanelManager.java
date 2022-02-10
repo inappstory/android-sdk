@@ -224,7 +224,9 @@ public class ButtonsPanelManager {
     public void shareClick(final Context context, final ShareButtonClickCallback callback) {
         if (InAppStoryManager.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex);
+        if (story == null) return;
+        StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex,
+                story.shareType(story.lastIndex));
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                 story.tags, story.getSlidesCount(), story.lastIndex));
 
@@ -232,7 +234,12 @@ public class ButtonsPanelManager {
             CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, story.title,
                     story.tags, story.getSlidesCount(), story.lastIndex);
         }
-
+        if (story.isScreenshotShare(story.lastIndex)) {
+            parentManager.screenshotShare();
+            if (callback != null)
+                callback.onSuccess(0);
+            return;
+        }
         if (callback != null)
             callback.onClick();
         //CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
