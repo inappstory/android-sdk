@@ -512,8 +512,7 @@ public class InAppStoryManager {
                 (builder.userId != null && !builder.userId.isEmpty()) ? builder.userId :
                         "",
                 builder.tags != null ? builder.tags : null,
-                builder.placeholders != null ? builder.placeholders : null,
-                builder.sendStatistic);
+                builder.placeholders != null ? builder.placeholders : null);
 
     }
 
@@ -563,7 +562,11 @@ public class InAppStoryManager {
 
     public int actionBarColor = -1;
 
-    public boolean sendStatistic = true;
+    public boolean isSendStatistic() {
+        return sendStatistic;
+    }
+
+    private boolean sendStatistic = true;
 
     private void initManager(Context context,
                              String cmsUrl,
@@ -571,14 +574,12 @@ public class InAppStoryManager {
                              String testKey,
                              String userId,
                              ArrayList<String> tags,
-                             Map<String, String> placeholders,
-                             boolean sendStatistic) {
+                             Map<String, String> placeholders) {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
         this.tags = tags;
         if (placeholders != null)
             setPlaceholders(placeholders);
-        this.sendStatistic = sendStatistic;
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         NetworkClient.setContext(context);
@@ -999,7 +1000,6 @@ public class InAppStoryManager {
         }
 
         boolean sandbox;
-        boolean sendStatistic = true;
 
         int cacheSize;
         String userId;
@@ -1039,10 +1039,6 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
-        public Builder sendStatistic(boolean sendStatistic) {
-            Builder.this.sendStatistic = sendStatistic;
-            return Builder.this;
-        }
 
         /**
          * use to set api key in runtime (or as alternate to csApiKey string constant)

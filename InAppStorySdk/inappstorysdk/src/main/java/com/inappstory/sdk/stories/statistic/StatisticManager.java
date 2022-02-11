@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -231,7 +232,8 @@ public class StatisticManager {
         task.slideIndex = si;
         task.widgetId = wi;
         generateBase(task);
-        addTask(task, true);
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendGoodsClick(final int i, final int si,
@@ -243,7 +245,8 @@ public class StatisticManager {
         task.widgetId = wi;
         task.widgetValue = sku;
         generateBase(task);
-        addTask(task, true);
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendViewStory(ArrayList<Integer> ids, final String w) {
@@ -449,7 +452,8 @@ public class StatisticManager {
         task.slideIndex = si;
         task.mode = mode;
         generateBase(task);
-        addTask(task, true);
+        addTask(task, InAppStoryManager.getInstance() != null &&
+                InAppStoryManager.getInstance().isSendStatistic());
 
     }
 
