@@ -52,10 +52,8 @@ public class WebPageConverter {
                     } else {
                         innerWebData = innerWebData.replace(imgKey, img);
                     }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    InAppStoryService.createExceptionLog(e);
                 }
             }
         }
@@ -65,7 +63,7 @@ public class WebPageConverter {
                     .replace("{{%content}}", innerWebData);
             callback.onConvert(innerWebData, wData, index);
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -105,10 +103,8 @@ public class WebPageConverter {
                         image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
                     fis.close();
                     innerWebData = innerWebData.replace(imgKey, image64);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    InAppStoryService.createExceptionLog(e);
                 }
             }
         }
@@ -118,7 +114,7 @@ public class WebPageConverter {
                     .replace("{{%content}}", innerWebData);
             callback.onConvert(innerWebData, wData, index);
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 }

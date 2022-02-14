@@ -187,6 +187,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     }
 
+
+
     @Override
     public void onBackPressed() {
 
@@ -265,6 +267,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
     }
@@ -311,6 +314,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 StatusBarController.hideStatusBar(StoriesFixedActivity.this, true);
             }
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             finish();
             return;
         }
@@ -344,6 +348,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                         t.addToBackStack("STORIES_FRAGMENT");
                         t.commit();
                     } catch (IllegalStateException e) {
+                        InAppStoryService.createExceptionLog(e);
                         finishWithoutAnimation();
                     }
                 } else {

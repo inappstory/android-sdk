@@ -54,7 +54,7 @@ public class ExceptionManager {
 
             @Override
             public void onError() {
-
+                SharedPreferencesAPI.removeString(SAVED_EX);
             }
         });
 

@@ -112,6 +112,7 @@ public class GameLoader {
                 if (callback != null)
                     callback.onProgress(cnt, totalSize);
             } catch (Exception e) {
+                InAppStoryService.createExceptionLog(e);
                 e.printStackTrace();
             }
         }
@@ -124,6 +125,7 @@ public class GameLoader {
                     try {
                         callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
                     } catch (Exception e) {
+                        InAppStoryService.createExceptionLog(e);
                         e.printStackTrace();
                     }
                 }
@@ -205,6 +207,7 @@ public class GameLoader {
                             callback.onError();
                     }
                 } catch (Exception e) {
+                    InAppStoryService.createExceptionLog(e);
                     if (callback != null)
                         callback.onError();
                 }
@@ -237,6 +240,7 @@ public class GameLoader {
             input.close();
             return cnt;
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             if (file.exists())
                 file.delete();
             return startSize;

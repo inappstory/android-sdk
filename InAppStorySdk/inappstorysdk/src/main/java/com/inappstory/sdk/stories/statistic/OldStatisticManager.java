@@ -34,7 +34,7 @@ public class OldStatisticManager {
         try {
             handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         } finally {
             handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread,
                     statisticUpdateInterval);
@@ -163,6 +163,7 @@ public class OldStatisticManager {
                     statistic.clear();
             }
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
         }
         return true;
     }

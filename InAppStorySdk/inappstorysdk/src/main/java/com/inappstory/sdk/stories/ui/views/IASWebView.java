@@ -4,13 +4,18 @@ import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
+import android.webkit.ConsoleMessage;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+
+import java.util.UUID;
 
 public class IASWebView extends WebView {
     public IASWebView(@NonNull Context context) {
@@ -44,4 +49,19 @@ public class IASWebView extends WebView {
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
     }
+
+    public void sendWebConsoleLog(ConsoleMessage consoleMessage,
+                                  String storyId, int slideIndex) {
+        WebConsoleLog log = new WebConsoleLog();
+        log.timestamp = System.currentTimeMillis();
+        log.id = UUID.randomUUID().toString();
+        log.logType = consoleMessage.messageLevel().name();
+        log.message = consoleMessage.message();
+        log.sourceId = consoleMessage.sourceId();
+        log.lineNumber = consoleMessage.lineNumber();
+        log.storyId = storyId;
+        log.slideIndex = slideIndex;
+        InAppStoryManager.sendWebConsoleLog(log);
+    }
+
 }

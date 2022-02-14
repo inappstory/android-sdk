@@ -296,12 +296,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                             String ctType = response.headers.get("Content-Type");
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
-                        } catch (FileNotFoundException e) {
-                            return super.shouldInterceptRequest(view, url);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return super.shouldInterceptRequest(view, url);
                         } catch (Exception e) {
+                            InAppStoryService.createExceptionLog(e);
                             return super.shouldInterceptRequest(view, url);
                         }
                     } else
@@ -321,6 +317,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
                         } catch (Exception e) {
+                            InAppStoryService.createExceptionLog(e);
                             return super.shouldInterceptRequest(view, request);
                         }
                     } else
@@ -358,7 +355,9 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
 
                     if (manager != null) {
-                        sendWebConsoleLog(consoleMessage);
+                        sendWebConsoleLog(consoleMessage,
+                                Integer.toString(manager.storyId),
+                                manager.index);
                     }
                     Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
                             + consoleMessage.message() + " -- From line "
@@ -371,18 +370,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         }
     }
 
-    private void sendWebConsoleLog(ConsoleMessage consoleMessage) {
-        WebConsoleLog log = new WebConsoleLog();
-        log.timestamp = System.currentTimeMillis();
-        log.id = UUID.randomUUID().toString();
-        log.logType = consoleMessage.messageLevel().name();
-        log.message = consoleMessage.message();
-        log.sourceId = consoleMessage.sourceId();
-        log.lineNumber = consoleMessage.lineNumber();
-        log.storyId = Integer.toString(manager.storyId);
-        log.slideIndex = manager.index;
-        InAppStoryManager.sendWebConsoleLog(log);
-    }
 
     @Override
     public void goodsWidgetComplete(String widgetId) {

@@ -76,7 +76,7 @@ public class KeyValueStorage {
             editor.putString(key, JsonParser.getJson(value));
             editor.apply();
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -102,7 +102,7 @@ public class KeyValueStorage {
             editor.putString(key, JsonParser.getJson(value));
             editor.apply();
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 

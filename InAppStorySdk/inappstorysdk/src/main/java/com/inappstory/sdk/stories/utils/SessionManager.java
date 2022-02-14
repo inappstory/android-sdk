@@ -131,7 +131,7 @@ public class SessionManager {
         try {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
@@ -234,13 +234,11 @@ public class SessionManager {
             List<List<Object>> stat = new ArrayList<>();
             stat.addAll(sendStatistic ? OldStatisticManager.getInstance().statistic :
                     new ArrayList<List<Object>>());
-            try {
+            if (OldStatisticManager.getInstance() != null
+                    && OldStatisticManager.getInstance().statistic != null)
                 OldStatisticManager.getInstance().statistic.clear();
-            } catch (Exception e) {
 
-            }
-
-          //  CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
+            //  CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
             final String sessionCloseUID =
                     ProfilingManager.getInstance().addTask("api_session_close");
 

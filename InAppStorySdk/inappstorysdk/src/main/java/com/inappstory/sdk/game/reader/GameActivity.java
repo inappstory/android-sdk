@@ -35,6 +35,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -43,6 +44,7 @@ import com.inappstory.sdk.game.loader.GameLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.share.ShareManager;
 import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
@@ -55,7 +57,8 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
-import static com.inappstory.sdk.network.JsonParser.toMap;
+
+import java.util.UUID;
 
 public class GameActivity extends AppCompatActivity {
     private IASWebView webView;
@@ -375,7 +378,13 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                Log.d("InAppStory_SDK_Web", consoleMessage.message() + " -- From line "
+                if (manager != null && webView != null) {
+                    webView.sendWebConsoleLog(consoleMessage,
+                            manager.storyId,
+                            manager.index);
+                }
+                Log.d("InAppStory_SDK_Game", consoleMessage.messageLevel().name() + ": "
+                        + consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId());
                 return super.onConsoleMessage(consoleMessage);
@@ -402,6 +411,7 @@ public class GameActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new GameJSInterface(GameActivity.this,
                 manager.index, manager.storyId, manager), "Android");
     }
+
 
     private void setLoader() {
         if (manager.loaderPath != null && !manager.loaderPath.isEmpty()
@@ -521,10 +531,10 @@ public class GameActivity extends AppCompatActivity {
             finish();
 
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             closing = false;
         }
     }
-
 
 
     private void initGame(String data) {

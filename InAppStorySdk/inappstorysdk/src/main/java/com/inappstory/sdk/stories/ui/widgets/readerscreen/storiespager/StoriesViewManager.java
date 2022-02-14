@@ -147,7 +147,7 @@ public class StoriesViewManager {
         try {
             setWebViewSettings(story);
         } catch (IOException e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -255,6 +255,7 @@ public class StoriesViewManager {
         try {
             return InAppStoryService.getInstance().getCommonCache().get(img);
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             return null;
         }
     }

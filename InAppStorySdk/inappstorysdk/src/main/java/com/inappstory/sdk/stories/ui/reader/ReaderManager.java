@@ -195,8 +195,8 @@ public class ReaderManager {
             public void run() {
                 try {
                     Thread.sleep(150);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (InterruptedException ignored) {
+
                 }
                 newStoryTask(pos);
 

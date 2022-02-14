@@ -250,7 +250,7 @@ public class InAppStoryService {
                             IAS_PREFIX + "fastCache",
                             MB_10, true);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    InAppStoryService.createExceptionLog(e);
                 }
             }
             return fastCache;
@@ -281,7 +281,7 @@ public class InAppStoryService {
                                 cacheType, false);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    InAppStoryService.createExceptionLog(e);
                 }
             }
             return commonCache;
@@ -304,6 +304,7 @@ public class InAppStoryService {
             NetworkInfo info = cm.getActiveNetworkInfo();
             return (info != null && info.isConnected());
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             return true;
         }
     }
@@ -424,6 +425,13 @@ public class InAppStoryService {
         listSubscribers.remove(listManager);
     }
 
+    public static void createExceptionLog(Throwable throwable) {
+        ExceptionManager em = new ExceptionManager();
+        ExceptionLog el = em.generateExceptionLog(throwable);
+        em.saveException(el);
+        em.sendException(el);
+    }
+
     public static class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
 
         Thread.UncaughtExceptionHandler oldHandler;
@@ -434,10 +442,7 @@ public class InAppStoryService {
 
         @Override
         public void uncaughtException(Thread thread, final Throwable throwable) {
-            ExceptionManager em = new ExceptionManager();
-            ExceptionLog el = em.generateExceptionLog(throwable);
-            em.saveException(el);
-            em.sendException(el);
+            createExceptionLog(throwable);
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
 
@@ -500,6 +505,8 @@ public class InAppStoryService {
             spaceHandler.postDelayed(checkFreeSpace, 60000);
         }
     };
+
+
 
     Handler spaceHandler;
 

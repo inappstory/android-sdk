@@ -158,6 +158,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(i);
                     } catch (Exception ignored) {
+                        InAppStoryService.createExceptionLog(ignored);
                     }
                 }
                 return;

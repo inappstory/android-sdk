@@ -342,6 +342,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 StatusBarController.hideStatusBar(StoriesActivity.this, true);
             }
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             finish();
             return;
         }
@@ -375,6 +376,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         t.addToBackStack("STORIES_FRAGMENT");
                         t.commit();
                     } catch (IllegalStateException e) {
+                        InAppStoryService.createExceptionLog(e);
                         finishWithoutAnimation();
                     }
                 } else {

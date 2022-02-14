@@ -122,7 +122,7 @@ public class ReaderPageFragment extends Fragment {
 
             close.setLayoutParams(layoutParams);
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -280,7 +280,7 @@ public class ReaderPageFragment extends Fragment {
         try {
             return createFragmentView(container);
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
             return new View(getContext());
         }
     }

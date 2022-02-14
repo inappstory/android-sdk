@@ -108,6 +108,7 @@ public class JsApiNetwork {
         try {
             respBody = getResponseFromStream(connection.getInputStream());
         } catch (IOException e) {
+            InAppStoryService.createExceptionLog(e);
             respBody = getResponseFromStream(connection.getErrorStream());
         }
         response.data = respBody;

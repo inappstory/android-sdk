@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -275,10 +276,8 @@ public class ImageLoader {
             Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream, null, o2);
             fileInputStream.close();
             return bitmap;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
         }
         return null;
     }

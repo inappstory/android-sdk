@@ -167,15 +167,8 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                     mp.start();
                 }
             });
-        } catch (IllegalArgumentException e1) {
-            e1.printStackTrace();
-        } catch (SecurityException e1) {
-            e1.printStackTrace();
-        } catch (IllegalStateException e1) {
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
 

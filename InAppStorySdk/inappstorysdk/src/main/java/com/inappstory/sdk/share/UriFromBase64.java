@@ -9,6 +9,8 @@ import android.util.Base64;
 
 import androidx.core.content.FileProvider;
 
+import com.inappstory.sdk.InAppStoryService;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -60,6 +62,7 @@ public class UriFromBase64 implements Callable<ArrayList<Uri>> {
             stream.close();
             uri = FileProvider.getUriForFile(context, context.getPackageName() + ".com.inappstory.fileprovider", file);
         } catch (IOException e) {
+            InAppStoryService.createExceptionLog(e);
         }
         return uri;
     }

@@ -282,6 +282,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             bundle.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
     }
