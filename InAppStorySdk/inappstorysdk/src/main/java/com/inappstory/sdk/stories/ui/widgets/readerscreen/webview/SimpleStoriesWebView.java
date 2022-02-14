@@ -29,6 +29,7 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -44,7 +45,7 @@ import java.util.UUID;
  * Created by Paperrose on 07.06.2018.
  */
 
-public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
+public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesView {
 
     private static String injectUnselectableStyle(String html) {
         return html.replace("<head>",
@@ -173,7 +174,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public SimpleStoriesWebView(Context context) {
         super(context);
-        init();
     }
 
     //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
@@ -236,23 +236,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     StoriesViewManager manager;
 
-    private void init() {
-        getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        setBackgroundColor(getResources().getColor(R.color.black));
-
-        setVerticalScrollBarEnabled(false);
-        setHorizontalScrollBarEnabled(false);
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        getSettings().setTextZoom(100);
-        getSettings().setAllowContentAccess(true);
-        getSettings().setAllowFileAccess(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            getSettings().setOffscreenPreRaster(true);
-        }
-
-        setClickable(true);
-        getSettings().setJavaScriptEnabled(true);
-
+    protected void init() {
+        super.init();
         manager = new StoriesViewManager(getContext());
         manager.setStoriesView(this);
     }
@@ -265,12 +250,10 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public SimpleStoriesWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
 
     public SimpleStoriesWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
     }
 
     float coordinate1;
