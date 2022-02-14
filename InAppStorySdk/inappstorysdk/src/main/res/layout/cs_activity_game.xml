@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <WebView
+            <com.inappstory.sdk.stories.ui.views.IASWebView
                 android:id="@+id/gameWebview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />

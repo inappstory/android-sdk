@@ -53,6 +53,7 @@ import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -63,7 +64,7 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static com.inappstory.sdk.network.JsonParser.toMap;
 
 public class GameActivity extends AppCompatActivity {
-    private WebView webView;
+    private IASWebView webView;
     private ImageView loader;
     private View closeButton;
     private RelativeLayout loaderContainer;
@@ -177,9 +178,6 @@ public class GameActivity extends AppCompatActivity {
 
     private void setViews() {
         webView = findViewById(R.id.gameWebview);
-        webView.setBackgroundColor(Color.BLACK);
-        webView.getSettings().setAllowFileAccess(true);
-        webView.getSettings().setAllowContentAccess(true);
         loader = findViewById(R.id.loader);
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
@@ -368,8 +366,6 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void initWebView() {
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setWebChromeClient(new WebChromeClient() {
             boolean init = false;
 
