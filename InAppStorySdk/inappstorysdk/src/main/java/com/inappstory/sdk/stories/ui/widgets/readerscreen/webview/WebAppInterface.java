@@ -177,6 +177,18 @@ public class WebAppInterface {
         logMethod("");
     }
 
+    @JavascriptInterface
+    public void storyPauseUI() {
+        manager.pauseUI();
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void storyResumeUI() {
+        manager.resumeUI();
+        logMethod("");
+    }
+
 
     @JavascriptInterface
     public void storySendData(String data) {

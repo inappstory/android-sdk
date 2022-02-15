@@ -312,7 +312,6 @@ public class StoriesViewManager {
     }
 
 
-
     public void pageFinished() {
     }
 
@@ -412,6 +411,17 @@ public class StoriesViewManager {
                         story.tags, story.getSlidesCount(), index);
             }
         }
+    }
+
+    public void pauseUI() {
+        if (pageManager != null)
+            pageManager.pauseSlide(false);
+
+    }
+
+    public void resumeUI() {
+        if (pageManager != null)
+            pageManager.resumeSlide(false);
     }
 
     public void freezeUI() {
