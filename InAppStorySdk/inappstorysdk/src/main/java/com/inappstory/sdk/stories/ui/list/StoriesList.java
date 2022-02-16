@@ -374,13 +374,15 @@ public class StoriesList extends RecyclerView {
             return;
         }
         if (adapter == null) {
-            adapter = new StoriesAdapter(getContext(), uniqueID, storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+            adapter = new StoriesAdapter(getContext(), uniqueID,
+                    storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
             setLayoutManager(layoutManager);
             setAdapter(adapter);
         } else {
             adapter.refresh(storiesIds);
             adapter.notifyDataSetChanged();
         }
+        if (callback != null) callback.storiesLoaded(storiesIds.size());
     }
 
     public void loadStoriesInner() throws DataException {
