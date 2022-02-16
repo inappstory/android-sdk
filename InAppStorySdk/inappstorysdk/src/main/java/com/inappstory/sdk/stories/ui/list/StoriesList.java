@@ -367,6 +367,21 @@ public class StoriesList extends RecyclerView {
             loadStoriesInner();
             return;
         }
+        checkAppearanceManager();
+        setOrRefreshAdapter(storiesIds);
+        if (callback != null) callback.storiesLoaded(storiesIds.size());
+    }
+
+    private void checkAppearanceManager() {
+        if (this.appearanceManager == null) {
+            this.appearanceManager = AppearanceManager.getCommonInstance();
+        }
+
+        if (this.appearanceManager == null) {
+            this.appearanceManager = new AppearanceManager();
+        }
+    }
+    private void setOrRefreshAdapter(List<Integer> storiesIds) {
         if (adapter == null) {
             adapter = new StoriesAdapter(getContext(), uniqueID,
                     storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
@@ -376,7 +391,6 @@ public class StoriesList extends RecyclerView {
             adapter.refresh(storiesIds);
             adapter.notifyDataSetChanged();
         }
-        if (callback != null) callback.storiesLoaded(storiesIds.size());
     }
 
     public void loadStoriesInner() throws DataException {
@@ -387,12 +401,8 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryManager.getInstance().getUserId() == null) {
             throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
-        if (appearanceManager == null) {
-            appearanceManager = AppearanceManager.getCommonInstance();
-        }
-        if (appearanceManager == null) {
-            appearanceManager = new AppearanceManager();
-        }
+
+        checkAppearanceManager();
         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
@@ -406,14 +416,7 @@ public class StoriesList extends RecyclerView {
                                     .listStoriesIds.put(cacheId, storiesIds);
                         }
                     }
-                    if (adapter == null) {
-                        adapter = new StoriesAdapter(getContext(), uniqueID, storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
-                        setLayoutManager(layoutManager);
-                        setAdapter(adapter);
-                    } else {
-                        adapter.refresh(storiesIds);
-                        adapter.notifyDataSetChanged();
-                    }
+                    setOrRefreshAdapter(storiesIds);
                     ProfilingManager.getInstance().setReady(listUid);
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
                     if (callback != null) callback.storiesLoaded(storiesIds.size());

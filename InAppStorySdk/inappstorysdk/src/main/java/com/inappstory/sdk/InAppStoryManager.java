@@ -699,7 +699,7 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().listStoriesIds.remove(id);
         }
     }
-    
+
     private void clearCachedLists() {
         if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().listStoriesIds.clear();
