@@ -64,6 +64,8 @@ public class InAppStoryService {
 
     }
 
+    public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
+
     public String getUserId() {
         if (userId == null && !InAppStoryManager.isNull())
             return InAppStoryManager.getInstance().getUserId();

@@ -95,8 +95,7 @@ public class StoriesList extends RecyclerView {
         super.onDetachedFromWindow();
         if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().removeListSubscriber(manager);
-        }
-        else
+        } else
             manager.clear();
     }
 
@@ -272,7 +271,7 @@ public class StoriesList extends RecyclerView {
         final int ind = adapter.getIndexById(storyId);
         if (ind == -1) return;
         if (layoutManager instanceof LinearLayoutManager) {
-            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);            
+            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
         } else if (layoutManager instanceof GridLayoutManager) {
             ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
         }
@@ -346,7 +345,42 @@ public class StoriesList extends RecyclerView {
 
     public void loadStories() throws DataException {
         InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
-        loadStoriesInner();
+        loadStoriesLocal();
+    }
+
+    private String cacheId;
+
+    private void setCacheId(String id) {
+        this.cacheId = id;
+    }
+
+    private void clearLocal() {
+        if (cacheId != null && !cacheId.isEmpty() && InAppStoryService.isNotNull()) {
+            InAppStoryService.getInstance().listStoriesIds.remove(cacheId);
+        }
+    }
+
+    private void loadStoriesLocal() throws DataException {
+        if (InAppStoryService.isNull()
+                || cacheId == null
+                || cacheId.isEmpty()) {
+            loadStoriesInner();
+            return;
+        }
+        List<Integer> storiesIds = InAppStoryService.getInstance()
+                .listStoriesIds.get(cacheId);
+        if (storiesIds == null) {
+            loadStoriesInner();
+            return;
+        }
+        if (adapter == null) {
+            adapter = new StoriesAdapter(getContext(), uniqueID, storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+            setLayoutManager(layoutManager);
+            setAdapter(adapter);
+        } else {
+            adapter.refresh(storiesIds);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     public void loadStoriesInner() throws DataException {
@@ -370,6 +404,12 @@ public class StoriesList extends RecyclerView {
             lcallback = new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(List<Integer> storiesIds) {
+                    if (cacheId != null && !cacheId.isEmpty()) {
+                        if (InAppStoryService.isNotNull()) {
+                            InAppStoryService.getInstance()
+                                    .listStoriesIds.put(cacheId, storiesIds);
+                        }
+                    }
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), uniqueID, storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
