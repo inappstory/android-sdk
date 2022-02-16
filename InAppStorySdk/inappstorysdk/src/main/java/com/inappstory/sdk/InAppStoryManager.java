@@ -694,6 +694,17 @@ public class InAppStoryManager {
         return userId;
     }
 
+    private void clearCachedList(String id) {
+        if (InAppStoryService.isNotNull()) {
+            InAppStoryService.getInstance().listStoriesIds.remove(id);
+        }
+    }
+    
+    private void clearCachedLists() {
+        if (InAppStoryService.isNotNull()) {
+            InAppStoryService.getInstance().listStoriesIds.clear();
+        }
+    }
 
     public void setActionBarColor(int actionBarColor) {
         this.actionBarColor = actionBarColor;

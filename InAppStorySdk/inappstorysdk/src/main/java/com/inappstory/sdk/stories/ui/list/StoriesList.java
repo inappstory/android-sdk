@@ -354,12 +354,6 @@ public class StoriesList extends RecyclerView {
         this.cacheId = id;
     }
 
-    private void clearLocal() {
-        if (cacheId != null && !cacheId.isEmpty() && InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().listStoriesIds.remove(cacheId);
-        }
-    }
-
     private void loadStoriesLocal() throws DataException {
         if (InAppStoryService.isNull()
                 || cacheId == null
