@@ -46,6 +46,19 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     public Context context;
 
+    public void refreshSettings(AppearanceManager manager,
+                                OnFavoriteItemClick favoriteItemClick,
+                                boolean isFavoriteList,
+                                ListCallback callback) {
+        this.manager = manager;
+        this.favoriteItemClick = favoriteItemClick;
+        this.callback = callback;
+        this.isFavoriteList = isFavoriteList;
+        hasFavItem = !isFavoriteList && InAppStoryService.isNotNull()
+                && manager != null && manager.csHasFavorite()
+                && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
+    }
+
     public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
                           OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback) {
         this.context = context;

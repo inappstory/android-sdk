@@ -327,10 +327,12 @@ public class StoriesList extends RecyclerView {
                 public void storiesLoaded(List<Integer> storiesIds) {
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded");
                     if (adapter == null) {
-                        adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+                        adapter = new StoriesAdapter(getContext(), storiesIds,
+                                appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
                         setAdapter(adapter);
                     } else {
+                        adapter.refreshSettings(appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         adapter.refresh(storiesIds);
                         adapter.notifyDataSetChanged();
                     }
