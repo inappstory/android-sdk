@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" project-jdk-name="1.8" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/build/classes" />
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/drawable/cs_circular_progress_bar.xml" value="0.1578125" />
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/drawable/cs_story_border_square.xml" value="0.12777777777777777" />
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/drawable/ic_share_status.xml" value="0.15648148148148147" />
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/drawable/ic_stories_close.xml" value="0.15648148148148147" />
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/layout-sw600dp/cs_activity_game.xml" value="0.1" />
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/layout/cs_activity_game.xml" value="0.11778115501519756" />
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/layout/cs_story_list_inner_item.xml" value="0.1" />
+        <entry key="..\:/AndroidProjects/InAppStorySdkRemote/InAppStorySdk/inappstorysdk/src/main/res/xml/inappstory_file_path.xml" value="0.15364583333333334" />
+      </map>
+    </option>
   </component>
-  <component name="ProjectType">
-    <option name="id" value="Android" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="11" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
 </project>

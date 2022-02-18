@@ -331,6 +331,7 @@ public class StoriesList extends RecyclerView {
                                 appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         setLayoutManager(layoutManager);
                         setAdapter(adapter);
+
                     } else {
                         adapter.refreshSettings(appearanceManager, favoriteItemClick, isFavoriteList, callback);
                         adapter.refresh(storiesIds);
