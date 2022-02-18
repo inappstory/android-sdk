@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -74,8 +76,7 @@ public class StoriesList extends RecyclerView {
         super.onDetachedFromWindow();
         if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().removeListSubscriber(manager);
-        }
-        else
+        } else
             manager.clear();
     }
 
@@ -305,7 +306,34 @@ public class StoriesList extends RecyclerView {
         loadStoriesInner();
     }
 
+    RecyclerView.AdapterDataObserver observer = new RecyclerView.AdapterDataObserver() {
+        @Override
+        public void onChanged() {
+            super.onChanged();
+            Log.e("AdapterDataObserver", "onChanged");
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            super.onItemRangeInserted(positionStart, itemCount);
+            Log.e("AdapterDataObserver", itemCount + " onItemRangeInserted");
+        }
+
+        @Override
+        public void onStateRestorationPolicyChanged() {
+            super.onStateRestorationPolicyChanged();
+            Log.e("AdapterDataObserver", "statePolicyChanged");
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
+            super.onItemRangeChanged(positionStart, itemCount, payload);
+            Log.e("AdapterDataObserver", itemCount + " onItemRangeChanged");
+        }
+    };
+
     public void loadStoriesInner() throws DataException {
+
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getCommonInstance();
         }
@@ -324,11 +352,12 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryService.isNotNull()) {
             lcallback = new LoadStoriesCallback() {
                 @Override
-                public void storiesLoaded(List<Integer> storiesIds) {
+                public void storiesLoaded(final List<Integer> storiesIds) {
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded");
                     if (adapter == null) {
                         adapter = new StoriesAdapter(getContext(), storiesIds,
                                 appearanceManager, favoriteItemClick, isFavoriteList, callback);
+                        adapter.registerAdapterDataObserver(observer);
                         setLayoutManager(layoutManager);
                         setAdapter(adapter);
 
@@ -340,8 +369,9 @@ public class StoriesList extends RecyclerView {
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter");
                     ProfilingManager.getInstance().setReady(listUid);
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager");
-                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                    if (callback != null) callback.storiesLoaded(storiesIds.size());
+                    final int size = storiesIds.size();
+                    CsEventBus.getDefault().post(new StoriesLoaded(size));
+                    if (callback != null) callback.storiesLoaded(size);
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback " + (callback != null));
                 }
 
@@ -363,6 +393,8 @@ public class StoriesList extends RecyclerView {
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded delay");
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+
+                                adapter.registerAdapterDataObserver(observer);
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
 

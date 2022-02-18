@@ -92,8 +92,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         return new StoryListItem(v, manager, (vType % 5) == 2, vType == 3, vType > 5);
     }
 
+
     @Override
-    public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
+    public void onBindViewHolder(@NonNull StoryListItem holder, int position) {
         if (holder == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
@@ -118,10 +119,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                         story.isOpened || isFavoriteList, story.hasAudio(),
                         story.getVideoUrl());
             }
+            final int pos = position;
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClick(position);
+
+                    onItemClick(pos);
                 }
             });
         }
