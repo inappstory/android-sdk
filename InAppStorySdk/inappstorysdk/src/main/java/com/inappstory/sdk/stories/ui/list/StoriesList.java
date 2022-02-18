@@ -172,7 +172,6 @@ public class StoriesList extends RecyclerView {
 
     void refreshList() {
         try {
-            adapter = null;
             loadStoriesInner();
         } catch (DataException e) {
             e.printStackTrace();
@@ -334,6 +333,9 @@ public class StoriesList extends RecyclerView {
 
     public void loadStoriesInner() throws DataException {
 
+        if (adapter != null) {
+            adapter.clickable = false;
+        }
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getCommonInstance();
         }
@@ -354,30 +356,35 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void storiesLoaded(final List<Integer> storiesIds) {
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded");
-                    if (adapter == null) {
-                        adapter = new StoriesAdapter(getContext(), storiesIds,
-                                appearanceManager, favoriteItemClick, isFavoriteList, callback);
-                        adapter.registerAdapterDataObserver(observer);
-                        setLayoutManager(layoutManager);
-                        setAdapter(adapter);
 
-                    } else {
-                        adapter.refreshSettings(appearanceManager, favoriteItemClick, isFavoriteList, callback);
-                        adapter.refresh(storiesIds);
-                        adapter.notifyDataSetChanged();
-                    }
+                    adapter = new StoriesAdapter(getContext(), storiesIds,
+                            appearanceManager, favoriteItemClick, isFavoriteList, callback);
+                    adapter.registerAdapterDataObserver(observer);
+                    setLayoutManager(layoutManager);
+                    setAdapter(adapter);
+
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter");
                     ProfilingManager.getInstance().setReady(listUid);
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager");
                     final int size = storiesIds.size();
-                    CsEventBus.getDefault().post(new StoriesLoaded(size));
-                    if (callback != null) callback.storiesLoaded(size);
-                    InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback " + (callback != null));
+                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            CsEventBus.getDefault().post(new StoriesLoaded(size));
+                            if (callback != null) callback.storiesLoaded(size);
+                            InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback " + (callback != null));
+                        }
+                    }, 300);
+
                 }
 
                 @Override
                 public void onError() {
                     if (callback != null) callback.loadError();
+
+                    if (adapter != null) {
+                        adapter.clickable = true;
+                    }
                 }
             };
             InAppStoryService.getInstance().getDownloadManager().loadStories(lcallback, isFavoriteList, hasFavorite);
@@ -401,15 +408,24 @@ public class StoriesList extends RecyclerView {
                                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter delay");
                                 ProfilingManager.getInstance().setReady(listUid);
                                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager delay");
-                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                if (callback != null) callback.storiesLoaded(storiesIds.size());
-                                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback delay " + (callback != null));
+                                final int size = storiesIds.size();
+                                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
 
+                                        CsEventBus.getDefault().post(new StoriesLoaded(size));
+                                        if (callback != null) callback.storiesLoaded(size);
+                                        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback delay " + (callback != null));
+                                    }
+                                }, 300);
                             }
 
                             @Override
                             public void onError() {
                                 if (callback != null) callback.loadError();
+                                if (adapter != null) {
+                                    adapter.clickable = true;
+                                }
                             }
                         };
                         InAppStoryService.getInstance().getDownloadManager().loadStories(

@@ -44,6 +44,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     boolean hasFavItem = false;
 
+    boolean clickable = true;
+
     public Context context;
 
     public void refreshSettings(AppearanceManager manager,
@@ -101,6 +103,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (!clickable) return;
                     if (favoriteItemClick != null) {
                         favoriteItemClick.onClick();
                     }
@@ -123,7 +126,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    if (!clickable) return;
                     onItemClick(pos);
                 }
             });
