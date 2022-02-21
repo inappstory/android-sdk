@@ -305,37 +305,14 @@ public class StoriesList extends RecyclerView {
         loadStoriesInner();
     }
 
-    RecyclerView.AdapterDataObserver observer = new RecyclerView.AdapterDataObserver() {
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            Log.e("AdapterDataObserver", "onChanged");
-        }
 
-        @Override
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            super.onItemRangeInserted(positionStart, itemCount);
-            Log.e("AdapterDataObserver", itemCount + " onItemRangeInserted");
-        }
-
-        @Override
-        public void onStateRestorationPolicyChanged() {
-            super.onStateRestorationPolicyChanged();
-            Log.e("AdapterDataObserver", "statePolicyChanged");
-        }
-
-        @Override
-        public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
-            super.onItemRangeChanged(positionStart, itemCount, payload);
-            Log.e("AdapterDataObserver", itemCount + " onItemRangeChanged");
-        }
-    };
 
     public void loadStoriesInner() throws DataException {
 
         if (adapter != null) {
             adapter.clickable = false;
         }
+        InAppStoryManager.debugSDKCalls("StoriesList_clickable", "loadStories");
         if (appearanceManager == null) {
             appearanceManager = AppearanceManager.getCommonInstance();
         }
@@ -359,10 +336,9 @@ public class StoriesList extends RecyclerView {
 
                     adapter = new StoriesAdapter(getContext(), storiesIds,
                             appearanceManager, favoriteItemClick, isFavoriteList, callback);
-                    adapter.registerAdapterDataObserver(observer);
                     setLayoutManager(layoutManager);
                     setAdapter(adapter);
-
+                    InAppStoryManager.debugSDKCalls("StoriesList_clickable", "setAdapter");
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter");
                     ProfilingManager.getInstance().setReady(listUid);
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager");
@@ -401,9 +377,9 @@ public class StoriesList extends RecyclerView {
                                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded delay");
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
 
-                                adapter.registerAdapterDataObserver(observer);
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
+
 
                                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter delay");
                                 ProfilingManager.getInstance().setReady(listUid);

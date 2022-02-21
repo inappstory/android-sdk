@@ -216,6 +216,7 @@ public class ReaderManager {
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
         if (InAppStoryService.isNull()) return;
         Story story2 = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+        if (story2 == null) return;
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(lastPos));

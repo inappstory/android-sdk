@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -126,6 +127,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    InAppStoryManager.debugSDKCalls("StoriesList_clickable", "onClick " + clickable);
                     if (!clickable) return;
                     onItemClick(pos);
                 }
