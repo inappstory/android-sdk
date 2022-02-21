@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -61,6 +62,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 && manager != null && manager.csHasFavorite()
                 && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
     }
+
+
 
     public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
                           OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback) {
@@ -127,7 +130,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    InAppStoryManager.debugSDKCalls("StoriesList_clickable", "onClick " + clickable);
+                    InAppStoryManager.debugSDKCalls("StoriesList_clickable", getLogUID() + " onClick " + clickable);
                     if (!clickable) return;
                     onItemClick(pos);
                 }
@@ -135,6 +138,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
         }
 
     }
+
+    public String getLogUID() {
+        return logUID;
+    }
+
+    private String logUID = UUID.randomUUID().toString();
 
     public void onItemClick(int index) {
         if (InAppStoryService.isNull()) return;
@@ -237,6 +246,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     @Override
     public int getItemCount() {
-        return storiesIds.size() + (hasFavItem ? 1 : 0);
+        return storiesIds.size() + ((!storiesIds.isEmpty() && hasFavItem) ? 1 : 0);
     }
 }

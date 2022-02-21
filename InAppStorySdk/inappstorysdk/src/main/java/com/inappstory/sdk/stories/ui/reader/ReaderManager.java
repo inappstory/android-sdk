@@ -153,12 +153,13 @@ public class ReaderManager {
                         story.tags, story.getSlidesCount(),
                         CallbackManager.getInstance().getSourceFromInt(source));
             }
+            ProfilingManager.getInstance().addTask("slide_show",
+                    currentStoryId + "_" +
+                            story.lastIndex);
+
         }
         final int pos = position;
 
-        ProfilingManager.getInstance().addTask("slide_show",
-                currentStoryId + "_" +
-                        InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId).lastIndex);
         InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId);
         if (Sizes.isTablet()) {
             if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {

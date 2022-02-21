@@ -575,6 +575,7 @@ public class InAppStoryManager {
                              String userId,
                              ArrayList<String> tags,
                              Map<String, String> placeholders) {
+
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
         this.tags = tags;

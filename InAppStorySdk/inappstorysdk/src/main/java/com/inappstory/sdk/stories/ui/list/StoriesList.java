@@ -172,6 +172,11 @@ public class StoriesList extends RecyclerView {
 
     void refreshList() {
         try {
+            if (adapter != null) {
+                int cnt = adapter.getItemCount();
+                adapter.refresh(new ArrayList<Integer>());
+                adapter.notifyItemRangeRemoved(0, cnt);
+            }
             loadStoriesInner();
         } catch (DataException e) {
             e.printStackTrace();
@@ -333,15 +338,13 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void storiesLoaded(final List<Integer> storiesIds) {
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded");
-
                     adapter = new StoriesAdapter(getContext(), storiesIds,
                             appearanceManager, favoriteItemClick, isFavoriteList, callback);
                     setLayoutManager(layoutManager);
                     setAdapter(adapter);
-                    InAppStoryManager.debugSDKCalls("StoriesList_clickable", "setAdapter");
+                    InAppStoryManager.debugSDKCalls("StoriesList_clickable", adapter.getLogUID() + " setAdapter");
                     InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter");
                     ProfilingManager.getInstance().setReady(listUid);
-                    InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager");
                     final int size = storiesIds.size();
                     new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                         @Override
@@ -357,8 +360,8 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void onError() {
                     if (callback != null) callback.loadError();
-
                     if (adapter != null) {
+                        InAppStoryManager.debugSDKCalls("StoriesList_clickable", adapter.getLogUID() + " onError");
                         adapter.clickable = true;
                     }
                 }
@@ -376,19 +379,15 @@ public class StoriesList extends RecyclerView {
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " loaded delay");
                                 adapter = new StoriesAdapter(getContext(), storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
-
                                 setLayoutManager(layoutManager);
                                 setAdapter(adapter);
-
-
+                                InAppStoryManager.debugSDKCalls("StoriesList_clickable", adapter.getLogUID() + " setAdapter");
                                 InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " setAdapter delay");
                                 ProfilingManager.getInstance().setReady(listUid);
-                                InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " ProfilingManager delay");
                                 final int size = storiesIds.size();
                                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
-
                                         CsEventBus.getDefault().post(new StoriesLoaded(size));
                                         if (callback != null) callback.storiesLoaded(size);
                                         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", StoriesList.this.toString() + " callback delay " + (callback != null));
@@ -400,6 +399,7 @@ public class StoriesList extends RecyclerView {
                             public void onError() {
                                 if (callback != null) callback.loadError();
                                 if (adapter != null) {
+                                    InAppStoryManager.debugSDKCalls("StoriesList_clickable", adapter.getLogUID() + " onError");
                                     adapter.clickable = true;
                                 }
                             }
