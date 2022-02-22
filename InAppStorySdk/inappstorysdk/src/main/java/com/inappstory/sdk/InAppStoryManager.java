@@ -669,7 +669,7 @@ public class InAppStoryManager {
             closeStoryReader(CloseStory.AUTO);
             SessionManager.getInstance().closeSession(sendStatistic, true);
             OldStatisticManager.getInstance().eventCount = 0;
-            InAppStoryService.getInstance().getDownloadManager().cleanTasks();
+            InAppStoryService.getInstance().getDownloadManager().cleanTasks(false);
             InAppStoryService.getInstance().setUserId(userId);
         } else {
             throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));

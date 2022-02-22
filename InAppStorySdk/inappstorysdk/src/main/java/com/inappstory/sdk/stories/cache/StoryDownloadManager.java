@@ -175,7 +175,12 @@ public class StoryDownloadManager {
     }
 
     public void cleanTasks() {
-        stories.clear();
+        cleanTasks(true);
+    }
+
+    public void cleanTasks(boolean cleanStories) {
+        if (cleanStories)
+            stories.clear();
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
