@@ -172,11 +172,6 @@ public class StoriesList extends RecyclerView {
 
     void refreshList() {
         try {
-            if (adapter != null) {
-                int cnt = adapter.getItemCount();
-                adapter.refresh(new ArrayList<Integer>());
-                adapter.notifyItemRangeRemoved(0, cnt);
-            }
             loadStoriesInner();
         } catch (DataException e) {
             e.printStackTrace();
