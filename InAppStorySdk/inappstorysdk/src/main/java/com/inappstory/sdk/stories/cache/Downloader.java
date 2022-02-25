@@ -82,7 +82,7 @@ public class Downloader {
 
         if (cache.hasKey(key)) {
             File file = cache.get(key);
-            if (file.exists()) {
+            if (file != null && file.exists()) {
                 if (callback != null)
                     callback.onSuccess(file);
                 headers.put("From Cache", "true");
