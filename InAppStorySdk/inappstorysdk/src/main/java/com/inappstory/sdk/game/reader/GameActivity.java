@@ -64,6 +64,7 @@ public class GameActivity extends AppCompatActivity {
     private IASWebView webView;
     private ImageView loader;
     private View closeButton;
+    private View webViewContainer;
     private RelativeLayout loaderContainer;
     private IGameLoaderView loaderView;
     private View blackTop;
@@ -195,6 +196,15 @@ public class GameActivity extends AppCompatActivity {
                 }
             });
         }
+
+        closeButton = findViewById(R.id.close_button);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeGame();
+            }
+        });
+        webViewContainer = findViewById(R.id.webViewContainer);
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize(GameActivity.this);
@@ -215,10 +225,10 @@ public class GameActivity extends AppCompatActivity {
                             if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
                                 DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
                                 if (cutout != null) {
-                                    if (closeButton != null) {
-                                        RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) closeButton.getLayoutParams();
+                                    if (webViewContainer != null) {
+                                        RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) webViewContainer.getLayoutParams();
                                         lp1.topMargin += Math.max(cutout.getSafeInsetTop() - lp.height, 0);
-                                        closeButton.setLayoutParams(lp1);
+                                        webViewContainer.setLayoutParams(lp1);
                                     }
                                 } else {
 
@@ -230,13 +240,6 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         loaderContainer.addView(loaderView.getView());
-        closeButton = findViewById(R.id.close_button);
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeGame();
-            }
-        });
     }
 
 

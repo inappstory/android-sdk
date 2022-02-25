@@ -28,6 +28,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:id="@+id/webViewContainer"
             android:layout_weight="1">
 
             <com.inappstory.sdk.stories.ui.views.IASWebView
