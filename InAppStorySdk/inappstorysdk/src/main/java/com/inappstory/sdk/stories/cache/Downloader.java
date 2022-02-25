@@ -89,8 +89,6 @@ public class Downloader {
                 responseLog.generateFile(200, file.getAbsolutePath(), headers);
                 InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
                 return file;
-            } else {
-                cache.delete(key);
             }
         }
 
