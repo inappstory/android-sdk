@@ -226,7 +226,7 @@ public class GameActivity extends AppCompatActivity {
                                 DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
                                 if (cutout != null && webViewContainer != null) {
                                     LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop() - lp.height, 0);
+                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
                                     webViewContainer.setLayoutParams(lp1);
                                 }
                             }
