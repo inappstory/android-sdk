@@ -82,34 +82,39 @@ public class Downloader {
 
         if (cache.hasKey(key)) {
             File file = cache.get(key);
-            if (callback != null)
-                callback.onSuccess(file);
-            headers.put("From Cache", "true");
-            responseLog.generateFile(200, file.getAbsolutePath(), headers);
-            InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
-            return file;
-        } else {
-            InAppStoryManager.sendApiRequestLog(requestLog);
-            if (hash != null) {
-                ProfilingManager.getInstance().addTask("game_download", hash);
-            }
-            if (img == null) {
-                img = cache.getFileFromKey(key);
-            }
-            File file = downloadFile(url, img, callback, responseLog);
-            if (file != null) {
-                cache.put(key, file);
+            if (file.exists()) {
                 if (callback != null)
                     callback.onSuccess(file);
+                headers.put("From Cache", "true");
+                responseLog.generateFile(200, file.getAbsolutePath(), headers);
+                InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
+                return file;
             } else {
-                if (callback != null)
-                    callback.onError();
+                cache.delete(key);
             }
-
-            responseLog.responseHeaders.add(new ApiLogRequestHeader("From Cache", "false"));
-            InAppStoryManager.sendApiResponseLog(responseLog);
-            return file;
         }
+
+        InAppStoryManager.sendApiRequestLog(requestLog);
+        if (hash != null) {
+            ProfilingManager.getInstance().addTask("game_download", hash);
+        }
+        if (img == null) {
+            img = cache.getFileFromKey(key);
+        }
+        File file = downloadFile(url, img, callback, responseLog);
+        if (file != null) {
+            cache.put(key, file);
+            if (callback != null)
+                callback.onSuccess(file);
+        } else {
+            if (callback != null)
+                callback.onError();
+        }
+
+        responseLog.responseHeaders.add(new ApiLogRequestHeader("From Cache", "false"));
+        InAppStoryManager.sendApiResponseLog(responseLog);
+        return file;
+
     }
 
     @NonNull
