@@ -88,7 +88,8 @@ class SlidesDownloader {
                     remove = true;
                 } else {
                     if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
-                        remove = true;
+                        reloadPage(key.first, key.second);
+                        return false;
                     }
                 }
             }
@@ -97,7 +98,8 @@ class SlidesDownloader {
                     remove = true;
                 } else {
                     if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
-                        remove = true;
+                        reloadPage(key.first, key.second);
+                        return false;
                     }
                 }
             }
