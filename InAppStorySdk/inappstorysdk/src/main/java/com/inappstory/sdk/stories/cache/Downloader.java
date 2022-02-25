@@ -121,16 +121,17 @@ public class Downloader {
                                                 LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
         if (cache.hasKey(key)) {
-            return false;
-        } else {
-            if (img == null) {
-                img = cache.getFileFromKey(key);
+            File file = cache.get(key);
+            if (file != null && file.exists()) {
+                return false;
             }
-            File file = downloadFile(url, img, callback, new ApiLogResponse());
-
-            cache.put(key, file);
-            return true;
         }
+        if (img == null) {
+            img = cache.getFileFromKey(key);
+        }
+        File file = downloadFile(url, img, callback, new ApiLogResponse());
+        cache.put(key, file);
+        return true;
     }
 
 

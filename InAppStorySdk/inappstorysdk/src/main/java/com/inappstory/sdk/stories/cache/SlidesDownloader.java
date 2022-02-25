@@ -8,6 +8,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,18 +79,26 @@ class SlidesDownloader {
 
     }
 
-    boolean checkIfPageLoaded(Pair<Integer, Integer> key) {
+    boolean checkIfPageLoaded(Pair<Integer, Integer> key) throws IOException {
         boolean remove = false;
         if (InAppStoryService.isNull()) return false;
         if (pageTasks.get(key) != null && pageTasks.get(key).loadType == 2) {
             for (String url : pageTasks.get(key).urls) {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
+                } else {
+                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                        remove = true;
+                    }
                 }
             }
             for (String url : pageTasks.get(key).videoUrls) {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
+                } else {
+                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                        remove = true;
+                    }
                 }
             }
             if (remove) {

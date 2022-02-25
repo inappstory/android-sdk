@@ -289,7 +289,11 @@ public class StoryDownloadManager {
     }
 
     public boolean checkIfPageLoaded(int storyId, int index) {
-        return slidesDownloader.checkIfPageLoaded(new Pair<>(storyId, index));
+        try {
+            return slidesDownloader.checkIfPageLoaded(new Pair<>(storyId, index));
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public StoryDownloadManager(final Context context, ExceptionCache cache) {
