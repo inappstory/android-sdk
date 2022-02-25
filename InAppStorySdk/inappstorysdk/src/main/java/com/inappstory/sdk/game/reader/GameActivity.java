@@ -224,14 +224,10 @@ public class GameActivity extends AppCompatActivity {
                         public void run() {
                             if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
                                 DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                                if (cutout != null) {
-                                    if (webViewContainer != null) {
-                                        RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                        lp1.topMargin += Math.max(cutout.getSafeInsetTop() - lp.height, 0);
-                                        webViewContainer.setLayoutParams(lp1);
-                                    }
-                                } else {
-
+                                if (cutout != null && webViewContainer != null) {
+                                    LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
+                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop() - lp.height, 0);
+                                    webViewContainer.setLayoutParams(lp1);
                                 }
                             }
                         }
