@@ -212,8 +212,14 @@ public class ScreensManager {
         }
     }
 
+    private Long lastOpenTry = -1L;
+
     public void openStoriesReader(Context outerContext, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {
+        if (System.currentTimeMillis() - lastOpenTry < 1000) {
+            return;
+        }
+        lastOpenTry = System.currentTimeMillis();
         closeGameReader();
         if (Sizes.isTablet() && outerContext instanceof AppCompatActivity) {
             closeStoryReader(CloseStory.CUSTOM);
