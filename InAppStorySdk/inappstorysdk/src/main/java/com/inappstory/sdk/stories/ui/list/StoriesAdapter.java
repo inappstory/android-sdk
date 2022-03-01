@@ -64,6 +64,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     }
 
 
+    Long clickTimestamp = -1L;
+
 
     public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
                           OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback) {
@@ -132,6 +134,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 public void onClick(View v) {
                     InAppStoryManager.debugSDKCalls("StoriesList_clickable", getLogUID() + " onClick " + clickable);
                     if (!clickable) return;
+                    if (System.currentTimeMillis() - clickTimestamp < 1500) {
+                        return;
+                    }
+                    clickTimestamp = System.currentTimeMillis();
                     onItemClick(pos);
                 }
             });
