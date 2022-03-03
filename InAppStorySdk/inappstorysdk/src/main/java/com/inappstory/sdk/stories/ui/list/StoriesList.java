@@ -382,15 +382,10 @@ public class StoriesList extends RecyclerView {
         }
     }
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
-        if (adapter == null) {
-            adapter = new StoriesAdapter(getContext(), uniqueID,
-                    storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
-            setLayoutManager(layoutManager);
-            setAdapter(adapter);
-        } else {
-            adapter.refresh(storiesIds);
-            adapter.notifyDataSetChanged();
-        }
+        adapter = new StoriesAdapter(getContext(), uniqueID,
+                storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);
+        setLayoutManager(layoutManager);
+        setAdapter(adapter);
     }
 
     public void loadStoriesInner() throws DataException {

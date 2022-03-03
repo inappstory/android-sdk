@@ -174,12 +174,13 @@ public class ReaderManager {
                         story.tags, story.getSlidesCount(),
                         CallbackManager.getInstance().getSourceFromInt(source));
             }
+
+            ProfilingManager.getInstance().addTask("slide_show",
+                    currentStoryId + "_" +
+                            story.lastIndex);
         }
         final int pos = position;
 
-        ProfilingManager.getInstance().addTask("slide_show",
-                currentStoryId + "_" +
-                        InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId).lastIndex);
         InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId, listID);
         if (Sizes.isTablet()) {
             if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {
@@ -237,6 +238,7 @@ public class ReaderManager {
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
         if (InAppStoryService.isNull()) return;
         Story story2 = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+        if (story2 == null) return;
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(lastPos));
