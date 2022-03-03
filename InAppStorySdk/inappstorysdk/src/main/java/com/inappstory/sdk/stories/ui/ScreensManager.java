@@ -35,6 +35,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -206,9 +207,18 @@ public class ScreensManager {
         }
     }
 
+    private Long lastOpenTry = -1L;
+
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {
+        if (System.currentTimeMillis() - lastOpenTry < 1000) {
+            return;
+        }
+        lastOpenTry = System.currentTimeMillis();
+        closeGameReader();
+
         if (Sizes.isTablet() && outerContext instanceof AppCompatActivity) {
+            closeStoryReader(CloseStory.CUSTOM);
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
@@ -249,8 +259,6 @@ public class ScreensManager {
 
             }
         } else {
-            if (created == -1) return;
-            created = -1;
             if (currentScreen != null) {
                 currentScreen.forceFinish();
             }

@@ -70,6 +70,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
         return storiesIds.indexOf(id);
     }
 
+    
+
 
     AppearanceManager manager;
 
@@ -112,9 +114,16 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
         }
     }
 
+    Long clickTimestamp = -1L;
+
     @Override
     public void onItemClick(int index) {
         if (InAppStoryService.isNull()) return;
+
+        if (System.currentTimeMillis() - clickTimestamp < 1500) {
+            return;
+        }
+        clickTimestamp = System.currentTimeMillis();
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
             CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title,
