@@ -58,7 +58,7 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 
 SDK can be initialized from any point with `Context` access (`Application`, `Activity`, `Fragment`, etc.)
 
-```java
+```js
 	new InAppStoryManager.Builder()
 	    	.apiKey(apiKey) //String
 		.context(context) //Context
@@ -90,7 +90,7 @@ After initialization you can use `InAppStoryManager` class via `InAppStoryManage
 
 After SDK initialization you can load stories in `StoriesList`
 
-```java
+```js
 	storiesList.loadStories(); 
 ```
 This method also can be used to reload list (for example in PtR case)
