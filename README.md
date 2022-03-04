@@ -21,12 +21,12 @@ Add jitpack maven repo to the root `build.gradle` in the `repositories` section 
 ```
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
-```
+```gradle
 	implementation 'com.github.inappstory:android-sdk:1.6.0'
 ```
 
 Also for correct work in `dependencies` you need to add:
-```
+```gradle
 	implementation 'androidx.recyclerview:recyclerview:1.2.1'
 	implementation 'androidx.webkit:webkit:1.4.0'
 ```
@@ -35,7 +35,7 @@ Also for correct work in `dependencies` you need to add:
 
 If your project uses `ProGuard` obfuscation, add following rules to proguard config file:
 
-```
+```gradle
 	-keepattributes *Annotation*
 
 	-keepclassmembers class * {
@@ -58,7 +58,7 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 
 SDK can be initialized from any point with `Context` access (`Application`, `Activity`, `Fragment`, etc.)
 
-```
+```Java
 	new InAppStoryManager.Builder()
 	    	.apiKey(apiKey) //String
 		.context(context) //Context
@@ -69,7 +69,7 @@ SDK can be initialized from any point with `Context` access (`Application`, `Act
 >Method `create()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
 
 Context and userId - is not optional parameters. Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
-```
+```xml
 	<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
 
@@ -81,7 +81,7 @@ After initialization you can use `InAppStoryManager` class via `InAppStoryManage
 
 `StoriesList` is extends RecyclerView class and can be added like any `View` class. For example - via xml
 
-```
+```xml
 	<com.inappstory.sdk.stories.ui.list.StoriesList
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
@@ -90,7 +90,7 @@ After initialization you can use `InAppStoryManager` class via `InAppStoryManage
 
 After SDK initialization you can load stories in `StoriesList`
 
-```
+```Java
 	storiesList.loadStories(); 
 ```
 This method also can be used to reload list (for example in PtR case)
