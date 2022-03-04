@@ -3,7 +3,7 @@
 In stories you can add goods widget. It can be represented as horizontal list of items (default implementation with RecyclerView) or you can fully customize it.  
 If you want to use widget you should set `csCustomGoodsWidget` interface in common `AppearanceManager` instance. 
 Example:
-```
+```js
 public class GoodsItemData {
     public GoodsItemData(String sku, 
                          String title, 
@@ -60,7 +60,7 @@ AppearanceManager.getCommonInstance().csCustomGoodsWidget(new ICustomGoodsWidget
 ```
 If you want use default implementation (RecyclerView) than method `getWidgetView()` should return null. In that case you override other methods like `getItem()`, `getWidgetAppearance()`, `getDecoration()`, `onItemClick()` as you need. Otherwise that methods won't be called and could return null values. 
 Method `getItem()` returns next interface:
-```
+```js
 public interface ICustomGoodsItem {
     @NonNull
     View getView();
@@ -69,7 +69,7 @@ public interface ICustomGoodsItem {
 }
 ```
 Here is an example for this method:
-```
+```js
 @Override
 public ICustomGoodsItem getItem() {
     return new ICustomGoodsItem() {
@@ -89,7 +89,7 @@ public ICustomGoodsItem getItem() {
 }
 ```
 Also you can use method `getWidgetAppearance()` if you want customize other parts of widget (background line, close button). Also for simple usage you can override GoodsWidgetAppearanceAdapter() instead of interface. Method returns next interface:
-```
+```js
 public interface IGoodsWidgetAppearance {
     int getBackgroundHeight();
     int getBackgroundColor();
@@ -99,7 +99,7 @@ public interface IGoodsWidgetAppearance {
 }
 ```
 Here is an example for this method:
-```
+```js
 @Override
 public ICustomGoodsItem get() {
     return new GoodsWidgetAppearanceAdapter() {
@@ -112,7 +112,7 @@ public ICustomGoodsItem get() {
 ```
 In method `getSkus()` you get ids for goods items. When you get data for this items from your application, you should create array of GoodsItemData items and call getGoodsDataCallback.onSuccess(ArrayList<GoodsItemData> data). Also in case of any error in retreiving data for items, you should call `getGoodsDataCallback.onError().`
 Here is an example for this method:
-```
+```js
 @Override
 public void getSkus(ArrayList<String> skus, GetGoodsDataCallback callback) {
     ArrayList<GoodsItemData> goodsItemData = new ArrayList<>();
@@ -128,7 +128,7 @@ public void getSkus(ArrayList<String> skus, GetGoodsDataCallback callback) {
 }
 ```
 If you want to fully customize your widget, you should override `getWidgetView()` to return NonNull view. In that case all binding logic should be in `getSkus()` method. For example:
-```
+```js
 AppearanceManager.getCommonInstance().csCustomGoodsWidget(new ICustomGoodsWidget() {
                 RelativeLayout container;
 

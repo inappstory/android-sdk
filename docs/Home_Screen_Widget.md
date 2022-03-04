@@ -2,7 +2,7 @@
 
 When creating a widget, it is possible to add a list of stories. This will display the first 4 elements of the list.
 To do this, you need to set the properties of the list using the method:
-```
+```js
 AppearanceManager.csWidgetAppearance(
     Context context, //context, it is best to pass the widget context, required parameter  
     Class widgetClass //widget class (WidgetName.class), required parameter 
@@ -12,7 +12,7 @@ AppearanceManager.csWidgetAppearance(
 
 The list is a `GridView`, so when marking up the widget, you need to add the corresponding element .
 Example:
-```
+```xml
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -32,7 +32,7 @@ Example:
 ```
 
 In the manifest file of the widget, you must set a filter for events:
-```
+```xml
 <receiver
     android:name=".MyWidget"
     android:label="MyWidget">
@@ -52,7 +52,7 @@ In the manifest file of the widget, you must set a filter for events:
 ```
 
 The corresponding event constants are defined as follows:
-```
+```js
 public static final String UPDATE = "ias_w.UPDATE_WIDGETS";
 public static final String CLICK_ITEM = "ias_w.CLICK_ITEM";
 public static final String POSITION = "item_position";
@@ -65,7 +65,7 @@ public static final String UPDATE_AUTH = "ias_w.UPDATE_AUTH";
 
 In the `onReceive` method of the widget, you can subscribe to them.
 Example:
-```
+```js
 @Override
 public void onReceive(Context context, Intent intent) {
     if (intent.getAction().equalsIgnoreCase(UPDATE_SUCCESS)) {
@@ -94,7 +94,7 @@ public void onReceive(Context context, Intent intent) {
 ```
 
 Exmaple `createSuccessData()` function:
-```
+```js
 void createSuccessData(final Context context) {
     ComponentName thisAppWidget = new ComponentName(
             context.getPackageName(), getClass().getName());
@@ -126,7 +126,7 @@ void setClick(RemoteViews rv, Context context, int appWidgetId) {
 
 The `StoriesWidgetService.loadData (Context context)` method is used directly to load the list. It can be called, for example, from the `onUpdate` or `onEnabled` method of the widget. 
 Example:
-```
+```js
 @Override
 public void onUpdate(Context context, AppWidgetManager appWidgetManager,
                      int[] appWidgetIds) {
@@ -147,7 +147,7 @@ public void onUpdate(Context context, AppWidgetManager appWidgetManager,
 
 By default, the cells of the list of the widget are square, 70x70. It is specified in the `cs_widget_grid_item.xml` file. To change, you need to reload this file, while maintaining the identifiers and type of the container, title, image elements. The container element sets the proportions of the cells, so the cell size must be determined in it.
 Example:
-```
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"

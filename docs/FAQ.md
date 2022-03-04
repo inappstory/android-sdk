@@ -20,7 +20,7 @@ The global `AppearanceManager` uses customization via `csLoaderView`.
 #### 5) Defining the handler for buttons
 
 Use the `InAppStoryManager.getInstance().setUrlClickCallback(InAppStoryManager.UrlClickCallback callback)` method. Also in the callback, it may be necessary to add the closure of the story reader via:
-```
+```js
 InAppStoryManager.closeStoryReader();
 ```
 
@@ -36,7 +36,7 @@ In the callback of PTR method, add `storiesList.loadStories()`.
 #### 8) Changing tags
 
 Use methods: 
-```
+```js
 InAppStoryManager.getInstance().setTags(ArrayList<String> tags);
 InAppStoryManager.getInstance().addTags(ArrayList<String> tags);
 InAppStoryManager.getInstance().removeTags(ArrayList<String> tags);
@@ -70,6 +70,6 @@ In the file `constants.xml` in the `defaultMuted` variable set a value. If `true
 
 Change the value of the `InAppStoryManager.getInstance().soundOn` flag. 
 Example:
-```
+```js
 InAppStoryManager.getInstance().soundOn(true);
 ```

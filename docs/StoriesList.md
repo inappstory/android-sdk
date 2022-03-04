@@ -3,7 +3,7 @@
 
 `StoriesList` can be added like any `View` class. For example - via xml
 
-```
+```xml
 	<com.inappstory.sdk.stories.ui.list.StoriesList
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
@@ -12,7 +12,7 @@
 ```
 
 Or via code:
-```
+```java
     StoriesList storiesList = new StoriesList(context);
     addView(storiesList);
 ```
@@ -22,7 +22,7 @@ The `cs_listIsFavorite` attribute is responsible for whether we add a regular li
 ### Methods
 After SDK initialization you can load stories in `StoriesList`
 
-```
+```java
 	storiesList.loadStories(); 
 ```
 This method also can be used to reload list (for example in PtR case)
@@ -36,12 +36,12 @@ This method also can be used to reload list (for example in PtR case)
 
 The appearance of the stories list, as well as some elements of the story reader, is configured through the `AppearanceManager` class. It must be set globally for the library, or separately for the list before calling `loadStories()`.
 For a global setting, you must call the static method of the class:
-```
+```java
     AppearanceManager.setCommonInstance(globalAppearanceManager);
 ```
 
 To set the list you should call the instance method of the `StoriesList` class:
-```
+```java
     storiesList.setAppearanceManager(appearanceManager);
 ```
 
@@ -68,7 +68,7 @@ Also, there are several interfaces in the `AppearanceManager`.
 >**Attention!**  
 >If this interface is specified, other parameters, affecting the appearance of the list cell, will be ignored.
 
-```
+```java
     interface IStoriesListItem {
         View getView(); // here you need to pass View - the appearance of the cell
         View getVideoView(); // here you need to pass the View - the appearance of the cell in case the cells use the cover video
@@ -81,7 +81,7 @@ Also, there are several interfaces in the `AppearanceManager`.
 ```
 
 Example:
-```
+```java
     appearanceManager
         .csListItemInterface(new IStoriesListItem() {
             @Override
@@ -129,7 +129,7 @@ Example:
 #### IGetFavoriteListItem
 
 `IGetFavoriteListItem csFavoriteListItemInterface` - used to fully customize the favorite item in the list
-```
+```java
     public interface IGetFavoriteListItem {
         View getFavoriteItem();
         void bindFavoriteItem(View favCell, List<Integer> backgroundColors, int count);
@@ -147,7 +147,7 @@ Class `FavoriteImage` contains the methods:
 | `int getBackgroundColor()` | background color                                                                          |
 
 Example:
-```
+```java
     appearanceManager
         .csFavoriteListItemInterface(new IGetFavoriteListItem() {
             @Override
@@ -175,7 +175,7 @@ Example:
 For more information about `AppearanceManager` read [this](https://github.com/paperrose/InAppStorySdkKt/blob/master/docs/AppearanceManager.md).
 
 Also, to interact with the favorite cell (for example, to open a new window with a list of favorite stories), you need to add a handler:
-```
+```java
     storiesList.setOnFavoriteItemClick(new StoriesList.OnFavoriteItemClick() {
         @Override
         public void onClick() {
@@ -185,7 +185,7 @@ Also, to interact with the favorite cell (for example, to open a new window with
 ```
 
 Clicks to list cells also can be customized with next handler (for example - if you want to add click touch animations):
-```
+```java
     storiesList.setStoryTouchListener(StoryTouchListener touchListener);
     
     public interface StoryTouchListener {
@@ -198,7 +198,7 @@ Clicks to list cells also can be customized with next handler (for example - if 
 
 ### Callbacks
 `StoriesList` actions (loading and clicks) can be obtained with `ListCallback`. It can be set with custom implementation or with `ListCallbackAdapter` (default implementation for `ListCallback` with empty methods) class
-```
+```java
     storiesList.setCallback(ListCallback callback);
     
     public interface ListCallback {

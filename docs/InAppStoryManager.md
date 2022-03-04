@@ -4,7 +4,7 @@ Main SDK class. Must be initialized before loading stories from any point.
 ### Initialization
 
 InAppStoryManager can be initialized from any point with `Context` access (`Application`, `Activity`, `Fragment`, etc.) through `Builder` pattern
-```
+```java
   new InAppStoryManager.Builder()
       .apiKey(apiKey) //String
       .context(context) //Context
@@ -20,7 +20,7 @@ InAppStoryManager can be initialized from any point with `Context` access (`Appl
 >Method `create()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
 
 Context and userId - is not optional parameters. UserId can't be longer than 255 characters. Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
-```
+```xml
 	<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
 
@@ -29,7 +29,7 @@ Other `Builder` parameters are optional.
 Besides userId for user you can specify tags and placeholders. `Tags` used for targeting stories in `StoriesList` or onboardings. `Placeholders` - for replacing special variables in the story content.
 
 You can also set amount of space which SDK can use for caching files (images, games, videos) with `cacheSize` parameter. In can be set with one of constants.
-```
+```java
 	CacheSize.SMALL = 15mb; 
 	CacheSize.MEDIUM = 110mb; 
 	CacheSize.LARGE = 210mb;
@@ -55,7 +55,7 @@ After initialization you can use `InAppStoryManager` class and its methods via `
 
 #### Non-static methods
 InAppStoryManager is a singleton. You can use it's non-static methods like this:
-```
+```js
 	InAppStoryManager.getInstance().<method>
 ```
 
@@ -82,7 +82,7 @@ Besides this methods there are some callbacks setters
 ### Callbacks
 
 #### Enums used in methods:
-```
+```java
 public enum SourceType {
     SINGLE, ONBOARDING, LIST, FAVORITE
 }    
@@ -99,13 +99,13 @@ public enum ClickAction {
 #### Handlers that overrides default behaviour
 
 1) When you click on a button in a story, or on story with a deeplink in `storiesList`
-```
+```java
 InAppStoryManager.getInstance().setUrlClickCallback(UrlClickCallback callback);
 ```
 
 The `UrlClickCallback` interface contains the `onUrlClick(String url)` method, which must be overrided.
 Example:
-```
+```java
 InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlClickCallback() {
     @Override
     public void onUrlClick(String link) {
@@ -114,7 +114,7 @@ InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlCli
 });
 ```
 If you need to close the reader when the handler is triggered, you need to call static method ` InAppStoryManager.closeStoryReader()` in `onUrlClick`:
-```
+```java
 InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlClickCallback() {
     @Override
     public void onUrlClick(String link) {
@@ -123,7 +123,7 @@ InAppStoryManager.getInstance().setUrlClickCallback(new InAppStoryManager.UrlCli
 });
 ```
 The SDK has a default link handler:
-```
+```java
 Intent i = new Intent(Intent.ACTION_VIEW);
 i.setData(Uri.parse(object.getLink().getTarget()));
 startActivity(i);
@@ -132,7 +132,7 @@ startActivity(i);
 It is not used during overriding, so if you want to keep the processing of links that are not required by the application in their default form, then you need to take them into account when overriding.
 
 2) When you click on `Share` button in stories reader or when you click on `Share widget` in story or game 
-```
+```java
 InAppStoryManager.getInstance().setShareCallback(new InAppStoryManager.ShareCallback() {
     @Override
     public void onShare(String url, String title, String description, String shareId) {
@@ -143,7 +143,7 @@ InAppStoryManager.getInstance().setShareCallback(new InAppStoryManager.ShareCall
 
 #### Notifications from stories reader
 1) When you open story in reader (open Stories reader or swipe between its pages)
-```
+```java
 InAppStoryManager.getInstance().setShowStoryCallback(ShowStoryCallback showStoryCallback); 
 
 
@@ -173,7 +173,7 @@ public interface CloseStoryCallback {
 ```
 
 3) When you click on a button in a story, or on story with a deeplink in storiesList. Same as `setUrlClickCallback` but with additional story info.
-```
+```java
 InAppStoryManager.getInstance().setCallToActionCallback(CallToActionCallback callToActionCallback); 
 
 public interface CallToActionCallback {
@@ -188,7 +188,7 @@ public interface CallToActionCallback {
 ```
 
 4) When current visible slide loaded in reader
-```
+```java
 InAppStoryManager.getInstance().setShowSlideCallback(ShowSlideCallback showSlideCallback); 
 
 public interface ShowSlideCallback {
@@ -201,7 +201,7 @@ public interface ShowSlideCallback {
 ```
 
 5) When you click on `Share` button in stories reader. Does not override default share behaviour.
-```
+```java
 InAppStoryManager.getInstance().setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback); 
 
 public interface ClickOnShareStoryCallback {
@@ -214,7 +214,7 @@ public interface ClickOnShareStoryCallback {
 ```
 
 6) When you click on `Like` or `Dislike` buttons in stories reader.
-```
+```java
 InAppStoryManager.getInstance().setLikeDislikeStoryCallback(LikeDislikeStoryCallback likeDislikeStoryCallback); 
 
 public interface LikeDislikeStoryCallback {
@@ -235,7 +235,7 @@ public interface LikeDislikeStoryCallback {
 ```
 
 7) When you click on `Favorite` button in stories reader.
-```
+```java
 InAppStoryManager.getInstance().setFavoriteStoryCallback(FavoriteStoryCallback favoriteStoryCallback); 
 
 public interface FavoriteStoryCallback {
@@ -251,7 +251,7 @@ public interface FavoriteStoryCallback {
 #### Notifications from InAppStoryManager methods calls
 
 1) When you call `showStory` and successfully load single story info from server.
-```
+```java
 InAppStoryManager.getInstance().setSingleLoadCallback(SingleLoadCallback singleLoadCallback); 
 
 public interface SingleLoadCallback {
@@ -260,7 +260,7 @@ public interface SingleLoadCallback {
 ```
 
 2) When you call `showOnboardingStories` and successfully load stories info from server.
-```
+```java
 InAppStoryManager.getInstance().setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback); 
 
 public interface OnboardingLoadCallback {
@@ -269,7 +269,7 @@ public interface OnboardingLoadCallback {
 ```
 
 #### Catching load errors in SDK.
-```
+```java
 InAppStoryManager.getInstance().setErrorCallback(ErrorCallback errorCallback); 
 //can be set with custom implementation or with ErrorCallbackAdapter class
 
@@ -286,7 +286,7 @@ public interface ErrorCallback {
 ```
 
 #### Notifications from Game reader
-```
+```java
 InAppStoryManager.getInstance().setGameCallback(GameCallback gameCallback); 
 //can be set with custom implementation or with GameCallbackAdapter class
 

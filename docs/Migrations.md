@@ -12,7 +12,7 @@ If you don't want customize anything and use default implementations - you can c
 
 For custom stories list cell interface `IStoriesListItem` has changed. Now it returns cached file path instead of web url in `setImage` and `setVideo` methods and calls only after this resouces are cached.
 Also poster url and background color were removed from `setVideo`.
-```
+```java
 interface IStoriesListItem {
     void setImage(View itemView, String imageFilePath, int backgroundColor);
     void setVideo(View itemView, String videoFilePath);

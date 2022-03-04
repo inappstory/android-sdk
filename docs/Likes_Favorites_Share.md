@@ -7,7 +7,7 @@ To customize like/dislike icons - use `csLikeIcon` and `csDislikeIcon` propertie
 
 If you need to perform some action in the application after buttons clicks - use next callback:
 
-```
+```java
 InAppStoryManager.getInstance().setLikeDislikeStoryCallback(LikeDislikeStoryCallback likeDislikeStoryCallback); 
 
 public interface LikeDislikeStoryCallback {
@@ -33,7 +33,7 @@ To include share functionality in you app use `csHasShare(true)` property in `Ap
 To customize share icon - use `csShareIcon` property.
 
 If you need to perform some action in the application after buttons clicks - use next callback:
-```
+```java
 InAppStoryManager.getInstance().setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback); 
 
 public interface ClickOnShareStoryCallback {
@@ -46,7 +46,7 @@ public interface ClickOnShareStoryCallback {
 ```
 
 You can also customize default share behaviour (for example - to create your custom share dialog) with next handler:
-```
+```java
 InAppStoryManager.getInstance().setShareCallback(new InAppStoryManager.ShareCallback() {
     @Override
     public void onShare(String url, String title, String description, String shareId) {
@@ -61,7 +61,7 @@ To include favorite functionality in you app use `csHasFavorite(true)` property 
 To customize favorite icon - use `csFavoriteIcon` property.
 
 If you need to perform some action in the application after buttons clicks - use next callback:
-```
+```java
 InAppStoryManager.getInstance().setFavoriteStoryCallback(FavoriteStoryCallback favoriteStoryCallback); 
 //equivalent to 'FavoriteStory' event
 
@@ -76,7 +76,7 @@ public interface FavoriteStoryCallback {
 ```
 
 If you want to show only favorited stories in list - add `StoriesList` like this:
-```
+```xml
 <com.inappstory.sdk.stories.ui.list.StoriesList
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
@@ -85,11 +85,11 @@ If you want to show only favorited stories in list - add `StoriesList` like this
       
 ```
 You can also customize favorite cell in list with `csFavoriteListItemInterface` property in `AppearanceManager`
-More about this you can read [here](https://github.com/paperrose/InAppStorySdkKt/blob/master/docs/StoriesList.md#igetfavoritelistitem).
+More about this you can read [here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#igetfavoritelistitem).
 
 To interact with the favorite cell (for example, to open a new window with a list of favorite stories), you need to add a handler:
 
-```
+```java
     storiesList.setOnFavoriteItemClick(new StoriesList.OnFavoriteItemClick() {
         @Override
         public void onClick() {

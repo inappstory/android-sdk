@@ -2,8 +2,7 @@
     
 SDK allows to open one story by its id or slug.
     
-```
-
+```java
 InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager);
 InAppStoryManager.getInstance().showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback /*optional, may be null*/);
 
@@ -15,7 +14,7 @@ interface IShowStoryCallback {
 
 It may be necessary to perform some action in the application immediately after the stories is loaded. In can be done by setting next callback:
 
-```
+```java
 InAppStoryManager.getInstance().setSingleLoadCallback(SingleLoadCallback singleLoadCallback) ; 
 //equivalent to 'SingleLoad' event
 
@@ -27,7 +26,7 @@ public interface SingleLoadCallback {
 
 In case of loading error you can get it from ErrorCallback:
 
-```
+```java
 InAppStoryManager.getInstance().setErrorCallback(ErrorCallback errorCallback); 
 //can be set with custom implementation or with ErrorCallbackAdapter class
 
