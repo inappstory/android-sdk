@@ -98,4 +98,4 @@ This method also can be used to reload list (for example in PtR case)
 >**Attention!**  
 >This method can generate DataException if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
 
-For more information you can read [the full SDK guide](https://github.com/inappstory/android-sdk/blob/main/docs/Index.md), [FAQ](https://github.cominappstory/android-sdk/blob/main/docs/FAQ.md) or check [Samples](https://github.com/inappstory/Android-Example).
+For more information you can read [the full SDK guide](https://github.com/inappstory/android-sdk/blob/main/docs/Index.md), [FAQ](https://github.com/inappstory/android-sdk/blob/main/docs/FAQ.md) or check [Samples](https://github.com/inappstory/Android-Example).
