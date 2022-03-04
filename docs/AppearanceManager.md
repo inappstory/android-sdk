@@ -5,12 +5,12 @@ The appearance of the stories list, story reader, game reader and input dialogs 
 2) In onboardings or single calls.
 
 For a common setting, you must call the static method of the class:
-```
+```js
     AppearanceManager.setCommonInstance(appearanceManager);
 ```
 
 To set appearanceManager `StoriesList` you should call:
-```
+```js
     storiesList.setAppearanceManager(appearanceManager);
 ```
 
@@ -64,7 +64,7 @@ Another parameters can be set separately for list/onboardings/single:
 
 All setters returns `AppearanceManager` instance, and can be set like this:
 
-```
+```js
 appearanceManager
     .csListItemBorderColor(Color.RED)
     .csListItemMargin(0)
@@ -77,14 +77,14 @@ Also, there are several interfaces in the `AppearanceManager`.
 
 Next two uses to fully customize list cells:
 
-```
+```js
 appearanceManager
     .csListItemInterface(IStoriesListItem listItemInterface)
 ```
 
 and:
 
-```
+```js
 appearanceManager
     .csFavoriteListItemInterface(IGetFavoriteListItem favoriteListItemInterface);
 ```
@@ -97,14 +97,14 @@ This interface must be set for the common `AppearanceManager`.
 #### ILoaderView
 
 `ILoaderView iLoaderView` - used to substitute your own loader instead of the default loader
-```
+```js
 public interface ILoaderView {
     View getView();
 }
 ```
 
 Example:
-```
+```js
 globalAppearanceManager.csLoaderView(new ILoaderView() {
     @Override
     public View getView() {
@@ -121,7 +121,7 @@ globalAppearanceManager.csLoaderView(new ILoaderView() {
 #### IGameLoaderView
 
 `IGameLoaderView iGameLoaderView` - used to substitute your own loader instead of the default one on the games screen. This interface must be set for the global `AppearanceManager`.
-```
+```js
 public interface IGameLoaderView {
     View getView(); // When inheriting from an interface, View must return itself
     void setProgress(int progress, int max); // Progress values - from 0 to 100, 100 is transmitted as max 
