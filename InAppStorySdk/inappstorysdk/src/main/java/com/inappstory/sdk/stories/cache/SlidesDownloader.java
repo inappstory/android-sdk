@@ -8,6 +8,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,18 +79,32 @@ class SlidesDownloader {
 
     }
 
-    boolean checkIfPageLoaded(Pair<Integer, Integer> key) {
+    boolean checkIfPageLoaded(Pair<Integer, Integer> key) throws IOException {
         boolean remove = false;
         if (InAppStoryService.isNull()) return false;
         if (pageTasks.get(key) != null && pageTasks.get(key).loadType == 2) {
             for (String url : pageTasks.get(key).urls) {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
+                } else {
+                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                        synchronized (pageTasksLock) {
+                            pageTasks.get(key).loadType = 0;
+                        }
+                        return false;
+                    }
                 }
             }
             for (String url : pageTasks.get(key).videoUrls) {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
+                } else {
+                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                        synchronized (pageTasksLock) {
+                            pageTasks.get(key).loadType = 0;
+                        }
+                        return false;
+                    }
                 }
             }
             if (remove) {
@@ -122,8 +138,8 @@ class SlidesDownloader {
             for (int i = 0; i < sc; i++) {
                 Pair<Integer, Integer> kv = new Pair<>(storyId, i);
                 secondPriority.remove(kv);
-         //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
-         //           continue;
+                //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
+                //           continue;
                 if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
@@ -131,7 +147,7 @@ class SlidesDownloader {
             if (sc > currentStory.lastIndex) {
                 firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex+1));
+                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex + 1));
                 }
             }
             int ind = Math.min(firstPriority.size(), 2);
@@ -141,15 +157,15 @@ class SlidesDownloader {
                     Pair<Integer, Integer> nk = new Pair<>(adjacent, adjacentStory.lastIndex + 1);
                     secondPriority.remove(nk);
 
-        //            if (!(pageTasks.containsKey(nk) && pageTasks.get(nk).loadType != 0))
-                        firstPriority.add(ind, nk);
+                    //            if (!(pageTasks.containsKey(nk) && pageTasks.get(nk).loadType != 0))
+                    firstPriority.add(ind, nk);
                 }
 
                 Pair<Integer, Integer> ck = new Pair<>(adjacent, adjacentStory.lastIndex);
                 secondPriority.remove(ck);
 
-           //     if (!(pageTasks.containsKey(ck) && pageTasks.get(ck).loadType != 0))
-                    firstPriority.add(ind, ck);
+                //     if (!(pageTasks.containsKey(ck) && pageTasks.get(ck).loadType != 0))
+                firstPriority.add(ind, ck);
             }
         }
     }
@@ -172,7 +188,7 @@ class SlidesDownloader {
             if (sc > currentStory.lastIndex) {
                 firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex+1));
+                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex + 1));
                 }
             }
         }

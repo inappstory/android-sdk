@@ -65,39 +65,44 @@ public class Downloader {
         String key = cropUrl(url);
         if (cache.hasKey(key)) {
             File file = cache.get(key);
-            if (callback != null)
-                callback.onSuccess(file);
-            return file;
-        } else {
-            if (hash != null) {
-                ProfilingManager.getInstance().addTask("game_download", hash);
+            if (file != null && file.exists()) {
+                if (callback != null)
+                    callback.onSuccess(file);
+                return file;
             }
-            if (img == null) {
-                img = cache.getFileFromKey(key);
-            }
-            File file = downloadFile(url, img, callback);
-            cache.put(key, file);
-            if (callback != null)
-                callback.onSuccess(file);
-            return file;
         }
+        if (hash != null) {
+            ProfilingManager.getInstance().addTask("game_download", hash);
+        }
+        if (img == null) {
+            img = cache.getFileFromKey(key);
+        }
+        File file = downloadFile(url, img, callback);
+        cache.put(key, file);
+        if (callback != null)
+            callback.onSuccess(file);
+        return file;
+
     }
 
     @NonNull
     @WorkerThread
     public static boolean downloadOrGetGameFile(@NonNull String url, @NonNull String hashKey,
-                                             LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+                                                LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
         if (cache.hasKey(key)) {
-            return false;
-        } else {
-            if (img == null) {
-                img = cache.getFileFromKey(key);
+            File file = cache.get(key);
+            if (file != null && file.exists()) {
+                return false;
             }
-            File file = downloadFile(url, img, callback);
-            cache.put(key, file);
-            return true;
         }
+        if (img == null) {
+            img = cache.getFileFromKey(key);
+        }
+        File file = downloadFile(url, img, callback);
+        cache.put(key, file);
+        return true;
+
     }
 
 
