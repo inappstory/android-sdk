@@ -11,7 +11,7 @@ The library is intended for Phone and Tablet projects (not intended for Android 
 ## Adding to the project
 
 Add jitpack maven repo to the root `build.gradle` in the `repositories` section :
-```
+```gradle
 	allprojects {
 	    repositories {
 	        ...
