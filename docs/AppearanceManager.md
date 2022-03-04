@@ -96,7 +96,7 @@ This interface must be set for the common `AppearanceManager`.
 
 #### ILoaderView
 
-`ILoaderView iLoaderView` - used to substitute your own loader instead of the default loader
+`js ILoaderView iLoaderView` - used to substitute your own loader instead of the default loader
 ```js
 public interface ILoaderView {
     View getView();
