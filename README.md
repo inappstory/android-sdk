@@ -4,7 +4,7 @@ A library for embedding stories into an application with customization.
 
 ## Contents
 
-* [How to getting started](https://github.com/inappstory/android-sdk/blob/main/README.m#Getting started)
+* [How to getting started](https://github.com/inappstory/android-sdk/blob/main/README.md#getting-started)
 * [Migrations](https://github.com/inappstory/android-sdk/blob/main/docs/Migrations.md)
 * [InAppStoryManager](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md)
 	* [Initialization](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#initialization)
