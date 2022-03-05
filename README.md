@@ -15,8 +15,12 @@ A library for embedding stories into an application with customization.
 	* [Methods](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#methods)
 	* [Customization](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#customization)
 	* [Callbacks](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#callbacks)
+
 * [AppearanceManager](https://github.com/inappstory/android-sdk/blob/main/docs/AppearanceManager.md)
 * [Likes, Favorites, Share](https://github.com/inappstory/android-sdk/blob/main/docs/Likes_Favorites_Share.md)
+* [Tags and placeholders](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md)
+	* [Tags](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#tags)
+	* [Placeholders](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#placeholders)
 * [Work with sound](https://github.com/inappstory/android-sdk/blob/main/docs/Sound.md)
 * [Onboardings](https://github.com/inappstory/android-sdk/blob/main/docs/Onboardings.md)
 * [Single Stories](https://github.com/inappstory/android-sdk/blob/main/docs/Single_Stories.md)
