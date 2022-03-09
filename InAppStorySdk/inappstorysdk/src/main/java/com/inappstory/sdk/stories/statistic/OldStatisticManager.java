@@ -42,8 +42,10 @@ public class OldStatisticManager {
     }
 
     public void refreshTimer() {
-        if (currentEvent != null) {
-            currentEvent.timer = System.currentTimeMillis();
+        synchronized (eventLock) {
+            if (currentEvent != null) {
+                currentEvent.timer = System.currentTimeMillis();
+            }
         }
     }
 
@@ -126,7 +128,7 @@ public class OldStatisticManager {
 
             synchronized (openProcessLock) {
 
-             //   CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
+                //   CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
                 final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
                 NetworkClient.getApi().statisticsUpdate(
                         new StatisticSendObject(StatisticSession.getInstance().id,
@@ -187,6 +189,10 @@ public class OldStatisticManager {
         public int index;
         public long timer;
 
+        public StatisticEvent() {
+            this.timer = System.currentTimeMillis();
+        }
+
         public StatisticEvent(int eventType, int storyId, int index) {
             this.eventType = eventType;
             this.storyId = storyId;
@@ -205,29 +211,47 @@ public class OldStatisticManager {
     public StatisticEvent currentEvent;
 
     public void addStatisticEvent(int eventType, int storyId, int index) {
-        currentEvent = new StatisticEvent(eventType, storyId, index);
+        synchronized (eventLock) {
+            currentEvent = new StatisticEvent(eventType, storyId, index);
+        }
     }
 
     public void addArticleStatisticEvent(int eventType, int articleId) {
-        currentEvent = new StatisticEvent(eventType, articleEventCount, articleId, articleTimer);
+        synchronized (eventLock) {
+            currentEvent = new StatisticEvent(eventType, articleEventCount, articleId, articleTimer);
+        }
     }
 
 
     public int eventCount = 0;
 
 
+    private final Object eventLock = new Object();
+
     public void closeStatisticEvent(final Integer time, boolean clear) {
-        if (currentEvent != null) {
-            ArrayList statObject = new ArrayList<Object>();
-            statObject.add(currentEvent.eventType);
-            statObject.add(eventCount);
-            statObject.add(currentEvent.storyId);
-            statObject.add(currentEvent.index);
-            statObject.add(Math.max(time != null ? time : System.currentTimeMillis() - currentEvent.timer, 0));
-            putStatistic(statObject);
-            if (!clear)
-                currentEvent = null;
+
+        StatisticEvent event = new StatisticEvent();
+        int count = 0;
+        synchronized (eventLock) {
+            if (currentEvent == null) return;
+            event.eventType = currentEvent.eventType;
+            event.storyId = currentEvent.storyId;
+            event.index = currentEvent.index;
+            event.timer = currentEvent.timer;
+            count = eventCount;
         }
+
+        ArrayList statObject = new ArrayList<Object>();
+        statObject.add(event.eventType);
+        statObject.add(count);
+        statObject.add(event.storyId);
+        statObject.add(event.index);
+        statObject.add(Math.max(time != null ? time : System.currentTimeMillis() - event.timer, 0));
+        putStatistic(statObject);
+        if (!clear)
+            synchronized (eventLock) {
+                currentEvent = null;
+            }
     }
 
     public void closeStatisticEvent() {
@@ -236,7 +260,11 @@ public class OldStatisticManager {
     }
 
     public void addStatisticBlock(int storyId, int index) {
-        if (currentEvent != null)
+        boolean closeStat = false;
+        synchronized (eventLock) {
+            if (currentEvent != null) closeStat = true;
+        }
+        if (closeStat)
             closeStatisticEvent();
         addStatisticEvent(1, storyId, index);
     }
@@ -246,16 +274,21 @@ public class OldStatisticManager {
 
     public void addArticleOpenStatistic(int eventType, int articleId) {
         articleEventCount = eventCount;
-        if (currentEvent != null)
-            currentEvent.eventType = 2;
+
+        synchronized (eventLock) {
+            if (currentEvent != null)
+                currentEvent.eventType = 2;
+        }
         closeStatisticEvent();
         articleTimer = System.currentTimeMillis();
         addArticleStatisticEvent(eventType, articleId);
     }
 
     public void addLinkOpenStatistic() {
-        if (currentEvent != null)
-            currentEvent.eventType = 2;
+        synchronized (eventLock) {
+            if (currentEvent != null)
+                currentEvent.eventType = 2;
+        }
     }
 
     public void addDeeplinkClickStatistic(int id) {

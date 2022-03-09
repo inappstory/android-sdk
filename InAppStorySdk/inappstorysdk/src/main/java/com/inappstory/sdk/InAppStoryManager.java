@@ -735,7 +735,7 @@ public class InAppStoryManager {
         NetworkClient.setContext(context);
         this.userId = userId;
         if (INSTANCE != null) {
-            destroy();
+            localDestroy();
         }
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
@@ -755,19 +755,23 @@ public class InAppStoryManager {
     public static void logout() {
         if (INSTANCE != null) {
             if (InAppStoryService.isNotNull()) {
+                InAppStoryService.getInstance().listStoriesIds.clear();
                 InAppStoryService.getInstance().getListSubscribers().clear();
                 InAppStoryService.getInstance().getDownloadManager().cleanTasks();
                 InAppStoryService.getInstance().logout();
-            } else {
-
             }
-            INSTANCE = null;
         }
     }
 
     public static void destroy() {
         logout();
     }
+
+    private static void localDestroy() {
+        logout();
+        INSTANCE = null;
+    }
+
 
     private String localOpensKey;
 
