@@ -38,6 +38,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -198,39 +199,61 @@ public class StoryDownloadManager {
     }
 
 
+    private final Object lock = new Object();
     List<ReaderPageManager> subscribers = new ArrayList<>();
 
     public void addSubscriber(ReaderPageManager manager) {
-        subscribers.add(manager);
+        synchronized (lock) {
+            subscribers.add(manager);
+        }
+        Long errorTime = storyErrorDelayed.remove(manager.getStoryId());
+        if (errorTime != null) {
+            manager.storyLoadError();
+        }
     }
 
     public void removeSubscriber(ReaderPageManager manager) {
-        subscribers.remove(manager);
+        synchronized (lock) {
+            subscribers.remove(manager);
+        }
     }
 
     void slideLoaded(int storyId, int index) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.slideLoadedInCache(index);
-                return;
+        synchronized (lock) {
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.slideLoadedInCache(index);
+                    return;
+                }
             }
         }
     }
 
+    HashMap<Integer, Long> storyErrorDelayed = new HashMap<>();
+
     void storyError(int storyId) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.storyLoadError();
+        synchronized (lock) {
+            if (subscribers.isEmpty()) {
+                storyErrorDelayed.put(storyId, System.currentTimeMillis());
                 return;
+            }
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.storyLoadError();
+                    return;
+                }
             }
         }
     }
 
     void storyLoaded(int storyId) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.storyLoadedInCache();
-                return;
+
+        synchronized (lock) {
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.storyLoadedInCache();
+                    return;
+                }
             }
         }
     }
