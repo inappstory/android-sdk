@@ -444,24 +444,10 @@ public class StoryDownloadManager {
 
     public void loadStories(final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
-        NetworkCallback loadCallback = new LoadListCallback() {
-            @Override
-            protected void error424(String message) {
-                super.error424(message);
-                storyDownloader.loadStoryList(this, false);
-            }
-
-            @Override
-            public void onTimeout() {
-                onError(-1, "Timeout");
-            }
-
+        SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
             public void onSuccess(final List<Story> response) {
-                if (InAppStoryService.isNull()) {
-                    generateLoadStoriesError(callback);
-                    return;
-                }
+
                 final ArrayList<Story> stories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     stories.add(response.get(i));
@@ -580,17 +566,13 @@ public class StoryDownloadManager {
             }
 
             @Override
-            public void onError(int code, String message) {
-                generateLoadStoriesError(callback);
+            public void onError(String message) {
+                if (callback != null) {
+                    callback.onError();
+                }
             }
         };
-        NetworkCallback loadCallbackWithoutFav = new LoadListCallback() {
-            @Override
-            protected void error424(String message) {
-                super.error424(message);
-                storyDownloader.loadStoryList(this, false);
-            }
-
+        SimpleListCallback loadCallbackWithoutFav = new SimpleListCallback() {
 
             @Override
             public void onSuccess(final List<Story> response) {
@@ -621,23 +603,16 @@ public class StoryDownloadManager {
             }
 
             @Override
-            public void onError(int code, String message) {
-                generateLoadStoriesError(callback);
+            public void onError(String message) {
+                if (callback != null) {
+                    callback.onError();
+                }
             }
         };
 
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
     }
-
-    public void generateLoadStoriesError(LoadStoriesCallback callback) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError();
-        }
-        if (callback != null) {
-            callback.onError();
-        }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-    }
+    
 
     public void refreshLocals() {
         if (stories == null) return;

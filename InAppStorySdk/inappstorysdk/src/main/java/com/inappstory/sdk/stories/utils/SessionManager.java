@@ -48,6 +48,8 @@ public class SessionManager {
     public void useOrOpenSession(OpenSessionCallback callback) {
         if (checkOpenStatistic(callback)) {
             callback.onSuccess();
+        } else {
+            callback.onError();
         }
     }
 
