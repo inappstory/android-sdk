@@ -612,7 +612,7 @@ public class StoryDownloadManager {
 
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
     }
-    
+
 
     public void refreshLocals() {
         if (stories == null) return;
