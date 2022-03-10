@@ -505,9 +505,12 @@ public class ReaderPageFragment extends Fragment {
         if (storiesView != null)
             storiesView.destroyView();
 
-        parentManager.removeSubscriber(manager);
-        if (InAppStoryService.getInstance() != null)
-            InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
+        if (manager != null) {
+            if (parentManager != null)
+                parentManager.removeSubscriber(manager);
+            if (InAppStoryService.getInstance() != null)
+                InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
+        }
         super.onDestroyView();
     }
 }

@@ -38,6 +38,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -198,40 +199,60 @@ public class StoryDownloadManager {
         }
     }
 
-
+    private final Object lock = new Object();
     List<ReaderPageManager> subscribers = new ArrayList<>();
+    HashMap<Integer, Long> storyErrorDelayed = new HashMap<>();
 
     public void addSubscriber(ReaderPageManager manager) {
-        subscribers.add(manager);
+        synchronized (lock) {
+            subscribers.add(manager);
+        }
+        Long errorTime = storyErrorDelayed.remove(manager.getStoryId());
+        if (errorTime != null) {
+            manager.storyLoadError();
+        }
     }
 
     public void removeSubscriber(ReaderPageManager manager) {
-        subscribers.remove(manager);
+        synchronized (lock) {
+            subscribers.remove(manager);
+        }
     }
 
     void slideLoaded(int storyId, int index) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.slideLoadedInCache(index);
-                return;
+        synchronized (lock) {
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.slideLoadedInCache(index);
+                    return;
+                }
             }
         }
     }
 
+
     void storyError(int storyId) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.storyLoadError();
+        synchronized (lock) {
+            if (subscribers.isEmpty()) {
+                storyErrorDelayed.put(storyId, System.currentTimeMillis());
                 return;
+            }
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.storyLoadError();
+                    return;
+                }
             }
         }
     }
 
     void storyLoaded(int storyId) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.storyLoadedInCache();
-                return;
+        synchronized (lock) {
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.storyLoadedInCache();
+                    return;
+                }
             }
         }
     }
@@ -414,24 +435,10 @@ public class StoryDownloadManager {
 
     public void loadStories(final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
-        NetworkCallback loadCallback = new LoadListCallback() {
-            @Override
-            protected void error424(String message) {
-                super.error424(message);
-                storyDownloader.loadStoryList(this, false);
-            }
-
-            @Override
-            public void onTimeout() {
-                onError(-1, "Timeout");
-            }
+        SimpleListCallback loadCallback = new SimpleListCallback() {
 
             @Override
             public void onSuccess(final List<Story> response) {
-                if (InAppStoryService.isNull()) {
-                    generateLoadStoriesError(callback);
-                    return;
-                }
                 final ArrayList<Story> stories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     stories.add(response.get(i));
@@ -550,17 +557,13 @@ public class StoryDownloadManager {
             }
 
             @Override
-            public void onError(int code, String message) {
-                generateLoadStoriesError(callback);
+            public void onError(String message) {
+                if (callback != null) {
+                    callback.onError();
+                }
             }
         };
-        NetworkCallback loadCallbackWithoutFav = new LoadListCallback() {
-            @Override
-            protected void error424(String message) {
-                super.error424(message);
-                storyDownloader.loadStoryList(this, false);
-            }
-
+        SimpleListCallback loadCallbackWithoutFav = new SimpleListCallback() {
 
             @Override
             public void onSuccess(final List<Story> response) {
@@ -591,22 +594,13 @@ public class StoryDownloadManager {
             }
 
             @Override
-            public void onError(int code, String message) {
-                generateLoadStoriesError(callback);
+            public void onError(String message) {
+                if (callback != null) {
+                    callback.onError();
+                }
             }
         };
-
         storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
-    }
-
-    public void generateLoadStoriesError(LoadStoriesCallback callback) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError();
-        }
-        if (callback != null) {
-            callback.onError();
-        }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
     }
 
     public void refreshLocals() {
