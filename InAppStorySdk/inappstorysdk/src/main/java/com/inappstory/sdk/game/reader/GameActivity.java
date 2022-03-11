@@ -360,6 +360,8 @@ public class GameActivity extends AppCompatActivity {
         webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
     }
 
+
+
     private void initWebView() {
         webView.setWebChromeClient(new WebChromeClient() {
             boolean init = false;

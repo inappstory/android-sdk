@@ -117,9 +117,15 @@ public class GameManager {
         new JsApiClient(host).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {
-                host.loadJsApiResponse(result, cb);
+                host.loadJsApiResponse(modifyJsResult(result), cb);
             }
         });
+    }
+
+    private String modifyJsResult(String data) {
+        if (data == null) return "";
+        data.replaceAll("'", "\\'");
+        return data;
     }
 
     void tapOnLink(String link) {
