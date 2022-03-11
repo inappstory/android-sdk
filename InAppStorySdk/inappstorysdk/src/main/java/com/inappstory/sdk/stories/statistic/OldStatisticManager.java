@@ -29,6 +29,13 @@ public class OldStatisticManager {
         return INSTANCE;
     }
 
+    public void clear() {
+        if (statistic == null) {
+            statistic = new ArrayList<>();
+        }
+        statistic.clear();
+    }
+
     public void refreshCallbacks() {
         if (handler == null) handler = new Handler();
         try {
