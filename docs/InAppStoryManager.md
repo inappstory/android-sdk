@@ -95,7 +95,7 @@ public enum ClickAction {
     BUTTON, // button from stories reader
     SWIPE, // "swipe up" item in stories reader
     GAME, // button from game reader
-    DEEPLINK // stories with deeplink in storiesList
+    DEEPLINK, // stories with deeplink in storiesList
 }
 ```
 
