@@ -92,7 +92,7 @@ public enum CloseReader {
 }
 
 public enum ClickAction {
-    BUTTON, SWIPE, GAME
+    BUTTON, SWIPE, GAME, DEEPLINK
 }
 ```
 
