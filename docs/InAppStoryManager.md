@@ -92,7 +92,10 @@ public enum CloseReader {
 }
 
 public enum ClickAction {
-    BUTTON, SWIPE, GAME, DEEPLINK
+    BUTTON, // button from stories reader
+    SWIPE, // "swipe up" item in stories reader
+    GAME, // button from game reader
+    DEEPLINK // stories with deeplink in `storiesList`
 }
 ```
 
