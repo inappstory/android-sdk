@@ -23,7 +23,7 @@ interface IStoriesListItem {
 `CloseStoryReaderEvent` was removed from SDK. Use static method `InAppStoryManager.closeStoryReader()` instead
 
 
-### 1.5.4 and later
+#### 1.5.4 and later
 `ClickAction` DEEPLINK value was added. Here describes its usage in [setCallToActionCallback](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#notifications-from-stories-reader)
 
 ### From 1.3.x to 1.4.x
