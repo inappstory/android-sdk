@@ -28,11 +28,22 @@ public class SharedPreferencesAPI {
     /**
      * Сохранение строки
      */
-    public static void saveString(String key, String value) {
+    private static Object sharedPrefLock = new Object();
+
+
+    public static void saveString(final String key, final String value) {
         if (context == null) return;
-        SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        editor.putString(key, value);
-        editor.apply();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (sharedPrefLock) {
+                    SharedPreferences.Editor editor = getDefaultPreferences().edit();
+                    editor.putString(key, value);
+                    editor.apply();
+                }
+            }
+        }).start();
     }
 
 
@@ -65,11 +76,19 @@ public class SharedPreferencesAPI {
     /**
      * Сохранение массива строк
      */
-    public static void saveStringSet(String key, Set<String> value) {
+    public static void saveStringSet(final String key, final Set<String> value) {
         if (context == null) return;
-        SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        editor.putStringSet(key, value);
-        editor.apply();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (sharedPrefLock) {
+                    SharedPreferences.Editor editor = getDefaultPreferences().edit();
+                    editor.putStringSet(key, value);
+                    editor.apply();
+                }
+            }
+        }).start();
+
     }
 
 
@@ -106,11 +125,21 @@ public class SharedPreferencesAPI {
     /**
      * Удаление значения по ключу
      */
-    public static void remove(String key) {
+    public static void remove(final String key) {
         if (context == null) return;
-        SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        editor.remove(key);
-        editor.apply();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (sharedPrefLock) {
+                    SharedPreferences.Editor editor = getDefaultPreferences().edit();
+                    editor.remove(key);
+                    editor.apply();
+                }
+            }
+        }).start();
+
+
     }
 
 
@@ -166,6 +195,8 @@ public class SharedPreferencesAPI {
      * Очистка SharedPreferences
      */
     public static void clear() {
-        getDefaultPreferences().edit().clear().apply();
+        synchronized (sharedPrefLock) {
+            getDefaultPreferences().edit().clear().apply();
+        }
     }
 }

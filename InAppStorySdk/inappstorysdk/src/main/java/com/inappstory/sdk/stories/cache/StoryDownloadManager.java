@@ -452,12 +452,13 @@ public class StoryDownloadManager {
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     stories.add(response.get(i));
                 }
-                try {
-                    SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
                 if (StoriesWidgetService.getInstance() != null) {
+                    try {
+                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     StoriesWidgetService.getInstance().refreshFactory();
                 }
                 CsEventBus.getDefault().post(new ListLoadedEvent());
