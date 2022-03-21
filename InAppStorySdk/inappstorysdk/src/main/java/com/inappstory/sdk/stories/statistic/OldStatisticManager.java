@@ -83,6 +83,13 @@ public class OldStatisticManager {
         }
     };
 
+    public void clear() {
+        if (statistic == null) {
+            statistic = new ArrayList<>();
+        }
+        statistic.clear();
+    }
+
     public void previewStatisticEvent(ArrayList<Integer> vals) {
         boolean firstSend = (StatisticSession.getInstance().viewed.size() == 0);
         ArrayList<Object> sendObject = new ArrayList<Object>();
@@ -110,7 +117,7 @@ public class OldStatisticManager {
 
     public boolean sendStatistic() {
         if (!InAppStoryService.isConnected()) return true;
-        if (StatisticSession.getInstance().id == null || StatisticSession.needToUpdate())
+        if (StatisticSession.needToUpdate())
             return false;
         synchronized (openProcessLock) {
             if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {

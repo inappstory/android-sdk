@@ -191,8 +191,7 @@ public class InAppStoryService {
     void logout() {
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         SessionManager.getInstance().closeSession(true, false);
-        OldStatisticManager.getInstance().statistic.clear();
-        OldStatisticManager.getInstance().statistic = null;
+        OldStatisticManager.getInstance().clear();
     }
 
 

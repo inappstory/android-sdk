@@ -52,15 +52,19 @@ public class SessionManager {
     }
 
     public boolean checkOpenStatistic(final OpenSessionCallback callback) {
+        boolean checkOpen = false;
+        synchronized (openProcessLock) {
+            checkOpen = openProcess;
+        }
         if (InAppStoryService.isConnected()) {
-            if (StatisticSession.needToUpdate()) {
+            if (StatisticSession.needToUpdate() || checkOpen) {
                 openSession(callback);
                 return false;
             } else {
                 return true;
             }
         } else {
-            return true;
+            return false;
         }
     }
 
@@ -184,6 +188,10 @@ public class SessionManager {
             @Override
             public void onError(int code, String message) {
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().sessionError();
+                }
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 synchronized (openProcessLock) {
                     openProcess = false;
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -197,10 +205,7 @@ public class SessionManager {
                     });
                 }
 
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().sessionError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
+
                 super.onError(code, message);
 
             }
@@ -208,7 +213,6 @@ public class SessionManager {
             @Override
             public void onTimeout() {
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
-
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().sessionError();
                 }
