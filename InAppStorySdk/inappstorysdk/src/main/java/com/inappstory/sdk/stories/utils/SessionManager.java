@@ -239,11 +239,9 @@ public class SessionManager {
             List<List<Object>> stat = new ArrayList<>();
             stat.addAll(sendStatistic ? OldStatisticManager.getInstance().statistic :
                     new ArrayList<List<Object>>());
-            if (OldStatisticManager.getInstance() != null
-                    && OldStatisticManager.getInstance().statistic != null)
-                OldStatisticManager.getInstance().statistic.clear();
+            if (OldStatisticManager.getInstance() != null)
+                OldStatisticManager.getInstance().clear();
 
-            //  CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
             final String sessionCloseUID =
                     ProfilingManager.getInstance().addTask("api_session_close");
 
