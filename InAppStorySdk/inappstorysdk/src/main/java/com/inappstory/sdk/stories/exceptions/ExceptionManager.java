@@ -29,7 +29,8 @@ public class ExceptionManager {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                if (StatisticSession.getInstance().statisticPermissions.allowCrash)
+                if (StatisticSession.getInstance().statisticPermissions != null
+                        && StatisticSession.getInstance().statisticPermissions.allowCrash)
                     NetworkClient.getStatApi().sendException(
                             copiedLog.session,
                             copiedLog.timestamp / 1000,
