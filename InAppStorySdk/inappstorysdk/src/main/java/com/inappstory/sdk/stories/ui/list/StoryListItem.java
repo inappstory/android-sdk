@@ -132,7 +132,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int)(1.25 * manager.csListItemRadius()));
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
@@ -392,6 +392,9 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         });
     }
 
+    public Integer backgroundColor;
+    public ClickCallback callback;
+
     public void bind(Integer id,
                      String titleText,
                      Integer titleColor,
@@ -400,15 +403,18 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                      Integer backgroundColor,
                      boolean isOpened,
                      boolean hasAudio,
-                     String videoUrl, final ClickCallback callback) {
+                     String videoUrl,
+                     ClickCallback callback) {
+        this.callback = callback;
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (callback != null) callback.onItemClick(getAbsoluteAdapterPosition());
+                if (StoryListItem.this.callback != null)
+                    StoryListItem.this.callback.onItemClick(getAbsoluteAdapterPosition());
             }
         });
         if (getListItem != null) {
-            final int bColor = backgroundColor;
+            this.backgroundColor = backgroundColor;
             getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
@@ -416,12 +422,14 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
                     @Override
                     public void run(String path) {
-                        getListItem.setImage(itemView, path, bColor);
+                        getListItem.setImage(itemView, path,
+                                StoryListItem.this.backgroundColor);
                     }
 
                     @Override
                     public void error() {
-                        getListItem.setImage(itemView, null, bColor);
+                        getListItem.setImage(itemView, null,
+                                StoryListItem.this.backgroundColor);
                     }
                 });
             }
@@ -446,7 +454,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
         cv.setBackgroundColor(Color.TRANSPARENT);
         cv.setRadius(manager.csListItemRadius());
         if (border != null)
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int)(1.25 * manager.csListItemRadius()));
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
         if (title != null) {
             title.setText(titleText);
             if (titleColor != null) {
