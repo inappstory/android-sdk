@@ -432,7 +432,11 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                                 StoryListItem.this.backgroundColor);
                     }
                 });
+            } else {
+                getListItem.setImage(itemView, null,
+                        StoryListItem.this.backgroundColor);
             }
+
             getListItem.setOpened(itemView, isOpened);
             if (videoUrl != null) {
                 downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
