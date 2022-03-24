@@ -126,6 +126,8 @@ public class StoriesList extends RecyclerView {
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
+            feedId = typedArray.getString(R.styleable.StoriesList_cs_feedId);
+            if (feedId == null || feedId.isEmpty()) feedId = StoriesList.DEFAULT_FEED;
             typedArray.recycle();
         }
         addOnScrollListener(new RecyclerView.OnScrollListener() {
