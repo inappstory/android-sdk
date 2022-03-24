@@ -809,12 +809,12 @@ public class InAppStoryManager {
         return soundOn;
     }
 
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager) {
+    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feedId) {
 
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0));
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0);
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, feedId);
             }
             return;
         }
@@ -825,7 +825,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager);
+                    showLoadedOnboardings(response, outerContext, manager, feedId);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -834,7 +834,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager);
+                    showLoadedOnboardings(response, outerContext, manager, feedId);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -853,7 +853,7 @@ public class InAppStoryManager {
         ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size());
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feedId);
         }
     }
 
@@ -901,7 +901,7 @@ public class InAppStoryManager {
                                     if (add) notOpened.add(story);
                                 }
                             }
-                            showLoadedOnboardings(notOpened, outerContext, manager);
+                            showLoadedOnboardings(notOpened, outerContext, manager, feedId);
                         }
 
                         @Override
@@ -935,7 +935,7 @@ public class InAppStoryManager {
                                 }
                                 if (add) notOpened.add(story);
                             }
-                            showLoadedOnboardings(notOpened, outerContext, manager);
+                            showLoadedOnboardings(notOpened, outerContext, manager, feedId);
                         }
 
                         @Override
@@ -1006,7 +1006,7 @@ public class InAppStoryManager {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(StoriesList.DEFAULT_FEED, tags, outerContext, manager);
+        showOnboardingStoriesInner(ONBOARDING_FEED, tags, outerContext, manager);
     }
 
     /**
@@ -1016,8 +1016,11 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(Context context, final AppearanceManager manager) {
-        showOnboardingStories(StoriesList.DEFAULT_FEED, getTags(), context, manager);
+        showOnboardingStories(ONBOARDING_FEED, getTags(), context, manager);
     }
+
+
+    public static String ONBOARDING_FEED = "onboarding";
 
     private String lastSingleOpen = null;
 

@@ -158,15 +158,17 @@ public class StoriesList extends RecyclerView {
                     indexes.add(adapter.getStoriesIds().get(i));
             }
         }
-        OldStatisticManager.getInstance().previewStatisticEvent(indexes);
+        ArrayList<Integer> newIndexes =
+                OldStatisticManager.getInstance().newStatisticPreviews(indexes);
         try {
             if (StatisticManager.getInstance() != null) {
-                StatisticManager.getInstance().sendViewStory(indexes,
+                StatisticManager.getInstance().sendViewStory(newIndexes,
                         isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST);
             }
         } catch (Exception e) {
 
         }
+        OldStatisticManager.getInstance().previewStatisticEvent(indexes);
     }
 
     StoriesAdapter adapter;
@@ -395,6 +397,7 @@ public class StoriesList extends RecyclerView {
             this.appearanceManager = new AppearanceManager();
         }
     }
+
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
         adapter = new StoriesAdapter(getContext(), uniqueID,
                 storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback);

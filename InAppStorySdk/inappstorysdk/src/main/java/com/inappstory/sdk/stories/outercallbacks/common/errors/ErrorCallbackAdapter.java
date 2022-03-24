@@ -3,12 +3,12 @@ package com.inappstory.sdk.stories.outercallbacks.common.errors;
 public class ErrorCallbackAdapter implements ErrorCallback {
 
     @Override
-    public void loadListError() {
+    public void loadListError(String feedId) {
 
     }
 
     @Override
-    public void loadOnboardingError() {
+    public void loadOnboardingError(String feedId) {
 
     }
 

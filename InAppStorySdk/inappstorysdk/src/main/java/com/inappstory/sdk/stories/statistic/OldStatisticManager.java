@@ -90,6 +90,17 @@ public class OldStatisticManager {
         statistic.clear();
     }
 
+    public ArrayList<Integer> newStatisticPreviews(ArrayList<Integer> vals) {
+
+        ArrayList<Integer> sendObject = new ArrayList<>();
+        for (Integer val : vals) {
+            if (!StatisticSession.getInstance().viewed.contains(val)) {
+                sendObject.add(val);
+            }
+        }
+        return sendObject;
+    }
+
     public void previewStatisticEvent(ArrayList<Integer> vals) {
         boolean firstSend = (StatisticSession.getInstance().viewed.size() == 0);
         ArrayList<Object> sendObject = new ArrayList<Object>();
@@ -105,6 +116,7 @@ public class OldStatisticManager {
                 StatisticSession.getInstance().viewed.add(val);
             }
         }
+
         if (sendObject.size() > 2) {
             putStatistic(sendObject);
             eventCount++;
