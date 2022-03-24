@@ -1,13 +1,8 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.api.models.callbacks;
 
-import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.SimpleApiCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.lang.reflect.Type;
 import java.util.List;

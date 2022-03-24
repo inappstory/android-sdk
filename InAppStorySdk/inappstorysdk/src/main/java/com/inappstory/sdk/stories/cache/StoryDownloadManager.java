@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Pair;
@@ -9,7 +7,6 @@ import android.util.Pair;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.listwidget.ListLoadedEvent;
@@ -23,10 +20,9 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallbackAdapter;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
 import com.inappstory.sdk.stories.outerevents.SingleLoadError;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -39,7 +35,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class StoryDownloadManager {
@@ -442,7 +437,7 @@ public class StoryDownloadManager {
     private SlidesDownloader slidesDownloader;
 
 
-    public void loadStories(final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
+    public void loadStories(String feedId, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
@@ -610,8 +605,11 @@ public class StoryDownloadManager {
                 }
             }
         };
-
-        storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+        if (feedId != null) {
+            storyDownloader.loadStoryListByFeedId(feedId, isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+        } else {
+            storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+        }
     }
 
 

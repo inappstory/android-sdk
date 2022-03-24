@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.content.Intent;
 import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -11,16 +10,17 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.SimpleApiCallback;
+import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
-import static java.util.UUID.randomUUID;
 
 class StoryDownloader {
     StoryDownloader(DownloadStoryCallback callback, StoryDownloadManager manager) {
@@ -305,16 +304,86 @@ class StoryDownloader {
                 null, "id, background_color, image").enqueue(callback);
     }
 
-    public static void generateCommonLoadListError() {
+    public static void generateCommonLoadListError(String feedId) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError();
+            CallbackManager.getInstance().getErrorCallback().loadListError(feedId);
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
     }
 
+    void loadStoryListByFeedId(final String feedId, final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
+        if (InAppStoryService.isNull()) {
+            generateCommonLoadListError(feedId);
+            callback.onError("");
+            return;
+        }
+        if (InAppStoryService.isConnected()) {
+            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                @Override
+                public void onSuccess() {
+                    if (InAppStoryService.isNull()) return;
+                    final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
+                            ? "api_favorite_list" : "api_story_list");
+                    NetworkClient.getApi().getFeedById(
+                            feedId,
+                            ApiSettings.getInstance().getTestKey(),
+                            isFavorite ? 1 : 0,
+                            isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
+                            null)
+                            .enqueue(new LoadFeedCallback() {
+                                @Override
+                                public void onSuccess(Feed response) {
+                                    if (InAppStoryService.isNull()) {
+                                        generateCommonLoadListError(feedId);
+                                        callback.onError("");
+                                    } else {
+                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                        callback.onSuccess(response.stories);
+                                    }
+                                }
+
+                                @Override
+                                public void onTimeout() {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    generateCommonLoadListError(feedId);
+                                    callback.onError("");
+                                }
+
+                                @Override
+                                public void onError(int code, String message) {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    generateCommonLoadListError(feedId);
+                                    callback.onError(message);
+                                }
+
+
+                                @Override
+                                public void error424(String message) {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    generateCommonLoadListError(null);
+                                    callback.onError(message);
+                                    SessionManager.getInstance().closeSession(true, false);
+                                    loadStoryList(callback, isFavorite);
+                                }
+                            });
+                }
+
+                @Override
+                public void onError() {
+                    generateCommonLoadListError(feedId);
+                    callback.onError("");
+                }
+            });
+        } else {
+            generateCommonLoadListError(feedId);
+            callback.onError("");
+        }
+    }
+
+
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
         if (InAppStoryService.isNull()) {
-            generateCommonLoadListError();
+            generateCommonLoadListError(null);
             callback.onError("");
             return;
         }
@@ -334,7 +403,7 @@ class StoryDownloader {
                                 @Override
                                 public void onSuccess(List<Story> response) {
                                     if (InAppStoryService.isNull()) {
-                                        generateCommonLoadListError();
+                                        generateCommonLoadListError(null);
                                         callback.onError("");
                                     } else {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
@@ -345,14 +414,14 @@ class StoryDownloader {
                                 @Override
                                 public void onTimeout() {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError();
+                                    generateCommonLoadListError(null);
                                     callback.onError("");
                                 }
 
                                 @Override
                                 public void onError(int code, String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError();
+                                    generateCommonLoadListError(null);
                                     callback.onError(message);
                                 }
 
@@ -360,7 +429,7 @@ class StoryDownloader {
                                 @Override
                                 public void error424(String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError();
+                                    generateCommonLoadListError(null);
                                     callback.onError(message);
                                     SessionManager.getInstance().closeSession(true, false);
                                     loadStoryList(callback, isFavorite);
@@ -370,12 +439,12 @@ class StoryDownloader {
 
                 @Override
                 public void onError() {
-                    generateCommonLoadListError();
+                    generateCommonLoadListError(null);
                     callback.onError("");
                 }
             });
         } else {
-            generateCommonLoadListError();
+            generateCommonLoadListError(null);
             callback.onError("");
         }
     }

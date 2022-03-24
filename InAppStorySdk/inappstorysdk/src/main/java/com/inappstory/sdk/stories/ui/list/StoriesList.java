@@ -43,6 +43,18 @@ public class StoriesList extends RecyclerView {
 
     }
 
+    public static String DEFAULT_FEED = "default";
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
+    }
+
+    private String feedId = DEFAULT_FEED;
+
     public String getUniqueID() {
         return uniqueID;
     }
@@ -422,7 +434,7 @@ public class StoriesList extends RecyclerView {
                     if (callback != null) callback.loadError();
                 }
             };
-            InAppStoryService.getInstance().getDownloadManager().loadStories(lcallback, isFavoriteList, hasFavorite);
+            InAppStoryService.getInstance().getDownloadManager().loadStories(feedId, lcallback, isFavoriteList, hasFavorite);
 
         } else {
             new Handler().postDelayed(new Runnable() {
@@ -446,7 +458,7 @@ public class StoriesList extends RecyclerView {
                                 if (callback != null) callback.loadError();
                             }
                         };
-                        InAppStoryService.getInstance().getDownloadManager().loadStories(
+                        InAppStoryService.getInstance().getDownloadManager().loadStories(feedId,
                                 lcallback, isFavoriteList, hasFav);
                     }
                 }

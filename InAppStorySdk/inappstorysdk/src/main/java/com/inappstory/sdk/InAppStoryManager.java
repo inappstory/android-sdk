@@ -28,6 +28,8 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.BaseLog;
@@ -67,6 +69,7 @@ import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -854,12 +857,12 @@ public class InAppStoryManager {
         }
     }
 
-    private void showOnboardingStoriesInner(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    private void showOnboardingStoriesInner(final String feedId, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.isNull()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showOnboardingStoriesInner(tags, outerContext, manager);
+                    showOnboardingStoriesInner(feedId, tags, outerContext, manager);
                 }
             }, 1000);
             return;
@@ -877,60 +880,121 @@ public class InAppStoryManager {
 
                 final String onboardUID =
                         ProfilingManager.getInstance().addTask("api_onboarding");
-                NetworkClient.getApi().onboardingStories(localTags == null ? getTagsString() :
-                        localTags).enqueue(new NetworkCallback<List<Story>>() {
-                    @Override
-                    public void onSuccess(List<Story> response) {
-                        if (InAppStoryManager.isNull()) return;
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        List<Story> notOpened = new ArrayList<>();
-                        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                        if (opens == null) opens = new HashSet<>();
-                        for (Story story : response) {
-                            boolean add = true;
-                            for (String opened : opens) {
-                                if (Integer.toString(story.id).equals(opened)) {
-                                    add = false;
+                if (feedId != null) {
+                    NetworkClient.getApi().getOnboardingFeedById(feedId, localTags == null ? getTagsString() :
+                            localTags).enqueue(new LoadFeedCallback() {
+                        @Override
+                        public void onSuccess(Feed response) {
+                            if (InAppStoryManager.isNull()) return;
+                            ProfilingManager.getInstance().setReady(onboardUID);
+                            List<Story> notOpened = new ArrayList<>();
+                            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                            if (opens == null) opens = new HashSet<>();
+                            if (response.stories != null) {
+                                for (Story story : response.stories) {
+                                    boolean add = true;
+                                    for (String opened : opens) {
+                                        if (Integer.toString(story.id).equals(opened)) {
+                                            add = false;
+                                        }
+                                    }
+                                    if (add) notOpened.add(story);
                                 }
                             }
-                            if (add) notOpened.add(story);
+                            showLoadedOnboardings(notOpened, outerContext, manager);
                         }
-                        showLoadedOnboardings(notOpened, outerContext, manager);
-                    }
 
-                    @Override
-                    public Type getType() {
-                        return new StoryListType();
-                    }
-
-                    @Override
-                    public void onError(int code, String message) {
-
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        CsEventBus.getDefault().post(new OnboardingLoadError());
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
+                        @Override
+                        public void onError(int code, String message) {
+                            ProfilingManager.getInstance().setReady(onboardUID);
+                            loadOnboardingError(feedId);
                         }
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
-                    }
 
-                    @Override
-                    public void onTimeout() {
-                        super.onTimeout();
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                    }
-                });
+                        @Override
+                        public void onTimeout() {
+                            ProfilingManager.getInstance().setReady(onboardUID);
+                            loadOnboardingError(feedId);
+                        }
+                    });
+                } else {
+                    NetworkClient.getApi().onboardingStories(localTags == null ? getTagsString() :
+                            localTags).enqueue(new NetworkCallback<List<Story>>() {
+                        @Override
+                        public void onSuccess(List<Story> response) {
+                            if (InAppStoryManager.isNull()) return;
+                            ProfilingManager.getInstance().setReady(onboardUID);
+                            List<Story> notOpened = new ArrayList<>();
+                            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                            if (opens == null) opens = new HashSet<>();
+                            for (Story story : response) {
+                                boolean add = true;
+                                for (String opened : opens) {
+                                    if (Integer.toString(story.id).equals(opened)) {
+                                        add = false;
+                                    }
+                                }
+                                if (add) notOpened.add(story);
+                            }
+                            showLoadedOnboardings(notOpened, outerContext, manager);
+                        }
+
+                        @Override
+                        public Type getType() {
+                            return new StoryListType();
+                        }
+
+                        @Override
+                        public void onError(int code, String message) {
+                            ProfilingManager.getInstance().setReady(onboardUID);
+                            loadOnboardingError(null);
+                        }
+
+                        @Override
+                        public void onTimeout() {
+                            ProfilingManager.getInstance().setReady(onboardUID);
+                            loadOnboardingError(null);
+                        }
+                    });
+                }
             }
 
             @Override
             public void onError() {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                loadOnboardingError(feedId);
             }
 
         });
+    }
+
+    private void loadOnboardingError(String feedId) {
+        CsEventBus.getDefault().post(new OnboardingLoadError());
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(feedId);
+        }
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+    }
+
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(String feedId, List<String> tags, Context outerContext, AppearanceManager manager) {
+        showOnboardingStoriesInner(feedId, tags, outerContext, manager);
+    }
+
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(String feedId, Context context, final AppearanceManager manager) {
+        showOnboardingStories(feedId, getTags(), context, manager);
     }
 
 
@@ -942,9 +1006,8 @@ public class InAppStoryManager {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(tags, outerContext, manager);
+        showOnboardingStoriesInner(StoriesList.DEFAULT_FEED, tags, outerContext, manager);
     }
-
 
     /**
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
@@ -953,7 +1016,7 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(Context context, final AppearanceManager manager) {
-        showOnboardingStories(getTags(), context, manager);
+        showOnboardingStories(StoriesList.DEFAULT_FEED, getTags(), context, manager);
     }
 
     private String lastSingleOpen = null;
