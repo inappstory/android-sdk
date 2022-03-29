@@ -42,6 +42,8 @@ public class IASWebView extends WebView {
         getSettings().setTextZoom(100);
         getSettings().setAllowContentAccess(true);
         getSettings().setAllowFileAccess(true);
+        getSettings().setAllowFileAccessFromFileURLs(true);
+        getSettings().setAllowUniversalAccessFromFileURLs(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
