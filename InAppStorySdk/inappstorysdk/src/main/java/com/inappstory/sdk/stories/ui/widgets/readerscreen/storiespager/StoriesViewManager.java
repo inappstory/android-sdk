@@ -228,11 +228,11 @@ public class StoriesViewManager {
                 fonturls.add(converter.fromHtml(urlMatcher.group(1)).toString());
             }
         }
-        for (String fonturl : fonturls) {
+        /*for (String fonturl : fonturls) {
             String fileLink = Downloader.getFontFile(fonturl);
             if (fileLink != null)
                 layout = layout.replaceFirst(fonturl, "file://" + fileLink);
-        }
+        }*/
         return layout;
     }
 
