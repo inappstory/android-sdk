@@ -18,6 +18,8 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.share.ShareManager;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -316,36 +318,20 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
+        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             CallbackManager.getInstance().getShareCallback()
-                    .onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
+                    .onShare(shareObj.getText(), shareObj.getTitle(), data, id);
         } else {
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObj.getTitle());
-            sendIntent.putExtra(Intent.EXTRA_TEXT, shareObj.getUrl());
-            sendIntent.setType("text/plain");
-            int shareFlag = FLAG_UPDATE_CURRENT;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                shareFlag |= FLAG_IMMUTABLE;
-            }
-            PendingIntent pi = PendingIntent.getBroadcast(storiesView.getContext(), 989,
-                    new Intent(storiesView.getContext(), StoryShareBroadcastReceiver.class),
-                    shareFlag);
-            Intent finalIntent = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-                // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ScreensManager.getInstance().setTempShareId(id);
                 ScreensManager.getInstance().setTempShareStoryId(storyId);
-                storiesView.getContext().startActivity(finalIntent);
             } else {
-                finalIntent = Intent.createChooser(sendIntent, null);
-                //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                storiesView.getContext().startActivity(finalIntent);
                 ScreensManager.getInstance().setOldTempShareId(id);
                 ScreensManager.getInstance().setOldTempShareStoryId(storyId);
+            }
+            if (storiesView.getContext() instanceof Activity) {
+                new ShareManager().shareDefault((Activity) storiesView.getContext(), shareObj);
             }
         }
     }
