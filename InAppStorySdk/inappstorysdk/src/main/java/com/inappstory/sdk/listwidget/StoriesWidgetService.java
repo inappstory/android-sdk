@@ -39,7 +39,7 @@ public class StoriesWidgetService extends RemoteViewsService {
 
 
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
-    private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
+    private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
 
     public static void loadData(@NonNull Context context) throws DataException {
         if (AppearanceManager.csWidgetAppearance() == null || AppearanceManager.csWidgetAppearance().getWidgetClass() == null)
@@ -50,9 +50,9 @@ public class StoriesWidgetService extends RemoteViewsService {
                     .cacheDirPath(context.getCacheDir().getAbsolutePath())
                     .apiKey(context.getResources().getString(R.string.csApiKey))
                     .setWebUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
-                            "https://api.test.inappstory.com/" : "https://api.inappstory.com/")
+                            "https://api.test.inappstory.com/" : "https://api.inappstory.ru/")
                     .cmsUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
-                            "https://api.test.inappstory.com/" : "https://api.inappstory.com/");
+                            "https://api.test.inappstory.com/" : "https://api.inappstory.ru/");
         }
 
         if (isConnected(context)) {

@@ -454,7 +454,7 @@ public class InAppStoryManager {
     Map<String, String> defaultPlaceholders = new HashMap<>();
 
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
-    private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
+    private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
 
     public String getApiKey() {
         return API_KEY;

@@ -63,10 +63,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     public void restartVideo() {
         stopVideo();
-
         playVideo();
     }
-
 
     private void logMethod(String payload) {
         InAppStoryManager.showDLog("JS_method_call", manager.storyId + " " + payload);
