@@ -197,7 +197,7 @@ public class StoriesViewManager {
 
     void setWebViewSettings(Story story) throws IOException {
         String innerWebData = story.pages.get(index);
-        String layout = story.getLayout();//getLayoutWithFonts(story.getLayout());
+        String layout = getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {
