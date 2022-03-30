@@ -217,7 +217,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public void run() {
                     String s0 = injectUnselectableStyle(lt);
-                    loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
+                    loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
                 }
             });
         } else {
@@ -284,9 +284,10 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         if (!clientIsSet) {
             addJavascriptInterface(new WebAppInterface(getContext(),
                     getManager()), "Android");
-            setWebViewClient(new WebViewClient() {
+           /* *
+           setWebViewClient(new WebViewClient() {
 
-                @Override
+               @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                     String img = url;
                     File file = getManager().getCurrentFile(img);
@@ -330,6 +331,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
                 }
             });
+            * */
             setWebChromeClient(new WebChromeClient() {
                 @Nullable
                 @Override
@@ -368,6 +370,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             });
 
         }
+        clientIsSet = true;
     }
 
 

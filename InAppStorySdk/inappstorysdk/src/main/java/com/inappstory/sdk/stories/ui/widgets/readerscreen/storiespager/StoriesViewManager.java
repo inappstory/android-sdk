@@ -197,7 +197,7 @@ public class StoriesViewManager {
 
     void setWebViewSettings(Story story) throws IOException {
         String innerWebData = story.pages.get(index);
-        String layout = getLayoutWithFonts(story.getLayout());
+        String layout = story.getLayout();//getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {
@@ -228,11 +228,11 @@ public class StoriesViewManager {
                 fonturls.add(converter.fromHtml(urlMatcher.group(1)).toString());
             }
         }
-        /*for (String fonturl : fonturls) {
+        for (String fonturl : fonturls) {
             String fileLink = Downloader.getFontFile(fonturl);
             if (fileLink != null)
                 layout = layout.replaceFirst(fonturl, "file://" + fileLink);
-        }*/
+        }
         return layout;
     }
 
