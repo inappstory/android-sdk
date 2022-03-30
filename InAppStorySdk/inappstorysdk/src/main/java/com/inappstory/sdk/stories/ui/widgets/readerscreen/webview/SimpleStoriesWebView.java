@@ -215,7 +215,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public void run() {
                     String s0 = injectUnselectableStyle(lt);
-                    loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
+                    loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
                 }
             });
         } else {

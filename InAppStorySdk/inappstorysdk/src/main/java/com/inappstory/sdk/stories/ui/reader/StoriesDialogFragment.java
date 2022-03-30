@@ -168,7 +168,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             if (((BackPressHandler) frag).onBackPressed())
                 return true;
         }
-        dismiss();
+        dismissAllowingStateLoss();
         return true;
     }
 
@@ -189,7 +189,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
             case android.R.id.home:
 
-                dismiss();
+                dismissAllowingStateLoss();
                 return true;
         }
         return false;
@@ -198,7 +198,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void closeStoryReaderEvent() {
         InAppStoryService.getInstance().getListReaderConnector().closeReader();
-        dismiss();
+        dismissAllowingStateLoss();
     }
 
 
@@ -231,7 +231,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             t.addToBackStack("STORIES_FRAGMENT");
             t.commitAllowingStateLoss();
         } else {
-            dismiss();
+            dismissAllowingStateLoss();
         }
 
     }

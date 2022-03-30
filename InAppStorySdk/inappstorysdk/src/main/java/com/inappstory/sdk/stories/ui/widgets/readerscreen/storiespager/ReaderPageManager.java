@@ -108,6 +108,8 @@ public class ReaderPageManager {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                     storyId
             );
+
+            if (story == null) return;
             switch (object.getLink().getType()) {
                 case "url":
                     CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
@@ -269,6 +271,8 @@ public class ReaderPageManager {
     public void openSlideByIndex(int index) {
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(storyId);
+
+        if (story == null) return;
         if (index < 0) index = 0;
         if (story.getSlidesCount() <= index) index = 0;
         story.setLastIndex(index);
@@ -291,6 +295,7 @@ public class ReaderPageManager {
 
     public void resetCurrentDuration() {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         this.durations.clear();
         this.durations.addAll(story.durations);
         //  this.durations.set(slideIndex, story.durations.get(slideIndex));
@@ -335,6 +340,7 @@ public class ReaderPageManager {
     public void nextSlide() {
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        if (story == null) return;
         timerManager.setTimerDuration(0);
         if (slideIndex < story.getSlidesCount() - 1) {
 
@@ -371,6 +377,7 @@ public class ReaderPageManager {
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
 
+        if (story == null) return;
         timerManager.setTimerDuration(0);
         if (slideIndex > 0) {
 
