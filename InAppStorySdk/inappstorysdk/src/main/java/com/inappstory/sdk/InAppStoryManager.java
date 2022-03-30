@@ -907,32 +907,36 @@ public class InAppStoryManager {
                     public void onError(int code, String message) {
 
                         ProfilingManager.getInstance().setReady(onboardUID);
-                        CsEventBus.getDefault().post(new OnboardingLoadError());
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
-                        }
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+
+                        loadOnboardingError();
                     }
 
                     @Override
                     public void onTimeout() {
                         super.onTimeout();
                         ProfilingManager.getInstance().setReady(onboardUID);
+
+                        loadOnboardingError();
                     }
                 });
             }
 
             @Override
             public void onError() {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                loadOnboardingError();
             }
 
         });
     }
 
+
+    private void loadOnboardingError() {
+        CsEventBus.getDefault().post(new OnboardingLoadError());
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
+        }
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+    }
 
     /**
      * Function for loading onboarding stories with custom tags
