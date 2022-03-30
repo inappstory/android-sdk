@@ -284,10 +284,10 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         if (!clientIsSet) {
             addJavascriptInterface(new WebAppInterface(getContext(),
                     getManager()), "Android");
-           /* *
-           setWebViewClient(new WebViewClient() {
 
-               @Override
+            setWebViewClient(new WebViewClient() {
+
+                @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                     String img = url;
                     File file = getManager().getCurrentFile(img);
@@ -331,7 +331,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
                 }
             });
-            * */
+
             setWebChromeClient(new WebChromeClient() {
                 @Nullable
                 @Override

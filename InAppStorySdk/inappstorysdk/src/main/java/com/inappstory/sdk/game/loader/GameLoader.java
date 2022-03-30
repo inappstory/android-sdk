@@ -28,7 +28,7 @@ import static java.util.UUID.randomUUID;
 
 public class GameLoader {
 
-    private static final String INDEX_MANE = "/index.html";
+    private static final String INDEX_NAME = "/index.html";
     public static final String FILE = "file://";
 
     private GameLoader() {
@@ -121,7 +121,7 @@ public class GameLoader {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    File fl = new File(file.getAbsolutePath() + INDEX_MANE);
+                    File fl = new File(file.getAbsolutePath() + INDEX_NAME);
                     try {
                         callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
                     } catch (Exception e) {
