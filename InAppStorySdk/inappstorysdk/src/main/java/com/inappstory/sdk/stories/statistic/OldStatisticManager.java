@@ -50,6 +50,7 @@ public class OldStatisticManager {
     }
 
     public static Object openProcessLock = new Object();
+    public static Object previewLock = new Object();
     public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
 
     public OldStatisticManager() {
@@ -109,12 +110,16 @@ public class OldStatisticManager {
 
         ArrayList<Integer> addedVals = new ArrayList<>();
         int count = 0;
-        for (Integer val : vals) {
-            if (!StatisticSession.getInstance().viewed.contains(val)) {
-                sendObject.add(val);
-                count++;
-                StatisticSession.getInstance().viewed.add(val);
+
+        synchronized (previewLock) {
+            for (Integer val : vals) {
+                if (!StatisticSession.getInstance().viewed.contains(val)) {
+                    sendObject.add(val);
+                    count++;
+                    StatisticSession.getInstance().viewed.add(val);
+                }
             }
+
         }
 
         if (sendObject.size() > 2) {
@@ -146,12 +151,15 @@ public class OldStatisticManager {
         try {
 
             synchronized (openProcessLock) {
+                final List<List<Object>> sendingStatistic = new ArrayList<>();
+                sendingStatistic.addAll(statistic);
+                statistic.clear();
 
                 //   CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
                 final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
                 NetworkClient.getApi().statisticsUpdate(
                         new StatisticSendObject(StatisticSession.getInstance().id,
-                                statistic)).enqueue(new NetworkCallback<StatisticResponse>() {
+                                sendingStatistic)).enqueue(new NetworkCallback<StatisticResponse>() {
                     @Override
                     public void onSuccess(StatisticResponse response) {
                         ProfilingManager.getInstance().setReady(updateUUID);
@@ -163,6 +171,9 @@ public class OldStatisticManager {
                         super.onError(code, message);
                         ProfilingManager.getInstance().setReady(updateUUID);
                         cleanStatistic();
+                        synchronized (openProcessLock) {
+                            statistic.addAll(sendingStatistic);
+                        }
                     }
 
                     @Override
@@ -170,6 +181,9 @@ public class OldStatisticManager {
                         super.onTimeout();
                         ProfilingManager.getInstance().setReady(updateUUID);
                         cleanStatistic();
+                        synchronized (openProcessLock) {
+                            statistic.addAll(sendingStatistic);
+                        }
                     }
 
                     @Override
@@ -178,10 +192,6 @@ public class OldStatisticManager {
                     }
                 });
 
-            }
-            synchronized (openProcessLock) {
-                if (statistic != null)
-                    statistic.clear();
             }
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
@@ -193,10 +203,7 @@ public class OldStatisticManager {
     public void cleanStatistic() {
         StatisticSession.getInstance();
         StatisticSession.updateStatistic();
-        synchronized (openProcessLock) {
-            if (statistic == null) return;
-            statistic.clear();
-        }
+
     }
 
     public static boolean openProcess = false;
