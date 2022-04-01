@@ -64,6 +64,8 @@ public class SessionManager {
                 return true;
             }
         } else {
+            if (callback != null)
+                callback.onError();
             return false;
         }
     }
