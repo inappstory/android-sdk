@@ -605,8 +605,8 @@ public class StoryDownloadManager {
                 }
             }
         };
-        if (feedId != null) {
-            storyDownloader.loadStoryListByFeedId(feedId, isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+        if (feedId != null && !isFavorite) {
+            storyDownloader.loadStoryListByFeedId(feedId, loadCallback);
         } else {
             storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
         }

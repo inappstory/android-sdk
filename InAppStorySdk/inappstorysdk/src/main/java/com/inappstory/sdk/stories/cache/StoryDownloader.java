@@ -311,7 +311,7 @@ class StoryDownloader {
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
     }
 
-    void loadStoryListByFeedId(final String feedId, final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
+    void loadStoryListByFeedId(final String feedId, final SimpleApiCallback<List<Story>> callback) {
         if (InAppStoryService.isNull()) {
             generateCommonLoadListError(feedId);
             callback.onError("");
@@ -322,13 +322,12 @@ class StoryDownloader {
                 @Override
                 public void onSuccess() {
                     if (InAppStoryService.isNull()) return;
-                    final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
-                            ? "api_favorite_list" : "api_story_list");
+                    final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
                     NetworkClient.getApi().getFeedById(
                             feedId,
                             ApiSettings.getInstance().getTestKey(),
-                            isFavorite ? 1 : 0,
-                            isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
+                            0,
+                            InAppStoryService.getInstance().getTagsString(),
                             null)
                             .enqueue(new LoadFeedCallback() {
                                 @Override
@@ -363,7 +362,7 @@ class StoryDownloader {
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
                                     SessionManager.getInstance().closeSession(true, false);
-                                    loadStoryList(callback, isFavorite);
+                                    loadStoryListByFeedId(feedId, callback);
                                 }
                             });
                 }
