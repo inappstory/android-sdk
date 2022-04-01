@@ -94,9 +94,11 @@ public class OldStatisticManager {
     public ArrayList<Integer> newStatisticPreviews(ArrayList<Integer> vals) {
 
         ArrayList<Integer> sendObject = new ArrayList<>();
-        for (Integer val : vals) {
-            if (!StatisticSession.getInstance().viewed.contains(val)) {
-                sendObject.add(val);
+        synchronized (previewLock) {
+            for (Integer val : vals) {
+                if (!StatisticSession.getInstance().viewed.contains(val)) {
+                    sendObject.add(val);
+                }
             }
         }
         return sendObject;
@@ -107,19 +109,13 @@ public class OldStatisticManager {
         ArrayList<Object> sendObject = new ArrayList<Object>();
         sendObject.add(5);
         sendObject.add(eventCount);
-
-        ArrayList<Integer> addedVals = new ArrayList<>();
-        int count = 0;
-
         synchronized (previewLock) {
             for (Integer val : vals) {
                 if (!StatisticSession.getInstance().viewed.contains(val)) {
                     sendObject.add(val);
-                    count++;
                     StatisticSession.getInstance().viewed.add(val);
                 }
             }
-
         }
 
         if (sendObject.size() > 2) {
