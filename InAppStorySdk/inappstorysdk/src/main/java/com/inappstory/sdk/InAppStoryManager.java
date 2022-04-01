@@ -189,7 +189,9 @@ public class InAppStoryManager {
      * @return {@link ArrayList} of tags
      */
     public ArrayList<String> getTags() {
-        return tags;
+        synchronized (tagsLock) {
+            return tags;
+        }
     }
 
     //Test
@@ -338,8 +340,10 @@ public class InAppStoryManager {
      * @return {@link String} with tags joined by comma
      */
     public String getTagsString() {
-        if (tags == null) return null;
-        return TextUtils.join(",", tags);
+        synchronized (tagsLock) {
+            if (tags == null) return null;
+            return TextUtils.join(",", tags);
+        }
     }
 
     /**
@@ -347,22 +351,29 @@ public class InAppStoryManager {
      *
      * @param tags (tags)
      */
-    //Test
+
     public void setTags(ArrayList<String> tags) {
-        this.tags = tags;
+
+        synchronized (tagsLock) {
+            this.tags = tags;
+        }
     }
+
+    private Object tagsLock = new Object();
 
     /**
      * use to customize tags in runtime. Adds tags to array.
      *
      * @param newTags (newTags) - list of additional tags
      */
-    //Test
+
     public void addTags(ArrayList<String> newTags) {
-        if (newTags == null || newTags.isEmpty()) return;
-        if (tags == null) tags = new ArrayList<>();
-        for (String tag : newTags) {
-            addTag(tag);
+        synchronized (tagsLock) {
+            if (newTags == null || newTags.isEmpty()) return;
+            if (tags == null) tags = new ArrayList<>();
+            for (String tag : newTags) {
+                addTag(tag);
+            }
         }
     }
 
@@ -371,11 +382,13 @@ public class InAppStoryManager {
      *
      * @param removedTags (removedTags) - list of removing tags
      */
-    //Test
+
     public void removeTags(ArrayList<String> removedTags) {
-        if (tags == null || removedTags == null || removedTags.isEmpty()) return;
-        for (String tag : removedTags) {
-            removeTag(tag);
+        synchronized (tagsLock) {
+            if (tags == null || removedTags == null || removedTags.isEmpty()) return;
+            for (String tag : removedTags) {
+                removeTag(tag);
+            }
         }
     }
 
@@ -730,7 +743,10 @@ public class InAppStoryManager {
                              Map<String, String> placeholders) {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
-        this.tags = tags;
+
+        synchronized (tagsLock) {
+            this.tags = tags;
+        }
         if (placeholders != null)
             setPlaceholders(placeholders);
         this.API_KEY = apiKey;

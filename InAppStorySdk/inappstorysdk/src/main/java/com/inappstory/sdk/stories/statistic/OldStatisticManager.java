@@ -199,7 +199,6 @@ public class OldStatisticManager {
     public void cleanStatistic() {
         StatisticSession.getInstance();
         StatisticSession.updateStatistic();
-
     }
 
     public static boolean openProcess = false;
