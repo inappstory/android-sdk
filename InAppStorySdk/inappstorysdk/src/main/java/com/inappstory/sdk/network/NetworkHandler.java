@@ -93,7 +93,7 @@ public final class NetworkHandler implements InvocationHandler {
             requestLog.headers.add(
                     new ApiLogRequestHeader("auth-session-id", StatisticSession.getInstance().id));
         }
-        InAppStoryManager.showDLog("InAppStory_Network", req.getHeaders().toString());
+        InAppStoryManager.showDLog("InAppStory_Network", req.getHeadersString());
         if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
             InAppStoryManager.showDLog("InAppStory_Network", req.getBody());
             requestLog.body = req.getBody();

@@ -23,6 +23,11 @@ public final class Request<T> {
         return headers;
     }
 
+    public String getHeadersString() {
+        if (headers == null) return "";
+        return headers.toString();
+    }
+
     public HashMap<String, String> getVars() {
         return vars;
     }
