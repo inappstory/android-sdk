@@ -33,6 +33,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 
 import java.util.HashSet;
+import java.util.List;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
@@ -112,7 +113,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
+        List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories();
+        for (Story story : stories)
             story.setLastIndex(0);
         cleaned = true;
     }

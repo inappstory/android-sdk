@@ -39,7 +39,10 @@ import java.util.List;
 
 public class StoryDownloadManager {
     public List<Story> getStories() {
-        return stories;
+        synchronized (storiesLock) {
+            if (stories == null) stories = new ArrayList<>();
+            return stories;
+        }
     }
 
     private Context context;
@@ -56,16 +59,18 @@ public class StoryDownloadManager {
 
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,slides_screenshot_share";
 
+    Object storiesLock = new Object();
+
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
-        for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {
+        List<Story> lStories = new ArrayList<>();
+        synchronized (storiesLock) {
+            if (stories != null)
+                lStories.addAll(stories);
+        }
+        for (Story story : lStories) {
             if (story.id == id) {
-                if (story.pages != null) {
-                    storyByIdCallback.getStory(story);
-                    return;
-                } else {
-                    storyByIdCallback.getStory(story);
-                    return;
-                }
+                storyByIdCallback.getStory(story);
+                return;
             }
         }
     }
@@ -443,14 +448,14 @@ public class StoryDownloadManager {
             @Override
             public void onSuccess(final List<Story> response) {
 
-                final ArrayList<Story> stories = new ArrayList<>();
+                final ArrayList<Story> resStories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
-                    stories.add(response.get(i));
+                    resStories.add(response.get(i));
                 }
 
                 if (StoriesWidgetService.getInstance() != null) {
                     try {
-                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
+                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(resStories));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -474,10 +479,12 @@ public class StoryDownloadManager {
                 setLocalsOpened(response);
                 InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
                 List<Story> newStories = new ArrayList<>();
-                if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
-                    for (Story story : response) {
-                        if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
-                            newStories.add(story);
+                synchronized (storiesLock) {
+                    if (stories != null) {
+                        for (Story story : response) {
+                            if (!stories.contains(story)) {
+                                newStories.add(story);
+                            }
                         }
                     }
                 }
@@ -497,10 +504,12 @@ public class StoryDownloadManager {
                             favStories.clear();
                             favStories.addAll(response2);
                             favoriteImages.clear();
-                            for (Story st : StoryDownloadManager.this.stories) {
-                                for (Story st2 : response2) {
-                                    if (st2.id == st.id) {
-                                        st.isOpened = true;
+                            synchronized (storiesLock) {
+                                for (Story st : stories) {
+                                    for (Story st2 : response2) {
+                                        if (st2.id == st.id) {
+                                            st.isOpened = true;
+                                        }
                                     }
                                 }
                             }
@@ -574,10 +583,12 @@ public class StoryDownloadManager {
             public void onSuccess(final List<Story> response) {
                 InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
                 List<Story> newStories = new ArrayList<>();
-                if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
-                    for (Story story : response) {
-                        if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
-                            newStories.add(story);
+                synchronized (storiesLock) {
+                    if (stories != null) {
+                        for (Story story : response) {
+                            if (!stories.contains(story)) {
+                                newStories.add(story);
+                            }
                         }
                     }
                 }
@@ -614,11 +625,17 @@ public class StoryDownloadManager {
 
 
     public void refreshLocals() {
-        if (stories == null) return;
-        for (Story story : stories) {
-            story.isOpened = false;
+        List<Story> lStories = new ArrayList<>();
+        synchronized (storiesLock) {
+            if (stories == null) return;
+            lStories.addAll(stories);
         }
-        setLocalsOpened(stories);
+        synchronized (storiesLock) {
+            for (Story story : lStories) {
+                story.isOpened = false;
+            }
+            setLocalsOpened(lStories);
+        }
     }
 
     void setLocalsOpened(List<Story> response) {
@@ -627,7 +644,7 @@ public class StoryDownloadManager {
     }
 
 
-    private List<Story> stories;
+    private List<Story> stories = new ArrayList<>();
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();
 }

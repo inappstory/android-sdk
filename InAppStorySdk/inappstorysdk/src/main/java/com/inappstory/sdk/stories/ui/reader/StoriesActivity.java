@@ -60,6 +60,8 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
+import java.util.List;
+
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
     public boolean pauseDestroyed = false;
@@ -494,10 +496,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         //  OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        if (InAppStoryService.getInstance().getDownloadManager() != null)
-            for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {
+        if (InAppStoryService.getInstance().getDownloadManager() != null) {
+
+            List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories();
+            for (Story story : stories) {
                 story.setLastIndex(0);
             }
+        }
         cleaned = true;
     }
 
