@@ -373,8 +373,11 @@ public class InAppStoryService {
 
         public void storyFavorite(int id, boolean favStatus) {
             if (InAppStoryService.isNull()) return;
+
+            List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
+            boolean isEmpty = favImages.isEmpty();
             for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.storyFavorite(id, favStatus);
+                sub.storyFavorite(id, favStatus, isEmpty);
             }
         }
 

@@ -95,7 +95,7 @@ public class StoriesListManager {
     }
 
     //StoryFavoriteEvent
-    public void storyFavorite(final int id, final boolean favStatus) {
+    public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
         if (InAppStoryService.isNull()) {
             return;
         }
@@ -103,7 +103,6 @@ public class StoriesListManager {
             @Override
             public void run() {
                 List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-                boolean isEmpty = favImages.isEmpty();
                 Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
                 if (story == null) return;
                 if (favStatus) {
