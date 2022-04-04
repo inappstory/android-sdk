@@ -44,7 +44,9 @@ import java.util.List;
 
 public class StoryDownloadManager {
     public List<Story> getStories() {
-        return stories;
+        synchronized (storiesLock) {
+            return stories;
+        }
     }
 
     private Context context;
@@ -168,9 +170,11 @@ public class StoryDownloadManager {
     public void destroy() {
         storyDownloader.destroy();
         slidesDownloader.destroy();
-        if (stories == null)
-            return;
-        stories.clear();
+        synchronized (storiesLock) {
+            if (stories == null)
+                return;
+            stories.clear();
+        }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -181,7 +185,9 @@ public class StoryDownloadManager {
 
     public void cleanTasks(boolean cleanStories) {
         if (cleanStories)
-            stories.clear();
+            synchronized (storiesLock) {
+                stories.clear();
+            }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -259,53 +265,59 @@ public class StoryDownloadManager {
     }
 
     public void addStories(List<Story> stories) {
-        if (this.stories == null) this.stories = new ArrayList<>();
-        for (Story story : stories) {
-            if (!this.stories.contains(story))
-                this.stories.add(story);
-            else {
-                Story tmp = story;
-                int ind = this.stories.indexOf(story);
-                if (ind >= 0) {
-                    if (tmp.pages == null & this.stories.get(ind).pages != null) {
-                        tmp.pages = new ArrayList<>();
-                        tmp.pages.addAll(this.stories.get(ind).pages);
+        synchronized (storiesLock) {
+            if (this.stories == null) this.stories = new ArrayList<>();
+            for (Story story : stories) {
+                if (!this.stories.contains(story))
+                    this.stories.add(story);
+                else {
+                    Story tmp = story;
+                    int ind = this.stories.indexOf(story);
+                    if (ind >= 0) {
+                        if (tmp.pages == null & this.stories.get(ind).pages != null) {
+                            tmp.pages = new ArrayList<>();
+                            tmp.pages.addAll(this.stories.get(ind).pages);
+                        }
+                        if (tmp.durations == null & this.stories.get(ind).durations != null) {
+                            tmp.durations = new ArrayList<>();
+                            tmp.durations.addAll(this.stories.get(ind).durations);
+                            tmp.setSlidesCount(tmp.durations.size());
+                        }
+                        if (tmp.layout == null & this.stories.get(ind).layout != null) {
+                            tmp.layout = this.stories.get(ind).layout;
+                        }
+                        if (tmp.srcList == null & this.stories.get(ind).srcList != null) {
+                            tmp.srcList = new ArrayList<>();
+                            tmp.srcList.addAll(this.stories.get(ind).srcList);
+                        }
+                        tmp.isOpened = tmp.isOpened || this.stories.get(ind).isOpened;
                     }
-                    if (tmp.durations == null & this.stories.get(ind).durations != null) {
-                        tmp.durations = new ArrayList<>();
-                        tmp.durations.addAll(this.stories.get(ind).durations);
-                        tmp.setSlidesCount(tmp.durations.size());
-                    }
-                    if (tmp.layout == null & this.stories.get(ind).layout != null) {
-                        tmp.layout = this.stories.get(ind).layout;
-                    }
-                    if (tmp.srcList == null & this.stories.get(ind).srcList != null) {
-                        tmp.srcList = new ArrayList<>();
-                        tmp.srcList.addAll(this.stories.get(ind).srcList);
-                    }
-                    tmp.isOpened = tmp.isOpened || this.stories.get(ind).isOpened;
+                    this.stories.set(ind, tmp);
                 }
-                this.stories.set(ind, tmp);
             }
         }
     }
 
+    private Object storiesLock = new Object();
+
     public void putStories(List<Story> stories) {
-        if (this.stories == null || this.stories.isEmpty()) {
-            this.stories = new ArrayList<>();
-            this.stories.addAll(stories);
-        } else {
-            for (int i = 0; i < stories.size(); i++) {
-                boolean newStory = true;
-                for (int j = 0; j < this.stories.size(); j++) {
-                    if (this.stories.get(j).id == stories.get(i).id) {
-                        this.stories.get(j).isOpened = stories.get(i).isOpened;
-                        newStory = false;
-                        this.stories.set(j, stories.get(i));
+        synchronized (storiesLock) {
+            if (this.stories == null || this.stories.isEmpty()) {
+                this.stories = new ArrayList<>();
+                this.stories.addAll(stories);
+            } else {
+                for (int i = 0; i < stories.size(); i++) {
+                    boolean newStory = true;
+                    for (int j = 0; j < this.stories.size(); j++) {
+                        if (this.stories.get(j).id == stories.get(i).id) {
+                            this.stories.get(j).isOpened = stories.get(i).isOpened;
+                            newStory = false;
+                            this.stories.set(j, stories.get(i));
+                        }
                     }
-                }
-                if (newStory) {
-                    this.stories.add(stories.get(i));
+                    if (newStory) {
+                        this.stories.add(stories.get(i));
+                    }
                 }
             }
         }
@@ -321,7 +333,9 @@ public class StoryDownloadManager {
 
     public StoryDownloadManager(final Context context, ExceptionCache cache) {
         this.context = context;
-        this.stories = new ArrayList<>();
+        synchronized (storiesLock) {
+            this.stories = new ArrayList<>();
+        }
         this.favStories = new ArrayList<>();
         this.favoriteImages = new ArrayList<>();
         if (cache != null) {
@@ -339,7 +353,9 @@ public class StoryDownloadManager {
                 Story local = getStoryById(story.id);
                 story.isOpened = local.isOpened;
                 story.lastIndex = local.lastIndex;
-                stories.set(stories.indexOf(local), story);
+                synchronized (storiesLock) {
+                    stories.set(stories.indexOf(local), story);
+                }
                 setStory(story, story.id);
                 storyLoaded(story.id);
                 try {
@@ -449,6 +465,7 @@ public class StoryDownloadManager {
             public void onSuccess(final List<Story> response) {
 
                 final ArrayList<Story> stories = new ArrayList<>();
+
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     stories.add(response.get(i));
                 }

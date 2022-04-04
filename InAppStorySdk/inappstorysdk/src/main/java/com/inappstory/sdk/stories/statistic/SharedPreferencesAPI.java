@@ -7,18 +7,20 @@ import java.util.Set;
 
 public class SharedPreferencesAPI {
     public static void setContext(Context context) {
-        SharedPreferencesAPI.context = context;
+        synchronized (sharedPrefLock) {
+            SharedPreferencesAPI.context = context;
+        }
     }
 
     private static Context context;
 
     public static boolean hasContext() {
-        return context != null;
+        synchronized (sharedPrefLock) {
+            return context != null;
+        }
     }
 
     private static final String SHARED_PREFERENCES_DEFAULT = "default_n";
-
-
 
     public static SharedPreferences getDefaultPreferences() {
         if (context == null) return null;
@@ -32,7 +34,9 @@ public class SharedPreferencesAPI {
 
 
     public static void saveString(final String key, final String value) {
-        if (context == null) return;
+        synchronized (sharedPrefLock) {
+            if (context == null) return;
+        }
 
         new Thread(new Runnable() {
             @Override
@@ -51,33 +55,43 @@ public class SharedPreferencesAPI {
      * Получение строки
      */
     public static String getString(String key) {
-        if (getDefaultPreferences() == null) return null;
-        return getDefaultPreferences().getString(key, null);
+        synchronized (sharedPrefLock) {
+            SharedPreferences prefs = getDefaultPreferences();
+            if (prefs == null) return null;
+            return prefs.getString(key, null);
+        }
     }
 
     /**
      * Получение строки
      */
     public static void removeString(String key) {
-        if (context == null) return;
-        SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        editor.remove(key);
-        editor.apply();
+        synchronized (sharedPrefLock) {
+            if (context == null) return;
+            SharedPreferences.Editor editor = getDefaultPreferences().edit();
+            editor.remove(key);
+            editor.apply();
+        }
     }
 
     /**
      * Получение строки
      */
     public static String getString(String key, String def) {
-        if (getDefaultPreferences() == null) return null;
-        return getDefaultPreferences().getString(key, def);
+        synchronized (sharedPrefLock) {
+            SharedPreferences prefs = getDefaultPreferences();
+            if (prefs == null) return null;
+            return prefs.getString(key, def);
+        }
     }
 
     /**
      * Сохранение массива строк
      */
     public static void saveStringSet(final String key, final Set<String> value) {
-        if (context == null) return;
+        synchronized (sharedPrefLock) {
+            if (context == null) return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -96,37 +110,20 @@ public class SharedPreferencesAPI {
      * Получение массива строк
      */
     public static Set<String> getStringSet(String key) {
-        if (getDefaultPreferences() == null) return null;
-        return getDefaultPreferences().getStringSet(key, null);
+        synchronized (sharedPrefLock) {
+            SharedPreferences prefs = getDefaultPreferences();
+            if (prefs == null) return null;
+            return prefs.getStringSet(key, null);
+        }
     }
-
-
-    /**
-     * Сохранение boolean значения
-     */
-    public static void saveBoolean(String key, boolean value) {
-        if (context == null) return;
-        SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        editor.putBoolean(key, value);
-        editor.apply();
-    }
-
-    /**
-     * Сохранение числового значения
-     */
-    public static void saveInt(String key, int value) {
-        if (context == null) return;
-        SharedPreferences.Editor editor = getDefaultPreferences().edit();
-        editor.putInt(key, value);
-        editor.apply();
-    }
-
 
     /**
      * Удаление значения по ключу
      */
     public static void remove(final String key) {
-        if (context == null) return;
+        synchronized (sharedPrefLock) {
+            if (context == null) return;
+        }
 
         new Thread(new Runnable() {
             @Override
@@ -140,55 +137,6 @@ public class SharedPreferencesAPI {
         }).start();
 
 
-    }
-
-
-    /**
-     * Получение числового значения
-     */
-    public static int getInt(String key) {
-        return getDefaultPreferences().getInt(key, -1);
-    }
-
-    /**
-     * Получение числового значения
-     */
-    public static int getInt(String key, int defaultVal) {
-        if (getDefaultPreferences() == null) return -1;
-        return getDefaultPreferences().getInt(key, defaultVal);
-    }
-
-    /**
-     * Получение boolean значения
-     */
-    public static boolean getBoolean(String key) {
-        if (getDefaultPreferences() == null) return false;
-        return getDefaultPreferences().getBoolean(key, false);
-    }
-
-    /**
-     * Получение boolean значения
-     */
-    public static boolean getBoolean(String key, boolean defValue) {
-        if (getDefaultPreferences() == null) return false;
-        return getDefaultPreferences().getBoolean(key, defValue);
-    }
-
-
-    /**
-     * Сохранение json объекта
-     */
-    public static long getLong(String key, long defaultVal) {
-        if (getDefaultPreferences() == null) return 0l;
-        return getDefaultPreferences().getLong(key, defaultVal);
-    }
-
-
-    /**
-     * Сохранение long
-     */
-    public static void saveLong(String key, long value) {
-        getDefaultPreferences().edit().putLong(key, value).apply();
     }
 
     /**
