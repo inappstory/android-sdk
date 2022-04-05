@@ -433,7 +433,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories();
-        for (Story story : stories) 
+        for (Story story : stories)
             story.lastIndex = 0;
         cleaned = true;
     }
