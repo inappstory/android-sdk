@@ -46,11 +46,13 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
 
     public Context context;
     private String listID;
+    private String feedId;
 
     public StoriesAdapter(Context context, String listID, List<Integer> storiesIds, AppearanceManager manager,
-                          OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback) {
+                          OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback, String feedId) {
         this.context = context;
         this.listID = listID;
+        this.feedId = feedId;
         this.storiesIds = storiesIds;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
@@ -128,10 +130,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
         if (current != null) {
             CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title,
                     current.tags, current.getSlidesCount(),
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feedId));
             if (callback != null) {
                 callback.itemClick(current.id, index, current.title, current.tags,
-                        current.getSlidesCount(), isFavoriteList);
+                        current.getSlidesCount(), isFavoriteList, feedId);
             }
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
@@ -182,11 +184,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> implemen
             }
         } else {
             CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null,
-                    null, 0, isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+                    null, 0, isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feedId));
 
             if (callback != null) {
                 callback.itemClick(storiesIds.get(index), index, null, null, 0,
-                        isFavoriteList);
+                        isFavoriteList, feedId);
             }
         }
         ArrayList<Integer> tempStories = new ArrayList();

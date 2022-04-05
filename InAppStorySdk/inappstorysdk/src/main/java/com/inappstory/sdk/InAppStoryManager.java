@@ -417,17 +417,19 @@ public class InAppStoryManager {
      * @param value (value) - replacement result
      */
     public void setPlaceholder(String key, String value) {
-        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-        if (placeholders == null) placeholders = new HashMap<>();
-        String inKey = "%" + key + "%";
-        if (value == null) {
-            if (defaultPlaceholders.containsKey(inKey)) {
-                placeholders.put(inKey, defaultPlaceholders.get(inKey));
+        synchronized (placeholdersLock) {
+            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+            if (placeholders == null) placeholders = new HashMap<>();
+            String inKey = "%" + key + "%";
+            if (value == null) {
+                if (defaultPlaceholders.containsKey(inKey)) {
+                    placeholders.put(inKey, defaultPlaceholders.get(inKey));
+                } else {
+                    placeholders.remove(inKey);
+                }
             } else {
-                placeholders.remove(inKey);
+                placeholders.put(inKey, value);
             }
-        } else {
-            placeholders.put(inKey, value);
         }
     }
 
@@ -437,7 +439,7 @@ public class InAppStoryManager {
      * @param placeholders (placeholders) - key-value map (key - what we replace, value - replacement result)
      */
     public void setPlaceholders(@NonNull Map<String, String> placeholders) {
-
+        getPlaceholders().clear();
         for (String placeholderKey : placeholders.keySet()) {
             setPlaceholder(placeholderKey, placeholders.get(placeholderKey));
         }
@@ -445,23 +447,27 @@ public class InAppStoryManager {
 
     ArrayList<String> tags;
 
+    public Object placeholdersLock = new Object();
+
     /**
      * Returns map with all default strings replacements
      */
     public Map<String, String> getPlaceholders() {
-
-        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-        if (placeholders == null) placeholders = new HashMap<>();
-        return placeholders;
+        synchronized (placeholdersLock) {
+            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+            if (placeholders == null) placeholders = new HashMap<>();
+            return placeholders;
+        }
     }
 
     Map<String, String> placeholders = new HashMap<>();
 
     public Map<String, String> getDefaultPlaceholders() {
-
-        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-        if (placeholders == null) placeholders = new HashMap<>();
-        return defaultPlaceholders;
+        synchronized (placeholdersLock) {
+            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+            if (placeholders == null) placeholders = new HashMap<>();
+            return defaultPlaceholders;
+        }
     }
 
     Map<String, String> defaultPlaceholders = new HashMap<>();
