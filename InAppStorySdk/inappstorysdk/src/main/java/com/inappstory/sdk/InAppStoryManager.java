@@ -1002,6 +1002,7 @@ public class InAppStoryManager {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
+        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
         showOnboardingStoriesInner(feed, tags, outerContext, manager);
     }
 
@@ -1013,6 +1014,7 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(String feed, Context context, final AppearanceManager manager) {
+        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
         showOnboardingStories(feed, getTags(), context, manager);
     }
 
