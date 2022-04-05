@@ -986,7 +986,7 @@ public class InAppStoryManager {
     }
 
     private void loadOnboardingError(String feed) {
-        CsEventBus.getDefault().post(new OnboardingLoadError());
+        CsEventBus.getDefault().post(new OnboardingLoadError(feed));
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadOnboardingError(feed);
         }
