@@ -7,17 +7,20 @@
 	<com.inappstory.sdk.stories.ui.list.StoriesList
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-            app:cs_listIsFavorite="false"
+        app:cs_listIsFavorite="false"
+        app:cs_feed="customFeed"
 	    android:id="@+id/stories_list"/>
 ```
 
 Or via code:
 ```java
     StoriesList storiesList = new StoriesList(context);
+    storiesList.setFeed("customFeed");
     addView(storiesList);
 ```
 
 The `cs_listIsFavorite` attribute is responsible for whether we add a regular list or a list of favorites (true - favorites, false - full list).
+The `cs_feed` attribute is defines specific feed of stories, that will be loaded through `loadStories` method.
 
 ### Methods
 After SDK initialization you can load stories in `StoriesList`
@@ -196,21 +199,34 @@ Clicks to list cells also can be customized with next handler (for example - if 
 ```
 
 
+
+### Stories Feed
+From version 1.8.x `StoriesList` has `feed` parameter that defines specific feed of stories, that will be loaded through `loadStories` method. 
+By default `feed` for `StoriesList` equals 'default'. Also it can be set through `cs_feed` attribute in xml or with setter:
+
+```java
+    storiesList.setFeed(String feed); // If you pass empty or null value - it will be set as 'default'
+```
+
+For favorite list this parameter is ignored and `feed` equals `null`.
+
 ### Callbacks
 `StoriesList` actions (loading and clicks) can be obtained with `ListCallback`. It can be set with custom implementation or with `ListCallbackAdapter` (default implementation for `ListCallback` with empty methods) class
+
 ```java
     storiesList.setCallback(ListCallback callback);
     
     public interface ListCallback {
-        void storiesLoaded(int size); //the list of stories has been loaded, the widget
-        is ready to work (triggered every time when the list is loaded, including at refresh).
+        void storiesLoaded(int size, String feed); //the list of stories has been loaded, the widget 
+        //is ready to work (triggered every time when the list is loaded, including at refresh).
         The event contains the `int getCount()` method - the number of stories
-        void loadError(); //the list of stories hasn't been loaded due to error
+        void loadError(String feed); //the list of stories hasn't been loaded due to error
         void itemClick(int id,
                        int listIndex,
                        String title,
                        String tags,
                        int slidesCount,
-                       boolean isFavoriteList); //user click on StoriesList item.
+                       boolean isFavoriteList,
+                       String feed); //user click on StoriesList item.
 }
 ```

@@ -92,10 +92,7 @@ public enum CloseReader {
 }
 
 public enum ClickAction {
-    BUTTON, // button from stories reader
-    SWIPE, // "swipe up" item in stories reader
-    GAME, // button from game reader
-    DEEPLINK, // stories with deeplink in storiesList
+    BUTTON, SWIPE, GAME
 }
 ```
 
@@ -267,7 +264,7 @@ public interface SingleLoadCallback {
 InAppStoryManager.getInstance().setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback); 
 
 public interface OnboardingLoadCallback {
-        void onboardingLoad(int count);
+        void onboardingLoad(int count, String feed);
 }
 ```
 
@@ -277,8 +274,8 @@ InAppStoryManager.getInstance().setErrorCallback(ErrorCallback errorCallback);
 //can be set with custom implementation or with ErrorCallbackAdapter class
 
 public interface ErrorCallback {
-        void loadListError();
-        void loadOnboardingError();
+        void loadListError(String feed);
+        void loadOnboardingError(String feed);
         void loadSingleError();
         void cacheError();
         void readerError();
