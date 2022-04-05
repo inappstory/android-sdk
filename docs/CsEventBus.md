@@ -88,7 +88,7 @@ There are the following events for working with onboarding and single stories:
 
 There are 2 events for tracking errors:
 
-1) `StoriesErrorEvent` - occurs when some kind of error comes from the server. Contains 7 different types depending on the place of origin. Has a `getType` method for getting the type of error. The types of errors:
+1) `StoriesErrorEvent` - occurs when some kind of error comes from the server. Contains 7 different types depending on the place of origin. Has a `getType` method for getting the type of error and `getFeed` that returns what feed we've try to load (for `LOAD_LIST` or `LOAD_ONBOARD` types). The types of errors:
 ```js
 OPEN_SESSION = 0;
 LOAD_LIST = 1;
