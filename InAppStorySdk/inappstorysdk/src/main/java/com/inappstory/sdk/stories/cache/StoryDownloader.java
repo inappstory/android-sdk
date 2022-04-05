@@ -308,7 +308,7 @@ class StoryDownloader {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError(feed);
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, feed));
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {

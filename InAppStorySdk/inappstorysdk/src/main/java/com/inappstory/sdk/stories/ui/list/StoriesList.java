@@ -444,7 +444,7 @@ public class StoriesList extends RecyclerView {
                     }
                     setOrRefreshAdapter(storiesIds);
                     ProfilingManager.getInstance().setReady(listUid);
-                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
                     if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
                 }
 
@@ -466,7 +466,7 @@ public class StoriesList extends RecyclerView {
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 setOrRefreshAdapter(storiesIds);
                                 ProfilingManager.getInstance().setReady(listUid);
-                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
+                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
                                 if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
                             }
 

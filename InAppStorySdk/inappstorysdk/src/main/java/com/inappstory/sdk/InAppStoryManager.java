@@ -831,7 +831,7 @@ public class InAppStoryManager {
     private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feed) {
 
         if (response == null || response.size() == 0) {
-            CsEventBus.getDefault().post(new OnboardingLoad(0));
+            CsEventBus.getDefault().post(new OnboardingLoad(0, feed));
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
                 CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, feed);
             }
@@ -870,7 +870,7 @@ public class InAppStoryManager {
         InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
         ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING);
-        CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
+        CsEventBus.getDefault().post(new OnboardingLoad(response.size(), feed));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feed);
         }
@@ -990,7 +990,7 @@ public class InAppStoryManager {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadOnboardingError(feed);
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD, feed));
     }
 
 

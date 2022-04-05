@@ -25,7 +25,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError(null);
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, null));
        // super.onError(code, message);
     }
 
@@ -34,7 +34,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError(null);
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, null));
         SessionManager.getInstance().closeSession(true, false);
     }
 

@@ -19,6 +19,17 @@ public class StoriesErrorEvent {
 
     int type;
 
+    public String getFeed() {
+        return feed;
+    }
+
+    String feed;
+
+    public StoriesErrorEvent(int type, String feed) {
+        this.type = type;
+        this.feed = feed;
+    }
+
     public StoriesErrorEvent(int type) {
         this.type = type;
     }

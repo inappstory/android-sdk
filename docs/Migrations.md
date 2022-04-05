@@ -1,5 +1,47 @@
 ## Migration
 
+### From 1.6.x or 1.7.x to 1.8.x
+Added new feeds feature to `StoriesList` and onboarding stories now has public `feed` parameter. [Here] and [here] describes its usage.
+
+Callback for `StoriesList` and its adapter has beed changed (added `feed` parameter to methods). 
+
+```java
+interface ListCallback {
+    void storiesLoaded(int size, String feed);
+
+    void loadError(String feed);
+
+    void itemClick(int id,
+                   int listIndex,
+                   String title,
+                   String tags,
+                   int slidesCount,
+                   boolean isFavoriteList,
+                   String feed);
+}
+```
+
+Next callbacks and their adapters for `InAppstoryManager` also have changed (added `feed` parameter to methods)
+
+```java
+public interface ErrorCallback {
+    void loadListError(String feed);
+    void loadOnboardingError(String feed);
+    void loadSingleError();
+    void cacheError();
+    void readerError();
+    void emptyLinkError();
+    void sessionError();
+    void noConnection();
+}
+
+public interface OnboardingLoadCallback {
+    void onboardingLoad(int count, String feed);
+}
+```
+
+Also `StoriesLoaded`, `OnboardingLoad` and `StoriesErrorEvent` events now has `getFeed()` method. 
+
 ### From 1.5.x to 1.6.x
 
 `setInstance` method for `AppearanceManager` now is deprecated. Use `setCommonInstance` method instead.
@@ -30,7 +72,7 @@ interface IStoriesListItem {
 ### From 1.3.x to 1.4.x
 `targetSdkVersion` in SDK gradle file was updated from 29 to 30. It may be necessary to update `targetSdkVersion` in your project gradle file.
 
-`InAppStoryManager` and `StoriesList` callbacks were added (you can use them instead of `CsEventBus`). For more information read [here](https://github.com/inappstory/android-sdk#inappstorymanager-callbacks).
+`InAppStoryManager` and `StoriesList` callbacks were added (you should use them instead of `CsEventBus`). For more information read [here](https://github.com/inappstory/android-sdk#inappstorymanager-callbacks).
 
 `InAppStoryManager.closeStoryReader()` method was added to SDK. 
 We recommend to use it instead of `CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM))`

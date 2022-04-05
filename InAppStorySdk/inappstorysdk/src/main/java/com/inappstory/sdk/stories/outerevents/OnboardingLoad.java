@@ -13,8 +13,13 @@ public class OnboardingLoad {
 
     int count;
 
-    public OnboardingLoad(int count) {
+    public String feed;
+
+    public String getFeed() { return feed; }
+
+    public OnboardingLoad(int count, String feed) {
         this.count = count;
+        this.feed = feed;
         if (count == 0)
             isEmpty = true;
     }
