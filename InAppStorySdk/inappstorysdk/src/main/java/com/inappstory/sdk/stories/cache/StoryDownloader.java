@@ -304,16 +304,16 @@ class StoryDownloader {
                 null, "id, background_color, image").enqueue(callback);
     }
 
-    public static void generateCommonLoadListError(String feedId) {
+    public static void generateCommonLoadListError(String feed) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError(feedId);
+            CallbackManager.getInstance().getErrorCallback().loadListError(feed);
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
     }
 
-    void loadStoryListByFeedId(final String feedId, final SimpleApiCallback<List<Story>> callback) {
+    void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
         if (InAppStoryService.isNull()) {
-            generateCommonLoadListError(feedId);
+            generateCommonLoadListError(feed);
             callback.onError("");
             return;
         }
@@ -323,8 +323,8 @@ class StoryDownloader {
                 public void onSuccess() {
                     if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
-                    NetworkClient.getApi().getFeedById(
-                            feedId,
+                    NetworkClient.getApi().getFeed(
+                            feed,
                             ApiSettings.getInstance().getTestKey(),
                             0,
                             InAppStoryService.getInstance().getTagsString(),
@@ -333,7 +333,7 @@ class StoryDownloader {
                                 @Override
                                 public void onSuccess(Feed response) {
                                     if (InAppStoryService.isNull()) {
-                                        generateCommonLoadListError(feedId);
+                                        generateCommonLoadListError(feed);
                                         callback.onError("");
                                     } else {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
@@ -344,14 +344,14 @@ class StoryDownloader {
                                 @Override
                                 public void onTimeout() {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(feedId);
+                                    generateCommonLoadListError(feed);
                                     callback.onError("");
                                 }
 
                                 @Override
                                 public void onError(int code, String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(feedId);
+                                    generateCommonLoadListError(feed);
                                     callback.onError(message);
                                 }
 
@@ -362,19 +362,19 @@ class StoryDownloader {
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
                                     SessionManager.getInstance().closeSession(true, false);
-                                    loadStoryListByFeedId(feedId, callback);
+                                    loadStoryListByFeed(feed, callback);
                                 }
                             });
                 }
 
                 @Override
                 public void onError() {
-                    generateCommonLoadListError(feedId);
+                    generateCommonLoadListError(feed);
                     callback.onError("");
                 }
             });
         } else {
-            generateCommonLoadListError(feedId);
+            generateCommonLoadListError(feed);
             callback.onError("");
         }
     }

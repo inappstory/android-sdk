@@ -45,23 +45,23 @@ public class StoriesList extends RecyclerView {
 
     public static String DEFAULT_FEED = "default";
 
-    public String getFeedId() {
-        synchronized (feedIdLock) {
+    public String getFeed() {
+        synchronized (feedLock) {
             if (isFavoriteList) return null;
-            return feedId;
+            return feed;
         }
     }
 
-    public Object feedIdLock = new Object();
+    public Object feedLock = new Object();
 
-    public void setFeedId(String feedId) {
-        synchronized (feedIdLock) {
-            if (!isFavoriteList && feedId != null && !feedId.isEmpty())
-                this.feedId = feedId;
+    public void setFeed(String feed) {
+        synchronized (feedLock) {
+            if (!isFavoriteList && feed != null && !feed.isEmpty())
+                this.feed = feed;
         }
     }
 
-    private String feedId = DEFAULT_FEED;
+    private String feed = DEFAULT_FEED;
 
     public String getUniqueID() {
         return uniqueID;
@@ -134,12 +134,12 @@ public class StoriesList extends RecyclerView {
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
-            synchronized (feedIdLock) {
+            synchronized (feedLock) {
                 if (!isFavoriteList) {
-                    feedId = typedArray.getString(R.styleable.StoriesList_cs_feedId);
-                    if (feedId == null || feedId.isEmpty()) feedId = StoriesList.DEFAULT_FEED;
+                    feed = typedArray.getString(R.styleable.StoriesList_cs_feed);
+                    if (feed == null || feed.isEmpty()) feed = StoriesList.DEFAULT_FEED;
                 } else {
-                    feedId = null;
+                    feed = null;
                 }
             }
             typedArray.recycle();
@@ -399,7 +399,7 @@ public class StoriesList extends RecyclerView {
         }
         checkAppearanceManager();
         setOrRefreshAdapter(storiesIds);
-        if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeedId());
+        if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
     }
 
     private void checkAppearanceManager() {
@@ -414,7 +414,7 @@ public class StoriesList extends RecyclerView {
 
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
         adapter = new StoriesAdapter(getContext(), uniqueID,
-                storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback, getFeedId());
+                storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback, getFeed());
         setLayoutManager(layoutManager);
         setAdapter(adapter);
     }
@@ -445,15 +445,15 @@ public class StoriesList extends RecyclerView {
                     setOrRefreshAdapter(storiesIds);
                     ProfilingManager.getInstance().setReady(listUid);
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                    if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeedId());
+                    if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
                 }
 
                 @Override
                 public void onError() {
-                    if (callback != null) callback.loadError(getFeedId());
+                    if (callback != null) callback.loadError(getFeed());
                 }
             };
-            InAppStoryService.getInstance().getDownloadManager().loadStories(getFeedId(), lcallback, isFavoriteList, hasFavorite);
+            InAppStoryService.getInstance().getDownloadManager().loadStories(getFeed(), lcallback, isFavoriteList, hasFavorite);
 
         } else {
             new Handler().postDelayed(new Runnable() {
@@ -467,15 +467,15 @@ public class StoriesList extends RecyclerView {
                                 setOrRefreshAdapter(storiesIds);
                                 ProfilingManager.getInstance().setReady(listUid);
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size()));
-                                if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeedId());
+                                if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
                             }
 
                             @Override
                             public void onError() {
-                                if (callback != null) callback.loadError(getFeedId());
+                                if (callback != null) callback.loadError(getFeed());
                             }
                         };
-                        InAppStoryService.getInstance().getDownloadManager().loadStories(getFeedId(),
+                        InAppStoryService.getInstance().getDownloadManager().loadStories(getFeed(),
                                 lcallback, isFavoriteList, hasFav);
                     }
                 }

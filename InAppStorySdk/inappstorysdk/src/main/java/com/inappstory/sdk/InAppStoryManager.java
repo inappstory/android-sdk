@@ -32,7 +32,6 @@ import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.api.models.logs.BaseLog;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
@@ -69,8 +68,6 @@ import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.list.StoriesList;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -831,12 +828,12 @@ public class InAppStoryManager {
         return soundOn;
     }
 
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feedId) {
+    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feed) {
 
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0));
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, feedId);
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, feed);
             }
             return;
         }
@@ -847,7 +844,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feedId);
+                    showLoadedOnboardings(response, outerContext, manager, feed);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -856,7 +853,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feedId);
+                    showLoadedOnboardings(response, outerContext, manager, feed);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -875,16 +872,16 @@ public class InAppStoryManager {
         ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feedId);
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feed);
         }
     }
 
-    private void showOnboardingStoriesInner(final String feedId, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    private void showOnboardingStoriesInner(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.isNull()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showOnboardingStoriesInner(feedId, tags, outerContext, manager);
+                    showOnboardingStoriesInner(feed, tags, outerContext, manager);
                 }
             }, 1000);
             return;
@@ -902,8 +899,8 @@ public class InAppStoryManager {
 
                 final String onboardUID =
                         ProfilingManager.getInstance().addTask("api_onboarding");
-                if (feedId != null) {
-                    NetworkClient.getApi().getOnboardingFeedById(feedId, localTags == null ? getTagsString() :
+                if (feed != null) {
+                    NetworkClient.getApi().getOnboardingFeed(feed, localTags == null ? getTagsString() :
                             localTags).enqueue(new LoadFeedCallback() {
                         @Override
                         public void onSuccess(Feed response) {
@@ -923,19 +920,19 @@ public class InAppStoryManager {
                                     if (add) notOpened.add(story);
                                 }
                             }
-                            showLoadedOnboardings(notOpened, outerContext, manager, feedId);
+                            showLoadedOnboardings(notOpened, outerContext, manager, feed);
                         }
 
                         @Override
                         public void onError(int code, String message) {
                             ProfilingManager.getInstance().setReady(onboardUID);
-                            loadOnboardingError(feedId);
+                            loadOnboardingError(feed);
                         }
 
                         @Override
                         public void onTimeout() {
                             ProfilingManager.getInstance().setReady(onboardUID);
-                            loadOnboardingError(feedId);
+                            loadOnboardingError(feed);
                         }
                     });
                 } else {
@@ -957,7 +954,7 @@ public class InAppStoryManager {
                                 }
                                 if (add) notOpened.add(story);
                             }
-                            showLoadedOnboardings(notOpened, outerContext, manager, feedId);
+                            showLoadedOnboardings(notOpened, outerContext, manager, feed);
                         }
 
                         @Override
@@ -982,16 +979,16 @@ public class InAppStoryManager {
 
             @Override
             public void onError() {
-                loadOnboardingError(feedId);
+                loadOnboardingError(feed);
             }
 
         });
     }
 
-    private void loadOnboardingError(String feedId) {
+    private void loadOnboardingError(String feed) {
         CsEventBus.getDefault().post(new OnboardingLoadError());
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(feedId);
+            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(feed);
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
     }
@@ -1004,8 +1001,8 @@ public class InAppStoryManager {
      * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(String feedId, List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(feedId, tags, outerContext, manager);
+    public void showOnboardingStories(String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
+        showOnboardingStoriesInner(feed, tags, outerContext, manager);
     }
 
 
@@ -1015,8 +1012,8 @@ public class InAppStoryManager {
      * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
-    public void showOnboardingStories(String feedId, Context context, final AppearanceManager manager) {
-        showOnboardingStories(feedId, getTags(), context, manager);
+    public void showOnboardingStories(String feed, Context context, final AppearanceManager manager) {
+        showOnboardingStories(feed, getTags(), context, manager);
     }
 
 

@@ -17,9 +17,9 @@ public interface ApiInterface {
             @Query("tags") String tags,
             @Query("fields") String fields);
 
-    @GET("v2/feed/{feedId}")
-    Request getFeedById(
-            @Path("feedId") String id,
+    @GET("v2/feed/{feed}")
+    Request getFeed(
+            @Path("feed") String feed,
             @Query("test") String test,
             @Query("favorite") Integer favorite,
             @Query("tags") String tags,
@@ -27,9 +27,9 @@ public interface ApiInterface {
     );
 
 
-    @GET("v2/feed/{feedId}/onboarding")
-    Request getOnboardingFeedById(
-            @Path("feedId") String id,
+    @GET("v2/feed/{feed}/onboarding")
+    Request getOnboardingFeed(
+            @Path("feed") String feed,
             @Query("tags") String tags
     );
 

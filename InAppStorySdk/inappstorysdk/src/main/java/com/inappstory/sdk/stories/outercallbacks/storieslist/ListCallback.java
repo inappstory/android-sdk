@@ -1,9 +1,9 @@
 package com.inappstory.sdk.stories.outercallbacks.storieslist;
 
 public interface ListCallback {
-    void storiesLoaded(int size, String feedId);
+    void storiesLoaded(int size, String feed);
 
-    void loadError(String feedId);
+    void loadError(String feed);
 
     void itemClick(int id,
                    int listIndex,
@@ -11,5 +11,5 @@ public interface ListCallback {
                    String tags,
                    int slidesCount,
                    boolean isFavoriteList,
-                   String feedId);
+                   String feed);
 }

@@ -22,6 +22,6 @@
 
     <declare-styleable name="StoriesList">
         <attr name="cs_listIsFavorite" format="boolean" />
-        <attr name="cs_feedId" format="string" />
+        <attr name="cs_feed" format="string" />
     </declare-styleable>
 </resources>

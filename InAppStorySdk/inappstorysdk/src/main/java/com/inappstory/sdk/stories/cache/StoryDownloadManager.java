@@ -442,7 +442,7 @@ public class StoryDownloadManager {
     private SlidesDownloader slidesDownloader;
 
 
-    public void loadStories(String feedId, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
+    public void loadStories(String feed, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
@@ -616,8 +616,8 @@ public class StoryDownloadManager {
                 }
             }
         };
-        if (feedId != null && !isFavorite) {
-            storyDownloader.loadStoryListByFeedId(feedId, loadCallback);
+        if (feed != null && !isFavorite) {
+            storyDownloader.loadStoryListByFeed(feed, loadCallback);
         } else {
             storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
         }
