@@ -7,33 +7,43 @@ import java.util.Set;
 
 public class SharedPreferencesAPI {
     public static void setContext(Context context) {
-        SharedPreferencesAPI.context = context;
+
+        synchronized (contextLock) {
+            SharedPreferencesAPI.context = context;
+        }
     }
 
     private static Context context;
 
     public static boolean hasContext() {
-        return context != null;
+
+        synchronized (contextLock) {
+            return context != null;
+        }
     }
 
     private static final String SHARED_PREFERENCES_DEFAULT = "default_n";
 
 
-
     public static SharedPreferences getDefaultPreferences() {
-        if (context == null) return null;
-        return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
+        synchronized (contextLock) {
+            if (context == null) return null;
+            return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
+        }
     }
 
     /**
      * Сохранение строки
      */
     private static Object sharedPrefLock = new Object();
+    private static Object contextLock = new Object();
 
 
     public static void saveString(final String key, final String value) {
-        if (context == null) return;
 
+        synchronized (contextLock) {
+            if (context == null) return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -62,7 +72,10 @@ public class SharedPreferencesAPI {
      * Получение строки
      */
     public static void removeString(String key) {
-        if (context == null) return;
+
+        synchronized (contextLock) {
+            if (context == null) return;
+        }
         synchronized (sharedPrefLock) {
             SharedPreferences.Editor editor = getDefaultPreferences().edit();
             editor.remove(key);
@@ -86,7 +99,10 @@ public class SharedPreferencesAPI {
      * Сохранение массива строк
      */
     public static void saveStringSet(final String key, final Set<String> value) {
-        if (context == null) return;
+
+        synchronized (contextLock) {
+            if (context == null) return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -113,13 +129,14 @@ public class SharedPreferencesAPI {
     }
 
 
-
     /**
      * Удаление значения по ключу
      */
     public static void remove(final String key) {
-        if (context == null) return;
 
+        synchronized (contextLock) {
+            if (context == null) return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -133,7 +150,7 @@ public class SharedPreferencesAPI {
 
 
     }
-    
+
     /**
      * Очистка SharedPreferences
      */
