@@ -96,7 +96,7 @@ SDK can be initialized from any point with `Context` access (`Application`, `Act
 >**Attention!**  
 >Methods  `create()` and `userId()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
 
-Context and userId - is not optional parameters. They can't be null. Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
+**Context and userId - is not optional parameters. They can't be null.** Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
 ```xml
 	<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
