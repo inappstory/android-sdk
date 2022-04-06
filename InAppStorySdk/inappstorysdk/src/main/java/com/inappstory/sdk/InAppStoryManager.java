@@ -1312,10 +1312,11 @@ public class InAppStoryManager {
          * @return {@link Builder}
          */
         public Builder userId(String userId) throws DataException {
-            if (userId.length() < 255) {
+            if (userId != null && userId.length() < 255) {
                 Builder.this.userId = userId;
             } else {
-                throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager.Builder data is not valid"));
+                throw new DataException("'userId' can't be null or longer than 255 characters",
+                        new Throwable("InAppStoryManager.Builder data is not valid"));
             }
             return Builder.this;
         }
