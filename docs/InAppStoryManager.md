@@ -8,7 +8,7 @@ InAppStoryManager can be initialized from any point with `Context` access (`Appl
   new InAppStoryManager.Builder()
       .apiKey(apiKey) //String
       .context(context) //Context
-      .userId(userId) //String
+      .userId(userId) //Non-null String
       .tags(tags) //ArrayList<String>
       .placeholders(placeholders) //Map<String, String>
       .cacheSize(cacheSize) //int, has defined constants
@@ -17,9 +17,9 @@ InAppStoryManager can be initialized from any point with `Context` access (`Appl
 ```
 
 >**Attention!**  
->Method `create()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
+>Methods `create()` and `userId()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
 
-Context and userId - is not optional parameters. UserId can't be longer than 255 characters. Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
+**Context and userId - is not optional parameters. They can't be null. UserId can't be longer than 255 characters.**  Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
 ```xml
 	<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
