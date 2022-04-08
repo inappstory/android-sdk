@@ -4,12 +4,14 @@ import static java.util.UUID.randomUUID;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +28,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -113,49 +116,69 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().removeListSubscriber(manager);
-        } else
-            manager.clear();
+        if (!isInEditMode()) {
+            if (InAppStoryService.getInstance() != null) {
+                InAppStoryService.getInstance().removeListSubscriber(manager);
+            } else
+                manager.clear();
+        }
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        manager.list = this;
-        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
-                + InAppStoryService.isNotNull());
-        InAppStoryService.checkAndAddListSubscriber(manager);
+        if (!isInEditMode()) {
+            manager.list = this;
+            InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
+                    + InAppStoryService.isNotNull());
+            InAppStoryService.checkAndAddListSubscriber(manager);
+        }
+    }
+
+
+    public void initInEditor() {
+        setBackgroundColor(Color.RED);
+        AppearanceManager appearanceManager = new AppearanceManager();
+        setAppearanceManager(appearanceManager);
+        setAdapter(new PreviewStoriesAdapter(getContext(), appearanceManager));
+        setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+
+
     }
 
     private void init(AttributeSet attributeSet) {
-        uniqueID = randomUUID().toString();
-        manager = new StoriesListManager();
-        if (attributeSet != null) {
-            TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
-            isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
-            synchronized (feedLock) {
-                if (!isFavoriteList) {
-                    feed = typedArray.getString(R.styleable.StoriesList_cs_feed);
-                    if (feed == null || feed.isEmpty()) feed = StoriesList.DEFAULT_FEED;
-                } else {
-                    feed = null;
+        if (isInEditMode()) {
+            initInEditor(); //whatever added functionality you are trying to add to Widget, call that inside this condition.
+        } else {
+            uniqueID = randomUUID().toString();
+            manager = new StoriesListManager();
+            if (attributeSet != null) {
+                TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
+                isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
+                synchronized (feedLock) {
+                    if (!isFavoriteList) {
+                        feed = typedArray.getString(R.styleable.StoriesList_cs_feed);
+                        if (feed == null || feed.isEmpty()) feed = StoriesList.DEFAULT_FEED;
+                    } else {
+                        feed = null;
+                    }
                 }
+                typedArray.recycle();
             }
-            typedArray.recycle();
-        }
-        addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (!readerIsOpened)
-                    sendIndexes();
+            addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    if (!readerIsOpened)
+                        sendIndexes();
 
-            }
-        });
-        itemTouchListener = new RecyclerTouchListener(
-                getContext());
-        addOnItemTouchListener(itemTouchListener);
+                }
+            });
+            itemTouchListener = new RecyclerTouchListener(
+                    getContext());
+            addOnItemTouchListener(itemTouchListener);
+        }
+
 
         //getRecycledViewPool().setMaxRecycledViews(6, 0);
     }
@@ -326,8 +349,10 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        if (!hasWindowFocus) {
-            OldStatisticManager.getInstance().sendStatistic();
+        if (!isInEditMode()) {
+            if (!hasWindowFocus) {
+                OldStatisticManager.getInstance().sendStatistic();
+            }
         }
     }
 
@@ -467,7 +492,8 @@ public class StoriesList extends RecyclerView {
                                 setOrRefreshAdapter(storiesIds);
                                 ProfilingManager.getInstance().setReady(listUid);
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
-                                if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
+                                if (callback != null)
+                                    callback.storiesLoaded(storiesIds.size(), getFeed());
                             }
 
                             @Override

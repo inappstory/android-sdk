@@ -512,4 +512,46 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
         }
     }
+
+
+    public void bindPreview(Integer id,
+                     String titleText,
+                     Integer titleColor,
+                     Integer backgroundColor, AppearanceManager appearanceManager) {
+        manager = appearanceManager;
+        getListItem = manager.csListItemInterface();
+        if (getListItem != null) {
+            this.backgroundColor = backgroundColor;
+            getListItem.setId(itemView, id);
+            getListItem.setTitle(itemView, titleText, titleColor);
+            getListItem.setOpened(itemView, isOpened);
+            return;
+        }
+
+        RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
+        cv.setBackgroundColor(Color.TRANSPARENT);
+        cv.setRadius(manager.csListItemRadius());
+        if (border != null)
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
+        if (title != null) {
+            title.setText(titleText);
+            if (titleColor != null) {
+                title.setTextColor(titleColor);
+            } else {
+                title.setTextColor(manager.csListItemTitleColor());
+            }
+            if (manager.csCustomFont() != null) {
+                title.setTypeface(manager.csCustomFont());
+            }
+        }
+        if (border != null)
+            border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
+        if (image != null) {
+
+            image.setImageResource(0);
+            image.setBackgroundColor(backgroundColor);
+        }
+        if (InAppStoryService.isNull()) return;
+
+    }
 }
