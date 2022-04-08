@@ -1,7 +1,7 @@
 ## Migration
 
 ### From 1.6.x or 1.7.x to 1.8.x
-Added new feeds feature to `StoriesList` and onboarding stories now has public `feed` parameter. [Here](https://github.com/inappstory/android-sdk/blob/1_8_x/docs/StoriesList.md#stories-feed) describes its usage.
+Added new feeds feature to `StoriesList` and onboarding stories now has public `feed` parameter. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#stories-feed) describes its usage.
 
 Callback for `StoriesList` and its adapter has beed changed (added `feed` parameter to methods). 
 
