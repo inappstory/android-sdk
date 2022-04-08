@@ -7,8 +7,8 @@
 	<com.inappstory.sdk.stories.ui.list.StoriesList
 	    android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-        app:cs_listIsFavorite="false"
-        app:cs_feed="customFeed"
+            app:cs_listIsFavorite="false"
+            app:cs_feed="customFeed"
 	    android:id="@+id/stories_list"/>
 ```
 
