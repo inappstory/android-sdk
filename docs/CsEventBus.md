@@ -78,9 +78,9 @@ The next 3 events also contain the method `boolean getValue()` - what state the 
 
 There are the following events for working with onboarding and single stories:
 
-14) `OnboardingLoad` - sent when the onboarding list is loaded. Contains a `getCount` method that returns the number of onboarding stories and `isEmpty` - a flag whether an empty list was returned on request or not.
+14) `OnboardingLoad` - sent when the onboarding list is loaded. Contains `getCount` method that returns the number of onboarding stories, `getFeed` that returns what feed we've loaded and `isEmpty` - a flag whether an empty list was returned on request or not.
 
-15) `OnboardingLoadError` - sent when loading the onboarding list in case of an error 
+15) `OnboardingLoadError` - sent when loading the onboarding list in case of an error. Contains `getFeed` method that returns what feed we've tried to load.
 
 16) `SingleLoad` - sent when loading single story by id (by `InAppStoryManager.getInstance().showStory` method)
 
@@ -88,7 +88,7 @@ There are the following events for working with onboarding and single stories:
 
 There are 2 events for tracking errors:
 
-1) `StoriesErrorEvent` - occurs when some kind of error comes from the server. Contains 7 different types depending on the place of origin. Has a `getType` method for getting the type of error. The types of errors:
+1) `StoriesErrorEvent` - occurs when some kind of error comes from the server. Contains 7 different types depending on the place of origin. Has a `getType` method for getting the type of error and `getFeed` that returns what feed we've try to load (for `LOAD_LIST` or `LOAD_ONBOARD` types). The types of errors:
 ```js
 OPEN_SESSION = 0;
 LOAD_LIST = 1;

@@ -50,7 +50,7 @@ Add jitpack maven repo to the root `build.gradle` in the `repositories` section 
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-	implementation 'com.github.inappstory:android-sdk:1.7.1'
+	implementation 'com.github.inappstory:android-sdk:1.8.0'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -88,15 +88,15 @@ SDK can be initialized from any point with `Context` access (`Application`, `Act
 
 ```js
 	new InAppStoryManager.Builder()
-	    	.apiKey(apiKey) //Non-null String
-		.context(context) //Context
-		.userId(userId) //Non-null String
+     		.apiKey(apiKey) //Non-null String
+      		.context(context) //Context
+      		.userId(userId) //Non-null String
 	    	.create();
 ```
 >**Attention!**  
->Methods  `create()` and `userId()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
+>Methods create() and userId() can generate DataException if SDK was not initialized. Strictly recommend to catch DataException for additional info.
 
-**Context and userId - is not optional parameters. They can't be null.** Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
+**Context and userId - is not optional parameters. UserId can't be longer than 255 characters.** Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
 ```xml
 	<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```

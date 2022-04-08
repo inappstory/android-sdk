@@ -6,7 +6,7 @@ Main SDK class. Must be initialized before loading stories from any point.
 InAppStoryManager can be initialized from any point with `Context` access (`Application`, `Activity`, `Fragment`, etc.) through `Builder` pattern
 ```java
   new InAppStoryManager.Builder()
-      .apiKey(apiKey) //String
+      .apiKey(apiKey) //Non-null String
       .context(context) //Context
       .userId(userId) //Non-null String
       .tags(tags) //ArrayList<String>
@@ -17,9 +17,9 @@ InAppStoryManager can be initialized from any point with `Context` access (`Appl
 ```
 
 >**Attention!**  
->Methods `create()` and `userId()` can generate `DataException` if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
+>Methods create() and userId() can generate DataException if SDK was not initialized. Strictly recommend to catch DataException for additional info.
 
-**Context and userId - is not optional parameters. They can't be null. UserId can't be longer than 255 characters.**  Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
+**Context and userId - is not optional parameters. UserId can't be longer than 255 characters.** Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
 ```xml
 	<string name="csApiKey">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 ```
@@ -92,10 +92,7 @@ public enum CloseReader {
 }
 
 public enum ClickAction {
-    BUTTON, // button from stories reader
-    SWIPE, // "swipe up" item in stories reader
-    GAME, // button from game reader
-    DEEPLINK, // stories with deeplink in storiesList
+    BUTTON, SWIPE, GAME
 }
 ```
 
@@ -267,7 +264,7 @@ public interface SingleLoadCallback {
 InAppStoryManager.getInstance().setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback); 
 
 public interface OnboardingLoadCallback {
-        void onboardingLoad(int count);
+        void onboardingLoad(int count, String feed);
 }
 ```
 
@@ -277,8 +274,8 @@ InAppStoryManager.getInstance().setErrorCallback(ErrorCallback errorCallback);
 //can be set with custom implementation or with ErrorCallbackAdapter class
 
 public interface ErrorCallback {
-        void loadListError();
-        void loadOnboardingError();
+        void loadListError(String feed);
+        void loadOnboardingError(String feed);
         void loadSingleError();
         void cacheError();
         void readerError();
