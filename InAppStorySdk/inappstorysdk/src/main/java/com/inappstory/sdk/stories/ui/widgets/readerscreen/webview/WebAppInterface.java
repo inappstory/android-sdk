@@ -21,6 +21,9 @@ public class WebAppInterface {
     WebAppInterface(Context c, StoriesViewManager manager) {
         //mContext = c;
         this.manager = manager;
+
+        InAppStoryManager.showDLog("InAppStory_JS_interface_init",
+                c.toString() + " " + manager.toString());
     }
 
     static String getMethodName() {

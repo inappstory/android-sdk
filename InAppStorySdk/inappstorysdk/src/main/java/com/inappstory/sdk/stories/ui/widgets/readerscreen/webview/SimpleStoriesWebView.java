@@ -214,6 +214,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
+                    InAppStoryManager.showDLog("InAppStory_content_load",
+                            SimpleStoriesWebView.this.getContext().toString() + " " + manager.toString());
                     String s0 = injectUnselectableStyle(lt);
                     loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
                 }
