@@ -23,7 +23,7 @@ public class WebAppInterface {
         this.manager = manager;
 
         InAppStoryManager.showDLog("InAppStory_JS_interface_init",
-                c.toString() + " " + manager.toString());
+                c + " " + manager);
     }
 
     static String getMethodName() {
