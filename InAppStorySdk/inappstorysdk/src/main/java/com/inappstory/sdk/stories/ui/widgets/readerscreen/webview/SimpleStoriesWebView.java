@@ -215,7 +215,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public void run() {
                     InAppStoryManager.showDLog("InAppStory_content_load",
-                            SimpleStoriesWebView.this.getContext() + " " + manager);
+                            SimpleStoriesWebView.this + " " +
+                                    SimpleStoriesWebView.this.getContext() + " " + manager);
                     String s0 = injectUnselectableStyle(lt);
                     loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
                 }
@@ -277,6 +278,10 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public void checkIfClientIsSet() {
 
         if (!clientIsSet) {
+
+            InAppStoryManager.showDLog("InAppStory_JS_interface_init",
+                    this + " " +
+                            getContext() + " " + manager);
             addJavascriptInterface(new WebAppInterface(getContext(),
                     getManager()), "Android");
             setWebViewClient(new WebViewClient() {
@@ -326,7 +331,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                     } else
                         return super.shouldInterceptRequest(view, request);
                 }
-
 
 
                 @Override
