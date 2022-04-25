@@ -12,8 +12,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,6 +68,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
@@ -243,7 +242,14 @@ public class ScreensManager {
                 bundle.putInt(CS_LIKE_ICON, manager.csLikeIcon());
                 bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
-                bundle.putBoolean(CS_TIMER_GRADIENT, manager.csTimerGradientEnable());
+                bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
+                if (manager.csTimerGradient() != null) {
+                    try {
+                        bundle.putString(CS_TIMER_GRADIENT, JsonParser.getJson(manager.csTimerGradient()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             storiesDialogFragment.setArguments(bundle);
             if (currentScreen != null) {
@@ -294,7 +300,14 @@ public class ScreensManager {
                 intent2.putExtra(CS_LIKE_ICON, manager.csLikeIcon());
                 intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
-                intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradientEnable());
+                intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
+                if (manager.csTimerGradient() != null) {
+                    try {
+                        intent2.putExtra(CS_TIMER_GRADIENT, JsonParser.getJson(manager.csTimerGradient()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

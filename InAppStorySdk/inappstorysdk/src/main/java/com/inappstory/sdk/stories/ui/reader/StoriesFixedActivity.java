@@ -21,7 +21,6 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -58,6 +57,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 import java.util.List;
@@ -252,7 +252,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
                 getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
                 getIntent().getIntExtra(CS_CLOSE_POSITION, 1),
-                //,
                 getIntent().getBooleanExtra(CS_HAS_LIKE, false),
                 getIntent().getBooleanExtra(CS_HAS_FAVORITE, false),
                 getIntent().getBooleanExtra(CS_HAS_SHARE, false),
@@ -263,7 +262,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
                 getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getIntent().getBooleanExtra(CS_TIMER_GRADIENT, true)
+                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true),
+                getIntent().getStringExtra(CS_TIMER_GRADIENT)
         );
         try {
             bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));

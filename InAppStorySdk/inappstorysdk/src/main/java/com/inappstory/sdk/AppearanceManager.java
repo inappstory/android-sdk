@@ -21,6 +21,9 @@ import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
  * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStoriesInner()}.
@@ -32,7 +35,9 @@ public class AppearanceManager {
     public static final String CS_NAVBAR_COLOR = "navBarColor";
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
 
-    public static final String CS_TIMER_GRADIENT = "timerGradientEnable";
+    public static final String CS_TIMER_GRADIENT_ENABLE = "timerGradientEnable";
+    public static final String CS_TIMER_GRADIENT = "timerGradient";
+
     public static final String CS_HAS_LIKE = "hasLike";
     public static final String CS_HAS_FAVORITE = "hasFavorite";
     public static final String CS_HAS_SHARE = "hasShare";
@@ -111,6 +116,25 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldFont;
     private Typeface csCustomSecondaryItalicFont;
     private Typeface csCustomSecondaryBoldItalicFont;
+
+    private StoriesGradientObject csTimerGradient;
+
+    public class StoriesGradientObject {
+        public Integer csGradientHeight = 100;
+        public int csStartColor = Color.parseColor("#00000000");
+        public List<Integer> csColors = new ArrayList<>();
+        public List<Float> csLocations = new ArrayList<>();
+        public int csEndColor = Color.parseColor("#50000000");
+    }
+
+    public AppearanceManager csTimerGradient(StoriesGradientObject csTimerGradient) {
+        this.csTimerGradient = csTimerGradient;
+        return AppearanceManager.this;
+    }
+
+    public StoriesGradientObject csTimerGradient() {
+        return csTimerGradient;
+    }
 
     private int csCoverQuality;
 

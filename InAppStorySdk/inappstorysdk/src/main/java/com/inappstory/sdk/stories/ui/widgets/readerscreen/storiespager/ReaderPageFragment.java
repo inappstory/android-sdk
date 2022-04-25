@@ -2,13 +2,16 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
+import android.graphics.Shader;
+import android.graphics.drawable.PaintDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RectShape;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,12 +20,10 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.Fragment;
 
@@ -47,7 +48,9 @@ import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
-import static com.inappstory.sdk.InAppStoryManager.testGenerated;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReaderPageFragment extends Fragment {
     ReaderPageManager manager;
@@ -350,7 +353,7 @@ public class ReaderPageFragment extends Fragment {
         addButtonsPanel(context, readerContainer);
         // readerContainer.addView(createProgressContainer(context));
         readerContainer.addView(createWebViewContainer(context));
-        if (readerSettings.timerGradient)
+        if (readerSettings.timerGradientEnable)
             addGradient(context, readerContainer);
 
         createLoader();
@@ -388,14 +391,14 @@ public class ReaderPageFragment extends Fragment {
         ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
         webViewContainer.addView(((SimpleStoriesWebView) storiesView));
 
-        View gradient = new View(context);
+     /*   View gradient = new View(context);
         gradient.setClickable(false);
         gradient.setLayoutParams(lp);
         gradient.setBackground(AppCompatResources.getDrawable(context, R.drawable.story_gradient));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             gradient.setElevation(8);
         }
-        webViewContainer.addView(gradient);
+        webViewContainer.addView(gradient);*/
         return webViewContainer;
     }
 
@@ -425,15 +428,57 @@ public class ReaderPageFragment extends Fragment {
 
     private void addGradient(Context context, RelativeLayout relativeLayout) {
         View gradientView = new View(context);
-        gradientView.setLayoutParams(new RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT
-        ));
+        );
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             gradientView.setElevation(8);
         }
         gradientView.setClickable(false);
-        gradientView.setBackground(getResources().getDrawable(R.drawable.story_gradient));
+        if (readerSettings.timerGradient != null) {
+            List<Integer> colors = readerSettings.timerGradient.csColors;
+            List<Float> locations = readerSettings.timerGradient.csLocations;
+            if (colors == null ||
+                    colors.isEmpty()) {
+                return;
+            }
+            if (locations == null
+                    || locations.isEmpty()) {
+                locations = new ArrayList<>();
+                locations.add(0f);
+                locations.add(1f);
+            }
+            if (colors.size() != locations.size()) return;
+
+            if (readerSettings.timerGradient.csGradientHeight > 0) {
+                lp.height = Sizes.dpToPxExt(readerSettings.timerGradient.csGradientHeight, getContext());
+            }
+            ShapeDrawable.ShaderFactory shaderFactory = new ShapeDrawable.ShaderFactory() {
+                @Override
+                public Shader resize(int width, int height) {
+                    int[] colorsArray = new int[readerSettings.timerGradient.csColors.size()];
+                    float[] locationsArray = new float[readerSettings.timerGradient.csColors.size()];
+                    for (int i = 0; i < readerSettings.timerGradient.csColors.size(); i++) {
+                        colorsArray[i] = readerSettings.timerGradient.csColors.get(i);
+                        locationsArray[i] = readerSettings.timerGradient.csLocations.get(i);
+                    }
+                    LinearGradient linearGradient = new LinearGradient(0, 0, width, height,
+                            colorsArray,
+                            locationsArray,
+                            Shader.TileMode.REPEAT);
+                    return linearGradient;
+                }
+            };
+            PaintDrawable paint = new PaintDrawable();
+            paint.setShape(new RectShape());
+            paint.setShaderFactory(shaderFactory);
+            gradientView.setBackground(paint);
+        } else {
+            gradientView.setBackground(getResources().getDrawable(R.drawable.story_gradient));
+        }
+
+        gradientView.setLayoutParams(lp);
         relativeLayout.addView(gradientView);
     }
 

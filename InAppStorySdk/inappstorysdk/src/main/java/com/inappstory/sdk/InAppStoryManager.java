@@ -1203,7 +1203,7 @@ public class InAppStoryManager {
             appearanceManager.csCloseOnOverscroll(settings.closeOnOverscroll);
             appearanceManager.csCloseOnSwipe(settings.closeOnSwipe);
             appearanceManager.csIsDraggable(true);
-            appearanceManager.csTimerGradientEnable(settings.timerGradient);
+            appearanceManager.csTimerGradientEnable(settings.timerGradientEnable);
             appearanceManager.csStoryReaderAnimation(settings.readerAnimation);
             appearanceManager.csCloseIcon(settings.closeIcon);
             appearanceManager.csDislikeIcon(settings.dislikeIcon);
