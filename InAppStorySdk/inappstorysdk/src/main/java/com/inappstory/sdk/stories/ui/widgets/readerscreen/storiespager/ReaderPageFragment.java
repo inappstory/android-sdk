@@ -439,30 +439,31 @@ public class ReaderPageFragment extends Fragment {
         if (readerSettings.timerGradient != null) {
             List<Integer> colors = readerSettings.timerGradient.csColors;
             List<Float> locations = readerSettings.timerGradient.csLocations;
+            final int[] colorsArray = new int[readerSettings.timerGradient.csColors.size()];
+            final float[] locationsArray = new float[readerSettings.timerGradient.csColors.size()];
+
             if (colors == null ||
                     colors.isEmpty()) {
                 return;
             }
-            if (locations == null
-                    || locations.isEmpty()) {
-                locations = new ArrayList<>();
-                locations.add(0f);
-                locations.add(1f);
-            }
             if (colors.size() != locations.size()) return;
-
+            int i = 0;
+            for (Integer color: colors) {
+                colorsArray[i] = color.intValue();
+                i++;
+            }
+            i = 0;
+            for (Float location: locations) {
+                locationsArray[i] = location.floatValue();
+                i++;
+            }
             if (readerSettings.timerGradient.csGradientHeight > 0) {
                 lp.height = Sizes.dpToPxExt(readerSettings.timerGradient.csGradientHeight, getContext());
             }
             ShapeDrawable.ShaderFactory shaderFactory = new ShapeDrawable.ShaderFactory() {
                 @Override
                 public Shader resize(int width, int height) {
-                    int[] colorsArray = new int[readerSettings.timerGradient.csColors.size()];
-                    float[] locationsArray = new float[readerSettings.timerGradient.csColors.size()];
-                    /*for (int i = 0; i < readerSettings.timerGradient.csColors.size(); i++) {
-                        colorsArray[i] = readerSettings.timerGradient.csColors.get(i);
-                        locationsArray[i] = readerSettings.timerGradient.csLocations.get(i).floatValue();
-                    }*/
+
                     return new LinearGradient(0f, 0f, 1f*width, 1f*height,
                             colorsArray,
                             locationsArray,
