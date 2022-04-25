@@ -6,16 +6,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StoriesGradientObject {
-    public void csGradientHeight(Integer csGradientHeight) {
+    public StoriesGradientObject csGradientHeight(Integer csGradientHeight) {
         this.csGradientHeight = csGradientHeight;
+        return this;
     }
 
-    public void csColors(List<Integer> csColors) {
+    public StoriesGradientObject csColors(List<Integer> csColors) {
         this.csColors = csColors;
+        return this;
     }
 
-    public void csLocations(List<Float> csLocations) {
+    public StoriesGradientObject csLocations(List<Float> csLocations) {
         this.csLocations = csLocations;
+        return this;
     }
 
 
