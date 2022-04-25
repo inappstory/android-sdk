@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
+import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
@@ -119,13 +120,7 @@ public class AppearanceManager {
 
     private StoriesGradientObject csTimerGradient;
 
-    public class StoriesGradientObject {
-        public Integer csGradientHeight = 100;
-        public int csStartColor = Color.parseColor("#00000000");
-        public List<Integer> csColors = new ArrayList<>();
-        public List<Float> csLocations = new ArrayList<>();
-        public int csEndColor = Color.parseColor("#50000000");
-    }
+
 
     public AppearanceManager csTimerGradient(StoriesGradientObject csTimerGradient) {
         this.csTimerGradient = csTimerGradient;

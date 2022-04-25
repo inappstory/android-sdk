@@ -19,7 +19,7 @@ public class StoriesReaderSettings {
     public int refreshIcon;
     public int soundIcon;
     public boolean timerGradientEnable;
-    public AppearanceManager.StoriesGradientObject timerGradient;
+    public StoriesGradientObject timerGradient;
 
 
     public StoriesReaderSettings(boolean closeOnSwipe, boolean closeOnOverscroll,
@@ -47,7 +47,7 @@ public class StoriesReaderSettings {
         this.timerGradientEnable = timerGradient;
         if (gradientSettings != null) {
             this.timerGradient = JsonParser.fromJson(gradientSettings,
-                    AppearanceManager.StoriesGradientObject.class);
+                    StoriesGradientObject.class);
         }
     }
 
