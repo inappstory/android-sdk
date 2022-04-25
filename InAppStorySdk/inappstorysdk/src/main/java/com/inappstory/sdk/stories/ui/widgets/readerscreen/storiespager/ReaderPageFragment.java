@@ -461,7 +461,7 @@ public class ReaderPageFragment extends Fragment {
                     float[] locationsArray = new float[readerSettings.timerGradient.csColors.size()];
                     for (int i = 0; i < readerSettings.timerGradient.csColors.size(); i++) {
                         colorsArray[i] = readerSettings.timerGradient.csColors.get(i);
-                        locationsArray[i] = new Float(readerSettings.timerGradient.csLocations.get(i));
+                        locationsArray[i] = readerSettings.timerGradient.csLocations.get(i)*1f;
                     }
                     LinearGradient linearGradient = new LinearGradient(0, 0, width, height,
                             colorsArray,
