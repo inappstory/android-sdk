@@ -463,11 +463,10 @@ public class ReaderPageFragment extends Fragment {
                         colorsArray[i] = readerSettings.timerGradient.csColors.get(i);
                         locationsArray[i] = readerSettings.timerGradient.csLocations.get(i)*1f;
                     }
-                    LinearGradient linearGradient = new LinearGradient(0, 0, width, height,
+                    return new LinearGradient(0f, 0f, 1f*width, 1f*height,
                             colorsArray,
                             locationsArray,
                             Shader.TileMode.REPEAT);
-                    return linearGradient;
                 }
             };
             PaintDrawable paint = new PaintDrawable();
