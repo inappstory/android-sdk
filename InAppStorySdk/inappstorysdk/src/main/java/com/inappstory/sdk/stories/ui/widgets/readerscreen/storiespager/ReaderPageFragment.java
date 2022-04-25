@@ -459,10 +459,10 @@ public class ReaderPageFragment extends Fragment {
                 public Shader resize(int width, int height) {
                     int[] colorsArray = new int[readerSettings.timerGradient.csColors.size()];
                     float[] locationsArray = new float[readerSettings.timerGradient.csColors.size()];
-                    for (int i = 0; i < readerSettings.timerGradient.csColors.size(); i++) {
+                    /*for (int i = 0; i < readerSettings.timerGradient.csColors.size(); i++) {
                         colorsArray[i] = readerSettings.timerGradient.csColors.get(i);
                         locationsArray[i] = readerSettings.timerGradient.csLocations.get(i).floatValue();
-                    }
+                    }*/
                     return new LinearGradient(0f, 0f, 1f*width, 1f*height,
                             colorsArray,
                             locationsArray,
