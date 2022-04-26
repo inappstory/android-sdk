@@ -121,7 +121,7 @@ StoriesGradientObject gradient = new StoriesGradientObject()
                 )
             )
             .csLocations(mutableListOf(0f, 0.2f, 1f))
-            .csGradientHeight(-1)
+            .csGradientHeight(0)
 
 ```
 
