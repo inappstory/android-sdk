@@ -1,8 +1,5 @@
 package com.inappstory.sdk.stories.ui.reader;
 
-import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.network.JsonParser;
-
 public class StoriesReaderSettings {
     public boolean closeOnSwipe;
     public boolean closeOnOverscroll;
@@ -29,7 +26,8 @@ public class StoriesReaderSettings {
                                  int likeIcon, int dislikeIcon,
                                  int shareIcon, int closeIcon,
                                  int refreshIcon, int soundIcon,
-                                 boolean timerGradient, String gradientSettings) {
+                                 boolean timerGradientEnable,
+                                 StoriesGradientObject timerGradient) {
         this.closeOnSwipe = closeOnSwipe;
         this.closeOnOverscroll = closeOnOverscroll;
         this.closePosition = closePosition;
@@ -44,11 +42,10 @@ public class StoriesReaderSettings {
         this.closeIcon = closeIcon;
         this.refreshIcon = refreshIcon;
         this.soundIcon = soundIcon;
-        this.timerGradientEnable = timerGradient;
-        if (gradientSettings != null) {
-            this.timerGradient = JsonParser.fromJson(gradientSettings,
-                    StoriesGradientObject.class);
-        }
+        this.timerGradientEnable = timerGradientEnable;
+        this.timerGradient = timerGradient;
+
+
     }
 
     public StoriesReaderSettings() {

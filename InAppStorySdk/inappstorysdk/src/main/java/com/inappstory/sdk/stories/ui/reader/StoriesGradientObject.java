@@ -2,10 +2,11 @@ package com.inappstory.sdk.stories.ui.reader;
 
 import android.graphics.Color;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoriesGradientObject {
+public class StoriesGradientObject implements Serializable {
     public StoriesGradientObject csGradientHeight(Integer csGradientHeight) {
         this.csGradientHeight = csGradientHeight;
         return this;

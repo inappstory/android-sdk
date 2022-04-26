@@ -245,7 +245,7 @@ public class ScreensManager {
                 bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
                 if (manager.csTimerGradient() != null) {
                     try {
-                        bundle.putString(CS_TIMER_GRADIENT, JsonParser.getJson(manager.csTimerGradient()));
+                        bundle.putSerializable(CS_TIMER_GRADIENT, manager.csTimerGradient());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -303,7 +303,7 @@ public class ScreensManager {
                 intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
                 if (manager.csTimerGradient() != null) {
                     try {
-                        intent2.putExtra(CS_TIMER_GRADIENT, JsonParser.getJson(manager.csTimerGradient()));
+                        intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
