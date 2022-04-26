@@ -461,13 +461,13 @@ public class ReaderPageFragment extends Fragment {
                 i++;
             }
             if (timerGradient.csGradientHeight > 0) {
-                lp.height = Sizes.dpToPxExt(timerGradient.csGradientHeight, getContext());
+                lp.height = Sizes.dpToPxExt(timerGradient.csGradientHeight, context);
             }
             ShapeDrawable.ShaderFactory shaderFactory = new ShapeDrawable.ShaderFactory() {
                 @Override
                 public Shader resize(int width, int height) {
 
-                    return new LinearGradient(0f, 0f, 1f*width, 1f*height,
+                    return new LinearGradient(0f, 0f, 0f, 1f*height,
                             colorsArray,
                             locationsArray,
                             Shader.TileMode.REPEAT);
