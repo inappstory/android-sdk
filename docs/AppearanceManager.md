@@ -61,6 +61,7 @@ Another parameters can be set separately for list/onboardings/single:
 | csSoundIcon                      | Integer(id)         | R.drawable.ic_stories_status_sound		|Reader | icon for sound button in reader.		|
 | csCoverQuality                   | Integer             | 0 	  |List | quality for stories list covers. If not set - sdk uses medium image quality (`QUALITY_MEDIUM = 1; QUALITY_HIGH = 2;`)|
 | csTimerGradientEnable 		   | Boolean             | false   |Reader | Flag that is responsible for show dark gradient behind timer in reader  |
+| csTimerGradient                  | StoriesGradientObject | null  |Reader | Appearance for gradient shade in reader |
 
 All setters returns `AppearanceManager` instance, and can be set like this:
 
@@ -93,6 +94,36 @@ This two interfaces can be set separately for each list. More information about 
 
 Also `AppearanceManager` has allow you to customize loaders in story reader and game reader with next two interfaces.
 This interface must be set for the common `AppearanceManager`.
+
+
+#### Reader gradient
+
+`AppearanceManager` has two parameters thar responsible for gradient in reader under timer. `csTimerGradientEnable` can be used to turn on/off that gradient and `csTimerGradient` - to customize its appearance. To customize you should pass StoriesGradientObject to setter. 
+
+```js
+class StoriesGradientObject {
+    Integer csGradientHeight; //by default equals 100 dp
+    List<Integer> csColors; //by default equals {0x00000000, 0x50000000}
+    List<Float> csLocations; //by default equals {0f, 1f}
+}
+```
+
+You can set `csColors` and `csLocatios` must have equal size that has to be greater or equal than 2. Also if you want create a fullscreen gradient - you can set `csGradientHeight` as 0. 
+`StoriesGradientObject` parameters can be set through `Builder` pattern
+
+```js
+StoriesGradientObject gradient = new StoriesGradientObject()
+            .csColors(
+                mutableListOf(
+                    Color.parseColor("#90000000"),
+                    Color.parseColor("#00000000"),
+                    Color.parseColor("#00000000")
+                )
+            )
+            .csLocations(mutableListOf(0f, 0.2f, 1f))
+            .csGradientHeight(-1)
+
+```
 
 #### ILoaderView
 
