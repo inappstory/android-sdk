@@ -301,13 +301,7 @@ public class ScreensManager {
                 intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
                 intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                if (manager.csTimerGradient() != null) {
-                    try {
-                        intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+                intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

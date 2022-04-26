@@ -27,12 +27,14 @@ import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
+import java.io.Serializable;
 import java.util.List;
 
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
 
@@ -97,6 +99,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     boolean closeOnOverscroll = true;
 
     String readerSettings;
+    Serializable timerGradient;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -110,6 +113,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (isDestroyed) return;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         readerSettings = getArguments().getString(CS_READER_SETTINGS);
+        timerGradient = getArguments().getSerializable(CS_TIMER_GRADIENT);
         storiesViewPager.setParameters(
                 getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
         currentIds = getArguments().getIntegerArrayList("stories_ids");
@@ -122,6 +126,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
                         readerSettings,
+                        timerGradient,
                         currentIds, readerManager);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);

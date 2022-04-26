@@ -408,10 +408,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
                 getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true),
-                (StoriesGradientObject) getIntent().getSerializableExtra(CS_TIMER_GRADIENT)
+                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true)
         );
         try {
+            bundle.putSerializable(CS_TIMER_GRADIENT, getIntent().getSerializableExtra(CS_TIMER_GRADIENT));
             bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {

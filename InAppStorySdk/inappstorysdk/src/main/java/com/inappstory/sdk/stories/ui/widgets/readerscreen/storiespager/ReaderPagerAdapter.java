@@ -11,11 +11,13 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     private List<Integer> storiesIds = new ArrayList<>();
@@ -32,12 +34,16 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
 
     ReaderManager manager;
 
-    public ReaderPagerAdapter(@NonNull FragmentManager fm, String readerSettings, List<Integer> ids,
+    public ReaderPagerAdapter(@NonNull FragmentManager fm,
+                              String readerSettings,
+                              Serializable timerGradient,
+                              List<Integer> ids,
                               ReaderManager manager) {
         super(fm);
         this.storiesIds.clear();
         this.storiesIds.addAll(ids);
         this.readerSettings = readerSettings;
+        this.timerGradient = timerGradient;
         this.manager = manager;
     }
 
@@ -66,6 +72,8 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
             new HashMap<>();
 
 
+    Serializable timerGradient;
+
     @NonNull
     @Override
     public Fragment getItem(int position) {
@@ -73,6 +81,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         Bundle a = new Bundle();
         a.putInt("story_id", storiesIds.get(position));
         a.putString(CS_READER_SETTINGS, readerSettings);
+        a.putSerializable(CS_TIMER_GRADIENT, timerGradient);
         frag.setArguments(a);
         frag.parentManager = manager;
         return frag;

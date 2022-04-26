@@ -279,10 +279,10 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 getArguments().getInt(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getArguments().getInt(CS_REFRESH_ICON, R.drawable.ic_refresh),
                 getArguments().getInt(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getArguments().getBoolean(CS_TIMER_GRADIENT_ENABLE, true),
-                (StoriesGradientObject) getArguments().getSerializable(CS_TIMER_GRADIENT)
+                getArguments().getBoolean(CS_TIMER_GRADIENT_ENABLE, true)
         );
         try {
+            bundle.putSerializable(CS_TIMER_GRADIENT, getArguments().getSerializable(CS_TIMER_GRADIENT));
             bundle.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {

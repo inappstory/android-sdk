@@ -37,6 +37,7 @@ import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
+import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
@@ -46,6 +47,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 
@@ -280,6 +282,7 @@ public class ReaderPageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         readerSettings = JsonParser.fromJson(getArguments().getString(CS_READER_SETTINGS),
                 StoriesReaderSettings.class);
+        timerGradient = (StoriesGradientObject) getArguments().getSerializable(CS_TIMER_GRADIENT);
         try {
             return createFragmentView(container);
         } catch (Exception e) {
@@ -436,11 +439,11 @@ public class ReaderPageFragment extends Fragment {
             gradientView.setElevation(8);
         }
         gradientView.setClickable(false);
-        if (readerSettings.timerGradient != null) {
-            List<Integer> colors = readerSettings.timerGradient.csColors;
-            List<Float> locations = readerSettings.timerGradient.csLocations;
-            final int[] colorsArray = new int[readerSettings.timerGradient.csColors.size()];
-            final float[] locationsArray = new float[readerSettings.timerGradient.csColors.size()];
+        if (timerGradient != null) {
+            List<Integer> colors = timerGradient.csColors;
+            List<Float> locations = timerGradient.csLocations;
+            final int[] colorsArray = new int[timerGradient.csColors.size()];
+            final float[] locationsArray = new float[timerGradient.csColors.size()];
 
             if (colors == null ||
                     colors.isEmpty()) {
@@ -457,8 +460,8 @@ public class ReaderPageFragment extends Fragment {
                 locationsArray[i] = location.floatValue();
                 i++;
             }
-            if (readerSettings.timerGradient.csGradientHeight > 0) {
-                lp.height = Sizes.dpToPxExt(readerSettings.timerGradient.csGradientHeight, getContext());
+            if (timerGradient.csGradientHeight > 0) {
+                lp.height = Sizes.dpToPxExt(timerGradient.csGradientHeight, getContext());
             }
             ShapeDrawable.ShaderFactory shaderFactory = new ShapeDrawable.ShaderFactory() {
                 @Override
@@ -510,6 +513,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     StoriesReaderSettings readerSettings = null;
+    StoriesGradientObject timerGradient = null;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
