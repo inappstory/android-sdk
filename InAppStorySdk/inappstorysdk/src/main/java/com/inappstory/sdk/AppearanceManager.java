@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +87,7 @@ public class AppearanceManager {
 
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
+    private IStoriesListUGCItem csListUGCItemInterface;
     private ILoaderView csLoaderView;
     private IGameLoaderView csGameLoaderView;
     private StoryTouchListener storyTouchListener;
@@ -96,6 +98,7 @@ public class AppearanceManager {
 
     private boolean csHasLike;
     private boolean csHasFavorite;
+    private boolean csHasUGC;
     private boolean csHasShare;
     private boolean csTimerGradientEnable = true;
 
@@ -376,6 +379,11 @@ public class AppearanceManager {
 
     public boolean csHasFavorite() {
         return csHasFavorite;
+
+    }
+
+    public boolean csHasUGC() {
+        return csHasUGC;
     }
 
     public boolean csHasShare() {
@@ -446,6 +454,12 @@ public class AppearanceManager {
         this.csHasFavorite = hasFavorite;
         return AppearanceManager.this;
     }
+
+    public AppearanceManager csHasUGC(boolean hasUGC) {
+        this.csHasUGC = csHasUGC;
+        return AppearanceManager.this;
+    }
+
 
     /**
      * use to turn on/off share feature (available in stories reader)
@@ -856,6 +870,15 @@ public class AppearanceManager {
 
     public AppearanceManager csListItemInterface(IStoriesListItem csListItemInterface) {
         this.csListItemInterface = csListItemInterface;
+        return AppearanceManager.this;
+    }
+
+    public IStoriesListUGCItem csListUGCItemInterface() {
+        return csListUGCItemInterface;
+    }
+
+    public AppearanceManager csListItemInterface(IStoriesListUGCItem csListUGCItemInterface) {
+        this.csListUGCItemInterface = csListUGCItemInterface;
         return AppearanceManager.this;
     }
 

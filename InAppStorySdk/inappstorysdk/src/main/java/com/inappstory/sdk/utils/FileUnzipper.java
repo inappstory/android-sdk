@@ -1,4 +1,4 @@
-package com.inappstory.sdk.game.loader;
+package com.inappstory.sdk.utils;
 
 import android.content.Context;
 

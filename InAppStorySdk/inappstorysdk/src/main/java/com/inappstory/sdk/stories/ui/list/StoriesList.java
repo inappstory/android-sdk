@@ -35,6 +35,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
@@ -210,6 +211,12 @@ public class StoriesList extends RecyclerView {
 
     AppearanceManager appearanceManager;
     OnFavoriteItemClick favoriteItemClick;
+    OnUGCItemClick ugcItemClick;
+
+    public void setOnUGCItemClick(OnUGCItemClick ugcItemClick) {
+        this.ugcItemClick = ugcItemClick;
+    }
+
 
     boolean readerIsOpened = false;
 
@@ -413,8 +420,17 @@ public class StoriesList extends RecyclerView {
     }
 
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
-        adapter = new StoriesAdapter(getContext(), uniqueID,
-                storiesIds, appearanceManager, favoriteItemClick, isFavoriteList, callback, getFeed());
+        adapter = new StoriesAdapter(getContext(),
+                uniqueID,
+                storiesIds,
+                appearanceManager,
+                isFavoriteList,
+                callback,
+                getFeed(),
+                appearanceManager.csHasFavorite(),
+                favoriteItemClick,
+                appearanceManager.csHasUGC(),
+                ugcItemClick);
         setLayoutManager(layoutManager);
         setAdapter(adapter);
     }
@@ -467,7 +483,8 @@ public class StoriesList extends RecyclerView {
                                 setOrRefreshAdapter(storiesIds);
                                 ProfilingManager.getInstance().setReady(listUid);
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
-                                if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
+                                if (callback != null)
+                                    callback.storiesLoaded(storiesIds.size(), getFeed());
                             }
 
                             @Override

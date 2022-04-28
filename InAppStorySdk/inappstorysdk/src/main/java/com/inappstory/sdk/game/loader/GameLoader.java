@@ -9,6 +9,7 @@ import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.utils.FileUnzipper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;

@@ -71,6 +71,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.ugc.list.UGCInitData;
 
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
@@ -693,6 +694,10 @@ public class InAppStoryManager {
         } else {
             throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));
         }
+    }
+
+    public void openUGCEditor(UGCInitData data) {
+        ScreensManager.getInstance().openUGCEditor(data);
     }
 
     //Test

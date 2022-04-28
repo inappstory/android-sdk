@@ -34,37 +34,28 @@ import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoryListItem extends RecyclerView.ViewHolder {
+public class StoryListItem extends BaseStoryListItem {
 
-    AppCompatTextView title;
-    AppCompatTextView source;
-    AppCompatImageView image;
-    VideoPlayer video;
-    AppCompatImageView hasAudioIcon;
-    View border;
-    AppearanceManager manager;
-    boolean isFavorite;
-    IGetFavoriteListItem getFavoriteListItem;
-    IStoriesListItem getListItem;
+    protected AppCompatTextView source;
+    protected AppCompatImageView image;
+    protected VideoPlayer video;
+    protected AppCompatImageView hasAudioIcon;
+    protected View border;
+    public boolean isOpened;
+    public boolean hasVideo;
 
-    protected View getDefaultFavoriteCell() {
-        int count = InAppStoryService.isNotNull() ?
-                InAppStoryService.getInstance().getFavoriteImages().size() : 0;
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem() != null) {
-            return getFavoriteListItem.getFavoriteItem();
+    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
+        super(itemView, manager, false, false);
+        this.isOpened = isOpened;
+        this.hasVideo = hasVideo;
+        ViewGroup vg = itemView.findViewById(R.id.baseLayout);
+        vg.removeAllViews();
+        if (hasVideo) {
+
+            vg.addView(getDefaultVideoCell());
+        } else {
+            vg.addView(getDefaultCell());
         }
-        View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
-        RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
-        cv.setRadius(manager.csListItemRadius());
-        cv.setBackgroundColor(Color.WHITE);
-        title = v.findViewById(R.id.title);
-        return v;
-    }
-
-    private void createDefaultFavoriteCell() {
-    }
-
-    private void createDefaultCell() {
     }
 
     protected View getDefaultCell() {
@@ -137,225 +128,6 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                     PorterDuff.Mode.SRC_ATOP);
         }
         return v;
-    }
-
-    View v0;
-
-    public boolean isOpened;
-    public boolean hasVideo;
-
-    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean isFavorite, boolean hasVideo) {
-        super(itemView);
-        this.manager = manager;
-        this.isFavorite = isFavorite;
-        this.isOpened = isOpened;
-        this.hasVideo = hasVideo;
-        ViewGroup vg = itemView.findViewById(R.id.baseLayout);
-        vg.removeAllViews();
-        getFavoriteListItem = manager.csFavoriteListItemInterface();
-        getListItem = manager.csListItemInterface();
-
-        if (isFavorite) {
-            vg.addView(getDefaultFavoriteCell());
-        } else {
-            if (hasVideo) {
-                v0 = getDefaultVideoCell();
-                // setIsRecyclable(false);
-            } else {
-                v0 = getDefaultCell();
-            }
-            vg.addView(v0);
-        }
-        if (manager.csListItemMargin() >= 0) {
-            RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
-            lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin() / 2), 0,
-                    Sizes.dpToPxExt(manager.csListItemMargin() / 2), 0);
-            itemView.setLayoutParams(lp);
-        }
-
-    }
-
-    private void setImage(AppCompatImageView imageView, FavoriteImage image) {
-        if (image.getImage() != null && InAppStoryService.isNotNull()) {
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
-                    InAppStoryService.getInstance().getFastCache());
-        } else {
-            imageView.setBackgroundColor(image.getBackgroundColor());
-        }
-    }
-
-    private void loadFavoriteImages(final LoadFavoriteImagesCallback callback, final int count) {
-        final List<String> downloadImages = new ArrayList<>();
-        final int[] i = {0};
-        RunnableCallback runnableCallback = new RunnableCallback() {
-            @Override
-            public void run(String path) {
-                if (InAppStoryService.isNull()) return;
-                downloadImages.add(path);
-                i[0]++;
-                if (i[0] >= count)
-                    callback.onLoad(downloadImages);
-                else {
-                    downloadFileAndSendToInterface(InAppStoryService.getInstance()
-                            .getFavoriteImages().get(i[0]).getUrl(), this);
-                }
-            }
-
-            @Override
-            public void error() {
-                if (InAppStoryService.isNull()) return;
-                downloadImages.add(null);
-                i[0]++;
-                if (i[0] >= count)
-                    callback.onLoad(downloadImages);
-                else {
-                    downloadFileAndSendToInterface(InAppStoryService.getInstance()
-                            .getFavoriteImages().get(i[0]).getUrl(), this);
-                }
-            }
-        };
-        downloadFileAndSendToInterface(InAppStoryService.getInstance()
-                .getFavoriteImages().get(0).getUrl(), runnableCallback);
-    }
-
-    interface LoadFavoriteImagesCallback {
-        void onLoad(List<String> downloadImages);
-    }
-
-    public void bindFavorite() {
-
-        if (getFavoriteListItem != null
-                && InAppStoryService.isNotNull()
-                && getFavoriteListItem.getFavoriteItem() != null) {
-            int count = Math.min(InAppStoryService.getInstance().getFavoriteImages().size(), 4);
-            final List<Integer> backgroundColors = new ArrayList<>();
-            for (int j = 0; j < count; j++) {
-                backgroundColors.add(InAppStoryService.getInstance().getFavoriteImages().get(j).getBackgroundColor());
-            }
-            getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
-            loadFavoriteImages(new LoadFavoriteImagesCallback() {
-                @Override
-                public void onLoad(List<String> downloadImages) {
-                    getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,
-                            downloadImages.size());
-                }
-            }, count);
-            return;
-        }
-        RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
-        boolean lpC = false;
-        View outerLayout = itemView.findViewById(R.id.outerLayout);
-        if (manager.csListItemHeight() != null) {
-            outerLayout.getLayoutParams().height = manager.csListItemHeight();
-            lpC = true;
-        }
-        if (manager.csListItemWidth() != null) {
-            outerLayout.getLayoutParams().width = manager.csListItemWidth();
-            lpC = true;
-        }
-        if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
-        if (title != null) {
-            title.setText("Favorites");
-            if (manager.csCustomFont() != null) {
-                title.setTypeface(manager.csCustomFont());
-            }
-            title.setTextColor(manager.csListItemTitleColor());
-        }
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-        int halfHeight = Sizes.dpToPxExt(55);
-        int halfWidth = Sizes.dpToPxExt(55);
-        int height = Sizes.dpToPxExt(110);
-        int width = Sizes.dpToPxExt(110);
-        if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
-                && manager.csListItemInterface().getVideoView() == null)) {
-            if (manager.csListItemHeight() != null) {
-                height = manager.csListItemHeight() - Sizes.dpToPxExt(10);
-                halfHeight = manager.csListItemHeight() / 2 - Sizes.dpToPxExt(5);
-            }
-            if (manager.csListItemWidth() != null) {
-                width = manager.csListItemWidth() - Sizes.dpToPxExt(10);
-                halfWidth = manager.csListItemWidth() / 2 - Sizes.dpToPxExt(5);
-            }
-        }
-        if (favImages.size() > 0 && imageViewLayout != null) {
-            AppCompatImageView image1 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image2 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image3 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image4 = new AppCompatImageView(itemView.getContext());
-
-            RelativeLayout.LayoutParams piece2;
-            RelativeLayout.LayoutParams piece3;
-            RelativeLayout.LayoutParams piece4;
-            switch (favImages.size()) {
-                case 1:
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    setImage(image1, favImages.get(0));
-                    imageViewLayout.addView(image1);
-                    break;
-                case 2:
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    image2.setLayoutParams(piece2);
-
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    break;
-                case 3:
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            height - halfHeight);
-                    piece3 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    image2.setLayoutParams(piece2);
-                    image3.setLayoutParams(piece3);
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    setImage(image3, favImages.get(2));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    imageViewLayout.addView(image3);
-                    break;
-                default:
-
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            height - halfHeight);
-                    piece3 = new RelativeLayout.LayoutParams(width - halfWidth,
-                            halfHeight);
-                    piece4 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
-
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    piece4.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            height - halfHeight));
-                    image2.setLayoutParams(piece2);
-                    image3.setLayoutParams(piece3);
-                    image4.setLayoutParams(piece4);
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    setImage(image3, favImages.get(2));
-                    setImage(image4, favImages.get(3));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    imageViewLayout.addView(image3);
-                    imageViewLayout.addView(image4);
-                    break;
-
-            }
-        }
     }
 
     interface RunnableCallback {
@@ -511,5 +283,15 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 }
             }
         }
+    }
+
+    @Override
+    public void bindFavorite() {
+
+    }
+
+    @Override
+    public void bindUGC() {
+
     }
 }
