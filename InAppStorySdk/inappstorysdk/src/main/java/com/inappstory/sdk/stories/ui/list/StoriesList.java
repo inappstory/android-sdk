@@ -427,10 +427,10 @@ public class StoriesList extends RecyclerView {
                 isFavoriteList,
                 callback,
                 getFeed(),
-                appearanceManager.csHasFavorite(),
-                favoriteItemClick,
-                appearanceManager.csHasUGC(),
-                ugcItemClick);
+                appearanceManager.csHasFavorite() && !isFavoriteList,
+                !isFavoriteList ? favoriteItemClick : null,
+                appearanceManager.csHasUGC() && !isFavoriteList,
+                !isFavoriteList ? ugcItemClick : null);
         setLayoutManager(layoutManager);
         setAdapter(adapter);
     }
