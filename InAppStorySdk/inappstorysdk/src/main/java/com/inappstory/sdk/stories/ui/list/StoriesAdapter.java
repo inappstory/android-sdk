@@ -32,6 +32,7 @@ import com.inappstory.sdk.stories.outerevents.ClickOnStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
+import com.inappstory.sdk.ugc.list.UGCListItem;
 
 public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> implements ClickCallback {
     public List<Integer> getStoriesIds() {
@@ -100,7 +101,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         if (vType == -1) {
             return new StoryFavoriteListItem(v, manager);
         } else if (vType == -2) {
-            return new StoryFavoriteListItem(v, manager);
+            return new UGCListItem(v, manager);
         } else {
             return new StoryListItem(v, manager, (vType % 5) == 2, vType > 5);
         }
