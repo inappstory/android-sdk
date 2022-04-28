@@ -24,28 +24,13 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_weight="1"
-                    android:layout_marginTop="8dp"
                     android:layout_height="match_parent">
                     <androidx.appcompat.widget.AppCompatImageView
-                        android:layout_width="45dp"
+                        android:layout_width="55dp"
                         android:layout_centerInParent="true"
                         android:src="@drawable/ic_new_ugc"
-                        android:layout_height="45dp"/>
+                        android:layout_height="55dp"/>
                 </RelativeLayout>
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:ellipsize="end"
-                    android:id="@+id/title"
-                    android:maxLines="1"
-                    android:elevation="9dp"
-                    tools:text="Create new"
-                    android:textSize="14sp"
-                    android:layout_alignParentBottom="true"
-                    android:layout_margin="8dp"
-                    tools:textColor="#FFFFFF"
-                    android:textColor="#000000"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
             </LinearLayout>
 
         </com.inappstory.sdk.imageloader.RoundedCornerLayout>
