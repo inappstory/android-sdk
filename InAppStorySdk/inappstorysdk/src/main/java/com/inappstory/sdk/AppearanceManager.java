@@ -456,7 +456,7 @@ public class AppearanceManager {
     }
 
     public AppearanceManager csHasUGC(boolean hasUGC) {
-        this.csHasUGC = csHasUGC;
+        this.csHasUGC = hasUGC;
         return AppearanceManager.this;
     }
 

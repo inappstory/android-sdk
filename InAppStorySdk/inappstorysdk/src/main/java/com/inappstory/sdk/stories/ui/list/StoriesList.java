@@ -164,13 +164,15 @@ public class StoriesList extends RecyclerView {
     OnItemTouchListener itemTouchListener;
 
     void sendIndexes() {
+        int hasUgc = (!isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
         ArrayList<Integer> indexes = new ArrayList<>();
         if (layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
             for (int i = linearLayoutManager.findFirstVisibleItemPosition();
                  i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
-                if (adapter != null && adapter.getStoriesIds().size() > i && i >= 0)
-                    indexes.add(adapter.getStoriesIds().get(i));
+                int ind = i - hasUgc;
+                if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0)
+                    indexes.add(adapter.getStoriesIds().get(ind));
             }
         }
         ArrayList<Integer> newIndexes =
