@@ -821,7 +821,7 @@ public class InAppStoryManager {
     private boolean soundOn = false;
 
     public void soundOn(boolean isSoundOn) {
-        this.soundOn = soundOn;
+        this.soundOn = isSoundOn;
     }
 
     public boolean soundOn() {
