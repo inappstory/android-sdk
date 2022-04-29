@@ -190,7 +190,7 @@ public class StoryListItem extends BaseStoryListItem {
             getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
-            final String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
+            String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
             if (fileLink != null) {
                 getListItem.setImage(itemView, fileLink,
                         StoryListItem.this.backgroundColor);
