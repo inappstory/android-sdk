@@ -52,15 +52,16 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
     public ClickCallback callback;
 
     public abstract void bind(Integer id,
-                     String titleText,
-                     Integer titleColor,
-                     String sourceText,
-                     String imageUrl,
-                     Integer backgroundColor,
-                     boolean isOpened,
-                     boolean hasAudio,
-                     String videoUrl,
-                     ClickCallback callback);
+                              String titleText,
+                              Integer titleColor,
+                              String sourceText,
+                              String imageUrl,
+                              String imagePath,
+                              Integer backgroundColor,
+                              boolean isOpened,
+                              boolean hasAudio,
+                              String videoUrl,
+                              ClickCallback callback);
 
 
     public abstract void bindFavorite();

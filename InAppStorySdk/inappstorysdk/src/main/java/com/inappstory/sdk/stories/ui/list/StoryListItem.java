@@ -172,6 +172,7 @@ public class StoryListItem extends BaseStoryListItem {
                      Integer titleColor,
                      String sourceText,
                      String imageUrl,
+                     String imagePath,
                      Integer backgroundColor,
                      boolean isOpened,
                      boolean hasAudio,
@@ -190,23 +191,28 @@ public class StoryListItem extends BaseStoryListItem {
             getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
-            if (imageUrl != null) {
-                downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
-                    @Override
-                    public void run(String path) {
-                        getListItem.setImage(itemView, path,
-                                StoryListItem.this.backgroundColor);
-                    }
-
-                    @Override
-                    public void error() {
-                        getListItem.setImage(itemView, null,
-                                StoryListItem.this.backgroundColor);
-                    }
-                });
-            } else {
-                getListItem.setImage(itemView, null,
+            if (imagePath != null && new File(imagePath).exists()) {
+                getListItem.setImage(itemView, imagePath,
                         StoryListItem.this.backgroundColor);
+            } else {
+                if (imageUrl != null) {
+                    downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
+                        @Override
+                        public void run(String path) {
+                            getListItem.setImage(itemView, path,
+                                    StoryListItem.this.backgroundColor);
+                        }
+
+                        @Override
+                        public void error() {
+                            getListItem.setImage(itemView, null,
+                                    StoryListItem.this.backgroundColor);
+                        }
+                    });
+                } else {
+                    getListItem.setImage(itemView, null,
+                            StoryListItem.this.backgroundColor);
+                }
             }
 
             getListItem.setOpened(itemView, isOpened);
