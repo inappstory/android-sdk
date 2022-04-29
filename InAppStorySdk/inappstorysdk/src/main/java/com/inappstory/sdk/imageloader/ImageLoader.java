@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
@@ -133,6 +134,27 @@ public class ImageLoader {
             }
         } catch (Exception e) {
 
+        }
+    }
+
+    public HashMap<String, String> fileLinks = new HashMap<>();
+    public Object fileLinksLock = new Object();
+
+    public String getFileLink(String link) {
+        synchronized (fileLinksLock) {
+            return fileLinks.get(link);
+        }
+    }
+
+    public void addLink(String link, String fileLink) {
+        synchronized (fileLinksLock) {
+            fileLinks.put(link, fileLink);
+        }
+    }
+
+    public void clearFileLinks() {
+        synchronized (fileLinksLock) {
+            fileLinks.clear();
         }
     }
 

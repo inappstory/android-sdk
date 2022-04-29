@@ -399,7 +399,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                      String titleText,
                      Integer titleColor,
                      String sourceText,
-                     String imageUrl,
+                     final String imageUrl,
                      Integer backgroundColor,
                      boolean isOpened,
                      boolean hasAudio,
@@ -418,20 +418,28 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
+            final String imgUrl = imageUrl;
             if (imageUrl != null) {
-                downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
-                    @Override
-                    public void run(String path) {
-                        getListItem.setImage(itemView, path,
-                                StoryListItem.this.backgroundColor);
-                    }
+                String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
+                if (fileLink != null) {
+                    getListItem.setImage(itemView, fileLink,
+                            StoryListItem.this.backgroundColor);
+                } else {
+                    downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
+                        @Override
+                        public void run(String path) {
+                            ImageLoader.getInstance().addLink(imgUrl, path);
+                            getListItem.setImage(itemView, path,
+                                    StoryListItem.this.backgroundColor);
+                        }
 
-                    @Override
-                    public void error() {
-                        getListItem.setImage(itemView, null,
-                                StoryListItem.this.backgroundColor);
-                    }
-                });
+                        @Override
+                        public void error() {
+                            getListItem.setImage(itemView, null,
+                                    StoryListItem.this.backgroundColor);
+                        }
+                    });
+                }
             } else {
                 getListItem.setImage(itemView, null,
                         StoryListItem.this.backgroundColor);
