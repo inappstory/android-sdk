@@ -56,7 +56,6 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
                               Integer titleColor,
                               String sourceText,
                               String imageUrl,
-                              String imagePath,
                               Integer backgroundColor,
                               boolean isOpened,
                               boolean hasAudio,

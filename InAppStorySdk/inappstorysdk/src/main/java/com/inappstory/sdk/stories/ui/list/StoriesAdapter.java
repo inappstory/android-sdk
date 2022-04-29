@@ -138,19 +138,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
                     story.getProperImage(manager.csCoverQuality()).getUrl() : null;
-            String imagePath = null;
-            try {
-                if (imgUrl != null)
-                    imagePath = InAppStoryService.getInstance().getFastCache().get(imgUrl).getAbsolutePath();
-            } catch (IOException e) {
 
-            }
             holder.bind(story.id,
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                     story.getSource(),
                     imgUrl,
-                    imagePath,
                     Color.parseColor(story.getBackgroundColor()),
                     story.isOpened || isFavoriteList,
                     story.hasAudio(),

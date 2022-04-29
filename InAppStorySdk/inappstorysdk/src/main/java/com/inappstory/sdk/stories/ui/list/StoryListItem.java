@@ -171,8 +171,7 @@ public class StoryListItem extends BaseStoryListItem {
                      String titleText,
                      Integer titleColor,
                      String sourceText,
-                     String imageUrl,
-                     String imagePath,
+                     final String imageUrl,
                      Integer backgroundColor,
                      boolean isOpened,
                      boolean hasAudio,
@@ -191,14 +190,16 @@ public class StoryListItem extends BaseStoryListItem {
             getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
-            if (imagePath != null && new File(imagePath).exists()) {
-                getListItem.setImage(itemView, imagePath,
+            final String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
+            if (fileLink != null) {
+                getListItem.setImage(itemView, fileLink,
                         StoryListItem.this.backgroundColor);
             } else {
                 if (imageUrl != null) {
                     downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
                         @Override
                         public void run(String path) {
+                            ImageLoader.getInstance().addLink(imageUrl, path);
                             getListItem.setImage(itemView, path,
                                     StoryListItem.this.backgroundColor);
                         }
