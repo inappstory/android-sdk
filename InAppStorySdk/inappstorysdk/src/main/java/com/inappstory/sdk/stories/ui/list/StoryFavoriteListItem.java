@@ -108,8 +108,8 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
     @Override
     public void bind(Integer id, String titleText, Integer titleColor, String sourceText,
-                     String imageUrl, Integer backgroundColor, boolean isOpened, boolean hasAudio,
-                     String videoUrl, ClickCallback callback) {
+                     String imageUrl, String imagePath, Integer backgroundColor,
+                     boolean isOpened, boolean hasAudio, String videoUrl, ClickCallback callback) {
 
     }
 
