@@ -392,6 +392,7 @@ public class ImageLoader {
     }
 
     public void clearCache() {
+        clearFileLinks();
         memoryCache.clear();
         memoryCache2.clear();
     }

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -207,6 +208,9 @@ public class InAppStoryManager {
      */
     public void clearCache(Context context) {
         if (InAppStoryService.isNull()) return;
+        if (ImageLoader.getInstance() != null) {
+            ImageLoader.getInstance().clearCache();
+        }
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
 
