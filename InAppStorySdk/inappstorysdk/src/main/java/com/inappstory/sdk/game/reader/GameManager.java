@@ -6,8 +6,8 @@ import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.game.loader.GameLoadCallback;
-import com.inappstory.sdk.game.loader.GameLoader;
+import com.inappstory.sdk.utils.ZipLoadCallback;
+import com.inappstory.sdk.utils.ZipLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -45,7 +45,7 @@ public class GameManager {
     boolean gameLoaded;
     String gameConfig;
 
-    GameLoadCallback callback;
+    ZipLoadCallback callback;
 
     public GameManager(GameActivity host) {
         this.host = host;
@@ -58,15 +58,11 @@ public class GameManager {
             resourceList = JsonParser.listFromJson(resources, WebResource.class);
         }
 
-        String[] urlParts = urlParts(path);
-        GameLoader.getInstance().downloadAndUnzip(host, resourceList, path, urlParts[0], callback);
+        String[] urlParts = ZipLoader.urlParts(path);
+        ZipLoader.getInstance().downloadAndUnzip(resourceList, path, urlParts[0], callback, "game");
     }
 
-    private String[] urlParts(String url) {
-        String[] parts = url.split("/");
-        String fName = parts[parts.length - 1].split("\\.")[0];
-        return fName.split("_");
-    }
+
 
 
     void storySetData(String data, boolean sendToServer) {

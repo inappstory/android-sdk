@@ -41,7 +41,6 @@ public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
         super(context);
         init(null);
-
     }
 
     public static String DEFAULT_FEED = "default";
@@ -85,10 +84,13 @@ public class StoriesList extends RecyclerView {
         this.isFavoriteList = isFavoriteList;
     }
 
-
     public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(attrs);
+    }
+
+    public AppearanceManager getAppearanceManager() {
+        return appearanceManager;
     }
 
     public void setStoryTouchListener(StoryTouchListener storyTouchListener) {

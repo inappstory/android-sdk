@@ -1,6 +1,5 @@
-package com.inappstory.sdk.game.loader;
+package com.inappstory.sdk.utils;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -9,7 +8,6 @@ import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.utils.FileUnzipper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -27,29 +25,34 @@ import java.util.concurrent.Executors;
 
 import static java.util.UUID.randomUUID;
 
-public class GameLoader {
+public class ZipLoader {
 
     private static final String INDEX_NAME = "/index.html";
     public static final String FILE = "file://";
 
-    private GameLoader() {
+    private ZipLoader() {
 
     }
 
-    private static volatile GameLoader INSTANCE;
+    private static volatile ZipLoader INSTANCE;
 
+    public static String[] urlParts(String url) {
+        String[] parts = url.split("/");
+        String fName = parts[parts.length - 1].split("\\.")[0];
+        return fName.split("_");
+    }
 
-    public static GameLoader getInstance() {
+    public static ZipLoader getInstance() {
         if (INSTANCE == null) {
-            synchronized (GameLoader.class) {
+            synchronized (ZipLoader.class) {
                 if (INSTANCE == null)
-                    INSTANCE = new GameLoader();
+                    INSTANCE = new ZipLoader();
             }
         }
         return INSTANCE;
     }
 
-    private static final ExecutorService gameFileThread = Executors.newFixedThreadPool(1);
+    private static final ExecutorService downloadFileThread = Executors.newFixedThreadPool(1);
 
     private String getStringFromFile(File fl) throws Exception {
         FileInputStream fin = new FileInputStream(fl);
@@ -87,9 +90,10 @@ public class GameLoader {
 
     private boolean downloadResources(final List<WebResource> resources,
                                       final File file,
-                                      final GameLoadCallback callback,
+                                      final ZipLoadCallback callback,
                                       final int totalSize,
                                       final int curSize) {
+        if (resources == null) return true;
         if (terminate) return false;
         if (InAppStoryService.isNull()) return false;
         String pathName = file.getAbsolutePath();
@@ -106,7 +110,7 @@ public class GameLoader {
                 String fileName = resource.key;
                 if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
                     continue;
-                downloaded |= Downloader.downloadOrGetGameFile(url, fileName, InAppStoryService.getInstance().getCommonCache(),
+                downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, InAppStoryService.getInstance().getCommonCache(),
                         new File(filePath.getAbsolutePath() + "/" + fileName),
                         null);
                 cnt += resource.size;
@@ -135,21 +139,22 @@ public class GameLoader {
         return downloaded;
     }
 
-    public void downloadAndUnzip(final Context context,
-                                 final List<WebResource> resources,
+    public void downloadAndUnzip(final List<WebResource> resources,
                                  final String url,
                                  final String pathName,
-                                 final GameLoadCallback callback) {
+                                 final ZipLoadCallback callback,
+                                 final String profilingPrefix) {
         terminate = false;
-        gameFileThread.submit(new Callable() {
+        downloadFileThread.submit(new Callable() {
             @Override
             public Void call() {
                 try {
                     if (InAppStoryService.isNull()) return null;
                     int totalSize = 0;
-                    for (WebResource resource : resources) {
-                        totalSize += resource.size;
-                    }
+                    if (resources != null)
+                        for (WebResource resource : resources) {
+                            totalSize += resource.size;
+                        }
                     final int fTotalSize = totalSize;
                     String hash = randomUUID().toString();
 
@@ -187,7 +192,8 @@ public class GameLoader {
                     File directory = new File(file.getParent() + File.separator + url.hashCode());
                     String resourcesHash;
                     if (directory.exists()) {
-                        resourcesHash = ProfilingManager.getInstance().addTask("game_resources_download");
+                        resourcesHash = ProfilingManager.getInstance().addTask(
+                                profilingPrefix + "_resources_download");
                         if (downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
                                 (int) file.length()))
                             ProfilingManager.getInstance().setReady(resourcesHash);
@@ -195,11 +201,12 @@ public class GameLoader {
                             InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         }
                     } else if (file.exists()) {
-                        String unzipHash = ProfilingManager.getInstance().addTask("game_unzip");
+                        String unzipHash = ProfilingManager.getInstance().addTask(profilingPrefix + "_unzip");
                         FileUnzipper.unzip(file, directory);
                         ProfilingManager.getInstance().setReady(unzipHash);
                         InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
-                        resourcesHash = ProfilingManager.getInstance().addTask("game_resources_download");
+                        resourcesHash = ProfilingManager.getInstance().addTask(
+                                profilingPrefix + "_resources_download");
                         if (downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
                                 (int) file.length()))
                             ProfilingManager.getInstance().setReady(resourcesHash);
@@ -223,7 +230,7 @@ public class GameLoader {
         terminate = true;
     }
 
-    private int downloadStream(URL uri, File file, GameLoadCallback callback, int startSize, int totalSize) {
+    private int downloadStream(URL uri, File file, ZipLoadCallback callback, int startSize, int totalSize) {
         try {
             int count;
             InputStream input = new BufferedInputStream(uri.openStream(),

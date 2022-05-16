@@ -49,6 +49,7 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.UGCInitData;
+import com.inappstory.sdk.ugc.reader.UGCActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -146,6 +147,7 @@ public class ScreensManager {
     }
 
     public GameActivity currentGameActivity;
+    public UGCActivity currentUGCActivity;
 
     int tempShareStoryId;
 
@@ -156,6 +158,16 @@ public class ScreensManager {
     String oldTempShareId;
 
     public Point coordinates = null;
+
+    interface CloseUgcReaderCallback {
+        void onClose();
+    }
+
+    public CloseUgcReaderCallback ugcCloseCallback;
+
+    public void closeUGCEditor() {
+        if (ugcCloseCallback != null) ugcCloseCallback.onClose();
+    }
 
     public void closeGameReader() {
         if (currentGameActivity != null) {
@@ -216,6 +228,7 @@ public class ScreensManager {
         }
         lastOpenTry = System.currentTimeMillis();
         closeGameReader();
+        closeUGCEditor();
 
         if (Sizes.isTablet() && outerContext instanceof AppCompatActivity) {
             closeStoryReader(CloseStory.CUSTOM);

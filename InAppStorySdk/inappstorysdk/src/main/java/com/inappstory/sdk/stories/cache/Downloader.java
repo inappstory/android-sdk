@@ -117,8 +117,8 @@ public class Downloader {
 
     @NonNull
     @WorkerThread
-    public static boolean downloadOrGetGameFile(@NonNull String url, @NonNull String hashKey,
-                                                LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+    public static boolean downloadOrGetResourceFile(@NonNull String url, @NonNull String hashKey,
+                                                    LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
         if (cache.hasKey(key)) {
             File file = cache.get(key);

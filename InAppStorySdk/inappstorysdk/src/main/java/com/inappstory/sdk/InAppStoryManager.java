@@ -229,6 +229,7 @@ public class InAppStoryManager {
                 ScreensManager.getInstance().closeStoryReader(action);
                 ScreensManager.getInstance().hideGoods();
                 ScreensManager.getInstance().closeGameReader();
+                ScreensManager.getInstance().closeUGCEditor();
             }
         });
     }
