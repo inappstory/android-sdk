@@ -49,7 +49,6 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.UGCInitData;
-import com.inappstory.sdk.ugc.reader.UGCActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -147,7 +146,6 @@ public class ScreensManager {
     }
 
     public GameActivity currentGameActivity;
-    public UGCActivity currentUGCActivity;
 
     int tempShareStoryId;
 
