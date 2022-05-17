@@ -48,7 +48,6 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdap
 import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.ugc.list.UGCInitData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -329,9 +328,6 @@ public class ScreensManager {
         openStoriesReader(outerContext, listID, manager, storiesIds, index, source, 0);
     }
 
-    public void openUGCEditor(UGCInitData data) {
-
-    }
 
     public Dialog goodsDialog;
 

@@ -15,6 +15,7 @@ public class StatisticResponse {
     @SerializedName("server_timestamp")
     public Long serverTimestamp;
 
+    public SessionEditor editor;
     @SerializedName("cache")
     public List<CacheFontObject> cachedFonts;
 
