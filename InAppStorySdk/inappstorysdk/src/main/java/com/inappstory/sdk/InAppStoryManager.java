@@ -626,6 +626,8 @@ public class InAppStoryManager {
                 });
     }
 
+    private boolean isSandbox = false;
+
     private InAppStoryManager(final Builder builder) throws DataException {
         if (builder.apiKey == null &&
                 builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
@@ -657,6 +659,7 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().getFastCache().setCacheSize(fastCacheSize);
             InAppStoryService.getInstance().getCommonCache().setCacheSize(commonCacheSize);
         }
+        this.isSandbox = builder.sandbox;
         initManager(builder.context,
                 builder.sandbox ? TEST_DOMAIN
                         : PRODUCT_DOMAIN,
@@ -1042,6 +1045,9 @@ public class InAppStoryManager {
         showOnboardingStories(ONBOARDING_FEED, getTags(), context, manager);
     }
 
+    public boolean isSandbox() {
+        return isSandbox;
+    }
 
     public static String ONBOARDING_FEED = "onboarding";
 

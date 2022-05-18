@@ -86,6 +86,7 @@ public class SessionManager {
                         response.isAllowStatV2,
                         response.isAllowCrash
                 );
+                response.session.editor = response.editor;
                 response.session.save();
                 InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
                 synchronized (openProcessLock) {

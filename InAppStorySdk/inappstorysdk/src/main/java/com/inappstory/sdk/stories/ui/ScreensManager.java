@@ -156,7 +156,7 @@ public class ScreensManager {
 
     public Point coordinates = null;
 
-    interface CloseUgcReaderCallback {
+    public interface CloseUgcReaderCallback {
         void onClose();
     }
 

@@ -299,7 +299,7 @@ public class StatisticManager {
     public void sendCloseStory(final int i, final String c, final Integer si, final Integer st) {
         sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
-        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
+        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
         StatisticTask task = new StatisticTask();
         task.event = prefix + "close";
         task.storyId = Integer.toString(i);
@@ -339,7 +339,7 @@ public class StatisticManager {
     public void sendCloseStory(final int i, final String c, final Integer si, final Integer st, final Long t) {
         sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
-        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
+        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
         StatisticTask task = new StatisticTask();
         task.event = prefix + "close";
         task.storyId = Integer.toString(i);
@@ -364,7 +364,7 @@ public class StatisticManager {
         addFakeTask(task);
 
         if (cTimes == null) cTimes = new HashMap<>();
-        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0;
+        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
         StatisticTask task2 = new StatisticTask();
         task2.event = prefix + "close";
         task2.storyId = Integer.toString(i);
