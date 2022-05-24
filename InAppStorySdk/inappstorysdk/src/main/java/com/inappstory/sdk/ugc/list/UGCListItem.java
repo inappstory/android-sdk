@@ -31,7 +31,7 @@ public class UGCListItem extends BaseStoryListItem {
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_ugc, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
         cv.setRadius(manager.csListItemRadius());
-        cv.setBackgroundColor(Color.WHITE);
+        cv.setBackgroundColor(Color.TRANSPARENT);
         title = v.findViewById(R.id.title);
         return v;
     }
