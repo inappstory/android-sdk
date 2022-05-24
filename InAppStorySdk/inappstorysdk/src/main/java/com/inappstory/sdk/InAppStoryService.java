@@ -3,6 +3,7 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -11,6 +12,8 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -176,6 +179,8 @@ public class InAppStoryService {
         }
         return false;
     }
+
+
 
     public InAppStoryService(String userId) {
         this.userId = userId;

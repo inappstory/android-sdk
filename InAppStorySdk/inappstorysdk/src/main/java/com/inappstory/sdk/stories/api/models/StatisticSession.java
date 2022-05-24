@@ -41,6 +41,12 @@ public class StatisticSession {
     }
 
 
+    public boolean isAllowProfiling() {
+        synchronized (StatisticSession.class) {
+            return statisticPermissions != null && statisticPermissions.allowProfiling;
+        }
+    }
+
     public static boolean needToUpdate() {
         if (INSTANCE == null) return true;
         if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;

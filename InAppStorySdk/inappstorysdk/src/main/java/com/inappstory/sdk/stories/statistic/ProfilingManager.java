@@ -170,9 +170,7 @@ public class ProfilingManager {
 
     private boolean isAllowToSend() {
         return !StatisticSession.needToUpdate()
-                && StatisticSession.getInstance()
-                .statisticPermissions != null && StatisticSession.getInstance()
-                .statisticPermissions.allowProfiling;
+                && StatisticSession.getInstance().isAllowProfiling();
     }
 
     private String getCC() {
