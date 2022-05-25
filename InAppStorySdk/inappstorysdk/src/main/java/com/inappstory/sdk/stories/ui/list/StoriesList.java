@@ -26,6 +26,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.stories.api.models.StatisticSession;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -34,6 +35,7 @@ import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
@@ -165,8 +167,17 @@ public class StoriesList extends RecyclerView {
 
     OnItemTouchListener itemTouchListener;
 
+    private boolean hasSessionUGC() {
+        synchronized (StatisticSession.class) {
+            return  (!StatisticSession.needToUpdate()
+                    && StatisticSession.getInstance().editor != null
+                    && StatisticSession.getInstance().editor.url != null
+                    && !StatisticSession.getInstance().editor.url.isEmpty());
+        }
+    }
+
     void sendIndexes() {
-        int hasUgc = (!isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
+        int hasUgc = (hasSessionUGC() && !isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
         ArrayList<Integer> indexes = new ArrayList<>();
         if (layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
@@ -433,7 +444,7 @@ public class StoriesList extends RecyclerView {
                 getFeed(),
                 appearanceManager.csHasFavorite() && !isFavoriteList,
                 !isFavoriteList ? favoriteItemClick : null,
-                appearanceManager.csHasUGC() && !isFavoriteList,
+                hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
                 !isFavoriteList ? ugcItemClick : null);
         setLayoutManager(layoutManager);
         setAdapter(adapter);
