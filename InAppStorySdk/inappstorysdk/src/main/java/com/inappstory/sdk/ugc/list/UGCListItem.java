@@ -33,6 +33,13 @@ public class UGCListItem extends BaseStoryListItem {
         cv.setRadius(manager.csListItemRadius());
         cv.setBackgroundColor(Color.TRANSPARENT);
         title = v.findViewById(R.id.title);
+        View outerLayout = v.findViewById(R.id.outerLayout);
+        if (manager.csListItemHeight() != null) {
+            outerLayout.getLayoutParams().height = manager.csListItemHeight();
+        }
+        if (manager.csListItemWidth() != null) {
+            outerLayout.getLayoutParams().width = manager.csListItemWidth();
+        }
         return v;
     }
 
@@ -51,6 +58,5 @@ public class UGCListItem extends BaseStoryListItem {
 
     @Override
     public void bindUGC() {
-
     }
 }
