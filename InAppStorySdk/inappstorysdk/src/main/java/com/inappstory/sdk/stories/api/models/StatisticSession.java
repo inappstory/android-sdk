@@ -20,6 +20,11 @@ public class StatisticSession {
     public SessionEditor editor;
     public long updatedAt;
 
+    public boolean isAllowProfiling() {
+        synchronized (StatisticSession.class) {
+            return statisticPermissions != null && statisticPermissions.allowProfiling;
+        }
+    }
 
     public ArrayList<Integer> viewed = new ArrayList<>();
 

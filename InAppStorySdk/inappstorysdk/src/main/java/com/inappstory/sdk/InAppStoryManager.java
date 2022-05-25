@@ -27,6 +27,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.utils.KeyConverter;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
@@ -659,10 +660,13 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().getFastCache().setCacheSize(fastCacheSize);
             InAppStoryService.getInstance().getCommonCache().setCacheSize(commonCacheSize);
         }
+        String domain = KeyConverter.getStringFromKey(
+                builder.apiKey != null ? builder.apiKey : builder.context
+                        .getResources().getString(R.string.csApiKey));
         this.isSandbox = builder.sandbox;
         initManager(builder.context,
-                builder.sandbox ? TEST_DOMAIN
-                        : PRODUCT_DOMAIN,
+                domain != null ? domain : (builder.sandbox ? TEST_DOMAIN
+                        : PRODUCT_DOMAIN),
                 builder.apiKey != null ? builder.apiKey : builder.context
                         .getResources().getString(R.string.csApiKey),
                 builder.testKey != null ? builder.testKey : null,
