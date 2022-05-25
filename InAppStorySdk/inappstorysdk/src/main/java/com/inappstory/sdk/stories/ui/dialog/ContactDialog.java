@@ -16,6 +16,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -190,9 +191,11 @@ public class ContactDialog {
 
         switch (dialogStructure.configV2.main.question.text.align) {
             case "right":
+                ((LinearLayout.LayoutParams) text.getLayoutParams()).gravity = Gravity.RIGHT;
                 text.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 break;
             case "center":
+                ((LinearLayout.LayoutParams) text.getLayoutParams()).gravity = Gravity.CENTER_HORIZONTAL;
                 text.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
                 break;
             default:
