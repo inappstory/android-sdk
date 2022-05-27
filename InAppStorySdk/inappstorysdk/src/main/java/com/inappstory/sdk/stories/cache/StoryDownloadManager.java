@@ -446,13 +446,16 @@ public class StoryDownloadManager {
         final boolean loadFavorite = hasFavorite;
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
-            public void onSuccess(final List<Story> response) {
+            public void onSuccess(final List<Story> response, Object...args) {
 
                 final ArrayList<Story> resStories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     resStories.add(response.get(i));
                 }
-
+                boolean loadFav = loadFavorite;
+                if (args != null && args.length > 0) {
+                    loadFav &= (boolean)args[0];
+                }
                 if (StoriesWidgetService.getInstance() != null) {
                     try {
                         SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(resStories));
@@ -495,7 +498,7 @@ public class StoryDownloadManager {
                         e.printStackTrace();
                     }
                 }
-                if (loadFavorite) {
+                if (loadFav) {
                     final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
                     storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
                         @Override
@@ -580,7 +583,7 @@ public class StoryDownloadManager {
         SimpleListCallback loadCallbackWithoutFav = new SimpleListCallback() {
 
             @Override
-            public void onSuccess(final List<Story> response) {
+            public void onSuccess(final List<Story> response, Object...args) {
                 InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
                 List<Story> newStories = new ArrayList<>();
                 synchronized (storiesLock) {

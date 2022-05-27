@@ -9,7 +9,7 @@ import java.util.List;
 
 public abstract class SimpleListCallback implements SimpleApiCallback<List<Story>> {
     @Override
-    public abstract void onSuccess(List<Story> response);
+    public abstract void onSuccess(List<Story> response, Object...args);
 
     @Override
     public Type getType() {
