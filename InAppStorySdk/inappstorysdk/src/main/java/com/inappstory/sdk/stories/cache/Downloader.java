@@ -206,11 +206,6 @@ public class Downloader {
         urlConnection.connect();
 
 
-        FileOutputStream fileOutput = new FileOutputStream(outputFile);
-        FileLock lock = fileOutput.getChannel().lock();
-        InputStream inputStream = urlConnection.getInputStream();
-
-        String contentType = urlConnection.getHeaderField("Content-Type");
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
 
@@ -224,9 +219,13 @@ public class Downloader {
         if (status > 350) {
             String res = getResponseFromStream(urlConnection.getErrorStream());
             apiLogResponse.generateFile(status, res, headers);
-            lock.release();
             return null;
         }
+        FileOutputStream fileOutput = new FileOutputStream(outputFile);
+        FileLock lock = fileOutput.getChannel().lock();
+        InputStream inputStream = urlConnection.getInputStream();
+
+        String contentType = urlConnection.getHeaderField("Content-Type");
 
         if (contentType != null)
             KeyValueStorage.saveString(outputFile.getName(), contentType);
