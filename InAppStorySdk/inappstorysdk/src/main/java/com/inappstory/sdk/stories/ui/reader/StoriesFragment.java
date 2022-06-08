@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -195,6 +196,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        try {
+            requireArguments();
+        } catch (IllegalStateException e) {
+            Activity activity = getActivity();
+            if (activity instanceof BaseReaderScreen)
+                ((BaseReaderScreen) activity).forceFinish();
+            return new View(getContext());
+        }
         isDestroyed = getArguments().getBoolean("isDestroyed");
         created = true;
         closeOnSwipe = getArguments().getBoolean(CS_CLOSE_ON_SWIPE, true);
@@ -330,7 +339,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
+                if (storiesViewPager.getAdapter() != null &&
+                        storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {

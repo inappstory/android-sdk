@@ -112,8 +112,9 @@ public class TimerManager {
         startTimer(duration, true);
     }
 
-    public void setCurrentDuration(int currentDuration) {
-        this.currentDuration = currentDuration;
+    public void setCurrentDuration(Integer currentDuration) {
+        if (currentDuration != null)
+            this.currentDuration = currentDuration;
     }
 
     int currentDuration;

@@ -25,7 +25,9 @@ import java.util.List;
 public class ReaderManager {
 
     private String listID;
-    public ReaderManager() {}
+
+    public ReaderManager() {
+    }
 
     public ReaderManager(String listID) {
         this.listID = listID;
@@ -157,15 +159,14 @@ public class ReaderManager {
         lastPos = position;
 
         currentStoryId = storiesIds.get(position);
-        if (firstStoryId > 0 && startedSlideInd > 0) {
-            if (InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentStoryId).getSlidesCount() > startedSlideInd)
-                InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(currentStoryId).lastIndex = startedSlideInd;
-            cleanFirst();
-        }
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId);
+
         if (story != null) {
+            if (firstStoryId > 0 && startedSlideInd > 0) {
+                if (story.getSlidesCount() > startedSlideInd)
+                    story.lastIndex = startedSlideInd;
+                cleanFirst();
+            }
             CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags,
                     story.getSlidesCount(), source));
 
@@ -188,8 +189,10 @@ public class ReaderManager {
             }
         }
         InAppStoryService.getInstance().setCurrentId(currentStoryId);
-        currentSlideIndex =
-                InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId).lastIndex;
+        story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId);
+        if (story != null) {
+            currentSlideIndex = story.lastIndex;
+        }
         parentFragment.showGuardMask(600);
         new Thread(new Runnable() {
             @Override
@@ -355,7 +358,6 @@ public class ReaderManager {
     public void prevStory() {
         parentFragment.prevStory();
     }
-
 
 
     public void defaultTapOnLink(String url) {

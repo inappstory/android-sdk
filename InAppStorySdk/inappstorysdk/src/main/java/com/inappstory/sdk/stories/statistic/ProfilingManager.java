@@ -78,6 +78,7 @@ public class ProfilingManager {
     }
 
     public void setReady(String hash, boolean force) {
+        if (handler == null) return;
         synchronized (tasksLock) {
             ProfilingTask readyTask = null;
             for (ProfilingTask task : tasks) {
@@ -115,7 +116,7 @@ public class ProfilingManager {
         setReady(hash, false);
     }
 
-    private Handler handler = new Handler();
+    private Handler handler;
     private HandlerThread thread;
 
     public void cleanTasks() {
@@ -135,6 +136,7 @@ public class ProfilingManager {
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
+            if (handler == null) return;
             if (getInstance().readyTasks == null || getInstance().readyTasks.size() == 0
                     || !InAppStoryService.isConnected() || !isAllowToSend()) {
                 handler.postDelayed(queueTasksRunnable, 100);
