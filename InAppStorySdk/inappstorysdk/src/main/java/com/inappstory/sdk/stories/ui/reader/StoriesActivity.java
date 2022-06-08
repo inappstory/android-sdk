@@ -493,15 +493,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void cleanReader() {
         if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        //  OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         if (InAppStoryService.getInstance().getDownloadManager() != null) {
-
-            List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories();
-            for (Story story : stories) {
-                story.setLastIndex(0);
-            }
+            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex();
         }
         cleaned = true;
     }

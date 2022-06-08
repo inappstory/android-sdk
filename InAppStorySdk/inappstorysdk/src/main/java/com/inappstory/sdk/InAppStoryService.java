@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -454,9 +453,10 @@ public class InAppStoryService {
             createExceptionLog(throwable);
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
-
             if (InAppStoryManager.getInstance() != null) {
                 if (thread != InAppStoryManager.getInstance().serviceThread) {
+                    if (oldHandler != null)
+                        oldHandler.uncaughtException(thread, throwable);
                     return;
                 }
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(

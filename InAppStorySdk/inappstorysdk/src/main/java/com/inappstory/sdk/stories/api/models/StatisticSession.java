@@ -48,8 +48,10 @@ public class StatisticSession {
     }
 
     public static boolean needToUpdate() {
-        if (INSTANCE == null) return true;
-        if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;
+        synchronized (StatisticSession.class) {
+            if (INSTANCE == null) return true;
+            if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;
+        }
         return false;
     }
 
