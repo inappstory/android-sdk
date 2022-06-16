@@ -877,7 +877,7 @@ public class AppearanceManager {
         return csListUGCItemInterface;
     }
 
-    public AppearanceManager csListItemInterface(IStoriesListUGCItem csListUGCItemInterface) {
+    public AppearanceManager csListUGCItemInterface(IStoriesListUGCItem csListUGCItemInterface) {
         this.csListUGCItemInterface = csListUGCItemInterface;
         return AppearanceManager.this;
     }
