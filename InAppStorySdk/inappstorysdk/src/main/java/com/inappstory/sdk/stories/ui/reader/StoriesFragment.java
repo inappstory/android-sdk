@@ -339,7 +339,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
+                if (storiesViewPager.getAdapter() != null &&
+                        storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
