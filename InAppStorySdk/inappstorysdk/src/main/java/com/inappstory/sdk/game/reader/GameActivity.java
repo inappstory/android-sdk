@@ -339,6 +339,10 @@ public class GameActivity extends AppCompatActivity {
 
     private void getIntentValues() {
         manager.path = getIntent().getStringExtra("gameUrl");
+        if (manager.path == null) {
+            finish();
+            return;
+        }
         manager.observableId = getIntent().getStringExtra("observableId");
         manager.resources = getIntent().getStringExtra("gameResources");
         manager.storyId = getIntent().getStringExtra("storyId");
@@ -347,7 +351,9 @@ public class GameActivity extends AppCompatActivity {
         manager.title = getIntent().getStringExtra("title");
         manager.tags = getIntent().getStringExtra("tags");
         manager.gameConfig = getIntent().getStringExtra("gameConfig");
-        manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
+        if (manager.gameConfig != null) {
+            manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
+        }
         manager.loaderPath = getIntent().getStringExtra("preloadPath");
     }
 

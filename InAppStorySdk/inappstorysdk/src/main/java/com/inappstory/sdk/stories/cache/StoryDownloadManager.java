@@ -407,9 +407,11 @@ public class StoryDownloadManager {
     }
 
     public Story getStoryById(int id) {
-        if (stories != null) {
-            for (Story story : stories) {
-                if (story.id == id) return story;
+        synchronized (storiesLock) {
+            if (stories != null) {
+                for (Story story : stories) {
+                    if (story.id == id) return story;
+                }
             }
         }
         return null;
@@ -441,6 +443,15 @@ public class StoryDownloadManager {
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
 
+    public void cleanStoriesIndex() {
+        synchronized (storiesLock) {
+            if (stories == null) return;
+            for (Story story : stories) {
+                if (story != null)
+                    story.setLastIndex(0);
+            }
+        }
+    }
 
     public void loadStories(String feed, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;

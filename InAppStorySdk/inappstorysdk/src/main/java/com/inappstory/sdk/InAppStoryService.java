@@ -452,6 +452,8 @@ public class InAppStoryService {
 
             if (InAppStoryManager.getInstance() != null) {
                 if (thread != InAppStoryManager.getInstance().serviceThread) {
+                    if (oldHandler != null)
+                        oldHandler.uncaughtException(thread, throwable);
                     return;
                 }
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
