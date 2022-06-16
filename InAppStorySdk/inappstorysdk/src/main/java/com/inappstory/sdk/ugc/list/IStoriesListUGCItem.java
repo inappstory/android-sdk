@@ -17,20 +17,5 @@ public interface IStoriesListUGCItem {
      **/
     View getView();
 
-    /**
-     * Use to set image cover for custom ugc list cell
-     * @param itemView (itemView) contains a view that was initialized in getView() method.
-     * @param path (path) contains a local path to ugc cell's cover image.
-     * @param backgroundColor (backgroundColor) contains background color to ugc cell's cover.
-     */
-    void setImage(View itemView, String path, int backgroundColor);
-
-    /**
-     * Use to set title for custom ugc list cell
-     * @param itemView (itemView) contains a view that was initialized in getView() method.
-     * @param title (title) contains a title string from cell
-     * @param titleColor (titleColor) contains a color for title string
-     */
-    void setTitle(View itemView, String title, Integer titleColor);
 
 }
