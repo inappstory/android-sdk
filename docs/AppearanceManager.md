@@ -38,6 +38,7 @@ Another parameters can be set separately for list/onboardings/single:
 | csCustomFont                     | Typeface            | null   |List   | the primary regular font for list cells. It can be set separately only for list cells, but not for inputs |
 | csHasLike            			   | Boolean             | false  |Reader | Flag that is responsible for connecting the like / dislike functionality|
 | csHasShare           			   | Boolean             | false  |Reader | Flag that is responsible for connecting the sharing functionality       |       
+| csHasUgc                         | Boolean             | false  |Reader | Flag that is responsible for showing ugc items in SDK. [Full documetation about UGC Editor can be found here](https://github.com/inappstory/ugc-android-sdk#readme) |     
 | csHasFavorite        			   | Boolean             | false  |Reader | Flag that is responsible for connecting the functionality of favorite stories |
 | csCloseOnSwipe                   | Boolean             | true   |Reader | Flag that is responsible for closing stories by swiping down            |
 | csCloseOnOverscroll              | Boolean             | true   |Reader | Flag that is responsible for closing stories by swiping left on the last story or right on the first story |
