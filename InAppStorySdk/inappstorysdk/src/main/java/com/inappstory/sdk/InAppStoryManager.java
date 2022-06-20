@@ -837,7 +837,7 @@ public class InAppStoryManager {
         return soundOn;
     }
 
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feed) {
+    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feed, final String feedId) {
 
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0, feed));
@@ -853,7 +853,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed);
+                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -862,7 +862,7 @@ public class InAppStoryManager {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed);
+                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -878,7 +878,7 @@ public class InAppStoryManager {
         InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
         InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
-        ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING);
+        ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING, feed, feedId);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size(), feed));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feed);
@@ -908,53 +908,20 @@ public class InAppStoryManager {
 
                 final String onboardUID =
                         ProfilingManager.getInstance().addTask("api_onboarding");
-                if (feed != null) {
-                    NetworkClient.getApi().getOnboardingFeed(feed, localTags == null ? getTagsString() :
-                            localTags).enqueue(new LoadFeedCallback() {
-                        @Override
-                        public void onSuccess(Feed response) {
-                            if (InAppStoryManager.isNull()) return;
-                            ProfilingManager.getInstance().setReady(onboardUID);
-                            List<Story> notOpened = new ArrayList<>();
-                            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                            if (opens == null) opens = new HashSet<>();
-                            if (response.stories != null) {
-                                for (Story story : response.stories) {
-                                    boolean add = true;
-                                    for (String opened : opens) {
-                                        if (Integer.toString(story.id).equals(opened)) {
-                                            add = false;
-                                        }
-                                    }
-                                    if (add) notOpened.add(story);
-                                }
-                            }
-                            showLoadedOnboardings(notOpened, outerContext, manager, feed);
-                        }
-
-                        @Override
-                        public void onError(int code, String message) {
-                            ProfilingManager.getInstance().setReady(onboardUID);
-                            loadOnboardingError(feed);
-                        }
-
-                        @Override
-                        public void onTimeout() {
-                            ProfilingManager.getInstance().setReady(onboardUID);
-                            loadOnboardingError(feed);
-                        }
-                    });
-                } else {
-                    NetworkClient.getApi().onboardingStories(localTags == null ? getTagsString() :
-                            localTags).enqueue(new NetworkCallback<List<Story>>() {
-                        @Override
-                        public void onSuccess(List<Story> response) {
-                            if (InAppStoryManager.isNull()) return;
-                            ProfilingManager.getInstance().setReady(onboardUID);
-                            List<Story> notOpened = new ArrayList<>();
-                            Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                            if (opens == null) opens = new HashSet<>();
-                            for (Story story : response) {
+                final String localFeed;
+                if (feed != null) localFeed = feed;
+                else localFeed = ONBOARDING_FEED;
+                NetworkClient.getApi().getOnboardingFeed(localFeed, localTags == null ? getTagsString() :
+                        localTags).enqueue(new LoadFeedCallback() {
+                    @Override
+                    public void onSuccess(Feed response) {
+                        if (InAppStoryManager.isNull()) return;
+                        ProfilingManager.getInstance().setReady(onboardUID);
+                        List<Story> notOpened = new ArrayList<>();
+                        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                        if (opens == null) opens = new HashSet<>();
+                        if (response.stories != null) {
+                            for (Story story : response.stories) {
                                 boolean add = true;
                                 for (String opened : opens) {
                                     if (Integer.toString(story.id).equals(opened)) {
@@ -963,27 +930,22 @@ public class InAppStoryManager {
                                 }
                                 if (add) notOpened.add(story);
                             }
-                            showLoadedOnboardings(notOpened, outerContext, manager, feed);
                         }
+                        showLoadedOnboardings(notOpened, outerContext, manager, localFeed, response.getFeedId());
+                    }
 
-                        @Override
-                        public Type getType() {
-                            return new StoryListType();
-                        }
+                    @Override
+                    public void onError(int code, String message) {
+                        ProfilingManager.getInstance().setReady(onboardUID);
+                        loadOnboardingError(localFeed);
+                    }
 
-                        @Override
-                        public void onError(int code, String message) {
-                            ProfilingManager.getInstance().setReady(onboardUID);
-                            loadOnboardingError(null);
-                        }
-
-                        @Override
-                        public void onTimeout() {
-                            ProfilingManager.getInstance().setReady(onboardUID);
-                            loadOnboardingError(null);
-                        }
-                    });
-                }
+                    @Override
+                    public void onTimeout() {
+                        ProfilingManager.getInstance().setReady(onboardUID);
+                        loadOnboardingError(localFeed);
+                    }
+                });
             }
 
             @Override
@@ -1053,7 +1015,7 @@ public class InAppStoryManager {
         return isSandbox;
     }
 
-    public static String ONBOARDING_FEED = "onboarding";
+    private final static String ONBOARDING_FEED = "onboarding";
 
     private String lastSingleOpen = null;
 
@@ -1114,7 +1076,7 @@ public class InAppStoryManager {
                         lastSingleOpen = null;
                         OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
 
-                        StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink);
+                        StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink, null);
                         if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
                         } else {
@@ -1148,7 +1110,7 @@ public class InAppStoryManager {
                             InAppStoryService.getInstance().getDownloadManager().getStories());
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
-                    ScreensManager.getInstance().openStoriesReader(context, null, manager, stIds, 0, ShowStory.SINGLE, slide);
+                    ScreensManager.getInstance().openStoriesReader(context, null, manager, stIds, 0, ShowStory.SINGLE, slide, null, null);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {

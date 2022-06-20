@@ -35,7 +35,6 @@ import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
@@ -64,6 +63,15 @@ public class StoriesList extends RecyclerView {
     }
 
     private String feed = DEFAULT_FEED;
+    private String feedId = null;
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    void setListFeedId(String feedId) {
+        this.feedId = feedId;
+    }
 
     public String getUniqueID() {
         return uniqueID;
@@ -193,7 +201,7 @@ public class StoriesList extends RecyclerView {
         try {
             if (StatisticManager.getInstance() != null) {
                 StatisticManager.getInstance().sendViewStory(newIndexes,
-                        isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST);
+                        isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feedId);
             }
         } catch (Exception e) {
 
@@ -442,6 +450,7 @@ public class StoriesList extends RecyclerView {
                 isFavoriteList,
                 callback,
                 getFeed(),
+                getFeedId(),
                 appearanceManager.csHasFavorite() && !isFavoriteList,
                 !isFavoriteList ? favoriteItemClick : null,
                 hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
@@ -480,6 +489,11 @@ public class StoriesList extends RecyclerView {
                 }
 
                 @Override
+                public void setFeedId(String feedId) {
+                    setListFeedId(feedId);
+                }
+
+                @Override
                 public void onError() {
                     if (callback != null) callback.loadError(getFeed());
                 }
@@ -500,6 +514,11 @@ public class StoriesList extends RecyclerView {
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
                                 if (callback != null)
                                     callback.storiesLoaded(storiesIds.size(), getFeed());
+                            }
+
+                            @Override
+                            public void setFeedId(String feedId) {
+                                setListFeedId(feedId);
                             }
 
                             @Override

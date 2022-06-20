@@ -181,7 +181,7 @@ public class ScreensManager {
     }
 
 
-    public void openGameReader(Context context, int storyId, int index, String gameUrl, String preloadPath, String gameConfig, String resources) {
+    public void openGameReader(Context context, int storyId, int index, String feedId, String gameUrl, String preloadPath, String gameConfig, String resources) {
         if (InAppStoryService.isNull()) {
             return;
         }
@@ -190,6 +190,7 @@ public class ScreensManager {
 
         intent2.putExtra("storyId", Integer.toString(storyId));
         intent2.putExtra("slideIndex", index);
+        intent2.putExtra("feedId", feedId);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         intent2.putExtra("tags", story.tags);
         intent2.putExtra("slidesCount", story.getSlidesCount());
@@ -219,7 +220,8 @@ public class ScreensManager {
     private Long lastOpenTry = -1L;
 
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex) {
+                                  ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex,
+                                  String feed, String feedId) {
         if (System.currentTimeMillis() - lastOpenTry < 1000) {
             return;
         }
@@ -233,6 +235,7 @@ public class ScreensManager {
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
             bundle.putInt("source", source);
+            bundle.putString("feedId", feedId);
             bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
             bundle.putIntegerArrayList("stories_ids", storiesIds);
             if (manager == null) {
@@ -289,6 +292,8 @@ public class ScreensManager {
             intent2.putExtra("source", source);
             if (listID != null)
                 intent2.putExtra("listID", listID);
+            if (feedId != null)
+                intent2.putExtra("feedId", feedId);
             intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
             intent2.putExtra("slideIndex", slideIndex);
             if (manager != null) {
@@ -324,8 +329,8 @@ public class ScreensManager {
     }
 
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds, int index, int source) {
-        openStoriesReader(outerContext, listID, manager, storiesIds, index, source, 0);
+                                  ArrayList<Integer> storiesIds, int index, int source, String feed, String feedId) {
+        openStoriesReader(outerContext, listID, manager, storiesIds, index, source, 0, feed, feedId);
     }
 
 
@@ -340,7 +345,7 @@ public class ScreensManager {
 
     public void showGoods(String skusString, Activity activity, final ShowGoodsCallback showGoodsCallback,
                           boolean fullScreen, final String widgetId,
-                          final int storyId, final int slideIndex) {
+                          final int storyId, final int slideIndex, final String feedId) {
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
             showGoodsCallback.onEmptyResume(widgetId);
             Log.d("InAppStory_SDK_error", "Empty goods widget");
@@ -375,7 +380,7 @@ public class ScreensManager {
 
             if (StatisticManager.getInstance() != null) {
                 StatisticManager.getInstance().sendGoodsOpen(storyId,
-                        slideIndex, widgetId);
+                        slideIndex, widgetId, feedId);
             }
             ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
                     .addView(AppearanceManager.getCommonInstance()
@@ -401,7 +406,7 @@ public class ScreensManager {
                         public void itemClick(String sku) {
                             if (StatisticManager.getInstance() != null) {
                                 StatisticManager.getInstance().sendGoodsClick(storyId,
-                                        slideIndex, widgetId, sku);
+                                        slideIndex, widgetId, sku, feedId);
                             }
                         }
                     });
@@ -417,10 +422,10 @@ public class ScreensManager {
 
             if (StatisticManager.getInstance() != null) {
                 StatisticManager.getInstance().sendGoodsOpen(storyId,
-                        slideIndex, widgetId);
+                        slideIndex, widgetId, feedId);
             }
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
-            goodsList.setConfig(new GoodsWidget.GoodsWidgetConfig(widgetId, storyId, slideIndex));
+            goodsList.setConfig(new GoodsWidget.GoodsWidgetConfig(widgetId, storyId, slideIndex, feedId));
             final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
             IGoodsWidgetAppearance iGoodsWidgetAppearance = AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetAppearance();
             if (iGoodsWidgetAppearance == null) {

@@ -127,7 +127,7 @@ public class GameActivity extends AppCompatActivity {
                             }
                         }, true, widgetId,
                         Integer.parseInt(manager.storyId),
-                        manager.index);
+                        manager.index, manager.feedId);
             }
         });
     }
@@ -361,7 +361,6 @@ public class GameActivity extends AppCompatActivity {
     void loadJsApiResponse(String gameResponse, String cb) {
         webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
     }
-
 
 
     private void initWebView() {

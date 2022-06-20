@@ -82,7 +82,8 @@ public class ButtonsPanelManager {
                             story.tags, story.getSlidesCount(),
                             story.lastIndex, true);
                 }
-                StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex);
+                StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex,
+                        parentManager != null ? parentManager.getFeedId() : null);
                 val = 1;
             }
         } else {
@@ -105,7 +106,8 @@ public class ButtonsPanelManager {
                             story.tags, story.getSlidesCount(),
                             story.lastIndex, true);
                 }
-                StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex);
+                StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex,
+                        parentManager != null ? parentManager.getFeedId() : null);
                 val = -1;
             }
         }
@@ -156,7 +158,8 @@ public class ButtonsPanelManager {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         final boolean val = story.favorite;
         if (!story.favorite)
-            StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex);
+            StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex,
+                    parentManager != null ? parentManager.getFeedId() : null);
         CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
                 story.tags, story.getSlidesCount(), story.lastIndex, !story.favorite));
         if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
@@ -226,7 +229,8 @@ public class ButtonsPanelManager {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex,
-                story.shareType(story.lastIndex));
+                story.shareType(story.lastIndex),
+                parentManager != null ? parentManager.getFeedId() : null);
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
                 story.tags, story.getSlidesCount(), story.lastIndex));
 

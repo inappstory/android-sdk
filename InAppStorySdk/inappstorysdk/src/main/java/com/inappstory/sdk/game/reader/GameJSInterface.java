@@ -76,7 +76,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void gameStatisticEvent(String name, String data) {
-        StatisticManager.getInstance().sendGameEvent(name, data);
+        manager.sendGameStat(name, data);
     }
 
     @JavascriptInterface

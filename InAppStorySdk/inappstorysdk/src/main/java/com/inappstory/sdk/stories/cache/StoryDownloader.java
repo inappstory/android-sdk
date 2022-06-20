@@ -337,7 +337,7 @@ class StoryDownloader {
                                         callback.onError("");
                                     } else {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                        callback.onSuccess(response.stories, response.hasFavorite());
+                                        callback.onSuccess(response.stories, response.hasFavorite(), response.getFeedId());
                                     }
                                 }
 

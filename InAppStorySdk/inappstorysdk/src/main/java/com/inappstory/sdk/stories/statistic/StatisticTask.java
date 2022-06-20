@@ -15,6 +15,8 @@ public class StatisticTask {
     public boolean isFake;
     @SerializedName("i")
     public String storyId;
+    @SerializedName("f")
+    public String feedId;
     @SerializedName("w")
     public String whence;
     @SerializedName("t")

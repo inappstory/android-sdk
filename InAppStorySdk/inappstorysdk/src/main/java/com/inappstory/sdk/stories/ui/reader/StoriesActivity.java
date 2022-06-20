@@ -210,7 +210,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             String cause = StatisticManager.BACK;
             if (story != null)
                 StatisticManager.getInstance().sendCloseStory(story.id, cause,
-                        story.lastIndex, story.getSlidesCount());
+                        story.lastIndex, story.getSlidesCount(),
+                        getIntent().getStringExtra("feedId"));
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -355,6 +356,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 Bundle bundle = new Bundle();
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
+                bundle.putString("feedId", getIntent().getStringExtra("feedId"));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
                 setAppearanceSettings(bundle);
@@ -459,7 +461,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         break;
                 }
                 StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                        story.getSlidesCount());
+                        story.getSlidesCount(),
+                        getIntent().getStringExtra("feedId"));
             }
         }
         cleanReader();

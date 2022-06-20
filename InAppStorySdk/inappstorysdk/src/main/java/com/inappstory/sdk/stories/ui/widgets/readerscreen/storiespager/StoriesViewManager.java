@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
@@ -64,6 +65,12 @@ public class StoriesViewManager {
     public void swipeUp() {
         if (storiesView != null)
             storiesView.swipeUp();
+    }
+
+    public void sendWidgetStoryEvent(String name, String data) {
+        StatisticManager.getInstance().sendWidgetStoryEvent(name, data,
+                pageManager != null ? pageManager.getFeedId() : null);
+
     }
 
     void screenshotShare() {
@@ -363,7 +370,8 @@ public class StoriesViewManager {
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
-        ScreensManager.getInstance().openGameReader(context, storyId, index, gameUrl,
+        ScreensManager.getInstance().openGameReader(context, storyId, index,
+                pageManager != null ? pageManager.getFeedId() : null, gameUrl,
                 preloadPath, gameConfig, resources);
     }
 

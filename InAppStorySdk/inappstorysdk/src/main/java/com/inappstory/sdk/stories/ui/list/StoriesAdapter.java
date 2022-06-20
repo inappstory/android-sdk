@@ -54,6 +54,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     public Context context;
     private String listID;
     private String feed;
+    private String feedID;
+
+    public void setFeedID(String feedID) {
+        this.feedID = feedID;
+    }
 
     public StoriesAdapter(Context context,
                           String listID,
@@ -62,6 +67,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                           boolean isFavoriteList,
                           ListCallback callback,
                           String feed,
+                          String feedID,
                           boolean useFavorite,
                           OnFavoriteItemClick favoriteItemClick,
                           boolean useUGC,
@@ -70,6 +76,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         this.listID = listID;
         this.feed = feed;
         this.storiesIds = storiesIds;
+        this.feedID = feedID;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.ugcItemClick = ugcItemClick;
@@ -173,7 +180,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         current.getSlidesCount(), isFavoriteList, feed);
             }
             if (current.deeplink != null) {
-                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
+                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 CsEventBus.getDefault().post(new CallToAction(current.id, current.title,
                         current.tags, current.getSlidesCount(), 0,
@@ -236,7 +243,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         }
         ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
-                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
+                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, feedID);
         InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
     }

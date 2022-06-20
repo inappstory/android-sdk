@@ -156,7 +156,7 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyStatisticEvent(String name, String data) {
-        StatisticManager.getInstance().sendWidgetStoryEvent(name, data);
+        manager.sendWidgetStoryEvent(name, data);
         logMethod(name + " " + data);
     }
 

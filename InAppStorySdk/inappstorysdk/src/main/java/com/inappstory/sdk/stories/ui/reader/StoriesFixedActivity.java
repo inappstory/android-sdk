@@ -215,7 +215,9 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     );
                 }
                 String cause = StatisticManager.BACK;
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                        story.getSlidesCount(),
+                        getIntent().getStringExtra("feedId"));
             }
         }
         finish();
@@ -328,6 +330,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
+                bundle.putString("feedId", getIntent().getStringExtra("feedId"));
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
@@ -398,7 +401,10 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     cause = StatisticManager.SWIPE;
                     break;
             }
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
+            StatisticManager.getInstance().sendCloseStory(story.id, cause,
+                    story.lastIndex,
+                    story.getSlidesCount(),
+                    getIntent().getStringExtra("feedId"));
         }
         cleanReader();
 

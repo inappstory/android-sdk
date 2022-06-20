@@ -6,6 +6,7 @@ import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 import com.inappstory.sdk.network.JsonParser;
@@ -34,6 +35,7 @@ import static com.inappstory.sdk.network.JsonParser.toMap;
 public class GameManager {
     String storyId;
     String path;
+    String feedId;
     String resources;
     String observableId;
     String loaderPath;
@@ -96,6 +98,10 @@ public class GameManager {
 
     void setAudioManagerMode(String mode) {
         host.setAudioManagerMode(mode);
+    }
+
+    void sendGameStat(String name, String data) {
+        StatisticManager.getInstance().sendGameEvent(name, data, feedId);
     }
 
     void gameCompleted(String gameState, String link, String eventData) {

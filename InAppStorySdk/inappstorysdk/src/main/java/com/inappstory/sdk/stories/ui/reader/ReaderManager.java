@@ -25,10 +25,13 @@ import java.util.List;
 public class ReaderManager {
 
     private String listID;
-    public ReaderManager() {}
 
-    public ReaderManager(String listID) {
+    public ReaderManager() {
+    }
+
+    public ReaderManager(String listID, String feedId) {
         this.listID = listID;
+        this.feedId = feedId;
     }
 
     public void close() {
@@ -50,7 +53,7 @@ public class ReaderManager {
     public void showGoods(String skusString, String widgetId, ShowGoodsCallback showGoodsCallback, int storyId, int slideIndex) {
         ScreensManager.getInstance().showGoods(skusString,
                 parentFragment.getActivity(), showGoodsCallback, false,
-                widgetId, storyId, slideIndex);
+                widgetId, storyId, slideIndex, feedId);
     }
 
     public void pause() {
@@ -235,6 +238,16 @@ public class ReaderManager {
 
     int lastPos = -1;
 
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
+    }
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    private String feedId;
+
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
         if (InAppStoryService.isNull()) return;
         Story story2 = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
@@ -242,11 +255,11 @@ public class ReaderManager {
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(lastPos));
-            StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount());
+            StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
         }
-        StatisticManager.getInstance().sendViewStory(id, whence);
-        StatisticManager.getInstance().sendOpenStory(id, whence);
-        StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex);
+        StatisticManager.getInstance().sendViewStory(id, whence, feedId);
+        StatisticManager.getInstance().sendOpenStory(id, whence, feedId);
+        StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
     }
 
     public void shareComplete() {
@@ -355,7 +368,6 @@ public class ReaderManager {
     public void prevStory() {
         parentFragment.prevStory();
     }
-
 
 
     public void defaultTapOnLink(String url) {

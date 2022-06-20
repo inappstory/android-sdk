@@ -95,7 +95,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 }
                 String cause = StatisticManager.CLICK;
                 StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                        story.getSlidesCount());
+                        story.getSlidesCount(),
+                        getArguments().getString("feedId"));
             }
 
         }

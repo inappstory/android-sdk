@@ -280,6 +280,11 @@ public class ReaderPageManager {
         }
     }
 
+    public String getFeedId() {
+        if (parentManager != null) return parentManager.getFeedId();
+        return null;
+    }
+
     public void restartCurrentWithDuration(long duration) {
         if (durations.size() <= slideIndex) return;
         durations.set(slideIndex, (int) duration);
@@ -363,7 +368,8 @@ public class ReaderPageManager {
         timerManager.setCurrentDuration(durations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
         InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId);
-        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex);
+        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
+                parentManager != null ? parentManager.getFeedId() : null);
         loadStoryAndSlide(storyId, slideIndex);
     }
 

@@ -223,9 +223,9 @@ public class InAppStoryService {
     }
 
 
-    public void sendPageOpenStatistic(int storyId, int index) {
+    public void sendPageOpenStatistic(int storyId, int index, String feedId) {
         OldStatisticManager.getInstance().addStatisticBlock(storyId, index);
-        StatisticManager.getInstance().createCurrentState(storyId, index);
+        StatisticManager.getInstance().createCurrentState(storyId, index, feedId);
     }
 
 

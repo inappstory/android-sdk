@@ -76,6 +76,7 @@ public interface ApiInterface {
             @Query("s") String sessionId,
             @Query("u") String userId,
             @Query("ts") Long timestamp,
+            @Query("f") String feedId,
             @Query("i") String storyId,
             @Query("w") String whence,
             @Query("c") String cause,

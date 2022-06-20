@@ -210,36 +210,43 @@ public class StatisticManager {
 
     String prefix = "";
 
-    public void sendViewStory(final int i, final String w) {
-        if (!viewed.contains(i)) {
+    public void sendViewStory(final int storyId, final String whence, final String feedId) {
+        if (!viewed.contains(storyId)) {
             StatisticTask task = new StatisticTask();
             task.event = prefix + "view";
-            task.storyId = Integer.toString(i);
-            task.whence = w;
+            task.storyId = Integer.toString(storyId);
+            task.feedId = feedId;
+            task.whence = whence;
             generateBase(task);
             addTask(task);
-            viewed.add(i);
+            viewed.add(storyId);
         }
     }
 
 
-    public void sendGoodsOpen(final int i, final int si, final String wi) {
+    public void sendGoodsOpen(final int storyId,
+                              final int slideIndex,
+                              final String widgetId,
+                              final String feedId) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "w-goods-open";
-        task.storyId = Integer.toString(i);
-        task.slideIndex = si;
-        task.widgetId = wi;
+        task.storyId = Integer.toString(storyId);
+        task.slideIndex = slideIndex;
+        task.widgetId = widgetId;
+        task.feedId = feedId;
         generateBase(task);
         addTask(task, InAppStoryManager.getInstance() != null &&
                 InAppStoryManager.getInstance().isSendStatistic());
     }
 
     public void sendGoodsClick(final int i, final int si,
-                               final String wi, final String sku) {
+                               final String wi, final String sku,
+                               final String feedId) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "w-goods-click";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
+        task.feedId = feedId;
         task.widgetId = wi;
         task.widgetValue = sku;
         generateBase(task);
@@ -247,7 +254,8 @@ public class StatisticManager {
                 InAppStoryManager.getInstance().isSendStatistic());
     }
 
-    public void sendViewStory(ArrayList<Integer> ids, final String w) {
+    public void sendViewStory(ArrayList<Integer> ids, final String w,
+                              final String feedId) {
         ArrayList<String> localIds = new ArrayList<>();
         for (int i : ids) {
             if (!viewed.contains(i)) {
@@ -257,6 +265,7 @@ public class StatisticManager {
         }
         if (localIds.size() > 0) {
             StatisticTask task = new StatisticTask();
+            task.feedId = feedId;
             task.event = prefix + "view";
             task.storyId = TextUtils.join(",", localIds);
             task.whence = w;
@@ -267,11 +276,13 @@ public class StatisticManager {
 
     HashMap<Integer, Long> cTimes;
 
-    public void sendOpenStory(final int i, final String w) {
+    public void sendOpenStory(final int i, final String w,
+                              final String feedId) {
         if (cTimes == null) cTimes = new HashMap<>();
         cTimes.put(i, System.currentTimeMillis());
         pauseTime = 0;
         StatisticTask task = new StatisticTask();
+        task.feedId = feedId;
         task.event = prefix + "open";
         task.storyId = Integer.toString(i);
         task.whence = w;
@@ -286,17 +297,23 @@ public class StatisticManager {
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 
-    public void sendReadStory(final int i) {
+    public void sendReadStory(final int i,
+                              final String feedId) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "read";
         task.storyId = Integer.toString(i);
 
+        task.feedId = feedId;
         generateBase(task);
         addTask(task);
 
     }
 
-    public void sendCloseStory(final int i, final String c, final Integer si, final Integer st) {
+    public void sendCloseStory(final int i,
+                               final String c,
+                               final Integer si,
+                               final Integer st,
+                               final String feedId) {
         sendCurrentState();
         if (cTimes == null) cTimes = new HashMap<>();
         Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
@@ -305,6 +322,7 @@ public class StatisticManager {
         task.storyId = Integer.toString(i);
         task.cause = c;
         task.slideIndex = si;
+        task.feedId = feedId;
         task.slideTotal = st;
         task.durationMs = System.currentTimeMillis() - tm - pauseTime;
         generateBase(task);
@@ -319,47 +337,39 @@ public class StatisticManager {
     public void sendCurrentState() {
         synchronized (csLock) {
             if (currentState != null) {
-                sendViewSlide(currentState.storyId, currentState.slideIndex, System.currentTimeMillis() - currentState.startTime - currentState.storyPause);
+                sendViewSlide(currentState.storyId,
+                        currentState.slideIndex,
+                        System.currentTimeMillis() - currentState.startTime - currentState.storyPause,
+                        currentState.feedId);
             }
             currentState = null;
         }
     }
 
-    public void createCurrentState(final int stId, final int ind) {
+    public void createCurrentState(final int stId,
+                                   final int ind,
+                                   final String feedId) {
         synchronized (csLock) {
             pauseTime = 0;
             currentState = new CurrentState();
             currentState.storyId = stId;
             currentState.slideIndex = ind;
+            currentState.feedId = feedId;
             currentState.startTime = System.currentTimeMillis();
         }
     }
 
-
-    public void sendCloseStory(final int i, final String c, final Integer si, final Integer st, final Long t) {
-        sendCurrentState();
-        if (cTimes == null) cTimes = new HashMap<>();
-        Long tm = cTimes.get(i) != null ? cTimes.get(i) : 0L;
-        StatisticTask task = new StatisticTask();
-        task.event = prefix + "close";
-        task.storyId = Integer.toString(i);
-        task.cause = c;
-        task.slideIndex = si;
-        task.slideTotal = st;
-        task.durationMs = System.currentTimeMillis() - tm - t;
-        generateBase(task);
-        addTask(task);
-        pauseTime = 0;
-
-    }
-
-    public void addFakeEvents(final int i, final Integer si, final Integer st) {
+    public void addFakeEvents(final int i,
+                              final Integer si,
+                              final Integer st,
+                              final String feedId) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "slide";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
         task.durationMs = System.currentTimeMillis() - (currentState != null ? currentState.startTime : 0);
         task.isFake = true;
+        task.feedId = feedId;
         generateBase(task);
         addFakeTask(task);
 
@@ -372,17 +382,21 @@ public class StatisticManager {
         task2.slideIndex = si;
         task2.isFake = true;
         task2.slideTotal = st;
+        task2.feedId = feedId;
         task2.durationMs = System.currentTimeMillis() - tm - pauseTime;
         generateBase(task2);
         addFakeTask(task2);
     }
 
-    public void sendDeeplinkStory(final int i, String link) {
+    public void sendDeeplinkStory(final int i,
+                                  String link,
+                                  final String feedId) {
 
         StatisticTask task = new StatisticTask();
         task.event = prefix + "link";
         task.storyId = Integer.toString(i);
         task.target = link;
+        task.feedId = feedId;
         generateBase(task);
         addTask(task);
 
@@ -397,20 +411,26 @@ public class StatisticManager {
         addTask(task);
     }
 
-    public void sendLikeStory(final int i, final int si) {
+    public void sendLikeStory(final int i,
+                              final int si,
+                              final String feedId) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "like";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
+        task.feedId = feedId;
         generateBase(task);
         addTask(task);
 
     }
 
-    public void sendDislikeStory(final int i, final int si) {
+    public void sendDislikeStory(final int i,
+                                 final int si,
+                                 final String feedId) {
 
         StatisticTask task = new StatisticTask();
         task.event = prefix + "dislike";
+        task.feedId = feedId;
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
         generateBase(task);
@@ -418,10 +438,13 @@ public class StatisticManager {
 
     }
 
-    public void sendFavoriteStory(final int i, final int si) {
+    public void sendFavoriteStory(final int i,
+                                  final int si,
+                                  final String feedId) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "favorite";
         task.storyId = Integer.toString(i);
+        task.feedId = feedId;
         task.slideIndex = si;
         generateBase(task);
         addTask(task);
@@ -431,23 +454,31 @@ public class StatisticManager {
     public long pauseTime = 0;
 
 
-    public void sendViewSlide(final int i, final int si, final Long t) {
+    public void sendViewSlide(final int i,
+                              final int si,
+                              final Long t,
+                              final String feedId) {
         if (t <= 0) return;
         StatisticTask task = new StatisticTask();
         task.event = prefix + "slide";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
         task.durationMs = t;
+        task.feedId = feedId;
         generateBase(task);
         addTask(task);
 
     }
 
-    public void sendShareStory(final int i, final int si, int mode) {
+    public void sendShareStory(final int i,
+                               final int si,
+                               int mode,
+                               final String feedId) {
         StatisticTask task = new StatisticTask();
         task.event = prefix + "share";
         task.storyId = Integer.toString(i);
         task.slideIndex = si;
+        task.feedId = feedId;
         task.mode = mode;
         generateBase(task);
         addTask(task, InAppStoryManager.getInstance() != null &&
@@ -456,16 +487,21 @@ public class StatisticManager {
     }
 
 
-    public void sendWidgetStoryEvent(final String name, final String data) {
+    public void sendWidgetStoryEvent(final String name,
+                                     final String data,
+                                     final String feedId) {
         StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
         task.event = name;
+        task.feedId = feedId;
         generateBase(task);
         addTask(task);
     }
 
-    public void sendGameEvent(final String name, final String data) {
+    public void sendGameEvent(final String name, final String data,
+                              final String feedId) {
         StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);
         task.event = name;
+        task.feedId = feedId;
         generateBase(task);
         addTask(task);
     }
@@ -481,6 +517,7 @@ public class StatisticManager {
                             task.sessionId,
                             task.userId,
                             task.timestamp,
+                            task.feedId,
                             task.storyId,
                             task.whence,
                             task.cause,
