@@ -7,7 +7,7 @@ import java.util.List;
 public class Feed {
     @SerializedName("id")
     public Integer feedId;
-    @SerializedName("stories")
+    @SerializedName("hasFavorite")
     public Boolean hasFavorite;
     @SerializedName("stories")
     public List<Story> stories;
