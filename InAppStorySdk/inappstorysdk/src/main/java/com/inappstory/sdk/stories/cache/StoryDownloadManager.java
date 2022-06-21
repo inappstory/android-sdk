@@ -459,7 +459,7 @@ public class StoryDownloadManager {
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
 
-                Integer feedId = null;
+                String feedId = null;
                 final ArrayList<Story> resStories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     resStories.add(response.get(i));
@@ -511,10 +511,10 @@ public class StoryDownloadManager {
                 if (args != null && args.length > 0) {
                     loadFav &= (boolean) args[0];
                     if (args.length > 1) {
-                        feedId = (Integer) args[1];
+                        feedId = (String) args[1];
                     }
                 }
-                final String sFeedId = (feedId != null) ? Integer.toString(feedId) : null;
+                final String sFeedId = feedId;
                 if (loadFav) {
                     final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
 
