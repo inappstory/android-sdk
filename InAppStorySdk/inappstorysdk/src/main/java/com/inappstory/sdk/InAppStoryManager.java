@@ -1,5 +1,10 @@
 package com.inappstory.sdk;
 
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -12,17 +17,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -30,11 +28,22 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.utils.KeyConverter;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+import com.inappstory.sdk.stories.callbacks.AppClickCallback;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
+import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
+import com.inappstory.sdk.stories.callbacks.ShareCallback;
+import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
+import com.inappstory.sdk.stories.events.NoConnectionEvent;
+import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
@@ -47,36 +56,26 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryC
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryListType;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.callbacks.AppClickCallback;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
-import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
-import com.inappstory.sdk.stories.callbacks.ShareCallback;
-import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**

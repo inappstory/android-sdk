@@ -1,15 +1,13 @@
 package com.inappstory.sdk.stories.utils;
 
+import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
+
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
-import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
-
-import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
 
 public class StoryShareBroadcastReceiver extends BroadcastReceiver {
     @Override

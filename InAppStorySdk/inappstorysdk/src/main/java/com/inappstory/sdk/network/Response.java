@@ -1,7 +1,5 @@
 package com.inappstory.sdk.network;
 
-import com.inappstory.sdk.stories.api.models.logs.ApiLog;
-
 import java.util.HashMap;
 
 public final class Response {

@@ -1,18 +1,14 @@
 package com.inappstory.sdk.network;
 
-import android.os.Build;
-import android.util.Log;
+import static java.util.UUID.randomUUID;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.StatisticSession;
-import com.inappstory.sdk.stories.api.models.logs.ApiLog;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.api.models.logs.BaseLog;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -31,9 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
-import static java.util.UUID.randomUUID;
 
 public final class NetworkHandler implements InvocationHandler {
     /**

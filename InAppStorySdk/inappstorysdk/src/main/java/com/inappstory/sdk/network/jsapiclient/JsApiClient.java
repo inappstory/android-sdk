@@ -1,5 +1,7 @@
 package com.inappstory.sdk.network.jsapiclient;
 
+import static com.inappstory.sdk.network.JsonParser.toMap;
+
 import android.content.Context;
 
 import com.inappstory.sdk.network.JsonParser;
@@ -12,8 +14,6 @@ import com.inappstory.sdk.stories.utils.TaskRunner;
 import org.json.JSONObject;
 
 import java.util.Map;
-
-import static com.inappstory.sdk.network.JsonParser.toMap;
 
 public class JsApiClient {
     TaskRunner taskRunner = new TaskRunner();

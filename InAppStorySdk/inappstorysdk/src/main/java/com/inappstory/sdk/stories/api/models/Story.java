@@ -2,19 +2,13 @@ package com.inappstory.sdk.stories.api.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.SerializedName;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Paperrose on 08.07.2018.

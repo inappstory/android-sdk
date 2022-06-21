@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.utils;
 
-import android.graphics.Bitmap;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

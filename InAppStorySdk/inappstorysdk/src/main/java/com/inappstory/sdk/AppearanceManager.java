@@ -14,17 +14,14 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
-import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
-import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
+import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.

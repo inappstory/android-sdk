@@ -1,5 +1,8 @@
 package com.inappstory.sdk.imageloader;
 
+import static com.inappstory.sdk.InAppStoryService.IAS_PREFIX;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,10 +21,15 @@ import android.os.Looper;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
+import com.inappstory.sdk.stories.utils.Sizes;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,17 +37,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
-import com.inappstory.sdk.stories.utils.Sizes;
-
-import static com.inappstory.sdk.InAppStoryService.IAS_PREFIX;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 
 public class ImageLoader {
 

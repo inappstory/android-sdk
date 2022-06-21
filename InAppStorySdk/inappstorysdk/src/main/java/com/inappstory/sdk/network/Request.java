@@ -1,7 +1,6 @@
 package com.inappstory.sdk.network;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;

@@ -6,9 +6,6 @@ import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.utils.ZipLoadCallback;
-import com.inappstory.sdk.utils.ZipLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -24,13 +21,14 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outerevents.CallToAction;
 import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.FinishGame;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.utils.ZipLoadCallback;
+import com.inappstory.sdk.utils.ZipLoader;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-
-import static com.inappstory.sdk.network.JsonParser.toMap;
 
 public class GameManager {
     String storyId;

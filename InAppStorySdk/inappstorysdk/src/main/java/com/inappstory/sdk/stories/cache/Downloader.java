@@ -8,6 +8,16 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.models.CacheFontObject;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.utils.KeyValueStorage;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,16 +31,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.api.models.CacheFontObject;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
 /**

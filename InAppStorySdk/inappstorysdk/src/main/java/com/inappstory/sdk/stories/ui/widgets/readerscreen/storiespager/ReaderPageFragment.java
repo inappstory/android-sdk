@@ -1,5 +1,12 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
+import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
+import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
+import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -44,14 +51,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timel
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
-import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
-import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReaderPageFragment extends Fragment {

@@ -3,11 +3,10 @@ package com.inappstory.sdk.stories.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import java.util.HashMap;
-
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
+
+import java.util.HashMap;
 
 public class KeyValueStorage {
 

@@ -1,5 +1,10 @@
 package com.inappstory.sdk.network.jsapiclient;
 
+import static com.inappstory.sdk.network.NetworkClient.getUAString;
+import static com.inappstory.sdk.network.NetworkHandler.GET;
+import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
+import static java.util.UUID.randomUUID;
+
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
@@ -18,11 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
-
-import static com.inappstory.sdk.network.NetworkClient.getUAString;
-import static com.inappstory.sdk.network.NetworkHandler.GET;
-import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
-import static java.util.UUID.randomUUID;
 
 public class JsApiNetwork {
 

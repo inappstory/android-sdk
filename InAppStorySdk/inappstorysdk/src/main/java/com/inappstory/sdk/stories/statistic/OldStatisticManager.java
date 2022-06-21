@@ -1,10 +1,8 @@
 package com.inappstory.sdk.stories.statistic;
 
 import android.os.Handler;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.StatisticResponse;

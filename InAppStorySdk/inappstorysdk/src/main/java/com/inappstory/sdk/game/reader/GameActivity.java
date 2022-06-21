@@ -1,5 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
+import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
+
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -38,11 +40,9 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.utils.ZipLoader;
-import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.share.ShareManager;
 import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.share.ShareManager;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
@@ -53,8 +53,8 @@ import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
+import com.inappstory.sdk.utils.ZipLoadCallback;
+import com.inappstory.sdk.utils.ZipLoader;
 
 public class GameActivity extends AppCompatActivity {
     private IASWebView webView;

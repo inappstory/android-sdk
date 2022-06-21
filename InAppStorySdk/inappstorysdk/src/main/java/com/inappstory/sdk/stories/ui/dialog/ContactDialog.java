@@ -1,10 +1,15 @@
 package com.inappstory.sdk.stories.ui.dialog;
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
+import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -32,18 +37,11 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
-import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
-import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
-import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
 
 public class ContactDialog {
 

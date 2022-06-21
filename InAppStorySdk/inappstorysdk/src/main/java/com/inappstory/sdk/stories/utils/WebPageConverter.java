@@ -1,20 +1,18 @@
 package com.inappstory.sdk.stories.utils;
 
-import android.content.Context;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Base64;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
-
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.Story;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
 
 public class WebPageConverter {
     public Spanned fromHtml(String html) {

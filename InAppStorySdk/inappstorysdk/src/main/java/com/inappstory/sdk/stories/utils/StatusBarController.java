@@ -1,9 +1,7 @@
 package com.inappstory.sdk.stories.utils;
 
 import android.app.Activity;
-import android.os.Build;
 import android.view.View;
-import android.view.WindowManager;
 
 /**
  * Created by Paperrose on 23.07.2018.

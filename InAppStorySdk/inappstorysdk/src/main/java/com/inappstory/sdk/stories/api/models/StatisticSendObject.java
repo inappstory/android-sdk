@@ -1,9 +1,9 @@
 package com.inappstory.sdk.stories.api.models;
 
 
-import java.util.List;
-
 import com.inappstory.sdk.network.SerializedName;
+
+import java.util.List;
 
 /**
  * Created by paperrose on 21.02.2018.

@@ -3,17 +3,13 @@ package com.inappstory.sdk.stories.utils;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
-import android.view.animation.RotateAnimation;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.RelativeLayout;
-
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedView;
 
 public class ViewAnimator {
     public static final String FOCUS_IN = "focus-in";

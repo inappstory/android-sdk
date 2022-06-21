@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
+import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
+
 import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -27,8 +29,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
 
 class StoryDownloader {
     StoryDownloader(DownloadStoryCallback callback, StoryDownloadManager manager) {

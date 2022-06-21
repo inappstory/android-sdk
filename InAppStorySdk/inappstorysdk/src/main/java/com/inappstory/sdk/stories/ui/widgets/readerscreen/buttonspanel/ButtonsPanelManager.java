@@ -1,5 +1,8 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
+import static android.app.PendingIntent.FLAG_IMMUTABLE;
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -12,22 +15,19 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.ClickOnShareStory;
 import com.inappstory.sdk.stories.outerevents.DislikeStory;
 import com.inappstory.sdk.stories.outerevents.FavoriteStory;
 import com.inappstory.sdk.stories.outerevents.LikeStory;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
 import java.lang.reflect.Type;
-
-import static android.app.PendingIntent.FLAG_IMMUTABLE;
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 public class ButtonsPanelManager {
     public void setStoryId(int storyId) {

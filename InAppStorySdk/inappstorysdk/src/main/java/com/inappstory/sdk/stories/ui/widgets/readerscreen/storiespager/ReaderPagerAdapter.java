@@ -1,5 +1,8 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+
 import android.os.Bundle;
 import android.os.Parcelable;
 
@@ -15,9 +18,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     private List<Integer> storiesIds = new ArrayList<>();

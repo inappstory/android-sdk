@@ -1,11 +1,9 @@
 package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 

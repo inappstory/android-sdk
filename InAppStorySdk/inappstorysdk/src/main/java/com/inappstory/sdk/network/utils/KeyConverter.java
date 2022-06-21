@@ -1,8 +1,9 @@
 package com.inappstory.sdk.network.utils;
 
 
-import java.util.Arrays;
 import android.util.Base64;
+
+import java.util.Arrays;
 
 public class KeyConverter {
     private static String xor(byte[] str1, byte[] str2) {

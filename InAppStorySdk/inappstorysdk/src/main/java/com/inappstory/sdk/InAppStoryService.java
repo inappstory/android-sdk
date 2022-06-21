@@ -1,12 +1,33 @@
 package com.inappstory.sdk;
 
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
+import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.lrudiskcache.FileManager;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
+import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
+import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.StoriesListManager;
+import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,32 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-
-
-import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
-import com.inappstory.sdk.stories.exceptions.ExceptionManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
-import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.stories.cache.StoryDownloadManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.managers.TimerManager;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.ui.list.StoriesListManager;
-import com.inappstory.sdk.stories.utils.SessionManager;
-
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
 public class InAppStoryService {
 

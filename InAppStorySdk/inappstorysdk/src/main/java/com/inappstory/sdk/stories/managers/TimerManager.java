@@ -1,12 +1,11 @@
 package com.inappstory.sdk.stories.managers;
 
 import android.os.Handler;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
 public class TimerManager {

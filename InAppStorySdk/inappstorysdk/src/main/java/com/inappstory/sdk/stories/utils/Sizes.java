@@ -9,7 +9,6 @@ import android.view.WindowManager;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.InAppStoryManager;
 
 /**
  * Created by Paperrose on 11.07.2018.

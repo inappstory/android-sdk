@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.outerevents;
 
-import android.util.Log;
-
 public class CloseStory extends BaseOuterEvent {
 
 

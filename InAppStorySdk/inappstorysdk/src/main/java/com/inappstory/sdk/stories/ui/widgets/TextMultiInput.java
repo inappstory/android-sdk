@@ -1,9 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
-import android.os.Handler;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -13,7 +11,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.DigitsKeyListener;
 import android.util.AttributeSet;
-import android.util.Size;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -24,7 +21,6 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
-import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.stories.utils.PhoneFormats;
 import com.inappstory.sdk.stories.utils.Sizes;

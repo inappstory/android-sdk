@@ -1,5 +1,25 @@
 package com.inappstory.sdk.stories.ui;
 
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
+import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
+import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
+import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
+import static java.util.UUID.randomUUID;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -51,26 +71,6 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
-import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
-import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
-import static java.util.UUID.randomUUID;
 
 public class ScreensManager {
 
