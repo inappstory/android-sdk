@@ -55,6 +55,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCall
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.WidgetClickCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
@@ -268,6 +269,13 @@ public class InAppStoryManager {
         CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
     }
 
+    /**
+     * use to set callback on click on widgets in stories (with info)
+     */
+    public void setWidgetClickCallback(WidgetClickCallback widgetClickCallback) {
+        CallbackManager.getInstance().setWidgetClickCallback(widgetClickCallback);
+    }
+
 
     /**
      * use to set callback on stories reader closing
@@ -315,6 +323,12 @@ public class InAppStoryManager {
      * use to set callback on click on buttons in stories (without additional info)
      */
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
+        CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
+    }
+    /**
+     * use to set callback on click on buttons in stories (without additional info)
+     */
+    public void setWidgetClickCallback(UrlClickCallback urlClickCallback) {
         CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
     }
 
@@ -1242,7 +1256,7 @@ public class InAppStoryManager {
         }
 
         @Deprecated
-        public Builder sandbox(boolean sandbox) {
+        private Builder sandbox(boolean sandbox) {
             Builder.this.sandbox = sandbox;
             return Builder.this;
         }

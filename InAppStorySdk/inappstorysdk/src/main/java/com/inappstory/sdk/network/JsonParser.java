@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public class JsonParser {
@@ -98,6 +99,9 @@ public class JsonParser {
                     }
                 }
                 field.set(res, arrayList);
+            } else if (field.getType().equals(Map.class) ||
+                    containsInterface(field.getType().getInterfaces(), Map.class)) {
+                field.set(res, toObjectMap(jsonObject.getJSONObject(name)));
             } else {
                 field.set(res, fromJson(jsonObject.getJSONObject(name), (Class) field.getGenericType()));
             }
@@ -118,7 +122,7 @@ public class JsonParser {
     public static Map<String, String> toMap(JSONObject jsonobj) throws JSONException {
         Map<String, String> map = new HashMap<String, String>();
         Iterator<String> keys = jsonobj.keys();
-        while(keys.hasNext()) {
+        while (keys.hasNext()) {
             String key = keys.next();
             Object value = jsonobj.get(key);
             if (value instanceof JSONArray) {
@@ -127,21 +131,38 @@ public class JsonParser {
                 value = toMap((JSONObject) value);
             }
             map.put(key, value.toString());
-        }   return map;
+        }
+        return map;
+    }
+
+    public static Map<String, Object> toObjectMap(JSONObject jsonobj) throws JSONException {
+        Map<String, Object> map = new HashMap<>();
+        Iterator<String> keys = jsonobj.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            Object value = jsonobj.get(key);
+            if (value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            } else if (value instanceof JSONObject) {
+                value = toObjectMap((JSONObject) value);
+            }
+            map.put(key, value);
+        }
+        return map;
     }
 
     public static List<Object> toList(JSONArray array) throws JSONException {
         List<Object> list = new ArrayList<Object>();
-        for(int i = 0; i < array.length(); i++) {
+        for (int i = 0; i < array.length(); i++) {
             Object value = array.get(i);
             if (value instanceof JSONArray) {
                 value = toList((JSONArray) value);
-            }
-            else if (value instanceof JSONObject) {
+            } else if (value instanceof JSONObject) {
                 value = toMap((JSONObject) value);
             }
             list.add(value);
-        }   return list;
+        }
+        return list;
     }
 
     public static <T> ArrayList<T> listFromJson(String json, Class<T> typeOfT) {
@@ -258,12 +279,38 @@ public class JsonParser {
                     }
                 }
                 object.put(name, array);
+            } else if (field.getType().equals(Map.class) ||
+                    containsInterface(field.getType().getInterfaces(), Map.class)) {
+                JSONObject mapObject = new JSONObject();
+                Map<String, Object> valMap = (Map<String, Object>)val;
+                Set<String> keys = valMap.keySet();
+                for (String key : keys) {
+                    Class fType = valMap.get(key).getClass();
+                    if (fType.isPrimitive() || fType.equals(Integer.class)
+                            || fType.equals(Boolean.class) || fType.equals(Character.class)
+                            || fType.equals(Short.class) || fType.equals(Long.class)
+                            || fType.equals(Byte.class) || fType.equals(Float.class)
+                            || fType.equals(Double.class) || fType.equals(String.class)) {
+                        mapObject.put(key, valMap.get(key));
+                    } else {
+                        mapObject.put(key, getJsonObject(valMap.get(key)));
+                        int c = 1;
+                    }
+                }
+                object.put(name, mapObject);
             } else {
                 object.put(name, getJsonObject(val));
             }
 
         }
         return object;
+    }
+
+    private static boolean containsInterface(Class[] interfaces, Class className) {
+        for (Class interfaceName : interfaces) {
+            if (className.equals(interfaceName)) return true;
+        }
+        return false;
     }
 
 }

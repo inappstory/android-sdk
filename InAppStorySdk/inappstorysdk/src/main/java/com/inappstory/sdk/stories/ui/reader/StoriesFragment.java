@@ -110,7 +110,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             return;
         }
         readerManager = new ReaderManager(getArguments().getString("listID", null),
-                getArguments().getString("feedId", null));
+                getArguments().getString("feedId", null),
+                getArguments().getString("feedSlug", null));
         readerManager.setParentFragment(this);
         if (isDestroyed) return;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

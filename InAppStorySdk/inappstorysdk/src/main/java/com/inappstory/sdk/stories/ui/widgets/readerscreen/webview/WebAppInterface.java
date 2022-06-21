@@ -153,9 +153,12 @@ public class WebAppInterface {
 
 
     @JavascriptInterface
-    public void storyStatisticEvent(String name, String data) {
-        manager.sendWidgetStoryEvent(name, data);
-        logMethod(name + " " + data);
+    public void storyStatisticEvent(
+            String name,
+            String data//, String eventData
+    ) {
+        manager.sendWidgetStoryEvent(name, data);//, eventData);
+        logMethod(name + " " + data);// + " " + eventData);
     }
 
     @JavascriptInterface

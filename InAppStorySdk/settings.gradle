@@ -1,3 +1,4 @@
 rootProject.name='InAppStorySdk'
 include ':app'
 include ':inappstorysdk'
+include ':examples'

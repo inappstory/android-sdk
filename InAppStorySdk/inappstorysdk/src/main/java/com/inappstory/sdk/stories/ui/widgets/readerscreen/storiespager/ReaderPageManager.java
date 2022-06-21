@@ -104,6 +104,24 @@ public class ReaderPageManager {
         InAppStoryService.getInstance().getDownloadManager().reloadStory(storyId);
     }
 
+    public void widgetClick(String widgetName, String widgetData) {
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                storyId
+        );
+        if (story == null) return;
+        if (CallbackManager.getInstance().getWidgetClickCallback() != null) {
+            CallbackManager.getInstance().getWidgetClickCallback().widgetClick(
+                    widgetName,
+                    JsonParser.toMap(widgetData),
+                    story.id,
+                    story.title,
+                    getFeedSlug(),
+                    story.getSlidesCount(),
+                    story.lastIndex,
+                    story.tags);
+        }
+    }
+
     private void tapOnLink(String link) {
         StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         if (object != null) {
@@ -281,6 +299,11 @@ public class ReaderPageManager {
 
     public String getFeedId() {
         if (parentManager != null) return parentManager.getFeedId();
+        return null;
+    }
+
+    public String getFeedSlug() {
+        if (parentManager != null) return parentManager.getFeedSlug();
         return null;
     }
 

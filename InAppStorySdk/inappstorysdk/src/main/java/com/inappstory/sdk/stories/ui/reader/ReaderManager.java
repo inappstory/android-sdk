@@ -29,9 +29,10 @@ public class ReaderManager {
     public ReaderManager() {
     }
 
-    public ReaderManager(String listID, String feedId) {
+    public ReaderManager(String listID, String feedId, String feedSlug) {
         this.listID = listID;
         this.feedId = feedId;
+        this.feedSlug = feedSlug;
     }
 
     public void close() {
@@ -241,12 +242,20 @@ public class ReaderManager {
     public void setFeedId(String feedId) {
         this.feedId = feedId;
     }
+    public void setFeedSlug(String feedId) {
+        this.feedSlug = feedSlug;
+    }
 
     public String getFeedId() {
         return feedId;
     }
 
+    public String getFeedSlug() {
+        return feedId;
+    }
+
     private String feedId;
+    private String feedSlug;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
         if (InAppStoryService.isNull()) return;

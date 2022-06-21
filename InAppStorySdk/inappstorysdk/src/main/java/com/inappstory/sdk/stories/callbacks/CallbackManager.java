@@ -12,6 +12,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryC
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.WidgetClickCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 
@@ -32,6 +33,9 @@ public class CallbackManager {
 
     public CallToActionCallback getCallToActionCallback() {
         return callToActionCallback;
+    }
+    public WidgetClickCallback getWidgetClickCallback() {
+        return widgetClickCallback;
     }
 
     public CloseStoryCallback getCloseStoryCallback() {
@@ -93,6 +97,12 @@ public class CallbackManager {
     private ErrorCallback errorCallback;
     private GameCallback gameCallback;
     private OnboardingLoadCallback onboardingLoadCallback;
+    private WidgetClickCallback widgetClickCallback;
+
+
+    public void setWidgetClickCallback(WidgetClickCallback widgetClickCallback) {
+        this.widgetClickCallback = widgetClickCallback;
+    }
 
     public ClickOnShareStoryCallback getClickOnShareStoryCallback() {
         return clickOnShareStoryCallback;
