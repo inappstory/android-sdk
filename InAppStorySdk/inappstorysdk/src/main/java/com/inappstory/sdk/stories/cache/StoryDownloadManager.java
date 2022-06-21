@@ -457,8 +457,9 @@ public class StoryDownloadManager {
         final boolean loadFavorite = hasFavorite;
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
-            public void onSuccess(final List<Story> response, Object...args) {
+            public void onSuccess(final List<Story> response, Object... args) {
 
+                Integer feedId = null;
                 final ArrayList<Story> resStories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
                     resStories.add(response.get(i));
@@ -508,10 +509,15 @@ public class StoryDownloadManager {
                 }
                 boolean loadFav = loadFavorite;
                 if (args != null && args.length > 0) {
-                    loadFav &= (boolean)args[0];
+                    loadFav &= (boolean) args[0];
+                    if (args.length > 1) {
+                        feedId = (Integer) args[1];
+                    }
                 }
+                final String sFeedId = (feedId != null) ? Integer.toString(feedId) : null;
                 if (loadFav) {
                     final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
+
                     storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
                         @Override
                         public void onSuccess(List<Story> response2) {
@@ -538,6 +544,7 @@ public class StoryDownloadManager {
                                     for (Story story : response) {
                                         ids.add(story.id);
                                     }
+                                    callback.setFeedId(sFeedId);
                                     callback.storiesLoaded(ids);
                                 }
                             } else {
@@ -546,6 +553,7 @@ public class StoryDownloadManager {
                                     for (Story story : response) {
                                         ids.add(story.id);
                                     }
+                                    callback.setFeedId(sFeedId);
                                     callback.storiesLoaded(ids);
                                 }
                             }
@@ -570,6 +578,7 @@ public class StoryDownloadManager {
                                 for (Story story : response) {
                                     ids.add(story.id);
                                 }
+                                callback.setFeedId(sFeedId);
                                 callback.storiesLoaded(ids);
                             }
                         }
@@ -580,6 +589,7 @@ public class StoryDownloadManager {
                         for (Story story : response) {
                             ids.add(story.id);
                         }
+                        callback.setFeedId(sFeedId);
                         callback.storiesLoaded(ids);
                     }
                 }
@@ -595,7 +605,7 @@ public class StoryDownloadManager {
         SimpleListCallback loadCallbackWithoutFav = new SimpleListCallback() {
 
             @Override
-            public void onSuccess(final List<Story> response, Object...args) {
+            public void onSuccess(final List<Story> response, Object... args) {
                 InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
                 List<Story> newStories = new ArrayList<>();
                 synchronized (storiesLock) {
