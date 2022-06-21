@@ -332,7 +332,7 @@ class StoryDownloader {
                             .enqueue(new LoadFeedCallback() {
                                 @Override
                                 public void onSuccess(Feed response) {
-                                    if (InAppStoryService.isNull()) {
+                                    if (InAppStoryService.isNull() || response == null) {
                                         generateCommonLoadListError(feed);
                                         callback.onError("");
                                     } else {
