@@ -60,10 +60,10 @@ public class StoriesViewManager {
             storiesView.swipeUp();
     }
 
-    public void sendWidgetStoryEvent(String name, String data){//}, String eventData) {
+    public void sendWidgetStoryEvent(String name, String data, String eventData) {
         StatisticManager.getInstance().sendWidgetStoryEvent(name, data,
                 pageManager != null ? pageManager.getFeedId() : null);
-        pageManager.widgetClick(name, data);//eventData);
+        pageManager.widgetClick(name, eventData);
     }
 
     void screenshotShare() {

@@ -1256,7 +1256,7 @@ public class InAppStoryManager {
         }
 
         @Deprecated
-        private Builder sandbox(boolean sandbox) {
+        public Builder sandbox(boolean sandbox) {
             Builder.this.sandbox = sandbox;
             return Builder.this;
         }
