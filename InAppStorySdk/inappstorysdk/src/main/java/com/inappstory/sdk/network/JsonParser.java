@@ -240,6 +240,12 @@ public class JsonParser {
             return instance;
         }
         JSONObject object = new JSONObject();
+        if (instance instanceof Map) {
+            for (Object key : ((Map) instance).keySet()) {
+                object.put(key.toString(), getJsonObject(((Map) instance).get(key)));
+            }
+            return object;
+        }
         for (Field field : instance.getClass().getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers())) continue;
             field.setAccessible(true);
@@ -282,7 +288,7 @@ public class JsonParser {
             } else if (field.getType().equals(Map.class) ||
                     containsInterface(field.getType().getInterfaces(), Map.class)) {
                 JSONObject mapObject = new JSONObject();
-                Map<String, Object> valMap = (Map<String, Object>)val;
+                Map<String, Object> valMap = (Map<String, Object>) val;
                 Set<String> keys = valMap.keySet();
                 for (String key : keys) {
                     Class fType = valMap.get(key).getClass();
