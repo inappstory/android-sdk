@@ -291,16 +291,20 @@ public class JsonParser {
                 Map<String, Object> valMap = (Map<String, Object>) val;
                 Set<String> keys = valMap.keySet();
                 for (String key : keys) {
-                    Class fType = valMap.get(key).getClass();
-                    if (fType.isPrimitive() || fType.equals(Integer.class)
-                            || fType.equals(Boolean.class) || fType.equals(Character.class)
-                            || fType.equals(Short.class) || fType.equals(Long.class)
-                            || fType.equals(Byte.class) || fType.equals(Float.class)
-                            || fType.equals(Double.class) || fType.equals(String.class)) {
-                        mapObject.put(key, valMap.get(key));
+                    Object valObj = valMap.get(key);
+                    if (valObj != null) {
+                        Class fType = valObj.getClass();
+                        if (fType.isPrimitive() || fType.equals(Integer.class)
+                                || fType.equals(Boolean.class) || fType.equals(Character.class)
+                                || fType.equals(Short.class) || fType.equals(Long.class)
+                                || fType.equals(Byte.class) || fType.equals(Float.class)
+                                || fType.equals(Double.class) || fType.equals(String.class)) {
+                            mapObject.put(key, valObj);
+                        } else {
+                            mapObject.put(key, getJsonObject(valObj));
+                        }
                     } else {
-                        mapObject.put(key, getJsonObject(valMap.get(key)));
-                        int c = 1;
+                        mapObject.put(key, getJsonObject(null));
                     }
                 }
                 object.put(name, mapObject);
