@@ -325,12 +325,6 @@ public class InAppStoryManager {
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
     }
-    /**
-     * use to set callback on click on buttons in stories (without additional info)
-     */
-    public void setWidgetClickCallback(UrlClickCallback urlClickCallback) {
-        CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
-    }
 
     /**
      * use to customize share functional
