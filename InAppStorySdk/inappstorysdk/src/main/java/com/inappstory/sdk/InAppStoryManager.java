@@ -55,7 +55,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCall
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.WidgetClickCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
@@ -272,8 +272,8 @@ public class InAppStoryManager {
     /**
      * use to set callback on click on widgets in stories (with info)
      */
-    public void setWidgetClickCallback(WidgetClickCallback widgetClickCallback) {
-        CallbackManager.getInstance().setWidgetClickCallback(widgetClickCallback);
+    public void setStoryWidgetCallback(StoryWidgetCallback storyWidgetCallback) {
+        CallbackManager.getInstance().setStoryWidgetCallback(storyWidgetCallback);
     }
 
 

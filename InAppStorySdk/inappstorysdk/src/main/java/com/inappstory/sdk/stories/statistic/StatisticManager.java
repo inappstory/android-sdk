@@ -487,7 +487,7 @@ public class StatisticManager {
     }
 
 
-    public void sendWidgetStoryEvent(final String name,
+    public void sendStoryWidgetEvent(final String name,
                                      final String data,
                                      final String feedId) {
         StatisticTask task = JsonParser.fromJson(data, StatisticTask.class);

@@ -158,7 +158,7 @@ public class WebAppInterface {
             String data,
             String eventData
     ) {
-        manager.sendWidgetStoryEvent(name, data, eventData);
+        manager.sendStoryWidgetEvent(name, data, eventData);
         logMethod(name + " " + data + " " + eventData);
     }
 
@@ -167,7 +167,7 @@ public class WebAppInterface {
             String name,
             String data
     ) {
-        manager.sendWidgetStoryEvent(name, data, data);
+        manager.sendStoryWidgetEvent(name, data, data);
         logMethod(name + " " + data);
     }
 

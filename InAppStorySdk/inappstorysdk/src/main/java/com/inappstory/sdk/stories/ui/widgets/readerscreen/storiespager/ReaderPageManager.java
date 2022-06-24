@@ -104,13 +104,13 @@ public class ReaderPageManager {
         InAppStoryService.getInstance().getDownloadManager().reloadStory(storyId);
     }
 
-    public void widgetClick(String widgetName, String widgetData) {
+    public void widgetEvent(String widgetName, String widgetData) {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                 storyId
         );
         if (story == null) return;
-        if (CallbackManager.getInstance().getWidgetClickCallback() != null) {
-            CallbackManager.getInstance().getWidgetClickCallback().widgetClick(
+        if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
+            CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
                     widgetName,
                     JsonParser.toMap(widgetData),
                     story.id,
