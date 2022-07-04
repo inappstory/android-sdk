@@ -23,7 +23,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
@@ -176,11 +176,11 @@ public class StoriesList extends RecyclerView {
     OnItemTouchListener itemTouchListener;
 
     private boolean hasSessionUGC() {
-        synchronized (StatisticSession.class) {
-            return  (!StatisticSession.needToUpdate()
-                    && StatisticSession.getInstance().editor != null
-                    && StatisticSession.getInstance().editor.url != null
-                    && !StatisticSession.getInstance().editor.url.isEmpty());
+        synchronized (Session.class) {
+            return  (!Session.needToUpdate()
+                    && Session.getInstance().editor != null
+                    && Session.getInstance().editor.url != null
+                    && !Session.getInstance().editor.url.isEmpty());
         }
     }
 

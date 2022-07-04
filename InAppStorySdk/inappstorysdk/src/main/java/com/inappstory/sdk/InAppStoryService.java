@@ -15,7 +15,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -154,20 +154,20 @@ public class InAppStoryService {
 
     public boolean getSendNewStatistic() {
         if (InAppStoryManager.getInstance() == null) return false;
-        if (!StatisticSession.needToUpdate()) {
-            if (StatisticSession.getInstance().statisticPermissions == null) return false;
+        if (!Session.needToUpdate()) {
+            if (Session.getInstance().statisticPermissions == null) return false;
             return InAppStoryManager.getInstance().isSendStatistic()
-                    && StatisticSession.getInstance().statisticPermissions.allowStatV2;
+                    && Session.getInstance().statisticPermissions.allowStatV2;
         }
         return false;
     }
 
     public boolean getSendStatistic() {
         if (InAppStoryManager.getInstance() == null) return false;
-        if (!StatisticSession.needToUpdate()) {
-            if (StatisticSession.getInstance().statisticPermissions == null) return false;
+        if (!Session.needToUpdate()) {
+            if (Session.getInstance().statisticPermissions == null) return false;
             return InAppStoryManager.getInstance().isSendStatistic()
-                    && StatisticSession.getInstance().statisticPermissions.allowStatV1;
+                    && Session.getInstance().statisticPermissions.allowStatV1;
         }
         return false;
     }

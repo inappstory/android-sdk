@@ -10,7 +10,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.CurrentState;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -291,7 +291,7 @@ public class StatisticManager {
     }
 
     public void generateBase(StatisticTask task) {
-        task.sessionId = StatisticSession.getInstance().id;
+        task.sessionId = Session.getInstance().id;
         if (InAppStoryService.isNotNull())
             task.userId = InAppStoryService.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;

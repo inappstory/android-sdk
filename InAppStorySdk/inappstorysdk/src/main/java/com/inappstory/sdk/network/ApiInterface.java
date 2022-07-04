@@ -122,7 +122,7 @@ public interface ApiInterface {
 
     @FormUrlEncoded
     @POST("v2/session/open")
-    Request statisticsOpen(
+    Request sessionOpen(
             @Query("expand") String expand,
             @Field("features") String features,
             @Field("platform") String platform,
@@ -141,11 +141,11 @@ public interface ApiInterface {
             @Field("user_id") String userId);
 
     @POST("v2/session/update")
-    Request statisticsUpdate(
+    Request sessionUpdate(
             @Body StatisticSendObject request);
 
     @POST("v2/session/close")
-    Request statisticsClose(
+    Request sessionClose(
             @Body StatisticSendObject request);
 
 }

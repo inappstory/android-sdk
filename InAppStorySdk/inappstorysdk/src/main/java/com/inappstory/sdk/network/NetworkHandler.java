@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 
@@ -80,11 +80,11 @@ public final class NetworkHandler implements InvocationHandler {
             requestLog.headers.add(
                     new ApiLogRequestHeader("Content-Type", "application/x-www-form-urlencoded"));
         }
-        if (!StatisticSession.needToUpdate() && !req.getUrl().contains("session/open")) {
-            connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
+        if (!Session.needToUpdate() && !req.getUrl().contains("session/open")) {
+            connection.setRequestProperty("auth-session-id", Session.getInstance().id);
 
             requestLog.headers.add(
-                    new ApiLogRequestHeader("auth-session-id", StatisticSession.getInstance().id));
+                    new ApiLogRequestHeader("auth-session-id", Session.getInstance().id));
         }
         InAppStoryManager.showDLog("InAppStory_Network", req.getHeadersString());
         if (!req.getMethod().equals(GET) && !req.getMethod().equals(HEAD) && !req.getBody().isEmpty()) {

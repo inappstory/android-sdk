@@ -12,7 +12,7 @@ import android.provider.Settings;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 
 import org.json.JSONObject;
 
@@ -71,7 +71,7 @@ public class JsApiNetwork {
         connection.setRequestProperty("X-Request-ID", randomUUID().toString());
         if (InAppStoryService.isNotNull())
             connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
-        connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
+        connection.setRequestProperty("auth-session-id", Session.getInstance().id);
 
         boolean hasBody = !method.equals(GET) && body != null && !body.isEmpty();
         if (hasBody) {

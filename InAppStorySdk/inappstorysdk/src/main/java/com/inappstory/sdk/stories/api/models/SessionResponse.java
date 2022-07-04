@@ -9,9 +9,9 @@ import java.util.List;
  * Created by paperrose on 19.02.2018.
  */
 
-public class StatisticResponse {
+public class SessionResponse {
 
-    public StatisticSession session;
+    public Session session;
     @SerializedName("server_timestamp")
     public Long serverTimestamp;
 

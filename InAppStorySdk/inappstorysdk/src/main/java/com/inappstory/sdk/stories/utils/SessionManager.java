@@ -17,9 +17,9 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
-import com.inappstory.sdk.stories.api.models.StatisticResponse;
+import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -57,7 +57,7 @@ public class SessionManager {
             checkOpen = openProcess;
         }
         if (InAppStoryService.isConnected()) {
-            if (StatisticSession.needToUpdate() || checkOpen) {
+            if (Session.needToUpdate() || checkOpen) {
                 openSession(callback);
                 return false;
             } else {
@@ -76,7 +76,7 @@ public class SessionManager {
     public static Object openProcessLock = new Object();
     public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
 
-    public void openStatisticSuccess(final StatisticResponse response) {
+    public void openStatisticSuccess(final SessionResponse response) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -149,7 +149,7 @@ public class SessionManager {
             return;
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
-        NetworkClient.getApi().statisticsOpen(
+        NetworkClient.getApi().sessionOpen(
                 "cache", FEATURES,
                 platform,
                 deviceId,
@@ -165,9 +165,9 @@ public class SessionManager {
                 appVersion,
                 appBuild,
                 InAppStoryService.getInstance().getUserId()
-        ).enqueue(new NetworkCallback<StatisticResponse>() {
+        ).enqueue(new NetworkCallback<SessionResponse>() {
             @Override
-            public void onSuccess(StatisticResponse response) {
+            public void onSuccess(SessionResponse response) {
                 if (InAppStoryService.isNull()) return;
                 OldStatisticManager.getInstance().eventCount = 0;
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
@@ -184,7 +184,7 @@ public class SessionManager {
 
             @Override
             public Type getType() {
-                return StatisticResponse.class;
+                return SessionResponse.class;
             }
 
 
@@ -238,7 +238,7 @@ public class SessionManager {
     }
 
     public void closeSession(boolean sendStatistic, final boolean changeUserId) {
-        if (StatisticSession.getInstance().id != null) {
+        if (Session.getInstance().id != null) {
             List<List<Object>> stat = new ArrayList<>();
             stat.addAll(sendStatistic ? OldStatisticManager.getInstance().statistic :
                     new ArrayList<List<Object>>());
@@ -248,11 +248,11 @@ public class SessionManager {
             final String sessionCloseUID =
                     ProfilingManager.getInstance().addTask("api_session_close");
 
-            NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
+            NetworkClient.getApi().sessionClose(new StatisticSendObject(Session.getInstance().id,
                     stat)).enqueue(
-                    new NetworkCallback<StatisticResponse>() {
+                    new NetworkCallback<SessionResponse>() {
                         @Override
-                        public void onSuccess(StatisticResponse response) {
+                        public void onSuccess(SessionResponse response) {
                             ProfilingManager.getInstance().setReady(sessionCloseUID, true);
                             if (changeUserId && InAppStoryService.isNotNull())
                                 InAppStoryService.getInstance().getListReaderConnector().changeUserId();
@@ -260,7 +260,7 @@ public class SessionManager {
 
                         @Override
                         public Type getType() {
-                            return StatisticResponse.class;
+                            return SessionResponse.class;
                         }
 
                         @Override
@@ -277,7 +277,7 @@ public class SessionManager {
                         }
                     });
         }
-        StatisticSession.clear();
+        Session.clear();
     }
 
 }

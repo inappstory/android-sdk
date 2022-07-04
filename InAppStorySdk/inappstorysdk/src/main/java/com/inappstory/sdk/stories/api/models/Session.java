@@ -10,7 +10,7 @@ import java.util.List;
  * Created by paperrose on 19.02.2018.
  */
 
-public class StatisticSession {
+public class Session {
     public String id;
     @SerializedName("expire_in")
     public int expireIn;
@@ -21,7 +21,7 @@ public class StatisticSession {
     public long updatedAt;
 
     public boolean isAllowProfiling() {
-        synchronized (StatisticSession.class) {
+        synchronized (Session.class) {
             return statisticPermissions != null && statisticPermissions.allowProfiling;
         }
     }
@@ -30,17 +30,17 @@ public class StatisticSession {
 
     public List<List<Object>> statistic = new ArrayList<>();
 
-    public static void setInstance(StatisticSession instance) {
+    public static void setInstance(Session instance) {
         INSTANCE = instance;
     }
 
-    private static volatile StatisticSession INSTANCE;
+    private static volatile Session INSTANCE;
 
-    public static StatisticSession getInstance() {
+    public static Session getInstance() {
         if (INSTANCE == null) {
-            synchronized (StatisticSession.class) {
+            synchronized (Session.class) {
                 if (INSTANCE == null)
-                    INSTANCE = new StatisticSession();
+                    INSTANCE = new Session();
             }
         }
         return INSTANCE;
@@ -48,7 +48,7 @@ public class StatisticSession {
 
 
     public static boolean needToUpdate() {
-        synchronized (StatisticSession.class) {
+        synchronized (Session.class) {
             if (INSTANCE == null) return true;
             if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;
         }

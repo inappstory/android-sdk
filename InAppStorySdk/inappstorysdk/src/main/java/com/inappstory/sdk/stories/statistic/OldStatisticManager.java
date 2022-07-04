@@ -5,9 +5,9 @@ import android.os.Handler;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.StatisticResponse;
+import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
 import java.lang.reflect.Type;
@@ -94,7 +94,7 @@ public class OldStatisticManager {
         ArrayList<Integer> sendObject = new ArrayList<>();
         synchronized (previewLock) {
             for (Integer val : vals) {
-                if (!StatisticSession.getInstance().viewed.contains(val)) {
+                if (!Session.getInstance().viewed.contains(val)) {
                     sendObject.add(val);
                 }
             }
@@ -103,15 +103,15 @@ public class OldStatisticManager {
     }
 
     public void previewStatisticEvent(ArrayList<Integer> vals) {
-        boolean firstSend = (StatisticSession.getInstance().viewed.size() == 0);
+        boolean firstSend = (Session.getInstance().viewed.size() == 0);
         ArrayList<Object> sendObject = new ArrayList<Object>();
         sendObject.add(5);
         sendObject.add(eventCount);
         synchronized (previewLock) {
             for (Integer val : vals) {
-                if (!StatisticSession.getInstance().viewed.contains(val)) {
+                if (!Session.getInstance().viewed.contains(val)) {
                     sendObject.add(val);
-                    StatisticSession.getInstance().viewed.add(val);
+                    Session.getInstance().viewed.add(val);
                 }
             }
         }
@@ -128,16 +128,16 @@ public class OldStatisticManager {
 
     public boolean sendStatistic() {
         if (!InAppStoryService.isConnected()) return true;
-        if (StatisticSession.needToUpdate())
+        if (Session.needToUpdate())
             return false;
         synchronized (openProcessLock) {
-            if (statistic == null || (statistic.isEmpty() && !StatisticSession.needToUpdate())) {
+            if (statistic == null || (statistic.isEmpty() && !Session.needToUpdate())) {
                 return true;
             }
         }
         if (!InAppStoryService.getInstance().getSendStatistic()) {
-            StatisticSession.getInstance();
-            StatisticSession.updateStatistic();
+            Session.getInstance();
+            Session.updateStatistic();
             if (statistic != null)
                 statistic.clear();
             return true;
@@ -151,11 +151,11 @@ public class OldStatisticManager {
 
                 //   CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
                 final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
-                NetworkClient.getApi().statisticsUpdate(
-                        new StatisticSendObject(StatisticSession.getInstance().id,
-                                sendingStatistic)).enqueue(new NetworkCallback<StatisticResponse>() {
+                NetworkClient.getApi().sessionUpdate(
+                        new StatisticSendObject(Session.getInstance().id,
+                                sendingStatistic)).enqueue(new NetworkCallback<SessionResponse>() {
                     @Override
-                    public void onSuccess(StatisticResponse response) {
+                    public void onSuccess(SessionResponse response) {
                         ProfilingManager.getInstance().setReady(updateUUID);
                         cleanStatistic();
                     }
@@ -182,7 +182,7 @@ public class OldStatisticManager {
 
                     @Override
                     public Type getType() {
-                        return StatisticResponse.class;
+                        return SessionResponse.class;
                     }
                 });
 
@@ -195,8 +195,8 @@ public class OldStatisticManager {
 
 
     public void cleanStatistic() {
-        StatisticSession.getInstance();
-        StatisticSession.updateStatistic();
+        Session.getInstance();
+        Session.updateStatistic();
     }
 
     public static boolean openProcess = false;

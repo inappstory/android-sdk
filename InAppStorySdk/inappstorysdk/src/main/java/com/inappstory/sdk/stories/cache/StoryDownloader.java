@@ -13,7 +13,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.SimpleApiCallback;
 import com.inappstory.sdk.stories.api.models.Feed;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
@@ -233,7 +233,7 @@ class StoryDownloader {
                     setStoryLoadType(key, 2);
                 }
             }
-            if (StatisticSession.needToUpdate()) {
+            if (Session.needToUpdate()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     if (SessionManager.getInstance() != null)

@@ -13,7 +13,7 @@ import android.telephony.TelephonyManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -65,7 +65,7 @@ public class ProfilingManager {
         if (InAppStoryService.isNull()) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = StatisticSession.getInstance().id;
+        task.sessionId = Session.getInstance().id;
         task.isAllowToForceSend = isAllowToSend();
         task.userId = InAppStoryService.getInstance().getUserId();
         task.uniqueHash = hash;
@@ -174,8 +174,8 @@ public class ProfilingManager {
     }
 
     private boolean isAllowToSend() {
-        return !StatisticSession.needToUpdate()
-                && StatisticSession.getInstance().isAllowProfiling();
+        return !Session.needToUpdate()
+                && Session.getInstance().isAllowProfiling();
     }
 
     private String getCC() {
@@ -199,7 +199,7 @@ public class ProfilingManager {
 
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                StatisticSession.getInstance().id);
+                Session.getInstance().id);
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);

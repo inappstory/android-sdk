@@ -4,7 +4,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -29,8 +29,8 @@ public class ExceptionManager {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                if (StatisticSession.getInstance().statisticPermissions != null
-                        && StatisticSession.getInstance().statisticPermissions.allowCrash)
+                if (Session.getInstance().statisticPermissions != null
+                        && Session.getInstance().statisticPermissions.allowCrash)
                     NetworkClient.getStatApi().sendException(
                             copiedLog.session,
                             copiedLog.timestamp / 1000,
@@ -73,7 +73,7 @@ public class ExceptionManager {
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
-        log.session = StatisticSession.getInstance().id;
+        log.session = Session.getInstance().id;
         StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         if (stackTraceElements.length > 0) {
             String stackTrace = "";

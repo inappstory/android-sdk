@@ -161,7 +161,7 @@ public class NetworkClient {
                 e.printStackTrace();
             }
             userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                    + " " + System.getProperty("http.agent") + " " + " Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
+                    + " " + System.getProperty("http.agent") + " " + "Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
         }
