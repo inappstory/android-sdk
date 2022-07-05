@@ -7,6 +7,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <permission
+        android:name="com.inappstory.sdk.home_screen_widget_permission"
+        android:label="home_screen_widget_permission"
+        android:protectionLevel="normal" />
+
     <application
         android:forceDarkAllowed="true"
         android:hardwareAccelerated="true"
@@ -21,23 +26,24 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/inappstory_file_path" />
         </provider>
+
         <activity
-            android:hardwareAccelerated="true"
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
+            android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
-            android:hardwareAccelerated="true"
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity"
+            android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.NonTransparent"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
-            android:hardwareAccelerated="true"
             android:name=".game.reader.GameActivity"
+            android:hardwareAccelerated="true"
             android:theme="@style/Theme.GameActivity" />
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />

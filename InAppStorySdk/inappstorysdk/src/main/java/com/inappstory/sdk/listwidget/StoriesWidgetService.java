@@ -85,7 +85,7 @@ public class StoriesWidgetService extends RemoteViewsService {
     private static void sendBroadcast(String action, Class widgetClass, Context context) {
         Intent i = new Intent(context, widgetClass);
         i.setAction(action);
-        context.sendBroadcast(i);
+        context.sendBroadcast(i, "com.inappstory.sdk.home_screen_widget_permission");
     }
 
     public static void loadEmpty(Context context, Class widgetClass) {
