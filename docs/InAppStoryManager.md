@@ -312,3 +312,21 @@ public interface GameCallback {
 }
 ```
 
+#### Notifications from widgets in Stories reader
+```java
+InAppStoryManager.getInstance().setStoryWidgetCallback(StoryWidgetCallback widgetCallback); 
+//can be set with custom implementation or with GameCallbackAdapter class
+
+public interface StoryWidgetCallback {
+        void widgetEvent(
+                    String widgetName,
+                    Map<String, String> widgetData,
+                    int storyId,
+                    String storyTitle,
+                    String feed,
+                    int slidesCount,
+                    int slideIndex,
+                    String tags
+        );
+}
+```

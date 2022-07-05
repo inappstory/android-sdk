@@ -1,5 +1,9 @@
 ## Migration
 
+
+### From 1.9.1
+Added widget callbacks. [Here](https://github.com/inappstory/ugc-android-sdk#readme) is described its usage.
+
 ### From 1.8.x to 1.9.x
 Added UGC Editor feature. [Here](https://github.com/inappstory/ugc-android-sdk#readme) is described its usage.
 
