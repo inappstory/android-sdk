@@ -280,6 +280,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                     String img = url;
+                    InAppStoryManager.showDLog("webView_int_url", url);
                     File file = getManager().getCurrentFile(img);
                     if (file != null && file.exists()) {
                         try {
@@ -300,6 +301,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                     String img = request.getUrl().toString();
+                    InAppStoryManager.showDLog("webView_int_resource", img);
                     File file = getManager().getCurrentFile(img);
                     if (file != null && file.exists()) {
                         try {
