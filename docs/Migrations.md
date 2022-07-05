@@ -2,7 +2,7 @@
 
 
 ### From 1.9.1
-Added widget callbacks. [Here](https://github.com/inappstory/ugc-android-sdk#readme) is described its usage.
+Added widget callbacks. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#notifications-from-widgets-in-stories-reader) is described its usage.
 
 ### From 1.8.x to 1.9.x
 Added UGC Editor feature. [Here](https://github.com/inappstory/ugc-android-sdk#readme) is described its usage.
