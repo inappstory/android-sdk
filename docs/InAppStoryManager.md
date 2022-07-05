@@ -315,7 +315,6 @@ public interface GameCallback {
 #### Notifications from widgets in Stories reader
 ```java
 InAppStoryManager.getInstance().setStoryWidgetCallback(StoryWidgetCallback widgetCallback); 
-//can be set with custom implementation or with GameCallbackAdapter class
 
 public interface StoryWidgetCallback {
         void widgetEvent(
@@ -330,3 +329,4 @@ public interface StoryWidgetCallback {
         );
 }
 ```
+[Here](https://github.com/inappstory/android-sdk/blob/main/docs/Stories_Widgets_Events.md) you can find full information about this events for each widget.
