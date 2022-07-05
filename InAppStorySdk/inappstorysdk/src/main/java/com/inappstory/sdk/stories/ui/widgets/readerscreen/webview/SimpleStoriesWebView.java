@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.webkit.ConsoleMessage;
+import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -280,6 +281,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                     String img = url;
+                    if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
+                        return super.shouldInterceptRequest(view, url);
                     InAppStoryManager.showDLog("webView_int_url", url);
                     File file = getManager().getCurrentFile(img);
                     if (file != null && file.exists()) {
@@ -301,6 +304,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                     String img = request.getUrl().toString();
+                    if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
+                        return super.shouldInterceptRequest(view, request);
                     InAppStoryManager.showDLog("webView_int_resource", img);
                     File file = getManager().getCurrentFile(img);
                     if (file != null && file.exists()) {
