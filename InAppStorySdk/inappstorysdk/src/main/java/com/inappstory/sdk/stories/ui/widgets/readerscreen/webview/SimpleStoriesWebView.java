@@ -235,6 +235,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
 
     public void shareComplete(String id, boolean success) {
+        if (id == null) return;
         loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
         logMethod("share_complete " + id + " " + success);
     }
