@@ -1,13 +1,11 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import android.content.Context;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.StoryLoadedData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -155,8 +153,21 @@ public class WebAppInterface {
 
 
     @JavascriptInterface
-    public void storyStatisticEvent(String name, String data) {
-        StatisticManager.getInstance().sendWidgetStoryEvent(name, data);
+    public void storyStatisticEvent(
+            String name,
+            String data,
+            String eventData
+    ) {
+        manager.sendStoryWidgetEvent(name, data, eventData);
+        logMethod(name + " " + data + " " + eventData);
+    }
+
+    @JavascriptInterface
+    public void storyStatisticEvent(
+            String name,
+            String data
+    ) {
+        manager.sendStoryWidgetEvent(name, data, data);
         logMethod(name + " " + data);
     }
 
@@ -174,6 +185,18 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyFreezeUI() {
         manager.freezeUI();
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void storyPauseUI() {
+        manager.pauseUI();
+        logMethod("");
+    }
+
+    @JavascriptInterface
+    public void storyResumeUI() {
+        manager.resumeUI();
         logMethod("");
     }
 

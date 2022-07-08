@@ -1,6 +1,6 @@
-package com.inappstory.sdk.game.loader;
+package com.inappstory.sdk.utils;
 
-public interface GameLoadCallback {
+public interface ZipLoadCallback {
     void onLoad(String baseUrl, String data);
     void onError();
     void onProgress(int loadedSize, int totalSize);

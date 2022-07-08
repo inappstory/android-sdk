@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -39,7 +38,7 @@ public class StoriesWidgetService extends RemoteViewsService {
 
 
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
-    private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
+    private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
 
     public static void loadData(@NonNull Context context) throws DataException {
         if (AppearanceManager.csWidgetAppearance() == null || AppearanceManager.csWidgetAppearance().getWidgetClass() == null)
@@ -50,9 +49,9 @@ public class StoriesWidgetService extends RemoteViewsService {
                     .cacheDirPath(context.getCacheDir().getAbsolutePath())
                     .apiKey(context.getResources().getString(R.string.csApiKey))
                     .setWebUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
-                            "https://api.test.inappstory.com/" : "https://api.inappstory.com/")
+                            "https://api.test.inappstory.com/" : "https://api.inappstory.ru/")
                     .cmsUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
-                            "https://api.test.inappstory.com/" : "https://api.inappstory.com/");
+                            "https://api.test.inappstory.com/" : "https://api.inappstory.ru/");
         }
 
         if (isConnected(context)) {
@@ -86,7 +85,7 @@ public class StoriesWidgetService extends RemoteViewsService {
     private static void sendBroadcast(String action, Class widgetClass, Context context) {
         Intent i = new Intent(context, widgetClass);
         i.setAction(action);
-        context.sendBroadcast(i);
+        context.sendBroadcast(i, "com.inappstory.sdk.home_screen_widget_permission");
     }
 
     public static void loadEmpty(Context context, Class widgetClass) {

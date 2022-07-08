@@ -2,8 +2,6 @@ package com.inappstory.sdk.lrudiskcache;
 
 import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryManager;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -24,7 +22,7 @@ public class CacheJournal {
     public static final int VERSION = 1;
     private File journalFile;
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     private final Map<String, CacheJournalItem> itemsLinks = new HashMap<>();
 
@@ -136,11 +134,9 @@ public class CacheJournal {
                 if (version != VERSION) {
                     Log.d("InAppStory_SDK_error", "Invalid journal " +
                             journalFile.getCanonicalPath() + " format version");
-                    if (stream != null) {
-                        try {
-                            stream.close();
-                        } catch (IOException ignored) {
-                        }
+                    try {
+                        stream.close();
+                    } catch (IOException ignored) {
                     }
                     return;
                     //throw new IllegalArgumentException("Invalid journal format version");

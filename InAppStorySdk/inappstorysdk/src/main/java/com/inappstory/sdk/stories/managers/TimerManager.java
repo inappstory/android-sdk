@@ -1,12 +1,11 @@
 package com.inappstory.sdk.stories.managers;
 
 import android.os.Handler;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
 public class TimerManager {
@@ -112,8 +111,9 @@ public class TimerManager {
         startTimer(duration, true);
     }
 
-    public void setCurrentDuration(int currentDuration) {
-        this.currentDuration = currentDuration;
+    public void setCurrentDuration(Integer currentDuration) {
+        if (currentDuration != null)
+            this.currentDuration = currentDuration;
     }
 
     int currentDuration;
@@ -133,10 +133,14 @@ public class TimerManager {
     }
 
     public void pauseTimer() {
+        if (InAppStoryService.isNull()) {
+            return;
+        }
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(InAppStoryService.getInstance().getCurrentId());
         if (story != null) {
-            StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount());
+            StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
+                    pageManager != null ? pageManager.getFeedId() : null);
         }
         pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();

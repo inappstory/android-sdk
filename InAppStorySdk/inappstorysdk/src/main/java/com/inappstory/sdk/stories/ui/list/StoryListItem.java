@@ -2,68 +2,51 @@ package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
-import androidx.recyclerview.widget.RecyclerView;
 
-
-import java.io.File;
-import java.util.List;
-
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
-import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
-import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
-import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoryListItem extends RecyclerView.ViewHolder {
+import java.io.File;
 
-    AppCompatTextView title;
-    AppCompatTextView source;
-    AppCompatImageView image;
-    VideoPlayer video;
-    AppCompatImageView hasAudioIcon;
-    View border;
-    AppearanceManager manager;
-    boolean isFavorite;
-    IGetFavoriteListItem getFavoriteListItem;
-    IStoriesListItem getListItem;
+public class StoryListItem extends BaseStoryListItem {
 
-    protected View getDefaultFavoriteCell() {
-        int count = InAppStoryService.isNotNull() ?
-                InAppStoryService.getInstance().getFavoriteImages().size() : 0;
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
-                InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
-            return getFavoriteListItem.getFavoriteItem(InAppStoryService.getInstance().getFavoriteImages(), count);
+    protected AppCompatTextView source;
+    protected AppCompatImageView image;
+    protected VideoPlayer video;
+    protected AppCompatImageView hasAudioIcon;
+    protected View border;
+    public boolean isOpened;
+    public boolean hasVideo;
+
+    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean hasVideo) {
+        super(itemView, manager, false, false);
+        this.isOpened = isOpened;
+        this.hasVideo = hasVideo;
+        ViewGroup vg = itemView.findViewById(R.id.baseLayout);
+        vg.removeAllViews();
+        if (hasVideo) {
+
+            vg.addView(getDefaultVideoCell());
+        } else {
+            vg.addView(getDefaultCell());
         }
-        View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
-        RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
-        cv.setRadius(Sizes.dpToPxExt(16));
-        cv.setBackgroundColor(Color.WHITE);
-        title = v.findViewById(R.id.title);
-        return v;
-    }
-
-    private void createDefaultFavoriteCell() {
-    }
-
-    private void createDefaultCell() {
     }
 
     protected View getDefaultCell() {
@@ -85,7 +68,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(Sizes.dpToPxExt(16));
+            cv.setRadius(manager.csListItemRadius());
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
@@ -120,7 +103,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(Sizes.dpToPxExt(16));
+            cv.setRadius(manager.csListItemRadius());
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
@@ -131,235 +114,121 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
         return v;
     }
 
-    View v0;
+    interface RunnableCallback {
+        void run(String path);
 
-    public boolean isOpened;
-    public boolean hasVideo;
-
-    public StoryListItem(@NonNull View itemView, AppearanceManager manager, boolean isOpened, boolean isFavorite, boolean hasVideo) {
-        super(itemView);
-        this.manager = manager;
-        this.isFavorite = isFavorite;
-        this.isOpened = isOpened;
-        this.hasVideo = hasVideo;
-        ViewGroup vg = itemView.findViewById(R.id.baseLayout);
-        vg.removeAllViews();
-        getFavoriteListItem = manager.csFavoriteListItemInterface();
-        getListItem = manager.csListItemInterface();
-
-        if (isFavorite) {
-            vg.addView(getDefaultFavoriteCell());
-        } else {
-            if (hasVideo) {
-                v0 = getDefaultVideoCell();
-                // setIsRecyclable(false);
-            } else {
-                v0 = getDefaultCell();
-            }
-            vg.addView(v0);
-        }
-        if (manager.csListItemMargin() >= 0) {
-            RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
-            lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin() / 2), 0,
-                    Sizes.dpToPxExt(manager.csListItemMargin() / 2), 0);
-            itemView.setLayoutParams(lp);
-        }
-
+        void error();
     }
 
-    private void setImage(AppCompatImageView imageView, FavoriteImage image) {
-        if (image.getImage() != null) {
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
-                    InAppStoryService.getInstance().getFastCache());
-        } else {
-            imageView.setBackgroundColor(image.getBackgroundColor());
-        }
-    }
-
-    public void bindFavorite() {
-        int count = InAppStoryService.isNotNull() ?
-                InAppStoryService.getInstance().getFavoriteImages().size() : 0;
-
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem(
-                InAppStoryService.getInstance().getFavoriteImages(), count) != null) {
-            getFavoriteListItem.bindFavoriteItem(itemView, InAppStoryService.getInstance().getFavoriteImages(), count);
-            return;
-        }
-        RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
-        boolean lpC = false;
-        View outerLayout = itemView.findViewById(R.id.outerLayout);
-        if (manager.csListItemHeight() != null) {
-            outerLayout.getLayoutParams().height = manager.csListItemHeight();
-            lpC = true;
-        }
-        if (manager.csListItemWidth() != null) {
-            outerLayout.getLayoutParams().width = manager.csListItemWidth();
-            lpC = true;
-        }
-        if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
-        if (title != null) {
-            title.setText("Favorites");
-            if (manager.csCustomFont() != null) {
-                title.setTypeface(manager.csCustomFont());
-            }
-            title.setTextColor(manager.csListItemTitleColor());
-        }
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-        int halfHeight = Sizes.dpToPxExt(55);
-        int halfWidth = Sizes.dpToPxExt(55);
-        int height = Sizes.dpToPxExt(110);
-        int width = Sizes.dpToPxExt(110);
-        if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
-                && manager.csListItemInterface().getVideoView() == null)) {
-            if (manager.csListItemHeight() != null) {
-                height = manager.csListItemHeight() - Sizes.dpToPxExt(10);
-                halfHeight = manager.csListItemHeight() / 2 - Sizes.dpToPxExt(5);
-            }
-            if (manager.csListItemWidth() != null) {
-                width = manager.csListItemWidth() - Sizes.dpToPxExt(10);
-                halfWidth = manager.csListItemWidth() / 2 - Sizes.dpToPxExt(5);
-            }
-        }
-        if (favImages.size() > 0 && imageViewLayout != null) {
-            AppCompatImageView image1 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image2 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image3 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image4 = new AppCompatImageView(itemView.getContext());
-
-            RelativeLayout.LayoutParams piece2;
-            RelativeLayout.LayoutParams piece3;
-            RelativeLayout.LayoutParams piece4;
-            switch (favImages.size()) {
-                case 1:
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    setImage(image1, favImages.get(0));
-                    imageViewLayout.addView(image1);
-                    break;
-                case 2:
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    image2.setLayoutParams(piece2);
-
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    break;
-                case 3:
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            height - halfHeight);
-                    piece3 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    image2.setLayoutParams(piece2);
-                    image3.setLayoutParams(piece3);
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    setImage(image3, favImages.get(2));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    imageViewLayout.addView(image3);
-                    break;
-                default:
-
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            height - halfHeight);
-                    piece3 = new RelativeLayout.LayoutParams(width - halfWidth,
-                            halfHeight);
-                    piece4 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
-
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    piece4.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            height - halfHeight));
-                    image2.setLayoutParams(piece2);
-                    image3.setLayoutParams(piece3);
-                    image4.setLayoutParams(piece4);
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    setImage(image3, favImages.get(2));
-                    setImage(image4, favImages.get(3));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    imageViewLayout.addView(image3);
-                    imageViewLayout.addView(image4);
-                    break;
+    private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
+        if (InAppStoryService.isNull()) return;
+        Downloader.downloadFileBackground(url, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+            @Override
+            public void onProgress(int loadedSize, int totalSize) {
 
             }
-        }
-    }
 
-
-    public void bind(String titleText,
-                     Integer titleColor,
-                     String sourceText,
-                     String imageUrl,
-                     Integer backgroundColor,
-                     boolean isOpened,
-                     boolean hasAudio,
-                     String videoUrl) {
-        if (getListItem != null) {
-            final int bColor = backgroundColor;
-            getListItem.setTitle(itemView, titleText, titleColor);
-            getListItem.setHasAudio(itemView, hasAudio);
-            if (imageUrl != null) {
-                Downloader.downloadFileBackground(imageUrl, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+            @Override
+            public void onSuccess(File file) {
+                final String path = file.getAbsolutePath();
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
-                    public void onProgress(int loadedSize, int totalSize) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(File file) {
+                    public void run() {
                         if (getListItem != null) {
-                            getListItem.setImage(itemView, file.getAbsolutePath(), bColor);
+                            callback.run(path);
                         }
                     }
                 });
             }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+    }
+
+    public Integer backgroundColor;
+    public ClickCallback callback;
+
+    public void bind(Integer id,
+                     String titleText,
+                     Integer titleColor,
+                     String sourceText,
+                     final String imageUrl,
+                     Integer backgroundColor,
+                     boolean isOpened,
+                     boolean hasAudio,
+                     String videoUrl,
+                     ClickCallback callback) {
+        this.callback = callback;
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (StoryListItem.this.callback != null)
+                    StoryListItem.this.callback.onItemClick(getAbsoluteAdapterPosition());
+            }
+        });
+        if (getListItem != null) {
+            this.backgroundColor = backgroundColor;
+            getListItem.setId(itemView, id);
+            getListItem.setTitle(itemView, titleText, titleColor);
+            getListItem.setHasAudio(itemView, hasAudio);
+            String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
+            if (fileLink != null) {
+                getListItem.setImage(itemView, fileLink,
+                        StoryListItem.this.backgroundColor);
+            } else {
+                if (imageUrl != null) {
+                    downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
+                        @Override
+                        public void run(String path) {
+                            ImageLoader.getInstance().addLink(imageUrl, path);
+                            getListItem.setImage(itemView, path,
+                                    StoryListItem.this.backgroundColor);
+                        }
+
+                        @Override
+                        public void error() {
+                            getListItem.setImage(itemView, null,
+                                    StoryListItem.this.backgroundColor);
+                        }
+                    });
+                } else {
+                    getListItem.setImage(itemView, null,
+                            StoryListItem.this.backgroundColor);
+                }
+            }
+
             getListItem.setOpened(itemView, isOpened);
             if (videoUrl != null) {
-                Downloader.downloadFileBackground(videoUrl, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+                downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
                     @Override
-                    public void onProgress(int loadedSize, int totalSize) {
-
+                    public void run(String path) {
+                        getListItem.setVideo(itemView, path);
                     }
 
                     @Override
-                    public void onSuccess(final File file) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (getListItem != null) {
-                                    getListItem.setVideo(itemView, file.getAbsolutePath());
-                                }
-                            }
-                        });
+                    public void error() {
+                        getListItem.setVideo(itemView, null);
                     }
                 });
             }
             return;
         }
 
-
+        RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
+        cv.setBackgroundColor(Color.TRANSPARENT);
+        cv.setRadius(manager.csListItemRadius());
+        if (border != null)
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
         if (title != null) {
             title.setText(titleText);
             if (titleColor != null) {
@@ -381,6 +250,7 @@ public class StoryListItem extends RecyclerView.ViewHolder {
             hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
         if (border != null)
             border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
+        if (InAppStoryService.isNull()) return;
         if (videoUrl != null) {
             if (image != null) {
                 if (imageUrl != null) {
@@ -411,5 +281,15 @@ public class StoryListItem extends RecyclerView.ViewHolder {
                 }
             }
         }
+    }
+
+    @Override
+    public void bindFavorite() {
+
+    }
+
+    @Override
+    public void bindUGC() {
+
     }
 }

@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -18,19 +17,6 @@ public class Timeline extends LinearLayout {
     public Timeline(Context context) {
         super(context);
         init();
-    }
-
-
-    public void setActiveProgressBar(int index, boolean active) {
-        if (progressBars == null) progressBars = new ArrayList<>();
-        if (progressBars.size() > index) {
-            progressBars.get(index).isActive = active;
-        }
-    }
-
-    public List<TimelineProgressBar> getProgressBars() {
-        if (progressBars == null) progressBars = new ArrayList<>();
-        return progressBars;
     }
 
     public TimelineManager getManager() {
@@ -99,11 +85,24 @@ public class Timeline extends LinearLayout {
     ValueAnimator curAnimation;
 
     public void setSlideDuration(int index) {
-        if (durations != null && progressBars.size() > index && durations.size() > index)
+        if (durations != null && progressBars.size() > index && durations.size() > index) {
             progressBars.get(index).setDuration(1L * durations.get(index));
+        }
     }
 
-    List<TimelineProgressBar> progressBars = new ArrayList<>();
+    private List<TimelineProgressBar> progressBars = new ArrayList<>();
+
+    public List<TimelineProgressBar> getProgressBars() {
+        if (progressBars == null) progressBars = new ArrayList<>();
+        return progressBars;
+    }
+
+    public void setActiveProgressBar(int index, boolean active) {
+        if (progressBars == null) progressBars = new ArrayList<>();
+        if (progressBars.size() > index) {
+            progressBars.get(index).isActive = active;
+        }
+    }
 
     private void bindViews() {
         progressBars.clear();

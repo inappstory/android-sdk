@@ -6,7 +6,6 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -15,12 +14,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A {@link FrameLayout} which responds to nested scrolls to create drag-dismissable layouts.
@@ -138,8 +137,9 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-         // if (st != null && (st.disableClose || st.hasSwipeUp()))
-       //     return true;
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        // if (st != null && (st.disableClose || st.hasSwipeUp()))
+        //     return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
     }
 
@@ -307,8 +307,9 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
                                       float rawOffset, float rawOffsetPixels) {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.onDrag(elasticOffset, elasticOffsetPixels,
-                        rawOffset, rawOffsetPixels);
+                if (callback != null)
+                    callback.onDrag(elasticOffset, elasticOffsetPixels,
+                            rawOffset, rawOffsetPixels);
             }
         }
     }
@@ -316,7 +317,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void dispatchDismissCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.onDragDismissed();
+                if (callback != null)
+                    callback.onDragDismissed();
             }
         }
     }
@@ -324,7 +326,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void swipeDownCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.swipeDown();
+                if (callback != null)
+                    callback.swipeDown();
             }
         }
     }
@@ -332,7 +335,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void swipeUpCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.swipeUp();
+                if (callback != null)
+                    callback.swipeUp();
             }
         }
     }
@@ -340,7 +344,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void touchPause() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.touchPause();
+                if (callback != null)
+                    callback.touchPause();
             }
         }
     }
@@ -348,7 +353,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void touchResume() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.touchResume();
+                if (callback != null)
+                    callback.touchResume();
             }
         }
     }
@@ -357,7 +363,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     private void dispatchDropCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {
             for (ElasticDragDismissCallback callback : callbacks) {
-                callback.onDragDropped();
+                if (callback != null)
+                    callback.onDragDropped();
             }
         }
     }

@@ -33,9 +33,11 @@ public class StoriesListManager {
         handler.post(runnable);
     }
 
-    public void changeStory(final int storyId) {
+    public void changeStory(final int storyId, final String listID) {
+        if (InAppStoryService.isNull()) {
+            return;
+        }
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened();
         checkHandler();
@@ -44,7 +46,7 @@ public class StoriesListManager {
             public void run() {
                 if (list == null) return;
                 if (list.getVisibility() != View.VISIBLE) return;
-                list.changeStoryEvent(storyId);
+                list.changeStoryEvent(storyId, listID);
             }
         });
     }
@@ -80,14 +82,27 @@ public class StoriesListManager {
         });
     }
 
-    //StoryFavoriteEvent
-    public void storyFavorite(final int id, final boolean favStatus) {
+    public void clearAllFavorites() {
+
         post(new Runnable() {
             @Override
             public void run() {
                 if (list == null) return;
+                if (list.getVisibility() != View.VISIBLE) return;
+                list.clearAllFavorites();
+            }
+        });
+    }
+
+    //StoryFavoriteEvent
+    public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
+        if (InAppStoryService.isNull()) {
+            return;
+        }
+        post(new Runnable() {
+            @Override
+            public void run() {
                 List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-                boolean isEmpty = favImages.isEmpty();
                 Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
                 if (story == null) return;
                 if (favStatus) {

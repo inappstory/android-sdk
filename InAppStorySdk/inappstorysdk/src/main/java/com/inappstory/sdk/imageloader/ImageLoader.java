@@ -1,5 +1,8 @@
 package com.inappstory.sdk.imageloader;
 
+import static com.inappstory.sdk.InAppStoryService.IAS_PREFIX;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,27 +21,22 @@ import android.os.Looper;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
+import com.inappstory.sdk.stories.utils.Sizes;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
-import com.inappstory.sdk.stories.utils.Sizes;
-
-import static com.inappstory.sdk.InAppStoryService.IAS_PREFIX;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
 
 public class ImageLoader {
 
@@ -65,9 +63,32 @@ public class ImageLoader {
     }
 
     int stub_id = R.drawable.ic_stories_close;
+
     public void displayImage(String path, int loader, ImageView imageView) {
         displayImage(path, loader, imageView, null);
     }
+
+    public HashMap<String, String> fileLinks = new HashMap<>();
+    public Object fileLinksLock = new Object();
+
+    public String getFileLink(String link) {
+        synchronized (fileLinksLock) {
+            return fileLinks.get(link);
+        }
+    }
+
+    public void addLink(String link, String fileLink) {
+        synchronized (fileLinksLock) {
+            fileLinks.put(link, fileLink);
+        }
+    }
+
+    public void clearFileLinks() {
+        synchronized (fileLinksLock) {
+            fileLinks.clear();
+        }
+    }
+
     public void displayImage(String path, int loader, ImageView imageView, LruDiskCache cache) {
         try {
             stub_id = loader;
@@ -156,22 +177,14 @@ public class ImageLoader {
 
     public Bitmap getBitmap(String url, LruDiskCache cache) {
         if (url == null) return null;
-        File file = null;
-        try {
-            file = cache.get(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
         Bitmap bitmap = null;
-        if (file != null)
+        try {
+            File file = Downloader.downloadOrGetFile(url, cache, null, null);
+            if (file == null) return null;
             bitmap = decodeFile(file);
-        else {
-            try {
-                file = Downloader.downloadOrGetFile(url, cache, null, null);
-                bitmap = decodeFile(file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return bitmap;
     }
@@ -213,31 +226,9 @@ public class ImageLoader {
                 bmp = getRoundedCornerBitmap(bmp, pixels);
             return bmp;
         }
-        File f = null;
         try {
-            f = lruDiskCache.get(url);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //from SD cache
-        Bitmap b = null;
-        if (f != null)
-            b = decodeFile(f);
-        if (b != null) {
-            if (getThumbnail) {
-                if (ratio != null && ratio > 0) {
-                    b = ThumbnailUtils.extractThumbnail(b, (int) (ratio * 300), 300);
-                } else {
-                    b = ThumbnailUtils.extractThumbnail(b, 300, 300);
-                }
-            }
-            addDarkGradient(b);
-            if (pixels != null)
-                b = getRoundedCornerBitmap(b, pixels);
-            return b;
-        }
-        try {
-            f = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
+            File f = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
+            if (f == null) return null;
             Bitmap bitmap = decodeFile(f);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
@@ -304,10 +295,8 @@ public class ImageLoader {
             Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream, null, o2);
             fileInputStream.close();
             return bitmap;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
         }
         return null;
     }
@@ -334,12 +323,12 @@ public class ImageLoader {
     }
 
     private class PhotoToLoad {
-        public String url;
+        public String path;
         public ImageView imageView;
         public LruDiskCache cache;
 
         public PhotoToLoad(String u, ImageView i, LruDiskCache c) {
-            url = u;
+            path = u;
             imageView = i;
             cache = c;
         }
@@ -359,11 +348,11 @@ public class ImageLoader {
                 return;
             Bitmap bmp = null;
             if (photoToLoad.cache != null)
-                bmp = getBitmap(photoToLoad.url, photoToLoad.cache);
+                bmp = getBitmap(photoToLoad.path, photoToLoad.cache);
             else
-                bmp = decodeFile(new File(photoToLoad.url));
+                bmp = decodeFile(new File(photoToLoad.path));
             if (bmp != null)
-                memoryCache.put(photoToLoad.url, bmp);
+                memoryCache.put(photoToLoad.path, bmp);
             if (imageViewReused(photoToLoad))
                 return;
             BitmapDisplayer bd = new BitmapDisplayer(bmp, photoToLoad);
@@ -373,7 +362,7 @@ public class ImageLoader {
 
     public boolean imageViewReused(PhotoToLoad photoToLoad) {
         String tag = imageViews.get(photoToLoad.imageView);
-        if (tag == null || !tag.equals(photoToLoad.url))
+        if (tag == null || !tag.equals(photoToLoad.path))
             return true;
         return false;
     }

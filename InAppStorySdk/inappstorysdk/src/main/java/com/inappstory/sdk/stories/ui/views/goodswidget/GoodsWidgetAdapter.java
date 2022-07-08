@@ -49,7 +49,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
             if (config != null) {
                 if (StatisticManager.getInstance() != null) {
                     StatisticManager.getInstance().sendGoodsClick(config.storyId,
-                            config.slideIndex, config.widgetId, data.sku);
+                            config.slideIndex, config.widgetId, data.sku, config.feedId);
                 }
             }
         }

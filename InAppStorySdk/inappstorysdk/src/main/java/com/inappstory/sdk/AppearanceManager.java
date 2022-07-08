@@ -13,13 +13,15 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
-import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
-import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
+import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
+import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
@@ -32,7 +34,9 @@ public class AppearanceManager {
     public static final String CS_NAVBAR_COLOR = "navBarColor";
     public static final String CS_STORY_READER_ANIMATION = "storyReaderAnimation";
 
-    public static final String CS_TIMER_GRADIENT = "timerGradientEnable";
+    public static final String CS_TIMER_GRADIENT_ENABLE = "timerGradientEnable";
+    public static final String CS_TIMER_GRADIENT = "timerGradient";
+
     public static final String CS_HAS_LIKE = "hasLike";
     public static final String CS_HAS_FAVORITE = "hasFavorite";
     public static final String CS_HAS_SHARE = "hasShare";
@@ -65,6 +69,9 @@ public class AppearanceManager {
     private int csListItemTitleSize = -1;
     private int csListItemTitleColor = Color.WHITE;
 
+
+    private int csListItemRadius = -1;
+
     private boolean csListItemSourceVisibility = false;
     private int csListItemSourceSize = -1;
     private int csListItemSourceColor = Color.WHITE;
@@ -77,6 +84,7 @@ public class AppearanceManager {
 
     private IGetFavoriteListItem csFavoriteListItemInterface;
     private IStoriesListItem csListItemInterface;
+    private IStoriesListUGCItem csListUGCItemInterface;
     private ILoaderView csLoaderView;
     private IGameLoaderView csGameLoaderView;
     private StoryTouchListener storyTouchListener;
@@ -87,8 +95,9 @@ public class AppearanceManager {
 
     private boolean csHasLike;
     private boolean csHasFavorite;
+    private boolean csHasUGC;
     private boolean csHasShare;
-    private boolean csTimerGradientEnable;
+    private boolean csTimerGradientEnable = true;
 
     private int csFavoriteIcon;
     private int csLikeIcon;
@@ -108,6 +117,19 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldFont;
     private Typeface csCustomSecondaryItalicFont;
     private Typeface csCustomSecondaryBoldItalicFont;
+
+    private StoriesGradientObject csTimerGradient;
+
+
+
+    public AppearanceManager csTimerGradient(StoriesGradientObject csTimerGradient) {
+        this.csTimerGradient = csTimerGradient;
+        return AppearanceManager.this;
+    }
+
+    public StoriesGradientObject csTimerGradient() {
+        return csTimerGradient;
+    }
 
     private int csCoverQuality;
 
@@ -221,6 +243,20 @@ public class AppearanceManager {
         }
     }
 
+    /**
+     * use to set common {@link AppearanceManager}
+     *
+     * @param manager (manager) {@link AppearanceManager} instance
+     * @deprecated will be removed in SDK 2.0
+     * Switch to {@link AppearanceManager#setCommonInstance(AppearanceManager)})
+     */
+    @Deprecated
+    public static void setInstance(AppearanceManager manager) {
+        synchronized (lock) {
+            commonInstance = manager;
+        }
+    }
+
 
     public boolean csTimerGradientEnable() {
         return csTimerGradientEnable;
@@ -294,7 +330,10 @@ public class AppearanceManager {
      *
      * @param storyTouchListener (storyTouchListener) {@link StoryTouchListener}
      * @return {@link AppearanceManager}
+     * @deprecated will be removed in 2.0
+     * Use {@link StoriesList#setStoryTouchListener(StoryTouchListener)} instead
      */
+    @Deprecated
     public AppearanceManager csStoryTouchListener(StoryTouchListener storyTouchListener) {
         this.storyTouchListener = storyTouchListener;
         return AppearanceManager.this;
@@ -337,6 +376,11 @@ public class AppearanceManager {
 
     public boolean csHasFavorite() {
         return csHasFavorite;
+
+    }
+
+    public boolean csHasUGC() {
+        return csHasUGC;
     }
 
     public boolean csHasShare() {
@@ -407,6 +451,12 @@ public class AppearanceManager {
         this.csHasFavorite = hasFavorite;
         return AppearanceManager.this;
     }
+
+    public AppearanceManager csHasUGC(boolean hasUGC) {
+        this.csHasUGC = hasUGC;
+        return AppearanceManager.this;
+    }
+
 
     /**
      * use to turn on/off share feature (available in stories reader)
@@ -544,6 +594,15 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    public AppearanceManager csListItemRadius(int csListItemRadius) {
+        this.csListItemRadius = csListItemRadius;
+        return AppearanceManager.this;
+    }
+
+    public int csListItemRadius() {
+        if (csListItemRadius == -1) return Sizes.dpToPxExt(16);
+        return csListItemRadius;
+    }
 
     public AppearanceManager csCustomBoldItalicFont(Typeface csCustomFont) {
         this.csCustomBoldItalicFont = csCustomFont;
@@ -659,6 +718,7 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csShowStatusBar(boolean csShowStatusBar) {
         this.csShowStatusBar = csShowStatusBar;
         return AppearanceManager.this;
@@ -756,8 +816,9 @@ public class AppearanceManager {
         return csIsDraggable;
     }
 
-    public void csIsDraggable(boolean csIsDraggable) {
+    public AppearanceManager csIsDraggable(boolean csIsDraggable) {
         this.csIsDraggable = csIsDraggable;
+        return AppearanceManager.this;
     }
 
 
@@ -806,6 +867,15 @@ public class AppearanceManager {
 
     public AppearanceManager csListItemInterface(IStoriesListItem csListItemInterface) {
         this.csListItemInterface = csListItemInterface;
+        return AppearanceManager.this;
+    }
+
+    public IStoriesListUGCItem csListUGCItemInterface() {
+        return csListUGCItemInterface;
+    }
+
+    public AppearanceManager csListUGCItemInterface(IStoriesListUGCItem csListUGCItemInterface) {
+        this.csListUGCItemInterface = csListUGCItemInterface;
         return AppearanceManager.this;
     }
 

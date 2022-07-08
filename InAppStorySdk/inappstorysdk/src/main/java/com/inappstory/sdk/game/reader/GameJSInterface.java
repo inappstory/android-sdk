@@ -1,11 +1,9 @@
 package com.inappstory.sdk.game.reader;
 
 import android.content.Context;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
@@ -43,6 +41,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public String storyGetLocalData(int storyId) {
+        if (InAppStoryService.isNull()) return "";
         String res = KeyValueStorage.getString("story" + storyId
                 + "__" + InAppStoryService.getInstance().getUserId());
         return res == null ? "" : res;
@@ -75,7 +74,7 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void gameStatisticEvent(String name, String data) {
-        StatisticManager.getInstance().sendGameEvent(name, data);
+        manager.sendGameStat(name, data);
     }
 
     @JavascriptInterface

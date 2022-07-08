@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Pair;
@@ -9,7 +7,6 @@ import android.util.Pair;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.listwidget.ListLoadedEvent;
@@ -23,10 +20,9 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallbackAdapter;
 import com.inappstory.sdk.stories.outerevents.SingleLoad;
 import com.inappstory.sdk.stories.outerevents.SingleLoadError;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -38,12 +34,15 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 
 public class StoryDownloadManager {
     public List<Story> getStories() {
-        return stories;
+        synchronized (storiesLock) {
+            if (stories == null) stories = new ArrayList<>();
+            return stories;
+        }
     }
 
     private Context context;
@@ -58,18 +57,20 @@ public class StoryDownloadManager {
         putStories(stories);
     }
 
-    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list";
+    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,slides_screenshot_share";
+
+    Object storiesLock = new Object();
 
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback, final int id) {
-        for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories()) {
+        List<Story> lStories = new ArrayList<>();
+        synchronized (storiesLock) {
+            if (stories != null)
+                lStories.addAll(stories);
+        }
+        for (Story story : lStories) {
             if (story.id == id) {
-                if (story.pages != null) {
-                    storyByIdCallback.getStory(story);
-                    return;
-                } else {
-                    storyByIdCallback.getStory(story);
-                    return;
-                }
+                storyByIdCallback.getStory(story);
+                return;
             }
         }
     }
@@ -82,11 +83,19 @@ public class StoryDownloadManager {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
+                if (InAppStoryService.isNull()) {
+                    storyByIdCallback.loadError(-1);
+                    return;
+                }
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
                 NetworkClient.getApi().getStoryById(id, 1, EXPAND_STRING
                 ).enqueue(new NetworkCallback<Story>() {
                     @Override
                     public void onSuccess(final Story response) {
+                        if (InAppStoryService.isNull()) {
+                            storyByIdCallback.loadError(-1);
+                            return;
+                        }
                         ProfilingManager.getInstance().setReady(storyUID);
                         CsEventBus.getDefault().post(new SingleLoad(id));
                         if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
@@ -107,8 +116,7 @@ public class StoryDownloadManager {
 
                     @Override
                     public void onTimeout() {
-                        super.onTimeout();
-                        ProfilingManager.getInstance().setReady(storyUID);
+                        onError(-1, "Timeout");
                     }
 
                     @Override
@@ -120,9 +128,6 @@ public class StoryDownloadManager {
                         }
                         CsEventBus.getDefault().post(new SingleLoadError());
 
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadSingleError();
-                        }
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                         if (storyByIdCallback != null)
                             storyByIdCallback.loadError(-1);
@@ -171,7 +176,12 @@ public class StoryDownloadManager {
     }
 
     public void cleanTasks() {
-        stories.clear();
+        cleanTasks(true);
+    }
+
+    public void cleanTasks(boolean cleanStories) {
+        if (cleanStories)
+            stories.clear();
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -180,6 +190,7 @@ public class StoryDownloadManager {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
         try {
+            if (InAppStoryService.isNull()) return;
             InAppStoryService.getInstance().getCommonCache().clearCache();
             InAppStoryService.getInstance().getFastCache().clearCache();
         } catch (IOException e) {
@@ -188,39 +199,61 @@ public class StoryDownloadManager {
     }
 
 
+    private final Object lock = new Object();
     List<ReaderPageManager> subscribers = new ArrayList<>();
 
     public void addSubscriber(ReaderPageManager manager) {
-        subscribers.add(manager);
+        synchronized (lock) {
+            subscribers.add(manager);
+        }
+        Long errorTime = storyErrorDelayed.remove(manager.getStoryId());
+        if (errorTime != null) {
+            manager.storyLoadError();
+        }
     }
 
     public void removeSubscriber(ReaderPageManager manager) {
-        subscribers.remove(manager);
+        synchronized (lock) {
+            subscribers.remove(manager);
+        }
     }
 
     void slideLoaded(int storyId, int index) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.slideLoadedInCache(index);
-                return;
+        synchronized (lock) {
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.slideLoadedInCache(index);
+                    return;
+                }
             }
         }
     }
 
+    HashMap<Integer, Long> storyErrorDelayed = new HashMap<>();
+
     void storyError(int storyId) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.storyLoadError();
+        synchronized (lock) {
+            if (subscribers.isEmpty()) {
+                storyErrorDelayed.put(storyId, System.currentTimeMillis());
                 return;
+            }
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.storyLoadError();
+                    return;
+                }
             }
         }
     }
 
     void storyLoaded(int storyId) {
-        for (ReaderPageManager subscriber : subscribers) {
-            if (subscriber.getStoryId() == storyId) {
-                subscriber.storyLoadedInCache();
-                return;
+
+        synchronized (lock) {
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == storyId) {
+                    subscriber.storyLoadedInCache();
+                    return;
+                }
             }
         }
     }
@@ -241,7 +274,7 @@ public class StoryDownloadManager {
                     if (tmp.durations == null & this.stories.get(ind).durations != null) {
                         tmp.durations = new ArrayList<>();
                         tmp.durations.addAll(this.stories.get(ind).durations);
-                        tmp.slidesCount = tmp.durations.size();
+                        tmp.setSlidesCount(tmp.durations.size());
                     }
                     if (tmp.layout == null & this.stories.get(ind).layout != null) {
                         tmp.layout = this.stories.get(ind).layout;
@@ -279,7 +312,11 @@ public class StoryDownloadManager {
     }
 
     public boolean checkIfPageLoaded(int storyId, int index) {
-        return slidesDownloader.checkIfPageLoaded(new Pair<>(storyId, index));
+        try {
+            return slidesDownloader.checkIfPageLoaded(new Pair<>(storyId, index));
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public StoryDownloadManager(final Context context, ExceptionCache cache) {
@@ -299,7 +336,6 @@ public class StoryDownloadManager {
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
             public void onDownload(Story story, int loadType) {
-                if (story == null) return;
                 Story local = getStoryById(story.id);
                 story.isOpened = local.isOpened;
                 story.lastIndex = local.lastIndex;
@@ -361,27 +397,27 @@ public class StoryDownloadManager {
         slidesDownloader.setCurrentSlide(storyId, slideIndex);
     }
 
-    public Story getStoryByIdWithEmpty(int id) {
+
+    public void clearAllFavoriteStatus() {
         if (stories != null) {
             for (Story story : stories) {
-                if (story.id == id) return story;
+                story.favorite = false;
             }
         }
-        return null;
     }
 
-
     public Story getStoryById(int id) {
-        if (stories != null) {
-            for (Story story : stories) {
-                if (story.id == id) return story;
+        synchronized (storiesLock) {
+            if (stories != null) {
+                for (Story story : stories) {
+                    if (story.id == id) return story;
+                }
             }
         }
         return null;
     }
 
     public void setStory(final Story story, int id) {
-        if (story == null) return;
         Story cur = getStoryById(id);
         if (cur == null) {
             stories.add(story);
@@ -398,42 +434,43 @@ public class StoryDownloadManager {
         cur.srcList = new ArrayList<>(story.getSrcList());
         cur.durations = new ArrayList<>(story.durations);
         if (!cur.durations.isEmpty()) {
-            cur.slidesCount = story.durations.size();
+            cur.setSlidesCount(story.durations.size());
         } else {
-            cur.slidesCount = story.getSlidesCount();
+            cur.setSlidesCount(story.getSlidesCount());
         }
     }
 
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
 
+    public void cleanStoriesIndex() {
+        synchronized (storiesLock) {
+            if (stories == null) return;
+            for (Story story : stories) {
+                if (story != null)
+                    story.setLastIndex(0);
+            }
+        }
+    }
 
-    public void loadStories(final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
+    public void loadStories(String feed, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
-        NetworkCallback loadCallback = new LoadListCallback() {
+        SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
-            protected void error424(String message) {
-                super.error424(message);
-                storyDownloader.loadStoryList(this, false);
-            }
+            public void onSuccess(final List<Story> response, Object... args) {
 
-            @Override
-            public void onTimeout() {
-                onError(-1, "Timeout");
-            }
-
-            @Override
-            public void onSuccess(final List<Story> response) {
-                final ArrayList<Story> stories = new ArrayList<>();
+                String feedId = null;
+                final ArrayList<Story> resStories = new ArrayList<>();
                 for (int i = 0; i < Math.min(response.size(), 4); i++) {
-                    stories.add(response.get(i));
+                    resStories.add(response.get(i));
                 }
-                try {
-                    SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(stories));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
                 if (StoriesWidgetService.getInstance() != null) {
+                    try {
+                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(resStories));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     StoriesWidgetService.getInstance().refreshFactory();
                 }
                 CsEventBus.getDefault().post(new ListLoadedEvent());
@@ -454,10 +491,12 @@ public class StoryDownloadManager {
                 setLocalsOpened(response);
                 InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
                 List<Story> newStories = new ArrayList<>();
-                if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
-                    for (Story story : response) {
-                        if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
-                            newStories.add(story);
+                synchronized (storiesLock) {
+                    if (stories != null) {
+                        for (Story story : response) {
+                            if (!stories.contains(story)) {
+                                newStories.add(story);
+                            }
                         }
                     }
                 }
@@ -468,8 +507,17 @@ public class StoryDownloadManager {
                         e.printStackTrace();
                     }
                 }
-                if (loadFavorite) {
+                boolean loadFav = loadFavorite;
+                if (args != null && args.length > 0) {
+                    loadFav &= (boolean) args[0];
+                    if (args.length > 1) {
+                        feedId = (String) args[1];
+                    }
+                }
+                final String sFeedId = feedId;
+                if (loadFav) {
                     final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
+
                     storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
                         @Override
                         public void onSuccess(List<Story> response2) {
@@ -477,10 +525,12 @@ public class StoryDownloadManager {
                             favStories.clear();
                             favStories.addAll(response2);
                             favoriteImages.clear();
-                            for (Story st : StoryDownloadManager.this.stories) {
-                                for (Story st2 : response2) {
-                                    if (st2.id == st.id) {
-                                        st.isOpened = true;
+                            synchronized (storiesLock) {
+                                for (Story st : stories) {
+                                    for (Story st2 : response2) {
+                                        if (st2.id == st.id) {
+                                            st.isOpened = true;
+                                        }
                                     }
                                 }
                             }
@@ -494,6 +544,7 @@ public class StoryDownloadManager {
                                     for (Story story : response) {
                                         ids.add(story.id);
                                     }
+                                    callback.setFeedId(sFeedId);
                                     callback.storiesLoaded(ids);
                                 }
                             } else {
@@ -502,6 +553,7 @@ public class StoryDownloadManager {
                                     for (Story story : response) {
                                         ids.add(story.id);
                                     }
+                                    callback.setFeedId(sFeedId);
                                     callback.storiesLoaded(ids);
                                 }
                             }
@@ -526,6 +578,7 @@ public class StoryDownloadManager {
                                 for (Story story : response) {
                                     ids.add(story.id);
                                 }
+                                callback.setFeedId(sFeedId);
                                 callback.storiesLoaded(ids);
                             }
                         }
@@ -536,32 +589,31 @@ public class StoryDownloadManager {
                         for (Story story : response) {
                             ids.add(story.id);
                         }
+                        callback.setFeedId(sFeedId);
                         callback.storiesLoaded(ids);
                     }
                 }
             }
 
             @Override
-            public void onError(int code, String message) {
-                generateLoadStoriesError(callback);
+            public void onError(String message) {
+                if (callback != null) {
+                    callback.onError();
+                }
             }
         };
-        NetworkCallback loadCallbackWithoutFav = new LoadListCallback() {
-            @Override
-            protected void error424(String message) {
-                super.error424(message);
-                storyDownloader.loadStoryList(this, false);
-            }
-
+        SimpleListCallback loadCallbackWithoutFav = new SimpleListCallback() {
 
             @Override
-            public void onSuccess(final List<Story> response) {
+            public void onSuccess(final List<Story> response, Object... args) {
                 InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
                 List<Story> newStories = new ArrayList<>();
-                if (InAppStoryService.getInstance().getDownloadManager().getStories() != null) {
-                    for (Story story : response) {
-                        if (!InAppStoryService.getInstance().getDownloadManager().getStories().contains(story)) {
-                            newStories.add(story);
+                synchronized (storiesLock) {
+                    if (stories != null) {
+                        for (Story story : response) {
+                            if (!stories.contains(story)) {
+                                newStories.add(story);
+                            }
                         }
                     }
                 }
@@ -583,30 +635,32 @@ public class StoryDownloadManager {
             }
 
             @Override
-            public void onError(int code, String message) {
-                generateLoadStoriesError(callback);
+            public void onError(String message) {
+                if (callback != null) {
+                    callback.onError();
+                }
             }
         };
-
-        storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+        if (feed != null && !isFavorite) {
+            storyDownloader.loadStoryListByFeed(feed, loadCallback);
+        } else {
+            storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
+        }
     }
 
-    public void generateLoadStoriesError(LoadStoriesCallback callback) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError();
-        }
-        if (callback != null) {
-            callback.onError();
-        }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
-    }
 
     public void refreshLocals() {
-        if (stories == null) return;
-        for (Story story : stories) {
-            story.isOpened = false;
+        List<Story> lStories = new ArrayList<>();
+        synchronized (storiesLock) {
+            if (stories == null) return;
+            lStories.addAll(stories);
         }
-        setLocalsOpened(stories);
+        synchronized (storiesLock) {
+            for (Story story : lStories) {
+                story.isOpened = false;
+            }
+            setLocalsOpened(lStories);
+        }
     }
 
     void setLocalsOpened(List<Story> response) {
@@ -615,7 +669,7 @@ public class StoryDownloadManager {
     }
 
 
-    private List<Story> stories;
+    private List<Story> stories = new ArrayList<>();
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();
 }

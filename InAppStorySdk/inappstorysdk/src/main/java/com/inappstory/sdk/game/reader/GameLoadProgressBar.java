@@ -1,5 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
+import static android.widget.RelativeLayout.CENTER_IN_PARENT;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -9,8 +11,6 @@ import android.widget.RelativeLayout;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 
 public class GameLoadProgressBar extends ProgressBar implements IGameLoaderView {
     public GameLoadProgressBar(Context context) {

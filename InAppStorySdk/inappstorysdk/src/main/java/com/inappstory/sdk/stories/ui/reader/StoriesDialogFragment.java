@@ -1,5 +1,23 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
+import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
+import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
+import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
+
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -18,42 +36,24 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 
 import java.util.HashSet;
+import java.util.List;
 
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
-import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-
-public class StoriesDialogFragment extends DialogFragment implements BackPressHandler {
+public class StoriesDialogFragment extends DialogFragment implements BackPressHandler, BaseReaderScreen {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -78,31 +78,33 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             OldStatisticManager.getInstance().sendStatistic();
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId());
-            if (story == null) {
-                super.onDismiss(dialogInterface);
-                return;
-            }
-            CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.getSlidesCount(),
-                    story.lastIndex, CloseStory.CLICK,
-                    getArguments().getInt("source", 0)));
-            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                        story.id,
+
+            if (story != null) {
+                CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.getSlidesCount(),
-                        story.lastIndex, CloseReader.CLICK,
-                        CallbackManager.getInstance().getSourceFromInt(
-                                getArguments().getInt("source", 0))
-                );
+                        story.lastIndex, CloseStory.CLICK,
+                        getArguments().getInt("source", 0)));
+                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                            story.id,
+                            story.title, story.tags, story.getSlidesCount(),
+                            story.lastIndex, CloseReader.CLICK,
+                            CallbackManager.getInstance().getSourceFromInt(
+                                    getArguments().getInt("source", 0))
+                    );
+                }
+                String cause = StatisticManager.CLICK;
+                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                        story.getSlidesCount(),
+                        getArguments().getString("feedId"));
             }
-            String cause = StatisticManager.CLICK;
-            StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex, story.getSlidesCount());
+
         }
         cleanReader();
         removeGameObservables();
         super.onDismiss(dialogInterface);
-        if (ScreensManager.getInstance().currentFragment == this)
-            ScreensManager.getInstance().currentFragment = null;
+        if (ScreensManager.getInstance().currentScreen == this)
+            ScreensManager.getInstance().currentScreen = null;
     }
 
     boolean cleaned = false;
@@ -113,7 +115,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        for (Story story : InAppStoryService.getInstance().getDownloadManager().getStories())
+        List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories();
+        for (Story story : stories)
             story.setLastIndex(0);
         cleaned = true;
     }
@@ -131,6 +134,18 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     HashSet<String> observerIDs = new HashSet<>();
 
+    @Override
+    public void closeStoryReader(int action) {
+        InAppStoryService.getInstance().getListReaderConnector().closeReader();
+        dismissAllowingStateLoss();
+    }
+
+    @Override
+    public void forceFinish() {
+        dismissAllowingStateLoss();
+    }
+
+    @Override
     public void observeGameReader(String observableId) {
         final String localObservableId = observableId;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -144,6 +159,23 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             }
         });
 
+    }
+
+    @Override
+    public void shareComplete() {
+
+    }
+
+    @Override
+    public void removeStoryFromFavorite(int id) {
+        if (storiesFragment != null)
+            storiesFragment.removeStoryFromFavorite(id);
+    }
+
+    @Override
+    public void removeAllStoriesFromFavorite() {
+        if (storiesFragment != null)
+            storiesFragment.removeAllStoriesFromFavorite();
     }
 
     @Override
@@ -167,13 +199,13 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             if (((BackPressHandler) frag).onBackPressed())
                 return true;
         }
-        dismiss();
+        dismissAllowingStateLoss();
         return true;
     }
 
     public void onDestroyView() {
         OldStatisticManager.getInstance().sendStatistic();
-        StoriesActivity.created = System.currentTimeMillis();
+        ScreensManager.created = System.currentTimeMillis();
         super.onDestroyView();
     }
 
@@ -188,20 +220,13 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
             case android.R.id.home:
 
-                dismiss();
+                dismissAllowingStateLoss();
                 return true;
         }
         return false;
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
-    public void closeStoryReaderEvent() {
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
-        dismiss();
-    }
 
-
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void changeStory(int index) {
         getArguments().putInt("index", index);
     }
@@ -216,6 +241,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             Bundle args = new Bundle();
             args.putBoolean("isDialogFragment", true);
             args.putInt("index", getArguments().getInt("index", 0));
+            args.putInt("source", getArguments().getInt("source", 0));
+            args.putInt("slideIndex", getArguments().getInt("slideIndex", 0));
             setAppearanceSettings(args);
             args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));
             storiesFragment.setArguments(args);
@@ -228,9 +255,9 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .replace(R.id.dialog_fragment, storiesFragment);
             t.addToBackStack("STORIES_FRAGMENT");
-            t.commit();
+            t.commitAllowingStateLoss();
         } else {
-            dismiss();
+            dismissAllowingStateLoss();
         }
 
     }
@@ -253,12 +280,14 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 getArguments().getInt(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getArguments().getInt(CS_REFRESH_ICON, R.drawable.ic_refresh),
                 getArguments().getInt(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getArguments().getBoolean(CS_TIMER_GRADIENT, true)
+                getArguments().getBoolean(CS_TIMER_GRADIENT_ENABLE, true)
         );
         try {
+            bundle.putSerializable(CS_TIMER_GRADIENT, getArguments().getSerializable(CS_TIMER_GRADIENT));
             bundle.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
     }

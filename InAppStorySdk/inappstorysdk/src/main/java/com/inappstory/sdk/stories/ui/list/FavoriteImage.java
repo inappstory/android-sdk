@@ -3,9 +3,9 @@ package com.inappstory.sdk.stories.ui.list;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
-import java.util.List;
-
 import com.inappstory.sdk.stories.api.models.Image;
+
+import java.util.List;
 
 /**
  * Defines type for story cover in favorite cell. Use {@link #getImage()}, {@link #getUrl()}
@@ -73,6 +73,8 @@ public class FavoriteImage {
         this.image = image;
         this.backgroundColor = backgroundColor;
     }
+
+
 
     @Override
     public boolean equals(Object other) {

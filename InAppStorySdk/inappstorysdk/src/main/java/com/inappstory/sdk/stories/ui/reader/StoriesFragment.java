@@ -1,5 +1,12 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
+import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
+import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
+import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -19,20 +26,16 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
+import java.io.Serializable;
 import java.util.List;
-
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 
 public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
 
@@ -64,6 +67,17 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         storiesViewPager.pageScrolled(positionOffset);
     }
 
+    public void removeStoryFromFavorite(int id) {
+        if (readerManager != null)
+            readerManager.removeStoryFromFavorite(id);
+    }
+
+
+    public void removeAllStoriesFromFavorite() {
+        if (readerManager != null)
+            readerManager.removeAllStoriesFromFavorite();
+    }
+
 
     @Override
     public void onPageSelected(int position) {
@@ -86,6 +100,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     boolean closeOnOverscroll = true;
 
     String readerSettings;
+    Serializable timerGradient;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -94,11 +109,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             if (getActivity() != null) getActivity().finish();
             return;
         }
-        readerManager = new ReaderManager();
+        readerManager = new ReaderManager(getArguments().getString("listID", null),
+                getArguments().getString("feedId", null),
+                getArguments().getString("feedSlug", null));
         readerManager.setParentFragment(this);
         if (isDestroyed) return;
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         readerSettings = getArguments().getString(CS_READER_SETTINGS);
+        timerGradient = getArguments().getSerializable(CS_TIMER_GRADIENT);
         storiesViewPager.setParameters(
                 getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
         currentIds = getArguments().getIntegerArrayList("stories_ids");
@@ -111,6 +129,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
                         readerSettings,
+                        timerGradient,
                         currentIds, readerManager);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
@@ -179,6 +198,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        try {
+            requireArguments();
+        } catch (IllegalStateException e) {
+            Activity activity = getActivity();
+            if (activity instanceof BaseReaderScreen)
+                ((BaseReaderScreen) activity).forceFinish();
+            return new View(getContext());
+        }
         isDestroyed = getArguments().getBoolean("isDestroyed");
         created = true;
         closeOnSwipe = getArguments().getBoolean(CS_CLOSE_ON_SWIPE, true);
@@ -314,7 +341,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
+                if (storiesViewPager.getAdapter() != null &&
+                        storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {

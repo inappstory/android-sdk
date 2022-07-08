@@ -15,7 +15,6 @@ import android.widget.RelativeLayout;
 import androidx.core.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.slidestructure.Element;
@@ -100,10 +99,8 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         }
         for (ValueAnimator animator : animatorHashMap.values()) {
             if (animator != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    if (!animator.isPaused())
-                        animator.pause();
-                }
+                if (!animator.isPaused())
+                    animator.pause();
             } else
                 animator.cancel();
         }
@@ -154,13 +151,9 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         }
         for (ValueAnimator animator : animatorHashMap.values()) {
             if (animator != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    if (animator.isPaused())
-                        animator.resume();
-                    else {
-                        animator.start();
-                    }
-                } else {
+                if (animator.isPaused())
+                    animator.resume();
+                else {
                     animator.start();
                 }
             }
@@ -384,6 +377,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     }
 
+
+    @Override
+    public void screenshotShare() {
+
+    }
 
     StoriesViewManager manager;
 

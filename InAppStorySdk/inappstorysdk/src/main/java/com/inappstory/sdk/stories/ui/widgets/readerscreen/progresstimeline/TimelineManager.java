@@ -1,11 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
-import android.animation.ValueAnimator;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-import android.view.animation.LinearInterpolator;
 
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
@@ -34,7 +30,6 @@ public class TimelineManager {
 
     Timeline timeline;
 
-
     public void setSlidesCount(int slidesCount) {
         timeline.setSlidesCount(slidesCount);
     }
@@ -47,7 +42,7 @@ public class TimelineManager {
     public void createFirstAnimation() {
         if (activeInd == 0) {
             // timeline.progressBars.get(0).setMin();
-           // timeline.progressBars.get(0).createAnimation();
+            // timeline.progressBars.get(0).createAnimation();
             timeline.setActiveProgressBar(0, true);
         }
     }
@@ -57,7 +52,7 @@ public class TimelineManager {
         if (ind > timeline.slidesCount) return;
         activeInd = ind;
         for (int i = 0; i < timeline.getProgressBars().size(); i++) {
-            timeline.setActiveProgressBar(i, (i == activeInd));
+            timeline.setActiveProgressBar(i, i == activeInd);
         }
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -67,14 +62,14 @@ public class TimelineManager {
                     timeline.getProgressBars().get(i).stopInLooper();
                 }
                 //createCurrentAnimation(ind);
-                if (timeline.getProgressBars().size() < activeInd) return;
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        if (timeline.getProgressBars().size() < activeInd) return;
                         for (int i = 0; i < activeInd; i++) {
                             timeline.getProgressBars().get(i).setMax();
                         }
-                        for (int i = activeInd + 1; i < timeline.slidesCount; i++) {
+                        for (int i = activeInd + 1; i < timeline.getProgressBars().size(); i++) {
                             timeline.getProgressBars().get(i).clearInLooper();
                         }
                         timeline.getProgressBars().get(activeInd).setMin();
@@ -97,10 +92,11 @@ public class TimelineManager {
 
     public ReaderPageManager pageManager;
 
+
     TimelineProgressBar getCurrentBar() {
-        if (timeline.getProgressBars().size() < pageManager.getSlideIndex())
-            return timeline.getProgressBars().get(pageManager.getSlideIndex());
-        return new TimelineProgressBar(timeline.getContext());
+        if (timeline.getProgressBars().size() <= pageManager.getSlideIndex())
+            return new TimelineProgressBar(timeline.getContext());
+        return timeline.getProgressBars().get(pageManager.getSlideIndex());
     }
 
     public void restart() {

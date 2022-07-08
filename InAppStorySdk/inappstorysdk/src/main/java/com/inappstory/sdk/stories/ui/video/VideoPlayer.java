@@ -57,8 +57,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         setSurfaceTextureListener(this);
     }
 
-
-
     @Override
     public void onSurfaceTextureAvailable(final SurfaceTexture surface, int width, int height) {
         isMpPrepared = false;
@@ -114,6 +112,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     File file = null;
 
     private void downloadCoverVideo(String url) {
+        if (InAppStoryService.isNull()) return;
         Downloader.downloadFileBackground(url, InAppStoryService.getInstance().getFastCache(),
                 new FileLoadProgressCallback() {
                     @Override
@@ -130,6 +129,11 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                    }
+
+                    @Override
+                    public void onError() {
+
                     }
                 });
     }
@@ -163,15 +167,8 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                     mp.start();
                 }
             });
-        } catch (IllegalArgumentException e1) {
-            e1.printStackTrace();
-        } catch (SecurityException e1) {
-            e1.printStackTrace();
-        } catch (IllegalStateException e1) {
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
         } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
 

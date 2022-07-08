@@ -11,12 +11,11 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -24,10 +23,9 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -35,14 +33,12 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * Created by Paperrose on 07.06.2018.
  */
 
-public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
+public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesView {
 
     private static String injectUnselectableStyle(String html) {
         return html.replace("<head>",
@@ -60,10 +56,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public void restartVideo() {
         stopVideo();
-
         playVideo();
     }
-
 
     private void logMethod(String payload) {
         InAppStoryManager.showDLog("JS_method_call", manager.storyId + " " + payload);
@@ -171,7 +165,6 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public SimpleStoriesWebView(Context context) {
         super(context);
-        init();
     }
 
     //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
@@ -215,7 +208,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 @Override
                 public void run() {
                     String s0 = injectUnselectableStyle(lt);
-                    loadDataWithBaseURL("", s0, "text/html; charset=utf-8", "UTF-8", null);
+                    loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
                 }
             });
         } else {
@@ -234,23 +227,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     StoriesViewManager manager;
 
-    private void init() {
-        getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        setBackgroundColor(getResources().getColor(R.color.black));
-
-        setVerticalScrollBarEnabled(false);
-        setHorizontalScrollBarEnabled(false);
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        getSettings().setTextZoom(100);
-        getSettings().setAllowContentAccess(true);
-        getSettings().setAllowFileAccess(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            getSettings().setOffscreenPreRaster(true);
-        }
-
-        setClickable(true);
-        getSettings().setJavaScriptEnabled(true);
-
+    protected void init() {
+        super.init();
         manager = new StoriesViewManager(getContext());
         manager.setStoriesView(this);
     }
@@ -263,12 +241,10 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
     public SimpleStoriesWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
     }
 
     public SimpleStoriesWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
     }
 
     float coordinate1;
@@ -283,6 +259,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     }
 
     @Override
+    public void screenshotShare() {
+        evaluateJavascript("share_slide_screenshot();", null);
+        logMethod("share_slide_screenshot");
+    }
+
+    @Override
     public void setStoriesView(SimpleStoriesView storiesView) {
 
     }
@@ -293,11 +275,15 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
         if (!clientIsSet) {
             addJavascriptInterface(new WebAppInterface(getContext(),
                     getManager()), "Android");
+
             setWebViewClient(new WebViewClient() {
 
                 @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
                     String img = url;
+                    if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
+                        return super.shouldInterceptRequest(view, url);
+                    InAppStoryManager.showDLog("webView_int_url", url);
                     File file = getManager().getCurrentFile(img);
                     if (file != null && file.exists()) {
                         try {
@@ -305,12 +291,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             String ctType = response.headers.get("Content-Type");
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
-                        } catch (FileNotFoundException e) {
-                            return super.shouldInterceptRequest(view, url);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return super.shouldInterceptRequest(view, url);
                         } catch (Exception e) {
+                            InAppStoryService.createExceptionLog(e);
                             return super.shouldInterceptRequest(view, url);
                         }
                     } else
@@ -322,6 +304,9 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 @Override
                 public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                     String img = request.getUrl().toString();
+                    if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
+                        return super.shouldInterceptRequest(view, request);
+                    InAppStoryManager.showDLog("webView_int_resource", img);
                     File file = getManager().getCurrentFile(img);
                     if (file != null && file.exists()) {
                         try {
@@ -329,12 +314,8 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                             String ctType = response.headers.get("Content-Type");
                             return new WebResourceResponse(ctType, "BINARY",
                                     new FileInputStream(file));
-                        } catch (FileNotFoundException e) {
-                            return super.shouldInterceptRequest(view, request);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return super.shouldInterceptRequest(view, request);
                         } catch (Exception e) {
+                            InAppStoryService.createExceptionLog(e);
                             return super.shouldInterceptRequest(view, request);
                         }
                     } else
@@ -342,12 +323,12 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
                 }
 
 
-
                 @Override
                 public void onPageFinished(WebView view, String url) {
 
                 }
             });
+
             setWebChromeClient(new WebChromeClient() {
                 @Nullable
                 @Override
@@ -371,7 +352,14 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    Log.d("InAppStory_SDK_Web", consoleMessage.message() + " -- From line "
+
+                    if (manager != null) {
+                        sendWebConsoleLog(consoleMessage,
+                                Integer.toString(manager.storyId),
+                                manager.index);
+                    }
+                    Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
+                            + consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
                             + consoleMessage.sourceId());
                     return super.onConsoleMessage(consoleMessage);
@@ -379,7 +367,9 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
             });
 
         }
+        clientIsSet = true;
     }
+
 
     @Override
     public void goodsWidgetComplete(String widgetId) {
@@ -391,7 +381,7 @@ public class SimpleStoriesWebView extends WebView implements SimpleStoriesView {
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
-        if (!InAppStoryService.isConnected()) return true;
+        //if (!InAppStoryService.isConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();

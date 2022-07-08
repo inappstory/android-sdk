@@ -1,13 +1,14 @@
 package com.inappstory.sdk.network;
 
-import android.os.Build;
-import android.util.Log;
+import static java.util.UUID.randomUUID;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -26,8 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.UUID.randomUUID;
 
 public final class NetworkHandler implements InvocationHandler {
     /**
@@ -49,32 +48,55 @@ public final class NetworkHandler implements InvocationHandler {
         return new URL(url + varStr);
     }
 
-    public static Response doRequest(Request req)
+    public static Response doRequest(Request req, String requestId)
             throws Exception {
-        HttpURLConnection connection = (HttpURLConnection) getURL(req).openConnection();
+        ApiLogRequest requestLog = new ApiLogRequest();
+        URL url = getURL(req);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod(req.getMethod());
+        requestLog.method = req.getMethod();
+        requestLog.url = url.toString();
+        requestLog.timestamp = System.currentTimeMillis();
+        requestLog.id = requestId;
         if (req.getHeaders() != null) {
             for (Object key : req.getHeaders().keySet()) {
+                requestLog.headers.add(new ApiLogRequestHeader(key.toString(), req.getHeader(key)));
                 connection.setRequestProperty(key.toString(), req.getHeader(key));
             }
         }
-        if (InAppStoryService.getInstance() != null && InAppStoryService.getInstance().getUserId() != null)
+        if (InAppStoryService.getInstance() != null && InAppStoryService.getInstance().getUserId() != null) {
             connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
+            requestLog.headers.add(
+                    new ApiLogRequestHeader("X-User-id", InAppStoryService.getInstance().getUserId()));
+        }
         connection.setRequestProperty("X-Request-ID", randomUUID().toString());
+        requestLog.headers.add(
+                new ApiLogRequestHeader("X-Request-ID", connection.getRequestProperty("X-Request-ID")));
+
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            requestLog.headers.add(
+                    new ApiLogRequestHeader("Content-Type", "application/x-www-form-urlencoded"));
         }
-        if (!StatisticSession.needToUpdate() && !req.getUrl().contains("session/open")) {
-            connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
+        if (!Session.needToUpdate() && !req.getUrl().contains("session/open")) {
+            connection.setRequestProperty("auth-session-id", Session.getInstance().id);
+
+            requestLog.headers.add(
+                    new ApiLogRequestHeader("auth-session-id", Session.getInstance().id));
         }
-        InAppStoryManager.showDLog("InAppStory_Network", req.getHeaders().toString());
-        if (!req.getMethod().equals(GET) && !req.getBody().isEmpty()) {
+        InAppStoryManager.showDLog("InAppStory_Network", req.getHeadersString());
+        if (!req.getMethod().equals(GET) && !req.getMethod().equals(HEAD) && !req.getBody().isEmpty()) {
             InAppStoryManager.showDLog("InAppStory_Network", req.getBody());
+            requestLog.body = req.getBody();
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
+                requestLog.headers.add(
+                        new ApiLogRequestHeader("Content-Type", "application/json"));
             }
+            InAppStoryManager.sendApiRequestLog(requestLog);
+
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
@@ -82,19 +104,26 @@ public final class NetworkHandler implements InvocationHandler {
             outStreamWriter.flush();
             outStreamWriter.close();
             outStream.close();
+        } else {
+            InAppStoryManager.sendApiRequestLog(requestLog);
         }
         int statusCode = connection.getResponseCode();
         Response respObject = null;
         InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        //apiLog.duration = System.currentTimeMillis() - start;
+        long contentLength = 0;
 
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
-
             String res = getResponseFromStream(connection.getInputStream());
-            respObject = new Response.Builder().headers(getHeaders(connection)).code(statusCode).body(res).build();
+            contentLength = res.length();
+            respObject = new Response.Builder().contentLength(contentLength).
+                    headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
             String res = getResponseFromStream(connection.getErrorStream());
+            contentLength = res.length();
             InAppStoryManager.showDLog("InAppStory_Network", "Error: " + res);
-            respObject = new Response.Builder().code(statusCode).errorBody(res).build();
+            respObject = new Response.Builder().contentLength(contentLength).
+                    headers(getHeaders(connection)).code(statusCode).errorBody(res).build();
         }
         connection.disconnect();
         return respObject;
@@ -128,8 +157,11 @@ public final class NetworkHandler implements InvocationHandler {
         if (networkClient == null) networkClient = NetworkClient.getInstance();
         GET get = method.getAnnotation(GET.class);
         POST post = method.getAnnotation(POST.class);
+        DELETE delete = method.getAnnotation(DELETE.class);
         PUT put = method.getAnnotation(PUT.class);
-        if (get != null) {
+        if (delete != null) {
+            return generateRequest(delete.value(), method.getParameterAnnotations(), args, (new Request.Builder()).delete());
+        } else if (get != null) {
             return generateRequest(get.value(), method.getParameterAnnotations(), args, (new Request.Builder()).get());
         } else {
             boolean encoded = (method.getAnnotation(FormUrlEncoded.class) != null);
@@ -154,11 +186,9 @@ public final class NetworkHandler implements InvocationHandler {
 
     //Test
     public String encode(String var) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try {
-                return URLEncoder.encode(var, StandardCharsets.UTF_8.name());
-            } catch (UnsupportedEncodingException e) {
-            }
+        try {
+            return URLEncoder.encode(var, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
         }
         return var;
     }
@@ -211,6 +241,7 @@ public final class NetworkHandler implements InvocationHandler {
 
     public static final String POST = "POST";
     public static final String GET = "GET";
+    public static final String DELETE = "DELETE";
     public static final String HEAD = "HEAD";
     public static final String PUT = "PUT";
 

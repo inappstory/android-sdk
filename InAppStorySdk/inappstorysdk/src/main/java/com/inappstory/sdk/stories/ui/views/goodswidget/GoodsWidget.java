@@ -28,11 +28,13 @@ public class GoodsWidget extends RecyclerView {
     public static class GoodsWidgetConfig {
         public String widgetId;
         public int storyId;
+        public String feedId;
         public int slideIndex;
 
-        public GoodsWidgetConfig(String widgetId, int storyId, int slideIndex) {
+        public GoodsWidgetConfig(String widgetId, int storyId, int slideIndex, String feedId) {
             this.widgetId = widgetId;
             this.storyId = storyId;
+            this.feedId = feedId;
             this.slideIndex = slideIndex;
         }
     }

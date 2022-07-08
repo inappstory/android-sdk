@@ -17,9 +17,9 @@ import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
-import com.inappstory.sdk.stories.api.models.StatisticResponse;
+import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -52,15 +52,21 @@ public class SessionManager {
     }
 
     public boolean checkOpenStatistic(final OpenSessionCallback callback) {
+        boolean checkOpen = false;
+        synchronized (openProcessLock) {
+            checkOpen = openProcess;
+        }
         if (InAppStoryService.isConnected()) {
-            if (StatisticSession.needToUpdate()) {
+            if (Session.needToUpdate() || checkOpen) {
                 openSession(callback);
                 return false;
             } else {
                 return true;
             }
         } else {
-            return true;
+            if (callback != null)
+                callback.onError();
+            return false;
         }
     }
 
@@ -70,15 +76,17 @@ public class SessionManager {
     public static Object openProcessLock = new Object();
     public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
 
-    public void openStatisticSuccess(final StatisticResponse response) {
+    public void openStatisticSuccess(final SessionResponse response) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 response.session.statisticPermissions = new StatisticPermissions(
                         response.isAllowProfiling,
                         response.isAllowStatV1,
-                        response.isAllowStatV2
+                        response.isAllowStatV2,
+                        response.isAllowCrash
                 );
+                response.session.editor = response.editor;
                 response.session.save();
                 InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
                 synchronized (openProcessLock) {
@@ -130,7 +138,7 @@ public class SessionManager {
         try {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
@@ -141,9 +149,8 @@ public class SessionManager {
             return;
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
-        NetworkClient.getApi().statisticsOpen(
-                "cache",
-                InAppStoryService.getInstance().getTagsString(), FEATURES,
+        NetworkClient.getApi().sessionOpen(
+                "cache", FEATURES,
                 platform,
                 deviceId,
                 model,
@@ -158,9 +165,10 @@ public class SessionManager {
                 appVersion,
                 appBuild,
                 InAppStoryService.getInstance().getUserId()
-        ).enqueue(new NetworkCallback<StatisticResponse>() {
+        ).enqueue(new NetworkCallback<SessionResponse>() {
             @Override
-            public void onSuccess(StatisticResponse response) {
+            public void onSuccess(SessionResponse response) {
+                if (InAppStoryService.isNull()) return;
                 OldStatisticManager.getInstance().eventCount = 0;
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
                 openStatisticSuccess(response);
@@ -176,13 +184,17 @@ public class SessionManager {
 
             @Override
             public Type getType() {
-                return StatisticResponse.class;
+                return SessionResponse.class;
             }
 
 
             @Override
             public void onError(int code, String message) {
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().sessionError();
+                }
+                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 synchronized (openProcessLock) {
                     openProcess = false;
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -196,10 +208,7 @@ public class SessionManager {
                     });
                 }
 
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().sessionError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
+
                 super.onError(code, message);
 
             }
@@ -207,7 +216,6 @@ public class SessionManager {
             @Override
             public void onTimeout() {
                 ProfilingManager.getInstance().setReady(sessionOpenUID);
-
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().sessionError();
                 }
@@ -230,25 +238,21 @@ public class SessionManager {
     }
 
     public void closeSession(boolean sendStatistic, final boolean changeUserId) {
-        if (StatisticSession.getInstance().id != null) {
+        if (Session.getInstance().id != null) {
             List<List<Object>> stat = new ArrayList<>();
             stat.addAll(sendStatistic ? OldStatisticManager.getInstance().statistic :
                     new ArrayList<List<Object>>());
-            try {
-                OldStatisticManager.getInstance().statistic.clear();
-            } catch (Exception e) {
+            if (OldStatisticManager.getInstance() != null)
+                OldStatisticManager.getInstance().clear();
 
-            }
-
-          //  CsEventBus.getDefault().post(new DebugEvent(stat.toString()));
             final String sessionCloseUID =
                     ProfilingManager.getInstance().addTask("api_session_close");
 
-            NetworkClient.getApi().statisticsClose(new StatisticSendObject(StatisticSession.getInstance().id,
+            NetworkClient.getApi().sessionClose(new StatisticSendObject(Session.getInstance().id,
                     stat)).enqueue(
-                    new NetworkCallback<StatisticResponse>() {
+                    new NetworkCallback<SessionResponse>() {
                         @Override
-                        public void onSuccess(StatisticResponse response) {
+                        public void onSuccess(SessionResponse response) {
                             ProfilingManager.getInstance().setReady(sessionCloseUID, true);
                             if (changeUserId && InAppStoryService.isNotNull())
                                 InAppStoryService.getInstance().getListReaderConnector().changeUserId();
@@ -256,7 +260,7 @@ public class SessionManager {
 
                         @Override
                         public Type getType() {
-                            return StatisticResponse.class;
+                            return SessionResponse.class;
                         }
 
                         @Override
@@ -273,7 +277,7 @@ public class SessionManager {
                         }
                     });
         }
-        StatisticSession.clear();
+        Session.clear();
     }
 
 }

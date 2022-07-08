@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.cache;
+package com.inappstory.sdk.stories.api.models.callbacks;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -23,18 +23,18 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
     @Override
     public void onError(int code, String message) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError();
+            CallbackManager.getInstance().getErrorCallback().loadListError(null);
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, null));
        // super.onError(code, message);
     }
 
     @Override
     protected void error424(String message) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError();
+            CallbackManager.getInstance().getErrorCallback().loadListError(null);
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST));
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, null));
         SessionManager.getInstance().closeSession(true, false);
     }
 

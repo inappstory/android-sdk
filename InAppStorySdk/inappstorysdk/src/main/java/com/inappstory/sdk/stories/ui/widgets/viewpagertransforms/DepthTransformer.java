@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.viewpagertransforms;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.viewpager.widget.ViewPager;

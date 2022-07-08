@@ -1,10 +1,15 @@
 package com.inappstory.sdk.stories.ui.dialog;
 
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
+import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
+import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -16,6 +21,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -31,18 +37,11 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.Sizes;
-
-
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
-import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
-import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
-import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
 
 public class ContactDialog {
 
@@ -100,6 +99,15 @@ public class ContactDialog {
     float factor = 1;
 
     public void showDialog(final Activity activity) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                showDialogInner(activity);
+            }
+        });
+    }
+
+    private void showDialogInner(final Activity activity) {
         final Dialog dialog = new Dialog(activity, R.style.DialogTheme);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -181,9 +189,11 @@ public class ContactDialog {
 
         switch (dialogStructure.configV2.main.question.text.align) {
             case "right":
+                ((LinearLayout.LayoutParams) text.getLayoutParams()).gravity = Gravity.RIGHT;
                 text.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 break;
             case "center":
+                ((LinearLayout.LayoutParams) text.getLayoutParams()).gravity = Gravity.CENTER_HORIZONTAL;
                 text.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
                 break;
             default:
@@ -399,12 +409,16 @@ public class ContactDialog {
             public void onDismiss(DialogInterface dialogInterface) {
 
                 View view = activity.getCurrentFocus();
-                editText.clearFocus();
                 if (view != null) {
-
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                    StatisticManager.getInstance().resumeStoryEvent(true);
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            editText.clearFocus();
+                            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                            StatisticManager.getInstance().resumeStoryEvent(true);
+                        }
+                    });
                 }
 
 
@@ -444,14 +458,17 @@ public class ContactDialog {
         });
 
         if (!isTablet()) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    et.requestFocus();
-                    InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
-                }
-            }, 200);
+            View view = activity.getCurrentFocus();
+            if (view != null) {
+                view.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        et.requestFocus();
+                        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
+                    }
+                }, 200);
+            }
         }
     }
 

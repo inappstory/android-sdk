@@ -1,8 +1,8 @@
 package com.inappstory.sdk.stories.outercallbacks.common.errors;
 
 public interface ErrorCallback {
-    void loadListError();
-    void loadOnboardingError();
+    void loadListError(String feed);
+    void loadOnboardingError(String feed);
     void loadSingleError();
     void cacheError();
     void readerError();

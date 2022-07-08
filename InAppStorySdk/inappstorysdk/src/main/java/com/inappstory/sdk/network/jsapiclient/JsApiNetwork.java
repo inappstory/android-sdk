@@ -1,5 +1,10 @@
 package com.inappstory.sdk.network.jsapiclient;
 
+import static com.inappstory.sdk.network.NetworkClient.getUAString;
+import static com.inappstory.sdk.network.NetworkHandler.GET;
+import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
+import static java.util.UUID.randomUUID;
+
 import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
@@ -7,7 +12,7 @@ import android.provider.Settings;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 
 import org.json.JSONObject;
 
@@ -18,11 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Map;
-
-import static com.inappstory.sdk.network.NetworkClient.getUAString;
-import static com.inappstory.sdk.network.NetworkHandler.GET;
-import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
-import static java.util.UUID.randomUUID;
 
 public class JsApiNetwork {
 
@@ -69,8 +69,9 @@ public class JsApiNetwork {
         connection.setRequestProperty("X-Device-Id", Settings.Secure.getString(context.getContentResolver(),
                 Settings.Secure.ANDROID_ID));
         connection.setRequestProperty("X-Request-ID", randomUUID().toString());
-        connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
-        connection.setRequestProperty("auth-session-id", StatisticSession.getInstance().id);
+        if (InAppStoryService.isNotNull())
+            connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
+        connection.setRequestProperty("auth-session-id", Session.getInstance().id);
 
         boolean hasBody = !method.equals(GET) && body != null && !body.isEmpty();
         if (hasBody) {
@@ -107,6 +108,7 @@ public class JsApiNetwork {
         try {
             respBody = getResponseFromStream(connection.getInputStream());
         } catch (IOException e) {
+            InAppStoryService.createExceptionLog(e);
             respBody = getResponseFromStream(connection.getErrorStream());
         }
         response.data = respBody;

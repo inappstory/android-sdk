@@ -1,9 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.generated;
 
-import android.content.Context;
 import android.graphics.Point;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class GeneratedViewSizes {

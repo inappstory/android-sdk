@@ -9,7 +9,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.inappstory.sdk.BuildConfig;
-import com.inappstory.sdk.InAppStoryService;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -162,7 +161,7 @@ public class NetworkClient {
                 e.printStackTrace();
             }
             userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                    + " " + System.getProperty("http.agent") + " " + " Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
+                    + " " + System.getProperty("http.agent") + " " + "Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
         }

@@ -11,28 +11,30 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
-import com.inappstory.sdk.stories.outerevents.CallToAction;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
+import com.inappstory.sdk.stories.outerevents.CallToAction;
 import com.inappstory.sdk.stories.outerevents.ClickOnStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.ugc.list.OnUGCItemClick;
+import com.inappstory.sdk.ugc.list.UGCListItem;
 
-public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> implements ClickCallback {
     public List<Integer> getStoriesIds() {
         return storiesIds;
     }
@@ -40,20 +42,47 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
     private List<Integer> storiesIds = new ArrayList<>();
     private boolean isFavoriteList;
     OnFavoriteItemClick favoriteItemClick;
+    OnUGCItemClick ugcItemClick;
     ListCallback callback;
 
     boolean hasFavItem = false;
 
-    public Context context;
+    boolean useFavorite;
+    boolean useUGC;
 
-    public StoriesAdapter(Context context, List<Integer> storiesIds, AppearanceManager manager,
-                          OnFavoriteItemClick favoriteItemClick, boolean isFavoriteList, ListCallback callback) {
+    public Context context;
+    private String listID;
+    private String feed;
+    private String feedID;
+
+    public void setFeedID(String feedID) {
+        this.feedID = feedID;
+    }
+
+    public StoriesAdapter(Context context,
+                          String listID,
+                          List<Integer> storiesIds,
+                          AppearanceManager manager,
+                          boolean isFavoriteList,
+                          ListCallback callback,
+                          String feed,
+                          String feedID,
+                          boolean useFavorite,
+                          OnFavoriteItemClick favoriteItemClick,
+                          boolean useUGC,
+                          OnUGCItemClick ugcItemClick) {
         this.context = context;
+        this.listID = listID;
+        this.feed = feed;
         this.storiesIds = storiesIds;
+        this.feedID = feedID;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
+        this.ugcItemClick = ugcItemClick;
         this.callback = callback;
         this.isFavoriteList = isFavoriteList;
+        this.useFavorite = useFavorite;
+        this.useUGC = useUGC;
         hasFavItem = !isFavoriteList && InAppStoryService.isNotNull()
                 && manager != null && manager.csHasFavorite()
                 && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
@@ -73,15 +102,21 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     @NonNull
     @Override
-    public StoryListItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public BaseStoryListItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         int vType = viewType % 10;
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cs_story_list_custom_item, parent, false);
-        return new StoryListItem(v, manager, (vType % 5) == 2, vType == 3, vType > 5);
+        if (vType == -1) {
+            return new StoryFavoriteListItem(v, manager);
+        } else if (vType == -2) {
+            return new UGCListItem(v, manager);
+        } else {
+            return new StoryListItem(v, manager, (vType % 5) == 2, vType > 5);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final StoryListItem holder, final int position) {
-        if (holder == null) return;
+    public void onBindViewHolder(@NonNull BaseStoryListItem holder, int position) {
+        if (holder == null || InAppStoryService.isNull()) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -92,40 +127,60 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                     }
                 }
             });
-        } else {
-            if (InAppStoryService.isNotNull()) {
-                final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(position));
-                if (story == null) return;
-                holder.bind(story.getTitle(),
-                        story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
-                        story.getSource(),
-                        (story.getImage() != null && story.getImage().size() > 0) ?
-                                story.getProperImage(manager.csCoverQuality()).getUrl() : null,
-                        Color.parseColor(story.getBackgroundColor()),
-                        story.isOpened || isFavoriteList, story.hasAudio(),
-                        story.getVideoUrl());
-            }
+        } else if (holder.isUGC) {
+            holder.bindUGC();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClick(position);
+                    if (ugcItemClick != null) {
+                        ugcItemClick.onClick();
+                    }
                 }
             });
-        }
+        } else {
+            int hasUGC = useUGC ? 1 : 0;
+            final Story story = InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(storiesIds.get(position - hasUGC));
+            if (story == null) return;
+            String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
+                    story.getProperImage(manager.csCoverQuality()).getUrl() : null;
 
+            holder.bind(story.id,
+                    story.getTitle(),
+                    story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
+                    story.getSource(),
+                    imgUrl,
+                    Color.parseColor(story.getBackgroundColor()),
+                    story.isOpened || isFavoriteList,
+                    story.hasAudio(),
+                    story.getVideoUrl(), this);
+        }
     }
 
-    public void onItemClick(int index) {
+    Long clickTimestamp = -1L;
+
+    @Override
+    public void onItemClick(int ind) {
         if (InAppStoryService.isNull()) return;
+
+        if (System.currentTimeMillis() - clickTimestamp < 1500) {
+            return;
+        }
+        int hasUGC = useUGC ? 1 : 0;
+        int index = ind - hasUGC;
+        clickTimestamp = System.currentTimeMillis();
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
         if (current != null) {
-            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title, current.tags, current.getSlidesCount(),
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title,
+                    current.tags, current.getSlidesCount(),
+                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feed));
             if (callback != null) {
-                callback.itemClick(current.id, index, current.title, current.tags, current.getSlidesCount(),
-                        isFavoriteList);
+                callback.itemClick(current.id, index, current.title, current.tags,
+                        current.getSlidesCount(), isFavoriteList, feed);
             }
             if (current.deeplink != null) {
+                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
+                OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 CsEventBus.getDefault().post(new CallToAction(current.id, current.title,
                         current.tags, current.getSlidesCount(), 0,
                         current.deeplink, CallToAction.DEEPLINK));
@@ -135,13 +190,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                             current.tags, current.getSlidesCount(), 0,
                             current.deeplink, ClickAction.DEEPLINK);
                 }
-                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink);
-                OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
                     current.saveStoryOpened();
-                    notifyItemChanged(index);
+                    notifyItemChanged(ind);
                 } else {
                     if (!InAppStoryService.isConnected()) {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -152,13 +205,14 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                     }
                     current.isOpened = true;
                     current.saveStoryOpened();
-                    notifyItemChanged(index);
+                    notifyItemChanged(ind);
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(current.deeplink));
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(i);
-                    } catch (Exception e) {
+                    } catch (Exception ignored) {
+                        InAppStoryService.createExceptionLog(ignored);
                     }
                 }
                 return;
@@ -172,12 +226,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
                 return;
             }
         } else {
-            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null, null, 0,
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST));
+            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null,
+                    null, 0, isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feed));
 
             if (callback != null) {
                 callback.itemClick(storiesIds.get(index), index, null, null, 0,
-                        isFavoriteList);
+                        isFavoriteList, feed);
             }
         }
         ArrayList<Integer> tempStories = new ArrayList();
@@ -186,26 +240,31 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        ScreensManager.getInstance().openStoriesReader(context, manager, tempStories,
+        ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
-                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST);
+                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, feedID);
         InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
     }
 
     @Override
     public int getItemViewType(int position) {
-        int pref = position * 10;
-        if (manager != null && manager.csHasFavorite() && position == storiesIds.size())
-            return pref + 3;
+        int hasUGC = useUGC ? 1 : 0;
+        if (useUGC && position == 0)
+            return -2;
+        if (useFavorite && position == storiesIds.size() + hasUGC)
+            return -1;
         try {
+            int pos = position - hasUGC;
+            int pref = pos * 10;
             Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(storiesIds.get(position));
+                    .getStoryById(storiesIds.get(pos));
             if (story.getVideoUrl() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {
             return 0;
         }
+
     }
 
     @Override
@@ -215,6 +274,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<StoryListItem> {
 
     @Override
     public int getItemCount() {
-        return storiesIds.size() + (hasFavItem ? 1 : 0);
+        return storiesIds.size() + ((!storiesIds.isEmpty() && hasFavItem) ? 1 : 0) +
+                ((!storiesIds.isEmpty() && useUGC) ? 1 : 0);
     }
 }

@@ -1,5 +1,10 @@
 package com.inappstory.sdk;
 
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
+import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -12,21 +17,34 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.utils.KeyConverter;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
+import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+import com.inappstory.sdk.stories.callbacks.AppClickCallback;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
+import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
+import com.inappstory.sdk.stories.callbacks.ShareCallback;
+import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
+import com.inappstory.sdk.stories.events.NoConnectionEvent;
+import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
@@ -37,38 +55,28 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCall
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryListType;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
-import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.callbacks.AppClickCallback;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
-import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
-import com.inappstory.sdk.stories.callbacks.ShareCallback;
-import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
 import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -98,7 +106,7 @@ public class InAppStoryManager {
     Context context;
 
 
-    private static final String DEBUG_API = "IAS debug api";
+    static final String DEBUG_API = "IAS debug api";
 
 
     @SuppressLint(DEBUG_API)
@@ -119,6 +127,9 @@ public class InAppStoryManager {
     }
 
     @SuppressLint(DEBUG_API)
+    public static IAS_QA_Log iasQaLog;
+
+    @SuppressLint(DEBUG_API)
     public static void showELog(String tag, String message) {
         if (logger != null) logger.showELog(tag, message);
     }
@@ -128,6 +139,33 @@ public class InAppStoryManager {
         if (logger != null) logger.showDLog(tag, message);
     }
 
+    @SuppressLint(DEBUG_API)
+    public static void sendApiRequestLog(ApiLogRequest log) {
+        if (iasQaLog != null) iasQaLog.getApiRequestLog(log);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendApiResponseLog(ApiLogResponse log) {
+        if (iasQaLog != null)
+            iasQaLog.getApiResponseLog(log);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendApiRequestResponseLog(ApiLogRequest logRequest,
+                                                 ApiLogResponse logResponse) {
+        if (iasQaLog != null)
+            iasQaLog.getApiRequestResponseLog(logRequest, logResponse);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendExceptionLog(ExceptionLog log) {
+        if (iasQaLog != null) iasQaLog.getExceptionLog(log);
+    }
+
+    @SuppressLint(DEBUG_API)
+    public static void sendWebConsoleLog(WebConsoleLog log) {
+        if (iasQaLog != null) iasQaLog.getWebConsoleLog(log);
+    }
 
     /**
      * use set custom callback in case of uncaught exceptions.
@@ -149,7 +187,9 @@ public class InAppStoryManager {
      * @return {@link ArrayList} of tags
      */
     public ArrayList<String> getTags() {
-        return tags;
+        synchronized (tagsLock) {
+            return tags;
+        }
     }
 
     //Test
@@ -158,6 +198,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
+        if (InAppStoryService.isNull()) return;
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
     //Test
@@ -166,6 +207,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache without manager
      */
     public void clearCache(Context context) {
+        if (InAppStoryService.isNull()) return;
         InAppStoryService.getInstance().getDownloadManager().clearCache();
     }
 
@@ -179,11 +221,17 @@ public class InAppStoryManager {
     /**
      * use to force close story reader
      */
-    public static void closeStoryReader(int action) {
-        ScreensManager.getInstance().closeStoryReader(action);
-        //CsEventBus.getDefault().post(new CloseStoryReaderEvent(action));
-        ScreensManager.getInstance().hideGoods();
-        ScreensManager.getInstance().closeGameReader();
+    public static void closeStoryReader(final int action) {
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                ScreensManager.getInstance().closeStoryReader(action);
+                ScreensManager.getInstance().hideGoods();
+                ScreensManager.getInstance().closeGameReader();
+                ScreensManager.getInstance().closeUGCEditor();
+            }
+        });
     }
 
     /**
@@ -219,6 +267,13 @@ public class InAppStoryManager {
      */
     public void setCallToActionCallback(CallToActionCallback callToActionCallback) {
         CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
+    }
+
+    /**
+     * use to set callback on click on widgets in stories (with info)
+     */
+    public void setStoryWidgetCallback(StoryWidgetCallback storyWidgetCallback) {
+        CallbackManager.getInstance().setStoryWidgetCallback(storyWidgetCallback);
     }
 
 
@@ -291,8 +346,10 @@ public class InAppStoryManager {
      * @return {@link String} with tags joined by comma
      */
     public String getTagsString() {
-        if (tags == null) return null;
-        return TextUtils.join(",", tags);
+        synchronized (tagsLock) {
+            if (tags == null) return null;
+            return TextUtils.join(",", tags);
+        }
     }
 
     /**
@@ -300,22 +357,29 @@ public class InAppStoryManager {
      *
      * @param tags (tags)
      */
-    //Test
+
     public void setTags(ArrayList<String> tags) {
-        this.tags = tags;
+
+        synchronized (tagsLock) {
+            this.tags = tags;
+        }
     }
+
+    private Object tagsLock = new Object();
 
     /**
      * use to customize tags in runtime. Adds tags to array.
      *
      * @param newTags (newTags) - list of additional tags
      */
-    //Test
+
     public void addTags(ArrayList<String> newTags) {
-        if (newTags == null || newTags.isEmpty()) return;
-        if (tags == null) tags = new ArrayList<>();
-        for (String tag : newTags) {
-            addTag(tag);
+        synchronized (tagsLock) {
+            if (newTags == null || newTags.isEmpty()) return;
+            if (tags == null) tags = new ArrayList<>();
+            for (String tag : newTags) {
+                addTag(tag);
+            }
         }
     }
 
@@ -324,11 +388,13 @@ public class InAppStoryManager {
      *
      * @param removedTags (removedTags) - list of removing tags
      */
-    //Test
+
     public void removeTags(ArrayList<String> removedTags) {
-        if (tags == null || removedTags == null || removedTags.isEmpty()) return;
-        for (String tag : removedTags) {
-            removeTag(tag);
+        synchronized (tagsLock) {
+            if (tags == null || removedTags == null || removedTags.isEmpty()) return;
+            for (String tag : removedTags) {
+                removeTag(tag);
+            }
         }
     }
 
@@ -357,17 +423,19 @@ public class InAppStoryManager {
      * @param value (value) - replacement result
      */
     public void setPlaceholder(String key, String value) {
-        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-        if (placeholders == null) placeholders = new HashMap<>();
-        String inKey = "%" + key + "%";
-        if (value == null) {
-            if (defaultPlaceholders.containsKey(inKey)) {
-                placeholders.put(inKey, defaultPlaceholders.get(inKey));
+        synchronized (placeholdersLock) {
+            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+            if (placeholders == null) placeholders = new HashMap<>();
+            String inKey = "%" + key + "%";
+            if (value == null) {
+                if (defaultPlaceholders.containsKey(inKey)) {
+                    placeholders.put(inKey, defaultPlaceholders.get(inKey));
+                } else {
+                    placeholders.remove(inKey);
+                }
             } else {
-                placeholders.remove(inKey);
+                placeholders.put(inKey, value);
             }
-        } else {
-            placeholders.put(inKey, value);
         }
     }
 
@@ -377,7 +445,7 @@ public class InAppStoryManager {
      * @param placeholders (placeholders) - key-value map (key - what we replace, value - replacement result)
      */
     public void setPlaceholders(@NonNull Map<String, String> placeholders) {
-
+        getPlaceholders().clear();
         for (String placeholderKey : placeholders.keySet()) {
             setPlaceholder(placeholderKey, placeholders.get(placeholderKey));
         }
@@ -385,40 +453,33 @@ public class InAppStoryManager {
 
     ArrayList<String> tags;
 
+    public Object placeholdersLock = new Object();
+
     /**
      * Returns map with all default strings replacements
      */
     public Map<String, String> getPlaceholders() {
-
-        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-        if (placeholders == null) placeholders = new HashMap<>();
-        return placeholders;
+        synchronized (placeholdersLock) {
+            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+            if (placeholders == null) placeholders = new HashMap<>();
+            return placeholders;
+        }
     }
 
     Map<String, String> placeholders = new HashMap<>();
 
     public Map<String, String> getDefaultPlaceholders() {
-
-        if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
-        if (placeholders == null) placeholders = new HashMap<>();
-        return defaultPlaceholders;
+        synchronized (placeholdersLock) {
+            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+            if (placeholders == null) placeholders = new HashMap<>();
+            return defaultPlaceholders;
+        }
     }
 
     Map<String, String> defaultPlaceholders = new HashMap<>();
 
-    public boolean closeOnOverscroll() {
-        return closeOnOverscroll;
-    }
-
-    public boolean closeOnSwipe() {
-        return closeOnSwipe;
-    }
-
-    boolean closeOnOverscroll = true;
-    boolean closeOnSwipe = true;
-
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
-    private static final String PRODUCT_DOMAIN = "https://api.inappstory.com/";
+    private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
 
     public String getApiKey() {
         return API_KEY;
@@ -429,10 +490,6 @@ public class InAppStoryManager {
     }
 
     String API_KEY = "";
-
-    public void setTestKey(String testKey) {
-        this.TEST_KEY = testKey;
-    }
 
     String TEST_KEY = null;
 
@@ -461,7 +518,7 @@ public class InAppStoryManager {
                 Looper.loop();
             }
         });
-        serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
+        //serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
         serviceThread.start();
     }
 
@@ -471,10 +528,117 @@ public class InAppStoryManager {
 
     private ExceptionCache exceptionCache;
 
+    public void removeFromFavorite(final int storyId) {
+        if (InAppStoryService.isNull()) return;
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess() {
+                favoriteOrRemoveStory(storyId, false);
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+    }
+
+    public void removeAllFavorites() {
+        if (InAppStoryService.isNull()) return;
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess() {
+                favoriteRemoveAll();
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+    }
+
+    private void favoriteRemoveAll() {
+        if (InAppStoryService.isNull()) return;
+        final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
+        NetworkClient.getApi().removeAllFavorites().enqueue(new NetworkCallback<Response>() {
+            @Override
+            public void onSuccess(Response response) {
+                ProfilingManager.getInstance().setReady(favUID);
+                if (InAppStoryService.isNotNull()) {
+                    InAppStoryService.getInstance().getDownloadManager().clearAllFavoriteStatus();
+                    InAppStoryService.getInstance().getFavoriteImages().clear();
+                    InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
+                }
+
+                if (ScreensManager.getInstance().currentScreen != null) {
+                    ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
+                }
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                ProfilingManager.getInstance().setReady(favUID);
+                super.onError(code, message);
+            }
+
+            @Override
+            public void onTimeout() {
+                super.onTimeout();
+                ProfilingManager.getInstance().setReady(favUID);
+            }
+
+            @Override
+            public Type getType() {
+                return null;
+            }
+        });
+    }
+
+
+    private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
+        if (InAppStoryService.isNull()) return;
+        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
+        NetworkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0).enqueue(
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        ProfilingManager.getInstance().setReady(favUID);
+                        if (InAppStoryService.isNotNull()) {
+                            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+                            if (story != null)
+                                story.favorite = favorite;
+                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
+                        }
+                        if (ScreensManager.getInstance().currentScreen != null) {
+                            ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
+                        }
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+                        ProfilingManager.getInstance().setReady(favUID);
+                        super.onError(code, message);
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        super.onTimeout();
+                        ProfilingManager.getInstance().setReady(favUID);
+                    }
+
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                });
+    }
+
+    private boolean isSandbox = false;
 
     private InAppStoryManager(final Builder builder) throws DataException {
         if (builder.apiKey == null &&
-                (builder.context.getResources().getString(R.string.csApiKey).isEmpty())) {
+                builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
             throw new DataException("'apiKey' can't be null or empty. Set 'csApiKey' in 'constants.xml' or use 'builder.apiKey(<api_key>)'", new Throwable("config is not valid"));
         }
         if (builder.userId == null || builder.userId.length() > 255) {
@@ -484,11 +648,10 @@ public class InAppStoryManager {
         if (freeSpace < MB_5 + MB_10 + MB_10) {
             throw new DataException("there is no free space on device", new Throwable("initialization error"));
         }
+
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         createServiceThread(builder.context, builder.userId);
-
-
         if (InAppStoryService.isNotNull()) {
             long commonCacheSize = MB_100;
             long fastCacheSize = MB_10;
@@ -504,17 +667,26 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().getFastCache().setCacheSize(fastCacheSize);
             InAppStoryService.getInstance().getCommonCache().setCacheSize(commonCacheSize);
         }
+        String domain = KeyConverter.getStringFromKey(
+                builder.apiKey != null ? builder.apiKey : builder.context
+                        .getResources().getString(R.string.csApiKey));
+        this.isSandbox = builder.sandbox;
         initManager(builder.context,
-                builder.sandbox ? TEST_DOMAIN
-                        : PRODUCT_DOMAIN,
+                domain != null ? domain : (builder.sandbox ? TEST_DOMAIN
+                        : PRODUCT_DOMAIN),
                 builder.apiKey != null ? builder.apiKey : builder.context
                         .getResources().getString(R.string.csApiKey),
                 builder.testKey != null ? builder.testKey : null,
                 builder.userId,
-                builder.tags != null ? builder.tags : new ArrayList<String>(),
-                builder.placeholders != null ? builder.placeholders : new HashMap<String, String>(),
-                builder.sendStatistic);
+                builder.tags != null ? builder.tags : null,
+                builder.placeholders != null ? builder.placeholders : null);
+        new ExceptionManager().sendSavedException();
+    }
 
+    public static void generateException() {
+        if (InAppStoryService.getInstance() != null) {
+            InAppStoryService.getInstance().genException = true;
+        }
     }
 
     private void setUserIdInner(String userId) throws DataException {
@@ -531,12 +703,13 @@ public class InAppStoryManager {
             closeStoryReader(CloseStory.AUTO);
             SessionManager.getInstance().closeSession(sendStatistic, true);
             OldStatisticManager.getInstance().eventCount = 0;
-            InAppStoryService.getInstance().getDownloadManager().cleanTasks();
+            InAppStoryService.getInstance().getDownloadManager().cleanTasks(false);
             InAppStoryService.getInstance().setUserId(userId);
         } else {
             throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));
         }
     }
+
 
     //Test
 
@@ -556,6 +729,17 @@ public class InAppStoryManager {
         return userId;
     }
 
+    private void clearCachedList(String id) {
+        if (InAppStoryService.isNotNull()) {
+            InAppStoryService.getInstance().listStoriesIds.remove(id);
+        }
+    }
+
+    private void clearCachedLists() {
+        if (InAppStoryService.isNotNull()) {
+            InAppStoryService.getInstance().listStoriesIds.clear();
+        }
+    }
 
     public void setActionBarColor(int actionBarColor) {
         this.actionBarColor = actionBarColor;
@@ -563,7 +747,11 @@ public class InAppStoryManager {
 
     public int actionBarColor = -1;
 
-    public boolean sendStatistic = true;
+    public boolean isSendStatistic() {
+        return sendStatistic;
+    }
+
+    private boolean sendStatistic = true;
 
     private void initManager(Context context,
                              String cmsUrl,
@@ -571,20 +759,21 @@ public class InAppStoryManager {
                              String testKey,
                              String userId,
                              ArrayList<String> tags,
-                             Map<String, String> placeholders,
-                             boolean sendStatistic) {
+                             Map<String, String> placeholders) {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
-        this.tags = tags;
+
+        synchronized (tagsLock) {
+            this.tags = tags;
+        }
         if (placeholders != null)
             setPlaceholders(placeholders);
-        this.sendStatistic = sendStatistic;
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         NetworkClient.setContext(context);
         this.userId = userId;
         if (INSTANCE != null) {
-            destroy();
+            localDestroy();
         }
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
@@ -604,19 +793,23 @@ public class InAppStoryManager {
     public static void logout() {
         if (INSTANCE != null) {
             if (InAppStoryService.isNotNull()) {
+                InAppStoryService.getInstance().listStoriesIds.clear();
                 InAppStoryService.getInstance().getListSubscribers().clear();
                 InAppStoryService.getInstance().getDownloadManager().cleanTasks();
                 InAppStoryService.getInstance().logout();
-            } else {
-
             }
-            INSTANCE = null;
         }
     }
 
     public static void destroy() {
         logout();
     }
+
+    private static void localDestroy() {
+        logout();
+        INSTANCE = null;
+    }
+
 
     private String localOpensKey;
 
@@ -642,40 +835,42 @@ public class InAppStoryManager {
     }
 
     private boolean soundOn = false;
+
     public void soundOn(boolean isSoundOn) {
-        this.soundOn = soundOn;
+        this.soundOn = isSoundOn;
     }
 
     public boolean soundOn() {
         return soundOn;
     }
 
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager) {
+    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feed, final String feedId) {
 
         if (response == null || response.size() == 0) {
-            CsEventBus.getDefault().post(new OnboardingLoad(0));
+            CsEventBus.getDefault().post(new OnboardingLoad(0, feed));
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0);
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, feed);
             }
             return;
         }
 
-        if (StoriesActivity.created == -1) {
+        if (InAppStoryService.isNull()) return;
+        if (ScreensManager.created == -1) {
             InAppStoryManager.closeStoryReader(CloseStory.AUTO);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager);
-                    StoriesActivity.created = 0;
+                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
+                    ScreensManager.created = 0;
                 }
             }, 350);
             return;
-        } else if (System.currentTimeMillis() - StoriesActivity.created < 1000) {
+        } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager);
-                    StoriesActivity.created = 0;
+                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
+                    ScreensManager.created = 0;
                 }
             }, 350);
             return;
@@ -690,19 +885,19 @@ public class InAppStoryManager {
         InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
         InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
-        ScreensManager.getInstance().openStoriesReader(outerContext, manager, storiesIds, 0, ShowStory.ONBOARDING);
-        CsEventBus.getDefault().post(new OnboardingLoad(response.size()));
+        ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING, feed, feedId);
+        CsEventBus.getDefault().post(new OnboardingLoad(response.size(), feed));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size());
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feed);
         }
     }
 
-    private void showOnboardingStoriesInner(final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    private void showOnboardingStoriesInner(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.isNull()) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showOnboardingStoriesInner(tags, outerContext, manager);
+                    showOnboardingStoriesInner(feed, tags, outerContext, manager);
                 }
             }, 1000);
             return;
@@ -720,59 +915,85 @@ public class InAppStoryManager {
 
                 final String onboardUID =
                         ProfilingManager.getInstance().addTask("api_onboarding");
-                NetworkClient.getApi().onboardingStories(localTags == null ? getTagsString() :
-                        localTags).enqueue(new NetworkCallback<List<Story>>() {
+                final String localFeed;
+                if (feed != null) localFeed = feed;
+                else localFeed = ONBOARDING_FEED;
+                NetworkClient.getApi().getOnboardingFeed(localFeed, localTags == null ? getTagsString() :
+                        localTags).enqueue(new LoadFeedCallback() {
                     @Override
-                    public void onSuccess(List<Story> response) {
+                    public void onSuccess(Feed response) {
+                        if (InAppStoryManager.isNull()) return;
                         ProfilingManager.getInstance().setReady(onboardUID);
                         List<Story> notOpened = new ArrayList<>();
                         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
                         if (opens == null) opens = new HashSet<>();
-                        for (Story story : response) {
-                            boolean add = true;
-                            for (String opened : opens) {
-                                if (Integer.toString(story.id).equals(opened)) {
-                                    add = false;
+                        if (response.stories != null) {
+                            for (Story story : response.stories) {
+                                boolean add = true;
+                                for (String opened : opens) {
+                                    if (Integer.toString(story.id).equals(opened)) {
+                                        add = false;
+                                    }
                                 }
+                                if (add) notOpened.add(story);
                             }
-                            if (add) notOpened.add(story);
                         }
-                        showLoadedOnboardings(notOpened, outerContext, manager);
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return new StoryListType();
+                        showLoadedOnboardings(notOpened, outerContext, manager, localFeed, response.getFeedId());
                     }
 
                     @Override
                     public void onError(int code, String message) {
-
                         ProfilingManager.getInstance().setReady(onboardUID);
-                        CsEventBus.getDefault().post(new OnboardingLoadError());
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
-                        }
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                        loadOnboardingError(localFeed);
                     }
 
                     @Override
                     public void onTimeout() {
-                        super.onTimeout();
                         ProfilingManager.getInstance().setReady(onboardUID);
+                        loadOnboardingError(localFeed);
                     }
                 });
             }
 
             @Override
             public void onError() {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadOnboardingError();
-                }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD));
+                loadOnboardingError(feed);
             }
 
         });
+    }
+
+    private void loadOnboardingError(String feed) {
+        CsEventBus.getDefault().post(new OnboardingLoadError(feed));
+        if (CallbackManager.getInstance().getErrorCallback() != null) {
+            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(feed);
+        }
+        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD, feed));
+    }
+
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
+        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
+        showOnboardingStoriesInner(feed, tags, outerContext, manager);
+    }
+
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(String feed, Context context, final AppearanceManager manager) {
+        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
+        showOnboardingStories(feed, getTags(), context, manager);
     }
 
 
@@ -784,9 +1005,8 @@ public class InAppStoryManager {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(tags, outerContext, manager);
+        showOnboardingStoriesInner(ONBOARDING_FEED, tags, outerContext, manager);
     }
-
 
     /**
      * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
@@ -795,8 +1015,14 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(Context context, final AppearanceManager manager) {
-        showOnboardingStories(getTags(), context, manager);
+        showOnboardingStories(ONBOARDING_FEED, getTags(), context, manager);
     }
+
+    public boolean isSandbox() {
+        return isSandbox;
+    }
+
+    private final static String ONBOARDING_FEED = "onboarding";
 
     private String lastSingleOpen = null;
 
@@ -821,7 +1047,7 @@ public class InAppStoryManager {
             public void getStory(Story story) {
                 if (story != null) {
 
-                    if (StoriesActivity.created == -1) {
+                    if (ScreensManager.created == -1) {
                         InAppStoryManager.closeStoryReader(CloseStory.AUTO);
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -832,12 +1058,12 @@ public class InAppStoryManager {
                             }
                         }, 500);
                         return;
-                    } else if (System.currentTimeMillis() - StoriesActivity.created < 1000) {
+                    } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 showStoryInner(storyId, context, manager, callback, slide);
-                                StoriesActivity.created = 0;
+                                ScreensManager.created = 0;
                             }
                         }, 350);
                         return;
@@ -857,7 +1083,7 @@ public class InAppStoryManager {
                         lastSingleOpen = null;
                         OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
 
-                        StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink);
+                        StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink, null);
                         if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
                         } else {
@@ -891,7 +1117,7 @@ public class InAppStoryManager {
                             InAppStoryService.getInstance().getDownloadManager().getStories());
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
-                    ScreensManager.getInstance().openStoriesReader(context, manager, stIds, 0, ShowStory.SINGLE, slide);
+                    ScreensManager.getInstance().openStoriesReader(context, null, manager, stIds, 0, ShowStory.SINGLE, slide, null, null);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -958,7 +1184,7 @@ public class InAppStoryManager {
             appearanceManager.csCloseOnOverscroll(settings.closeOnOverscroll);
             appearanceManager.csCloseOnSwipe(settings.closeOnSwipe);
             appearanceManager.csIsDraggable(true);
-            appearanceManager.csTimerGradientEnable(settings.timerGradient);
+            appearanceManager.csTimerGradientEnable(settings.timerGradientEnable);
             appearanceManager.csStoryReaderAnimation(settings.readerAnimation);
             appearanceManager.csCloseIcon(settings.closeIcon);
             appearanceManager.csDislikeIcon(settings.dislikeIcon);
@@ -1004,7 +1230,6 @@ public class InAppStoryManager {
         }
 
         boolean sandbox;
-        boolean sendStatistic = true;
 
         int cacheSize;
         String userId;
@@ -1016,9 +1241,9 @@ public class InAppStoryManager {
         public Builder() {
         }
 
-        public Builder context(@NonNull Context context) {
-           /* if (context == null)
-                throw new DataException("Context must not be null", new Throwable("InAppStoryManager.Builder data is not valid"));*/
+        public Builder context(Context context) throws DataException {
+            if (context == null)
+                throw new DataException("Context must not be null", new Throwable("InAppStoryManager.Builder data is not valid"));
             Builder.this.context = context;
 
             return Builder.this;
@@ -1044,11 +1269,6 @@ public class InAppStoryManager {
             return Builder.this;
         }
 
-        public Builder sendStatistic(boolean sendStatistic) {
-            Builder.this.sendStatistic = sendStatistic;
-            return Builder.this;
-        }
-
         /**
          * use to set api key in runtime (or as alternate to csApiKey string constant)
          *
@@ -1056,12 +1276,12 @@ public class InAppStoryManager {
          *               false by default
          * @return {@link Builder}
          */
-        public Builder apiKey(@NonNull  String apiKey) {
+        public Builder apiKey(String apiKey) {
             Builder.this.apiKey = apiKey;
             return Builder.this;
         }
 
-        public Builder testKey(@NonNull String testKey) {
+        public Builder testKey(String testKey) {
             Builder.this.testKey = testKey;
             return Builder.this;
         }
@@ -1069,14 +1289,15 @@ public class InAppStoryManager {
         /**
          * use to set user id.
          *
-         * @param userId (userId) value for user id. Can't be null or longer than 255 characters.
+         * @param userId (userId) value for user id. Can't be longer than 255 characters.
          * @return {@link Builder}
          */
-        public Builder userId(@NonNull String userId) throws DataException {
-            if (userId.length() < 255) {
+        public Builder userId(String userId) throws DataException {
+            if (userId != null && userId.length() < 255) {
                 Builder.this.userId = userId;
             } else {
-                throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager.Builder data is not valid"));
+                throw new DataException("'userId' can't be null or longer than 255 characters",
+                        new Throwable("InAppStoryManager.Builder data is not valid"));
             }
             return Builder.this;
         }

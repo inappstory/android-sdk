@@ -8,6 +8,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,17 +79,32 @@ class SlidesDownloader {
 
     }
 
-    boolean checkIfPageLoaded(Pair<Integer, Integer> key) {
+    boolean checkIfPageLoaded(Pair<Integer, Integer> key) throws IOException {
         boolean remove = false;
+        if (InAppStoryService.isNull()) return false;
         if (pageTasks.get(key) != null && pageTasks.get(key).loadType == 2) {
             for (String url : pageTasks.get(key).urls) {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
+                } else {
+                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                        synchronized (pageTasksLock) {
+                            pageTasks.get(key).loadType = 0;
+                        }
+                        return false;
+                    }
                 }
             }
             for (String url : pageTasks.get(key).videoUrls) {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
+                } else {
+                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                        synchronized (pageTasksLock) {
+                            pageTasks.get(key).loadType = 0;
+                        }
+                        return false;
+                    }
                 }
             }
             if (remove) {
@@ -136,7 +153,6 @@ class SlidesDownloader {
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
                 Story adjacentStory = manager.getStoryById(adjacent);
-                if (adjacentStory == null) continue;
                 if (adjacentStory.lastIndex < adjacentStory.getSlidesCount() - 1) {
                     Pair<Integer, Integer> nk = new Pair<>(adjacent, adjacentStory.lastIndex + 1);
                     secondPriority.remove(nk);
@@ -157,7 +173,6 @@ class SlidesDownloader {
     void changePriorityForSingle(Integer storyId) {
         synchronized (pageTasksLock) {
             Story currentStory = manager.getStoryById(storyId);
-            if (currentStory == null) return;
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
                 Pair<Integer, Integer> kv = new Pair<>(storyId, i);

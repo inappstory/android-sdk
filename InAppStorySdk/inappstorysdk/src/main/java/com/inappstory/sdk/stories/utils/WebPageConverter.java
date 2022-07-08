@@ -1,20 +1,18 @@
 package com.inappstory.sdk.stories.utils;
 
-import android.content.Context;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Base64;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
-
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.Story;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
 
 public class WebPageConverter {
     public Spanned fromHtml(String html) {
@@ -52,10 +50,8 @@ public class WebPageConverter {
                     } else {
                         innerWebData = innerWebData.replace(imgKey, img);
                     }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    InAppStoryService.createExceptionLog(e);
                 }
             }
         }
@@ -65,7 +61,7 @@ public class WebPageConverter {
                     .replace("{{%content}}", innerWebData);
             callback.onConvert(innerWebData, wData, index);
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -105,10 +101,8 @@ public class WebPageConverter {
                         image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
                     fis.close();
                     innerWebData = innerWebData.replace(imgKey, image64);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    InAppStoryService.createExceptionLog(e);
                 }
             }
         }
@@ -118,7 +112,7 @@ public class WebPageConverter {
                     .replace("{{%content}}", innerWebData);
             callback.onConvert(innerWebData, wData, index);
         } catch (Exception e) {
-            e.printStackTrace();
+            InAppStoryService.createExceptionLog(e);
         }
     }
 }

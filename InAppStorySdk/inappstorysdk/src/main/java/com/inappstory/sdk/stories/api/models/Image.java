@@ -3,10 +3,9 @@ package com.inappstory.sdk.stories.api.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.inappstory.sdk.network.SerializedName;
 
 import java.util.List;
-
-import com.inappstory.sdk.network.SerializedName;
 
 public class Image implements Parcelable {
     public static final String TYPE_SMALL = "s";

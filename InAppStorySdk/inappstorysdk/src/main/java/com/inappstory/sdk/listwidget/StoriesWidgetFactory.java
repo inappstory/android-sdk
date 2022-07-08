@@ -8,11 +8,9 @@ import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.WidgetAppearance;
-import com.inappstory.sdk.eventbus.CsSubscribe;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;

@@ -1,7 +1,5 @@
 package com.inappstory.sdk.stories.api.models.slidestructure;
 
-import com.inappstory.sdk.network.SerializedName;
-
 public class Geometry {
     public float width;
     public float height;

@@ -1,38 +1,32 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
-import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
@@ -40,7 +34,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStorie
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 
@@ -51,11 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static android.content.Intent.EXTRA_CHOSEN_COMPONENT;
-import static com.inappstory.sdk.InAppStoryManager.testGenerated;
-import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 public class StoriesViewManager {
     public int index = -1;
@@ -70,6 +58,21 @@ public class StoriesViewManager {
     public void swipeUp() {
         if (storiesView != null)
             storiesView.swipeUp();
+    }
+
+    public void sendStoryWidgetEvent(String name, String data, String eventData) {
+        if (data != null)
+            StatisticManager.getInstance().sendStoryWidgetEvent(name, data,
+                    pageManager != null ? pageManager.getFeedId() : null);
+        if (eventData != null)
+            pageManager.widgetEvent(name, eventData);
+    }
+
+    void screenshotShare() {
+        if (storiesView != null)
+            storiesView.screenshotShare();
+
+
     }
 
     void goodsWidgetComplete(String widgetId) {
@@ -122,14 +125,14 @@ public class StoriesViewManager {
 
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
 
-    boolean lock = true;
 
     public void storyLoaded(int oId, int oInd, boolean alreadyLoaded) {
         this.index = oInd;
         loadedIndex = oInd;
         loadedId = oId;
         if (alreadyLoaded) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance() != null ?
+                InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) : null;
         innerLoad(story);
     }
 
@@ -147,20 +150,10 @@ public class StoriesViewManager {
     }
 
     void innerLoad(Story story) {
-
-        if (story == null) return;
-        if (InAppStoryService.isConnected()) {
-            if (testGenerated) {
-                initViews(story.slidesStructure.get(index));
-            } else {
-                try {
-                    setWebViewSettings(story);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-
+        try {
+            setWebViewSettings(story);
+        } catch (IOException e) {
+            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -179,13 +172,7 @@ public class StoriesViewManager {
 
         if (InAppStoryService.isNull())
             return;
-        if (!InAppStoryService.isConnected()) {
-            if (CallbackManager.getInstance().getErrorCallback() != null) {
-                CallbackManager.getInstance().getErrorCallback().noConnection();
-            }
-            CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            return;
-        }
+
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
         if (story == null || story.checkIfEmpty()) {
             return;
@@ -201,13 +188,20 @@ public class StoriesViewManager {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
         } else {
+            if (!InAppStoryService.isConnected()) {
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback().noConnection();
+                }
+                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
+                return;
+            }
             pageManager.storyLoadStart();
         }
     }
 
     void setWebViewSettings(Story story) throws IOException {
         String innerWebData = story.pages.get(index);
-        String layout = getLayoutWithFonts(story.getLayout());
+        String layout = story.getLayout();//getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
 
         WebPageConvertCallback callback = new WebPageConvertCallback() {
@@ -266,7 +260,8 @@ public class StoriesViewManager {
     public File getCurrentFile(String img) {
         try {
             return InAppStoryService.getInstance().getCommonCache().get(img);
-        } catch (IOException e) {
+        } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
             return null;
         }
     }
@@ -308,23 +303,9 @@ public class StoriesViewManager {
 
     public void storyClick(String payload) {
         if (payload == null || payload.isEmpty() || payload.equals("test")) {
-            if (InAppStoryService.isConnected()) {
-                pageManager.storyClick(null, (int) getClickCoordinate(), false);
-            } else {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().noConnection();
-                }
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            }
+            pageManager.storyClick(null, (int) getClickCoordinate(), false);
         } else if (payload.equals("forbidden")) {
-            if (InAppStoryService.isConnected()) {
-                pageManager.storyClick(null, (int) getClickCoordinate(), true);
-            } else {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().noConnection();
-                }
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
-            }
+            pageManager.storyClick(null, (int) getClickCoordinate(), true);
         } else {
             //pageManager.showGoods();
             pageManager.storyClick(payload, (int) getClickCoordinate(), false);
@@ -336,47 +317,25 @@ public class StoriesViewManager {
         storiesView.shareComplete(stId, success);
     }
 
-    /*public class StoryShareBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            ComponentName clickedComponent = intent.getParcelableExtra(EXTRA_CHOSEN_COMPONENT);
-            if (clickedComponent != null && ScreensManager.getInstance().getTempShareId() != null) {
-                shareComplete(Integer.toString(ScreensManager.getInstance().getTempShareStoryId()),
-                        true);
-            }
-        }
-    }*/
 
     public void pageFinished() {
     }
 
     public void share(String id, String data) {
-        ShareObject shareObj = JsonParser.fromJson(data, ShareObject.class);
+        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             CallbackManager.getInstance().getShareCallback()
-                    .onShare(shareObj.getUrl(), shareObj.getTitle(), shareObj.getDescription(), id);
+                    .onShare(shareObj.getText(), shareObj.getTitle(), data, id);
         } else {
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObj.getTitle());
-            sendIntent.putExtra(Intent.EXTRA_TEXT, shareObj.getUrl());
-            sendIntent.setType("text/plain");
-            PendingIntent pi = PendingIntent.getBroadcast(storiesView.getContext(), 989,
-                    new Intent(storiesView.getContext(), StoryShareBroadcastReceiver.class),
-                    FLAG_UPDATE_CURRENT);
-            Intent finalIntent = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-                // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ScreensManager.getInstance().setTempShareId(id);
                 ScreensManager.getInstance().setTempShareStoryId(storyId);
-                storiesView.getContext().startActivity(finalIntent);
             } else {
-                finalIntent = Intent.createChooser(sendIntent, null);
-                //finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                storiesView.getContext().startActivity(finalIntent);
                 ScreensManager.getInstance().setOldTempShareId(id);
                 ScreensManager.getInstance().setOldTempShareStoryId(storyId);
+            }
+            if (storiesView.getContext() instanceof Activity) {
+                new ShareManager().shareDefault((Activity) storiesView.getContext(), shareObj);
             }
         }
     }
@@ -408,15 +367,17 @@ public class StoriesViewManager {
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
-        ScreensManager.getInstance().openGameReader(context, storyId, index, gameUrl,
+        ScreensManager.getInstance().openGameReader(context, storyId, index,
+                pageManager != null ? pageManager.getFeedId() : null, gameUrl,
                 preloadPath, gameConfig, resources);
     }
+
     private boolean storyIsLoaded = false;
+
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
         storyIsLoaded = true;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
-        if (story == null) return;
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopStory();
@@ -443,6 +404,17 @@ public class StoriesViewManager {
         }
     }
 
+    public void pauseUI() {
+        if (pageManager != null)
+            pageManager.pauseSlide(false);
+
+    }
+
+    public void resumeUI() {
+        if (pageManager != null)
+            pageManager.resumeSlide(false);
+    }
+
     public void freezeUI() {
         storiesView.freezeUI();
     }
@@ -453,7 +425,7 @@ public class StoriesViewManager {
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
+            NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, Session.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {
@@ -470,7 +442,7 @@ public class StoriesViewManager {
 
     public void storySendData(String data) {
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
-        NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, StatisticSession.getInstance().id)
+        NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, Session.getInstance().id)
                 .enqueue(new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {

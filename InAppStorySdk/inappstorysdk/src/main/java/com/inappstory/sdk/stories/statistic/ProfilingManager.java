@@ -1,16 +1,19 @@
 package com.inappstory.sdk.stories.statistic;
 
+import static android.content.Context.TELEPHONY_SERVICE;
+import static com.inappstory.sdk.network.NetworkClient.getUAString;
+import static java.util.UUID.randomUUID;
+
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.stories.api.models.StatisticSession;
+import com.inappstory.sdk.stories.api.models.Session;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -19,10 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static android.content.Context.TELEPHONY_SERVICE;
-import static com.inappstory.sdk.network.NetworkClient.getUAString;
-import static java.util.UUID.randomUUID;
 
 public class ProfilingManager {
     ArrayList<ProfilingTask> tasks = new ArrayList<>();
@@ -66,7 +65,7 @@ public class ProfilingManager {
         if (InAppStoryService.isNull()) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = StatisticSession.getInstance().id;
+        task.sessionId = Session.getInstance().id;
         task.isAllowToForceSend = isAllowToSend();
         task.userId = InAppStoryService.getInstance().getUserId();
         task.uniqueHash = hash;
@@ -79,6 +78,7 @@ public class ProfilingManager {
     }
 
     public void setReady(String hash, boolean force) {
+        if (handler == null) return;
         synchronized (tasksLock) {
             ProfilingTask readyTask = null;
             for (ProfilingTask task : tasks) {
@@ -116,7 +116,7 @@ public class ProfilingManager {
         setReady(hash, false);
     }
 
-    private Handler handler = new Handler();
+    private Handler handler;
     private HandlerThread thread;
 
     public void cleanTasks() {
@@ -136,8 +136,12 @@ public class ProfilingManager {
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getInstance().readyTasks == null || getInstance().readyTasks.size() == 0
-                    || !InAppStoryService.isConnected() || !isAllowToSend()) {
+            if (handler == null) return;
+            boolean readyIsEmpty = false;
+            synchronized (getInstance().tasksLock) {
+                readyIsEmpty = getInstance().readyTasks == null || getInstance().readyTasks.size() == 0;
+            }
+            if (readyIsEmpty || !InAppStoryService.isConnected() || !isAllowToSend()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
             }
@@ -170,10 +174,8 @@ public class ProfilingManager {
     }
 
     private boolean isAllowToSend() {
-        return !StatisticSession.needToUpdate()
-                && StatisticSession.getInstance()
-                .statisticPermissions != null && StatisticSession.getInstance()
-                .statisticPermissions.allowProfiling;
+        return !Session.needToUpdate()
+                && Session.getInstance().isAllowProfiling();
     }
 
     private String getCC() {
@@ -197,7 +199,7 @@ public class ProfilingManager {
 
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                StatisticSession.getInstance().id);
+                Session.getInstance().id);
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);

@@ -1,6 +1,5 @@
 package com.inappstory.sdk.eventbus;
 
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,9 +9,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 
 /**
-* @deprecated will be removed in SDK 2.0
+ * @deprecated will be removed in SDK 2.0
  * Switch to InAppStoryManager and StoriesList callbacks
-* */
+ * */
 @Deprecated
 public class CsEventBus {
 
