@@ -210,15 +210,6 @@ public class Story implements Parcelable {
         return srcList;
     }
 
-    public List<String> getSrcListKeys(int index, String type) {
-        ArrayList<String> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
-            if (object.getIndex() == index && ((type == null && object.getType() == null) || object.getType().equals(type)))
-                res.add(object.getKey());
-        }
-        return res;
-    }
-
     public List<String> getSrcListPlaceholderNames(int index) {
         ArrayList<String> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
@@ -233,14 +224,36 @@ public class Story implements Parcelable {
 
 
 
+    public List<String> getSrcListKeys(int index, String type) {
+        ArrayList<String> res = new ArrayList<>();
+        for (ResourceMappingObject object : getSrcList()) {
+            String objType = object.getType();
+            if (object.getIndex() == index &&
+                    (
+                            (type == null && (objType == null || objType.equals("image")))
+                                    ||
+                                    object.getType().equals(type)
+                    )
+            )
+                res.add(object.getKey());
+        }
+        return res;
+    }
+
 
     public List<String> getSrcListUrls(int index, String type) {
         ArrayList<String> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
-
-            if (object.getIndex() == index && ((type == null && object.getType() == null) || object.getType().equals(type)))
+            String objType = object.getType();
+            if (object.getIndex() == index &&
+                    (
+                            (type == null && (objType == null || objType.equals("image")))
+                                    ||
+                                    object.getType().equals(type)
+                    )
+            )
                 res.add(object.getUrl());
-            
+
         }
         return res;
     }
