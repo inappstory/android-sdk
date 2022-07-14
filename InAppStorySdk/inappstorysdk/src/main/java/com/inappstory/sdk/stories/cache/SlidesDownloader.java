@@ -5,6 +5,8 @@ import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
@@ -13,9 +15,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 class SlidesDownloader {
@@ -119,6 +124,7 @@ class SlidesDownloader {
     }
 
     private static final String VIDEO = "video";
+    private static final String IMG_PLACEHOLDER = "image-placeholder";
 
     List<Pair<Integer, Integer>> firstPriority = new ArrayList<>();
     List<Pair<Integer, Integer>> secondPriority = new ArrayList<>();
@@ -138,8 +144,8 @@ class SlidesDownloader {
             for (int i = 0; i < sc; i++) {
                 Pair<Integer, Integer> kv = new Pair<>(storyId, i);
                 secondPriority.remove(kv);
-         //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
-         //           continue;
+                //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
+                //           continue;
                 if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
@@ -147,7 +153,7 @@ class SlidesDownloader {
             if (sc > currentStory.lastIndex) {
                 firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex+1));
+                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex + 1));
                 }
             }
             int ind = Math.min(firstPriority.size(), 2);
@@ -157,15 +163,15 @@ class SlidesDownloader {
                     Pair<Integer, Integer> nk = new Pair<>(adjacent, adjacentStory.lastIndex + 1);
                     secondPriority.remove(nk);
 
-        //            if (!(pageTasks.containsKey(nk) && pageTasks.get(nk).loadType != 0))
-                        firstPriority.add(ind, nk);
+                    //            if (!(pageTasks.containsKey(nk) && pageTasks.get(nk).loadType != 0))
+                    firstPriority.add(ind, nk);
                 }
 
                 Pair<Integer, Integer> ck = new Pair<>(adjacent, adjacentStory.lastIndex);
                 secondPriority.remove(ck);
 
-           //     if (!(pageTasks.containsKey(ck) && pageTasks.get(ck).loadType != 0))
-                    firstPriority.add(ind, ck);
+                //     if (!(pageTasks.containsKey(ck) && pageTasks.get(ck).loadType != 0))
+                firstPriority.add(ind, ck);
             }
         }
     }
@@ -188,13 +194,17 @@ class SlidesDownloader {
             if (sc > currentStory.lastIndex) {
                 firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex+1));
+                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex + 1));
                 }
             }
         }
     }
 
     void addStoryPages(Story story, int loadType) throws Exception {
+        Map<String, ImagePlaceholderValue> imgPlaceholders = new HashMap<>();
+        if (InAppStoryService.isNotNull()) {
+            imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholders());
+        }
         synchronized (pageTasksLock) {
             int key = story.id;
             int sz;
@@ -206,6 +216,13 @@ class SlidesDownloader {
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
                         spt.videoUrls = story.getSrcListUrls(i, VIDEO);
+                        List<String> plNames = story.getSrcListPlaceholderNames(i);
+                        for (String plName : plNames) {
+                            ImagePlaceholderValue value = imgPlaceholders.get(plName);
+                            if (value != null && value.getType() == ImagePlaceholderType.URL) {
+                                spt.urls.add(value.getUrl());
+                            }
+                        }
                         pageTasks.put(new Pair<>(key, i), spt);
                     }
                 }
@@ -217,6 +234,13 @@ class SlidesDownloader {
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
                         spt.videoUrls = story.getSrcListUrls(i, VIDEO);
+                        List<String> plNames = story.getSrcListPlaceholderNames(i);
+                        for (String plName : plNames) {
+                            ImagePlaceholderValue value = imgPlaceholders.get(plName);
+                            if (value != null && value.getType() == ImagePlaceholderType.URL) {
+                                spt.urls.add(value.getUrl());
+                            }
+                        }
                         pageTasks.put(new Pair<>(key, i), spt);
                     }
                 }
@@ -224,6 +248,9 @@ class SlidesDownloader {
             }
         }
     }
+
+
+
 
     DownloadPageCallback callback;
 

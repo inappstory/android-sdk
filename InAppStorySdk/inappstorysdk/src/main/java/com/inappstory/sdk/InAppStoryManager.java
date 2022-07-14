@@ -28,6 +28,7 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.utils.KeyConverter;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
@@ -51,6 +52,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoa
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CustomActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
@@ -269,6 +271,10 @@ public class InAppStoryManager {
         CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
     }
 
+    public void setCustomActionCallback(CustomActionCallback customActionCallback) {
+        CallbackManager.getInstance().setCustomActionCallback(customActionCallback);
+    }
+
     /**
      * use to set callback on click on widgets in stories (with info)
      */
@@ -466,7 +472,30 @@ public class InAppStoryManager {
         }
     }
 
+    public Map<String, ImagePlaceholderValue> getImagePlaceholders() {
+        synchronized (placeholdersLock) {
+            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
+            return imagePlaceholders;
+        }
+    }
+
+    public void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
+        synchronized (placeholdersLock) {
+            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
+            imagePlaceholders = placeholders;
+        }
+    }
+
+    public void setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
+        synchronized (placeholdersLock) {
+            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
+            if (value == null) imagePlaceholders.remove(key);
+            else imagePlaceholders.put(key, value);
+        }
+    }
+
     Map<String, String> placeholders = new HashMap<>();
+    Map<String, ImagePlaceholderValue> imagePlaceholders = new HashMap<>();
 
     public Map<String, String> getDefaultPlaceholders() {
         synchronized (placeholdersLock) {
@@ -734,6 +763,8 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().listStoriesIds.remove(id);
         }
     }
+
+
 
     private void clearCachedLists() {
         if (InAppStoryService.isNotNull()) {

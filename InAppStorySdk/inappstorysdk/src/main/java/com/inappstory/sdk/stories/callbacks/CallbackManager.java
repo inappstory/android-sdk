@@ -7,6 +7,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallb
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.CustomActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
@@ -161,6 +162,16 @@ public class CallbackManager {
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
     private SingleLoadCallback singleLoadCallback;
+
+    public CustomActionCallback getCustomActionCallback() {
+        return customActionCallback;
+    }
+
+    public void setCustomActionCallback(CustomActionCallback customActionCallback) {
+        this.customActionCallback = customActionCallback;
+    }
+
+    private CustomActionCallback customActionCallback;
 
 
     private UrlClickCallback urlClickCallback;

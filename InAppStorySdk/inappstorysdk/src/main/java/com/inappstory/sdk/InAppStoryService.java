@@ -15,6 +15,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
@@ -308,6 +309,13 @@ public class InAppStoryService {
     public Map<String, String> getPlaceholders() {
         if (InAppStoryManager.getInstance() != null)
             return InAppStoryManager.getInstance().getPlaceholders();
+        return new HashMap<>();
+    }
+
+
+    public Map<String, ImagePlaceholderValue> getImagePlaceholders() {
+        if (InAppStoryManager.getInstance() != null)
+            return InAppStoryManager.getInstance().getImagePlaceholders();
         return new HashMap<>();
     }
 

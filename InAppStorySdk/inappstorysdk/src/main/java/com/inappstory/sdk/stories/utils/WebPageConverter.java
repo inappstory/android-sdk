@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.utils;
 
+
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
@@ -7,12 +8,14 @@ import android.util.Base64;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class WebPageConverter {
     public Spanned fromHtml(String html) {
@@ -66,7 +69,6 @@ public class WebPageConverter {
     }
 
 
-
     public void replaceVideoAndLoad(String innerWebData, Story story, final int index, String layout,
                                     WebPageConvertCallback callback) throws IOException {
         List<String> videos = story.getSrcListUrls(index, "video");
@@ -76,14 +78,52 @@ public class WebPageConverter {
             String video = videos.get(i);
             String videoKey = videosKeys.get(i);
             File file = cache.get(video);
-            if (file != null) {
+            if (file != null && file.exists() && file.length() > 0) {
                 video = "file://" + file.getAbsolutePath();
             }
             innerWebData = innerWebData.replace(videoKey, video);
         }
+
         List<String> imgs = story.getSrcListUrls(index, null);
         List<String> imgKeys = story.getSrcListKeys(index, null);
+
         for (int i = 0; i < imgs.size(); i++) {
+            String video = imgs.get(i);
+            String videoKey = imgKeys.get(i);
+            File file = cache.get(video);
+            if (file != null && file.exists() && file.length() > 0) {
+                video = "file://" + file.getAbsolutePath();
+            }
+            innerWebData = innerWebData.replace(videoKey, video);
+        }
+        if (InAppStoryService.isNotNull()) {
+            Map<String, ImagePlaceholderValue> imgPlaceholders =
+                    InAppStoryService.getInstance().getImagePlaceholders();
+            List<String> imgPlaceholderKeys = story.getSrcListKeys(index, "image-placeholder");
+
+            for (int i = 0; i < imgPlaceholderKeys.size(); i++) {
+                String placeholderKey = imgPlaceholderKeys.get(i);
+                String placeholderName = PlaceholderKeyConverter.getPlaceholderNameFromKey(placeholderKey);
+                ImagePlaceholderValue placeholderValue = imgPlaceholders.get(placeholderName);
+                if (placeholderValue != null) {
+                    String path = "";
+                    switch (placeholderValue.getType()) {
+                        case URL:
+                            File file = cache.get(placeholderValue.getUrl());
+                            if (file != null && file.exists() && file.length() > 0) {
+                                path = "file://" + file.getAbsolutePath();
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    innerWebData = innerWebData.replace(placeholderKey, path);
+                }
+
+            }
+        }
+
+        /*for (int i = 0; i < imgs.size(); i++) {
             String img = imgs.get(i);
             String imgKey = imgKeys.get(i);
             File file = cache.get(img);
@@ -105,7 +145,7 @@ public class WebPageConverter {
                     InAppStoryService.createExceptionLog(e);
                 }
             }
-        }
+        }*/
         try {
             String wData = layout
                     .replace("//_ratio = 0.66666666666,", "")

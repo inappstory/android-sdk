@@ -6,9 +6,12 @@ import android.os.Parcelable;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.SerializedName;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
+import com.inappstory.sdk.stories.utils.PlaceholderKeyConverter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -210,18 +213,34 @@ public class Story implements Parcelable {
     public List<String> getSrcListKeys(int index, String type) {
         ArrayList<String> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
-            if (object.getIndex() == index && (type == null || object.getType().equals(type)))
+            if (object.getIndex() == index && ((type == null && object.getType() == null) || object.getType().equals(type)))
                 res.add(object.getKey());
         }
         return res;
     }
 
+    public List<String> getSrcListPlaceholderNames(int index) {
+        ArrayList<String> res = new ArrayList<>();
+        for (ResourceMappingObject object : getSrcList()) {
+            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+                String name = PlaceholderKeyConverter.getPlaceholderNameFromKey(object.getKey());
+                if (name != null) res.add(name);
+            }
+
+        }
+        return res;
+    }
+
+
+
+
     public List<String> getSrcListUrls(int index, String type) {
         ArrayList<String> res = new ArrayList<>();
         for (ResourceMappingObject object : getSrcList()) {
 
-            if (object.getIndex() == index && (type == null || object.getType().equals(type)))
+            if (object.getIndex() == index && ((type == null && object.getType() == null) || object.getType().equals(type)))
                 res.add(object.getUrl());
+            
         }
         return res;
     }

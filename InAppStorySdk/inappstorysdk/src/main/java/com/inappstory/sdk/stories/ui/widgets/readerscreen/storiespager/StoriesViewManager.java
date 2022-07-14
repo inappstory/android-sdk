@@ -217,7 +217,7 @@ public class StoriesViewManager {
             converter.replaceVideoAndLoad(innerWebData, story, index, layout, callback);
         } else {
             isVideo = false;
-            converter.replaceImagesAndLoad(innerWebData, story, index, layout, callback);
+            converter.replaceVideoAndLoad(innerWebData, story, index, layout, callback);
         }
     }
 
