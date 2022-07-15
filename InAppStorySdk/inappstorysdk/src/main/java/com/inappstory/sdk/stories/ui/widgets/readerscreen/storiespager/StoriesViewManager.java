@@ -214,10 +214,10 @@ public class StoriesViewManager {
         ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
         if (innerWebData.contains("<video")) {
             isVideo = true;
-            converter.replaceVideoAndLoad(innerWebData, story, index, layout, callback);
+            converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
         } else {
             isVideo = false;
-            converter.replaceVideoAndLoad(innerWebData, story, index, layout, callback);
+            converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
         }
     }
 

@@ -85,7 +85,6 @@ public class InAppStoryService {
     public boolean genException = false;
 
 
-
     public void generateException() {
         new Thread(new Runnable() {
             @Override
@@ -313,9 +312,9 @@ public class InAppStoryService {
     }
 
 
-    public Map<String, ImagePlaceholderValue> getImagePlaceholders() {
+    public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
         if (InAppStoryManager.getInstance() != null)
-            return InAppStoryManager.getInstance().getImagePlaceholders();
+            return InAppStoryManager.getInstance().getImagePlaceholdersValues();
         return new HashMap<>();
     }
 
@@ -333,6 +332,16 @@ public class InAppStoryService {
         }
     }
 
+    public void saveSessionImagePlaceholders(List<StoryPlaceholder> placeholders) {
+        if (placeholders == null) return;
+        if (InAppStoryManager.getInstance() == null) return;
+        for (StoryPlaceholder placeholder : placeholders) {
+            String key = placeholder.name;
+            ImagePlaceholderValue defaultVal = ImagePlaceholderValue.createByUrl(placeholder.defaultVal);
+            InAppStoryManager.getInstance().setDefaultImagePlaceholder(key,
+                    defaultVal);
+        }
+    }
 
     public void runStatisticThread() {
         OldStatisticManager.getInstance().refreshCallbacks();
@@ -514,7 +523,6 @@ public class InAppStoryService {
             spaceHandler.postDelayed(checkFreeSpace, 60000);
         }
     };
-
 
 
     Handler spaceHandler;

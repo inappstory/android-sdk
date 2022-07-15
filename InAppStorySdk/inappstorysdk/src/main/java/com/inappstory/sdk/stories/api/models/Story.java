@@ -9,7 +9,9 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.utils.PlaceholderKeyConverter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -138,6 +140,10 @@ public class Story implements Parcelable {
     @SerializedName("src_list")
     public List<ResourceMappingObject> srcList;
 
+    @SerializedName("img_placeholder_src_list")
+    public List<ImagePlaceholderMappingObject> imagePlaceholdersList;
+
+
     @SerializedName("like")
     public Integer like;
 
@@ -210,11 +216,16 @@ public class Story implements Parcelable {
         return srcList;
     }
 
-    public List<String> getSrcListPlaceholderNames(int index) {
+    public List<ImagePlaceholderMappingObject> getImagePlaceholdersList() {
+        if (imagePlaceholdersList == null) imagePlaceholdersList = new ArrayList<>();
+        return imagePlaceholdersList;
+    }
+
+    public List<String> getPlaceholdersListNames(int index) {
         ArrayList<String> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
+        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
             if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                String name = PlaceholderKeyConverter.getPlaceholderNameFromKey(object.getKey());
+                String name = object.getUrl();
                 if (name != null) res.add(name);
             }
 
@@ -222,6 +233,26 @@ public class Story implements Parcelable {
         return res;
     }
 
+    public List<String> getPlaceholdersListKeys(int index, String type) {
+        ArrayList<String> res = new ArrayList<>();
+        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
+            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+                res.add(object.getKey());
+            }
+        }
+        return res;
+    }
+
+
+    public Map<String, String> getPlaceholdersList(int index, String type) {
+        Map<String, String> res = new HashMap<>();
+        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
+            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
+                res.put(object.getKey(), object.getUrl());
+            }
+        }
+        return res;
+    }
 
 
     public List<String> getSrcListKeys(int index, String type) {

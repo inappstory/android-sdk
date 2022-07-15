@@ -19,8 +19,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 class SlidesDownloader {
@@ -203,7 +201,7 @@ class SlidesDownloader {
     void addStoryPages(Story story, int loadType) throws Exception {
         Map<String, ImagePlaceholderValue> imgPlaceholders = new HashMap<>();
         if (InAppStoryService.isNotNull()) {
-            imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholders());
+            imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholdersValues());
         }
         synchronized (pageTasksLock) {
             int key = story.id;
@@ -216,7 +214,7 @@ class SlidesDownloader {
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
                         spt.videoUrls = story.getSrcListUrls(i, VIDEO);
-                        List<String> plNames = story.getSrcListPlaceholderNames(i);
+                        List<String> plNames = story.getPlaceholdersListNames(i);
                         for (String plName : plNames) {
                             ImagePlaceholderValue value = imgPlaceholders.get(plName);
                             if (value != null && value.getType() == ImagePlaceholderType.URL) {
@@ -234,7 +232,7 @@ class SlidesDownloader {
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
                         spt.videoUrls = story.getSrcListUrls(i, VIDEO);
-                        List<String> plNames = story.getSrcListPlaceholderNames(i);
+                        List<String> plNames = story.getPlaceholdersListNames(i);
                         for (String plName : plNames) {
                             ImagePlaceholderValue value = imgPlaceholders.get(plName);
                             if (value != null && value.getType() == ImagePlaceholderType.URL) {

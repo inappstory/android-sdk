@@ -203,8 +203,11 @@ public class Downloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        urlConnection.connect();
-
+        try {
+            urlConnection.connect();
+        } catch (Exception e) {
+            return null;
+        }
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
 

@@ -40,7 +40,6 @@ public interface ApiInterface {
     @GET("v2/story/{id}")
     Request getStoryById(
             @Path("id") String id,
-
             @Query("src_list") Integer srcList,
             @Query("expand") String expand
     );

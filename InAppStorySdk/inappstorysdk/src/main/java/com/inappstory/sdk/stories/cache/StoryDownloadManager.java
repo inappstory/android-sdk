@@ -57,7 +57,7 @@ public class StoryDownloadManager {
         putStories(stories);
     }
 
-    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,slides_screenshot_share";
+    static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share";
 
     Object storiesLock = new Object();
 
@@ -432,6 +432,7 @@ public class StoryDownloadManager {
         cur.layout = story.layout;
         cur.title = story.title;
         cur.srcList = new ArrayList<>(story.getSrcList());
+        cur.imagePlaceholdersList = new ArrayList<>(story.getImagePlaceholdersList());
         cur.durations = new ArrayList<>(story.durations);
         if (!cur.durations.isEmpty()) {
             cur.setSlidesCount(story.durations.size());

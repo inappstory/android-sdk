@@ -472,19 +472,40 @@ public class InAppStoryManager {
         }
     }
 
-    public Map<String, ImagePlaceholderValue> getImagePlaceholders() {
+    public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
         synchronized (placeholdersLock) {
+            Map<String, ImagePlaceholderValue> resultPlaceholders = new HashMap<>();
+            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
             if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            return imagePlaceholders;
+            resultPlaceholders.putAll(defaultImagePlaceholders);
+            resultPlaceholders.putAll(imagePlaceholders);
+            return resultPlaceholders;
         }
     }
 
     public void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
         synchronized (placeholdersLock) {
             if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            imagePlaceholders = placeholders;
+            imagePlaceholders.clear();
+            imagePlaceholders.putAll(placeholders);
         }
     }
+
+    public void setDefaultImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
+        synchronized (placeholdersLock) {
+            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
+            defaultImagePlaceholders.clear();
+            defaultImagePlaceholders.putAll(placeholders);
+        }
+    }
+
+    public void setDefaultImagePlaceholder(@NonNull String key, @NonNull ImagePlaceholderValue value) {
+        synchronized (placeholdersLock) {
+            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
+            defaultImagePlaceholders.put(key, value);
+        }
+    }
+
 
     public void setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
         synchronized (placeholdersLock) {
@@ -506,6 +527,7 @@ public class InAppStoryManager {
     }
 
     Map<String, String> defaultPlaceholders = new HashMap<>();
+    Map<String, ImagePlaceholderValue> defaultImagePlaceholders = new HashMap<>();
 
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
     private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
@@ -708,7 +730,8 @@ public class InAppStoryManager {
                 builder.testKey != null ? builder.testKey : null,
                 builder.userId,
                 builder.tags != null ? builder.tags : null,
-                builder.placeholders != null ? builder.placeholders : null);
+                builder.placeholders != null ? builder.placeholders : null,
+                builder.imagePlaceholders != null ? builder.imagePlaceholders : null);
         new ExceptionManager().sendSavedException();
     }
 
@@ -765,7 +788,6 @@ public class InAppStoryManager {
     }
 
 
-
     private void clearCachedLists() {
         if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().listStoriesIds.clear();
@@ -790,7 +812,8 @@ public class InAppStoryManager {
                              String testKey,
                              String userId,
                              ArrayList<String> tags,
-                             Map<String, String> placeholders) {
+                             Map<String, String> placeholders,
+                             Map<String, ImagePlaceholderValue> imagePlaceholders) {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
 
@@ -799,6 +822,8 @@ public class InAppStoryManager {
         }
         if (placeholders != null)
             setPlaceholders(placeholders);
+        if (imagePlaceholders != null)
+            setImagePlaceholders(imagePlaceholders);
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         NetworkClient.setContext(context);
@@ -1268,6 +1293,7 @@ public class InAppStoryManager {
         String testKey;
         ArrayList<String> tags;
         Map<String, String> placeholders;
+        Map<String, ImagePlaceholderValue> imagePlaceholders;
 
         public Builder() {
         }
@@ -1360,6 +1386,15 @@ public class InAppStoryManager {
          */
         public Builder placeholders(Map<String, String> placeholders) {
             Builder.this.placeholders = placeholders;
+            return Builder.this;
+        }
+
+        /**
+         * @param placeholders (placeholders) - placeholders for default values in stories
+         * @return {@link Builder}
+         */
+        public Builder imagePlaceholders(Map<String, ImagePlaceholderValue> placeholders) {
+            Builder.this.imagePlaceholders = placeholders;
             return Builder.this;
         }
 

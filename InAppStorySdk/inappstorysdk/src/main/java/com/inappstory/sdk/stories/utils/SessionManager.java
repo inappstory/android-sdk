@@ -89,6 +89,7 @@ public class SessionManager {
                 response.session.editor = response.editor;
                 response.session.save();
                 InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
+                InAppStoryService.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
                 synchronized (openProcessLock) {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)

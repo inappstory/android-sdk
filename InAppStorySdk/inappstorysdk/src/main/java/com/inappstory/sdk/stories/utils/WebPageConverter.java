@@ -14,6 +14,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,42 +69,33 @@ public class WebPageConverter {
         }
     }
 
-
-    public void replaceVideoAndLoad(String innerWebData, Story story, final int index, String layout,
-                                    WebPageConvertCallback callback) throws IOException {
-        List<String> videos = story.getSrcListUrls(index, "video");
-        List<String> videosKeys = story.getSrcListKeys(index, "video");
-        LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
-        for (int i = 0; i < videos.size(); i++) {
-            String video = videos.get(i);
-            String videoKey = videosKeys.get(i);
+    private String replaceResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+        List<String> resourceKeys = new ArrayList<>();
+        resourceKeys.addAll(story.getSrcListKeys(index, "null"));
+        resourceKeys.addAll(story.getSrcListKeys(index, "video"));
+        List<String> resourceUrls = new ArrayList<>();
+        resourceUrls.addAll(story.getSrcListUrls(index, "null"));
+        resourceUrls.addAll(story.getSrcListUrls(index, "video"));
+        for (int i = 0; i < resourceKeys.size(); i++) {
+            String video = resourceUrls.get(i);
+            String videoKey = resourceKeys.get(i);
             File file = cache.get(video);
             if (file != null && file.exists() && file.length() > 0) {
                 video = "file://" + file.getAbsolutePath();
             }
             innerWebData = innerWebData.replace(videoKey, video);
         }
+        return innerWebData;
+    }
 
-        List<String> imgs = story.getSrcListUrls(index, null);
-        List<String> imgKeys = story.getSrcListKeys(index, null);
-
-        for (int i = 0; i < imgs.size(); i++) {
-            String video = imgs.get(i);
-            String videoKey = imgKeys.get(i);
-            File file = cache.get(video);
-            if (file != null && file.exists() && file.length() > 0) {
-                video = "file://" + file.getAbsolutePath();
-            }
-            innerWebData = innerWebData.replace(videoKey, video);
-        }
-        if (InAppStoryService.isNotNull()) {
-            Map<String, ImagePlaceholderValue> imgPlaceholders =
-                    InAppStoryService.getInstance().getImagePlaceholders();
-            List<String> imgPlaceholderKeys = story.getSrcListKeys(index, "image-placeholder");
-
-            for (int i = 0; i < imgPlaceholderKeys.size(); i++) {
-                String placeholderKey = imgPlaceholderKeys.get(i);
-                String placeholderName = PlaceholderKeyConverter.getPlaceholderNameFromKey(placeholderKey);
+    private String replacePlaceholders(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+        Map<String, ImagePlaceholderValue> imgPlaceholders =
+                InAppStoryService.getInstance().getImagePlaceholdersValues();
+        Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
+        for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
+            String placeholderKey = entry.getKey();
+            String placeholderName = entry.getValue();
+            if (placeholderKey != null && placeholderName != null) {
                 ImagePlaceholderValue placeholderValue = imgPlaceholders.get(placeholderName);
                 if (placeholderValue != null) {
                     String path = "";
@@ -119,8 +111,17 @@ public class WebPageConverter {
                     }
                     innerWebData = innerWebData.replace(placeholderKey, path);
                 }
-
             }
+        }
+        return innerWebData;
+    }
+
+    public void replaceDataAndLoad(String innerWebData, Story story, final int index, String layout,
+                                   WebPageConvertCallback callback) throws IOException {
+        if (InAppStoryService.isNotNull()) {
+            LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
+            innerWebData = replaceResources(innerWebData, story, index, cache);
+            innerWebData = replacePlaceholders(innerWebData, story, index, cache);
         }
 
         /*for (int i = 0; i < imgs.size(); i++) {
