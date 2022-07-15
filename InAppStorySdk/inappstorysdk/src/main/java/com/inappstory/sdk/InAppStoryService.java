@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.util.Log;
+import android.webkit.URLUtil;
 
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.FileManager;
@@ -336,6 +337,8 @@ public class InAppStoryService {
         if (placeholders == null) return;
         if (InAppStoryManager.getInstance() == null) return;
         for (StoryPlaceholder placeholder : placeholders) {
+            if (!URLUtil.isNetworkUrl(placeholder.defaultVal))
+                continue;
             String key = placeholder.name;
             ImagePlaceholderValue defaultVal = ImagePlaceholderValue.createByUrl(placeholder.defaultVal);
             InAppStoryManager.getInstance().setDefaultImagePlaceholder(key,
