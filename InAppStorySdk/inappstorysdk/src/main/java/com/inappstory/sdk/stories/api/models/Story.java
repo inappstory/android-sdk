@@ -34,6 +34,12 @@ public class Story implements Parcelable {
     }
 
     public String getSlideEventPayload(String eventType, int slideIndex) {
+        if (slidesPayload == null) return null;
+        for (PayloadObject payloadObject : slidesPayload) {
+            if (slideIndex == payloadObject.slideIndex && eventType.equals(payloadObject.getEventType())) {
+                return payloadObject.getPayload();
+            }
+        }
         return null;
     }
 
@@ -89,6 +95,9 @@ public class Story implements Parcelable {
     @SerializedName("video_cover")
     public List<Image> videoUrl;
 
+    @SerializedName("slides_payload")
+    public List<PayloadObject> slidesPayload;
+
 
     public String getVideoUrl() {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
@@ -103,6 +112,8 @@ public class Story implements Parcelable {
 
         }
     }
+
+
 
     /**
      * Последний открытый слайд

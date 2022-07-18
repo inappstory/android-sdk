@@ -18,6 +18,7 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.stories.api.models.PayloadTypes;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
@@ -402,7 +403,7 @@ public class StoriesViewManager {
             if (showSlideCallback != null) {
                 showSlideCallback.showSlide(story.id, story.title,
                         story.tags, story.getSlidesCount(), index,
-                        story.getSlideEventPayload(null, index));
+                        story.getSlideEventPayload(PayloadTypes.SHOW_SLIDE, index));
             }
         }
     }
