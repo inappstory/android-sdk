@@ -400,9 +400,9 @@ public class StoriesViewManager {
                     story.tags, story.getSlidesCount(), index));
             ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
             if (showSlideCallback != null) {
-                showSlideCallback.setPayload(story.getSlideEventPayload(null, index));
                 showSlideCallback.showSlide(story.id, story.title,
-                        story.tags, story.getSlidesCount(), index);
+                        story.tags, story.getSlidesCount(), index,
+                        story.getSlideEventPayload(null, index));
             }
         }
     }
