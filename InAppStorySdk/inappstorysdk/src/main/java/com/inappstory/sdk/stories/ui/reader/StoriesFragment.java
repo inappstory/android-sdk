@@ -28,6 +28,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
@@ -47,7 +48,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     boolean created = false;
 
-    boolean backPaused = false;
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -102,82 +102,35 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     String readerSettings;
     Serializable timerGradient;
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        if (InAppStoryService.isNull() && !Sizes.isTablet()) {
-            if (getActivity() != null) getActivity().finish();
-            return;
+    private void closeFragment() {
+        if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentScreen != null)
+            ScreensManager.getInstance().currentScreen.forceFinish();
+        else if (!Sizes.isTablet()) {
+            Activity activity = getActivity();
+            if (activity instanceof BaseReaderScreen)
+                ((BaseReaderScreen) activity).forceFinish();
         }
-        readerManager = new ReaderManager(getArguments().getString("listID", null),
-                getArguments().getString("feedId", null),
-                getArguments().getString("feedSlug", null));
-        readerManager.setParentFragment(this);
-        if (isDestroyed) return;
-        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        readerSettings = getArguments().getString(CS_READER_SETTINGS);
-        timerGradient = getArguments().getSerializable(CS_TIMER_GRADIENT);
-        storiesViewPager.setParameters(
-                getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
-        currentIds = getArguments().getIntegerArrayList("stories_ids");
-        if (currentIds == null || currentIds.isEmpty()) {
-            if (getActivity() != null && !Sizes.isTablet()) getActivity().finish();
-            return;
-        }
-        readerManager.setStoriesIds(currentIds);
-        outerViewPagerAdapter =
-                new ReaderPagerAdapter(
-                        getChildFragmentManager(),
-                        readerSettings,
-                        timerGradient,
-                        currentIds, readerManager);
-        storiesViewPager.setAdapter(outerViewPagerAdapter);
-        storiesViewPager.addOnPageChangeListener(this);
-        int ind = getArguments().getInt("index", 0);
-        readerManager.firstStoryId = currentIds.get(ind);
-        readerManager.startedSlideInd = getArguments().getInt("slideIndex", 0);
-        if (ind > 0) {
-            storiesViewPager.setCurrentItem(ind);
-        } else {
-            try {
-                onPageSelected(0);
-            } catch (Exception e) {
-
-            }
-        }
-        storiesViewPager.getAdapter().notifyDataSetChanged();
     }
+
+
 
 
     @Override
     public void onDestroyView() {
-        if (!isDestroyed) {
-            if (InAppStoryService.isNotNull()) {
-                OldStatisticManager.getInstance().currentEvent = null;
-            }
-            isDestroyed = true;
-        }
-        getArguments().putBoolean("isDestroyed", true);
+        OldStatisticManager.getInstance().currentEvent = null;
         super.onDestroyView();
     }
 
     public void pause() {
-        if (!isDestroyed) {
-            backPaused = true;
-            readerManager.pauseCurrent(true);
-        }
+        readerManager.pauseCurrent(true);
     }
 
     public void resume() {
-        if (!isDestroyed) {
-            backPaused = false;
-            if (!created)
-                readerManager.resumeCurrent(true);
-            if (!Sizes.isTablet())
-                StatusBarController.hideStatusBar(getActivity(), true);
-            created = false;
+        if (!created) {
+            readerManager.resumeCurrent(true);
             readerManager.resumeWithShareId();
         }
+        created = false;
     }
 
     @Override
@@ -189,11 +142,15 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
+
+       // setRetainInstance(true);
     }
 
+    int ind;
+    int readerAnimation;
 
     ReaderPager storiesViewPager;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -201,15 +158,31 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         try {
             requireArguments();
         } catch (IllegalStateException e) {
-            Activity activity = getActivity();
-            if (activity instanceof BaseReaderScreen)
-                ((BaseReaderScreen) activity).forceFinish();
+            closeFragment();
             return new View(getContext());
         }
-        isDestroyed = getArguments().getBoolean("isDestroyed");
+
+        Bundle arguments = getArguments();
+
+        currentIds = arguments.getIntegerArrayList("stories_ids");
+        readerSettings = arguments.getString(CS_READER_SETTINGS);
+        timerGradient = arguments.getSerializable(CS_TIMER_GRADIENT);
+        ind = arguments.getInt("index", 0);
+        readerAnimation = arguments.getInt(CS_STORY_READER_ANIMATION, 0);
+
+        readerManager = new ReaderManager(arguments.getString("listID", null),
+                arguments.getString("feedId", null),
+                arguments.getString("feedSlug", null));
+        if (currentIds != null && !currentIds.isEmpty()) {
+            readerManager.setStoriesIds(currentIds);
+            readerManager.firstStoryId = currentIds.get(ind);
+            readerManager.startedSlideInd = arguments.getInt("slideIndex", 0);
+        }
+        closeOnSwipe = arguments.getBoolean(CS_CLOSE_ON_SWIPE, true);
+        closeOnOverscroll = arguments.getBoolean(CS_CLOSE_ON_OVERSCROLL, true);
+
+
         created = true;
-        closeOnSwipe = getArguments().getBoolean(CS_CLOSE_ON_SWIPE, true);
-        closeOnOverscroll = getArguments().getBoolean(CS_CLOSE_ON_OVERSCROLL, true);
         RelativeLayout resView = new RelativeLayout(getContext());
         //   resView.setBackgroundColor(getResources().getColor(R.color.black));
         storiesViewPager = new ReaderPager(getContext());
@@ -232,6 +205,37 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);
     }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (InAppStoryService.isNull() || currentIds == null || currentIds.isEmpty()) {
+            closeFragment();
+            return;
+        }
+        readerManager.setParentFragment(this);
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        storiesViewPager.setParameters(readerAnimation);
+
+        outerViewPagerAdapter =
+                new ReaderPagerAdapter(
+                        getChildFragmentManager(),
+                        readerSettings,
+                        timerGradient,
+                        currentIds, readerManager);
+        storiesViewPager.setAdapter(outerViewPagerAdapter);
+        storiesViewPager.addOnPageChangeListener(this);
+        if (ind > 0) {
+            storiesViewPager.setCurrentItem(ind);
+        } else {
+            try {
+                onPageSelected(0);
+            } catch (Exception e) {
+
+            }
+        }
+        //  storiesViewPager.getAdapter().notifyDataSetChanged();
+    }
 
     public void swipeUpEvent() {
         swipeUpEvent(storiesViewPager.getCurrentItem());

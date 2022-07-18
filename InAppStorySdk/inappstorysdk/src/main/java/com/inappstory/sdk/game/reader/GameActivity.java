@@ -337,11 +337,11 @@ public class GameActivity extends AppCompatActivity {
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
-    private void getIntentValues() {
+    private boolean getIntentValues() {
         manager.path = getIntent().getStringExtra("gameUrl");
         if (manager.path == null) {
             finish();
-            return;
+            return false;
         }
         manager.observableId = getIntent().getStringExtra("observableId");
         manager.resources = getIntent().getStringExtra("gameResources");
@@ -355,6 +355,7 @@ public class GameActivity extends AppCompatActivity {
             manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
         }
         manager.loaderPath = getIntent().getStringExtra("preloadPath");
+        return true;
     }
 
 
@@ -467,10 +468,11 @@ public class GameActivity extends AppCompatActivity {
             }
         };
         setViews();
-        getIntentValues();
-        initWebView();
-        setLoader();
-        manager.loadGame();
+        if (getIntentValues()) {
+            initWebView();
+            setLoader();
+            manager.loadGame();
+        }
     }
 
     private void closeGame() {

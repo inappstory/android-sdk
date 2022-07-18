@@ -118,9 +118,20 @@ public class ScreensManager {
         return tempShareId;
     }
 
+    public boolean getTempShareStatus() {
+        return tempShareStatus;
+    }
+
+    public void setTempShareStatus(boolean tempShareStatus) {
+        this.tempShareStatus = tempShareStatus;
+    }
+
     public void setTempShareId(String tempShareId) {
+        this.tempShareStatus = false;
         this.tempShareId = tempShareId;
     }
+
+
 
     public void setTempShareStoryId(int tempShareStoryId) {
         this.tempShareStoryId = tempShareStoryId;
@@ -149,6 +160,8 @@ public class ScreensManager {
     int tempShareStoryId;
 
     String tempShareId;
+
+    boolean tempShareStatus = false;
 
     int oldTempShareStoryId;
 

@@ -242,6 +242,7 @@ public class ReaderManager {
     public void setFeedId(String feedId) {
         this.feedId = feedId;
     }
+
     public void setFeedSlug(String feedId) {
         this.feedSlug = feedSlug;
     }
@@ -272,11 +273,7 @@ public class ReaderManager {
     }
 
     public void shareComplete() {
-        getSubscriberByStoryId(ScreensManager.getInstance().getTempShareStoryId()).
-                shareComplete("" + ScreensManager.getInstance().getTempShareId(),
-                        true);
-        ScreensManager.getInstance().setTempShareStoryId(0);
-        ScreensManager.getInstance().setTempShareId(null);
+        ScreensManager.getInstance().setTempShareStatus(true);
     }
 
     void resumeWithShareId() {
@@ -287,8 +284,9 @@ public class ReaderManager {
         } else if (ScreensManager.getInstance().getTempShareId() != null) {
             getSubscriberByStoryId(ScreensManager.getInstance().getTempShareStoryId()).
                     shareComplete("" + ScreensManager.getInstance().getTempShareId(),
-                            false);
+                            ScreensManager.getInstance().getTempShareStatus());
         }
+        ScreensManager.getInstance().setTempShareStatus(false);
         ScreensManager.getInstance().setTempShareStoryId(0);
         ScreensManager.getInstance().setTempShareId(null);
         ScreensManager.getInstance().setOldTempShareStoryId(0);

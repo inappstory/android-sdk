@@ -71,10 +71,10 @@ public class WebPageConverter {
 
     private String replaceResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
         List<String> resourceKeys = new ArrayList<>();
-        resourceKeys.addAll(story.getSrcListKeys(index, "null"));
+        resourceKeys.addAll(story.getSrcListKeys(index, null));
         resourceKeys.addAll(story.getSrcListKeys(index, "video"));
         List<String> resourceUrls = new ArrayList<>();
-        resourceUrls.addAll(story.getSrcListUrls(index, "null"));
+        resourceUrls.addAll(story.getSrcListUrls(index, null));
         resourceUrls.addAll(story.getSrcListUrls(index, "video"));
         for (int i = 0; i < resourceKeys.size(); i++) {
             String video = resourceUrls.get(i);

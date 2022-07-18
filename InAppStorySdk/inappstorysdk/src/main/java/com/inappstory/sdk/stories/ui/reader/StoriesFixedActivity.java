@@ -187,6 +187,11 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        StatusBarController.hideStatusBar(this, true);
+    }
 
 
     @Override

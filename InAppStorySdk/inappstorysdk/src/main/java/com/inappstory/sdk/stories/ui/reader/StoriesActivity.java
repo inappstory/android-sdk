@@ -121,6 +121,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     boolean isAnimation = false;
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        StatusBarController.hideStatusBar(this, true);
+    }
+
     public void loadAnim() {
         try {
             isAnimation = true;
