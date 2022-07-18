@@ -33,6 +33,10 @@ public class Story implements Parcelable {
         return tmp;
     }
 
+    public String getSlideEventPayload(String eventType, int slideIndex) {
+        return null;
+    }
+
     public boolean checkIfEmpty() {
         boolean res = (getLayout() == null || pages == null || pages.isEmpty());
         res = res && (slidesStructure == null || slidesStructure.isEmpty());

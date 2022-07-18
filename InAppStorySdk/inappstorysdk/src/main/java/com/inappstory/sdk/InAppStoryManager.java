@@ -271,7 +271,7 @@ public class InAppStoryManager {
         CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
     }
 
-    public void setCustomActionCallback(CustomActionCallback customActionCallback) {
+    private void setCustomActionCallback(CustomActionCallback customActionCallback) {
         CallbackManager.getInstance().setCustomActionCallback(customActionCallback);
     }
 

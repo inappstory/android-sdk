@@ -24,6 +24,7 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -397,8 +398,10 @@ public class StoriesViewManager {
         if (story != null) {
             CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                     story.tags, story.getSlidesCount(), index));
-            if (CallbackManager.getInstance().getShowSlideCallback() != null) {
-                CallbackManager.getInstance().getShowSlideCallback().showSlide(story.id, story.title,
+            ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
+            if (showSlideCallback != null) {
+                showSlideCallback.setPayload(story.getSlideEventPayload(null, index));
+                showSlideCallback.showSlide(story.id, story.title,
                         story.tags, story.getSlidesCount(), index);
             }
         }
