@@ -2,7 +2,7 @@
 
 
 ### From 1.10.x
-Added image placeholders. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#Image_placeholders) is described its usage.
+Added image placeholders. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#image-placeholders) is described its usage.
 
 Signature of `showSlide` method in `ShowSlideCallback` was changed. (added `String payload` parameter) 
 ```java
