@@ -491,7 +491,7 @@ public class InAppStoryManager {
         }
     }
 
-    public void setDefaultImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
+    void setDefaultImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
         synchronized (placeholdersLock) {
             if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
             defaultImagePlaceholders.clear();
@@ -499,7 +499,7 @@ public class InAppStoryManager {
         }
     }
 
-    public void setDefaultImagePlaceholder(@NonNull String key, @NonNull ImagePlaceholderValue value) {
+    void setDefaultImagePlaceholder(@NonNull String key, @NonNull ImagePlaceholderValue value) {
         synchronized (placeholdersLock) {
             if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
             defaultImagePlaceholders.put(key, value);

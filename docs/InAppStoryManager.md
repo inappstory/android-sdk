@@ -196,7 +196,8 @@ public interface ShowSlideCallback {
                    String title,
                    String tags,
                    int slidesCount,
-                   int index);
+                   int index, 
+                   String payload);
 }
 ```
 

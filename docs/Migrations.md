@@ -1,6 +1,22 @@
 ## Migration
 
 
+### From 1.10.x
+Added image placeholders. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#Image_placeholders) is described its usage.
+
+Signature of `showSlide` method in `ShowSlideCallback` was changed. (added `String payload` parameter) 
+```java
+interface ShowSlideCallback {
+
+    void showSlide(int id,
+                   String title,
+                   String tags,
+                   int slidesCount,
+                   int index,
+                   String payload);
+}
+```
+
 ### From 1.9.1
 Added widget callbacks. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#notifications-from-widgets-in-stories-reader) is described its usage.
 
@@ -8,9 +24,9 @@ Added widget callbacks. [Here](https://github.com/inappstory/android-sdk/blob/ma
 Added UGC Editor feature. [Here](https://github.com/inappstory/ugc-android-sdk#readme) is described its usage.
 
 ### From 1.6.x or 1.7.x to 1.8.x
-Added new feeds feature to `StoriesList` and onboarding stories now has public `feed` parameter. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#stories-feed) is described its usage.
+Added new feeds feature to `StoriesList` and onboarding stories now has public `String feed` parameter. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#stories-feed) is described its usage.
 
-Callback for `StoriesList` and its adapter has beed changed (added `feed` parameter to methods). 
+Callback for `StoriesList` and its adapter has beed changed (added `String feed` parameter to methods). 
 
 ```java
 interface ListCallback {

@@ -55,3 +55,34 @@ In that case you may need to reload `StoriesList` through `storiesList.loadStori
 InAppStoryManager.getInstance().setPlaceholders(<new_placeholders_Map>) 
 storiesList.loadStories()
 ```
+
+### Image placeholders
+
+This feature was added from 1.10.0 
+
+Image placeholders can be set in `InAppStoryManager` initialization
+
+```java
+  new InAppStoryManager.Builder()
+      .apiKey(apiKey) //String
+      .context(context) //Context
+      .userId(userId) //String
+      .imagePlaceholders(imagePlaceholders) //Map<String, ImagePlaceholderValue>
+      .create();
+```
+
+or can be changed in runtime after `InAppStoryManager` initialization
+
+```js
+InAppStoryManager.getInstance().setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders)  // Set new or completely replace current image placeholders list
+
+InAppStoryManager.getInstance().setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value)  // Set placeholder to the current placeholders list. If you pass null, then the placeholder will be removed
+```
+
+Here `ImagePlaceholderValue` is a class with private constructor and it's instance can be created through method `createByUrl(String url)`. Here `url` is a remote link with http(s) scheme to image 
+
+```js
+ImagePlaceholderValue placeholder = ImagePlaceholderValue.createByUrl("url string"). 
+```
+
+Image placeholders are used only in Stories reader, so you don't need to reload list after new changes.
