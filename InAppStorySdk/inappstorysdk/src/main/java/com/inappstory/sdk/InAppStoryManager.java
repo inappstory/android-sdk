@@ -735,7 +735,7 @@ public class InAppStoryManager {
         new ExceptionManager().sendSavedException();
     }
 
-    public static void generateException() {
+    private static void generateException() {
         if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().genException = true;
         }
@@ -829,6 +829,7 @@ public class InAppStoryManager {
         NetworkClient.setContext(context);
         this.userId = userId;
         if (INSTANCE != null) {
+            localHandler.removeCallbacksAndMessages(null);
             localDestroy();
         }
 
@@ -862,6 +863,7 @@ public class InAppStoryManager {
     }
 
     private static void localDestroy() {
+
         logout();
         INSTANCE = null;
     }
@@ -900,6 +902,9 @@ public class InAppStoryManager {
         return soundOn;
     }
 
+    private Handler localHandler = new Handler();
+    private Object handlerToken = new Object();
+
     private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feed, final String feedId) {
 
         if (response == null || response.size() == 0) {
@@ -913,7 +918,7 @@ public class InAppStoryManager {
         if (InAppStoryService.isNull()) return;
         if (ScreensManager.created == -1) {
             InAppStoryManager.closeStoryReader(CloseStory.AUTO);
-            new Handler().postDelayed(new Runnable() {
+            localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showLoadedOnboardings(response, outerContext, manager, feed, feedId);
@@ -922,7 +927,7 @@ public class InAppStoryManager {
             }, 350);
             return;
         } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
-            new Handler().postDelayed(new Runnable() {
+            localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showLoadedOnboardings(response, outerContext, manager, feed, feedId);
@@ -950,7 +955,7 @@ public class InAppStoryManager {
 
     private void showOnboardingStoriesInner(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.isNull()) {
-            new Handler().postDelayed(new Runnable() {
+            localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showOnboardingStoriesInner(feed, tags, outerContext, manager);
@@ -1084,7 +1089,7 @@ public class InAppStoryManager {
 
     private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide) {
         if (InAppStoryService.isNull()) {
-            new Handler().postDelayed(new Runnable() {
+            localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     showStoryInner(storyId, context, manager, callback, slide);
@@ -1105,7 +1110,7 @@ public class InAppStoryManager {
 
                     if (ScreensManager.created == -1) {
                         InAppStoryManager.closeStoryReader(CloseStory.AUTO);
-                        new Handler().postDelayed(new Runnable() {
+                        localHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 lastSingleOpen = null;
@@ -1115,7 +1120,7 @@ public class InAppStoryManager {
                         }, 500);
                         return;
                     } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
-                        new Handler().postDelayed(new Runnable() {
+                        localHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 showStoryInner(storyId, context, manager, callback, slide);
@@ -1174,7 +1179,7 @@ public class InAppStoryManager {
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
                     ScreensManager.getInstance().openStoriesReader(context, null, manager, stIds, 0, ShowStory.SINGLE, slide, null, null);
-                    new Handler().postDelayed(new Runnable() {
+                    localHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             lastSingleOpen = null;

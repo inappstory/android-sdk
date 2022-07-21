@@ -213,6 +213,7 @@ public class InAppStoryService {
 
 
     public void onDestroy() {
+        spaceHandler.removeCallbacksAndMessages(null);
         getDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;
@@ -528,7 +529,7 @@ public class InAppStoryService {
     };
 
 
-    Handler spaceHandler;
+    Handler spaceHandler = new Handler();
 
     private void clearOldFiles() {
         FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "Stories"));
@@ -553,7 +554,6 @@ public class InAppStoryService {
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         createDownloadManager(exceptionCache);
         timerManager = new TimerManager();
-        spaceHandler = new Handler();
         if (tempListSubscribers != null) {
             if (listSubscribers == null) listSubscribers = new HashSet<>();
             InAppStoryManager.debugSDKCalls("IASService_subscribers", "temp size:" + tempListSubscribers.size() + " / size:" + listSubscribers.size());
