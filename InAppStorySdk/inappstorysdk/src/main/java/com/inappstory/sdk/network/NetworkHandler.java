@@ -48,6 +48,8 @@ public final class NetworkHandler implements InvocationHandler {
         return new URL(url + varStr);
     }
 
+    public static boolean sessionKill = false;
+
     public static Response doRequest(Request req, String requestId)
             throws Exception {
         ApiLogRequest requestLog = new ApiLogRequest();
@@ -80,12 +82,18 @@ public final class NetworkHandler implements InvocationHandler {
             requestLog.headers.add(
                     new ApiLogRequestHeader("Content-Type", "application/x-www-form-urlencoded"));
         }
-        if (!Session.needToUpdate() && !req.getUrl().contains("session/open")) {
+        if (!sessionKill && !Session.needToUpdate() && !req.getUrl().contains("session/open")) {
             connection.setRequestProperty("auth-session-id", Session.getInstance().id);
 
             requestLog.headers.add(
                     new ApiLogRequestHeader("auth-session-id", Session.getInstance().id));
         }
+
+
+
+
+
+
         InAppStoryManager.showDLog("InAppStory_Network", req.getHeadersString());
         if (!req.getMethod().equals(GET) && !req.getMethod().equals(HEAD) && !req.getBody().isEmpty()) {
             InAppStoryManager.showDLog("InAppStory_Network", req.getBody());

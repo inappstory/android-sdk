@@ -58,6 +58,12 @@ class StoryDownloader {
     private final Object storyTasksLock = new Object();
     private HashMap<Integer, StoryTask> storyTasks = new HashMap<>();
 
+    void addCompletedStoryTask(int storyId) {
+        synchronized (storyTasksLock) {
+            storyTasks.put(storyId, new StoryTask(-1, 3));
+        }
+    }
+
     void cleanTasks() {
         synchronized (storyTasksLock) {
             storyTasks.clear();

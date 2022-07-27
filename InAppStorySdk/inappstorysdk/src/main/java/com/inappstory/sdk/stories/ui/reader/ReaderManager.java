@@ -190,7 +190,6 @@ public class ReaderManager {
             }
         }
         InAppStoryService.getInstance().setCurrentId(currentStoryId);
-        story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId);
         if (story != null) {
             currentSlideIndex = story.lastIndex;
         }

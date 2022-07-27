@@ -185,6 +185,7 @@ public class StoriesList extends RecyclerView {
     }
 
     void sendIndexes() {
+        checkAppearanceManager();
         int hasUgc = (hasSessionUGC() && !isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
         ArrayList<Integer> indexes = new ArrayList<>();
         if (layoutManager instanceof LinearLayoutManager) {
@@ -285,9 +286,7 @@ public class StoriesList extends RecyclerView {
         @Override
         public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
             View child = rv.findChildViewUnder(e.getX(), e.getY());
-            if (appearanceManager == null) {
-                appearanceManager = AppearanceManager.getCommonInstance();
-            }
+            checkAppearanceManager();
             if (touchListener == null)
                 touchListener = appearanceManager.csStoryTouchListener();
             if (touchListener != null) {
@@ -376,6 +375,8 @@ public class StoriesList extends RecyclerView {
     public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
         if (InAppStoryService.isNull()) return;
         if (adapter == null) return;
+
+        checkAppearanceManager();
         if (isFavoriteList) {
             adapter.hasFavItem = false;
             if (favStatus) {
@@ -443,6 +444,7 @@ public class StoriesList extends RecyclerView {
     }
 
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
+        checkAppearanceManager();
         adapter = new StoriesAdapter(getContext(),
                 uniqueID,
                 storiesIds,

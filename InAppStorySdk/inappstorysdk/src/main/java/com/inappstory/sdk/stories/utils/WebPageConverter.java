@@ -27,47 +27,48 @@ public class WebPageConverter {
         }
     }
 
-    public void replaceImagesAndLoad(String innerWebData, Story story, final int index, String layout,
-                                     WebPageConvertCallback callback) throws IOException {
-        List<String> imgs = story.getSrcListUrls(index, null);
-        List<String> imgKeys = story.getSrcListKeys(index, null);
-        for (int i = 0; i < imgs.size(); i++) {
-            String img = imgs.get(i);
-            String imgKey = imgKeys.get(i);
-            File file = InAppStoryService.getInstance().getCommonCache().get(img);
-            if (file != null) {
-                FileInputStream fis = null;
-                try {
+    /*  public void replaceImagesAndLoad(String innerWebData, Story story, final int index, String layout,
+                                       WebPageConvertCallback callback) throws IOException {
+          List<String> imgs = story.getSrcListUrls(index, null);
+          List<String> imgKeys = story.getSrcListKeys(index, null);
+          for (int i = 0; i < imgs.size(); i++) {
+              String img = imgs.get(i);
+              String imgKey = imgKeys.get(i);
+              File file = InAppStoryService.getInstance().getCommonCache().get(img);
+              if (file != null) {
+                  FileInputStream fis = null;
+                  try {
 
-                    if (file.length() > 0) {
-                        fis = new FileInputStream(file);
-                        byte[] imageRaw = new byte[(int) file.length()];
-                        fis.read(imageRaw);
-                        String cType = KeyValueStorage.getString(file.getName());
-                        String image64;
-                        if (cType != null)
-                            image64 = "data:" + cType + ";base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
-                        else
-                            image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
-                        fis.close();
-                        innerWebData = innerWebData.replace(imgKey, image64);
-                    } else {
-                        innerWebData = innerWebData.replace(imgKey, img);
-                    }
-                } catch (Exception e) {
-                    InAppStoryService.createExceptionLog(e);
-                }
-            }
-        }
-        try {
-            String wData = layout
-                    .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", innerWebData);
-            callback.onConvert(innerWebData, wData, index);
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-        }
-    }
+                      if (file.length() > 0) {
+                          fis = new FileInputStream(file);
+                          byte[] imageRaw = new byte[(int) file.length()];
+                          fis.read(imageRaw);
+                          String cType = KeyValueStorage.getString(file.getName());
+                          String image64;
+                          if (cType != null)
+                              image64 = "data:" + cType + ";base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
+                          else
+                              image64 = "data:image/jpeg;base64," + Base64.encodeToString(imageRaw, Base64.DEFAULT);
+                          fis.close();
+                          innerWebData = innerWebData.replace(imgKey, image64);
+                      } else {
+                          innerWebData = innerWebData.replace(imgKey, img);
+                      }
+                  } catch (Exception e) {
+                      InAppStoryService.createExceptionLog(e);
+                  }
+              }
+          }
+          try {
+              String wData = layout
+                      .replace("//_ratio = 0.66666666666,", "")
+                      .replace("{{%content}}", innerWebData);
+              callback.onConvert(innerWebData, wData, index);
+          } catch (Exception e) {
+              InAppStoryService.createExceptionLog(e);
+          }
+      }
+  */
 
     private String replaceResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
         List<String> resourceKeys = new ArrayList<>();

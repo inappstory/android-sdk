@@ -454,6 +454,33 @@ public class StoryDownloadManager {
         }
     }
 
+    public void addCompletedStoryTask(Story story) {
+        boolean noStory = true;
+        synchronized (storiesLock) {
+            for (Story localStory : stories) {
+                if (localStory.id == story.id) {
+                    noStory = false;
+                    break;
+                }
+            }
+            if (noStory) stories.add(story);
+        }
+        if (storyDownloader != null) {
+            storyDownloader.addCompletedStoryTask(story.id);
+            Story local = getStoryById(story.id);
+            story.isOpened = local.isOpened;
+            story.lastIndex = local.lastIndex;
+            stories.set(stories.indexOf(local), story);
+            setStory(story, story.id);
+            storyLoaded(story.id);
+            try {
+                slidesDownloader.addStoryPages(story, 3);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void loadStories(String feed, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
         SimpleListCallback loadCallback = new SimpleListCallback() {

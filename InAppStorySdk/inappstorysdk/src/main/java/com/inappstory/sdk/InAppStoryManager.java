@@ -1107,7 +1107,7 @@ public class InAppStoryManager {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
-
+                    InAppStoryService.getInstance().getDownloadManager().addCompletedStoryTask(story);
                     if (ScreensManager.created == -1) {
                         InAppStoryManager.closeStoryReader(CloseStory.AUTO);
                         localHandler.postDelayed(new Runnable() {

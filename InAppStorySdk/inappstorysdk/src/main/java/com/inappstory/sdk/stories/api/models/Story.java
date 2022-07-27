@@ -248,16 +248,6 @@ public class Story implements Parcelable {
         return res;
     }
 
-    public List<String> getPlaceholdersListKeys(int index, String type) {
-        ArrayList<String> res = new ArrayList<>();
-        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                res.add(object.getKey());
-            }
-        }
-        return res;
-    }
-
 
     public Map<String, String> getPlaceholdersList(int index, String type) {
         Map<String, String> res = new HashMap<>();
