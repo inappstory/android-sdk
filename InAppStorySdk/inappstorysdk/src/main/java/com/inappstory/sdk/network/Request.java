@@ -35,6 +35,14 @@ public final class Request<T> {
         return body;
     }
 
+    public String getBodyRaw() {
+        return bodyRaw;
+    }
+
+    public String getBodyEncoded() {
+        return bodyEncoded;
+    }
+
 
     public String getMethod() {
         return method;
@@ -59,12 +67,16 @@ public final class Request<T> {
     private HashMap<String, String> headers;
     private HashMap<String, String> vars;
     private String body;
+    private String bodyRaw;
+    private String bodyEncoded;
 
     Request(Builder builder) {
         this.url = builder.url;
         this.method = builder.method;
         this.headers = builder.headers;
         this.vars = builder.vars;
+        this.bodyRaw = builder.bodyRaw;
+        this.bodyEncoded = builder.bodyEncoded;
         this.body = builder.body;
         this.isFormEncoded = builder.isFormEncoded;
     }
@@ -78,6 +90,8 @@ public final class Request<T> {
         private HashMap<String, String> headers;
         private HashMap<String, String> vars;
         private String body;
+        private String bodyRaw;
+        private String bodyEncoded;
 
         public Builder headers(HashMap<String, String> headers) {
             this.headers = headers;
@@ -131,6 +145,16 @@ public final class Request<T> {
 
         public Builder body(String body) {
             this.body = body;
+            return this;
+        }
+
+        public Builder bodyRaw(String bodyRaw) {
+            this.bodyRaw = bodyRaw;
+            return this;
+        }
+
+        public Builder bodyEncoded(String bodyEncoded) {
+            this.bodyEncoded = bodyEncoded;
             return this;
         }
 

@@ -98,6 +98,8 @@ public final class NetworkHandler implements InvocationHandler {
         if (!req.getMethod().equals(GET) && !req.getMethod().equals(HEAD) && !req.getBody().isEmpty()) {
             InAppStoryManager.showDLog("InAppStory_Network", req.getBody());
             requestLog.body = req.getBody();
+            requestLog.bodyRaw = req.getBodyRaw();
+            requestLog.bodyUrlEncoded = req.getBodyEncoded();
             if (!req.isFormEncoded()) {
                 connection.setRequestProperty("Content-Type", "application/json");
                 requestLog.headers.add(
@@ -208,6 +210,8 @@ public final class NetworkHandler implements InvocationHandler {
         //
         HashMap<String, String> vars = new HashMap<>();
         // String path = ev.value();
+        String bodyRaw = "";
+        String bodyEncoded = "";
         String body = "";
         if (headers == null) {
             headers = networkClient.getHeaders();
@@ -222,24 +226,30 @@ public final class NetworkHandler implements InvocationHandler {
                 } else if (annotation instanceof Query) {
                     vars.put(((Query) annotation).value(), encode(args[i].toString()));
                 } else if (annotation instanceof Field) {
-                    body += "&" + ((Field) annotation).value() + "=" + encode(args[i].toString());
+                    bodyEncoded += "&" + ((Field) annotation).value() + "=" + encode(args[i].toString());
                 } else if (annotation instanceof Body) {
                     try {
-                        String bd = JsonParser.getJson(args[i]);
-                        body += (body.isEmpty() ? "" : "\n") + bd;
+                        bodyRaw += JsonParser.getJson(args[i]);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
         }
-        if (!body.isEmpty() && body.startsWith("&")) {
-            body = body.substring(1);
+        if (!bodyEncoded.isEmpty() && bodyEncoded.startsWith("&")) {
+            bodyEncoded = bodyEncoded.substring(1);
         }
+        body += bodyEncoded;
+        if (!body.isEmpty()) {
+            body += "\n";
+        }
+        body += bodyRaw;
         final Request request = builder.headers(headers)
                 .url(NetworkClient.getInstance().getBaseUrl() != null ?
                         NetworkClient.getInstance().getBaseUrl() + path : path)
                 .vars(vars)
+                .bodyRaw(bodyRaw)
+                .bodyEncoded(bodyEncoded)
                 .body(body).build();
         return request;
     }
