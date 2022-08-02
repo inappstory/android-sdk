@@ -324,7 +324,7 @@ public class InAppStoryService {
         if (placeholders == null) return;
         if (InAppStoryManager.getInstance() == null) return;
         for (StoryPlaceholder placeholder : placeholders) {
-            String key = "%" + placeholder.name + "%";
+            String key = placeholder.name;
             InAppStoryManager.getInstance().defaultPlaceholders.put(key,
                     placeholder.defaultVal);
             if (!InAppStoryManager.getInstance().placeholders.containsKey(key)) {

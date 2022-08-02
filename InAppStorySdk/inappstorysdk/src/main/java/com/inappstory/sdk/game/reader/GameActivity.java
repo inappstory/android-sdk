@@ -37,12 +37,16 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
@@ -55,6 +59,9 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
+
+import java.util.ArrayList;
+import java.util.Map;
 
 public class GameActivity extends AppCompatActivity {
     private IASWebView webView;
@@ -352,11 +359,48 @@ public class GameActivity extends AppCompatActivity {
         manager.tags = getIntent().getStringExtra("tags");
         manager.gameConfig = getIntent().getStringExtra("gameConfig");
         if (manager.gameConfig != null) {
-            manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
+            if (manager.gameConfig.contains("{{%sdkVersion}}"))
+                manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
+            if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
+                String replacedPlaceholders = generateJsonPlaceholders();
+                manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedPlaceholders);
+                manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
+            }
         }
         manager.loaderPath = getIntent().getStringExtra("preloadPath");
         return true;
     }
+
+    private String generateJsonPlaceholders() {
+        Map<String, String> textPlaceholders =
+                InAppStoryManager.getInstance().getPlaceholders();
+        Map<String, ImagePlaceholderValue> imagePlaceholders =
+                InAppStoryManager.getInstance().getImagePlaceholdersValues();
+        ArrayList<GameDataPlaceholder> gameDataPlaceholders = new ArrayList<GameDataPlaceholder>();
+        for (Map.Entry<String, String> entry : textPlaceholders.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null)
+                gameDataPlaceholders.add(new GameDataPlaceholder(
+                        "text",
+                        entry.getKey(),
+                        entry.getValue()));
+        }
+        for (Map.Entry<String, ImagePlaceholderValue> entry : imagePlaceholders.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null
+                    && entry.getValue().getType() == ImagePlaceholderType.URL)
+                gameDataPlaceholders.add(new GameDataPlaceholder(
+                        "image",
+                        entry.getKey(),
+                        entry.getValue().getUrl()));
+        }
+        String st = "[]";
+        try {
+            st = JsonParser.getJson(gameDataPlaceholders);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return st;
+    }
+
 
 
     void loadJsApiResponse(String gameResponse, String cb) {

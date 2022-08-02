@@ -196,8 +196,9 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         String tmpData = outerData;
         String tmpLayout = outerLayout;
         for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
-            tmpData = tmpData.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
-            tmpLayout = tmpLayout.replace(key, InAppStoryService.getInstance().getPlaceholders().get(key));
+            String modifiedKey = "%" + key + "%";
+            tmpData = tmpData.replace(modifiedKey, InAppStoryService.getInstance().getPlaceholders().get(key));
+            tmpLayout = tmpLayout.replace(modifiedKey, InAppStoryService.getInstance().getPlaceholders().get(key));
         }
 
         final String data = tmpData;

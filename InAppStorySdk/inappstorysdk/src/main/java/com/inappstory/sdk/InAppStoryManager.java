@@ -432,15 +432,14 @@ public class InAppStoryManager {
         synchronized (placeholdersLock) {
             if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
             if (placeholders == null) placeholders = new HashMap<>();
-            String inKey = "%" + key + "%";
             if (value == null) {
-                if (defaultPlaceholders.containsKey(inKey)) {
-                    placeholders.put(inKey, defaultPlaceholders.get(inKey));
+                if (defaultPlaceholders.containsKey(key)) {
+                    placeholders.put(key, defaultPlaceholders.get(key));
                 } else {
-                    placeholders.remove(inKey);
+                    placeholders.remove(key);
                 }
             } else {
-                placeholders.put(inKey, value);
+                placeholders.put(key, value);
             }
         }
     }
