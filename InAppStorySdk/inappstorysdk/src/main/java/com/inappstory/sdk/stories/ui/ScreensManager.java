@@ -21,6 +21,7 @@ import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -226,7 +227,9 @@ public class ScreensManager {
                 currentScreen.observeGameReader(observableUID);
             }
         } else {
-            ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+            if (context instanceof Activity) {
+                ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+            }
         }
     }
 
@@ -336,6 +339,9 @@ public class ScreensManager {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ctx.startActivity(intent2);
             } else {
+                if (!(outerContext instanceof Activity)) {
+                    intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
                 outerContext.startActivity(intent2);
             }
         }
