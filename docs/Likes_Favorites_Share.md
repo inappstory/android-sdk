@@ -97,3 +97,67 @@ To interact with the favorite cell (for example, to open a new window with a lis
         }
     });
 ```
+
+Also you can remove favorites through `InAppStoryManager` methods. 
+Next method allows you to remove story from favorite by story id
+
+```java
+    InAppStoryManager.getInstance().removeFromFavorite(int storyId)
+```
+To get story id you can implement custom interface `IStoriesListItem` for stories list item and get it from method `setId`.
+For example:
+```java
+    appearanceManager
+        .csListItemInterface(new IStoriesListItem() {
+            @Override
+            public View getView() {
+                return LayoutInflater.from(MainActivity.this)
+                    .inflate(R.layout.custom_story_list_item, null, false);
+            }
+    
+            @Override
+            public View getVideoView() {
+                return LayoutInflater.from(MainActivity.this)
+                    .inflate(R.layout.custom_story_list_video_item, null, false);
+            }
+    
+            @Override
+            public void setId(View itemView, int storyId) {
+                 itemView.findViewById(R.id.removeStoryButton).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (InAppStoryManager.getInstance() != null) {
+                            InAppStoryManager.getInstance().removeFromFavorite(int storyId)
+                        }
+                    }
+                 })
+            }
+    
+            @Override
+            public void setTitle(View itemView, String title, Integer titleColor) { 
+            }
+    
+            @Override
+            public void setImage(View itemView, String url, int backgroundColor) {
+            }
+    
+            @Override
+            public void setVideo(View itemView, String videoPath) {
+            }
+    
+            @Override
+            public void setOpened(View itemView, boolean isOpened) {
+            }
+    
+            @Override
+            public void setHasAudio(View itemView, boolean hasAudio) {
+    
+            }
+        });
+```
+
+Also you can remove from favorites all stories together with next method:
+
+```java
+    InAppStoryManager.getInstance().removeAllFavorites()
+```

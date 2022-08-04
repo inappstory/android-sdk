@@ -75,6 +75,7 @@ Also, there are several interfaces in the `AppearanceManager`.
     interface IStoriesListItem {
         View getView(); // here you need to pass View - the appearance of the cell
         View getVideoView(); // here you need to pass the View - the appearance of the cell in case the cells use the cover video
+        void setId(View itemView, int storyId); // itemView is the current cell, in the required View we use the story header. storyId - unique story id that can be used for your own purposes. For example - to remove from favorite by id
         void setTitle(View itemView, String title, Integer titleColor); // itemView is the current cell, in the required View we use the story header. The titleColor parameter can be null
         void setImage(View itemView, String imagePath, int backgroundColor); // itemView - the current cell, in the required View show the story's cover (imagePath - path for local file) or background color if it is absent. For video cover imagePath returns poster frame 
         void setOpened(View itemView, boolean isOpened); // itemView is the current cell, change it as needed if it is opened
@@ -97,6 +98,11 @@ Example:
             public View getVideoView() {
                 return LayoutInflater.from(MainActivity.this)
                     .inflate(R.layout.custom_story_list_video_item, null, false);
+            }
+    
+            @Override
+            public void setId(View itemView, int storyId) {
+                //do smth with storyId
             }
     
             @Override
