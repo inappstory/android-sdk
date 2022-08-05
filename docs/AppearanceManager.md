@@ -91,7 +91,7 @@ appearanceManager
     .csFavoriteListItemInterface(IGetFavoriteListItem favoriteListItemInterface);
 ```
 
-This two interfaces can be set separately for each list. More information about this interfaces you can read [here](https://github.com/paperrose/InAppStorySdkKt/blob/master/docs/StoriesList.md#istorieslistitem)
+This two interfaces can be set separately for each list. More information about this interfaces you can read [here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#istorieslistitem)
 
 Also `AppearanceManager` has allow you to customize loaders in story reader and game reader with next two interfaces.
 This interface must be set for the common `AppearanceManager`.
