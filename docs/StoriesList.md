@@ -181,7 +181,7 @@ Example:
         });
 ```
 
-For more information about `AppearanceManager` read [this](https://github.com/paperrose/InAppStorySdkKt/blob/master/docs/AppearanceManager.md).
+For more information about `AppearanceManager` read [this](https://github.com/inappstory/android-sdk/blob/main/docs/AppearanceManager.md).
 
 Also, to interact with the favorite cell (for example, to open a new window with a list of favorite stories), you need to add a handler:
 ```java
