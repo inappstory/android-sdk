@@ -119,7 +119,7 @@ public class JsonParser {
         }
     }
 
-    public static Map<String, String> toMap(JSONObject jsonobj) throws JSONException {
+    static Map<String, String> toMap(JSONObject jsonobj) throws JSONException {
         Map<String, String> map = new HashMap<String, String>();
         Iterator<String> keys = jsonobj.keys();
         while (keys.hasNext()) {
@@ -135,7 +135,7 @@ public class JsonParser {
         return map;
     }
 
-    public static Map<String, Object> toObjectMap(JSONObject jsonobj) throws JSONException {
+    static Map<String, Object> toObjectMap(JSONObject jsonobj) throws JSONException {
         Map<String, Object> map = new HashMap<>();
         Iterator<String> keys = jsonobj.keys();
         while (keys.hasNext()) {
