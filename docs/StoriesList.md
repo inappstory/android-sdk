@@ -43,10 +43,7 @@ For example if you want to show `StoriesList` as grid with 2 columns, you can do
     val columnCount = 2
     val itemPaddingInPx =
         Math.max((screenWidth - columnCount * itemWidthInPx) / (columnCount + 1), 0)
-    storiesList.layoutManager = new GridLayoutManager (
-            ctx, columnCount,
-    RecyclerView.VERTICAL, false
-    )
+    storiesList.layoutManager = GridLayoutManager(context, columnCount,RecyclerView.VERTICAL, false)
     storiesList.addItemDecoration(object : RecyclerView.ItemDecoration() {
         override fun getItemOffsets(
             outRect: Rect, view: View, parent: RecyclerView,
