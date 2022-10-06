@@ -59,6 +59,7 @@ public class ReaderPageFragment extends Fragment {
     Timeline timeline;
     SimpleStoriesView storiesView;
     ButtonsPanel buttonsPanel;
+    View aboveButtonsPanel;
     ReaderManager parentManager;
 
     View blackBottom;
@@ -145,6 +146,7 @@ public class ReaderPageFragment extends Fragment {
             buttonsPanel.setButtonsVisibility(readerSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+            aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
         setOffsets(view);
         if (storiesView != null)
@@ -291,6 +293,8 @@ public class ReaderPageFragment extends Fragment {
         }
     }
 
+    LinearLayout linearLayout;
+
     View createFragmentView(ViewGroup root) {
         Context context = getContext();
 
@@ -298,7 +302,7 @@ public class ReaderPageFragment extends Fragment {
         res.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        LinearLayout linearLayout = new LinearLayout(context);
+        linearLayout = new LinearLayout(context);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -333,30 +337,45 @@ public class ReaderPageFragment extends Fragment {
         blackBottom.setId(R.id.ias_black_bottom);
         blackBottom.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
         blackBottom.setBackgroundColor(Color.TRANSPARENT);
+        RelativeLayout content = new RelativeLayout(context);
+        content.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT, 1));
         ViewGroup main;
+        RelativeLayout.LayoutParams contentLP = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        contentLP.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
+        aboveButtonsPanel = new View(context);
+        aboveButtonsPanel.setBackgroundColor(Color.BLACK);
+        aboveButtonsPanel.setVisibility(View.GONE);
+        RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                Sizes.dpToPxExt(readerSettings.radius));
+        aboveLp.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
+        aboveButtonsPanel.setLayoutParams(aboveLp);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
             main = new CardView(context);
-            main.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1));
+            main.setLayoutParams(contentLP);
             ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius));
             main.setElevation(0);
             RelativeLayout cardContent = new RelativeLayout(context);
-            main.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+            cardContent.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                     CardView.LayoutParams.MATCH_PARENT));
             cardContent.addView(createReaderContainer(context));
             cardContent.addView(createTimelineContainer(context));
             main.addView(cardContent);
         } else {
             main = new RelativeLayout(context);
-            main.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1));
+            main.setLayoutParams(contentLP);
             main.addView(createReaderContainer(context));
             main.addView(createTimelineContainer(context));
         }
+        createButtonsPanel(context);
+        content.addView(buttonsPanel);
+        content.addView(aboveButtonsPanel);
+        content.addView(main);
         linearLayout.addView(blackTop);
-        linearLayout.addView(main);
+        linearLayout.addView(content);
         linearLayout.addView(blackBottom);
-
     }
 
     private RelativeLayout createReaderContainer(Context context) {
@@ -367,8 +386,6 @@ public class ReaderPageFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             readerContainer.setElevation(9);
         }
-
-        addButtonsPanel(context, readerContainer);
         // readerContainer.addView(createProgressContainer(context));
         readerContainer.addView(createWebViewContainer(context));
         if (readerSettings.timerGradientEnable)
@@ -396,7 +413,6 @@ public class ReaderPageFragment extends Fragment {
         RelativeLayout.LayoutParams webViewContainerParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT
         );
-        webViewContainerParams.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webViewContainer.setElevation(4);
         }
@@ -426,22 +442,18 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-    private void addButtonsPanel(Context context, RelativeLayout relativeLayout) {
+    private void createButtonsPanel(Context context) {
         buttonsPanel = new ButtonsPanel(context);
         RelativeLayout.LayoutParams buttonsPanelParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60)
+                RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
         );
         buttonsPanelParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
         buttonsPanel.setVisibility(View.GONE);
         buttonsPanel.setId(R.id.ias_buttons_panel);
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            buttonsPanel.setElevation(9);
-        }
         buttonsPanel.setLayoutParams(buttonsPanelParams);
         buttonsPanel.setIcons(readerSettings);
-        relativeLayout.addView(buttonsPanel);
     }
 
     private void addGradient(Context context, RelativeLayout relativeLayout) {
@@ -466,12 +478,12 @@ public class ReaderPageFragment extends Fragment {
             }
             if (colors.size() != locations.size()) return;
             int i = 0;
-            for (Integer color: colors) {
+            for (Integer color : colors) {
                 colorsArray[i] = color.intValue();
                 i++;
             }
             i = 0;
-            for (Float location: locations) {
+            for (Float location : locations) {
                 locationsArray[i] = location.floatValue();
                 i++;
             }
@@ -482,7 +494,7 @@ public class ReaderPageFragment extends Fragment {
                 @Override
                 public Shader resize(int width, int height) {
 
-                    return new LinearGradient(0f, 0f, 0f, 1f*height,
+                    return new LinearGradient(0f, 0f, 0f, 1f * height,
                             colorsArray,
                             locationsArray,
                             Shader.TileMode.REPEAT);
