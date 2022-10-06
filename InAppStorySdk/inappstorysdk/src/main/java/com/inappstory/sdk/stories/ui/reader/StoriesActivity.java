@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -51,6 +52,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
@@ -60,7 +62,6 @@ import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
-import java.util.List;
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -235,6 +236,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;
+    View backTintView;
 
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
@@ -291,12 +293,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         setContentView(R.layout.cs_activity_stories_draggable);
         draggableFrame = findViewById(R.id.draggable_frame);
         blockView = findViewById(R.id.blockView);
+        backTintView = findViewById(R.id.background);
         //scrollView = findViewById(R.id.scrollContainer);
         if (Build.VERSION.SDK_INT >= 21) {
             chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
                 @Override
                 public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
                     super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
+                    backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
                 }
 
                 @Override
@@ -408,7 +412,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
                 getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true)
+                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true),
+                getIntent().getIntExtra(CS_READER_RADIUS, 0)
         );
         try {
             bundle.putSerializable(CS_TIMER_GRADIENT, getIntent().getSerializableExtra(CS_TIMER_GRADIENT));

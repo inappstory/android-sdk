@@ -39,6 +39,7 @@ public class AppearanceManager {
 
     public static final String CS_TIMER_GRADIENT_ENABLE = "timerGradientEnable";
     public static final String CS_TIMER_GRADIENT = "timerGradient";
+    public static final String CS_READER_RADIUS = "readerRadius";
 
     public static final String CS_HAS_LIKE = "hasLike";
     public static final String CS_HAS_FAVORITE = "hasFavorite";
@@ -122,6 +123,7 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldItalicFont;
 
     private StoriesGradientObject csTimerGradient;
+    private int csReaderRadius = 0;
 
 
 
@@ -132,6 +134,15 @@ public class AppearanceManager {
 
     public StoriesGradientObject csTimerGradient() {
         return csTimerGradient;
+    }
+
+    public AppearanceManager csReaderRadius(int csReaderRadius) {
+        this.csReaderRadius = csReaderRadius;
+        return AppearanceManager.this;
+    }
+
+    public int csReaderRadius() {
+        return csReaderRadius;
     }
 
     private int csCoverQuality;
@@ -633,7 +644,7 @@ public class AppearanceManager {
     }
 
     private boolean csListOpenedItemBorderVisibility = false;
-    private int csListOpenedItemBorderColor = Color.GRAY;
+    private int csListOpenedItemBorderColor = Color.TRANSPARENT;
 
 
     @Deprecated
@@ -682,7 +693,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
     public AppearanceManager csListItemBorderVisibility(boolean csListItemBorderVisibility) {
         this.csListItemBorderVisibility = csListItemBorderVisibility;
         return AppearanceManager.this;
@@ -704,7 +714,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
     public AppearanceManager csListOpenedItemBorderVisibility(boolean csListOpenedItemBorderVisibility) {
         this.csListOpenedItemBorderVisibility = csListOpenedItemBorderVisibility;
         return AppearanceManager.this;
@@ -775,10 +784,6 @@ public class AppearanceManager {
     public boolean csListItemBorderVisibility() {
         return csListItemBorderVisibility;
     }
-
-    /*public int csListItemBorderSize() {
-        return csListItemBorderSize;
-    }*/
 
     public int csListItemBorderColor() {
         return csListItemBorderColor;
