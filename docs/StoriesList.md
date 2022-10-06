@@ -35,6 +35,32 @@ This method also can be used to reload list (for example in PtR case)
 
 `StoriesList` is extends `androidx.recyclerview.widget.RecyclerView`. If necessary, you can use all the methods that are in the `RecyclerView` (setting the `layoutManager`, getting the `adapter`, etc.).
 
+For example if you want to show `StoriesList` as grid with 2 columns, you can do next:
+```
+    val itemWidthInPx = Sizes.dpToPxExt(120) //here place your stories cell width. By default cell width is 120 dp
+    val itemPaddingInPx = Sizes.dpToPxExt(12)  //here place padding between stories or edges
+    val screenWidth = Sizes.getScreenSize().x
+    val columnCount = 2
+    val itemPaddingInPx =
+        Math.max((screenWidth - columnCount * itemWidthInPx) / (columnCount + 1), 0)
+    storiesList.layoutManager = GridLayoutManager(context, columnCount,RecyclerView.VERTICAL, false)
+    storiesList.addItemDecoration(object : RecyclerView.ItemDecoration() {
+        override fun getItemOffsets(
+            outRect: Rect, view: View, parent: RecyclerView,
+            state: RecyclerView.State
+        ) {
+            val position = parent.getChildAdapterPosition(view)
+            val itemCount = parent.adapter?.itemCount ?: 0
+            val lp = view.layoutParams as GridLayoutManager.LayoutParams
+            val bottomIndex = itemCount - columnCount + (itemCount % columnCount)
+            outRect.left = itemPaddingInPx
+            outRect.right = 0
+            outRect.top =
+                if (position < count) itemPaddingInPx else itemPaddingInPx
+            outRect.bottom = if (position >= bottomIndex) itemPaddingInPx else 0
+        }
+    })
+```
 ### Customization
 
 The appearance of the stories list, as well as some elements of the story reader, is configured through the `AppearanceManager` class. It must be set globally for the library, or separately for the list before calling `loadStories()`.

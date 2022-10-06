@@ -75,6 +75,7 @@ public interface FavoriteStoryCallback {
 }
 ```
 
+
 If you want to show only favorited stories in list - add `StoriesList` like this:
 ```xml
 <com.inappstory.sdk.stories.ui.list.StoriesList
@@ -160,4 +161,32 @@ Also you can remove from favorites all stories together with next method:
 
 ```java
     InAppStoryManager.getInstance().removeAllFavorites()
+```
+
+Also you can customize favorites list form.
+For example if you want to show stories as grid with 2 columns, you can do next:
+```
+    val itemWidthInPx = Sizes.dpToPxExt(120) //here place your stories cell width. By default cell width is 120 dp
+    val itemPaddingInPx = Sizes.dpToPxExt(12)  //here place padding between stories or edges
+    val screenWidth = Sizes.getScreenSize().x
+    val columnCount = 2
+    val itemPaddingInPx =
+        Math.max((screenWidth - columnCount * itemWidthInPx) / (columnCount + 1), 0)
+    storiesList.layoutManager = GridLayoutManager(context, columnCount,RecyclerView.VERTICAL, false)
+    storiesList.addItemDecoration(object : RecyclerView.ItemDecoration() {
+        override fun getItemOffsets(
+            outRect: Rect, view: View, parent: RecyclerView,
+            state: RecyclerView.State
+        ) {
+            val position = parent.getChildAdapterPosition(view)
+            val itemCount = parent.adapter?.itemCount ?: 0
+            val lp = view.layoutParams as GridLayoutManager.LayoutParams
+            val bottomIndex = itemCount - columnCount + (itemCount % columnCount)
+            outRect.left = itemPaddingInPx
+            outRect.right = 0
+            outRect.top =
+                if (position < count) itemPaddingInPx else itemPaddingInPx
+            outRect.bottom = if (position >= bottomIndex) itemPaddingInPx else 0
+        }
+    })
 ```
