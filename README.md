@@ -1,5 +1,5 @@
 # InAppStory
-12
+
 A library for embedding stories into an application with customization.
 
 ## Contents
