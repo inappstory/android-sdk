@@ -11,6 +11,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
@@ -272,6 +273,7 @@ public class ScreensManager {
                 bundle.putInt(CS_LIKE_ICON, manager.csLikeIcon());
                 bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
+                bundle.putInt(CS_READER_RADIUS, manager.csReaderRadius());
                 bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
                 if (manager.csTimerGradient() != null) {
                     try {
@@ -334,6 +336,7 @@ public class ScreensManager {
                 intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
                 intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
                 intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
+                intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius());
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

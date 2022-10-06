@@ -12,6 +12,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
@@ -267,7 +268,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
                 getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
                 getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true)
+                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true),
+                getIntent().getIntExtra(CS_READER_RADIUS, 0)
         );
         try {
             bundle.putSerializable(CS_TIMER_GRADIENT,

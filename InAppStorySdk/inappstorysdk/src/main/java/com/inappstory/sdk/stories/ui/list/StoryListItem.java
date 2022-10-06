@@ -248,8 +248,14 @@ public class StoryListItem extends BaseStoryListItem {
         }
         if (hasAudioIcon != null)
             hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
-        if (border != null)
-            border.setVisibility(isOpened ? View.GONE : View.VISIBLE);
+        if (border != null) {
+            border.setVisibility(isOpened ?
+                    (manager.csListOpenedItemBorderVisibility() ? View.VISIBLE : View.GONE)
+                    : (manager.csListItemBorderVisibility() ? View.VISIBLE : View.GONE));
+            border.getBackground().setColorFilter(isOpened ? manager.csListOpenedItemBorderColor() :
+                            manager.csListItemBorderColor(),
+                    PorterDuff.Mode.SRC_ATOP);
+        }
         if (InAppStoryService.isNull()) return;
         if (videoUrl != null) {
             if (image != null) {

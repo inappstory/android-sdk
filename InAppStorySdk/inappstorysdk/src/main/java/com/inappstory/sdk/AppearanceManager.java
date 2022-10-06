@@ -42,6 +42,7 @@ public class AppearanceManager {
     public static final String CS_HAS_SHARE = "hasShare";
     public static final String CS_CLOSE_ON_SWIPE = "closeOnSwipe";
 
+    public static final String CS_READER_RADIUS = "readerRadius";
     public static final String CS_CLOSE_ON_OVERSCROLL = "closeOnOverscroll";
     public static final String CS_READER_OPEN_ANIM = "readerOpenAnimation";
     public static final String CS_FAVORITE_ICON = "iconFavorite";
@@ -119,8 +120,17 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldItalicFont;
 
     private StoriesGradientObject csTimerGradient;
+    private int csReaderRadius = 0;
 
 
+    public AppearanceManager csReaderRadius(int csReaderRadius) {
+        this.csReaderRadius = csReaderRadius;
+        return AppearanceManager.this;
+    }
+
+    public int csReaderRadius() {
+        return csReaderRadius;
+    }
 
     public AppearanceManager csTimerGradient(StoriesGradientObject csTimerGradient) {
         this.csTimerGradient = csTimerGradient;

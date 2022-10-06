@@ -6,6 +6,12 @@
     android:layout_height="match_parent"
     tools:context="com.inappstory.sdk.stories.ui.reader.StoriesActivity">
 
+    <View
+        android:layout_width="match_parent"
+        android:id="@+id/background"
+        android:background="@color/black"
+        android:layout_height="match_parent"/>
+
     <com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout
         android:id="@+id/draggable_frame"
         android:layout_width="match_parent"

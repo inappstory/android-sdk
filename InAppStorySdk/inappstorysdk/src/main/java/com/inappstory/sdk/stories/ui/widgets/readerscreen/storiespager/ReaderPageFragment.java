@@ -32,6 +32,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -327,16 +328,31 @@ public class ReaderPageFragment extends Fragment {
         blackTop = new View(context);
         blackTop.setId(R.id.ias_black_top);
         blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
-        blackTop.setBackgroundColor(Color.BLACK);
+        blackTop.setBackgroundColor(Color.TRANSPARENT);
         blackBottom = new View(context);
         blackBottom.setId(R.id.ias_black_bottom);
         blackBottom.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
-        blackBottom.setBackgroundColor(Color.BLACK);
-        RelativeLayout main = new RelativeLayout(context);
-        main.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT, 1));
-        main.addView(createReaderContainer(context));
-        main.addView(createTimelineContainer(context));
+        blackBottom.setBackgroundColor(Color.TRANSPARENT);
+        ViewGroup main;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            main = new CardView(context);
+            main.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1));
+            ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius));
+            main.setElevation(0);
+            RelativeLayout cardContent = new RelativeLayout(context);
+            main.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    CardView.LayoutParams.MATCH_PARENT));
+            cardContent.addView(createReaderContainer(context));
+            cardContent.addView(createTimelineContainer(context));
+            main.addView(cardContent);
+        } else {
+            main = new RelativeLayout(context);
+            main.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1));
+            main.addView(createReaderContainer(context));
+            main.addView(createTimelineContainer(context));
+        }
         linearLayout.addView(blackTop);
         linearLayout.addView(main);
         linearLayout.addView(blackBottom);
@@ -387,10 +403,10 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
         storiesView = new SimpleStoriesWebView(context);
+        ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         ((SimpleStoriesWebView) storiesView).setLayoutParams(lp);
-        ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
         webViewContainer.addView(((SimpleStoriesWebView) storiesView));
 
      /*   View gradient = new View(context);
@@ -487,8 +503,11 @@ public class ReaderPageFragment extends Fragment {
 
     private RelativeLayout createTimelineContainer(Context context) {
         RelativeLayout timelineContainer = new RelativeLayout(context);
-        timelineContainer.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT));
+        RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        int offset = Sizes.dpToPxExt(Math.max(0, readerSettings.radius - 16)) / 2;
+        tclp.setMargins(offset, offset, offset, 0);
+        timelineContainer.setLayoutParams(tclp);
         timelineContainer.setId(R.id.ias_timeline_container);
         timelineContainer.setMinimumHeight(Sizes.dpToPxExt(40));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -510,6 +529,7 @@ public class ReaderPageFragment extends Fragment {
         timelineContainer.addView(close);
         return timelineContainer;
     }
+
 
     StoriesReaderSettings readerSettings = null;
     StoriesGradientObject timerGradient = null;
