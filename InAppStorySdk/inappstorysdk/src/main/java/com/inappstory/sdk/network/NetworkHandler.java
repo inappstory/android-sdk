@@ -240,7 +240,7 @@ public final class NetworkHandler implements InvocationHandler {
             bodyEncoded = bodyEncoded.substring(1);
         }
         body += bodyEncoded;
-        if (!body.isEmpty()) {
+        if (!body.isEmpty() && !bodyRaw.isEmpty()) {
             body += "\n";
         }
         body += bodyRaw;
