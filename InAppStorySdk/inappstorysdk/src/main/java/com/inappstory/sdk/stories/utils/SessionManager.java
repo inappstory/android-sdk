@@ -16,6 +16,7 @@ import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.stories.api.models.SessionOpenObject;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
@@ -151,21 +152,24 @@ public class SessionManager {
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
         NetworkClient.getApi().sessionOpen(
-                "cache", FEATURES,
-                platform,
-                deviceId,
-                model,
-                manufacturer,
-                brand,
-                screenWidth,
-                screenHeight,
-                screenDpi,
-                osVersion,
-                osSdkVersion,
-                appPackageId,
-                appVersion,
-                appBuild,
-                InAppStoryService.getInstance().getUserId()
+                "cache",
+                new SessionOpenObject(
+                        FEATURES,
+                        platform,
+                        deviceId,
+                        model,
+                        manufacturer,
+                        brand,
+                        screenWidth,
+                        screenHeight,
+                        screenDpi,
+                        osVersion,
+                        osSdkVersion,
+                        appPackageId,
+                        appVersion,
+                        appBuild,
+                        InAppStoryService.getInstance().getUserId()
+                )
         ).enqueue(new NetworkCallback<SessionResponse>() {
             @Override
             public void onSuccess(SessionResponse response) {

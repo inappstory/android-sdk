@@ -1,6 +1,9 @@
 package com.inappstory.sdk.network;
 
 
+import com.inappstory.sdk.stories.api.models.SendExceptionObject;
+import com.inappstory.sdk.stories.api.models.SendStoryDataObject;
+import com.inappstory.sdk.stories.api.models.SessionOpenObject;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 /**
@@ -58,15 +61,11 @@ public interface ApiInterface {
             @Query("d") Long durationMs,
             @Query("spend_ms") Long spendMs);
 
-    @FormUrlEncoded
     @POST("exception")
     Request sendException(
             @Query("s") String session,
             @Query("ts") Long timestamp,
-            @Field("m") String message,
-            @Field("f") String file,
-            @Field("l") Integer line,
-            @Field("t") String trace);
+            @Body SendExceptionObject object);
 
 
     @GET("stat/{event_name}")
@@ -92,12 +91,10 @@ public interface ApiInterface {
             @Query("t") String t,
             @Query("m") Integer type);
 
-
-    @FormUrlEncoded
     @PUT("v2/story-data/{id}")
     Request sendStoryData(
             @Path("id") String id,
-            @Field("data") String data,
+            @Body SendStoryDataObject data,
             @Query("session_id") String sessionId);
 
     @POST("v2/story-like/{id}")
@@ -119,25 +116,10 @@ public interface ApiInterface {
             @Query("expand") String expand
     );
 
-    @FormUrlEncoded
     @POST("v2/session/open")
     Request sessionOpen(
             @Query("expand") String expand,
-            @Field("features") String features,
-            @Field("platform") String platform,
-            @Field("device_id") String deviceId,
-            @Field("model") String model,
-            @Field("manufacturer") String manufacturer,
-            @Field("brand") String brand,
-            @Field("screen_width") String screenWidth,
-            @Field("screen_height") String screenHeight,
-            @Field("screen_dpi") String screenDpi,
-            @Field("os_version") String osVersion,
-            @Field("os_sdk_version") String osSdkVersion,
-            @Field("app_package_id") String appPackageId,
-            @Field("app_version") String appVersion,
-            @Field("app_build") String appBuild,
-            @Field("user_id") String userId);
+            @Body SessionOpenObject object);
 
     @POST("v2/session/update")
     Request sessionUpdate(

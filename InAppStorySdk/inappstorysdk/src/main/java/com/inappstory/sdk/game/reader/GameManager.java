@@ -13,6 +13,7 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.stories.api.models.SendStoryDataObject;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -72,7 +73,7 @@ public class GameManager {
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            NetworkClient.getApi().sendStoryData(storyId, data, Session.getInstance().id)
+            NetworkClient.getApi().sendStoryData(storyId, new SendStoryDataObject(data), Session.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {

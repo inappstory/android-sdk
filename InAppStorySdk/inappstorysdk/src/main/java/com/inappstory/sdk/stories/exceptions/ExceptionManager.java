@@ -4,6 +4,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.SendExceptionObject;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -34,10 +35,12 @@ public class ExceptionManager {
                     NetworkClient.getStatApi().sendException(
                             copiedLog.session,
                             copiedLog.timestamp / 1000,
-                            copiedLog.message,
-                            copiedLog.file,
-                            copiedLog.line,
-                            copiedLog.stacktrace
+                            new SendExceptionObject(
+                                    copiedLog.message,
+                                    copiedLog.file,
+                                    copiedLog.line,
+                                    copiedLog.stacktrace
+                            )
                     ).enqueue(new NetworkCallback() {
                         @Override
                         public void onSuccess(Object response) {

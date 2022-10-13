@@ -203,16 +203,12 @@ public final class NetworkHandler implements InvocationHandler {
         return var;
     }
 
-
-    //Test
     public Request generateRequest(String path, Annotation[][] parameterAnnotations, Object[] args, Request.Builder builder) {
         if (networkClient == null) networkClient = NetworkClient.getInstance();
-        //
+
         HashMap<String, String> vars = new HashMap<>();
-        // String path = ev.value();
         String bodyRaw = "";
-        String bodyEncoded = "";
-        String body = "";
+        StringBuilder body = new StringBuilder();
         if (headers == null) {
             headers = networkClient.getHeaders();
         }
@@ -225,33 +221,21 @@ public final class NetworkHandler implements InvocationHandler {
                     path = path.replaceFirst("\\{" + ((Path) annotation).value() + "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
                     vars.put(((Query) annotation).value(), encode(args[i].toString()));
-                } else if (annotation instanceof Field) {
-                    bodyEncoded += "&" + ((Field) annotation).value() + "=" + encode(args[i].toString());
                 } else if (annotation instanceof Body) {
                     try {
-                        bodyRaw += JsonParser.getJson(args[i]);
+                        body.append(JsonParser.getJson(args[i]));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
         }
-        if (!bodyEncoded.isEmpty() && bodyEncoded.startsWith("&")) {
-            bodyEncoded = bodyEncoded.substring(1);
-        }
-        body += bodyEncoded;
-        if (!body.isEmpty()) {
-            body += "\n";
-        }
-        body += bodyRaw;
-        final Request request = builder.headers(headers)
+        return builder.headers(headers)
                 .url(NetworkClient.getInstance().getBaseUrl() != null ?
                         NetworkClient.getInstance().getBaseUrl() + path : path)
                 .vars(vars)
                 .bodyRaw(bodyRaw)
-                .bodyEncoded(bodyEncoded)
-                .body(body).build();
-        return request;
+                .body(body.toString()).build();
     }
 
     public NetworkClient networkClient;

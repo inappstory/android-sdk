@@ -19,6 +19,7 @@ import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.share.ShareManager;
 import com.inappstory.sdk.stories.api.models.PayloadTypes;
+import com.inappstory.sdk.stories.api.models.SendStoryDataObject;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
@@ -429,7 +430,7 @@ public class StoriesViewManager {
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, Session.getInstance().id)
+            NetworkClient.getApi().sendStoryData(Integer.toString(storyId), new SendStoryDataObject(data), Session.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {
@@ -446,7 +447,8 @@ public class StoriesViewManager {
 
     public void storySendData(String data) {
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
-        NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, Session.getInstance().id)
+        NetworkClient.getApi().sendStoryData(Integer.toString(storyId),
+                        new SendStoryDataObject(data), Session.getInstance().id)
                 .enqueue(new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
