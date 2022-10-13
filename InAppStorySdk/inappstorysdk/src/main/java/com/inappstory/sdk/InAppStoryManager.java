@@ -952,12 +952,12 @@ public class InAppStoryManager {
         }
     }
 
-    private void showOnboardingStoriesInner(final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
+    private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (InAppStoryService.isNull()) {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showOnboardingStoriesInner(feed, tags, outerContext, manager);
+                    showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
                 }
             }, 1000);
             return;
@@ -978,8 +978,11 @@ public class InAppStoryManager {
                 final String localFeed;
                 if (feed != null) localFeed = feed;
                 else localFeed = ONBOARDING_FEED;
-                NetworkClient.getApi().getOnboardingFeed(localFeed, localTags == null ? getTagsString() :
-                        localTags).enqueue(new LoadFeedCallback() {
+                NetworkClient.getApi().getOnboardingFeed(
+                        localFeed,
+                        limit,
+                        localTags == null ? getTagsString() : localTags
+                ).enqueue(new LoadFeedCallback() {
                     @Override
                     public void onSuccess(Feed response) {
                         if (InAppStoryManager.isNull()) return;
@@ -1041,7 +1044,7 @@ public class InAppStoryManager {
      */
     public void showOnboardingStories(String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
         if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
-        showOnboardingStoriesInner(feed, tags, outerContext, manager);
+        showOnboardingStoriesInner(null, feed, tags, outerContext, manager);
     }
 
 
@@ -1065,7 +1068,7 @@ public class InAppStoryManager {
      * @param manager      (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showOnboardingStories(List<String> tags, Context outerContext, AppearanceManager manager) {
-        showOnboardingStoriesInner(ONBOARDING_FEED, tags, outerContext, manager);
+        showOnboardingStoriesInner(null, ONBOARDING_FEED, tags, outerContext, manager);
     }
 
     /**
@@ -1076,6 +1079,52 @@ public class InAppStoryManager {
      */
     public void showOnboardingStories(Context context, final AppearanceManager manager) {
         showOnboardingStories(ONBOARDING_FEED, getTags(), context, manager);
+    }
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(int limit, String feed, List<String> tags, Context outerContext, AppearanceManager manager) {
+        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
+        showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
+    }
+
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(int limit, String feed, Context context, final AppearanceManager manager) {
+        if (feed == null || feed.isEmpty()) feed = ONBOARDING_FEED;
+        showOnboardingStories(limit, feed, getTags(), context, manager);
+    }
+
+
+    /**
+     * Function for loading onboarding stories with custom tags
+     *
+     * @param tags         (tags)
+     * @param outerContext (outerContext) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager      (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(int limit, List<String> tags, Context outerContext, AppearanceManager manager) {
+        showOnboardingStoriesInner(limit, ONBOARDING_FEED, tags, outerContext, manager);
+    }
+
+    /**
+     * function for loading onboarding stories with default tags (set in InAppStoryManager.Builder)
+     *
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     * @param manager (manager) {@link AppearanceManager} for reader. May be null
+     */
+    public void showOnboardingStories(int limit, Context context, final AppearanceManager manager) {
+        showOnboardingStories(limit, ONBOARDING_FEED, getTags(), context, manager);
     }
 
     public boolean isSandbox() {

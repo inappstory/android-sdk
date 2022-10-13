@@ -30,6 +30,7 @@ public interface ApiInterface {
     @GET("v2/feed/{feed}/onboarding")
     Request getOnboardingFeed(
             @Path("feed") String feed,
+            @Query("limit") Integer limit,
             @Query("tags") String tags
     );
 
