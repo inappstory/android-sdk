@@ -480,9 +480,14 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
+        /*if (!Sizes.isTablet()) {
+            View v = findViewById(R.id.gameContainer);
+            v.getLayoutParams().height = Sizes.getScreenSize().y;
+            v.requestLayout();
+        }*/
       /*  new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

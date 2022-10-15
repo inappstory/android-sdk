@@ -27,6 +27,7 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowSoftInputMode">adjustResize|adjustPan</item>
         <item name="android:windowFullscreen">@bool/isFullscreen</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="android:windowTranslucentStatus">@bool/isFullscreen</item>

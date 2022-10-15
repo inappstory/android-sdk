@@ -12,6 +12,7 @@
         android:layout_height="match_parent"/>
     <LinearLayout
         android:clickable="true"
+        android:id="@+id/gameContainer"
         android:layout_width="@dimen/cs_tablet_width"
         android:background="@android:color/black"
         android:layout_height="@dimen/cs_tablet_height"
