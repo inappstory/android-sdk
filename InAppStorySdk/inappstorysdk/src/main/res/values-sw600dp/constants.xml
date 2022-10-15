@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <bool name="isTablet">true</bool>
+    <bool name="isFullscreen">false</bool>
     <!-- < <string name="csApiKey">BHZsOnyoz1oF7b46lNlbBqV5ZskZsx5P</string> --><!--Pashas-->
 </resources>

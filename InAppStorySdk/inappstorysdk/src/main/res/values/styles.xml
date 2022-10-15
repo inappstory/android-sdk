@@ -11,9 +11,9 @@
     </style>
 
     <declare-styleable name="BlurringView">
-        <attr name="cblurRadius" format="integer"/>
-        <attr name="cdownsampleFactor" format="integer"/>
-        <attr name="coverlayColor" format="color"/>
+        <attr name="cblurRadius" format="integer" />
+        <attr name="cdownsampleFactor" format="integer" />
+        <attr name="coverlayColor" format="color" />
     </declare-styleable>
 
     <style name="StoriesSDKAppTheme.NoActionBar">
@@ -27,9 +27,10 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowDisablePreview">true</item>
-        <item name="android:windowFullscreen">true</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
-        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentStatus">@bool/isFullscreen</item>
+        <item name="android:windowSoftInputMode">adjustResize|adjustPan</item>
+        <item name="android:windowFullscreen">@bool/isFullscreen</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">

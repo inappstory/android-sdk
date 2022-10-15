@@ -37,6 +37,7 @@
 
         <activity
             android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
             android:name=".game.reader.GameActivity"
             android:theme="@style/Theme.GameActivity" />
 

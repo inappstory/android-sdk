@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
@@ -77,6 +78,13 @@ public class GameActivity extends AppCompatActivity {
 
     private boolean closing = false;
     boolean showClose = true;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onCreate(savedInstanceState, persistentState);
+        overridePendingTransition(0, 0);
+    }
+
 
 
     @Override
@@ -205,34 +213,29 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         webViewContainer = findViewById(R.id.webViewContainer);
-        if (!Sizes.isTablet()) {
-            if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(GameActivity.this);
-                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-                float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.85f;
-                if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+        if (blackBottom != null) {
+            Point screenSize = Sizes.getScreenSize(GameActivity.this);
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+            float realProps = screenSize.y / ((float) screenSize.x);
+            float sn = 1.85f;
+            if (realProps > sn) {
+                lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
 
-                }
-
-                //    blackBottom.setLayoutParams(lp);
-                //    blackTop.setLayoutParams(lp);
-                if (Build.VERSION.SDK_INT >= 28) {
-                    new Handler(getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                                DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                                if (cutout != null && webViewContainer != null) {
-                                    LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                    webViewContainer.setLayoutParams(lp1);
-                                }
+            }
+            if (Build.VERSION.SDK_INT >= 28) {
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                            if (cutout != null && webViewContainer != null) {
+                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
+                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
+                                webViewContainer.setLayoutParams(lp1);
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
         }
         loaderContainer.addView(loaderView.getView());
@@ -265,6 +268,8 @@ public class GameActivity extends AppCompatActivity {
 
     @Override
     public void onResume() {
+
+        overridePendingTransition(0, 0);
         manager.onResume();
         super.onResume();
         resumeGame();
@@ -315,6 +320,7 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        overridePendingTransition(0, 0);
         pauseGame();
     }
 
@@ -365,7 +371,6 @@ public class GameActivity extends AppCompatActivity {
     void loadJsApiResponse(String gameResponse, String cb) {
         webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
     }
-
 
 
     private void initWebView() {
@@ -433,6 +438,7 @@ public class GameActivity extends AppCompatActivity {
     protected void onDestroy() {
         if (ScreensManager.getInstance().currentGameActivity == this)
             ScreensManager.getInstance().currentGameActivity = null;
+
         super.onDestroy();
     }
 
@@ -440,17 +446,9 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
-      /*  new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (webView != null) {
-                    webView.evaluateJavascript("window.showGoodsWidget(['sku_1', 'sku_2', 'sku_3']);", null);
-                }
-            }
-        }, 10000);*/
+
         manager = new GameManager(this);
         manager.callback = new GameLoadCallback() {
             @Override
@@ -536,6 +534,7 @@ public class GameActivity extends AppCompatActivity {
                 manager.tapOnLink(link);
             setResult(RESULT_OK, intent);
             finish();
+            overridePendingTransition(0, 0);
 
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
