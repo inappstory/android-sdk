@@ -236,6 +236,12 @@ public class ScreensManager {
         }
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+        } else {
+            try {
+                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent2);
+            } catch (Exception e) {
+            }
         }
     }
 
