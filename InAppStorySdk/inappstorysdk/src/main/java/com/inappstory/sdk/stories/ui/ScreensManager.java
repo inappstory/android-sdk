@@ -134,7 +134,6 @@ public class ScreensManager {
     }
 
 
-
     public void setTempShareStoryId(int tempShareStoryId) {
         this.tempShareStoryId = tempShareStoryId;
     }
@@ -196,7 +195,14 @@ public class ScreensManager {
     }
 
 
-    public void openGameReader(Context context, int storyId, int index, String feedId, String gameUrl, String preloadPath, String gameConfig, String resources) {
+    public void openGameReader(Context context,
+                               int storyId,
+                               int index,
+                               String feedId,
+                               String gameUrl,
+                               String preloadPath,
+                               String gameConfig,
+                               String resources) {
         if (InAppStoryService.isNull()) {
             return;
         }
@@ -227,10 +233,9 @@ public class ScreensManager {
                         new MutableLiveData<GameCompleteEvent>());
                 currentScreen.observeGameReader(observableUID);
             }
-        } else {
-            if (context instanceof Activity) {
-                ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
-            }
+        }
+        if (context instanceof Activity) {
+            ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
         }
     }
 
