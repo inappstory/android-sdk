@@ -236,6 +236,7 @@ public class ScreensManager {
         }
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
+            ((Activity)context).overridePendingTransition(0, 0);
         } else {
             try {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -243,6 +244,7 @@ public class ScreensManager {
             } catch (Exception e) {
             }
         }
+
     }
 
     private Long lastOpenTry = -1L;

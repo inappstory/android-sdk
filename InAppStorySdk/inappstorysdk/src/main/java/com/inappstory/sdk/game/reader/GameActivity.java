@@ -577,7 +577,7 @@ public class GameActivity extends AppCompatActivity {
                 manager.tapOnLink(link);
             setResult(RESULT_OK, intent);
             finish();
-
+            overridePendingTransition(0, 0);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             closing = false;
