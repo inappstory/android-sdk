@@ -39,6 +39,7 @@
         <activity
             android:name=".game.reader.GameActivity"
             android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.GameActivity" />
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />

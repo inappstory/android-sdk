@@ -208,7 +208,7 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         webViewContainer = findViewById(R.id.webViewContainer);
-        if (!Sizes.isTablet()) {
+        //if (!Sizes.isTablet()) {
             if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize(GameActivity.this);
                 final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
@@ -237,7 +237,7 @@ public class GameActivity extends AppCompatActivity {
                     });
                 }
             }
-        }
+       // }
         loaderContainer.addView(loaderView.getView());
     }
 
