@@ -44,6 +44,7 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -151,7 +152,7 @@ public class ScreensManager {
             currentScreen = null;
     }
 
-    public void clearCurrentActivity(AppCompatActivity activity) {
+    public void clearCurrentActivity(FragmentActivity activity) {
         if (activity == currentScreen)
             currentScreen = null;
     }
@@ -259,7 +260,7 @@ public class ScreensManager {
         closeGameReader();
         closeUGCEditor();
 
-        if (Sizes.isTablet() && outerContext instanceof AppCompatActivity) {
+        if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
             closeStoryReader(CloseStory.CUSTOM);
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
@@ -302,7 +303,7 @@ public class ScreensManager {
             }
             try {
                 storiesDialogFragment.show(
-                        ((AppCompatActivity) outerContext).getSupportFragmentManager(),
+                        ((FragmentActivity) outerContext).getSupportFragmentManager(),
                         "DialogFragment");
                 ScreensManager.getInstance().currentScreen = storiesDialogFragment;
             } catch (IllegalStateException e) {
