@@ -47,8 +47,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
 
-
-
     private void setImage(AppCompatImageView imageView, FavoriteImage image) {
         if (image.getImage() != null && InAppStoryService.isNotNull()) {
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -273,7 +271,14 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
             @Override
             public void onError() {
-
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getListItem != null) {
+                            callback.error();
+                        }
+                    }
+                });
             }
         });
     }
