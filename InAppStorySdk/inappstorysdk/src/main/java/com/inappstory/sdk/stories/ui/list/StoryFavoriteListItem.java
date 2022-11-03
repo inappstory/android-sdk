@@ -107,7 +107,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         if (getFavoriteListItem != null
                 && InAppStoryService.isNotNull()
                 && getFavoriteListItem.getFavoriteItem() != null) {
-            int count = Math.min(InAppStoryService.getInstance().getFavoriteImages().size(), 4);
+            int count = InAppStoryService.getInstance().getFavoriteImages().size();
             final List<Integer> backgroundColors = new ArrayList<>();
             for (int j = 0; j < count; j++) {
                 backgroundColors.add(InAppStoryService.getInstance().getFavoriteImages().get(j).getBackgroundColor());
