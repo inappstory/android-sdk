@@ -1,5 +1,7 @@
 ## Migration
 
+### From 1.11.x
+Now parameters from methods in IGetFavoriteListItem (bindFavoriteItem and setImages) can contains more than 4 elements (and count may be more than 4)
 
 ### From 1.10.x
 Added image placeholders. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#image-placeholders) is described its usage.
