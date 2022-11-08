@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/draggable_frame"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    app:dragDismissDistance="250dp"
-    app:dragDismissEnableBottomDrag="true"
-    app:dragDismissScale="0.90"
-    tools:context="com.inappstory.sdk.stories.ui.reader.StoriesActivity">
-
-    <FrameLayout
-        android:id="@+id/fragments_layout"
+    android:layout_height="match_parent">
+    <com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout
+        android:id="@+id/draggable_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black"
-        android:layout_weight="1" />
-</com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout>
+        android:background="@android:color/transparent"
+        app:dragDismissDistance="250dp"
+        app:dragDismissEnableBottomDrag="true"
+        app:dragDismissScale="0.90"
+        tools:context="com.inappstory.sdk.stories.ui.reader.StoriesActivity">
 
+        <FrameLayout
+            android:id="@+id/fragments_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+    </com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout>
+</FrameLayout>

@@ -307,6 +307,9 @@ public class ReaderPageFragment extends Fragment {
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         createRefreshButton(context);
+        if (!Sizes.isTablet()) {
+            linearLayout.setBackgroundColor(Color.BLACK);
+        }
         setLinearContainer(context, linearLayout);
         res.addView(linearLayout);
         res.addView(refresh);

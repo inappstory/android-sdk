@@ -33,7 +33,7 @@
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity"
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.NonTransparent"
+            android:theme="@style/Theme.Transparent"
             tools:ignore="LockedOrientationActivity" />
 
         <activity

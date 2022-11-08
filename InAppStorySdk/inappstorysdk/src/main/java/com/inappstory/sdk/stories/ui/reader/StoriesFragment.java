@@ -22,6 +22,7 @@ import android.widget.RelativeLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
@@ -113,8 +114,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     }
 
 
-
-
     @Override
     public void onDestroyView() {
         OldStatisticManager.getInstance().currentEvent = null;
@@ -143,7 +142,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-       // setRetainInstance(true);
+        // setRetainInstance(true);
     }
 
     int ind;
@@ -168,7 +167,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         readerSettings = arguments.getString(CS_READER_SETTINGS);
         timerGradient = arguments.getSerializable(CS_TIMER_GRADIENT);
         ind = arguments.getInt("index", 0);
-        readerAnimation = arguments.getInt(CS_STORY_READER_ANIMATION, 0);
+        readerAnimation = arguments.getInt(CS_STORY_READER_ANIMATION,
+                AppearanceManager.ANIMATION_CUBE);
 
         readerManager = new ReaderManager(arguments.getString("listID", null),
                 arguments.getString("feedId", null),

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import static com.inappstory.sdk.AppearanceManager.ANIMATION_CUBE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
@@ -11,6 +12,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
@@ -268,7 +270,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
-
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
@@ -297,7 +298,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         setContentView(R.layout.cs_activity_stories_draggable);
         draggableFrame = findViewById(R.id.draggable_frame);
         blockView = findViewById(R.id.blockView);
-
         backTintView = findViewById(R.id.background);
         //scrollView = findViewById(R.id.scrollContainer);
         if (Build.VERSION.SDK_INT >= 21) {
@@ -404,6 +404,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     StoriesReaderSettings storiesReaderSettings;
 
     private void setAppearanceSettings(Bundle bundle) {
+        int color = getIntent().getIntExtra(CS_READER_BACKGROUND_COLOR,
+                getResources().getColor(R.color.black)
+        );
+        backTintView.setBackgroundColor(color);
         storiesReaderSettings = new StoriesReaderSettings(
                 getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
                 getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
@@ -423,7 +427,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         );
         try {
             bundle.putSerializable(CS_TIMER_GRADIENT, getIntent().getSerializableExtra(CS_TIMER_GRADIENT));
-            bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
+            bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
             e.printStackTrace();
@@ -435,6 +439,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void closeStoryReader(int action) {
         if (closing) return;
+        backTintView.setVisibility(View.GONE);
         closing = true;
         InAppStoryService.getInstance().getListReaderConnector().closeReader();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,

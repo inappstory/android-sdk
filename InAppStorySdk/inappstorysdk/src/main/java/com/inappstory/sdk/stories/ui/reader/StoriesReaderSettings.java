@@ -17,6 +17,7 @@ public class StoriesReaderSettings {
     public int soundIcon;
     public boolean timerGradientEnable;
     public int radius;
+    public int panelColor;
 
 
     public StoriesReaderSettings(boolean closeOnSwipe, boolean closeOnOverscroll,

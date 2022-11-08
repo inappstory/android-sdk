@@ -11,6 +11,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
@@ -237,7 +238,7 @@ public class ScreensManager {
         }
         if (context instanceof Activity) {
             ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
-            ((Activity)context).overridePendingTransition(0, 0);
+            ((Activity) context).overridePendingTransition(0, 0);
         } else {
             try {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -289,6 +290,7 @@ public class ScreensManager {
                 bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
                 bundle.putInt(CS_READER_RADIUS, manager.csReaderRadius());
                 bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
+                bundle.putInt(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
                 if (manager.csTimerGradient() != null) {
                     try {
                         bundle.putSerializable(CS_TIMER_GRADIENT, manager.csTimerGradient());
@@ -351,6 +353,7 @@ public class ScreensManager {
                 intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
                 intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
                 intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius());
+                intent2.putExtra(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

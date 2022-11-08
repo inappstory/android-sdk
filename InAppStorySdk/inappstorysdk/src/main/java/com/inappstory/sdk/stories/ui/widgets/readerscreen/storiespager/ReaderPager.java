@@ -9,8 +9,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
+import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CoverTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
@@ -43,6 +45,7 @@ public class ReaderPager extends ViewPager {
 
     public static PageTransformer cubeTransformer = new CubeTransformer();
     public static PageTransformer depthTransformer = new DepthTransformer();
+    public static PageTransformer coverTransformer = new CoverTransformer();
 
     public void setTransformAnimation(int transformAnimation) {
         this.transformAnimation = transformAnimation;
@@ -64,13 +67,15 @@ public class ReaderPager extends ViewPager {
 
     public void init() {
         switch (transformAnimation) {
-            case 0:
-                setChildrenDrawingOrderEnabled(false);
-                setPageTransformer(true, cubeTransformer);
+            case AppearanceManager.ANIMATION_FLAT:
                 break;
-            case 1:
+            case AppearanceManager.ANIMATION_DEPTH:
                 setChildrenDrawingOrderEnabled(true);
                 setPageTransformer(true, depthTransformer);
+                break;
+            case AppearanceManager.ANIMATION_COVER:
+                setChildrenDrawingOrderEnabled(true);
+                setPageTransformer(true, coverTransformer);
                 break;
             default:
                 setChildrenDrawingOrderEnabled(false);

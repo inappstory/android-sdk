@@ -17,14 +17,19 @@ public class CubeTransformer implements ViewPager.PageTransformer {
     }
 
     protected void onTransform(View view, float position) {
-    /*    if (Math.abs(position) > 0.90 || Math.abs(position) < 0.09) {
-            StoriesManager.getInstance().cubeAnimation = false;
-        } else {
-            StoriesManager.getInstance().cubeAnimation = true;
-        }*/
-        view.setPivotX(position < 0f ? view.getWidth() : 0f);
+
+        float deltaY = 0.5f;
+        float pivotX = position < 0f ? view.getWidth() : 0f;
+        float pivotY = view.getHeight() * 0.5f;
+        float rotationY = 90f * position;
+
+        view.setPivotX(pivotX);
+        view.setPivotY(pivotY);
+        view.setRotationY(rotationY);
+
+      /*  view.setPivotX(position < 0f ? view.getWidth() : 0f);
         view.setPivotY(view.getHeight() * 0.6f);
-        view.setRotationY(60 * position);
+        view.setRotationY(30 * position);*/
     }
 
     protected void onPostTransform(View page, float position) {

@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import static com.inappstory.sdk.AppearanceManager.ANIMATION_CUBE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
@@ -11,6 +12,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
@@ -64,7 +66,6 @@ import com.inappstory.sdk.stories.utils.StatusBarController;
 public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen {
 
     public boolean pauseDestroyed = false;
-
 
     public static void setWindowFlag(Activity activity, final int bits, boolean on) {
         Window win = activity.getWindow();
@@ -125,27 +126,34 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
         ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
-        switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
-            case 0:
-                finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
-                break;
-            case 1:
-                super.finish();
-                break;
-            case 2:
-                finishWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
-                break;
-            default:
-                super.finish();
-                break;
+        if (animateFirst &&
+                android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
+            animateFirst = false;
+            loadAnim();
+        } else {
+            switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
+                case 0:
+                    finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
+                    break;
+                case 1:
+                    super.finish();
+                    break;
+                case 2:
+                    finishWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
+                    break;
+                default:
+                    super.finish();
+                    break;
+            }
         }
     }
 
-    boolean animateFirst = true;
+    boolean isAnimation = false;
 
 
     public void loadAnim() {
         try {
+            isAnimation = true;
             float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
             float y = draggableFrame.getY();
             AnimationSet animationSet = new AnimationSet(true);
@@ -154,8 +162,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             animationSet.addAnimation(anim);
             Point coordinates = ScreensManager.getInstance().coordinates;
             if (coordinates != null) {
-                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x
-                        - Sizes.getScreenSize(StoriesFixedActivity.this).x / 2,
+                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x -
+                        Sizes.getScreenSize(StoriesFixedActivity.this).x / 2,
                         0f, coordinates.y - draggableFrame.getY());
                 anim2.setDuration(200);
                 animationSet.addAnimation(anim2);
@@ -179,6 +187,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 public void onAnimationEnd(Animation animation) {
                     draggableFrame.setVisibility(View.GONE);
                     StoriesFixedActivity.super.finish();
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 }
             });
             draggableFrame.startAnimation(animationSet);
@@ -187,6 +196,9 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         }
 
     }
+
+    boolean animateFirst = true;
+
 
     @Override
     protected void onResume() {
@@ -198,6 +210,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     @Override
     public void onBackPressed() {
 
+        if (isAnimation) return;
         if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
         else animateFirst = false;
 
@@ -254,6 +267,10 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     ElasticDragDismissFrameLayout draggableFrame;
 
     private void setAppearanceSettings(Bundle bundle) {
+        int color = getIntent().getIntExtra(CS_READER_BACKGROUND_COLOR,
+                getResources().getColor(R.color.black)
+        );
+        draggableFrame.setBackgroundColor(color);
         StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(
                 getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
                 getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
@@ -275,7 +292,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             bundle.putSerializable(CS_TIMER_GRADIENT,
                     getIntent().getSerializableExtra(CS_TIMER_GRADIENT));
             bundle.putInt(CS_STORY_READER_ANIMATION,
-                    getIntent().getIntExtra(CS_STORY_READER_ANIMATION, 0));
+                    getIntent().getIntExtra(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
@@ -293,11 +310,15 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         }
 
         super.onCreate(savedInstanceState1);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
+            if (navColor != 0)
+                getWindow().setNavigationBarColor(navColor);
+        }
         if (InAppStoryService.isNull()) {
             finishWithoutAnimation();
             return;
         }
-
         ScreensManager.getInstance().currentScreen = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         if (Build.VERSION.SDK_INT >= 21) {
@@ -318,7 +339,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         }
 
         setContentView(R.layout.cs_activity_stories);
-
+        draggableFrame = findViewById(R.id.draggable_frame);
         final Bundle savedInstanceState = savedInstanceState1;
         try {
             if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {
@@ -343,7 +364,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
             }
-
         } else {
             storiesFragment = (StoriesFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
@@ -368,8 +388,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 }
             }
         }, 300);
-
-        //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
     @Override

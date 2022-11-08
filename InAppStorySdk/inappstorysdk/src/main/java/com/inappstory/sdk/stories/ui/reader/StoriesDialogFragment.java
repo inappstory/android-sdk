@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import static com.inappstory.sdk.AppearanceManager.ANIMATION_CUBE;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
@@ -37,6 +38,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -237,6 +239,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         cleaned = false;
+        int color = getArguments().getInt(AppearanceManager.CS_READER_BACKGROUND_COLOR, Color.BLACK);
+        view.setBackgroundColor(color);
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             Bundle args = new Bundle();
@@ -286,7 +290,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         );
         try {
             bundle.putSerializable(CS_TIMER_GRADIENT, getArguments().getSerializable(CS_TIMER_GRADIENT));
-            bundle.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, 0));
+            bundle.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);

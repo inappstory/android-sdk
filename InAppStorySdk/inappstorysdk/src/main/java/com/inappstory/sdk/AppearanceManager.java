@@ -41,6 +41,7 @@ public class AppearanceManager {
     public static final String CS_HAS_FAVORITE = "hasFavorite";
     public static final String CS_HAS_SHARE = "hasShare";
     public static final String CS_CLOSE_ON_SWIPE = "closeOnSwipe";
+    public static final String CS_READER_BACKGROUND_COLOR = "readerBackgroundColor";
 
     public static final String CS_READER_RADIUS = "readerRadius";
     public static final String CS_CLOSE_ON_OVERSCROLL = "closeOnOverscroll";
@@ -63,8 +64,10 @@ public class AppearanceManager {
     public static final int BOTTOM_LEFT = 3;
     public static final int BOTTOM_RIGHT = 4;
 
-    public static final int ANIMATION_CUBE = 2;
     public static final int ANIMATION_DEPTH = 1;
+    public static final int ANIMATION_CUBE = 2;
+    public static final int ANIMATION_COVER = 3;
+    public static final int ANIMATION_FLAT = 4;
 
     private boolean csListItemTitleVisibility = true;
     private int csListItemTitleSize = -1;
@@ -109,6 +112,7 @@ public class AppearanceManager {
     private int csSoundIcon;
     private int csNavBarColor = Color.TRANSPARENT;
     private int csNightNavBarColor = Color.TRANSPARENT;
+    private int csReaderBackgroundColor = Color.BLACK;
 
     private Typeface csCustomFont;
     private Typeface csCustomBoldFont;
@@ -122,6 +126,15 @@ public class AppearanceManager {
     private StoriesGradientObject csTimerGradient;
     private int csReaderRadius = 0;
 
+
+    public AppearanceManager csReaderBackgroundColor(int csReaderBackgroundColor) {
+        this.csReaderBackgroundColor = csReaderBackgroundColor;
+        return AppearanceManager.this;
+    }
+
+    public int csReaderBackgroundColor() {
+        return csReaderBackgroundColor;
+    }
 
     public AppearanceManager csReaderRadius(int csReaderRadius) {
         this.csReaderRadius = csReaderRadius;
@@ -207,7 +220,7 @@ public class AppearanceManager {
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csCloseOnSwipe(boolean closeOnSwipe) {
-        this.csCloseOnSwipe = csCloseOnSwipe;
+        this.csCloseOnSwipe = closeOnSwipe;
         return AppearanceManager.this;
     }
 
