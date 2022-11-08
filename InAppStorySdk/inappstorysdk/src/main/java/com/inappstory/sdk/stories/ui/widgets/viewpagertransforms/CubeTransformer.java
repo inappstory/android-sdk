@@ -18,18 +18,18 @@ public class CubeTransformer implements ViewPager.PageTransformer {
 
     protected void onTransform(View view, float position) {
 
-        float deltaY = 0.5f;
+       /* float deltaY = 0.5f;
         float pivotX = position < 0f ? view.getWidth() : 0f;
         float pivotY = view.getHeight() * 0.5f;
         float rotationY = 90f * position;
 
         view.setPivotX(pivotX);
         view.setPivotY(pivotY);
-        view.setRotationY(rotationY);
+        view.setRotationY(rotationY);*/
 
-      /*  view.setPivotX(position < 0f ? view.getWidth() : 0f);
+        view.setPivotX(position < 0f ? view.getWidth() : 0f);
         view.setPivotY(view.getHeight() * 0.6f);
-        view.setRotationY(30 * position);*/
+        view.setRotationY(30 * position);
     }
 
     protected void onPostTransform(View page, float position) {
