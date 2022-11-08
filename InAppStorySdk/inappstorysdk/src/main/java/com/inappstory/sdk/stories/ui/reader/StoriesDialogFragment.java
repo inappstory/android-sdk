@@ -11,6 +11,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
 import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
@@ -270,32 +271,19 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     StoriesFragment storiesFragment;
 
     private void setAppearanceSettings(Bundle bundle) {
-        StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(
-                getArguments().getBoolean(CS_CLOSE_ON_SWIPE, true),
-                getArguments().getBoolean(CS_CLOSE_ON_OVERSCROLL, true),
-                getArguments().getInt(CS_CLOSE_POSITION, 1),
-                //,
-                getArguments().getBoolean(CS_HAS_LIKE, false),
-                getArguments().getBoolean(CS_HAS_FAVORITE, false),
-                getArguments().getBoolean(CS_HAS_SHARE, false),
-                getArguments().getInt(CS_FAVORITE_ICON, R.drawable.ic_stories_status_favorite),
-                getArguments().getInt(CS_LIKE_ICON, R.drawable.ic_stories_status_like),
-                getArguments().getInt(CS_DISLIKE_ICON, R.drawable.ic_stories_status_dislike),
-                getArguments().getInt(CS_SHARE_ICON, R.drawable.ic_share_status),
-                getArguments().getInt(CS_CLOSE_ICON, R.drawable.ic_stories_close),
-                getArguments().getInt(CS_REFRESH_ICON, R.drawable.ic_refresh),
-                getArguments().getInt(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getArguments().getBoolean(CS_TIMER_GRADIENT_ENABLE, true),
-                getArguments().getInt(CS_READER_RADIUS, 0)
-        );
         try {
-            bundle.putSerializable(CS_TIMER_GRADIENT, getArguments().getSerializable(CS_TIMER_GRADIENT));
-            bundle.putInt(CS_STORY_READER_ANIMATION, getArguments().getInt(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
+            Bundle fragmentArgs = requireArguments();
+            StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(fragmentArgs);
+            bundle.putSerializable(CS_TIMER_GRADIENT,
+                    fragmentArgs.getSerializable(CS_TIMER_GRADIENT));
+            bundle.putInt(CS_STORY_READER_ANIMATION,
+                    fragmentArgs.getInt(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
+
     }
 
 

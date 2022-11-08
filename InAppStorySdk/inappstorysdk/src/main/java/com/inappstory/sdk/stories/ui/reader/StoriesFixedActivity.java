@@ -267,33 +267,17 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     ElasticDragDismissFrameLayout draggableFrame;
 
     private void setAppearanceSettings(Bundle bundle) {
-        int color = getIntent().getIntExtra(CS_READER_BACKGROUND_COLOR,
-                getResources().getColor(R.color.black)
-        );
-        draggableFrame.setBackgroundColor(color);
-        StoriesReaderSettings storiesReaderSettings = new StoriesReaderSettings(
-                getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
-                getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
-                getIntent().getIntExtra(CS_CLOSE_POSITION, 1),
-                getIntent().getBooleanExtra(CS_HAS_LIKE, false),
-                getIntent().getBooleanExtra(CS_HAS_FAVORITE, false),
-                getIntent().getBooleanExtra(CS_HAS_SHARE, false),
-                getIntent().getIntExtra(CS_FAVORITE_ICON, R.drawable.ic_stories_status_favorite),
-                getIntent().getIntExtra(CS_LIKE_ICON, R.drawable.ic_stories_status_like),
-                getIntent().getIntExtra(CS_DISLIKE_ICON, R.drawable.ic_stories_status_dislike),
-                getIntent().getIntExtra(CS_SHARE_ICON, R.drawable.ic_share_status),
-                getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
-                getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
-                getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true),
-                getIntent().getIntExtra(CS_READER_RADIUS, 0)
-        );
         try {
+            int color = getIntent().getIntExtra(CS_READER_BACKGROUND_COLOR,
+                    getResources().getColor(R.color.black)
+            );
+            draggableFrame.setBackgroundColor(color);
             bundle.putSerializable(CS_TIMER_GRADIENT,
                     getIntent().getSerializableExtra(CS_TIMER_GRADIENT));
             bundle.putInt(CS_STORY_READER_ANIMATION,
                     getIntent().getIntExtra(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
-            bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
+            bundle.putString(CS_READER_SETTINGS,
+                    JsonParser.getJson(new StoriesReaderSettings(getIntent().getExtras())));
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             e.printStackTrace();

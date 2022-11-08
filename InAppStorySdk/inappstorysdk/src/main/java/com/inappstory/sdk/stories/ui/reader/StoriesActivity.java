@@ -409,21 +409,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         );
         backTintView.setBackgroundColor(color);
         storiesReaderSettings = new StoriesReaderSettings(
-                getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true),
-                getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true),
-                getIntent().getIntExtra(CS_CLOSE_POSITION, 1),
-                getIntent().getBooleanExtra(CS_HAS_LIKE, false),
-                getIntent().getBooleanExtra(CS_HAS_FAVORITE, false),
-                getIntent().getBooleanExtra(CS_HAS_SHARE, false),
-                getIntent().getIntExtra(CS_FAVORITE_ICON, R.drawable.ic_stories_status_favorite),
-                getIntent().getIntExtra(CS_LIKE_ICON, R.drawable.ic_stories_status_like),
-                getIntent().getIntExtra(CS_DISLIKE_ICON, R.drawable.ic_stories_status_dislike),
-                getIntent().getIntExtra(CS_SHARE_ICON, R.drawable.ic_share_status),
-                getIntent().getIntExtra(CS_CLOSE_ICON, R.drawable.ic_stories_close),
-                getIntent().getIntExtra(CS_REFRESH_ICON, R.drawable.ic_refresh),
-                getIntent().getIntExtra(CS_SOUND_ICON, R.drawable.ic_stories_status_sound),
-                getIntent().getBooleanExtra(CS_TIMER_GRADIENT_ENABLE, true),
-                getIntent().getIntExtra(CS_READER_RADIUS, 0)
+               getIntent().getExtras()
         );
         try {
             bundle.putSerializable(CS_TIMER_GRADIENT, getIntent().getSerializableExtra(CS_TIMER_GRADIENT));
