@@ -178,7 +178,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                             RelativeLayout.LayoutParams.MATCH_PARENT);
                     image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece2.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
                     image2.setLayoutParams(piece2);
 
                     setImage(image1, favImages.get(0));
@@ -191,8 +191,8 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                             height - halfHeight);
                     piece3 = new RelativeLayout.LayoutParams(halfWidth,
                             halfHeight);
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece2.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
+                    piece3.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
                     image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
                             RelativeLayout.LayoutParams.MATCH_PARENT));
@@ -214,9 +214,9 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                     piece4 = new RelativeLayout.LayoutParams(halfWidth,
                             halfHeight);
 
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece2.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
                     piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    piece4.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+                    piece4.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
                     piece4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
                     image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
                             height - halfHeight));

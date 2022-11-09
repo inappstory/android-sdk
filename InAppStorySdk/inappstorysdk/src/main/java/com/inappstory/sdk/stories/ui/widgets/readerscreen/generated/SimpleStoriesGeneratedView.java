@@ -217,7 +217,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         RelativeLayout rl = new RelativeLayout(getContext());
         rl.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        rl.setPadding(-leftPadding, -topPadding, -leftPadding, -topPadding);
+        rl.setPaddingRelative(-leftPadding, -topPadding, -leftPadding, -topPadding);
         rl.setVisibility(GONE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             rl.setElevation(4);
@@ -225,7 +225,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         RelativeLayout rl2 = new RelativeLayout(getContext());
         rl2.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        rl2.setPadding(-leftPadding, -topPadding, -leftPadding, -topPadding);
+        rl2.setPaddingRelative(-leftPadding, -topPadding, -leftPadding, -topPadding);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             rl.setElevation(2);
         }

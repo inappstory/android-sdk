@@ -9,7 +9,7 @@
         android:id="@+id/likeButton"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
         android:layout_marginTop="15dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_stories_status_like" />
@@ -18,7 +18,7 @@
         android:id="@+id/dislikeButton"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
         android:layout_marginTop="15dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_stories_status_dislike"/>
@@ -27,7 +27,7 @@
         android:id="@+id/favoriteButton"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginLeft="18dp"
+        android:layout_marginStart="18dp"
         android:layout_marginTop="15dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_stories_status_favorite" />
@@ -43,7 +43,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"
-        android:layout_marginRight="18dp"
+        android:layout_marginEnd="18dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_stories_status_sound" />
 
@@ -52,7 +52,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"
-        android:layout_marginRight="18dp"
+        android:layout_marginEnd="18dp"
         android:layout_marginBottom="15dp"
         app:srcCompat="@drawable/ic_share_status" />
 

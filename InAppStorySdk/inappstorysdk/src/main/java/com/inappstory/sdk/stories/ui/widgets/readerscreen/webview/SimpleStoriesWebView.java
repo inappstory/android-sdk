@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
@@ -20,6 +21,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -385,15 +387,20 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         //if (!InAppStoryService.isConnected()) return true;
+
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();
+                if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+                    int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
+                    coordinate1 = sz - coordinate1;
+                }
                 break;
             case MotionEvent.ACTION_UP:
-                break;
             case MotionEvent.ACTION_CANCEL:
                 break;
         }
+
         boolean c = super.dispatchTouchEvent(motionEvent);
         return c;
     }

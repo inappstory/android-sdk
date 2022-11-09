@@ -162,7 +162,7 @@ public class ContactDialog {
         factor = (1f * fullWidth) / dialogStructure.configV2.factor;
         LinearLayout parentContainer = dialog.findViewById(R.id.parentContainer);
         LinearLayout contentContainer = dialog.findViewById(R.id.contentContainer);
-        contentContainer.setPadding(
+        contentContainer.setPaddingRelative(
                 getSize(dialogStructure.configV2.main.padding.left),
                 getSize(dialogStructure.configV2.main.padding.top),
                 getSize(dialogStructure.configV2.main.padding.right),
@@ -173,7 +173,7 @@ public class ContactDialog {
             text.setText(dialogStructure.configV2.main.question.text.value);
             text.setTextColor(hex2color(dialogStructure.configV2.main.question.text.color));
             text.setTextSize(TypedValue.COMPLEX_UNIT_PX, getSize(dialogStructure.configV2.main.question.text.size));
-            text.setPadding(
+            text.setPaddingRelative(
                     getSize(dialogStructure.configV2.main.question.padding.left),
                     getSize(dialogStructure.configV2.main.question.padding.top),
                     getSize(dialogStructure.configV2.main.question.padding.right),
@@ -207,7 +207,7 @@ public class ContactDialog {
         editText.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 getSize(dialogStructure.configV2.main.input.text.size));
 
-        editBorderContainer.setPadding(
+        editBorderContainer.setPaddingRelative(
                 getSize(dialogStructure.configV2.main.input.padding.left),
                 getSize(dialogStructure.configV2.main.input.padding.top),
                 getSize(dialogStructure.configV2.main.input.padding.right),
@@ -228,6 +228,8 @@ public class ContactDialog {
                     editText.getMainText().setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                     break;
             }
+        } else  {
+            editText.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         }
         setTypeface(editText.getMainText(), dialogStructure.configV2.main.input.text.isBold(),
                 dialogStructure.configV2.main.input.text.isItalic(),
@@ -259,7 +261,7 @@ public class ContactDialog {
         int rightMargin = (int) (fullWidth * (100 - centerStructure.x) / 100 - dialogWidth / 2);
         parentParams.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
         //parentContainer.setLayoutParams(parentParams);
-        buttonText.setPadding(
+        buttonText.setPaddingRelative(
                 getSize(dialogStructure.configV2.main.button.padding.left),
                 getSize(dialogStructure.configV2.main.button.padding.top),
                 getSize(dialogStructure.configV2.main.button.padding.right),

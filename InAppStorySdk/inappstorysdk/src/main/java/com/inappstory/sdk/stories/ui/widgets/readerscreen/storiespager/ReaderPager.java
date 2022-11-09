@@ -7,8 +7,10 @@ import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.ViewPager;
 
+import com.duolingo.open.rtlviewpager.RtlViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
@@ -16,7 +18,7 @@ import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CoverTransforme
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
-public class ReaderPager extends ViewPager {
+public class ReaderPager extends RtlViewPager {
     public void setHost(StoriesFragment host) {
         this.host = host;
     }
@@ -25,10 +27,16 @@ public class ReaderPager extends ViewPager {
 
     public ReaderPager(@NonNull Context context) {
         super(context);
+        init(context);
     }
 
     public ReaderPager(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init(context);
+    }
+
+    private void init(@NonNull Context context) {
+        setLayoutDirection(context.getResources().getConfiguration().getLayoutDirection());
     }
 
     public boolean canUseNotLoaded;
@@ -107,6 +115,12 @@ public class ReaderPager extends ViewPager {
         float pressedEndX = 0f;
         float pressedEndY = 0f;
         boolean distance = false;
+        boolean swipeLeftCondition = (getCurrentItem() ==
+                ((getLayoutDirection() == LAYOUT_DIRECTION_RTL) ?
+                        0 : (getAdapter().getCount() - 1)));
+        boolean swipeRightCondition = (getCurrentItem() ==
+                ((getLayoutDirection() == LAYOUT_DIRECTION_LTR) ?
+                        0 : (getAdapter().getCount() - 1)));
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
@@ -129,14 +143,14 @@ public class ReaderPager extends ViewPager {
                 host.swipeUpEvent(getCurrentItem());
                 return true;
             }
-            if (getCurrentItem() == 0 &&
+            if (swipeRightCondition &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX > 300) {
                 host.swipeRightEvent(getCurrentItem());
                 return true;
             }
 
-            if (getCurrentItem() == getAdapter().getCount() - 1 &&
+            if (swipeLeftCondition &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX < -300) {
                 host.swipeLeftEvent(getCurrentItem());
@@ -149,11 +163,11 @@ public class ReaderPager extends ViewPager {
                 return false;
             }
             if (distance && !(
-                    getCurrentItem() == 0 &&
+                    swipeRightCondition &&
                             pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                             pressedEndX > 0)
                     &&
-                    !(getCurrentItem() == getAdapter().getCount() - 1 &&
+                    !(swipeLeftCondition &&
                             pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                             pressedEndX < 0)) {
                 return true;

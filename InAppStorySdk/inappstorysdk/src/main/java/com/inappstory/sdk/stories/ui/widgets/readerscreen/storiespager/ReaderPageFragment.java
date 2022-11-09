@@ -103,17 +103,17 @@ public class ReaderPageFragment extends Fragment {
             int cp = readerSettings.closePosition;
             switch (cp) {
                 case TOP_RIGHT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.LEFT_OF, close.getId());
+                    storiesProgressViewLP.addRule(RelativeLayout.START_OF, close.getId());
                     break;
                 case TOP_LEFT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.RIGHT_OF, close.getId());
+                    storiesProgressViewLP.addRule(RelativeLayout.END_OF, close.getId());
                     break;
                 case BOTTOM_RIGHT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
                     layoutParams.topMargin = Sizes.dpToPxExt(8);
@@ -121,7 +121,7 @@ public class ReaderPageFragment extends Fragment {
                 case BOTTOM_LEFT:
                     storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
                     layoutParams.topMargin = Sizes.dpToPxExt(8);
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     break;
             }
@@ -532,12 +532,12 @@ public class ReaderPageFragment extends Fragment {
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 Sizes.dpToPxExt(3)));
-        timeline.setPadding(Sizes.dpToPxExt(8), 0, Sizes.dpToPxExt(8), 0);
+        timeline.setPaddingRelative(Sizes.dpToPxExt(8), 0, Sizes.dpToPxExt(8), 0);
 
         close = new AppCompatImageView(context);
         close.setId(R.id.ias_close_button);
         close.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(40), Sizes.dpToPxExt(40)));
-        close.setPadding(0, Sizes.dpToPxExt(8), 0, Sizes.dpToPxExt(8));
+        close.setPaddingRelative(0, Sizes.dpToPxExt(8), 0, Sizes.dpToPxExt(8));
         close.setBackground(null);
         close.setImageDrawable(getResources().getDrawable(readerSettings.closeIcon));
         timelineContainer.addView(timeline);
