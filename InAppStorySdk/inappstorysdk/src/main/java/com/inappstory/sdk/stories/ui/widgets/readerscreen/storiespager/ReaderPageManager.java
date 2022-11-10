@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReaderPageManager {
+
+
     TimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
@@ -56,6 +58,10 @@ public class ReaderPageManager {
 
     public int getStoryId() {
         return storyId;
+    }
+
+    public Story.StoryType getStoryType() {
+        return parentManager != null ? parentManager.storyType : Story.StoryType.COMMON;
     }
 
     private int storyId;
@@ -101,13 +107,11 @@ public class ReaderPageManager {
     }
 
     public void reloadStory() {
-        InAppStoryService.getInstance().getDownloadManager().reloadStory(storyId);
+        InAppStoryService.getInstance().getDownloadManager().reloadStory(storyId, getStoryType());
     }
 
     public void widgetEvent(String widgetName, String widgetData) {
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                storyId
-        );
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
             CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
@@ -389,7 +393,8 @@ public class ReaderPageManager {
         timerManager.stopTimer();
         timerManager.setCurrentDuration(durations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
-        InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId);
+        InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId,
+                parentManager.storyType);
         InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
                 parentManager != null ? parentManager.getFeedId() : null);
         loadStoryAndSlide(storyId, slideIndex);

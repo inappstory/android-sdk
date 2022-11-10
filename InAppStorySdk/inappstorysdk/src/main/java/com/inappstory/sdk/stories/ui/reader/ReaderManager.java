@@ -25,14 +25,16 @@ import java.util.List;
 public class ReaderManager {
 
     private String listID;
+    public Story.StoryType storyType;
 
     public ReaderManager() {
     }
 
-    public ReaderManager(String listID, String feedId, String feedSlug) {
+    public ReaderManager(String listID, String feedId, String feedSlug, Story.StoryType storyType) {
         this.listID = listID;
         this.feedId = feedId;
         this.feedSlug = feedSlug;
+        this.storyType = storyType;
     }
 
     public void close() {
@@ -145,8 +147,15 @@ public class ReaderManager {
             }
         }
         if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().changePriority(storiesIds.get(pos), adds);
-        InAppStoryService.getInstance().getDownloadManager().addStoryTask(storiesIds.get(pos), adds);
+        InAppStoryService.getInstance().getDownloadManager().changePriority(
+                storiesIds.get(pos),
+                adds,
+                storyType
+        );
+        InAppStoryService.getInstance().getDownloadManager().addStoryTask(
+                storiesIds.get(pos),
+                adds,
+                storyType);
 
     }
 

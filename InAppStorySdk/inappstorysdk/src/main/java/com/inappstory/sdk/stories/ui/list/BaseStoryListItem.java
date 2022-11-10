@@ -20,11 +20,13 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
 
     protected IStoriesListItem getListItem;
 
-    protected boolean isFavorite;
+    public boolean isFavorite;
     protected IGetFavoriteListItem getFavoriteListItem;
 
-    protected boolean isUGC;
+    public boolean isUGC;
     protected IStoriesListUGCItem getUGCListItem;
+
+
 
 
     public BaseStoryListItem(@NonNull View itemView, AppearanceManager manager,

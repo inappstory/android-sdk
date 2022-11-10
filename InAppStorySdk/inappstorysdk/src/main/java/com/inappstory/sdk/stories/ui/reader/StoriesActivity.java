@@ -362,6 +362,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
+
+                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
@@ -409,7 +411,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         );
         backTintView.setBackgroundColor(color);
         storiesReaderSettings = new StoriesReaderSettings(
-               getIntent().getExtras()
+                getIntent().getExtras()
         );
         try {
             bundle.putSerializable(CS_TIMER_GRADIENT, getIntent().getSerializableExtra(CS_TIMER_GRADIENT));

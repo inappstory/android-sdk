@@ -149,14 +149,14 @@ public class StoryDownloadManager {
         });
     }
 
-    public void changePriority(int storyId, List<Integer> adjacent) {
+    public void changePriority(int storyId, List<Integer> adjacent, Story.StoryType type) {
         if (slidesDownloader != null)
-            slidesDownloader.changePriority(storyId, adjacent);
+            slidesDownloader.changePriority(storyId, adjacent, type);
     }
 
-    public void changePriorityForSingle(int storyId) {
+    public void changePriorityForSingle(int storyId, Story.StoryType type) {
         if (slidesDownloader != null)
-            slidesDownloader.changePriorityForSingle(storyId);
+            slidesDownloader.changePriorityForSingle(storyId, type);
 
     }
 
@@ -218,10 +218,10 @@ public class StoryDownloadManager {
         }
     }
 
-    void slideLoaded(int storyId, int index) {
+    void slideLoaded(int storyId, int index, Story.StoryType type) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == storyId) {
+                if (subscriber.getStoryId() == storyId && subscriber.getStoryType() == type) {
                     subscriber.slideLoadedInCache(index);
                     return;
                 }
@@ -311,9 +311,9 @@ public class StoryDownloadManager {
         }
     }
 
-    public boolean checkIfPageLoaded(int storyId, int index) {
+    public boolean checkIfPageLoaded(int storyId, int index, Story.StoryType type) {
         try {
-            return slidesDownloader.checkIfPageLoaded(new Pair<>(storyId, index));
+            return slidesDownloader.checkIfPageLoaded(new SlideTaskKey(storyId, index, type));
         } catch (IOException e) {
             return false;
         }
@@ -335,7 +335,7 @@ public class StoryDownloadManager {
         }
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
-            public void onDownload(Story story, int loadType) {
+            public void onDownload(Story story, int loadType, Story.StoryType type) {
                 Story local = getStoryById(story.id);
                 story.isOpened = local.isOpened;
                 story.lastIndex = local.lastIndex;
@@ -343,7 +343,7 @@ public class StoryDownloadManager {
                 setStory(story, story.id);
                 storyLoaded(story.id);
                 try {
-                    slidesDownloader.addStoryPages(story, loadType);
+                    slidesDownloader.addStoryPages(story, loadType, type);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -374,22 +374,22 @@ public class StoryDownloadManager {
         }, StoryDownloadManager.this);
     }
 
-    public void addStoryTask(int storyId, ArrayList<Integer> addIds) {
+    public void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         try {
-            storyDownloader.addStoryTask(storyId, addIds);
+            storyDownloader.addStoryTask(storyId, addIds, type);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    public void reloadStory(int storyId) {
-        storyDownloader.reloadPage(storyId, new ArrayList<Integer>());
+    public void reloadStory(int storyId, Story.StoryType type) {
+        storyDownloader.reloadPage(storyId, new ArrayList<Integer>(), type);
     }
 
-    public void reloadPage(int storyId, int index, ArrayList<Integer> addIds) {
-        if (storyDownloader.reloadPage(storyId, addIds)) {
-            slidesDownloader.reloadPage(storyId, index);
+    public void reloadPage(int storyId, int index, ArrayList<Integer> addIds, Story.StoryType type) {
+        if (storyDownloader.reloadPage(storyId, addIds, type)) {
+            slidesDownloader.reloadPage(storyId, index, type);
         }
     }
 
@@ -454,7 +454,7 @@ public class StoryDownloadManager {
         }
     }
 
-    public void addCompletedStoryTask(Story story) {
+    public void addCompletedStoryTask(Story story, Story.StoryType type) {
         boolean noStory = true;
         synchronized (storiesLock) {
             for (Story localStory : stories) {
@@ -466,7 +466,7 @@ public class StoryDownloadManager {
             if (noStory) stories.add(story);
         }
         if (storyDownloader != null) {
-            storyDownloader.addCompletedStoryTask(story.id);
+            storyDownloader.addCompletedStoryTask(story.id, type);
             Story local = getStoryById(story.id);
             story.isOpened = local.isOpened;
             story.lastIndex = local.lastIndex;
@@ -474,11 +474,55 @@ public class StoryDownloadManager {
             setStory(story, story.id);
             storyLoaded(story.id);
             try {
-                slidesDownloader.addStoryPages(story, 3);
+                slidesDownloader.addStoryPages(story, 3, type);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    public void loadUgcStories(final LoadStoriesCallback callback, final String payload) {
+        SimpleListCallback loadCallback = new SimpleListCallback() {
+
+            @Override
+            public void onSuccess(final List<Story> response, Object... args) {
+                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
+                List<Story> newStories = new ArrayList<>();
+                synchronized (storiesLock) {
+                    if (stories != null) {
+                        for (Story story : response) {
+                            if (!stories.contains(story)) {
+                                newStories.add(story);
+                            }
+                        }
+                    }
+                }
+                if (newStories.size() > 0) {
+                    try {
+                        setLocalsOpened(newStories);
+                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (callback != null) {
+                    List<Integer> ids = new ArrayList<>();
+                    for (Story story : response) {
+                        ids.add(story.id);
+                    }
+                    callback.storiesLoaded(ids);
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                if (callback != null) {
+                    callback.onError();
+                }
+            }
+        };
+        storyDownloader.loadUgcStoryList(loadCallback, payload);
     }
 
     public void loadStories(String feed, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
@@ -503,15 +547,19 @@ public class StoryDownloadManager {
                 }
                 CsEventBus.getDefault().post(new ListLoadedEvent());
                 if (response == null || response.size() == 0) {
-                    if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
-                        StoriesWidgetService.loadEmpty(context, AppearanceManager.csWidgetAppearance().getWidgetClass());
+                    if (AppearanceManager.csWidgetAppearance() != null
+                            && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
+                        StoriesWidgetService.loadEmpty(context,
+                                AppearanceManager.csWidgetAppearance().getWidgetClass());
                     }
                 } else {
-                    if (AppearanceManager.csWidgetAppearance() != null && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
+                    if (AppearanceManager.csWidgetAppearance() != null
+                            && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                StoriesWidgetService.loadSuccess(context, AppearanceManager.csWidgetAppearance().getWidgetClass());
+                                StoriesWidgetService.loadSuccess(context,
+                                        AppearanceManager.csWidgetAppearance().getWidgetClass());
                             }
                         }, 500);
                     }
@@ -698,6 +746,7 @@ public class StoryDownloadManager {
 
 
     private List<Story> stories = new ArrayList<>();
+    private List<Story> ugcStories = new ArrayList<>();
     public List<Story> favStories = new ArrayList<>();
     public List<FavoriteImage> favoriteImages = new ArrayList<>();
 }

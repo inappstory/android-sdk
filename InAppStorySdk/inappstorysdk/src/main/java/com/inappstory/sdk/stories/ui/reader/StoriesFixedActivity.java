@@ -341,6 +341,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 Bundle bundle = new Bundle();
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
+                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 bundle.putInt("source", getIntent().getIntExtra("source", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));

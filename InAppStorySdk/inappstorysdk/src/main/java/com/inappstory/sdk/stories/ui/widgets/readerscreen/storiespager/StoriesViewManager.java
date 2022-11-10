@@ -185,7 +185,8 @@ public class StoriesViewManager {
         loadedIndex = index;
         loadedId = id;
 
-        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
+        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index,
+                pageManager.getStoryType());
         if (slideInCache) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);

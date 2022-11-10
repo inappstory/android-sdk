@@ -13,6 +13,8 @@ class StoryTask {
         this.loadType = loadType;
     }
 
+
+
     StoryTask() {
     }
     //1 - not loaded, 2 - loading, 3 - loaded,

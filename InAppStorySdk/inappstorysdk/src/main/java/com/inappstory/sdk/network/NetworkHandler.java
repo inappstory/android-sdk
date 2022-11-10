@@ -2,6 +2,8 @@ package com.inappstory.sdk.network;
 
 import static java.util.UUID.randomUUID;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -24,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +41,16 @@ public final class NetworkHandler implements InvocationHandler {
 
     static URL getURL(Request req) throws Exception {
         String url = req.getUrl();
-        String varStr = "";
-        if (req.getVars() != null && req.getVars().keySet().size() > 0) {
+        StringBuilder varStr = new StringBuilder();
+        if (!(req.getVarList().isEmpty() && req.getVars().isEmpty())) {
             for (Object key : req.getVarKeys()) {
-                varStr += "&" + key + "=" + req.getVars().get(key);
+                varStr.append("&").append(key).append("=").append(req.getVars().get(key));
             }
-            varStr = "?" + varStr.substring(1);
+            for (Object keyVal : req.getVarList()) {
+                Pair<String, String> locVal = (Pair<String, String>) keyVal;
+                varStr.append("&").append(locVal.first).append("=").append(locVal.second);
+            }
+            varStr = new StringBuilder("?" + varStr.substring(1));
         }
         return new URL(url + varStr);
     }
@@ -90,13 +97,9 @@ public final class NetworkHandler implements InvocationHandler {
         }
 
 
-
-
-
-
-        InAppStoryManager.showDLog("InAppStory_Network", req.getHeadersString());
+        InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getRequestProperties().toString());
         if (!req.getMethod().equals(GET) && !req.getMethod().equals(HEAD) && !req.getBody().isEmpty()) {
-            InAppStoryManager.showDLog("InAppStory_Network", req.getBody());
+            InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + req.getBody());
             requestLog.body = req.getBody();
             requestLog.bodyRaw = req.getBodyRaw();
             requestLog.bodyUrlEncoded = req.getBodyEncoded();
@@ -119,19 +122,21 @@ public final class NetworkHandler implements InvocationHandler {
         }
         int statusCode = connection.getResponseCode();
         Response respObject = null;
-        InAppStoryManager.showDLog("InAppStory_Network", connection.getURL().toString() + " \nStatus Code: " + statusCode);
+        InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getURL().toString() + " \nStatus Code: " + statusCode);
         //apiLog.duration = System.currentTimeMillis() - start;
         long contentLength = 0;
 
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
             String res = getResponseFromStream(connection.getInputStream());
             contentLength = res.length();
+            InAppStoryManager.showDLog("InAppStory_Network", requestId + " Response: " + res);
+
             respObject = new Response.Builder().contentLength(contentLength).
                     headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
             String res = getResponseFromStream(connection.getErrorStream());
             contentLength = res.length();
-            InAppStoryManager.showDLog("InAppStory_Network", "Error: " + res);
+            InAppStoryManager.showDLog("InAppStory_Network", requestId + " Error: " + res);
             respObject = new Response.Builder().contentLength(contentLength).
                     headers(getHeaders(connection)).code(statusCode).errorBody(res).build();
         }
@@ -209,6 +214,7 @@ public final class NetworkHandler implements InvocationHandler {
         if (networkClient == null) networkClient = NetworkClient.getInstance();
         //
         HashMap<String, String> vars = new HashMap<>();
+        ArrayList<Pair<String, String>> varList = new ArrayList<>();
         // String path = ev.value();
         String bodyRaw = "";
         String bodyEncoded = "";
@@ -225,6 +231,13 @@ public final class NetworkHandler implements InvocationHandler {
                     path = path.replaceFirst("\\{" + ((Path) annotation).value() + "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
                     vars.put(((Query) annotation).value(), encode(args[i].toString()));
+                } else if (annotation instanceof QueryObject) {
+                    List<Pair<String, String>> objList =
+                            convertObjectToQuery(((QueryObject) annotation).value(), args[i].toString());
+                    for (int k = 0; k < objList.size(); k++) {
+                        varList.add(new Pair(objList.get(k).first, encode(objList.get(k).second)));
+                    }
+
                 } else if (annotation instanceof Field) {
                     bodyEncoded += "&" + ((Field) annotation).value() + "=" + encode(args[i].toString());
                 } else if (annotation instanceof Body) {
@@ -248,6 +261,7 @@ public final class NetworkHandler implements InvocationHandler {
                 .url(NetworkClient.getInstance().getBaseUrl() != null ?
                         NetworkClient.getInstance().getBaseUrl() + path : path)
                 .vars(vars)
+                .varList(varList)
                 .bodyRaw(bodyRaw)
                 .bodyEncoded(bodyEncoded)
                 .body(body).build();
@@ -256,6 +270,14 @@ public final class NetworkHandler implements InvocationHandler {
 
     public NetworkClient networkClient;
 
+
+    private List<Pair<String, String>> convertObjectToQuery(String mainName, String object) {
+        try {
+            return JsonParser.toQueryParams(mainName, object);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
 
     public static final String POST = "POST";
     public static final String GET = "GET";

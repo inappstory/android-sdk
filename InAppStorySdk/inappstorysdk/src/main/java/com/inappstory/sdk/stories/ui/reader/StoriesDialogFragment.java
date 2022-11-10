@@ -248,6 +248,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             args.putBoolean("isDialogFragment", true);
             args.putInt("index", getArguments().getInt("index", 0));
             args.putInt("source", getArguments().getInt("source", 0));
+            args.putString("storiesType", getArguments().getString("storiesType"));
             args.putInt("slideIndex", getArguments().getInt("slideIndex", 0));
             setAppearanceSettings(args);
             args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));

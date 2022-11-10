@@ -1,5 +1,7 @@
 package com.inappstory.sdk.network;
 
+import android.util.Pair;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -109,6 +111,48 @@ public class JsonParser {
         return res;
     }
 
+    public static List<Pair<String, String>> toQueryParams(String mainName, String jsonString) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            return mapToQueryParams(mainName, toObjectMap(jsonObject));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String mapToJsonString(Map<String, Object> map) {
+        return new JSONObject(map).toString();
+    }
+
+    private static List<Pair<String, String>> mapToQueryParams(String mainName, Map<String, Object> map) {
+        ArrayList<Pair<String, String>> result = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            String newMainName = mainName + "[" + entry.getKey() + "]";
+            if (entry.getValue() instanceof List) {
+                result.addAll(listToQueryParams(newMainName, (List<Object>) entry.getValue()));
+            } else if (entry.getValue() instanceof Map) {
+                result.addAll(mapToQueryParams(newMainName, (Map<String, Object>) entry.getValue()));
+            } else {
+                result.add(new Pair(newMainName, entry.getValue().toString()));
+            }
+        }
+        return result;
+    }
+
+    private static List<Pair<String, String>> listToQueryParams(String mainName, List<Object> map) {
+        List<Pair<String, String>> result = new ArrayList<>();
+        for (int i = 0; i < map.size(); i++) {
+            Object entry = map.get(i);
+            if (entry instanceof List) {
+                result.addAll(listToQueryParams(mainName + "[" + i + "]", (List<Object>) entry));
+            } else if (entry instanceof Map) {
+                result.addAll(mapToQueryParams(mainName + "[" + i + "]", (Map<String, Object>) entry));
+            } else {
+                result.add(new Pair(mainName + "[]", entry.toString()));
+            }
+        }
+        return result;
+    }
 
     public static Map<String, String> toMap(String jsonString) {
         try {

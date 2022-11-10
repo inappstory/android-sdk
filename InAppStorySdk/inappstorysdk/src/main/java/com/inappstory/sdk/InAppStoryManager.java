@@ -945,7 +945,16 @@ public class InAppStoryManager {
         InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories);
         InAppStoryService.getInstance().getDownloadManager().putStories(
                 InAppStoryService.getInstance().getDownloadManager().getStories());
-        ScreensManager.getInstance().openStoriesReader(outerContext, null, manager, storiesIds, 0, ShowStory.ONBOARDING, feed, feedId);
+        ScreensManager.getInstance().openStoriesReader(
+                outerContext,
+                null,
+                manager,
+                storiesIds,
+                0,
+                ShowStory.ONBOARDING,
+                feed,
+                feedId,
+                Story.StoryType.COMMON);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size(), feed));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feed);
@@ -1155,7 +1164,8 @@ public class InAppStoryManager {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
-                    InAppStoryService.getInstance().getDownloadManager().addCompletedStoryTask(story);
+                    InAppStoryService.getInstance().getDownloadManager().addCompletedStoryTask(story,
+                            Story.StoryType.COMMON);
                     if (ScreensManager.created == -1) {
                         InAppStoryManager.closeStoryReader(CloseStory.AUTO);
                         localHandler.postDelayed(new Runnable() {
@@ -1226,7 +1236,12 @@ public class InAppStoryManager {
                             InAppStoryService.getInstance().getDownloadManager().getStories());
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
-                    ScreensManager.getInstance().openStoriesReader(context, null, manager, stIds, 0, ShowStory.SINGLE, slide, null, null);
+                    ScreensManager.getInstance().openStoriesReader(
+                            context, null,
+                            manager, stIds,
+                            0, ShowStory.SINGLE,
+                            slide, null,
+                            null, Story.StoryType.COMMON);
                     localHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {

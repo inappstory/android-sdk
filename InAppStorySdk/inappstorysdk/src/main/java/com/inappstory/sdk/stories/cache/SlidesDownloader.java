@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,8 +27,8 @@ class SlidesDownloader {
     boolean uploadAdditional(boolean sync) {
         synchronized (pageTasksLock) {
             if (!pageTasks.isEmpty() && sync) {
-                for (Pair<Integer, Integer> pair : pageTasks.keySet()) {
-                    if (pageTasks.get(pair).loadType <= 1) return false;
+                for (SlideTaskKey pair : pageTasks.keySet()) {
+                    if (Objects.requireNonNull(pageTasks.get(pair)).loadType <= 1) return false;
                 }
             }
         }
@@ -61,6 +62,7 @@ class SlidesDownloader {
     }
 
 
+
     private final Object pageTasksLock = new Object();
     private final ExecutorService loader = Executors.newFixedThreadPool(1);
 
@@ -82,7 +84,7 @@ class SlidesDownloader {
 
     }
 
-    boolean checkIfPageLoaded(Pair<Integer, Integer> key) throws IOException {
+    boolean checkIfPageLoaded(SlideTaskKey key) throws IOException {
         boolean remove = false;
         if (InAppStoryService.isNull()) return false;
         if (pageTasks.get(key) != null && pageTasks.get(key).loadType == 2) {
@@ -124,11 +126,11 @@ class SlidesDownloader {
     private static final String VIDEO = "video";
     private static final String IMG_PLACEHOLDER = "image-placeholder";
 
-    List<Pair<Integer, Integer>> firstPriority = new ArrayList<>();
-    List<Pair<Integer, Integer>> secondPriority = new ArrayList<>();
+    List<SlideTaskKey> firstPriority = new ArrayList<>();
+    List<SlideTaskKey> secondPriority = new ArrayList<>();
 
     //adjacent - for next and prev story
-    void changePriority(Integer storyId, List<Integer> adjacents) {
+    void changePriority(Integer storyId, List<Integer> adjacents, Story.StoryType type) {
         synchronized (pageTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
                 if (!secondPriority.contains(firstPriority.get(i))) {
@@ -140,7 +142,7 @@ class SlidesDownloader {
             if (currentStory == null) return;
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
-                Pair<Integer, Integer> kv = new Pair<>(storyId, i);
+                SlideTaskKey kv = new SlideTaskKey(storyId, i, type);
                 secondPriority.remove(kv);
                 //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
                 //           continue;
@@ -149,23 +151,23 @@ class SlidesDownloader {
                 firstPriority.add(kv);
             }
             if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
+                firstPriority.add(0, new SlideTaskKey(storyId, currentStory.lastIndex, type));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex + 1));
+                    firstPriority.add(1, new SlideTaskKey(storyId, currentStory.lastIndex + 1, type));
                 }
             }
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
                 Story adjacentStory = manager.getStoryById(adjacent);
                 if (adjacentStory.lastIndex < adjacentStory.getSlidesCount() - 1) {
-                    Pair<Integer, Integer> nk = new Pair<>(adjacent, adjacentStory.lastIndex + 1);
+                    SlideTaskKey nk = new SlideTaskKey(adjacent, adjacentStory.lastIndex + 1, type);
                     secondPriority.remove(nk);
 
                     //            if (!(pageTasks.containsKey(nk) && pageTasks.get(nk).loadType != 0))
                     firstPriority.add(ind, nk);
                 }
 
-                Pair<Integer, Integer> ck = new Pair<>(adjacent, adjacentStory.lastIndex);
+                SlideTaskKey ck = new SlideTaskKey(adjacent, adjacentStory.lastIndex, type);
                 secondPriority.remove(ck);
 
                 //     if (!(pageTasks.containsKey(ck) && pageTasks.get(ck).loadType != 0))
@@ -174,31 +176,31 @@ class SlidesDownloader {
         }
     }
 
-    void changePriorityForSingle(Integer storyId) {
+    void changePriorityForSingle(Integer storyId, Story.StoryType type) {
         synchronized (pageTasksLock) {
             Story currentStory = manager.getStoryById(storyId);
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
-                Pair<Integer, Integer> kv = new Pair<>(storyId, i);
+                SlideTaskKey kv = new SlideTaskKey(storyId, i, type);
                 firstPriority.remove(kv);
             }
 
             for (int i = 0; i < sc; i++) {
-                Pair<Integer, Integer> kv = new Pair<>(storyId, i);
+                SlideTaskKey kv = new SlideTaskKey(storyId, i, type);
                 if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
             }
             if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new Pair<>(storyId, currentStory.lastIndex));
+                firstPriority.add(0, new SlideTaskKey(storyId, currentStory.lastIndex, type));
                 if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new Pair<>(storyId, currentStory.lastIndex + 1));
+                    firstPriority.add(1, new SlideTaskKey(storyId, currentStory.lastIndex + 1, type));
                 }
             }
         }
     }
 
-    void addStoryPages(Story story, int loadType) throws Exception {
+    void addStoryPages(Story story, int loadType, Story.StoryType type) throws Exception {
         Map<String, ImagePlaceholderValue> imgPlaceholders = new HashMap<>();
         if (InAppStoryService.isNotNull()) {
             imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholdersValues());
@@ -209,7 +211,7 @@ class SlidesDownloader {
             if (loadType == 3) {
                 sz = story.pages.size();
                 for (int i = 0; i < sz; i++) {
-                    if (pageTasks.get(new Pair<>(key, i)) == null) {
+                    if (pageTasks.get(new SlideTaskKey(key, i, type)) == null) {
                         StoryPageTask spt = new StoryPageTask();
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
@@ -221,13 +223,13 @@ class SlidesDownloader {
                                 spt.urls.add(value.getUrl());
                             }
                         }
-                        pageTasks.put(new Pair<>(key, i), spt);
+                        pageTasks.put(new SlideTaskKey(key, i, type), spt);
                     }
                 }
             } else {
                 sz = 2;
                 for (int i = 0; i < sz; i++) {
-                    if (pageTasks.get(new Pair<>(key, i)) == null) {
+                    if (pageTasks.get(new SlideTaskKey(key, i, type)) == null) {
                         StoryPageTask spt = new StoryPageTask();
                         spt.loadType = 0;
                         spt.urls = story.getSrcListUrls(i, null);
@@ -239,7 +241,7 @@ class SlidesDownloader {
                                 spt.urls.add(value.getUrl());
                             }
                         }
-                        pageTasks.put(new Pair<>(key, i), spt);
+                        pageTasks.put(new SlideTaskKey(key, i, type), spt);
                     }
                 }
 
@@ -248,18 +250,16 @@ class SlidesDownloader {
     }
 
 
-
-
     DownloadPageCallback callback;
 
-    private void loadPageError(final int storyId, final int index) {
+    private void loadPageError(SlideTaskKey key) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().cacheError();
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
         synchronized (pageTasksLock) {
-            pageTasks.get(new Pair<>(storyId, index)).loadType = -1;
-            callback.onError(storyId);
+            Objects.requireNonNull(pageTasks.get(key)).loadType = -1;
+            callback.onError(key.storyId);
         }
     }
 
@@ -272,13 +272,13 @@ class SlidesDownloader {
         @Override
         public void run() {
 
-            final Pair<Integer, Integer> key = getMaxPriorityPageTaskKey();
+            final SlideTaskKey key = getMaxPriorityPageTaskKey();
             if (key == null) {
                 handler.postDelayed(queuePageReadRunnable, 100);
                 return;
             }
             synchronized (pageTasksLock) {
-                pageTasks.get(key).loadType = 1;
+                Objects.requireNonNull(pageTasks.get(key)).loadType = 1;
             }
             loader.submit(new Callable() {
                 @Override
@@ -289,7 +289,7 @@ class SlidesDownloader {
         }
     };
 
-    Object loadSlide(Pair<Integer, Integer> key) {
+    Object loadSlide(SlideTaskKey key) {
         try {
             ArrayList<String> urls = new ArrayList<>();
             ArrayList<String> videoUrls = new ArrayList<>();
@@ -298,11 +298,11 @@ class SlidesDownloader {
                 urls.addAll(pageTasks.get(key).urls);
                 videoUrls.addAll(pageTasks.get(key).videoUrls);
             }
-            final String storyId = key.first != null ? Integer.toString(key.first) : null;
+            final String storyId = key.storyId != null ? Integer.toString(key.storyId) : null;
 
             for (String url : urls) {
                 if (callback != null) {
-                    boolean success = callback.downloadFile(url, storyId, key.second);
+                    boolean success = callback.downloadFile(url, storyId, key.index);
                     synchronized (pageTasksLock) {
                         if (!success) pageTasks.get(key).urls.remove(url);
                     }
@@ -310,7 +310,7 @@ class SlidesDownloader {
             }
             for (String url : videoUrls) {
                 if (callback != null) {
-                    boolean success = callback.downloadFile(url, storyId, key.second);
+                    boolean success = callback.downloadFile(url, storyId, key.index);
                     synchronized (pageTasksLock) {
                         if (!success) pageTasks.get(key).videoUrls.remove(url);
                     }
@@ -319,44 +319,45 @@ class SlidesDownloader {
             synchronized (pageTasksLock) {
                 pageTasks.get(key).loadType = 2;
             }
-            manager.slideLoaded(key.first, key.second);
+            manager.slideLoaded(key.storyId, key.index, key.storyType);
             handler.postDelayed(queuePageReadRunnable, 200);
             return null;
 
         } catch (Throwable t) {
-            loadPageError(key.first, key.second);
+            loadPageError(key);
             handler.postDelayed(queuePageReadRunnable, 200);
             return null;
         }
     }
 
-    void reloadPage(int storyId, int index) {
-        Pair<Integer, Integer> key = new Pair<>(storyId, index);
+    void reloadPage(int storyId, int index, Story.StoryType type) {
+        SlideTaskKey key = new SlideTaskKey(storyId, index, type);
         synchronized (pageTasksLock) {
             if (pageTasks == null) pageTasks = new HashMap<>();
-            if (pageTasks.get(key) != null && pageTasks.get(key).loadType == -1) {
-                pageTasks.get(key).loadType = 0;
+            StoryPageTask task = pageTasks.get(key);
+            if (task != null && task.loadType == -1) {
+                task.loadType = 0;
             }
         }
     }
 
-    private Pair<Integer, Integer> getMaxPriorityPageTaskKey() {
+    private SlideTaskKey getMaxPriorityPageTaskKey() {
         synchronized (pageTasksLock) {
             if (pageTasks == null || pageTasks.size() == 0) return null;
             if (firstPriority == null || secondPriority == null) return null;
-            for (Pair<Integer, Integer> key : firstPriority) {
+            for (SlideTaskKey key : firstPriority) {
                 if (!pageTasks.containsKey(key)) continue;
-                if (pageTasks.get(key).loadType != 0) continue;
+                if (Objects.requireNonNull(pageTasks.get(key)).loadType != 0) continue;
                 return key;
             }
-            for (Pair<Integer, Integer> key : secondPriority) {
+            for (SlideTaskKey key : secondPriority) {
                 if (!pageTasks.containsKey(key)) continue;
-                if (pageTasks.get(key).loadType != 0) continue;
+                if (Objects.requireNonNull(pageTasks.get(key)).loadType != 0) continue;
                 return key;
             }
             return null;
         }
     }
 
-    private HashMap<Pair<Integer, Integer>, StoryPageTask> pageTasks = new HashMap<>();
+    private HashMap<SlideTaskKey, StoryPageTask> pageTasks = new HashMap<>();
 }

@@ -2,6 +2,9 @@ package com.inappstory.sdk.network;
 
 
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
+import com.inappstory.sdk.stories.ui.ugclist.UgcPayload;
+
+import java.util.HashMap;
 
 /**
  * InAppStory API. Contains all request
@@ -9,6 +12,18 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 public interface ApiInterface {
 
+    @GET("v2/ugc/feed")
+    Request getUgcStories(
+            @QueryObject("f") String f,
+            @Query("fields") String fields,
+            @Query("expand") String expand);
+
+    @GET("v2/ugc/story/{id}")
+    Request getUgcStoryById(
+            @Path("id") String id,
+            @Query("src_list") Integer srcList,
+            @Query("expand") String expand
+    );
 
     @GET("v2/story")
     Request getStories(
@@ -16,6 +31,7 @@ public interface ApiInterface {
             @Query("favorite") Integer favorite,
             @Query("tags") String tags,
             @Query("fields") String fields);
+
 
     @GET("v2/feed/{feed}")
     Request getFeed(

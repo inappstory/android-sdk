@@ -169,10 +169,11 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         ind = arguments.getInt("index", 0);
         readerAnimation = arguments.getInt(CS_STORY_READER_ANIMATION,
                 AppearanceManager.ANIMATION_CUBE);
-
+        Story.StoryType type =
+                Story.StoryType.valueOf(getArguments().getString("storiesType", Story.StoryType.COMMON.name()));
         readerManager = new ReaderManager(arguments.getString("listID", null),
                 arguments.getString("feedId", null),
-                arguments.getString("feedSlug", null));
+                arguments.getString("feedSlug", null), type);
         if (currentIds != null && !currentIds.isEmpty()) {
             readerManager.setStoriesIds(currentIds);
             readerManager.firstStoryId = currentIds.get(ind);

@@ -19,8 +19,13 @@ import java.util.regex.Pattern;
  * Created by Paperrose on 08.07.2018.
  */
 
+
 public class Story implements Parcelable {
     public int id;
+
+    public enum StoryType {
+        COMMON, UGC
+    }
 
     public String getTitle() {
         String tmp = title != null ? title : "";

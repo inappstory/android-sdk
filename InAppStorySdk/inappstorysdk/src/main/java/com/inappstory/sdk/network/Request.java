@@ -1,6 +1,9 @@
 package com.inappstory.sdk.network;
 
 import android.os.AsyncTask;
+import android.util.Pair;
+
+import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
@@ -8,7 +11,10 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import java.lang.reflect.ParameterizedType;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,7 +34,11 @@ public final class Request<T> {
     }
 
     public HashMap<String, String> getVars() {
-        return vars;
+        return vars != null ? vars : new HashMap<String, String>();
+    }
+
+    public List<Pair<String, String>> getVarList() {
+        return varList != null ? varList : new ArrayList<Pair<String, String>>();
     }
 
     public String getBody() {
@@ -53,7 +63,7 @@ public final class Request<T> {
     }
 
     public Set<String> getVarKeys() {
-        return vars.keySet();
+        return vars != null ? vars.keySet() : new HashSet<String>();
     }
 
     private String url;
@@ -66,6 +76,7 @@ public final class Request<T> {
     private boolean isFormEncoded;
     private HashMap<String, String> headers;
     private HashMap<String, String> vars;
+    private List<Pair<String, String>> varList;
     private String body;
     private String bodyRaw;
     private String bodyEncoded;
@@ -75,12 +86,12 @@ public final class Request<T> {
         this.method = builder.method;
         this.headers = builder.headers;
         this.vars = builder.vars;
+        this.varList = builder.varList;
         this.bodyRaw = builder.bodyRaw;
         this.bodyEncoded = builder.bodyEncoded;
         this.body = builder.body;
         this.isFormEncoded = builder.isFormEncoded;
     }
-
 
 
     public static class Builder {
@@ -89,6 +100,7 @@ public final class Request<T> {
         private String method;
         private HashMap<String, String> headers;
         private HashMap<String, String> vars;
+        private List<Pair<String, String>> varList;
         private String body;
         private String bodyRaw;
         private String bodyEncoded;
@@ -140,6 +152,11 @@ public final class Request<T> {
 
         public Builder vars(HashMap<String, String> vars) {
             this.vars = vars;
+            return this;
+        }
+
+        public Builder varList(List<Pair<String, String>> varList) {
+            this.varList = varList;
             return this;
         }
 
@@ -228,10 +245,10 @@ public final class Request<T> {
                             if (callback.getType() instanceof ParameterizedType) {
                                 ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
                                 Object obj = JsonParser.listFromJson(result.body,
-                                        (Class)(parameterizedType.getActualTypeArguments()[0]));
+                                        (Class) (parameterizedType.getActualTypeArguments()[0]));
                                 callback.onSuccess(obj);
                             } else {
-                                callback.onSuccess(JsonParser.fromJson(result.body, (Class)callback.getType()));
+                                callback.onSuccess(JsonParser.fromJson(result.body, (Class) callback.getType()));
                             }
                         }
                     } else {
