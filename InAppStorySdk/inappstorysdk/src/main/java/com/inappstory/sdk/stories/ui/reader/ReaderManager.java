@@ -106,7 +106,9 @@ public class ReaderManager {
                 }
             });
         } else {
-            InAppStoryManager.getInstance().showStoryWithSlide(storyId + "", parentFragment.getContext(), slideIndex, parentFragment.readerSettings);
+            InAppStoryManager.getInstance().showStoryWithSlide(
+                    storyId + "", parentFragment.getContext(),
+                    slideIndex, parentFragment.readerSettings, storyType);
         }
     }
 

@@ -48,13 +48,13 @@ public class StoryDownloadManager {
     private Context context;
 
     @WorkerThread
-    public void uploadingAdditional(List<Story> newStories) {
+    public void uploadingAdditional(List<Story> newStories, Story.StoryType type) {
         addStories(newStories);
         if (slidesDownloader.uploadAdditional(
                 storyDownloader.uploadAdditional())) {
             return;
         }
-        putStories(stories);
+        putStories(stories, type);
     }
 
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
@@ -75,7 +75,8 @@ public class StoryDownloadManager {
         }
     }
 
-    public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback, final String id) {
+    public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback,
+                                       final String id, final Story.StoryType type) {
         if (InAppStoryService.isNull()) {
             storyByIdCallback.loadError(-1);
             return;
@@ -103,7 +104,7 @@ public class StoryDownloadManager {
                         }
                         ArrayList<Story> st = new ArrayList<>();
                         st.add(response);
-                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(st);
+                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(st, type);
                         InAppStoryService.getInstance().getDownloadManager().setStory(response, response.id);
                         if (storyByIdCallback != null)
                             storyByIdCallback.getStory(response);
@@ -171,6 +172,9 @@ public class StoryDownloadManager {
         if (stories == null)
             return;
         stories.clear();
+        if (ugcStories == null)
+            return;
+        ugcStories.clear();
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -180,8 +184,10 @@ public class StoryDownloadManager {
     }
 
     public void cleanTasks(boolean cleanStories) {
-        if (cleanStories)
+        if (cleanStories) {
             stories.clear();
+            ugcStories.clear();
+        }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -290,7 +296,7 @@ public class StoryDownloadManager {
         }
     }
 
-    public void putStories(List<Story> stories) {
+    public void putStories(List<Story> stories, Story.StoryType type) {
         if (this.stories == null || this.stories.isEmpty()) {
             this.stories = new ArrayList<>();
             this.stories.addAll(stories);
@@ -487,12 +493,12 @@ public class StoryDownloadManager {
 
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
-                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
+                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response, Story.StoryType.UGC);
                 List<Story> newStories = new ArrayList<>();
                 synchronized (storiesLock) {
-                    if (stories != null) {
+                    if (ugcStories != null) {
                         for (Story story : response) {
-                            if (!stories.contains(story)) {
+                            if (!ugcStories.contains(story)) {
                                 newStories.add(story);
                             }
                         }
@@ -501,7 +507,8 @@ public class StoryDownloadManager {
                 if (newStories.size() > 0) {
                     try {
                         setLocalsOpened(newStories);
-                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .uploadingAdditional(newStories, Story.StoryType.UGC);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -525,7 +532,8 @@ public class StoryDownloadManager {
         storyDownloader.loadUgcStoryList(loadCallback, payload);
     }
 
-    public void loadStories(String feed, final LoadStoriesCallback callback, boolean isFavorite, boolean hasFavorite) {
+    public void loadStories(String feed, final LoadStoriesCallback callback,
+                            boolean isFavorite, boolean hasFavorite) {
         final boolean loadFavorite = hasFavorite;
         SimpleListCallback loadCallback = new SimpleListCallback() {
             @Override
@@ -565,7 +573,8 @@ public class StoryDownloadManager {
                     }
                 }
                 setLocalsOpened(response);
-                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
+                InAppStoryService.getInstance().getDownloadManager()
+                        .uploadingAdditional(response, Story.StoryType.COMMON);
                 List<Story> newStories = new ArrayList<>();
                 synchronized (storiesLock) {
                     if (stories != null) {
@@ -578,7 +587,8 @@ public class StoryDownloadManager {
                 }
                 if (newStories.size() > 0) {
                     try {
-                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .uploadingAdditional(newStories, Story.StoryType.COMMON);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -682,7 +692,8 @@ public class StoryDownloadManager {
 
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
-                InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(response);
+                InAppStoryService.getInstance().getDownloadManager()
+                        .uploadingAdditional(response, Story.StoryType.COMMON);
                 List<Story> newStories = new ArrayList<>();
                 synchronized (storiesLock) {
                     if (stories != null) {
@@ -696,7 +707,8 @@ public class StoryDownloadManager {
                 if (newStories.size() > 0) {
                     try {
                         setLocalsOpened(newStories);
-                        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(newStories);
+                        InAppStoryService.getInstance().getDownloadManager()
+                                .uploadingAdditional(newStories, Story.StoryType.COMMON);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
