@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +28,7 @@ import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
+import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -84,6 +86,11 @@ public class StoriesList extends RecyclerView {
     }
 
     ListCallback callback;
+    ListScrollCallback scrollCallback;
+
+    public void setScrollCallback(ListScrollCallback scrollCallback) {
+        this.scrollCallback = scrollCallback;
+    }
 
     StoriesListManager manager;
     boolean isFavoriteList = false;
@@ -118,6 +125,36 @@ public class StoriesList extends RecyclerView {
     StoryTouchListener storyTouchListener = null;
 
 
+    private int mTouchSlop = 0;
+    private float mPrevX = 0f;
+    private float mPrevY = 0f;
+
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent e) {
+        if (e.getAction() == MotionEvent.ACTION_DOWN) {
+            mPrevX = e.getX();
+            mPrevY = e.getY();
+        } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
+            if (Math.abs(e.getX() - mPrevX) > Math.abs(e.getY() - mPrevY)) {
+                if (scrollCallback != null) {
+                    scrollCallback.scrollStart();
+                }
+            }
+        }
+        return super.onInterceptTouchEvent(e);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
+            if (scrollCallback != null) {
+                scrollCallback.scrollEnd();
+            }
+        }
+        return super.onTouchEvent(e);
+    }
+
     public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(attrs);
@@ -143,6 +180,7 @@ public class StoriesList extends RecyclerView {
 
     private void init(AttributeSet attributeSet) {
         uniqueID = randomUUID().toString();
+        mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         manager = new StoriesListManager();
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
@@ -177,7 +215,7 @@ public class StoriesList extends RecyclerView {
 
     private boolean hasSessionUGC() {
         synchronized (Session.class) {
-            return  (!Session.needToUpdate()
+            return (!Session.needToUpdate()
                     && Session.getInstance().editor != null
                     && Session.getInstance().editor.url != null
                     && !Session.getInstance().editor.url.isEmpty());
