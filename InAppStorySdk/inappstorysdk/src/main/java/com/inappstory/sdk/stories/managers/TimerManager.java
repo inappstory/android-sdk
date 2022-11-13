@@ -136,8 +136,9 @@ public class TimerManager {
         if (InAppStoryService.isNull()) {
             return;
         }
+        Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
         Story story = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId());
+                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
         if (story != null) {
             StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
                     pageManager != null ? pageManager.getFeedId() : null);

@@ -109,16 +109,15 @@ public class Story implements Parcelable {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
     }
 
-    public void setLastIndex(int lastIndex) {
+    public void setLastIndex(int lastIndex, StoryType type) {
         this.lastIndex = lastIndex;
         try {
             InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(id).lastIndex = lastIndex;
+                    .getStoryById(id, type).lastIndex = lastIndex;
         } catch (Exception e) {
 
         }
     }
-
 
 
     /**

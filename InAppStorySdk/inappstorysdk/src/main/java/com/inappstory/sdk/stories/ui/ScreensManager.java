@@ -204,7 +204,8 @@ public class ScreensManager {
                                String gameUrl,
                                String preloadPath,
                                String gameConfig,
-                               String resources) {
+                               String resources,
+                               Story.StoryType type) {
         if (InAppStoryService.isNull()) {
             return;
         }
@@ -214,7 +215,7 @@ public class ScreensManager {
         intent2.putExtra("storyId", Integer.toString(storyId));
         intent2.putExtra("slideIndex", index);
         intent2.putExtra("feedId", feedId);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, type);
         intent2.putExtra("tags", story.tags);
         intent2.putExtra("slidesCount", story.getSlidesCount());
         intent2.putExtra("title", story.title);

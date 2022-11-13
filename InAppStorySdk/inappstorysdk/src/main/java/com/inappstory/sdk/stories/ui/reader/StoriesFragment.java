@@ -266,7 +266,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void swipeCloseEvent(int position, boolean check) {
         if (check) {
             Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentIds.get(position));
+                    .getStoryById(currentIds.get(position), readerManager.storyType);
             if (story == null || story.disableClose) return;
             InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
         }
@@ -282,7 +282,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     private int getCurIndexById(int id) {
         if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, readerManager.storyType);
         return st == null ? 0 : st.lastIndex;
     }
 

@@ -77,7 +77,8 @@ public class ReaderPageManager {
     public void setSlideIndex(int slideIndex) {
 
         this.slideIndex = slideIndex;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(storyId, getStoryType());
         timelineManager.setCurrentSlide(slideIndex);
         timerManager.stopTimer();
         if (story != null) {
@@ -111,7 +112,8 @@ public class ReaderPageManager {
     }
 
     public void widgetEvent(String widgetName, String widgetData) {
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance()
+                .getDownloadManager().getStoryById(storyId, getStoryType());
         if (story == null) return;
         if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
             CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
@@ -133,7 +135,7 @@ public class ReaderPageManager {
             int cta = CallToAction.BUTTON;
             ClickAction action = ClickAction.BUTTON;
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                    storyId
+                    storyId, getStoryType()
             );
             switch (object.getLink().getType()) {
                 case "url":
@@ -290,11 +292,11 @@ public class ReaderPageManager {
 
     public void openSlideByIndex(int index) {
         Story story = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId);
+                .getStoryById(storyId, getStoryType());
         if (index < 0) index = 0;
         if (story == null) return;
         if (story.getSlidesCount() <= index) index = 0;
-        story.setLastIndex(index);
+        story.lastIndex = index;
         if (slideIndex != index) {
             slideIndex = index;
             changeCurrentSlide();
@@ -323,7 +325,7 @@ public class ReaderPageManager {
 
 
     public void resetCurrentDuration() {
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
 
         if (story == null) return;
         this.durations.clear();
@@ -369,7 +371,7 @@ public class ReaderPageManager {
 
     public void nextSlide() {
         if (InAppStoryService.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
 
         if (story == null) return;
         timerManager.setTimerDuration(0);
@@ -378,7 +380,7 @@ public class ReaderPageManager {
             if (webViewManager == null) return;
             webViewManager.stopStory();
             slideIndex++;
-            story.setLastIndex(slideIndex);
+            story.lastIndex = slideIndex;
             changeCurrentSlide();
         } else {
             parentManager.nextStory();
@@ -408,7 +410,7 @@ public class ReaderPageManager {
 
     public void prevSlide() {
         if (InAppStoryService.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
 
         if (story == null) return;
         timerManager.setTimerDuration(0);
@@ -416,7 +418,7 @@ public class ReaderPageManager {
             if (webViewManager == null) return;
             webViewManager.stopStory();
             slideIndex--;
-            story.setLastIndex(slideIndex);
+            story.lastIndex = slideIndex;
             changeCurrentSlide();
         } else {
             parentManager.prevStory();
@@ -448,7 +450,7 @@ public class ReaderPageManager {
 
     void storyInfoLoaded() {
         this.timelineManager.setStoryDurations(InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(storyId).durations, false);
+                .getStoryById(storyId, getStoryType()).durations, false);
     }
 
     public void setTimelineManager(TimelineManager timelineManager, int storyId) {
@@ -485,7 +487,7 @@ public class ReaderPageManager {
 
     public void storyLoadedInCache() {
         if (InAppStoryService.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
         if (story == null) return;
         if (story.durations != null && !story.durations.isEmpty()) {
             if (this.durations == null)

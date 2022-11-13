@@ -216,7 +216,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
         if (InAppStoryService.isNotNull()) {
             Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId());
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.getSlidesCount(),
@@ -284,6 +284,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         }
     }
 
+    Story.StoryType type = Story.StoryType.COMMON;
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
@@ -335,6 +336,13 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             return;
         }
         InAppStoryService.getInstance().getListReaderConnector().openReader();
+        String stStoriesType = getIntent().getStringExtra("storiesType");
+        if (stStoriesType != null) {
+            if (stStoriesType.equals(Story.StoryType.UGC.name()))
+                type = Story.StoryType.UGC;
+            draggableFrame.type = type;
+        }
+
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
@@ -381,7 +389,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
             InAppStoryService.getInstance().getListReaderConnector().closeReader();
             Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId());
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
                     story.title, story.tags, story.getSlidesCount(),
@@ -449,7 +457,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         if (InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex();
+            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex(type);
         }
         cleaned = true;
     }

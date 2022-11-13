@@ -616,7 +616,10 @@ public class InAppStoryManager {
             public void onSuccess(Response response) {
                 ProfilingManager.getInstance().setReady(favUID);
                 if (InAppStoryService.isNotNull()) {
-                    InAppStoryService.getInstance().getDownloadManager().clearAllFavoriteStatus();
+                    InAppStoryService.getInstance().getDownloadManager()
+                            .clearAllFavoriteStatus(Story.StoryType.COMMON);
+                    InAppStoryService.getInstance().getDownloadManager()
+                            .clearAllFavoriteStatus(Story.StoryType.UGC);
                     InAppStoryService.getInstance().getFavoriteImages().clear();
                     InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
                 }
@@ -655,7 +658,8 @@ public class InAppStoryManager {
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(favUID);
                         if (InAppStoryService.isNotNull()) {
-                            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+                            Story story = InAppStoryService.getInstance().getDownloadManager()
+                                    .getStoryById(storyId, Story.StoryType.COMMON);
                             if (story != null)
                                 story.favorite = favorite;
                             InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
@@ -904,8 +908,9 @@ public class InAppStoryManager {
     private Handler localHandler = new Handler();
     private Object handlerToken = new Object();
 
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext, final AppearanceManager manager, final String feed, final String feedId) {
-
+    private void showLoadedOnboardings(final List<Story> response, final Context outerContext,
+                                       final AppearanceManager manager, final String feed, final String feedId) {
+        Story.StoryType storyType = Story.StoryType.COMMON;
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0, feed));
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
@@ -942,11 +947,7 @@ public class InAppStoryManager {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories,
-                Story.StoryType.COMMON);
-        InAppStoryService.getInstance().getDownloadManager().putStories(
-                InAppStoryService.getInstance().getDownloadManager().getStories(),
-                Story.StoryType.COMMON);
+        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories, storyType);
         ScreensManager.getInstance().openStoriesReader(
                 outerContext,
                 null,
@@ -1236,7 +1237,7 @@ public class InAppStoryManager {
                         return;
                     }
                     InAppStoryService.getInstance().getDownloadManager().putStories(
-                            InAppStoryService.getInstance().getDownloadManager().getStories(),
+                            InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
                             type
                     );
                     ArrayList<Integer> stIds = new ArrayList<>();

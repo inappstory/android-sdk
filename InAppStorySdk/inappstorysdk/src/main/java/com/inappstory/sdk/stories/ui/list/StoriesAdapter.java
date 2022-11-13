@@ -140,7 +140,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         } else {
             int hasUGC = useUGC ? 1 : 0;
             final Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(storiesIds.get(position - hasUGC));
+                    .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.COMMON);
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
                     story.getProperImage(manager.csCoverQuality()).getUrl() : null;
@@ -169,7 +169,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index));
+        Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
             CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.title,
                     current.tags, current.getSlidesCount(),
@@ -236,15 +236,13 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
         ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
                 isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, feedID, Story.StoryType.COMMON);
-        InAppStoryService.getInstance().getDownloadManager().putStories(
-                InAppStoryService.getInstance().getDownloadManager().getStories());
     }
 
     @Override
@@ -258,7 +256,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             int pos = position - hasUGC;
             int pref = pos * 10;
             Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(storiesIds.get(pos));
+                    .getStoryById(storiesIds.get(pos), Story.StoryType.COMMON);
             if (story.getVideoUrl() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {

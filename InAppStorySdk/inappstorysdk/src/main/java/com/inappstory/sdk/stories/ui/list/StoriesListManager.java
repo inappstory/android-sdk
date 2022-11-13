@@ -38,7 +38,8 @@ public class StoriesListManager implements ListManager {
         if (InAppStoryService.isNull()) {
             return;
         }
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened();
         checkHandler();
@@ -104,7 +105,7 @@ public class StoriesListManager implements ListManager {
             @Override
             public void run() {
                 List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-                Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+                Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
                 if (story == null) return;
                 if (favStatus) {
                     FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());

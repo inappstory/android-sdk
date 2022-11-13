@@ -197,7 +197,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         else animateFirst = false;
 
         if (InAppStoryService.isNotNull()) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+            Story story = InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.getSlidesCount(),
@@ -249,6 +250,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
 
+    Story.StoryType type = Story.StoryType.COMMON;
 
     public void shareComplete() {
         storiesFragment.readerManager.shareComplete();
@@ -358,6 +360,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             return;
         }
         InAppStoryService.getInstance().getListReaderConnector().openReader();
+        String stStoriesType = getIntent().getStringExtra("storiesType");
+        if (stStoriesType != null) {
+            if (stStoriesType.equals(Story.StoryType.UGC.name()))
+                type = Story.StoryType.UGC;
+            draggableFrame.type = type;
+        }
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
@@ -434,7 +442,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (InAppStoryService.isNotNull()) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+            Story story = InAppStoryService.getInstance().getDownloadManager()
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
                         story.title, story.tags, story.getSlidesCount(),
@@ -502,7 +511,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         if (InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex();
+            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex(type);
         }
         cleaned = true;
     }

@@ -138,7 +138,7 @@ class SlidesDownloader {
                 }
             }
             firstPriority.clear();
-            Story currentStory = manager.getStoryById(storyId);
+            Story currentStory = manager.getStoryById(storyId, type);
             if (currentStory == null) return;
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
@@ -158,19 +158,15 @@ class SlidesDownloader {
             }
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
-                Story adjacentStory = manager.getStoryById(adjacent);
+                Story adjacentStory = manager.getStoryById(adjacent, type);
                 if (adjacentStory.lastIndex < adjacentStory.getSlidesCount() - 1) {
                     SlideTaskKey nk = new SlideTaskKey(adjacent, adjacentStory.lastIndex + 1, type);
                     secondPriority.remove(nk);
-
-                    //            if (!(pageTasks.containsKey(nk) && pageTasks.get(nk).loadType != 0))
                     firstPriority.add(ind, nk);
                 }
 
                 SlideTaskKey ck = new SlideTaskKey(adjacent, adjacentStory.lastIndex, type);
                 secondPriority.remove(ck);
-
-                //     if (!(pageTasks.containsKey(ck) && pageTasks.get(ck).loadType != 0))
                 firstPriority.add(ind, ck);
             }
         }
@@ -178,7 +174,7 @@ class SlidesDownloader {
 
     void changePriorityForSingle(Integer storyId, Story.StoryType type) {
         synchronized (pageTasksLock) {
-            Story currentStory = manager.getStoryById(storyId);
+            Story currentStory = manager.getStoryById(storyId, type);
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
                 SlideTaskKey kv = new SlideTaskKey(storyId, i, type);

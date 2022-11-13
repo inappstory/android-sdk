@@ -474,7 +474,7 @@ public class InAppStoryService {
                     return;
                 }
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
-                        getInstance().getDownloadManager().getStories(),
+                        getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
                         getInstance().getDownloadManager().favStories,
                         getInstance().getDownloadManager().favoriteImages
                 ));

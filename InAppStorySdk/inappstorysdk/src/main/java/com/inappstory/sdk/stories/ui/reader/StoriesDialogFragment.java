@@ -81,7 +81,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         if (InAppStoryService.isNotNull()) {
             OldStatisticManager.getInstance().sendStatistic();
             Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId());
+                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
 
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
@@ -119,9 +119,9 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories();
+        List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories(type);
         for (Story story : stories)
-            story.setLastIndex(0);
+            story.lastIndex = 0;
         cleaned = true;
     }
 
@@ -235,6 +235,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         getArguments().putInt("index", index);
     }
 
+    Story.StoryType type = Story.StoryType.COMMON;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -242,6 +243,11 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         cleaned = false;
         int color = getArguments().getInt(AppearanceManager.CS_READER_BACKGROUND_COLOR, Color.BLACK);
         view.setBackgroundColor(color);
+        String stStoriesType = getArguments().getString("storiesType", Story.StoryType.COMMON.name());
+        if (stStoriesType != null) {
+            if (stStoriesType.equals(Story.StoryType.UGC.name()))
+                type = Story.StoryType.UGC;
+        }
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             Bundle args = new Bundle();
