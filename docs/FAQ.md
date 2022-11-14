@@ -73,3 +73,29 @@ Example:
 ```js
 InAppStoryManager.getInstance().soundOn(true);
 ```
+
+#### 16) Prevent swipe to refresh or outer scroll events during stories list scroll
+
+Example:
+```java
+storiesList.setScrollCallback(object : ListScrollCallback {
+ 	override fun scrollStart() {
+		requestParentForDisallow(storiesList.parent, true)
+	}
+
+	override fun scrollEnd() {
+		requestParentForDisallow(storiesList.parent, false)
+	}
+})
+
+
+// This method enable/disable all parent touch events. You shouldn't use it directly and better to lock only necessary views
+private fun requestParentForDisallow(view: ViewParent, disallow: Boolean) {
+    if (view.parent == null) return
+    view.parent.requestDisallowInterceptTouchEvent(disallow)
+    if (view.parent is SwipeRefreshLayout) {
+        (view.parent as SwipeRefreshLayout).isEnabled = !disallow
+    }
+    requestParentForDisallow(view.parent, disallow)
+}
+```

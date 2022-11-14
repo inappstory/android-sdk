@@ -262,3 +262,17 @@ For favorite list this parameter is ignored and `feed` equals `null`.
                        String feed); //user click on StoriesList item.
 }
 ```
+
+
+Starting from version 1.11.1 was added callback to handle list scroll events (start and stop): 
+```java
+    storiesList.setScrollCallback(ListScrollCallback callback);
+    
+    public interface ListScrollCallback {
+	    void scrollStart();
+
+	    void scrollEnd();
+	}
+}
+```
+For example it can be used to prevent touch events from parent containers during scroll
