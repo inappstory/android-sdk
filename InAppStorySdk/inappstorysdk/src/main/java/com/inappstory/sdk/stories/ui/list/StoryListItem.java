@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.list;
 
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
@@ -21,7 +22,9 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
 
@@ -172,6 +175,12 @@ public class StoryListItem extends BaseStoryListItem {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int[] location = new int[2];
+                v.getLocationOnScreen(location);
+                int x = location[0];
+                int y = location[1];
+                ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
+                        y + v.getHeight() / 2);
                 if (StoryListItem.this.callback != null)
                     StoryListItem.this.callback.onItemClick(getAbsoluteAdapterPosition());
             }

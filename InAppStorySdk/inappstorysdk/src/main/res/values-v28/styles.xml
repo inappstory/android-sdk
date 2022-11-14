@@ -21,14 +21,14 @@
 
     </style>
 
-    <style name="Theme.Transparent" parent="StoriesSDKAppTheme.NoActionBar">
+    <style name="StoriesSDKAppTheme.Transparent" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
-    <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
+    <style name="StoriesSDKAppTheme.DialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowSoftInputMode">adjustResize|stateAlwaysHidden</item>
     </style>
 

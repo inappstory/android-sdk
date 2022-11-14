@@ -10,7 +10,7 @@
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
-    <declare-styleable name="BlurringView">
+    <declare-styleable name="StoriesSDKAppTheme.BlurringView">
         <attr name="cblurRadius" format="integer"/>
         <attr name="cdownsampleFactor" format="integer"/>
         <attr name="coverlayColor" format="color"/>
@@ -22,7 +22,7 @@
 
     </style>
 
-    <style name="Theme.GameActivity" parent="StoriesSDKAppTheme.NoActionBar">
+    <style name="StoriesSDKAppTheme.GameActivity" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
@@ -38,24 +38,24 @@
         </item>
     </style>
 
-    <style name="Theme.Transparent" parent="StoriesSDKAppTheme.NoActionBar">
+    <style name="StoriesSDKAppTheme.Transparent" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
 
-    <style name="Theme.NonTransparent" parent="StoriesSDKAppTheme.NoActionBar">
+    <style name="StoriesSDKAppTheme.NonTransparent" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">false</item>
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
-    <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
+    <style name="StoriesSDKAppTheme.DialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowSoftInputMode">adjustResize|stateAlwaysHidden</item>
     </style>
 
-    <style name="NewDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+    <style name="StoriesSDKAppTheme.NewDialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -63,7 +63,7 @@
         <item name="android:windowSoftInputMode">adjustResize|stateAlwaysHidden</item>
     </style>
 
-    <style name="GoodsDialog" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="StoriesSDKAppTheme.GoodsDialog" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
     </style>

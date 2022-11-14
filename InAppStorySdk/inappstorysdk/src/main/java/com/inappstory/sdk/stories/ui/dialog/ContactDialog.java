@@ -108,7 +108,7 @@ public class ContactDialog {
     }
 
     private void showDialogInner(final Activity activity) {
-        final Dialog dialog = new Dialog(activity, R.style.DialogTheme);
+        final Dialog dialog = new Dialog(activity, R.style.StoriesSDKAppTheme_DialogTheme);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         dialog.setCancelable(true);

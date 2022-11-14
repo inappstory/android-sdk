@@ -1,27 +1,14 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 import static com.inappstory.sdk.AppearanceManager.ANIMATION_CUBE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
-import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 import android.content.Context;
@@ -45,6 +32,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -100,7 +88,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         if (animateFirst &&
                 android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             animateFirst = false;
-            loadAnim();
+            closeAnim();
         } else {
             switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
                 case 0:
@@ -130,7 +118,57 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         StatusBarController.hideStatusBar(this, true);
     }
 
-    public void loadAnim() {
+    public void startAnim() {
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        backTintView.setVisibility(View.GONE);
+        try {
+            isAnimation = true;
+            draggableFrame.setVisibility(View.INVISIBLE);
+            float x = Sizes.getScreenSize().x / 2f;
+            float y = draggableFrame.getY();
+            AnimationSet animationSet = new AnimationSet(true);
+            Animation anim = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, x, y);
+            animationSet.addAnimation(anim);
+            animationSet.setDuration(300);
+            animationSet.setStartOffset(200);
+            animationSet.setInterpolator(new LinearOutSlowInInterpolator());
+            Point coordinates = ScreensManager.getInstance().coordinates;
+            if (coordinates != null) {
+                Animation anim2 = new TranslateAnimation(coordinates.x -
+                        Sizes.getScreenSize(StoriesActivity.this).x / 2, 0f,
+                        coordinates.y - draggableFrame.getY(), 0f);
+                animationSet.addAnimation(anim2);
+
+            }
+            animationSet.setAnimationListener(new Animation.AnimationListener() {
+
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    draggableFrame.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    draggableFrame.setVisibility(View.VISIBLE);
+                    backTintView.setVisibility(View.VISIBLE);
+                    isAnimation = false;
+                }
+            });
+            draggableFrame.startAnimation(animationSet);
+        } catch (Exception e) {
+            finishWithoutAnimation();
+        }
+    }
+
+    public void closeAnim() {
         try {
             isAnimation = true;
             float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
@@ -409,7 +447,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         );
         backTintView.setBackgroundColor(color);
         storiesReaderSettings = new StoriesReaderSettings(
-               getIntent().getExtras()
+                getIntent().getExtras()
         );
         try {
             bundle.putSerializable(CS_TIMER_GRADIENT, getIntent().getSerializableExtra(CS_TIMER_GRADIENT));

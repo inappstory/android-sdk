@@ -26,21 +26,21 @@
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Transparent"
+            android:theme="@style/StoriesSDKAppTheme.Transparent"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name="com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity"
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Transparent"
+            android:theme="@style/StoriesSDKAppTheme.Transparent"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".game.reader.GameActivity"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.GameActivity" />
+            android:theme="@style/StoriesSDKAppTheme.GameActivity" />
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
 

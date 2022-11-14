@@ -358,11 +358,17 @@ public class ScreensManager {
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ctx.startActivity(intent2);
+                if (ctx instanceof Activity) {
+                 //   ((Activity) ctx).overridePendingTransition(0, 0);
+                }
             } else {
                 if (!(outerContext instanceof Activity)) {
                     intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
                 outerContext.startActivity(intent2);
+                if (outerContext instanceof Activity) {
+                 //   ((Activity) outerContext).overridePendingTransition(0, 0);
+                }
             }
         }
     }
@@ -401,7 +407,7 @@ public class ScreensManager {
         if (widgetId != null) localTaskId = widgetId;
         else localTaskId = randomUUID().toString();
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.GoodsDialog);
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
             builder.setView(dialogView);
             goodsDialog = builder.create();
@@ -451,7 +457,7 @@ public class ScreensManager {
                     });
         } else {
             AlertDialog.Builder builder = (Sizes.isTablet() && !fullScreen) ? new AlertDialog.Builder(activity) :
-                    new AlertDialog.Builder(activity, R.style.GoodsDialog);
+                    new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
             builder.setView(dialogView);
             goodsDialog = builder.create();
