@@ -162,12 +162,19 @@ public class Downloader {
                                               final FileLoadProgressCallback callback) {
         tmpFileDownloader.submit(new Callable() {
             @Override
-            public File call() throws Exception {
+            public File call() {
                 if (cache == null) {
-                    callback.onError();
+                    if (callback != null)
+                        callback.onError();
                     return null;
                 }
-                return downloadOrGetFile(url, cache, null, callback);
+                try {
+                    return downloadOrGetFile(url, cache, null, callback);
+                } catch (Exception e) {
+                    if (callback != null)
+                        callback.onError();
+                    return null;
+                }
             }
         });
     }
