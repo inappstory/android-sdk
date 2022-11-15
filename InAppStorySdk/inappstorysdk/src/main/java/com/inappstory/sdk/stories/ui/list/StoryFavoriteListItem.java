@@ -69,8 +69,13 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    downloadFileAndSendToInterface(InAppStoryService.getInstance()
-                            .getFavoriteImages().get(i[0]).getUrl(), this);
+                    List<FavoriteImage> images = InAppStoryService.getInstance()
+                            .getFavoriteImages();
+                    if (images == null || images.size() <= i[0]) {
+                        downloadFileAndSendToInterface("", this);
+                    } else {
+                        downloadFileAndSendToInterface(images.get(i[0]).getUrl(), this);
+                    }
                 }
             }
 
@@ -82,8 +87,13 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    downloadFileAndSendToInterface(InAppStoryService.getInstance()
-                            .getFavoriteImages().get(i[0]).getUrl(), this);
+                    List<FavoriteImage> images = InAppStoryService.getInstance()
+                            .getFavoriteImages();
+                    if (images == null || images.size() <= i[0]) {
+                        downloadFileAndSendToInterface("", this);
+                    } else {
+                        downloadFileAndSendToInterface(images.get(i[0]).getUrl(), this);
+                    }
                 }
             }
         };
@@ -265,7 +275,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                    callback.run(path);
+                        callback.run(path);
                     }
                 });
             }
@@ -275,7 +285,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                    callback.error();
+                        callback.error();
                     }
                 });
             }
