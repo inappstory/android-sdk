@@ -116,8 +116,11 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             loadFavoriteImages(new LoadFavoriteImagesCallback() {
                 @Override
                 public void onLoad(List<String> downloadImages) {
-                    getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,
-                            downloadImages.size());
+                    if (getFavoriteListItem != null
+                            && getFavoriteListItem.getFavoriteItem() != null) {
+                        getFavoriteListItem.setImages(itemView, downloadImages, backgroundColors,
+                                downloadImages.size());
+                    }
                 }
             }, count);
             return;
@@ -262,9 +265,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        if (getListItem != null) {
-                            callback.run(path);
-                        }
+                    callback.run(path);
                     }
                 });
             }
@@ -274,9 +275,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        if (getListItem != null) {
-                            callback.error();
-                        }
+                    callback.error();
                     }
                 });
             }
