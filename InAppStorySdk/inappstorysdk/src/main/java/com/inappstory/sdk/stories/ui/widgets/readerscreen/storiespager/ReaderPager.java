@@ -7,18 +7,16 @@ import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
-import androidx.viewpager.widget.ViewPager;
 
-import com.duolingo.open.rtlviewpager.RtlViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.ui.reader.BothSideViewPager;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CoverTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
-public class ReaderPager extends RtlViewPager {
+public class ReaderPager extends BothSideViewPager {
     public void setHost(StoriesFragment host) {
         this.host = host;
     }
