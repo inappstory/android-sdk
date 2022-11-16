@@ -234,9 +234,10 @@ public final class NetworkHandler implements InvocationHandler {
                 } else if (annotation instanceof QueryObject) {
                     List<Pair<String, String>> objList =
                             convertObjectToQuery(((QueryObject) annotation).value(), args[i].toString());
-                    for (int k = 0; k < objList.size(); k++) {
-                        varList.add(new Pair(objList.get(k).first, encode(objList.get(k).second)));
-                    }
+                    if (objList != null)
+                        for (int k = 0; k < objList.size(); k++) {
+                            varList.add(new Pair(objList.get(k).first, encode(objList.get(k).second)));
+                        }
 
                 } else if (annotation instanceof Field) {
                     bodyEncoded += "&" + ((Field) annotation).value() + "=" + encode(args[i].toString());

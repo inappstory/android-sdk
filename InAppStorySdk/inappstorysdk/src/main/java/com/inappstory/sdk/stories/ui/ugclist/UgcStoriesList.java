@@ -298,15 +298,19 @@ public class UgcStoriesList extends RecyclerView {
 
     LoadStoriesCallback lcallback;
 
-    public void loadStories(String payload) throws DataException {
-        loadStoriesLocal(payload);
+    public void loadStories(@NonNull String payload) throws DataException {
+        if (payload.isEmpty()) {
+            loadStories();
+        } else {
+            loadStoriesLocal(payload);
+        }
     }
 
     public void loadStories() throws DataException {
-        loadStoriesLocal("");
+        loadStories(new HashMap<String, Object>());
     }
 
-    public void loadStories(HashMap<String, Object> payload) throws DataException {
+    public void loadStories(@NonNull HashMap<String, Object> payload) throws DataException {
         loadStoriesLocal(JsonParser.mapToJsonString(payload));
     }
 
