@@ -131,7 +131,7 @@ public class GameManager {
     void tapOnLink(String link) {
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                Integer.parseInt(storyId));
+                Integer.parseInt(storyId), Story.StoryType.COMMON);
         CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
                 story.tags, story.getSlidesCount(), story.lastIndex,
                 link));

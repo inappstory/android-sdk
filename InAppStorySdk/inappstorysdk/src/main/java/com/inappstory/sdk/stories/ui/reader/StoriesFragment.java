@@ -169,10 +169,11 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         ind = arguments.getInt("index", 0);
         readerAnimation = arguments.getInt(CS_STORY_READER_ANIMATION,
                 AppearanceManager.ANIMATION_CUBE);
-
+        Story.StoryType type =
+                Story.StoryType.valueOf(getArguments().getString("storiesType", Story.StoryType.COMMON.name()));
         readerManager = new ReaderManager(arguments.getString("listID", null),
                 arguments.getString("feedId", null),
-                arguments.getString("feedSlug", null));
+                arguments.getString("feedSlug", null), type);
         if (currentIds != null && !currentIds.isEmpty()) {
             readerManager.setStoriesIds(currentIds);
             readerManager.firstStoryId = currentIds.get(ind);
@@ -265,7 +266,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void swipeCloseEvent(int position, boolean check) {
         if (check) {
             Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentIds.get(position));
+                    .getStoryById(currentIds.get(position), readerManager.storyType);
             if (story == null || story.disableClose) return;
             InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
         }
@@ -281,7 +282,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     private int getCurIndexById(int id) {
         if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, readerManager.storyType);
         return st == null ? 0 : st.lastIndex;
     }
 

@@ -137,7 +137,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+      //  Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         // if (st != null && (st.disableClose || st.hasSwipeUp()))
         //     return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
@@ -146,7 +146,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         // if we're in a drag gesture and the user reverses up the we should take those events
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        Story st = InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
 
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
             if (st != null && (st.disableClose || st.hasSwipeUp()))
@@ -161,7 +162,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        Story st = InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
         if (st != null && (st.disableClose || st.hasSwipeUp())) {
             disabledDragScale(dyUnconsumed);
         } else {
@@ -190,7 +192,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public void onStopNestedScroll(View child) {
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        Story st = InAppStoryService.getInstance().getDownloadManager()
+                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
         if (totalDisabledDrag > 400) {
             swipeUpCallback();
         } else if (st != null && !st.disableClose && totalDisabledDrag < -400) {
@@ -331,6 +334,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             }
         }
     }
+
+    public Story.StoryType type = Story.StoryType.COMMON;
 
     private void swipeUpCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {

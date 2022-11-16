@@ -138,7 +138,8 @@ public class ReaderPageFragment extends Fragment {
 
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId,
+                manager.getStoryType());
         if (story == null) return;
         if (story.disableClose)
             close.setVisibility(View.GONE);
@@ -559,6 +560,7 @@ public class ReaderPageFragment extends Fragment {
             parentManager = ((StoriesFragment) getParentFragment()).readerManager;
         }
         manager.parentManager = parentManager;
+        manager.setStoryId(storyId);
         if (parentManager != null) {
             parentManager.addSubscriber(manager);
         }
@@ -566,11 +568,10 @@ public class ReaderPageFragment extends Fragment {
         setActions();
         if (setManagers() && InAppStoryService.getInstance() != null
                 && InAppStoryService.getInstance().getDownloadManager() != null) {
-            if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) != null)
+            if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, manager.getStoryType()) != null)
                 manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(storyId).lastIndex);
+                        .getStoryById(storyId, manager.getStoryType()).lastIndex);
 
-            manager.setStoryId(storyId);
             setViews(view);
             InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
             manager.storyLoadedInCache();

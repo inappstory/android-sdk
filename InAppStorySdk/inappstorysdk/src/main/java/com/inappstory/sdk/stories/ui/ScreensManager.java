@@ -204,7 +204,8 @@ public class ScreensManager {
                                String gameUrl,
                                String preloadPath,
                                String gameConfig,
-                               String resources) {
+                               String resources,
+                               Story.StoryType type) {
         if (InAppStoryService.isNull()) {
             return;
         }
@@ -214,7 +215,7 @@ public class ScreensManager {
         intent2.putExtra("storyId", Integer.toString(storyId));
         intent2.putExtra("slideIndex", index);
         intent2.putExtra("feedId", feedId);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, type);
         intent2.putExtra("tags", story.tags);
         intent2.putExtra("slidesCount", story.getSlidesCount());
         intent2.putExtra("title", story.title);
@@ -253,7 +254,7 @@ public class ScreensManager {
 
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex,
-                                  String feed, String feedId) {
+                                  String feed, String feedId, Story.StoryType type) {
         if (System.currentTimeMillis() - lastOpenTry < 1000) {
             return;
         }
@@ -267,6 +268,7 @@ public class ScreensManager {
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
             bundle.putInt("source", source);
+            bundle.putString("storiesType", type.name());
             bundle.putString("feedId", feedId);
             bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
             bundle.putIntegerArrayList("stories_ids", storiesIds);
@@ -324,6 +326,7 @@ public class ScreensManager {
                             StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", index);
             intent2.putExtra("source", source);
+            intent2.putExtra("storiesType", type.name());
             if (listID != null)
                 intent2.putExtra("listID", listID);
             if (feedId != null)
@@ -373,9 +376,26 @@ public class ScreensManager {
         }
     }
 
-    public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds, int index, int source, String feed, String feedId) {
-        openStoriesReader(outerContext, listID, manager, storiesIds, index, source, 0, feed, feedId);
+    public void openStoriesReader(Context outerContext,
+                                  String listID,
+                                  AppearanceManager manager,
+                                  ArrayList<Integer> storiesIds,
+                                  int index,
+                                  int source,
+                                  String feed,
+                                  String feedId,
+                                  Story.StoryType type) {
+        openStoriesReader(
+                outerContext,
+                listID,
+                manager,
+                storiesIds,
+                index,
+                source,
+                0,
+                feed,
+                feedId,
+                type);
     }
 
 

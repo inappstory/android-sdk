@@ -134,7 +134,7 @@ public class StoriesViewManager {
         loadedId = oId;
         if (alreadyLoaded) return;
         Story story = InAppStoryService.getInstance() != null ?
-                InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId) : null;
+                InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType()) : null;
         innerLoad(story);
     }
 
@@ -175,7 +175,7 @@ public class StoriesViewManager {
         if (InAppStoryService.isNull())
             return;
 
-        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id);
+        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, pageManager.getStoryType());
         if (story == null || story.checkIfEmpty()) {
             return;
         }
@@ -185,7 +185,8 @@ public class StoriesViewManager {
         loadedIndex = index;
         loadedId = id;
 
-        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index);
+        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index,
+                pageManager.getStoryType());
         if (slideInCache) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
@@ -371,7 +372,7 @@ public class StoriesViewManager {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
         ScreensManager.getInstance().openGameReader(context, storyId, index,
                 pageManager != null ? pageManager.getFeedId() : null, gameUrl,
-                preloadPath, gameConfig, resources);
+                preloadPath, gameConfig, resources, pageManager.getStoryType());
     }
 
     private boolean storyIsLoaded = false;
@@ -379,7 +380,7 @@ public class StoriesViewManager {
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
         storyIsLoaded = true;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopStory();
@@ -395,7 +396,7 @@ public class StoriesViewManager {
     }
 
     public void sendShowSlideEvents() {
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
             CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
                     story.tags, story.getSlidesCount(), index));

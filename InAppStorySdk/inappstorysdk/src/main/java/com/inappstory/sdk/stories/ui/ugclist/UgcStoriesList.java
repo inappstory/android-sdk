@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.ui.ugclist;
 
 import static java.util.UUID.randomUUID;
 
@@ -10,7 +10,6 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,51 +27,25 @@ import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
-import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.StoriesAdapter;
+import com.inappstory.sdk.stories.ui.list.StoriesListManager;
+import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoriesList extends RecyclerView {
-    public StoriesList(@NonNull Context context) {
+public class UgcStoriesList extends RecyclerView {
+    public UgcStoriesList(@NonNull Context context) {
         super(context);
         init(null);
-    }
-
-    public static String DEFAULT_FEED = "default";
-
-    public String getFeed() {
-        synchronized (feedLock) {
-            if (isFavoriteList) return null;
-            return feed;
-        }
-    }
-
-    public Object feedLock = new Object();
-
-    public void setFeed(String feed) {
-        synchronized (feedLock) {
-            if (!isFavoriteList && feed != null && !feed.isEmpty())
-                this.feed = feed;
-        }
-    }
-
-    private String feed = DEFAULT_FEED;
-    private String feedId = null;
-
-    public String getFeedId() {
-        return feedId;
-    }
-
-    void setListFeedId(String feedId) {
-        this.feedId = feedId;
     }
 
     public String getUniqueID() {
@@ -86,22 +59,10 @@ public class StoriesList extends RecyclerView {
     }
 
     ListCallback callback;
-    ListScrollCallback scrollCallback;
 
-    public void setScrollCallback(ListScrollCallback scrollCallback) {
-        this.scrollCallback = scrollCallback;
-    }
+    UgcStoriesListManager manager;
 
-    StoriesListManager manager;
-    boolean isFavoriteList = false;
-
-    public StoriesList(@NonNull Context context, boolean isFavoriteList) {
-        super(context);
-        init(null);
-        this.isFavoriteList = isFavoriteList;
-    }
-
-    public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public UgcStoriesList(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(attrs);
     }
@@ -125,37 +86,7 @@ public class StoriesList extends RecyclerView {
     StoryTouchListener storyTouchListener = null;
 
 
-    private int mTouchSlop = 0;
-    private float mPrevX = 0f;
-    private float mPrevY = 0f;
-
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent e) {
-        if (e.getAction() == MotionEvent.ACTION_DOWN) {
-            mPrevX = e.getX();
-            mPrevY = e.getY();
-        } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
-            if (Math.abs(e.getX() - mPrevX) > Math.abs(e.getY() - mPrevY)) {
-                if (scrollCallback != null) {
-                    scrollCallback.scrollStart();
-                }
-            }
-        }
-        return super.onInterceptTouchEvent(e);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent e) {
-        if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
-            if (scrollCallback != null) {
-                scrollCallback.scrollEnd();
-            }
-        }
-        return super.onTouchEvent(e);
-    }
-
-    public StoriesList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public UgcStoriesList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(attrs);
     }
@@ -180,22 +111,8 @@ public class StoriesList extends RecyclerView {
 
     private void init(AttributeSet attributeSet) {
         uniqueID = randomUUID().toString();
-        mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-        manager = new StoriesListManager();
-        if (attributeSet != null) {
-            TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
-            isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
-            synchronized (feedLock) {
-                if (!isFavoriteList) {
-                    feed = typedArray.getString(R.styleable.StoriesList_cs_feed);
-                    if (feed == null || feed.isEmpty()) feed = StoriesList.DEFAULT_FEED;
-                } else {
-                    feed = null;
-                }
-            }
-            typedArray.recycle();
-        }
-        addOnScrollListener(new RecyclerView.OnScrollListener() {
+        manager = new UgcStoriesListManager();
+        addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
@@ -223,32 +140,9 @@ public class StoriesList extends RecyclerView {
     }
 
     void sendIndexes() {
-        checkAppearanceManager();
-        int hasUgc = (hasSessionUGC() && !isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
-        ArrayList<Integer> indexes = new ArrayList<>();
-        if (layoutManager instanceof LinearLayoutManager) {
-            LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
-            for (int i = linearLayoutManager.findFirstVisibleItemPosition();
-                 i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
-                int ind = i - hasUgc;
-                if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0)
-                    indexes.add(adapter.getStoriesIds().get(ind));
-            }
-        }
-        ArrayList<Integer> newIndexes =
-                OldStatisticManager.getInstance().newStatisticPreviews(indexes);
-        try {
-            if (StatisticManager.getInstance() != null) {
-                StatisticManager.getInstance().sendViewStory(newIndexes,
-                        isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feedId);
-            }
-        } catch (Exception e) {
-
-        }
-        OldStatisticManager.getInstance().previewStatisticEvent(indexes);
     }
 
-    StoriesAdapter adapter;
+    UgcStoriesAdapter adapter;
 
     @Override
     public void setLayoutManager(LayoutManager layoutManager) {
@@ -295,13 +189,15 @@ public class StoriesList extends RecyclerView {
     void refreshList() {
         try {
             adapter = null;
-            loadStoriesInner();
+            loadStoriesInner(lastPayload);
         } catch (DataException e) {
             e.printStackTrace();
         }
     }
 
-    public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
+    String lastPayload = "";
+
+    public class RecyclerTouchListener implements OnItemTouchListener {
         private GestureDetector gestureDetector;
         private StoryTouchListener touchListener;
         View lastChild = null;
@@ -398,53 +294,10 @@ public class StoriesList extends RecyclerView {
         }
     }
 
-    public void clearAllFavorites() {
-        if (InAppStoryService.isNull()) return;
-        if (adapter == null) return;
-        if (isFavoriteList) {
-            adapter.hasFavItem = false;
-            adapter.getStoriesIds().clear();
-        } else {
-            adapter.hasFavItem = false;
-        }
-        adapter.notifyDataSetChanged();
-    }
-
-    public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
-        if (InAppStoryService.isNull()) return;
-        if (adapter == null) return;
-
-        checkAppearanceManager();
-        if (isFavoriteList) {
-            adapter.hasFavItem = false;
-            if (favStatus) {
-                if (!adapter.getStoriesIds().contains(id))
-                    adapter.getStoriesIds().add(0, id);
-            } else {
-                if (adapter.getStoriesIds().contains(id))
-                    adapter.getStoriesIds().remove(new Integer(id));
-            }
-            adapter.notifyDataSetChanged();
-        } else if (isEmpty && !favImages.isEmpty()) {
-            adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
-            // adapter.refresh();
-            adapter.notifyDataSetChanged();
-        } else if ((!isEmpty && favImages.isEmpty()) || (adapter.hasFavItem && favImages.isEmpty())) {
-            adapter.hasFavItem = false;
-            adapter.notifyDataSetChanged();
-            // adapter.refresh();
-        } else {
-            adapter.notifyItemChanged(getAdapter().getItemCount() - 1);
-        }
-
-    }
-
-
     LoadStoriesCallback lcallback;
 
-    public void loadStories() throws DataException {
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
-        loadStoriesLocal();
+    public void loadStories(String payload) throws DataException {
+        loadStoriesLocal(payload);
     }
 
     private String cacheId;
@@ -453,22 +306,22 @@ public class StoriesList extends RecyclerView {
         this.cacheId = id;
     }
 
-    private void loadStoriesLocal() throws DataException {
+    private void loadStoriesLocal(String payload) throws DataException {
         if (InAppStoryService.isNull()
                 || cacheId == null
                 || cacheId.isEmpty()) {
-            loadStoriesInner();
+            loadStoriesInner(payload);
             return;
         }
         List<Integer> storiesIds = InAppStoryService.getInstance()
                 .listStoriesIds.get(cacheId);
         if (storiesIds == null) {
-            loadStoriesInner();
+            loadStoriesInner(payload);
             return;
         }
         checkAppearanceManager();
         setOrRefreshAdapter(storiesIds);
-        if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
+        if (callback != null) callback.storiesLoaded(storiesIds.size(), null);
     }
 
     private void checkAppearanceManager() {
@@ -479,30 +332,29 @@ public class StoriesList extends RecyclerView {
         if (this.appearanceManager == null) {
             this.appearanceManager = new AppearanceManager();
         }
+        this.appearanceManager
+                .csHasFavorite(false)
+                .csHasUGC(false)
+                .csHasLike(false)
+                .csHasShare(false);
     }
 
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
         checkAppearanceManager();
-        adapter = new StoriesAdapter(getContext(),
+        adapter = new UgcStoriesAdapter(getContext(),
                 uniqueID,
                 storiesIds,
                 appearanceManager,
-                isFavoriteList,
                 callback,
-                getFeed(),
-                getFeedId(),
-                appearanceManager.csHasFavorite() && !isFavoriteList,
-                !isFavoriteList ? favoriteItemClick : null,
-                hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
-                !isFavoriteList ? ugcItemClick : null);
+                hasSessionUGC() && appearanceManager.csHasUGC(),
+                ugcItemClick);
         setLayoutManager(layoutManager);
         setAdapter(adapter);
     }
 
 
-
-    public void loadStoriesInner() throws DataException {
-
+    private void loadStoriesInner(final String payload) throws DataException {
+        lastPayload = payload;
         if (InAppStoryManager.getInstance() == null) {
             throw new DataException("'InAppStoryManager' can't be null", new Throwable("InAppStoryManager data is not valid"));
         }
@@ -511,9 +363,7 @@ public class StoriesList extends RecyclerView {
         }
 
         checkAppearanceManager();
-        InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
-        boolean hasFavorite = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
         if (InAppStoryService.isNotNull()) {
             lcallback = new LoadStoriesCallback() {
                 @Override
@@ -526,50 +376,46 @@ public class StoriesList extends RecyclerView {
                     }
                     setOrRefreshAdapter(storiesIds);
                     ProfilingManager.getInstance().setReady(listUid);
-                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
-                    if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
+                    if (callback != null) callback.storiesLoaded(storiesIds.size(), null);
                 }
 
                 @Override
                 public void setFeedId(String feedId) {
-                    setListFeedId(feedId);
+
                 }
 
                 @Override
                 public void onError() {
-                    if (callback != null) callback.loadError(getFeed());
+                    if (callback != null) callback.loadError(null);
                 }
             };
-            InAppStoryService.getInstance().getDownloadManager().loadStories(getFeed(), lcallback, isFavoriteList, hasFavorite);
+            InAppStoryService.getInstance().getDownloadManager().loadUgcStories(lcallback, payload);
 
         } else {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     if (InAppStoryService.isNotNull()) {
-                        boolean hasFav = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
                         lcallback = new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 setOrRefreshAdapter(storiesIds);
                                 ProfilingManager.getInstance().setReady(listUid);
-                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
                                 if (callback != null)
-                                    callback.storiesLoaded(storiesIds.size(), getFeed());
+                                    callback.storiesLoaded(storiesIds.size(), null);
                             }
 
                             @Override
                             public void setFeedId(String feedId) {
-                                setListFeedId(feedId);
+
                             }
 
                             @Override
                             public void onError() {
-                                if (callback != null) callback.loadError(getFeed());
+                                if (callback != null) callback.loadError(null);
                             }
                         };
-                        InAppStoryService.getInstance().getDownloadManager().loadStories(getFeed(),
-                                lcallback, isFavoriteList, hasFav);
+                        InAppStoryService.getInstance().getDownloadManager().loadUgcStories(lcallback, payload);
                     }
                 }
             }, 1000);

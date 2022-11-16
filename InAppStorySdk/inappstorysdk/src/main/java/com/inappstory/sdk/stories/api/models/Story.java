@@ -19,8 +19,13 @@ import java.util.regex.Pattern;
  * Created by Paperrose on 08.07.2018.
  */
 
+
 public class Story implements Parcelable {
     public int id;
+
+    public enum StoryType {
+        COMMON, UGC
+    }
 
     public String getTitle() {
         String tmp = title != null ? title : "";
@@ -104,16 +109,15 @@ public class Story implements Parcelable {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
     }
 
-    public void setLastIndex(int lastIndex) {
+    public void setLastIndex(int lastIndex, StoryType type) {
         this.lastIndex = lastIndex;
         try {
             InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(id).lastIndex = lastIndex;
+                    .getStoryById(id, type).lastIndex = lastIndex;
         } catch (Exception e) {
 
         }
     }
-
 
 
     /**

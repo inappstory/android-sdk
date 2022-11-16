@@ -50,6 +50,7 @@ public class TimelineManager {
     public void setCurrentSlide(int ind) {
         if (ind < 0) return;
         if (ind > timeline.slidesCount) return;
+        if (timeline.getProgressBars().isEmpty()) return;
         activeInd = ind;
         for (int i = 0; i < timeline.getProgressBars().size(); i++) {
             timeline.setActiveProgressBar(i, i == activeInd);

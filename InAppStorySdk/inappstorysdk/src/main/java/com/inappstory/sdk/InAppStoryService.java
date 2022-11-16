@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.ListManager;
 import com.inappstory.sdk.stories.ui.list.StoriesListManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
@@ -361,28 +362,28 @@ public class InAppStoryService {
     public class ListReaderConnector {
         public void changeStory(int storyId, String listID) {
             if (InAppStoryService.isNull()) return;
-            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.changeStory(storyId, listID);
             }
         }
 
         public void closeReader() {
             if (InAppStoryService.isNull()) return;
-            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.closeReader();
             }
         }
 
         public void openReader() {
             if (InAppStoryService.isNull()) return;
-            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.openReader();
             }
         }
 
         public void changeUserId() {
             if (InAppStoryService.isNull()) return;
-            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.changeUserId();
             }
         }
@@ -392,28 +393,28 @@ public class InAppStoryService {
 
             List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
             boolean isEmpty = favImages.isEmpty();
-            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.storyFavorite(id, favStatus, isEmpty);
             }
         }
 
         public void clearAllFavorites() {
             if (InAppStoryService.isNull()) return;
-            for (StoriesListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.clearAllFavorites();
             }
         }
     }
 
-    Set<StoriesListManager> listSubscribers;
-    public static Set<StoriesListManager> tempListSubscribers;
+    Set<ListManager> listSubscribers;
+    public static Set<ListManager> tempListSubscribers;
 
-    public Set<StoriesListManager> getListSubscribers() {
+    public Set<ListManager> getListSubscribers() {
         if (listSubscribers == null) listSubscribers = new HashSet<>();
         return listSubscribers;
     }
 
-    public static void checkAndAddListSubscriber(StoriesListManager listManager) {
+    public static void checkAndAddListSubscriber(ListManager listManager) {
         if (isNotNull()) {
             getInstance().addListSubscriber(listManager);
         } else {
@@ -422,14 +423,14 @@ public class InAppStoryService {
         }
     }
 
-    public void addListSubscriber(StoriesListManager listManager) {
+    public void addListSubscriber(ListManager listManager) {
         if (listSubscribers == null) listSubscribers = new HashSet<>();
         listSubscribers.add(listManager);
     }
 
 
     public void clearSubscribers() {
-        for (StoriesListManager listManager : listSubscribers) {
+        for (ListManager listManager : listSubscribers) {
             listManager.clear();
         }
         tempListSubscribers.clear();
@@ -437,7 +438,7 @@ public class InAppStoryService {
     }
 
 
-    public void removeListSubscriber(StoriesListManager listManager) {
+    public void removeListSubscriber(ListManager listManager) {
         if (listSubscribers == null) return;
         listManager.clear();
         if (tempListSubscribers != null)
@@ -473,7 +474,7 @@ public class InAppStoryService {
                     return;
                 }
                 InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
-                        getInstance().getDownloadManager().getStories(),
+                        getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
                         getInstance().getDownloadManager().favStories,
                         getInstance().getDownloadManager().favoriteImages
                 ));

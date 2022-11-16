@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.ui.ugclist;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -6,17 +6,21 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.ListManager;
+import com.inappstory.sdk.stories.ui.list.StoriesList;
 
 import java.util.List;
 
-public class StoriesListManager implements ListManager {
-    StoriesList list;
+class UgcStoriesListManager implements ListManager {
+
+    UgcStoriesList list;
 
     public void clear() {
         list = null;
     }
 
-    public StoriesListManager() {
+    public UgcStoriesListManager() {
       //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
     }
@@ -33,12 +37,11 @@ public class StoriesListManager implements ListManager {
         handler.post(runnable);
     }
 
-
     public void changeStory(final int storyId, final String listID) {
         if (InAppStoryService.isNull()) {
             return;
         }
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
         if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened();
@@ -86,43 +89,10 @@ public class StoriesListManager implements ListManager {
 
     public void clearAllFavorites() {
 
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (list == null) return;
-                if (list.getVisibility() != View.VISIBLE) return;
-                list.clearAllFavorites();
-            }
-        });
     }
 
     //StoryFavoriteEvent
     public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        post(new Runnable() {
-            @Override
-            public void run() {
-                List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-                Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
-                if (story == null) return;
-                if (favStatus) {
-                    FavoriteImage favoriteImage = new FavoriteImage(id, story.getImage(), story.getBackgroundColor());
-                    if (!favImages.contains(favoriteImage))
-                        favImages.add(0, favoriteImage);
-                } else {
-                    for (FavoriteImage favoriteImage : favImages) {
-                        if (favoriteImage.getId() == id) {
-                            favImages.remove(favoriteImage);
-                            break;
-                        }
-                    }
-                }
-                if (list == null) return;
-                if (list.getVisibility() != View.VISIBLE) return;
-                list.favStory(id, favStatus, favImages, isEmpty);
-            }
-        });
+
     }
 }
