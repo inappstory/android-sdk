@@ -71,6 +71,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -914,7 +915,7 @@ public class InAppStoryManager {
         if (response == null || response.size() == 0) {
             CsEventBus.getDefault().post(new OnboardingLoad(0, feed));
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, feed);
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, StringsUtils.getNonNull(feed));
             }
             return;
         }
@@ -960,7 +961,7 @@ public class InAppStoryManager {
                 Story.StoryType.COMMON);
         CsEventBus.getDefault().post(new OnboardingLoad(response.size(), feed));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), feed);
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
         }
     }
 
@@ -1041,7 +1042,7 @@ public class InAppStoryManager {
     private void loadOnboardingError(String feed) {
         CsEventBus.getDefault().post(new OnboardingLoadError(feed));
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(feed);
+            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(StringsUtils.getNonNull(feed));
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD, feed));
     }

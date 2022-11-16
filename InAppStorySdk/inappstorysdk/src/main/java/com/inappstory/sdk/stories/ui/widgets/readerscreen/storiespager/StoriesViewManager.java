@@ -38,6 +38,7 @@ import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -328,7 +329,11 @@ public class StoriesViewManager {
         JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             CallbackManager.getInstance().getShareCallback()
-                    .onShare(shareObj.getText(), shareObj.getTitle(), data, id);
+                    .onShare(StringsUtils.getNonNull(shareObj.getText()),
+                            StringsUtils.getNonNull(shareObj.getTitle()),
+                            StringsUtils.getNonNull(data),
+                            StringsUtils.getNonNull(id)
+                    );
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 ScreensManager.getInstance().setTempShareId(id);
@@ -402,8 +407,8 @@ public class StoriesViewManager {
                     story.tags, story.getSlidesCount(), index));
             ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
             if (showSlideCallback != null) {
-                showSlideCallback.showSlide(story.id, story.title,
-                        story.tags, story.getSlidesCount(), index,
+                showSlideCallback.showSlide(story.id, StringsUtils.getNonNull(story.title),
+                        StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index,
                         story.getSlideEventPayload(PayloadTypes.SHOW_SLIDE, index));
             }
         }

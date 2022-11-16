@@ -34,6 +34,7 @@ import com.inappstory.sdk.stories.ui.list.StoryFavoriteListItem;
 import com.inappstory.sdk.stories.ui.list.StoryListItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,8 +147,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 //OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                            current.id, current.title,
-                            current.tags, current.getSlidesCount(), 0,
+                            current.id, StringsUtils.getNonNull(current.title),
+                            StringsUtils.getNonNull(current.tags), current.getSlidesCount(), 0,
                             current.deeplink, ClickAction.DEEPLINK);
                 }
                 if (CallbackManager.getInstance().getUrlClickCallback() != null) {
@@ -184,8 +185,15 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             }
         } else {
             if (callback != null) {
-                callback.itemClick(storiesIds.get(index), index, null, null, 0,
-                        false, null);
+                Story lStory = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.UGC);
+                if (lStory != null) {
+                    callback.itemClick(lStory.id, index, StringsUtils.getNonNull(lStory.title), "", 0,
+                            false, "");
+                } else {
+                    callback.itemClick(storiesIds.get(index), index, "", "", 0,
+                            false, "");
+                }
+
             }
         }
         ArrayList<Integer> tempStories = new ArrayList();

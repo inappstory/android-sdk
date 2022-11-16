@@ -24,6 +24,7 @@ import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
@@ -61,8 +62,6 @@ public class GameManager {
         String[] urlParts = ZipLoader.urlParts(path);
         ZipLoader.getInstance().downloadAndUnzip(resourceList, path, urlParts[0], callback, "game");
     }
-
-
 
 
     void storySetData(String data, boolean sendToServer) {
@@ -107,8 +106,8 @@ public class GameManager {
                 slidesCount, index, eventData));
         if (CallbackManager.getInstance().getGameCallback() != null) {
             CallbackManager.getInstance().getGameCallback().finishGame(
-                    Integer.parseInt(storyId), title, tags,
-                    slidesCount, index, eventData);
+                    Integer.parseInt(storyId), StringsUtils.getNonNull(title), StringsUtils.getNonNull(tags),
+                    slidesCount, index, StringsUtils.getNonNull(eventData));
         }
         host.gameCompleted(gameState, link);
     }
@@ -140,17 +139,17 @@ public class GameManager {
                 story.tags, story.getSlidesCount(), story.lastIndex,
                 link, cta));
         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(story.id, story.title,
-                    story.tags, story.getSlidesCount(), story.lastIndex,
-                    link, ClickAction.GAME);
+            CallbackManager.getInstance().getCallToActionCallback().callToAction(story.id, StringsUtils.getNonNull(story.title),
+                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex,
+                    StringsUtils.getNonNull(link), ClickAction.GAME);
         }
         // OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
-                    link
+                    StringsUtils.getNonNull(link)
             );
         } else {
-            host.tapOnLinkDefault(link);
+            host.tapOnLinkDefault(StringsUtils.getNonNull(link));
         }
     }
 
@@ -170,7 +169,6 @@ public class GameManager {
     }
 
 
-
     void onResume() {
         ScreensManager.getInstance().setTempShareStoryId(0);
         ScreensManager.getInstance().setTempShareId(null);
@@ -185,7 +183,10 @@ public class GameManager {
         JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             CallbackManager.getInstance().getShareCallback()
-                    .onShare(shareObj.getText(), shareObj.getTitle(), data, id);
+                    .onShare(StringsUtils.getNonNull(shareObj.getText()),
+                            StringsUtils.getNonNull(shareObj.getTitle()),
+                            StringsUtils.getNonNull(data),
+                            StringsUtils.getNonNull(id));
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 ScreensManager.getInstance().setTempShareId(id);

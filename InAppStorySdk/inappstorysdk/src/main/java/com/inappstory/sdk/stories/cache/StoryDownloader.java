@@ -24,6 +24,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -339,7 +340,7 @@ class StoryDownloader {
 
     public static void generateCommonLoadListError(String feed) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError(feed);
+            CallbackManager.getInstance().getErrorCallback().loadListError(StringsUtils.getNonNull(feed));
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, feed));
     }

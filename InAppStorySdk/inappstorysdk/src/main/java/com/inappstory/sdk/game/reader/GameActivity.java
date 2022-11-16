@@ -57,6 +57,7 @@ import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
@@ -520,7 +521,7 @@ public class GameActivity extends AppCompatActivity {
         if (CallbackManager.getInstance().getGameCallback() != null) {
             CallbackManager.getInstance().getGameCallback().closeGame(
                     Integer.parseInt(manager.storyId),
-                    manager.title, manager.tags,
+                    StringsUtils.getNonNull(manager.title), StringsUtils.getNonNull(manager.tags),
                     manager.slidesCount, manager.index);
         }
         if (manager.gameLoaded) {

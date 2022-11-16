@@ -7,6 +7,7 @@ import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -23,7 +24,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
     @Override
     public void onError(int code, String message) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError(null);
+            CallbackManager.getInstance().getErrorCallback().loadListError("");
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, null));
        // super.onError(code, message);
@@ -32,7 +33,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
     @Override
     protected void error424(String message) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError(null);
+            CallbackManager.getInstance().getErrorCallback().loadListError("");
         }
         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, null));
         SessionManager.getInstance().closeSession(true, false);

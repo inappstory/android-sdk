@@ -36,6 +36,7 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -468,7 +469,8 @@ public class StoriesList extends RecyclerView {
         }
         checkAppearanceManager();
         setOrRefreshAdapter(storiesIds);
-        if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
+        if (callback != null)
+            callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
     }
 
     private void checkAppearanceManager() {
@@ -500,7 +502,6 @@ public class StoriesList extends RecyclerView {
     }
 
 
-
     public void loadStoriesInner() throws DataException {
 
         if (InAppStoryManager.getInstance() == null) {
@@ -527,7 +528,8 @@ public class StoriesList extends RecyclerView {
                     setOrRefreshAdapter(storiesIds);
                     ProfilingManager.getInstance().setReady(listUid);
                     CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
-                    if (callback != null) callback.storiesLoaded(storiesIds.size(), getFeed());
+                    if (callback != null)
+                        callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
                 }
 
                 @Override
@@ -537,7 +539,7 @@ public class StoriesList extends RecyclerView {
 
                 @Override
                 public void onError() {
-                    if (callback != null) callback.loadError(getFeed());
+                    if (callback != null) callback.loadError(StringsUtils.getNonNull(getFeed()));
                 }
             };
             InAppStoryService.getInstance().getDownloadManager().loadStories(getFeed(), lcallback, isFavoriteList, hasFavorite);
@@ -555,7 +557,7 @@ public class StoriesList extends RecyclerView {
                                 ProfilingManager.getInstance().setReady(listUid);
                                 CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
                                 if (callback != null)
-                                    callback.storiesLoaded(storiesIds.size(), getFeed());
+                                    callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
                             }
 
                             @Override
@@ -565,7 +567,8 @@ public class StoriesList extends RecyclerView {
 
                             @Override
                             public void onError() {
-                                if (callback != null) callback.loadError(getFeed());
+                                if (callback != null)
+                                    callback.loadError(StringsUtils.getNonNull(getFeed()));
                             }
                         };
                         InAppStoryService.getInstance().getDownloadManager().loadStories(getFeed(),

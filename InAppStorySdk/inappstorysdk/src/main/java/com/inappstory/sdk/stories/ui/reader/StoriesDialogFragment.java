@@ -53,6 +53,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -91,7 +92,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
-                            story.title, story.tags, story.getSlidesCount(),
+                            StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, CloseReader.CLICK,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getArguments().getInt("source", 0))

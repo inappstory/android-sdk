@@ -17,6 +17,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -186,8 +187,8 @@ public class ReaderManager {
                     story.getSlidesCount(), source));
 
             if (CallbackManager.getInstance().getShowStoryCallback() != null) {
-                CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, story.title,
-                        story.tags, story.getSlidesCount(),
+                CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, StringsUtils.getNonNull(story.title),
+                        StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                         CallbackManager.getInstance().getSourceFromInt(source));
             }
 

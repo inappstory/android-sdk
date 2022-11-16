@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPa
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.TimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,14 +118,14 @@ public class ReaderPageManager {
         if (story == null) return;
         if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
             CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
-                    widgetName,
+                    StringsUtils.getNonNull(widgetName),
                     JsonParser.toMap(widgetData),
                     story.id,
-                    story.title,
-                    getFeedSlug(),
+                    StringsUtils.getNonNull(story.title),
+                    StringsUtils.getNonNull(getFeedSlug()),
                     story.getSlidesCount(),
                     story.lastIndex,
-                    story.tags);
+                    StringsUtils.getNonNull(story.tags));
         }
     }
 
@@ -160,8 +161,8 @@ public class ReaderPageManager {
                                 object.getLink().getTarget(), cta));
                         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                             CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                                    story.id, story.title,
-                                    story.tags, story.getSlidesCount(), story.lastIndex,
+                                    story.id, StringsUtils.getNonNull(story.title),
+                                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex,
                                     object.getLink().getTarget(), action);
                         }
                     }

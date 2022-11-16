@@ -32,6 +32,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,8 +178,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                     current.tags, current.getSlidesCount(),
                     isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feed));
             if (callback != null) {
-                callback.itemClick(current.id, index, current.title, current.tags,
-                        current.getSlidesCount(), isFavoriteList, feed);
+                callback.itemClick(current.id, index,
+                        StringsUtils.getNonNull(current.title),
+                        StringsUtils.getNonNull(current.tags),
+                        current.getSlidesCount(),
+                        isFavoriteList,
+                        StringsUtils.getNonNull(feed));
             }
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
@@ -188,8 +193,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         current.deeplink, CallToAction.DEEPLINK));
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                            current.id, current.title,
-                            current.tags, current.getSlidesCount(), 0,
+                            current.id, StringsUtils.getNonNull(current.title),
+                            StringsUtils.getNonNull(current.tags), current.getSlidesCount(), 0,
                             current.deeplink, ClickAction.DEEPLINK);
                 }
                 if (CallbackManager.getInstance().getUrlClickCallback() != null) {
@@ -232,8 +237,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                     null, 0, isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feed));
 
             if (callback != null) {
-                callback.itemClick(storiesIds.get(index), index, null, null, 0,
-                        isFavoriteList, feed);
+                Story lStory = InAppStoryService.getInstance().getDownloadManager()
+                        .getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+                if (lStory != null) {
+                    callback.itemClick(lStory.id, index, StringsUtils.getNonNull(lStory.title), "", 0,
+                            false, "");
+                } else {
+                    callback.itemClick(storiesIds.get(index), index, "", "", 0,
+                            false, "");
+                }
             }
         }
         ArrayList<Integer> tempStories = new ArrayList();

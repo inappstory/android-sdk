@@ -72,6 +72,7 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdap
 import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -225,8 +226,8 @@ public class ScreensManager {
         CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags,
                 story.getSlidesCount(), index));
         if (CallbackManager.getInstance().getGameCallback() != null) {
-            CallbackManager.getInstance().getGameCallback().startGame(storyId, story.title,
-                    story.tags, story.getSlidesCount(), index);
+            CallbackManager.getInstance().getGameCallback().startGame(storyId, StringsUtils.getNonNull(story.title),
+                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index);
         }
         if (Sizes.isTablet()) {
             if (currentScreen != null) {
@@ -362,7 +363,7 @@ public class ScreensManager {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ctx.startActivity(intent2);
                 if (ctx instanceof Activity) {
-                 //   ((Activity) ctx).overridePendingTransition(0, 0);
+                    //   ((Activity) ctx).overridePendingTransition(0, 0);
                 }
             } else {
                 if (!(outerContext instanceof Activity)) {
@@ -370,7 +371,7 @@ public class ScreensManager {
                 }
                 outerContext.startActivity(intent2);
                 if (outerContext instanceof Activity) {
-                 //   ((Activity) outerContext).overridePendingTransition(0, 0);
+                    //   ((Activity) outerContext).overridePendingTransition(0, 0);
                 }
             }
         }

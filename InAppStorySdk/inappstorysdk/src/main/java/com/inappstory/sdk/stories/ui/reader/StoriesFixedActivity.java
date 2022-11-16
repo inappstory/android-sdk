@@ -62,6 +62,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
+import com.inappstory.sdk.utils.StringsUtils;
 
 public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -225,7 +226,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
-                            story.title, story.tags, story.getSlidesCount(),
+                            StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, CloseReader.CUSTOM,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getIntent().getIntExtra("source", 0))
@@ -398,7 +399,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         story.id,
-                        story.title, story.tags, story.getSlidesCount(),
+                        StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                         story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
                                 action),
                         CallbackManager.getInstance().getSourceFromInt(
