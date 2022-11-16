@@ -27,7 +27,6 @@ A library for embedding stories into an application with customization.
 * [Single Stories](https://github.com/inappstory/android-sdk/blob/main/docs/Single_Stories.md)
 * [Stories Reader Goods Widget](https://github.com/inappstory/android-sdk/blob/main/docs/Goods.md)
 * [Home Screen Widget](https://github.com/inappstory/android-sdk/blob/main/docs/Home_Screen_Widget.md)
-* [Events](https://github.com/inappstory/android-sdk/blob/main/docs/CsEventBus.md)
 * [Stories Widget Events](https://github.com/inappstory/android-sdk/blob/main/docs/Stories_Widgets_Events.md)
 * [FAQ](https://github.com/inappstory/android-sdk/blob/main/docs/FAQ.md)
 * [Samples](https://github.com/inappstory/Android-Example)
