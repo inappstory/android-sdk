@@ -165,7 +165,8 @@ public class ReaderPageManager {
                                     object.getLink().getTarget(), action);
                         }
                     }
-                    OldStatisticManager.getInstance().addLinkOpenStatistic();
+                    if (getStoryType() == Story.StoryType.COMMON)
+                        OldStatisticManager.getInstance().addLinkOpenStatistic();
                     if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                         CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
                                 object.getLink().getTarget()
@@ -397,8 +398,9 @@ public class ReaderPageManager {
         StatisticManager.getInstance().sendCurrentState();
         InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId,
                 parentManager.storyType);
-        InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
-                parentManager != null ? parentManager.getFeedId() : null);
+        if (getStoryType() == Story.StoryType.COMMON)
+            InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
+                    parentManager != null ? parentManager.getFeedId() : null);
         loadStoryAndSlide(storyId, slideIndex);
     }
 

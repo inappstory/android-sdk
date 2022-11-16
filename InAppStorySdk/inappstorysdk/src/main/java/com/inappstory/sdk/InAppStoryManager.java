@@ -1204,7 +1204,8 @@ public class InAppStoryManager {
                         callback.onShow();
                     if (story.deeplink != null) {
                         lastSingleOpen = null;
-                        OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
+                        if (type == Story.StoryType.COMMON)
+                            OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
 
                         StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink, null);
                         if (CallbackManager.getInstance().getUrlClickCallback() != null) {

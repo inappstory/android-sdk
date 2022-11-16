@@ -89,7 +89,8 @@ public class ReaderManager {
 
     public void showSingleStory(final int storyId, final int slideIndex) {
         if (InAppStoryService.isNull()) return;
-        OldStatisticManager.getInstance().addLinkOpenStatistic();
+        if (storyType == Story.StoryType.COMMON)
+            OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (storiesIds.contains(storyId)) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -231,12 +232,14 @@ public class ReaderManager {
     }
 
     void changeStory() {
-        OldStatisticManager.getInstance().addStatisticBlock(currentStoryId,
-                currentSlideIndex);
+        if (storyType == Story.StoryType.COMMON)
+            OldStatisticManager.getInstance().addStatisticBlock(currentStoryId,
+                    currentSlideIndex);
 
         ArrayList<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
-        OldStatisticManager.getInstance().previewStatisticEvent(lst);
+        if (storyType == Story.StoryType.COMMON)
+            OldStatisticManager.getInstance().previewStatisticEvent(lst);
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 if (pageManager.getStoryId() != currentStoryId) {

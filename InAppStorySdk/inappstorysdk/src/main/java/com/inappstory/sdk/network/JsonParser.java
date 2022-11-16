@@ -309,7 +309,8 @@ public class JsonParser {
                     || ptype.equals(Byte.class) || ptype.equals(Float.class)
                     || ptype.equals(Double.class) || ptype.equals(String.class)) {
                 object.put(name, val);
-            } else if (field.getType().equals(List.class)) {
+            } else if (field.getType().equals(List.class) ||
+                    containsInterface(field.getType().getInterfaces(), List.class)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
                 JSONArray array = new JSONArray();
                 int outerSz = ((List) val).size();
@@ -336,17 +337,15 @@ public class JsonParser {
                 Set<String> keys = valMap.keySet();
                 for (String key : keys) {
                     Object valObj = valMap.get(key);
-                    if (valObj != null) {
-                        Class fType = valObj.getClass();
-                        if (fType.isPrimitive() || fType.equals(Integer.class)
-                                || fType.equals(Boolean.class) || fType.equals(Character.class)
-                                || fType.equals(Short.class) || fType.equals(Long.class)
-                                || fType.equals(Byte.class) || fType.equals(Float.class)
-                                || fType.equals(Double.class) || fType.equals(String.class)) {
-                            mapObject.put(key, valObj);
-                        } else {
-                            mapObject.put(key, getJsonObject(valObj));
+                    if (valObj instanceof List) {
+                        JSONArray arr = new JSONArray();
+                        int size = ((List)valObj).size();
+                        for (int i = 0; i < size; i++) {
+                            arr.put(getJsonObject(((List)valObj).get(i)));
                         }
+                        mapObject.put(key, arr);
+                    } else if (valObj != null) {
+                        mapObject.put(key, getJsonObject(valObj));
                     } else {
                         mapObject.put(key, getJsonObject(null));
                     }

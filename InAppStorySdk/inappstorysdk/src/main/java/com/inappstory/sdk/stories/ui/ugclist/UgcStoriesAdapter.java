@@ -143,7 +143,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             }
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, null);
-                OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
+                //OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
                             current.id, current.title,
