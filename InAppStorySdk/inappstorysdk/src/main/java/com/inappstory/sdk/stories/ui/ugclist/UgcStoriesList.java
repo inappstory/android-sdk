@@ -23,6 +23,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.exceptions.DataException;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
@@ -40,6 +41,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class UgcStoriesList extends RecyclerView {
@@ -298,6 +300,14 @@ public class UgcStoriesList extends RecyclerView {
 
     public void loadStories(String payload) throws DataException {
         loadStoriesLocal(payload);
+    }
+
+    public void loadStories() throws DataException {
+        loadStoriesLocal("");
+    }
+
+    public void loadStories(HashMap<String, Object> payload) throws DataException {
+        loadStoriesLocal(JsonParser.mapToJsonString(payload));
     }
 
     private String cacheId;
