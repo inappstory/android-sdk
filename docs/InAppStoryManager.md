@@ -92,7 +92,7 @@ public enum CloseReader {
 }
 
 public enum ClickAction {
-    BUTTON, SWIPE, GAME
+    BUTTON, SWIPE, GAME, DEEPLINK
 }
 ```
 
@@ -330,4 +330,4 @@ public interface StoryWidgetCallback {
         );
 }
 ```
-[Here](https://github.com/inappstory/android-sdk/blob/main/docs/Stories_Widgets_Events.md) you can find full information about this events for each widget.
+[Here](docs/Stories_Widgets_Events.md) you can find full information about this events for each widget.

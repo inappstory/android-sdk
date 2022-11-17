@@ -4,7 +4,7 @@
 Now parameters from methods in IGetFavoriteListItem (bindFavoriteItem and setImages) can contains more than 4 elements (and count may be more than 4)
 
 ### From 1.10.x
-Added image placeholders. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#image-placeholders) is described its usage.
+Added image placeholders. [Here](docs/Tags_Placeholders.md#image-placeholders) is described its usage.
 
 Signature of `showSlide` method in `ShowSlideCallback` was changed. (added `String payload` parameter) 
 ```java
@@ -20,13 +20,13 @@ interface ShowSlideCallback {
 ```
 
 ### From 1.9.1
-Added widget callbacks. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#notifications-from-widgets-in-stories-reader) is described its usage.
+Added widget callbacks. [Here](docs/InAppStoryManager.md#notifications-from-widgets-in-stories-reader) is described its usage.
 
 ### From 1.8.x to 1.9.x
 Added UGC Editor feature. [Here](https://github.com/inappstory/ugc-android-sdk#readme) is described its usage.
 
 ### From 1.6.x or 1.7.x to 1.8.x
-Added new feeds feature to `StoriesList` and onboarding stories now has public `String feed` parameter. [Here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#stories-feed) is described its usage.
+Added new feeds feature to `StoriesList` and onboarding stories now has public `String feed` parameter. [Here](docs/StoriesList.md#stories-feed) is described its usage.
 
 Callback for `StoriesList` and its adapter has beed changed (added `String feed` parameter to methods). 
 
@@ -88,7 +88,7 @@ interface IStoriesListItem {
 
 
 ### 1.5.4 and later
-`ClickAction` DEEPLINK value was added. Here describes its usage in [setCallToActionCallback](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#notifications-from-stories-reader)
+`ClickAction` DEEPLINK value was added. Here describes its usage in [setCallToActionCallback](docs/InAppStoryManager.md#notifications-from-stories-reader)
 
 ### From 1.4.x to 1.5.x
 `CloseStoryReaderEvent` was removed from SDK. Use static method `InAppStoryManager.closeStoryReader()` instead

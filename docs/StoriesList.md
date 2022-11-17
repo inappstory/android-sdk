@@ -77,7 +77,9 @@ To set the list you should call the instance method of the `StoriesList` class:
 Next `AppearanceManager` parameters can be set for list appearance:
 | Variable                         | Type                | Default| Description                                                             |
 |----------------------------------|---------------------|--------|-------------------------------------------------------------------------|
-| csHasFavorite                    | Boolean             | false  | Flag that is responsible for connecting the functionality of favorite stories |
+| csHasFavorite                    | Boolean             | false  | Flag that responsible for usage `favorite` feature in stories list and it's reader |
+| csHasLike                        | Boolean             | false  | Flag that responsible for usage `like/dislike` feature in stories list's reader |
+| csHasShare                       | Boolean             | false  | Flag that responsible for usage `share` feature in stories list's reader  |
 | csListItemRadius                 | Integer             | 16dp   | radius for list cell in pixels                                          |
 | csListItemWidth                  | Integer             | null   | the width of the list cell in pixels                                    |
 | csListItemHeight                 | Integer             | null   | the height of the list cell in pixels                                   |
@@ -207,7 +209,7 @@ Example:
         });
 ```
 
-For more information about `AppearanceManager` read [this](https://github.com/inappstory/android-sdk/blob/main/docs/AppearanceManager.md).
+For more information about `AppearanceManager` read [this](docs/AppearanceManager.md).
 
 Also, to interact with the favorite cell (for example, to open a new window with a list of favorite stories), you need to add a handler:
 ```java

@@ -53,7 +53,7 @@ Another parameters can be set separately for list/onboardings/single:
 | csNightNavBarColor      | Integer             | 0                                      |Reader | color of navigation bar in dark mode. If 0 - we use csNavBarColor		                                                                                                 |
 | csClosePosition         | Integer             | 2                                      |Reader | place, where we display the close button of the story reader (`TOP_LEFT = 1; TOP_RIGHT = 2; BOTTOM_LEFT = 3; BOTTOM_RIGHT = 4;`)                                    |
 | csReaderRadius          | Integer             | 0                                      |Reader | radius for Stories reader pages                                                                                                                                     |
-| csStoryReaderAnimation  | Integer             | 2                                      |Reader | animation of scrolling through stories in the story reader (`ANIMATION_DEPTH = 1; ANIMATION_CUBE = 2;`)                                                             |
+| csStoryReaderAnimation  | Integer             | 2                                      |Reader | animation of scrolling through stories in the story reader (`ANIMATION_DEPTH = 1; ANIMATION_CUBE = 2, ANIMATION_COVER = 3, ANIMATION_FLAT = 4;`)                                                             |
 | csLikeIcon	            | Integer(id)         | R.drawable.ic_stories_status_like		    |Reader | icon for like button in reader.		                                                                                                                                   |
 | csDislikeIcon           | Integer(id)         | R.drawable.ic_stories_status_dislike		 |Reader | icon for dislike button in reader.	                                                                                                                                 |
 | csFavoriteIcon          | Integer(id)         | R.drawable.ic_stories_status_favorite	 |Reader | icon for favorite button in reader.	                                                                                                                                |
@@ -92,7 +92,7 @@ appearanceManager
     .csFavoriteListItemInterface(IGetFavoriteListItem favoriteListItemInterface);
 ```
 
-This two interfaces can be set separately for each list. More information about this interfaces you can read [here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#istorieslistitem)
+This two interfaces can be set separately for each list. More information about this interfaces you can read [here](docs/StoriesList.md#istorieslistitem)
 
 Also `AppearanceManager` has allow you to customize loaders in story reader and game reader with next two interfaces.
 This interface must be set for the common `AppearanceManager`.

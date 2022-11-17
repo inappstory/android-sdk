@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
+import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -81,6 +82,12 @@ public class UgcStoriesList extends RecyclerView {
 
     StoryTouchListener storyTouchListener = null;
 
+    ListScrollCallback scrollCallback;
+
+    public void setScrollCallback(ListScrollCallback scrollCallback) {
+        this.scrollCallback = scrollCallback;
+    }
+
 
     public UgcStoriesList(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -94,6 +101,34 @@ public class UgcStoriesList extends RecyclerView {
             InAppStoryService.getInstance().removeListSubscriber(manager);
         } else
             manager.clear();
+    }
+
+    private float mPrevX = 0f;
+    private float mPrevY = 0f;
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent e) {
+        if (e.getAction() == MotionEvent.ACTION_DOWN) {
+            mPrevX = e.getX();
+            mPrevY = e.getY();
+        } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
+            if (Math.abs(e.getX() - mPrevX) > Math.abs(e.getY() - mPrevY)) {
+                if (scrollCallback != null) {
+                    scrollCallback.scrollStart();
+                }
+            }
+        }
+        return super.onInterceptTouchEvent(e);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
+            if (scrollCallback != null) {
+                scrollCallback.scrollEnd();
+            }
+        }
+        return super.onTouchEvent(e);
     }
 
     @Override

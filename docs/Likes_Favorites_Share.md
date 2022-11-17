@@ -86,7 +86,7 @@ If you want to show only favorited stories in list - add `StoriesList` like this
       
 ```
 You can also customize favorite cell in list with `csFavoriteListItemInterface` property in `AppearanceManager`
-More about this you can read [here](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#igetfavoritelistitem).
+More about this you can read [here](docs/StoriesList.md#igetfavoritelistitem).
 
 To interact with the favorite cell (for example, to open a new window with a list of favorite stories), you need to add a handler:
 

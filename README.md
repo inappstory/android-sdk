@@ -4,32 +4,32 @@ A library for embedding stories into an application with customization.
 
 ## Contents
 
-* [How to getting started](https://github.com/inappstory/android-sdk/blob/main/README.md#getting-started)
-* [Migrations](https://github.com/inappstory/android-sdk/blob/main/docs/Migrations.md)
-* [InAppStoryManager](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md)
-	* [Initialization](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#initialization)
-	* [Methods](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#methods)
-	* [Callbacks](https://github.com/inappstory/android-sdk/blob/main/docs/InAppStoryManager.md#callbacks)
-* [StoriesList](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md)
-	* [Initialization](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#initialization)
-	* [Methods](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#methods)
-	* [Customization](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#customization)
-	* [Callbacks](https://github.com/inappstory/android-sdk/blob/main/docs/StoriesList.md#callbacks)
+* [How to getting started](README.md#getting-started)
+* [Migrations](docs/Migrations.md)
+* [InAppStoryManager](docs/InAppStoryManager.md)
+	* [Initialization](docs/InAppStoryManager.md#initialization)
+	* [Methods](docs/InAppStoryManager.md#methods)
+	* [Callbacks](docs/InAppStoryManager.md#callbacks)
+* [StoriesList](docs/StoriesList.md)
+	* [Initialization](docs/StoriesList.md#initialization)
+	* [Methods](docs/StoriesList.md#methods)
+	* [Customization](docs/StoriesList.md#customization)
+	* [Callbacks](docs/StoriesList.md#callbacks)
 
-* [AppearanceManager](https://github.com/inappstory/android-sdk/blob/main/docs/AppearanceManager.md)
-* [Likes, Favorites, Share](https://github.com/inappstory/android-sdk/blob/main/docs/Likes_Favorites_Share.md)
-* [Tags and placeholders](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md)
-	* [Tags](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#tags)
-	* [Placeholders](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#placeholders)
-	* [Image placeholders](https://github.com/inappstory/android-sdk/blob/main/docs/Tags_Placeholders.md#image-placeholders)
-* [Work with sound](https://github.com/inappstory/android-sdk/blob/main/docs/Sound.md)
-* [Onboardings](https://github.com/inappstory/android-sdk/blob/main/docs/Onboardings.md)
-* [Single Stories](https://github.com/inappstory/android-sdk/blob/main/docs/Single_Stories.md)
-* [Stories Reader Goods Widget](https://github.com/inappstory/android-sdk/blob/main/docs/Goods.md)
-* [Home Screen Widget](https://github.com/inappstory/android-sdk/blob/main/docs/Home_Screen_Widget.md)
-* [Events](https://github.com/inappstory/android-sdk/blob/main/docs/CsEventBus.md)
-* [Stories Widget Events](https://github.com/inappstory/android-sdk/blob/main/docs/Stories_Widgets_Events.md)
-* [FAQ](https://github.com/inappstory/android-sdk/blob/main/docs/FAQ.md)
+* [AppearanceManager](docs/AppearanceManager.md)
+* [Likes, Favorites, Share](docs/Likes_Favorites_Share.md)
+* [Tags and placeholders](docs/Tags_Placeholders.md)
+	* [Tags](docs/Tags_Placeholders.md#tags)
+	* [Placeholders](docs/Tags_Placeholders.md#placeholders)
+	* [Image placeholders](docs/Tags_Placeholders.md#image-placeholders)
+* [Work with sound](docs/Sound.md)
+* [Onboardings](docs/Onboardings.md)
+* [Single Stories](docs/Single_Stories.md)
+* [Stories Reader Goods Widget](docs/Goods.md)
+* [Home Screen Widget](docs/Home_Screen_Widget.md)
+* [Events](docs/CsEventBus.md)
+* [Stories Widget Events](docs/Stories_Widgets_Events.md)
+* [FAQ](docs/FAQ.md)
 * [Samples](https://github.com/inappstory/Android-Example)
 
 ## Requirements
@@ -128,4 +128,4 @@ This method also can be used to reload list (for example in PtR case)
 >**Attention!**  
 >This method can generate DataException if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
 
-For more information you can read [the full SDK guide](https://github.com/inappstory/android-sdk/blob/main/README.md#contents), [FAQ](https://github.com/inappstory/android-sdk/blob/main/docs/FAQ.md) or check [Samples](https://github.com/inappstory/Android-Example).
+For more information you can read [the full SDK guide](README.md#contents), [FAQ](docs/FAQ.md) or check [Samples](https://github.com/inappstory/Android-Example).
