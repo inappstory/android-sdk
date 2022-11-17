@@ -200,7 +200,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
-                    current.saveStoryOpened();
+                    current.saveStoryOpened(Story.StoryType.COMMON);
                     notifyItemChanged(ind);
                 } else {
                     if (!InAppStoryService.isConnected()) {
@@ -211,7 +211,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         return;
                     }
                     current.isOpened = true;
-                    current.saveStoryOpened();
+                    current.saveStoryOpened(Story.StoryType.COMMON);
                     notifyItemChanged(ind);
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);

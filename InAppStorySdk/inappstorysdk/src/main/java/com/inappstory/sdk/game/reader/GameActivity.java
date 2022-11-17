@@ -481,8 +481,12 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
-        ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
+        if (InAppStoryManager.isNull()) {
+            finish();
+            return;
+        }
+        ScreensManager.getInstance().currentGameActivity = this;
         manager = new GameManager(this);
         manager.callback = new ZipLoadCallback() {
             @Override

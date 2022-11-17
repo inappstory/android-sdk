@@ -755,7 +755,8 @@ public class InAppStoryManager {
             this.userId = userId;
             if (InAppStoryService.getInstance().getFavoriteImages() != null)
                 InAppStoryService.getInstance().getFavoriteImages().clear();
-            InAppStoryService.getInstance().getDownloadManager().refreshLocals();
+            InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.COMMON);
+            InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.UGC);
             closeStoryReader(CloseStory.AUTO);
             SessionManager.getInstance().closeSession(sendStatistic, true);
             OldStatisticManager.getInstance().eventCount = 0;
@@ -875,11 +876,15 @@ public class InAppStoryManager {
 
     private String localOpensKey;
 
-    public String getLocalOpensKey() {
+    public String getLocalOpensKey(Story.StoryType type) {
         if (localOpensKey == null && userId != null) {
             localOpensKey = "opened" + userId;
         }
-        return localOpensKey;
+        return (type == Story.StoryType.COMMON) ? localOpensKey : type.name() + localOpensKey;
+    }
+
+    public String getLocalOpensKey() {
+        return getLocalOpensKey(Story.StoryType.COMMON);
     }
 
     /**

@@ -41,7 +41,7 @@ public class StoriesListManager implements ListManager {
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
         if (st == null) return;
         st.isOpened = true;
-        st.saveStoryOpened();
+        st.saveStoryOpened(Story.StoryType.COMMON);
         checkHandler();
         post(new Runnable() {
             @Override

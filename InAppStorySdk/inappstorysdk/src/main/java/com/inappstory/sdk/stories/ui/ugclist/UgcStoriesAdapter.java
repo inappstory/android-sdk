@@ -89,7 +89,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         if (vType == -2) {
             return new UGCListItem(v, manager);
         } else
-            return new UgcStoryListItem(v, manager, true, false);
+            return new UgcStoryListItem(v, manager, (vType % 5) == 2, vType > 5);
     }
 
     @Override
@@ -118,7 +118,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                     story.getSource(),
                     imgUrl,
                     Color.parseColor(story.getBackgroundColor()),
-                    true,
+                    story.isOpened,
                     story.hasAudio(),
                     story.getVideoUrl(), this);
         }
@@ -154,7 +154,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
-                    current.saveStoryOpened();
+                    current.saveStoryOpened(Story.StoryType.UGC);
                     notifyItemChanged(ind);
                 } else {
                     if (!InAppStoryService.isConnected()) {
@@ -164,7 +164,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         return;
                     }
                     current.isOpened = true;
-                    current.saveStoryOpened();
+                    current.saveStoryOpened(Story.StoryType.UGC);
                     notifyItemChanged(ind);
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);

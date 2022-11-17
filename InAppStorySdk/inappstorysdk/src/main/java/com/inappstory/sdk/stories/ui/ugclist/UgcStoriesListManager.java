@@ -44,7 +44,7 @@ class UgcStoriesListManager implements ListManager {
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
         if (st == null) return;
         st.isOpened = true;
-        st.saveStoryOpened();
+        st.saveStoryOpened(Story.StoryType.UGC);
         checkHandler();
         post(new Runnable() {
             @Override

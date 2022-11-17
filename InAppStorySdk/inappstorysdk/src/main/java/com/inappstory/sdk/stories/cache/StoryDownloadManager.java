@@ -495,24 +495,8 @@ public class StoryDownloadManager {
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
                 uploadingAdditional(response, Story.StoryType.UGC);
-                List<Story> newStories = new ArrayList<>();
-
                 List<Story> stories = getStoriesListByType(Story.StoryType.UGC);
-                synchronized (storiesLock) {
-                    for (Story story : response) {
-                        if (!stories.contains(story)) {
-                            newStories.add(story);
-                        }
-                    }
-                }
-                if (newStories.size() > 0) {
-                    try {
-                        setLocalsOpened(newStories);
-                        uploadingAdditional(newStories, Story.StoryType.UGC);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+                setLocalsOpened(stories, Story.StoryType.UGC);
                 if (callback != null) {
                     List<Integer> ids = new ArrayList<>();
                     for (Story story : response) {
@@ -572,7 +556,7 @@ public class StoryDownloadManager {
                         }, 500);
                     }
                 }
-                setLocalsOpened(response);
+                setLocalsOpened(response, Story.StoryType.COMMON);
                 uploadingAdditional(response, Story.StoryType.COMMON);
                 List<Story> newStories = new ArrayList<>();
                 List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
@@ -619,7 +603,7 @@ public class StoryDownloadManager {
                                 }
                             }
                             if (response2 != null && response2.size() > 0) {
-                                setLocalsOpened(response2);
+                                setLocalsOpened(response2, Story.StoryType.COMMON);
                                 for (Story story : response2) {
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                                 }
@@ -702,7 +686,7 @@ public class StoryDownloadManager {
                 }
                 if (newStories.size() > 0) {
                     try {
-                        setLocalsOpened(newStories);
+                        setLocalsOpened(newStories, Story.StoryType.COMMON);
                         uploadingAdditional(newStories, Story.StoryType.COMMON);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -732,9 +716,9 @@ public class StoryDownloadManager {
     }
 
 
-    public void refreshLocals() {
+    public void refreshLocals(Story.StoryType type) {
         List<Story> lStories = new ArrayList<>();
-        List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
+        List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
             lStories.addAll(stories);
         }
@@ -742,13 +726,13 @@ public class StoryDownloadManager {
             for (Story story : lStories) {
                 story.isOpened = false;
             }
-            setLocalsOpened(lStories);
+            setLocalsOpened(lStories, type);
         }
     }
 
-    void setLocalsOpened(List<Story> response) {
+    void setLocalsOpened(List<Story> response, Story.StoryType type) {
         if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().saveStoriesOpened(response);
+        InAppStoryService.getInstance().saveStoriesOpened(response, type);
     }
 
 

@@ -228,7 +228,7 @@ public class Story implements Parcelable {
     public boolean disableClose;
 
     public String getBackgroundColor() {
-        if (backgroundColor == null) return "#000000";
+        if (backgroundColor == null) return "#FFFFFF";
         return backgroundColor;
     }
 
@@ -334,11 +334,13 @@ public class Story implements Parcelable {
         return hasAudio != null ? hasAudio : false;
     }
 
-    public void saveStoryOpened() {
+    public void saveStoryOpened(StoryType type) {
         if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().saveStoryOpened(id);
+            InAppStoryService.getInstance().saveStoryOpened(id, type);
         }
     }
+
+
 
     @SerializedName("like_functional")
     public Boolean hasLike;

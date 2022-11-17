@@ -109,7 +109,7 @@ public class InAppStoryService {
         }
     };
 
-    public void saveStoriesOpened(List<Story> stories) {
+    public void saveStoriesOpened(List<Story> stories, Story.StoryType type) {
   /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
         if (opens == null) opens = new HashSet<>();
         for (Story story : stories) {
@@ -119,7 +119,7 @@ public class InAppStoryService {
 
 
 */
-        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type));
         if (opens == null) opens = new HashSet<>();
         for (Story story : stories) {
             if (story.isOpened) {
@@ -128,15 +128,15 @@ public class InAppStoryService {
                 story.isOpened = true;
             }
         }
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type), opens);
     }
 
-    public void saveStoryOpened(int id) {
+    public void saveStoryOpened(int id, Story.StoryType type) {
         if (InAppStoryManager.getInstance() == null) return;
-        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type));
         if (opens == null) opens = new HashSet<>();
         opens.add(Integer.toString(id));
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
+        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type), opens);
     }
 
     public boolean isSoundOn() {
