@@ -46,6 +46,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -293,7 +294,9 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         }
 
         super.onCreate(savedInstanceState1);
-        if (InAppStoryService.isNull()) {
+
+        setContentView(R.layout.cs_activity_stories);
+        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             finishWithoutAnimation();
             return;
         }
@@ -316,8 +319,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-
-        setContentView(R.layout.cs_activity_stories);
 
         final Bundle savedInstanceState = savedInstanceState1;
         try {
