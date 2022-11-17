@@ -482,6 +482,10 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState1);
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
+        if (InAppStoryManager.getInstance() == null) {
+            finish();
+            return;
+        }
         manager = new GameManager(this);
         manager.callback = new ZipLoadCallback() {
             @Override

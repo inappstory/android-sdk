@@ -313,15 +313,17 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         }
 
         super.onCreate(savedInstanceState1);
+        setContentView(R.layout.cs_activity_stories_draggable);
+        if (InAppStoryService.isNull() || InAppStoryManager.isNull()) {
+            finishWithoutAnimation();
+            return;
+        }
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
             if (navColor != 0)
                 getWindow().setNavigationBarColor(navColor);
         }
-        if (InAppStoryService.isNull()) {
-            finishWithoutAnimation();
-            return;
-        }
+
 
         ScreensManager.getInstance().currentScreen = this;
         View view = getCurrentFocus();
@@ -333,7 +335,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         closeOnSwipe = getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true);
         closeOnOverscroll = getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true);
 
-        setContentView(R.layout.cs_activity_stories_draggable);
         draggableFrame = findViewById(R.id.draggable_frame);
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);

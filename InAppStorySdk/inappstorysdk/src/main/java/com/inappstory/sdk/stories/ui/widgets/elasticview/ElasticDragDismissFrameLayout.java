@@ -137,7 +137,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        //Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         // if (st != null && (st.disableClose || st.hasSwipeUp()))
         //     return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
@@ -146,6 +146,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         // if we're in a drag gesture and the user reverses up the we should take those events
+        if (InAppStoryService.getInstance() == null) return;
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
 
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
@@ -161,6 +162,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
+        if (InAppStoryService.getInstance() == null) return;
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         if (st != null && (st.disableClose || st.hasSwipeUp())) {
             disabledDragScale(dyUnconsumed);
@@ -190,6 +192,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public void onStopNestedScroll(View child) {
+        if (InAppStoryService.getInstance() == null) return;
         Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         if (totalDisabledDrag > 400) {
             swipeUpCallback();

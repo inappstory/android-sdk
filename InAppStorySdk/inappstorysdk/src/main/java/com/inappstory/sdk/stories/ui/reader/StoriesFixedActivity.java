@@ -48,6 +48,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
@@ -294,14 +295,15 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         }
 
         super.onCreate(savedInstanceState1);
+        setContentView(R.layout.cs_activity_stories);
+        if (InAppStoryService.isNull() || InAppStoryManager.isNull()) {
+            finishWithoutAnimation();
+            return;
+        }
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
             if (navColor != 0)
                 getWindow().setNavigationBarColor(navColor);
-        }
-        if (InAppStoryService.isNull()) {
-            finishWithoutAnimation();
-            return;
         }
         ScreensManager.getInstance().currentScreen = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
@@ -322,7 +324,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
-        setContentView(R.layout.cs_activity_stories);
         draggableFrame = findViewById(R.id.draggable_frame);
         final Bundle savedInstanceState = savedInstanceState1;
         try {
