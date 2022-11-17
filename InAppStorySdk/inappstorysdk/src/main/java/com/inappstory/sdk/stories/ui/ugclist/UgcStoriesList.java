@@ -327,11 +327,11 @@ public class UgcStoriesList extends RecyclerView {
 
     LoadStoriesCallback lcallback;
 
-    public void loadStories(@NonNull String payload) throws DataException {
-        if (payload.isEmpty()) {
+    public void loadStories(@NonNull String filter) throws DataException {
+        if (filter.isEmpty()) {
             loadStories();
         } else {
-            loadStoriesLocal(payload);
+            loadStoriesLocal(filter);
         }
     }
 
@@ -339,8 +339,8 @@ public class UgcStoriesList extends RecyclerView {
         loadStories(new HashMap<String, Object>());
     }
 
-    public void loadStories(@NonNull HashMap<String, Object> payload) throws DataException {
-        loadStoriesLocal(JsonParser.mapToJsonString(payload));
+    public void loadStories(@NonNull HashMap<String, Object> filter) throws DataException {
+        loadStoriesLocal(JsonParser.mapToJsonString(filter));
     }
 
     private String cacheId;

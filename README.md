@@ -15,7 +15,6 @@ A library for embedding stories into an application with customization.
 	* [Methods](docs/StoriesList.md#methods)
 	* [Customization](docs/StoriesList.md#customization)
 	* [Callbacks](docs/StoriesList.md#callbacks)
-
 * [AppearanceManager](docs/AppearanceManager.md)
 * [Likes, Favorites, Share](docs/Likes_Favorites_Share.md)
 * [Tags and placeholders](docs/Tags_Placeholders.md)
@@ -25,9 +24,12 @@ A library for embedding stories into an application with customization.
 * [Work with sound](docs/Sound.md)
 * [Onboardings](docs/Onboardings.md)
 * [Single Stories](docs/Single_Stories.md)
+* [UgcStoriesList](docs/UgcStoriesList.md)
+	* [Initialization](docs/UgcStoriesList.md#initialization)
+	* [Methods](docs/UgcStoriesList.md#methods)
+	* [Customization and Callbacks](docs/UgcStoriesList.md#customization-and-callbacks)
 * [Stories Reader Goods Widget](docs/Goods.md)
 * [Home Screen Widget](docs/Home_Screen_Widget.md)
-* [Events](docs/CsEventBus.md)
 * [Stories Widget Events](docs/Stories_Widgets_Events.md)
 * [FAQ](docs/FAQ.md)
 * [Samples](https://github.com/inappstory/Android-Example)
@@ -52,7 +54,7 @@ Add jitpack maven repo to the root `build.gradle` in the `repositories` section 
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-	implementation 'com.github.inappstory:android-sdk:1.11.2'
+	implementation 'com.github.inappstory:android-sdk:1.12.0-rc2'
 ```
 
 Also for correct work in `dependencies` you need to add:
