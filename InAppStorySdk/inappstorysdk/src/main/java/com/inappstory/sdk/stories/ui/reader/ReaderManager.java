@@ -296,13 +296,17 @@ public class ReaderManager {
 
     void resumeWithShareId() {
         if (ScreensManager.getInstance().getOldTempShareId() != null) {
-            getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId()).
-                    shareComplete("" + ScreensManager.getInstance().getOldTempShareStoryId(),
-                            true);
+            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId());
+            if (rm != null) {
+                rm.shareComplete("" + ScreensManager.getInstance().getOldTempShareStoryId(),
+                        true);
+            }
         } else if (ScreensManager.getInstance().getTempShareId() != null) {
-            getSubscriberByStoryId(ScreensManager.getInstance().getTempShareStoryId()).
-                    shareComplete("" + ScreensManager.getInstance().getTempShareId(),
-                            ScreensManager.getInstance().getTempShareStatus());
+            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId());
+            if (rm != null) {
+                rm.shareComplete("" + ScreensManager.getInstance().getTempShareId(),
+                        ScreensManager.getInstance().getTempShareStatus());
+            }
         }
         ScreensManager.getInstance().setTempShareStatus(false);
         ScreensManager.getInstance().setTempShareStoryId(0);
