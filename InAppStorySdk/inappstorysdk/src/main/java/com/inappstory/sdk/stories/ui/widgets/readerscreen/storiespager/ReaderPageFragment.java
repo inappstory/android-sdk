@@ -1,11 +1,15 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
+import static com.inappstory.sdk.AppearanceManager.BOTTOM_END;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
+import static com.inappstory.sdk.AppearanceManager.BOTTOM_START;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
+import static com.inappstory.sdk.AppearanceManager.TOP_END;
 import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
+import static com.inappstory.sdk.AppearanceManager.TOP_START;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -103,17 +107,17 @@ public class ReaderPageFragment extends Fragment {
             int cp = readerSettings.closePosition;
             switch (cp) {
                 case TOP_RIGHT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.START_OF, close.getId());
+                    storiesProgressViewLP.addRule(RelativeLayout.LEFT_OF, close.getId());
                     break;
                 case TOP_LEFT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                     storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.END_OF, close.getId());
+                    storiesProgressViewLP.addRule(RelativeLayout.RIGHT_OF, close.getId());
                     break;
                 case BOTTOM_RIGHT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
                     layoutParams.topMargin = Sizes.dpToPxExt(8);
@@ -121,7 +125,29 @@ public class ReaderPageFragment extends Fragment {
                 case BOTTOM_LEFT:
                     storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
                     layoutParams.topMargin = Sizes.dpToPxExt(8);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                    layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
+                    break;
+                case TOP_START:
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+                    storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
+                    storiesProgressViewLP.addRule(RelativeLayout.END_OF, close.getId());
+                    break;
+                case TOP_END:
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                    storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
+                    storiesProgressViewLP.addRule(RelativeLayout.START_OF, close.getId());
+                    break;
+                case BOTTOM_START:
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
+                    layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
+                    storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
+                    layoutParams.topMargin = Sizes.dpToPxExt(8);
+                    break;
+                case BOTTOM_END:
+                    storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
+                    layoutParams.topMargin = Sizes.dpToPxExt(8);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     break;
             }
