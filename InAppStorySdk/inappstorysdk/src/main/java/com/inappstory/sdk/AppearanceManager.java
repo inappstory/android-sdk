@@ -64,6 +64,11 @@ public class AppearanceManager {
     public static final int BOTTOM_LEFT = 3;
     public static final int BOTTOM_RIGHT = 4;
 
+    public static final int TOP_START = -1;
+    public static final int TOP_END = -2;
+    public static final int BOTTOM_START = -3;
+    public static final int BOTTOM_END = -4;
+
     public static final int ANIMATION_DEPTH = 1;
     public static final int ANIMATION_CUBE = 2;
     public static final int ANIMATION_COVER = 3;
