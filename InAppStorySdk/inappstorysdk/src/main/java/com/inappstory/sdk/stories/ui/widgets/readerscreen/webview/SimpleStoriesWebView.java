@@ -28,6 +28,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.Request;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
+import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
+import com.inappstory.sdk.stories.ui.views.StoriesReaderWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -35,6 +37,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -42,17 +45,7 @@ import java.io.FileInputStream;
 
 public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesView {
 
-    private static String injectUnselectableStyle(String html) {
-        return html.replace("<head>",
-                "<head><style>*{" +
-                        "-webkit-touch-callout: none;" +
-                        "-webkit-user-select: none;" +
-                        "-khtml-user-select: none;" +
-                        "-moz-user-select: none;" +
-                        "-ms-user-select: none;" +
-                        "user-select: none;" +
-                        "} </style>");
-    }
+    private
 
     boolean clientIsSet = false;
 
@@ -211,7 +204,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    String s0 = injectUnselectableStyle(lt);
+                    String s0 = setDir(injectUnselectableStyle(lt));
                     loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
                 }
             });
@@ -281,58 +274,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             addJavascriptInterface(new WebAppInterface(getContext(),
                     getManager()), "Android");
 
-            setWebViewClient(new WebViewClient() {
-
-                @Override
-                public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-                    String img = url;
-                    if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
-                        return super.shouldInterceptRequest(view, url);
-                    InAppStoryManager.showDLog("webView_int_url", url);
-                    File file = getManager().getCurrentFile(img);
-                    if (file != null && file.exists()) {
-                        try {
-                            Response response = new Request.Builder().head().url(url).build().execute();
-                            String ctType = response.headers.get("Content-Type");
-                            return new WebResourceResponse(ctType, "BINARY",
-                                    new FileInputStream(file));
-                        } catch (Exception e) {
-                            InAppStoryService.createExceptionLog(e);
-                            return super.shouldInterceptRequest(view, url);
-                        }
-                    } else
-                        return super.shouldInterceptRequest(view, url);
-                }
-
-
-                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-                @Override
-                public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                    String img = request.getUrl().toString();
-                    if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
-                        return super.shouldInterceptRequest(view, request);
-                    InAppStoryManager.showDLog("webView_int_resource", img);
-                    File file = getManager().getCurrentFile(img);
-                    if (file != null && file.exists()) {
-                        try {
-                            Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
-                            String ctType = response.headers.get("Content-Type");
-                            return new WebResourceResponse(ctType, "BINARY",
-                                    new FileInputStream(file));
-                        } catch (Exception e) {
-                            InAppStoryService.createExceptionLog(e);
-                            return super.shouldInterceptRequest(view, request);
-                        }
-                    } else
-                        return super.shouldInterceptRequest(view, request);
-                }
-
-
-                @Override
-                public void onPageFinished(WebView view, String url) {
-
-                }
-            });
+            setWebViewClient(new StoriesReaderWebViewClient(getManager()));
 
             setWebChromeClient(new WebChromeClient() {
                 @Nullable

@@ -125,7 +125,11 @@ public final class NetworkHandler implements InvocationHandler {
 
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
             String res = getResponseFromStream(connection.getInputStream());
+            if (connection.getURL().toString().contains("v2/feed")) {
+                res = mockFeed();
+            }
             contentLength = res.length();
+            InAppStoryManager.showDLog("InAppStory_Network", "Success: " + res);
             respObject = new Response.Builder().contentLength(contentLength).
                     headers(getHeaders(connection)).code(statusCode).body(res).build();
         } else {
@@ -149,6 +153,10 @@ public final class NetworkHandler implements InvocationHandler {
         }
         bufferedReader.close();
         return response.toString();
+    }
+
+    private static String mockFeed() {
+        return "{\"id\":1,\"hasFavorite\":false,\"stories\":[{\"title\":\"Сберзвук звукомания\",\"title_color\":\"#ffffff\",\"source\":\"test номер 1\",\"image\":[{\"url\":\"https://cdn.test.inappstory.com/np/story/jv9/mec/tiw/0icmemejzjs8enjlxh1w4zj/custom_cover/logo-220x220.webp?v=1668762302\",\"width\":220,\"height\":220,\"type\":\"m\"},{\"url\":\"https://cdn.test.inappstory.com/np/story/jv9/mec/tiw/0icmemejzjs8enjlxh1w4zj/custom_cover/logo-440x440.webp?v=1668762302\",\"width\":440,\"height\":440,\"type\":\"h\"}],\"background_color\":\"#209bbb\",\"display_to\":null,\"display_from\":1668424988,\"updated_at\":1668762302,\"is_opened\":true,\"like\":0,\"favorite\":false,\"slides_count\":1,\"deeplink\":null,\"disable_close\":false,\"like_functional\":true,\"favorite_functional\":true,\"share_functional\":true,\"tags\":[],\"has_audio\":false,\"video_cover\":null,\"need_placeholders\":false,\"has_swipe_up\":false,\"position\":null,\"string_id\":\"r4nkcpg\",\"hide_in_reader\":false},{\"id\":7630,\"title\":\"5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперароматных вин (TEST)5 суперарома\",\"title_color\":\"#ffffff\",\"source\":\"test номер 1\",\"image\":[{\"url\":\"https://cdn.test.inappstory.com/np/story/rlo/c3f/u0b/frdhxpohqiestdxq6zeqxzb/logo-220x220.webp?v=1667997633\",\"width\":220,\"height\":220,\"type\":\"m\"},{\"url\":\"https://cdn.test.inappstory.com/np/story/rlo/c3f/u0b/frdhxpohqiestdxq6zeqxzb/logo-440x440.webp?v=1667997633\",\"width\":440,\"height\":440,\"type\":\"h\"}],\"background_color\":\"#ffffff\",\"display_to\":null,\"display_from\":1667245599,\"updated_at\":1667997633,\"is_opened\":true,\"like\":0,\"favorite\":false,\"slides_count\":6,\"deeplink\":null,\"disable_close\":false,\"like_functional\":true,\"favorite_functional\":true,\"share_functional\":true,\"tags\":[],\"has_audio\":false,\"video_cover\":null,\"need_placeholders\":false,\"has_swipe_up\":false,\"position\":null,\"string_id\":\"puwi9r4\",\"hide_in_reader\":false}]}";
     }
 
     private static HashMap<String, String> getHeaders(@NonNull final HttpURLConnection connection) {

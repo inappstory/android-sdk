@@ -128,7 +128,7 @@ public class ZipLoader {
                 public void run() {
                     File fl = new File(file.getAbsolutePath() + INDEX_NAME);
                     try {
-                        callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
+                        callback.onLoad(FILE + fl.getAbsolutePath(), fl.getAbsolutePath(), getStringFromFile(fl));
                     } catch (Exception e) {
                         InAppStoryService.createExceptionLog(e);
                         e.printStackTrace();

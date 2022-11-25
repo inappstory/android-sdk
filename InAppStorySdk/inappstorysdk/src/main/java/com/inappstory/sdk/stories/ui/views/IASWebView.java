@@ -1,23 +1,42 @@
 package com.inappstory.sdk.stories.ui.views;
 
+import static android.content.Context.DOWNLOAD_SERVICE;
+
+import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.util.AttributeSet;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 public class IASWebView extends WebView {
+
+
     public IASWebView(@NonNull Context context) {
         super(context);
         init();
@@ -25,6 +44,7 @@ public class IASWebView extends WebView {
 
     public IASWebView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+
         init();
     }
 
@@ -44,13 +64,31 @@ public class IASWebView extends WebView {
         getSettings().setAllowFileAccess(true);
         getSettings().setAllowFileAccessFromFileURLs(true);
         getSettings().setAllowUniversalAccessFromFileURLs(true);
+        setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent,
+                                        String contentDisposition, String mimetype,
+                                        long contentLength) {
+                Log.e("downloadIAS", url + " " + mimetype);
+                /* DownloadManager.Request request = new DownloadManager.Request(
+                        Uri.parse(url));
+
+                request.allowScanningByMediaScanner();
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); //Notify client once download is completed!
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "fileName");
+                DownloadManager dm = (DownloadManager) getContext().getSystemService(DOWNLOAD_SERVICE);
+                dm.enqueue(request);*/
+            }
+        });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
 
         setClickable(true);
         getSettings().setJavaScriptEnabled(true);
+        setWebViewClient(new IASWebViewClient());
     }
+
 
     public void sendWebConsoleLog(ConsoleMessage consoleMessage,
                                   String storyId, int slideIndex) {
@@ -64,6 +102,28 @@ public class IASWebView extends WebView {
         log.storyId = storyId;
         log.slideIndex = slideIndex;
         InAppStoryManager.sendWebConsoleLog(log);
+    }
+
+    protected String injectUnselectableStyle(String html) {
+        return html.replace("<head>",
+                "<head><style>*{" +
+                        "-webkit-touch-callout: none;" +
+                        "-webkit-user-select: none;" +
+                        "-khtml-user-select: none;" +
+                        "-moz-user-select: none;" +
+                        "-ms-user-select: none;" +
+                        "user-select: none;" +
+                        "} </style>");
+    }
+
+    public String setDir(String html) {
+        try {
+            int dir = getContext().getResources().getConfiguration().getLayoutDirection();
+            String dirString = (dir == View.LAYOUT_DIRECTION_RTL) ? "rtl" : "ltr";
+            return html.replace("{{%dir}}", dirString);
+        } catch (Exception e) {
+            return html;
+        }
     }
 
 }

@@ -3,6 +3,8 @@ package com.inappstory.sdk.game.reader;
 import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
@@ -60,6 +62,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -84,6 +87,7 @@ public class GameActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        if (onBackPressedLocked) return;
         if (gameReaderGestureBack) {
             gameReaderGestureBack();
         } else {
@@ -170,11 +174,27 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void run() {
                 closeButton.setVisibility(showClose ? View.VISIBLE : View.GONE);
-                if (loaderContainer != null)
-                    loaderContainer.setVisibility(View.GONE);
+                hideView(loaderContainer);
             }
         });
 
+    }
+
+    private boolean onBackPressedLocked = false;
+
+
+    void hideView(final View view) {
+        if (view == null) return;
+        onBackPressedLocked = true;
+        view.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                view.setVisibility(View.GONE);
+                view.setAlpha(1f);
+                onBackPressedLocked = false;
+            }
+        });
     }
 
     private void setViews() {
@@ -209,35 +229,35 @@ public class GameActivity extends AppCompatActivity {
         });
         webViewContainer = findViewById(R.id.webViewContainer);
         //if (!Sizes.isTablet()) {
-            if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(GameActivity.this);
-                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-                float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.85f;
-                if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+        if (blackBottom != null) {
+            Point screenSize = Sizes.getScreenSize(GameActivity.this);
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+            float realProps = screenSize.y / ((float) screenSize.x);
+            float sn = 1.85f;
+            if (realProps > sn) {
+                lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
 
-                }
+            }
 
-                //    blackBottom.setLayoutParams(lp);
-                //    blackTop.setLayoutParams(lp);
-                if (Build.VERSION.SDK_INT >= 28) {
-                    new Handler(getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                                DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                                if (cutout != null && webViewContainer != null) {
-                                    LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                    webViewContainer.setLayoutParams(lp1);
-                                }
+            //    blackBottom.setLayoutParams(lp);
+            //    blackTop.setLayoutParams(lp);
+            if (Build.VERSION.SDK_INT >= 28) {
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                            if (cutout != null && webViewContainer != null) {
+                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
+                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
+                                webViewContainer.setLayoutParams(lp1);
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
-       // }
+        }
+        // }
         loaderContainer.addView(loaderView.getView());
     }
 
@@ -402,13 +422,13 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
-
     void loadJsApiResponse(String gameResponse, String cb) {
         webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
     }
 
 
     private void initWebView() {
+
         webView.setWebChromeClient(new WebChromeClient() {
             boolean init = false;
 
@@ -476,6 +496,11 @@ public class GameActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @Override
+    public void finish() {
+        super.finish();
+        GameActivity.this.overridePendingTransition(R.anim.empty_animation, R.anim.alpha_fade_out);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
@@ -489,8 +514,8 @@ public class GameActivity extends AppCompatActivity {
         manager = new GameManager(this);
         manager.callback = new ZipLoadCallback() {
             @Override
-            public void onLoad(String baseUrl, String data) {
-                webView.loadDataWithBaseURL(baseUrl, data,
+            public void onLoad(String baseUrl, String filePath, String data) {
+                webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);
             }
@@ -512,6 +537,12 @@ public class GameActivity extends AppCompatActivity {
             setLoader();
             manager.loadGame();
         }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                testJS();
+            }
+        }, 10000);
     }
 
     private void closeGame() {
@@ -572,7 +603,6 @@ public class GameActivity extends AppCompatActivity {
                 manager.tapOnLink(link);
             setResult(RESULT_OK, intent);
             finish();
-            overridePendingTransition(0, 0);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             closing = false;
@@ -580,8 +610,14 @@ public class GameActivity extends AppCompatActivity {
     }
 
 
+
+
     private void initGame(String data) {
         webView.evaluateJavascript(data, null);
+    }
+
+    void testJS() {
+        webView.evaluateJavascript("(async () => await fetch('./581568cfc6e82597459a.jpeg', {headers: {Accept: \"image/jpg\"} }))()", null);
     }
 
 }

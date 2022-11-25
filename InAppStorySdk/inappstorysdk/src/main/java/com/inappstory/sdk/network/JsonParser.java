@@ -28,8 +28,12 @@ public class JsonParser {
             if (field.getAnnotation(SerializedName.class) != null) {
                 name = field.getAnnotation(SerializedName.class).value();
             }
-            if (!jsonObject.has(name) || jsonObject.get(name) == null || jsonObject.get(name).toString().equals("null"))
+            if (!jsonObject.has(name) || jsonObject.get(name) == null || jsonObject.get(name).toString().equals("null")) {
+                if (field.getAnnotation(Required.class) != null) {
+                    throw new JSONException("Required field " + field.getName() + " is empty or in wrong format");
+                }
                 continue;
+            }
             if (field.getType().equals(Integer.TYPE) || field.getType().equals(Integer.class)) {
                 field.set(res, new Integer(jsonObject.getInt(name)));
             } else if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class)) {
@@ -257,14 +261,20 @@ public class JsonParser {
                 name = field.getAnnotation(SerializedName.class).value();
             }
             Object val = field.get(instance);
-            if (val == null) continue;
+            if (val == null) {
+                if (field.getAnnotation(Required.class) != null) {
+                    throw new JSONException("Required field " + field.getName() + " is empty or in wrong format");
+                }
+                continue;
+            }
             Class ptype = field.getType();
+            Object result = null;
             if (ptype.isPrimitive() || ptype.equals(Integer.class)
                     || ptype.equals(Boolean.class) || ptype.equals(Character.class)
                     || ptype.equals(Short.class) || ptype.equals(Long.class)
                     || ptype.equals(Byte.class) || ptype.equals(Float.class)
                     || ptype.equals(Double.class) || ptype.equals(String.class)) {
-                object.put(name, val);
+                result = val;
             } else if (field.getType().equals(List.class)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
                 JSONArray array = new JSONArray();
@@ -307,11 +317,15 @@ public class JsonParser {
                         mapObject.put(key, getJsonObject(null));
                     }
                 }
-                object.put(name, mapObject);
+                result = mapObject;
             } else {
-                object.put(name, getJsonObject(val));
+                result = getJsonObject(val);
             }
-
+            if (result == null) {
+                if (field.getAnnotation(Required.class) != null)
+                    throw new JSONException("Required field " + field.getName() + " is empty or in wrong format");
+            }
+            object.put(name, result);
         }
         return object;
     }

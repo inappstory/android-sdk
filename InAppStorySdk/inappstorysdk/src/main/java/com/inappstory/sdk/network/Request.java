@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 
-public final class Request<T> {
+public class Request<T> {
     public String getUrl() {
         return url;
     }
@@ -80,7 +80,6 @@ public final class Request<T> {
         this.body = builder.body;
         this.isFormEncoded = builder.isFormEncoded;
     }
-
 
 
     public static class Builder {
@@ -222,25 +221,38 @@ public final class Request<T> {
                         responseLog.generateJsonResponse(result.code, result.body, result.headers);
                         InAppStoryManager.sendApiResponseLog(responseLog);
                         //Gson gson = new Gson();
-                        if (callback.getType() == null) {
-                            callback.onSuccess(result);
-                        } else {
-                            if (callback.getType() instanceof ParameterizedType) {
-                                ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
-                                Object obj = JsonParser.listFromJson(result.body,
-                                        (Class)(parameterizedType.getActualTypeArguments()[0]));
-                                callback.onSuccess(obj);
+                        try {
+                            if (callback.getType() == null) {
+                                callback.onSuccess(result);
                             } else {
-                                callback.onSuccess(JsonParser.fromJson(result.body, (Class)callback.getType()));
+                                Object obj;
+                                if (callback.getType() instanceof ParameterizedType) {
+                                    ParameterizedType parameterizedType = (ParameterizedType) callback.getType();
+                                    obj = JsonParser.listFromJson(result.body,
+                                            (Class) (parameterizedType.getActualTypeArguments()[0]));
+                                } else {
+                                    obj = JsonParser.fromJson(result.body, (Class) callback.getType());
+                                }
+                                if (obj != null) {
+                                    callback.onSuccess(obj);
+                                } else {
+                                    sendError(responseLog, result, result.errorBody, callback);
+                                }
                             }
+                        } catch (Exception e) {
+                            sendError(responseLog, result, e.getMessage(), callback);
                         }
                     } else {
-                        responseLog.generateJsonResponse(result.code, result.errorBody, result.headers);
-                        InAppStoryManager.sendApiResponseLog(responseLog);
-                        callback.onFailure(result);
+                        sendError(responseLog, result, result.errorBody, callback);
                     }
                 }
             }
         }.execute();
+    }
+
+    private void sendError(ApiLogResponse responseLog, Response result, String error, Callback callback) {
+        responseLog.generateJsonResponse(result.code, error, result.headers);
+        InAppStoryManager.sendApiResponseLog(responseLog);
+        callback.onFailure(result);
     }
 }
