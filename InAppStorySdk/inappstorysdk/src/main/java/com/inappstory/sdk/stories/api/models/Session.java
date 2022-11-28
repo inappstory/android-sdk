@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.api.models;
 
 
+import com.inappstory.sdk.network.Required;
 import com.inappstory.sdk.network.SerializedName;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
  */
 
 public class Session {
+    @Required
     public String id;
     @SerializedName("expire_in")
     public int expireIn;
