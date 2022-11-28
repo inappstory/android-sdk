@@ -125,9 +125,6 @@ public final class NetworkHandler implements InvocationHandler {
 
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
             String res = getResponseFromStream(connection.getInputStream());
-            if (connection.getURL().toString().contains("v2/feed")) {
-                res = mockFeed();
-            }
             contentLength = res.length();
             InAppStoryManager.showDLog("InAppStory_Network", "Success: " + res);
             respObject = new Response.Builder().contentLength(contentLength).
