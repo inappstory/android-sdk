@@ -9,6 +9,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -91,9 +92,6 @@ public final class NetworkHandler implements InvocationHandler {
 
 
 
-
-
-
         InAppStoryManager.showDLog("InAppStory_Network", req.getHeadersString());
         if (!req.getMethod().equals(GET) && !req.getMethod().equals(HEAD) && !req.getBody().isEmpty()) {
             InAppStoryManager.showDLog("InAppStory_Network", req.getBody());
@@ -136,6 +134,16 @@ public final class NetworkHandler implements InvocationHandler {
             respObject = new Response.Builder().contentLength(contentLength).
                     headers(getHeaders(connection)).code(statusCode).errorBody(res).build();
         }
+        ApiLogResponse responseLog = new ApiLogResponse();
+        responseLog.id = requestId;
+        responseLog.timestamp = System.currentTimeMillis();
+        responseLog.contentLength = respObject.contentLength;
+        if (respObject.body != null) {
+            responseLog.generateJsonResponse(respObject.code, respObject.body, respObject.headers);
+        } else {
+            responseLog.generateError(respObject.code, respObject.errorBody, respObject.headers);
+        }
+        InAppStoryManager.sendApiResponseLog(responseLog);
         connection.disconnect();
         return respObject;
     }

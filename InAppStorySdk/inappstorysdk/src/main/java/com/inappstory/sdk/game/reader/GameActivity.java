@@ -8,7 +8,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.media.AudioManager;
@@ -17,9 +19,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
@@ -45,8 +49,10 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -57,6 +63,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
+import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.ZipLoadCallback;
@@ -78,6 +85,7 @@ public class GameActivity extends AppCompatActivity {
     private View baseContainer;
     GameManager manager;
     private PermissionRequest audioRequest;
+    private boolean isFullscreen = false;
 
     public static final int GAME_READER_REQUEST = 878;
 
@@ -261,6 +269,11 @@ public class GameActivity extends AppCompatActivity {
         loaderContainer.addView(loaderView.getView());
     }
 
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+    }
 
     public void tapOnLinkDefault(String link) {
         Intent i = new Intent(Intent.ACTION_VIEW);
@@ -370,6 +383,7 @@ public class GameActivity extends AppCompatActivity {
             finish();
             return false;
         }
+        isFullscreen = getIntent().getBooleanExtra("isFullscreen", false);
         manager.observableId = getIntent().getStringExtra("observableId");
         manager.resources = getIntent().getStringExtra("gameResources");
         manager.storyId = getIntent().getStringExtra("storyId");
@@ -381,7 +395,11 @@ public class GameActivity extends AppCompatActivity {
         if (manager.gameConfig != null) {
             if (manager.gameConfig.contains("{{%sdkVersion}}"))
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
-            if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
+
+            if (manager.gameConfig.contains("{{%sdkConfig}}") || manager.gameConfig.contains("\"{{%sdkConfig}}\"")) {
+                String replacedConfig = generateJsonConfig();
+                manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedConfig);
+            } else if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
                 String replacedPlaceholders = generateJsonPlaceholders();
                 manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedPlaceholders);
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
@@ -391,7 +409,60 @@ public class GameActivity extends AppCompatActivity {
         return true;
     }
 
+    private String generateJsonConfig() {
+        GameConfigOptions options = new GameConfigOptions();
+        options.fullScreen = isFullscreen;
+        options.apiBaseUrl = NetworkClient.getInstance().getBaseUrl();
+        options.appPackageId = NetworkClient.getInstance().getBaseUrl();
+        int orientation = getResources().getConfiguration().orientation;
+        options.screenOrientation =
+                (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
+        options.userAgent = NetworkClient.getUAString(this);
+        String appPackageName = "";
+        try {
+            appPackageName = getPackageManager().getPackageInfo(getPackageName(), 0).packageName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        options.appPackageId = appPackageName;
+        options.sdkVersion = BuildConfig.VERSION_NAME;
+        options.apiKey = InAppStoryManager.getInstance().getApiKey();
+        options.sessionId = CachedSessionData.getInstance(this).sessionId;
+        options.deviceId = Settings.Secure.getString(getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+        options.placeholders = generatePlaceholders();
+        SaveAreaInsets insets = new SaveAreaInsets();
+        if (Build.VERSION.SDK_INT >= 28) {
+            if (getWindow() != null) {
+                WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    insets.top = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetTop(), this);
+                    insets.bottom = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetBottom(), this);
+                    insets.left = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetLeft(), this);
+                    insets.right = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetRight(), this);
+                }
+            }
+        }
+        options.saveAreaInsets = insets;
+        try {
+            return JsonParser.getJson(options);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+
     private String generateJsonPlaceholders() {
+        String st = "[]";
+        try {
+            st = JsonParser.getJson(generatePlaceholders());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return st;
+    }
+
+    private ArrayList<GameDataPlaceholder> generatePlaceholders() {
         Map<String, String> textPlaceholders =
                 InAppStoryManager.getInstance().getPlaceholders();
         Map<String, ImagePlaceholderValue> imagePlaceholders =
@@ -412,13 +483,7 @@ public class GameActivity extends AppCompatActivity {
                         entry.getKey(),
                         entry.getValue().getUrl()));
         }
-        String st = "[]";
-        try {
-            st = JsonParser.getJson(gameDataPlaceholders);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return st;
+        return gameDataPlaceholders;
     }
 
 
@@ -505,8 +570,10 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
+
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
+
         if (InAppStoryManager.getInstance() == null) {
             finish();
             return;
@@ -532,17 +599,24 @@ public class GameActivity extends AppCompatActivity {
             }
         };
         setViews();
-        if (getIntentValues()) {
-            initWebView();
-            setLoader();
-            manager.loadGame();
-        }
-        new Handler().postDelayed(new Runnable() {
+        new Handler(getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Log.e("jsonConfig", generateJsonConfig());
+                if (getIntentValues()) {
+                    initWebView();
+                    setLoader();
+                    manager.loadGame();
+                }
+            }
+        }, 300);
+
+      /*  new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 testJS();
             }
-        }, 10000);
+        }, 10000);*/
     }
 
     private void closeGame() {
@@ -608,8 +682,6 @@ public class GameActivity extends AppCompatActivity {
             closing = false;
         }
     }
-
-
 
 
     private void initGame(String data) {

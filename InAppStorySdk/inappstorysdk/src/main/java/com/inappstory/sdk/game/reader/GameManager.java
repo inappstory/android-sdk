@@ -4,6 +4,8 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 
+import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
@@ -63,8 +65,6 @@ public class GameManager {
     }
 
 
-
-
     void storySetData(String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         KeyValueStorage.saveString("story" + storyId
@@ -102,7 +102,7 @@ public class GameManager {
         StatisticManager.getInstance().sendGameEvent(name, data, feedId);
     }
 
-    void gameCompleted(String gameState, String link, String eventData) {
+    void gameCompletedWithUrl(String gameState, String link, String eventData) {
         CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
                 slidesCount, index, eventData));
         if (CallbackManager.getInstance().getGameCallback() != null) {
@@ -111,6 +111,38 @@ public class GameManager {
                     slidesCount, index, eventData);
         }
         host.gameCompleted(gameState, link);
+    }
+
+    void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
+        CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
+                slidesCount, index, eventData));
+        if (CallbackManager.getInstance().getGameCallback() != null) {
+            CallbackManager.getInstance().getGameCallback().finishGame(
+                    Integer.parseInt(storyId), title, tags,
+                    slidesCount, index, eventData);
+        }
+        if (options.openStory != null
+                && options.openStory.id != null
+                && !options.openStory.id.isEmpty()) {
+            InAppStoryManager.getInstance().showStory(
+                    options.openStory.id,
+                    host,
+                    AppearanceManager.getCommonInstance()
+            );
+        }
+        host.gameCompleted(gameState, null);
+
+    }
+
+    void gameCompleted(String gameState, String link, String eventData) {
+        GameFinishOptions options = JsonParser.fromJson(link, GameFinishOptions.class);
+        if (options == null) {
+            gameCompletedWithUrl(gameState, link, eventData);
+        } else if (options.openUrl != null) {
+            gameCompletedWithUrl(gameState, link, eventData);
+        } else {
+            gameCompletedWithObject(gameState, options, eventData);
+        }
     }
 
     void sendApiRequest(String data) {
@@ -168,7 +200,6 @@ public class GameManager {
         gameLoaded = true;
         host.updateUI();
     }
-
 
 
     void onResume() {

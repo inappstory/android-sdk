@@ -9,10 +9,13 @@ import android.content.Context;
 import android.os.Build;
 import android.provider.Settings;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 
 import org.json.JSONObject;
 
@@ -21,6 +24,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,6 +48,7 @@ public class JsApiNetwork {
                                             Map<String, String> getParams,
                                             String body,
                                             String requestId, Context context) throws Exception {
+        ApiLogRequest requestLog = new ApiLogRequest();
         JsApiResponse response = new JsApiResponse();
         response.requestId = requestId;
         if (!InAppStoryService.isConnected()) {
@@ -82,7 +87,17 @@ public class JsApiNetwork {
                 connection.setRequestProperty(key, headers.get(key));
             }
         }
+
+        requestLog.timestamp = System.currentTimeMillis();
+        requestLog.method = method;
+
+        for (Map.Entry<String, List<String>> entry : connection.getRequestProperties().entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null && !entry.getValue().isEmpty())
+                requestLog.headers.add(new ApiLogRequestHeader(entry.getKey(), entry.getValue().get(0)));
+        }
         if (hasBody) {
+            requestLog.body = body;
+            InAppStoryManager.sendApiRequestLog(requestLog);
             connection.setDoOutput(true);
             OutputStream outStream = connection.getOutputStream();
             OutputStreamWriter outStreamWriter = new OutputStreamWriter(outStream, "UTF-8");
@@ -90,6 +105,8 @@ public class JsApiNetwork {
             outStreamWriter.flush();
             outStreamWriter.close();
             outStream.close();
+        } else {
+            InAppStoryManager.sendApiRequestLog(requestLog);
         }
         int statusCode = connection.getResponseCode();
         response.status = statusCode;
