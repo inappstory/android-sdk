@@ -135,7 +135,7 @@ public class JsApiNetwork {
         }
         String respBody = null;
         ApiLogResponse responseLog = new ApiLogResponse();
-        responseLog.id = requestId;
+        responseLog.id = logRequestId;
         responseLog.timestamp = System.currentTimeMillis();
         responseLog.contentLength = connection.getContentLength();
         try {
