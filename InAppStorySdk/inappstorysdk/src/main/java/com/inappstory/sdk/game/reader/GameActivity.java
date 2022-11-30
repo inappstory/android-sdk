@@ -39,6 +39,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -237,34 +238,70 @@ public class GameActivity extends AppCompatActivity {
         });
         webViewContainer = findViewById(R.id.webViewContainer);
         //if (!Sizes.isTablet()) {
-        if (blackBottom != null) {
-            Point screenSize = Sizes.getScreenSize(GameActivity.this);
-            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-            float realProps = screenSize.y / ((float) screenSize.x);
-            float sn = 1.85f;
-            if (realProps > sn) {
-                lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+        if (!isFullscreen) {
+            if (blackBottom != null) {
+                Point screenSize = Sizes.getScreenSize(GameActivity.this);
+                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                float realProps = screenSize.y / ((float) screenSize.x);
+                float sn = 1.85f;
+                if (realProps > sn) {
+                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
 
-            }
+                }
 
-            //    blackBottom.setLayoutParams(lp);
-            //    blackTop.setLayoutParams(lp);
-            if (Build.VERSION.SDK_INT >= 28) {
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                            if (cutout != null && webViewContainer != null) {
-                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                webViewContainer.setLayoutParams(lp1);
+                //    blackBottom.setLayoutParams(lp);
+                //    blackTop.setLayoutParams(lp);
+                if (Build.VERSION.SDK_INT >= 28) {
+                    new Handler(getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                                DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                                if (cutout != null && webViewContainer != null) {
+                                    LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
+                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
+                                    webViewContainer.setLayoutParams(lp1);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
+        } else {
+            int systemUiVisibility = 0;
+            int navigationBarColor = Color.TRANSPARENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                systemUiVisibility = systemUiVisibility | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            }
+            systemUiVisibility = systemUiVisibility |
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+            getWindow().getDecorView().setSystemUiVisibility(systemUiVisibility);
+            getWindow().getAttributes().flags = getWindow().getAttributes().flags |
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setNavigationBarColor(navigationBarColor);
+            }
+
         }
+
+        new Handler(getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    if (getWindow() != null) {
+                        WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
+                                    windowInsets.getSystemWindowInsetTop();
+                        }
+                    }
+                }
+                closeButton.setVisibility(View.VISIBLE);
+            }
+        });
         // }
         loaderContainer.addView(loaderView.getView());
     }
@@ -383,7 +420,6 @@ public class GameActivity extends AppCompatActivity {
             finish();
             return false;
         }
-        isFullscreen = getIntent().getBooleanExtra("isFullscreen", false);
         manager.observableId = getIntent().getStringExtra("observableId");
         manager.resources = getIntent().getStringExtra("gameResources");
         manager.storyId = getIntent().getStringExtra("storyId");
@@ -573,7 +609,7 @@ public class GameActivity extends AppCompatActivity {
 
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
-
+        isFullscreen = getIntent().getBooleanExtra("isFullscreen", true);
         if (InAppStoryManager.getInstance() == null) {
             finish();
             return;
@@ -582,6 +618,7 @@ public class GameActivity extends AppCompatActivity {
         manager.callback = new ZipLoadCallback() {
             @Override
             public void onLoad(String baseUrl, String filePath, String data) {
+                manager.gameLoaded = true;
                 webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);

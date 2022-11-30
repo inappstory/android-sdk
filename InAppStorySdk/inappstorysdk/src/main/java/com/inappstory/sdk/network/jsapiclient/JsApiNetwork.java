@@ -16,6 +16,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
+import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 
 import org.json.JSONObject;
 
@@ -24,9 +25,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public class JsApiNetwork {
 
@@ -49,6 +53,8 @@ public class JsApiNetwork {
                                             String body,
                                             String requestId, Context context) throws Exception {
         ApiLogRequest requestLog = new ApiLogRequest();
+        String logRequestId = UUID.randomUUID().toString();
+        requestLog.id = logRequestId;
         JsApiResponse response = new JsApiResponse();
         response.requestId = requestId;
         if (!InAppStoryService.isConnected()) {
@@ -110,24 +116,35 @@ public class JsApiNetwork {
         }
         int statusCode = connection.getResponseCode();
         response.status = statusCode;
+        HashMap<String, String> logHeaders = new HashMap<>();
         if (connection.getHeaderFields() != null && connection.getHeaderFields().size() > 0) {
             JSONObject jheaders = new JSONObject();
             for (String headerKey : connection.getHeaderFields().keySet()) {
                 if (connection.getHeaderFields().get(headerKey) != null &&
                         connection.getHeaderFields().get(headerKey).size() > 0) {
-                    if (headerKey != null)
-                        jheaders.put(headerKey, connection.getHeaderFields().get(headerKey).get(0));
+                    if (headerKey != null) {
+                        String headerVal = connection.getHeaderFields().get(headerKey).get(0);
+                        jheaders.put(headerKey, headerVal);
+                        logHeaders.put(headerKey, headerVal);
+                    }
                 }
             }
             response.headers = jheaders.toString();
         }
         String respBody = null;
+        ApiLogResponse responseLog = new ApiLogResponse();
+        responseLog.id = requestId;
+        responseLog.timestamp = System.currentTimeMillis();
+        responseLog.contentLength = connection.getContentLength();
         try {
             respBody = getResponseFromStream(connection.getInputStream());
+            responseLog.generateJsonResponse(response.status, respBody, logHeaders);
         } catch (IOException e) {
             InAppStoryService.createExceptionLog(e);
             respBody = getResponseFromStream(connection.getErrorStream());
+            responseLog.generateError(response.status, respBody, logHeaders);
         }
+        InAppStoryManager.sendApiResponseLog(responseLog);
         response.data = respBody;
         connection.disconnect();
         return response;

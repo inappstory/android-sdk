@@ -70,6 +70,12 @@ public class WebAppInterface {
         logMethod(gameFile);
     }
 
+    @JavascriptInterface
+    public void openGameReader(String gameFile, String coverFile, String initCode, String gameResources, String options) {
+        manager.openGameReader(gameFile, coverFile, initCode, gameResources);
+        logMethod(gameFile);
+    }
+
 
     @JavascriptInterface
     public void setAudioManagerMode(String mode) {

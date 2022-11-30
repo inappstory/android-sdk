@@ -38,6 +38,9 @@
         </item>
     </style>
 
+
+
+
     <style name="StoriesSDKAppTheme.Transparent" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
