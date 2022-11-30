@@ -55,6 +55,7 @@ public class JsApiNetwork {
         ApiLogRequest requestLog = new ApiLogRequest();
         String logRequestId = UUID.randomUUID().toString();
         requestLog.id = logRequestId;
+
         JsApiResponse response = new JsApiResponse();
         response.requestId = requestId;
         if (!InAppStoryService.isConnected()) {
@@ -62,6 +63,7 @@ public class JsApiNetwork {
             return response;
         }
         HttpURLConnection connection = (HttpURLConnection) getURL(path, getParams).openConnection();
+        requestLog.url = connection.getURL().toString();
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod(method);
