@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.network.Required;
 import com.inappstory.sdk.network.SerializedName;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.utils.PlaceholderKeyConverter;
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
 
 
 public class Story implements Parcelable {
+    @Required
     public int id;
 
     public enum StoryType {

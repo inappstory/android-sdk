@@ -9,6 +9,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.media.AudioManager;
@@ -17,9 +18,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
@@ -45,8 +48,10 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -78,6 +83,7 @@ public class GameActivity extends AppCompatActivity {
     private View baseContainer;
     GameManager manager;
     private PermissionRequest audioRequest;
+    private boolean isFullscreen = false;
 
     public static final int GAME_READER_REQUEST = 878;
 
@@ -227,34 +233,70 @@ public class GameActivity extends AppCompatActivity {
         });
         webViewContainer = findViewById(R.id.webViewContainer);
         //if (!Sizes.isTablet()) {
-        if (blackBottom != null) {
-            Point screenSize = Sizes.getScreenSize(GameActivity.this);
-            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-            float realProps = screenSize.y / ((float) screenSize.x);
-            float sn = 1.85f;
-            if (realProps > sn) {
-                lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+        if (!isFullscreen) {
+            if (blackBottom != null) {
+                Point screenSize = Sizes.getScreenSize(GameActivity.this);
+                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+                float realProps = screenSize.y / ((float) screenSize.x);
+                float sn = 1.85f;
+                if (realProps > sn) {
+                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
 
-            }
+                }
 
-            //    blackBottom.setLayoutParams(lp);
-            //    blackTop.setLayoutParams(lp);
-            if (Build.VERSION.SDK_INT >= 28) {
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                            if (cutout != null && webViewContainer != null) {
-                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                webViewContainer.setLayoutParams(lp1);
+                //    blackBottom.setLayoutParams(lp);
+                //    blackTop.setLayoutParams(lp);
+                if (Build.VERSION.SDK_INT >= 28) {
+                    new Handler(getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                                DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                                if (cutout != null && webViewContainer != null) {
+                                    LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
+                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
+                                    webViewContainer.setLayoutParams(lp1);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
+        } else {
+            int systemUiVisibility = 0;
+            int navigationBarColor = Color.TRANSPARENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                systemUiVisibility = systemUiVisibility | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            }
+            systemUiVisibility = systemUiVisibility |
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+            getWindow().getDecorView().setSystemUiVisibility(systemUiVisibility);
+            getWindow().getAttributes().flags = getWindow().getAttributes().flags |
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setNavigationBarColor(navigationBarColor);
+            }
+
         }
+
+        new Handler(getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    if (getWindow() != null) {
+                        WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
+                                    windowInsets.getSystemWindowInsetTop();
+                        }
+                    }
+                }
+                closeButton.setVisibility(View.VISIBLE);
+            }
+        });
         // }
         loaderContainer.addView(loaderView.getView());
     }
@@ -385,7 +427,10 @@ public class GameActivity extends AppCompatActivity {
         if (manager.gameConfig != null) {
             if (manager.gameConfig.contains("{{%sdkVersion}}"))
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkVersion}}", BuildConfig.VERSION_NAME);
-            if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
+            if (manager.gameConfig.contains("{{%sdkConfig}}") || manager.gameConfig.contains("\"{{%sdkConfig}}\"")) {
+                String replacedConfig = generateJsonConfig();
+                manager.gameConfig = manager.gameConfig.replace("\"{{%sdkConfig}}\"", replacedConfig);
+            } else if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
                 String replacedPlaceholders = generateJsonPlaceholders();
                 manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedPlaceholders);
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
@@ -395,7 +440,60 @@ public class GameActivity extends AppCompatActivity {
         return true;
     }
 
+    private String generateJsonConfig() {
+        GameConfigOptions options = new GameConfigOptions();
+        options.fullScreen = isFullscreen;
+        options.apiBaseUrl = NetworkClient.getInstance().getBaseUrl();
+        options.appPackageId = NetworkClient.getInstance().getBaseUrl();
+        int orientation = getResources().getConfiguration().orientation;
+        options.screenOrientation =
+                (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
+        options.userAgent = NetworkClient.getUAString(this);
+        String appPackageName = "";
+        try {
+            appPackageName = getPackageManager().getPackageInfo(getPackageName(), 0).packageName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        options.appPackageId = appPackageName;
+        options.sdkVersion = BuildConfig.VERSION_NAME;
+        options.apiKey = InAppStoryManager.getInstance().getApiKey();
+        options.sessionId = CachedSessionData.getInstance(this).sessionId;
+        options.deviceId = Settings.Secure.getString(getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+        options.placeholders = generatePlaceholders();
+        SafeAreaInsets insets = new SafeAreaInsets();
+        if (Build.VERSION.SDK_INT >= 28) {
+            if (getWindow() != null) {
+                WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
+                if (windowInsets != null) {
+                    insets.top = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetTop(), this);
+                    insets.bottom = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetBottom(), this);
+                    insets.left = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetLeft(), this);
+                    insets.right = Sizes.pxToDpExt(windowInsets.getSystemWindowInsetRight(), this);
+                }
+            }
+        }
+        options.safeAreaInsets = insets;
+        try {
+            return JsonParser.getJson(options);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+
     private String generateJsonPlaceholders() {
+        String st = "[]";
+        try {
+            st = JsonParser.getJson(generatePlaceholders());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return st;
+    }
+
+    private ArrayList<GameDataPlaceholder> generatePlaceholders() {
         Map<String, String> textPlaceholders =
                 InAppStoryManager.getInstance().getPlaceholders();
         Map<String, ImagePlaceholderValue> imagePlaceholders =
@@ -416,13 +514,7 @@ public class GameActivity extends AppCompatActivity {
                         entry.getKey(),
                         entry.getValue().getUrl()));
         }
-        String st = "[]";
-        try {
-            st = JsonParser.getJson(gameDataPlaceholders);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return st;
+        return gameDataPlaceholders;
     }
 
 
@@ -508,6 +600,9 @@ public class GameActivity extends AppCompatActivity {
             finish();
             return;
         }
+        GameScreenOptions options =
+                JsonParser.fromJson(getIntent().getStringExtra("options"), GameScreenOptions.class);
+        isFullscreen = options != null && options.fullScreen;
         ScreensManager.getInstance().currentGameActivity = this;
         manager = new GameManager(this);
         manager.callback = new ZipLoadCallback() {
@@ -530,11 +625,18 @@ public class GameActivity extends AppCompatActivity {
             }
         };
         setViews();
-        if (getIntentValues()) {
-            initWebView();
-            setLoader();
-            manager.loadGame();
-        }
+        new Handler(getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Log.e("jsonConfig", generateJsonConfig());
+                if (getIntentValues()) {
+                    initWebView();
+                    setLoader();
+                    manager.loadGame();
+                }
+            }
+        }, 300);
+
     }
 
     private void closeGame() {

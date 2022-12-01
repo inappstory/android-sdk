@@ -93,30 +93,38 @@ public class NetworkClient {
         apiInterface = null;
     }
 
+    private static Object syncLock = new Object();
+
     public static ApiInterface getApi() {
-        if (instance == null) {
-            String packageName = appContext.getPackageName();
-            String language;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                language = Locale.getDefault().toLanguageTag();
-            } else {
-                language = Locale.getDefault().getLanguage();
+        synchronized (syncLock) {
+            if (instance == null || instance.getBaseUrl() == null) {
+                if (ApiSettings.getInstance().getCmsUrl() == null) {
+                    return new DumbApiInterface();
+                }
+                String packageName = appContext.getPackageName();
+                String language;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    language = Locale.getDefault().toLanguageTag();
+                } else {
+                    language = Locale.getDefault().getLanguage();
+                }
+                instance = new Builder()
+                        .context(appContext)
+                        .baseUrl(ApiSettings.getInstance().getCmsUrl())
+                        .addHeader("Accept", "application/json")
+                        .addHeader("Accept-Language", language)
+                        .addHeader("X-Device-Id", Settings.Secure.getString(appContext.getContentResolver(),
+                                Settings.Secure.ANDROID_ID))
+                        .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
+                        .addHeader("User-Agent", getUAString(appContext))
+                        .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey()).build();
+                apiInterface = null;
             }
-            instance = new Builder()
-                    .context(appContext)
-                    .baseUrl(ApiSettings.getInstance().getCmsUrl())
-                    .addHeader("Accept", "application/json")
-                    .addHeader("Accept-Language", language)
-                    .addHeader("X-Device-Id", Settings.Secure.getString(appContext.getContentResolver(),
-                            Settings.Secure.ANDROID_ID))
-                    .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
-                    .addHeader("User-Agent", getUAString(appContext))
-                    .addHeader("Authorization", "Bearer " + ApiSettings.getInstance().getApiKey()).build();
+            if (apiInterface == null) {
+                apiInterface = NetworkHandler.implement(ApiInterface.class, instance);
+            }
+            return apiInterface;
         }
-        if (apiInterface == null) {
-            apiInterface = NetworkHandler.implement(ApiInterface.class, instance);
-        }
-        return apiInterface;
     }
 
     public static ApiInterface getStatApi() {

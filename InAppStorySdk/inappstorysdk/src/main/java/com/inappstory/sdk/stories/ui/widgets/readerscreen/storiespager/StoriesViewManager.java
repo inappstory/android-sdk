@@ -373,11 +373,11 @@ public class StoriesViewManager {
         pageManager.prevStory();
     }
 
-    public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources) {
+    public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources, String options) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
         ScreensManager.getInstance().openGameReader(context, storyId, index,
                 pageManager != null ? pageManager.getFeedId() : null, gameUrl,
-                preloadPath, gameConfig, resources, pageManager.getStoryType());
+                preloadPath, gameConfig, resources, pageManager.getStoryType(), options);
     }
 
     private boolean storyIsLoaded = false;

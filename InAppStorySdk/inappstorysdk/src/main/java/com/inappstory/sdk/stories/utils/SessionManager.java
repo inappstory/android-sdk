@@ -80,6 +80,7 @@ public class SessionManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                if (response == null || response.session == null) return;
                 response.session.statisticPermissions = new StatisticPermissions(
                         response.isAllowProfiling,
                         response.isAllowStatV1,
