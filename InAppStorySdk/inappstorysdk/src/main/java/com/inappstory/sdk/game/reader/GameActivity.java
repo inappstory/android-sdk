@@ -8,7 +8,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -39,7 +38,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.WindowCompat;
 import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -64,13 +62,11 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -467,7 +463,7 @@ public class GameActivity extends AppCompatActivity {
         options.deviceId = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         options.placeholders = generatePlaceholders();
-        SaveAreaInsets insets = new SaveAreaInsets();
+        SafeAreaInsets insets = new SafeAreaInsets();
         if (Build.VERSION.SDK_INT >= 28) {
             if (getWindow() != null) {
                 WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
@@ -479,7 +475,7 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         }
-        options.saveAreaInsets = insets;
+        options.safeAreaInsets = insets;
         try {
             return JsonParser.getJson(options);
         } catch (Exception e) {

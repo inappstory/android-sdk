@@ -15,5 +15,5 @@ public class GameConfigOptions {
     public ArrayList<GameDataPlaceholder> placeholders;
     public String screenOrientation;
     public boolean fullScreen;
-    public SaveAreaInsets saveAreaInsets;
+    public SafeAreaInsets safeAreaInsets;
 }
