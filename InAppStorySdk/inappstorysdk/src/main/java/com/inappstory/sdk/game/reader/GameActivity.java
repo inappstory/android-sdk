@@ -3,6 +3,8 @@ package com.inappstory.sdk.game.reader;
 import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
@@ -82,9 +84,11 @@ public class GameActivity extends AppCompatActivity {
     private boolean closing = false;
     boolean showClose = true;
 
+    private boolean onBackPressedLocked = false;
 
     @Override
     public void onBackPressed() {
+        if (onBackPressedLocked) return;
         if (gameReaderGestureBack) {
             gameReaderGestureBack();
         } else {
@@ -111,6 +115,20 @@ public class GameActivity extends AppCompatActivity {
                 gameCompleted(null, null);
             }
         }
+    }
+
+    void hideView(final View view) {
+        if (view == null) return;
+        onBackPressedLocked = true;
+        view.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                view.setVisibility(View.GONE);
+                view.setAlpha(1f);
+                onBackPressedLocked = false;
+            }
+        });
     }
 
     void showGoods(final String skusString, final String widgetId) {
@@ -171,8 +189,7 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void run() {
                 closeButton.setVisibility(showClose ? View.VISIBLE : View.GONE);
-                if (loaderContainer != null)
-                    loaderContainer.setVisibility(View.GONE);
+                hideView(loaderContainer);
             }
         });
 
@@ -210,35 +227,35 @@ public class GameActivity extends AppCompatActivity {
         });
         webViewContainer = findViewById(R.id.webViewContainer);
         //if (!Sizes.isTablet()) {
-            if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(GameActivity.this);
-                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-                float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.85f;
-                if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
+        if (blackBottom != null) {
+            Point screenSize = Sizes.getScreenSize(GameActivity.this);
+            final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
+            float realProps = screenSize.y / ((float) screenSize.x);
+            float sn = 1.85f;
+            if (realProps > sn) {
+                lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
 
-                }
+            }
 
-                //    blackBottom.setLayoutParams(lp);
-                //    blackTop.setLayoutParams(lp);
-                if (Build.VERSION.SDK_INT >= 28) {
-                    new Handler(getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                                DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                                if (cutout != null && webViewContainer != null) {
-                                    LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                    webViewContainer.setLayoutParams(lp1);
-                                }
+            //    blackBottom.setLayoutParams(lp);
+            //    blackTop.setLayoutParams(lp);
+            if (Build.VERSION.SDK_INT >= 28) {
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                            if (cutout != null && webViewContainer != null) {
+                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
+                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
+                                webViewContainer.setLayoutParams(lp1);
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
-       // }
+        }
+        // }
         loaderContainer.addView(loaderView.getView());
     }
 
@@ -345,6 +362,12 @@ public class GameActivity extends AppCompatActivity {
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
+    @Override
+    public void finish() {
+        super.finish();
+        GameActivity.this.overridePendingTransition(R.anim.empty_animation, R.anim.alpha_fade_out);
+    }
+
     private boolean getIntentValues() {
         manager.path = getIntent().getStringExtra("gameUrl");
         if (manager.path == null) {
@@ -401,7 +424,6 @@ public class GameActivity extends AppCompatActivity {
         }
         return st;
     }
-
 
 
     void loadJsApiResponse(String gameResponse, String cb) {
@@ -491,7 +513,7 @@ public class GameActivity extends AppCompatActivity {
         manager.callback = new ZipLoadCallback() {
             @Override
             public void onLoad(String baseUrl, String data) {
-                webView.loadDataWithBaseURL(baseUrl, data,
+                webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);
             }
@@ -573,7 +595,7 @@ public class GameActivity extends AppCompatActivity {
                 manager.tapOnLink(link);
             setResult(RESULT_OK, intent);
             finish();
-            overridePendingTransition(0, 0);
+            //overridePendingTransition(0, 0);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             closing = false;

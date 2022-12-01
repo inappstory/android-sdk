@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 
 
-public final class Request<T> {
+public class Request<T> {
     public String getUrl() {
         return url;
     }
