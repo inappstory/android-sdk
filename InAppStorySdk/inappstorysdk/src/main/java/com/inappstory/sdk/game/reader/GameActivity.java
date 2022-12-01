@@ -434,7 +434,7 @@ public class GameActivity extends AppCompatActivity {
 
             if (manager.gameConfig.contains("{{%sdkConfig}}") || manager.gameConfig.contains("\"{{%sdkConfig}}\"")) {
                 String replacedConfig = generateJsonConfig();
-                manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedConfig);
+                manager.gameConfig = manager.gameConfig.replace("\"{{%sdkConfig}}\"", replacedConfig);
             } else if (manager.gameConfig.contains("{{%sdkPlaceholders}}") || manager.gameConfig.contains("\"{{%sdkPlaceholders}}\"")) {
                 String replacedPlaceholders = generateJsonPlaceholders();
                 manager.gameConfig = manager.gameConfig.replace("\"{{%sdkPlaceholders}}\"", replacedPlaceholders);
@@ -606,10 +606,11 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
         super.onCreate(savedInstanceState1);
-
         ScreensManager.getInstance().currentGameActivity = this;
         setContentView(R.layout.cs_activity_game);
-        isFullscreen = getIntent().getBooleanExtra("isFullscreen", true);
+        GameScreenOptions options =
+                JsonParser.fromJson(getIntent().getStringExtra("options"), GameScreenOptions.class);
+        isFullscreen = options != null && options.fullScreen;
         if (InAppStoryManager.getInstance() == null) {
             finish();
             return;
