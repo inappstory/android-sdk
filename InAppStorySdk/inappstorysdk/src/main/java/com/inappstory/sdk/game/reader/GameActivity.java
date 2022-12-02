@@ -273,9 +273,9 @@ public class GameActivity extends AppCompatActivity {
             systemUiVisibility = systemUiVisibility |
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;/* |
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    View.SYSTEM_UI_FLAG_FULLSCREEN;*/
             getWindow().getDecorView().setSystemUiVisibility(systemUiVisibility);
             getWindow().getAttributes().flags = getWindow().getAttributes().flags |
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
