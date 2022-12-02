@@ -6,6 +6,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -239,17 +240,35 @@ public class GameActivity extends AppCompatActivity {
                 new Handler(getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                        WindowInsets insets = getWindow().getDecorView().getRootWindowInsets();
+                        if (insets != null) {
+                            DisplayCutout cutout = insets.getDisplayCutout();
                             if (cutout != null && webViewContainer != null) {
                                 LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
                                 lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
                                 webViewContainer.setLayoutParams(lp1);
                             }
+                            if (Sizes.isTablet()) {
+                                View gameContainer = findViewById(R.id.gameContainer);
+                                if (gameContainer != null) {
+                                    int dialogHeight = getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
+                                    Point size = Sizes.getScreenSize();
+                                    size.y -= (insets.getSystemWindowInsetTop() +
+                                            insets.getSystemWindowInsetBottom());
+                                    dialogHeight = Math.min(dialogHeight, size.y);
+                                    gameContainer.getLayoutParams().width = Math.round(dialogHeight / 1.5f);
+                                    gameContainer.getLayoutParams().height = dialogHeight;
+                                    gameContainer.requestLayout();
+                                }
+                            }
                         }
                     }
                 });
             }
+            /*if (Sizes.isTablet()) {
+                getWindow().getAttributes().flags = getWindow().getAttributes().flags |
+                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+            }*/
             /* if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize(GameActivity.this);
                 final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
@@ -265,6 +284,9 @@ public class GameActivity extends AppCompatActivity {
 
             }*/
         } else {
+            /*baseContainer.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
+            baseContainer.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
+            baseContainer.requestLayout();*/
             int systemUiVisibility = 0;
             int navigationBarColor = Color.TRANSPARENT;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -659,6 +681,10 @@ public class GameActivity extends AppCompatActivity {
 
     private void closeGame() {
         if (closing) return;
+        if (manager == null || manager.storyId == null) {
+            finish();
+            return;
+        }
         ZipLoader.getInstance().terminate();
         closing = true;
         CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(manager.storyId),

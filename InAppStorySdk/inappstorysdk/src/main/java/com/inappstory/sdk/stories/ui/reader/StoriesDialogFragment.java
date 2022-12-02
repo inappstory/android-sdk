@@ -21,16 +21,23 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.widget.LinearLayout;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -53,6 +60,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.HashSet;
 import java.util.List;
@@ -189,8 +197,24 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         // safety check
         if (getDialog() == null)
             return;
-        int dialogWidth = getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
+       // = getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
         int dialogHeight = getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
+        Point size = Sizes.getScreenSize();
+        if (Build.VERSION.SDK_INT >= 28) {
+            if (getContext() instanceof Activity) {
+                WindowInsets insets =
+                        ((Activity) getContext()).getWindow()
+                                .getDecorView().getRootWindowInsets();
+                if (insets != null) {
+                    size.y -= (insets.getSystemWindowInsetTop() +
+                            insets.getSystemWindowInsetBottom());
+                }
+            }
+        }
+        dialogHeight = Math.min(dialogHeight, size.y);
+        int dialogWidth = Math.round(dialogHeight / 1.5f);
+        Log.e("sizes", size + " " + dialogHeight + " " + dialogWidth);
+
         getDialog().getWindow().setLayout(dialogWidth, dialogHeight);
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
