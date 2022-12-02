@@ -47,19 +47,7 @@
             </RelativeLayout>
 
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/close_button"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentRight="true"
-                android:background="@null"
-                android:elevation="10dp"
-                android:paddingTop="8dp"
-                android:paddingRight="8dp"
-                android:paddingBottom="8dp"
-                android:src="@drawable/ic_stories_close"
-                android:tint="@color/white"
-                android:tintMode="src_atop" />
+
         </RelativeLayout>
 
         <View
@@ -68,6 +56,18 @@
             android:layout_height="1px"
             android:background="#000000" />
     </LinearLayout>
-
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/close_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentRight="true"
+        android:background="@null"
+        android:elevation="10dp"
+        android:paddingTop="8dp"
+        android:paddingRight="8dp"
+        android:paddingBottom="8dp"
+        android:src="@drawable/ic_stories_close"
+        android:tint="@color/white"
+        android:tintMode="src_atop" />
 </RelativeLayout>
 

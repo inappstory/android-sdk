@@ -234,7 +234,7 @@ public class GameActivity extends AppCompatActivity {
         webViewContainer = findViewById(R.id.webViewContainer);
         //if (!Sizes.isTablet()) {
         if (!isFullscreen) {
-            if (blackBottom != null) {
+           /* if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize(GameActivity.this);
                 final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
@@ -261,7 +261,7 @@ public class GameActivity extends AppCompatActivity {
                         }
                     });
                 }
-            }
+            }*/
         } else {
             int systemUiVisibility = 0;
             int navigationBarColor = Color.TRANSPARENT;
@@ -293,6 +293,7 @@ public class GameActivity extends AppCompatActivity {
                         if (windowInsets != null) {
                             ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
                                     windowInsets.getSystemWindowInsetTop();
+                            closeButton.requestLayout();
                         }
                     }
                 }
