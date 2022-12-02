@@ -235,7 +235,22 @@ public class GameActivity extends AppCompatActivity {
         webViewContainer = findViewById(R.id.webViewContainer);
         //if (!Sizes.isTablet()) {
         if (!isFullscreen) {
-            if (blackBottom != null) {
+            if (Build.VERSION.SDK_INT >= 28) {
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
+                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
+                            if (cutout != null && webViewContainer != null) {
+                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
+                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
+                                webViewContainer.setLayoutParams(lp1);
+                            }
+                        }
+                    }
+                });
+            }
+            /* if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize(GameActivity.this);
                 final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
@@ -247,22 +262,8 @@ public class GameActivity extends AppCompatActivity {
 
                 //    blackBottom.setLayoutParams(lp);
                 //    blackTop.setLayoutParams(lp);
-                if (Build.VERSION.SDK_INT >= 28) {
-                    new Handler(getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                                DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                                if (cutout != null && webViewContainer != null) {
-                                    LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                    lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                    webViewContainer.setLayoutParams(lp1);
-                                }
-                            }
-                        }
-                    });
-                }
-            }
+
+            }*/
         } else {
             int systemUiVisibility = 0;
             int navigationBarColor = Color.TRANSPARENT;
@@ -294,6 +295,7 @@ public class GameActivity extends AppCompatActivity {
                         if (windowInsets != null) {
                             ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
                                     windowInsets.getSystemWindowInsetTop();
+                            closeButton.requestLayout();
                         }
                     }
                 }
