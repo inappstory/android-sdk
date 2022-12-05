@@ -5,6 +5,9 @@ import static java.util.UUID.randomUUID;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -187,7 +190,11 @@ public class ZipLoader {
 
                                 }
                             }, hash);
-
+                    if (file == null) {
+                        if (callback != null)
+                            callback.onError();
+                        return null;
+                    }
                     ProfilingManager.getInstance().setReady(hash);
                     File directory = new File(file.getParent() + File.separator + url.hashCode());
                     String resourcesHash;

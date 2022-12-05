@@ -58,14 +58,12 @@ public class Downloader {
     }
 
 
-    @NonNull
     @WorkerThread
     public static File downloadOrGetFile(@NonNull String url,
                                          LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
         return downloadOrGetFile(url, cache, img, callback, null);
     }
 
-    @NonNull
     @WorkerThread
     public static File downloadOrGetFile(@NonNull String url,
                                          LruDiskCache cache, File img, FileLoadProgressCallback callback, String hash) throws Exception {
