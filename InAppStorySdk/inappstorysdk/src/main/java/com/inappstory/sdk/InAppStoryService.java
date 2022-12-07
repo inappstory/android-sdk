@@ -309,30 +309,25 @@ public class InAppStoryService {
     }
 
     public Map<String, String> getPlaceholders() {
-        if (InAppStoryManager.getInstance() != null)
-            return InAppStoryManager.getInstance().getPlaceholders();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null)
+            return manager.getPlaceholdersCopy();
         return new HashMap<>();
     }
 
 
     public Map<String, ImagePlaceholderValue> getImagePlaceholdersValues() {
-        if (InAppStoryManager.getInstance() != null)
-            return InAppStoryManager.getInstance().getImagePlaceholdersValues();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null)
+            return manager.getImagePlaceholdersValues();
         return new HashMap<>();
     }
 
     public void saveSessionPlaceholders(List<StoryPlaceholder> placeholders) {
         if (placeholders == null) return;
-        if (InAppStoryManager.getInstance() == null) return;
-        for (StoryPlaceholder placeholder : placeholders) {
-            String key = placeholder.name;
-            InAppStoryManager.getInstance().defaultPlaceholders.put(key,
-                    placeholder.defaultVal);
-            if (!InAppStoryManager.getInstance().placeholders.containsKey(key)) {
-                InAppStoryManager.getInstance().placeholders.put(key,
-                        placeholder.defaultVal);
-            }
-        }
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return;
+        manager.setDefaultPlaceholders(placeholders);
     }
 
     public void saveSessionImagePlaceholders(List<StoryPlaceholder> placeholders) {
