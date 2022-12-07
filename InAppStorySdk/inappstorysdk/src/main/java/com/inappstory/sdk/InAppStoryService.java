@@ -308,8 +308,9 @@ public class InAppStoryService {
     }
 
     public Map<String, String> getPlaceholders() {
-        if (InAppStoryManager.getInstance() != null)
-            return InAppStoryManager.getInstance().getPlaceholders();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null)
+            return manager.getPlaceholdersCopy();
         return new HashMap<>();
     }
 
