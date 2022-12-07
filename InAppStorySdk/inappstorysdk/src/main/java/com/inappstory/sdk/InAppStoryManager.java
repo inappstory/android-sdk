@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
@@ -450,15 +451,44 @@ public class InAppStoryManager {
      * @param placeholders (placeholders) - key-value map (key - what we replace, value - replacement result)
      */
     public void setPlaceholders(@NonNull Map<String, String> placeholders) {
-        getPlaceholders().clear();
-        for (String placeholderKey : placeholders.keySet()) {
-            setPlaceholder(placeholderKey, placeholders.get(placeholderKey));
+        synchronized (placeholdersLock) {
+            if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
+            if (this.placeholders == null)
+                this.placeholders = new HashMap<>();
+            else
+                this.placeholders.clear();
+            for (String key : placeholders.keySet()) {
+                String value = placeholders.get(key);
+                if (value == null) {
+                    if (defaultPlaceholders.containsKey(key)) {
+                        placeholders.put(key, defaultPlaceholders.get(key));
+                    } else {
+                        placeholders.remove(key);
+                    }
+                } else {
+                    placeholders.put(key, value);
+                }
+            }
+        }
+    }
+
+    void setDefaultPlaceholders(@NonNull List<StoryPlaceholder> placeholders) {
+        synchronized (placeholdersLock) {
+            for (StoryPlaceholder placeholder : placeholders) {
+                String key = placeholder.name;
+                this.defaultPlaceholders.put(key,
+                        placeholder.defaultVal);
+                if (!this.placeholders.containsKey(key)) {
+                    InAppStoryManager.getInstance().placeholders.put(key,
+                            placeholder.defaultVal);
+                }
+            }
         }
     }
 
     ArrayList<String> tags;
 
-    public Object placeholdersLock = new Object();
+    private final Object placeholdersLock = new Object();
 
     /**
      * Returns map with all default strings replacements
@@ -468,6 +498,13 @@ public class InAppStoryManager {
             if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
             if (placeholders == null) placeholders = new HashMap<>();
             return placeholders;
+        }
+    }
+
+    public Map<String, String> getPlaceholdersCopy() {
+        synchronized (placeholdersLock) {
+            if (placeholders == null) return new HashMap<>();
+            return new HashMap<>(placeholders);
         }
     }
 
@@ -484,8 +521,10 @@ public class InAppStoryManager {
 
     public void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
         synchronized (placeholdersLock) {
-            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            imagePlaceholders.clear();
+            if (imagePlaceholders == null)
+                imagePlaceholders = new HashMap<>();
+            else
+                imagePlaceholders.clear();
             imagePlaceholders.putAll(placeholders);
         }
     }

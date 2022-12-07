@@ -38,6 +38,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -190,12 +191,19 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public void loadWebData(String outerLayout, String outerData) {
         String tmpData = outerData;
         String tmpLayout = outerLayout;
-        for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
-            String modifiedKey = "%" + key + "%";
-            tmpData = tmpData.replace(modifiedKey, InAppStoryService.getInstance().getPlaceholders().get(key));
-            tmpLayout = tmpLayout.replace(modifiedKey, InAppStoryService.getInstance().getPlaceholders().get(key));
-        }
 
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            Map<String, String> localPlaceholders = service.getPlaceholders();
+            for (String key : localPlaceholders.keySet()) {
+                String modifiedKey = "%" + key + "%";
+                String value = localPlaceholders.get(key);
+                if (value != null) {
+                    tmpData = tmpData.replace(modifiedKey, value);
+                    tmpLayout = tmpLayout.replace(modifiedKey, value);
+                }
+            }
+        }
         final String data = tmpData;
         final String lt = tmpLayout;
 

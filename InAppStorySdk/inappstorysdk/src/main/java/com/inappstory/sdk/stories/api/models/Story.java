@@ -25,12 +25,22 @@ public class Story implements Parcelable {
     public int id;
 
     public String getTitle() {
-        String tmp = title != null ? title : "";
-        if (InAppStoryService.isNull()) return title;
-        for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
+        return getReplacedField(title != null ? title : "");
+    }
+
+    public String getSource() {
+        return getReplacedField(source != null ? source : "");
+    }
+
+    private String getReplacedField(String tmp) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return tmp;
+        Map<String, String> localPlaceholders = InAppStoryService.getInstance().getPlaceholders();
+        for (String key : localPlaceholders.keySet()) {
             String modifiedKey = "%" + key + "%";
-            if (tmp.contains(modifiedKey)) {
-                tmp = tmp.replace(modifiedKey, InAppStoryService.getInstance().getPlaceholders().get(key));
+            String value = localPlaceholders.get(key);
+            if (value != null) {
+                tmp = tmp.replace(modifiedKey, value);
             }
         }
         return tmp;
@@ -126,19 +136,6 @@ public class Story implements Parcelable {
     public String title;
 
     public String tags;
-
-    public String getSource() {
-        String tmp = source != null ? source : "";
-        if (InAppStoryService.isNull()) return source;
-        for (String key : InAppStoryService.getInstance().getPlaceholders().keySet()) {
-            String modifiedKey = "%" + key + "%";
-            if (tmp.contains(modifiedKey)) {
-                tmp = tmp.replace(modifiedKey, InAppStoryService.getInstance().getPlaceholders().get(key));
-            }
-        }
-        return tmp;
-        //  return source;
-    }
 
     public String source;
 
