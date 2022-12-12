@@ -36,39 +36,47 @@ public class Session {
         INSTANCE = instance;
     }
 
-    private static volatile Session INSTANCE;
+    private static Session INSTANCE;
+
+    private static final Object lock = new Object();
 
     public static Session getInstance() {
-        if (INSTANCE == null) {
-            synchronized (Session.class) {
-                if (INSTANCE == null)
-                    INSTANCE = new Session();
-            }
+        synchronized (lock) {
+            if (INSTANCE == null)
+                INSTANCE = new Session();
+            return INSTANCE;
         }
-        return INSTANCE;
     }
 
 
     public static boolean needToUpdate() {
-        synchronized (Session.class) {
-            if (INSTANCE == null) return true;
-            if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;
+        synchronized (lock) {
+            Session session = INSTANCE;
+            if (session == null) return true;
+            if (session.id == null || session.id.isEmpty()) return true;
         }
         return false;
     }
 
     public static void updateStatistic() {
-        if (INSTANCE == null) return;
-        INSTANCE.updatedAt = System.currentTimeMillis();
+        synchronized (lock) {
+            Session session = INSTANCE;
+            if (session == null) return;
+            session.updatedAt = System.currentTimeMillis();
+        }
     }
 
     public static void clear() {
-        INSTANCE = null;
+        synchronized (lock) {
+            INSTANCE = null;
+        }
     }
 
     public void save() {
         updatedAt = System.currentTimeMillis();
-        INSTANCE = this;
+        synchronized (lock) {
+            INSTANCE = this;
+        }
         //SharedPreferencesAPI.ge
     }
 }

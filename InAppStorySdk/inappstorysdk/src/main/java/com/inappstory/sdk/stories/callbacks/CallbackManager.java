@@ -207,20 +207,15 @@ public class CallbackManager {
 
     }
 
-    private static volatile CallbackManager INSTANCE;
+    private static CallbackManager INSTANCE;
 
+    private static Object lock = new Object();
 
     public static CallbackManager getInstance() {
-        if (INSTANCE == null) {
-            synchronized (CallbackManager.class) {
-                if (INSTANCE == null)
-                    INSTANCE = new CallbackManager();
-            }
+        synchronized (lock) {
+            if (INSTANCE == null)
+                INSTANCE = new CallbackManager();
+            return INSTANCE;
         }
-        return INSTANCE;
     }
-
-
-
-
 }
