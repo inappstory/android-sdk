@@ -32,6 +32,8 @@ public class ProfilingManager {
     private static final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
+    private static Object lock = new Object();
+
     public static ProfilingManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ProfilingManager();
@@ -174,8 +176,7 @@ public class ProfilingManager {
     }
 
     private boolean isAllowToSend() {
-        return !Session.needToUpdate()
-                && Session.getInstance().isAllowProfiling();
+        return !Session.needToUpdate() && Session.getInstance().isAllowProfiling();
     }
 
     private String getCC() {

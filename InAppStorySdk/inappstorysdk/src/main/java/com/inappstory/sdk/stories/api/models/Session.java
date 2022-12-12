@@ -23,7 +23,7 @@ public class Session {
     public long updatedAt;
 
     public boolean isAllowProfiling() {
-        synchronized (Session.class) {
+        synchronized (lock) {
             return statisticPermissions != null && statisticPermissions.allowProfiling;
         }
     }
