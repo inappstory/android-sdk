@@ -78,8 +78,6 @@ public class GameActivity extends AppCompatActivity {
     private View webViewContainer;
     private RelativeLayout loaderContainer;
     private IGameLoaderView loaderView;
-    private View blackTop;
-    private View blackBottom;
     private View baseContainer;
     GameManager manager;
     private PermissionRequest audioRequest;
@@ -208,8 +206,6 @@ public class GameActivity extends AppCompatActivity {
         loader = findViewById(R.id.loader);
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
-        blackTop = findViewById(R.id.blackTop);
-        blackBottom = findViewById(R.id.blackBottom);
         if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
             loaderView = new GameLoadProgressBar(GameActivity.this,
                     null,
@@ -234,59 +230,38 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         webViewContainer = findViewById(R.id.webViewContainer);
-        //if (!Sizes.isTablet()) {
-        if (!isFullscreen) {
-            if (Build.VERSION.SDK_INT >= 28) {
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        WindowInsets insets = getWindow().getDecorView().getRootWindowInsets();
-                        if (insets != null) {
-                            DisplayCutout cutout = insets.getDisplayCutout();
-                            if (cutout != null && webViewContainer != null) {
-                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                webViewContainer.setLayoutParams(lp1);
-                            }
-                            if (Sizes.isTablet()) {
-                                View gameContainer = findViewById(R.id.gameContainer);
-                                if (gameContainer != null) {
-                                    int dialogHeight = getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
-                                    Point size = Sizes.getScreenSize();
-                                    size.y -= (insets.getSystemWindowInsetTop() +
-                                            insets.getSystemWindowInsetBottom());
-                                    dialogHeight = Math.min(dialogHeight, size.y);
-                                    gameContainer.getLayoutParams().width = Math.round(dialogHeight / 1.5f);
-                                    gameContainer.getLayoutParams().height = dialogHeight;
-                                    gameContainer.requestLayout();
-                                }
+        if (Sizes.isTablet()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(Color.BLACK);
+            }
+        }
+        if (Build.VERSION.SDK_INT >= 28) {
+            new Handler(getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    WindowInsets insets = getWindow().getDecorView().getRootWindowInsets();
+                    if (insets != null) {
+                        if (Sizes.isTablet()) {
+
+                            View gameContainer = findViewById(R.id.gameContainer);
+                            if (gameContainer != null) {
+                                Point size = Sizes.getScreenSize();
+                                size.y -= (insets.getSystemWindowInsetTop() +
+                                        insets.getSystemWindowInsetBottom());
+                                gameContainer.getLayoutParams().height = size.y;
+                                gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
+                                gameContainer.requestLayout();
                             }
                         }
                     }
-                });
-            }
-            /*if (Sizes.isTablet()) {
-                getWindow().getAttributes().flags = getWindow().getAttributes().flags |
-                        WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-            }*/
-            /* if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(GameActivity.this);
-                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-                float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.85f;
-                if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
-
                 }
+            });
+        }
 
-                //    blackBottom.setLayoutParams(lp);
-                //    blackTop.setLayoutParams(lp);
+      /*  if (!isFullscreen) {
 
-            }*/
+
         } else {
-            /*baseContainer.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-            baseContainer.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
-            baseContainer.requestLayout();*/
             int systemUiVisibility = 0;
             int navigationBarColor = Color.TRANSPARENT;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -297,7 +272,7 @@ public class GameActivity extends AppCompatActivity {
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;/* |
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_FULLSCREEN;*/
+                    View.SYSTEM_UI_FLAG_FULLSCREEN;
             getWindow().getDecorView().setSystemUiVisibility(systemUiVisibility);
             getWindow().getAttributes().flags = getWindow().getAttributes().flags |
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
@@ -307,7 +282,7 @@ public class GameActivity extends AppCompatActivity {
             }
 
         }
-
+        */
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -633,6 +608,7 @@ public class GameActivity extends AppCompatActivity {
         GameScreenOptions options =
                 JsonParser.fromJson(getIntent().getStringExtra("options"), GameScreenOptions.class);
         isFullscreen = options != null && options.fullScreen;
+        //isFullscreen = false;
         if (InAppStoryManager.getInstance() == null) {
             finish();
             return;

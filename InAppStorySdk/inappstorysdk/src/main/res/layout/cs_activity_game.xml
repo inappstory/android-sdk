@@ -8,6 +8,7 @@
 
     <View
         android:id="@+id/draggable_frame"
+        android:background="@android:color/black"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -16,12 +17,6 @@
         android:id="@+id/gameContainer"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
-        <View
-            android:id="@+id/blackTop"
-            android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:background="#000000" />
 
         <RelativeLayout
             android:id="@+id/webViewContainer"
@@ -50,11 +45,6 @@
 
         </RelativeLayout>
 
-        <View
-            android:id="@+id/blackBottom"
-            android:layout_width="match_parent"
-            android:layout_height="0px"
-            android:background="#000000" />
     </LinearLayout>
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/close_button"
