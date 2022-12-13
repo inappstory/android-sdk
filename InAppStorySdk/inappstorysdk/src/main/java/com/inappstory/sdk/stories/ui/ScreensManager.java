@@ -82,6 +82,7 @@ public class ScreensManager {
     private ScreensManager() {
 
     }
+
     private static ScreensManager INSTANCE;
     private static final Object lock = new Object();
 
@@ -92,7 +93,6 @@ public class ScreensManager {
             return INSTANCE;
         }
     }
-
 
     public static long created = 0;
 

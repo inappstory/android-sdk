@@ -78,8 +78,6 @@ public class GameActivity extends AppCompatActivity {
     private View webViewContainer;
     private RelativeLayout loaderContainer;
     private IGameLoaderView loaderView;
-    private View blackTop;
-    private View blackBottom;
     private View baseContainer;
     GameManager manager;
     private PermissionRequest audioRequest;
@@ -198,7 +196,6 @@ public class GameActivity extends AppCompatActivity {
                 hideView(loaderContainer);
             }
         });
-
     }
 
     private void setViews() {
@@ -206,8 +203,6 @@ public class GameActivity extends AppCompatActivity {
         loader = findViewById(R.id.loader);
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
-        blackTop = findViewById(R.id.blackTop);
-        blackBottom = findViewById(R.id.blackBottom);
         if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
             loaderView = new GameLoadProgressBar(GameActivity.this,
                     null,
@@ -232,37 +227,13 @@ public class GameActivity extends AppCompatActivity {
             }
         });
         webViewContainer = findViewById(R.id.webViewContainer);
-        //if (!Sizes.isTablet()) {
-        if (!isFullscreen) {
-            /*if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(GameActivity.this);
-                final LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
-                float realProps = screenSize.y / ((float) screenSize.x);
-                float sn = 1.85f;
-                if (realProps > sn) {
-                    lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
-
-                }
-
-                //    blackBottom.setLayoutParams(lp);
-                //    blackTop.setLayoutParams(lp);
-
-            }*/
-            if (Build.VERSION.SDK_INT >= 28) {
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getWindow() != null && getWindow().getDecorView().getRootWindowInsets() != null) {
-                            DisplayCutout cutout = getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
-                            if (cutout != null && webViewContainer != null) {
-                                LinearLayout.LayoutParams lp1 = (LinearLayout.LayoutParams) webViewContainer.getLayoutParams();
-                                lp1.topMargin += Math.max(cutout.getSafeInsetTop(), 0);
-                                webViewContainer.setLayoutParams(lp1);
-                            }
-                        }
-                    }
-                });
+        if (Sizes.isTablet()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(Color.BLACK);
             }
+        }
+       /* if (!isFullscreen) {
+
         } else {
             int systemUiVisibility = 0;
             int navigationBarColor = Color.TRANSPARENT;
@@ -272,9 +243,7 @@ public class GameActivity extends AppCompatActivity {
             systemUiVisibility = systemUiVisibility |
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;/* |
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_FULLSCREEN;*/
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
             getWindow().getDecorView().setSystemUiVisibility(systemUiVisibility);
             getWindow().getAttributes().flags = getWindow().getAttributes().flags |
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
@@ -283,8 +252,29 @@ public class GameActivity extends AppCompatActivity {
                 getWindow().setNavigationBarColor(navigationBarColor);
             }
 
-        }
+        }*/
+        if (Build.VERSION.SDK_INT >= 28) {
+            new Handler(getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    WindowInsets insets = getWindow().getDecorView().getRootWindowInsets();
+                    if (insets != null) {
+                        if (Sizes.isTablet()) {
 
+                            View gameContainer = findViewById(R.id.gameContainer);
+                            if (gameContainer != null) {
+                                Point size = Sizes.getScreenSize();
+                                size.y -= (insets.getSystemWindowInsetTop() +
+                                        insets.getSystemWindowInsetBottom());
+                                gameContainer.getLayoutParams().height = size.y;
+                                gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
+                                gameContainer.requestLayout();
+                            }
+                        }
+                    }
+                }
+            });
+        }
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -301,7 +291,6 @@ public class GameActivity extends AppCompatActivity {
                 closeButton.setVisibility(View.VISIBLE);
             }
         });
-        // }
         loaderContainer.addView(loaderView.getView());
     }
 
