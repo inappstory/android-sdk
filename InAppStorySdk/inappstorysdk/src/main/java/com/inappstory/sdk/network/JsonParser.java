@@ -294,7 +294,7 @@ public class JsonParser {
                         array.put(getJsonObject(((List) val).get(i)));
                     }
                 }
-                object.put(name, array);
+                result = array;
             } else if (field.getType().equals(Map.class) ||
                     containsInterface(field.getType().getInterfaces(), Map.class)) {
                 JSONObject mapObject = new JSONObject();
