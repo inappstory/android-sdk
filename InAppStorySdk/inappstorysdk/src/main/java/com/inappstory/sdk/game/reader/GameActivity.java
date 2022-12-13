@@ -635,6 +635,10 @@ public class GameActivity extends AppCompatActivity {
 
     private void closeGame() {
         if (closing) return;
+        if (manager == null || manager.storyId == null) {
+            finish();
+            return;
+        }
         ZipLoader.getInstance().terminate();
         closing = true;
         CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(manager.storyId),
