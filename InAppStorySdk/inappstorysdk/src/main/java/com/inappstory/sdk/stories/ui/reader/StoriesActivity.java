@@ -446,7 +446,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         int color = getIntent().getIntExtra(CS_READER_BACKGROUND_COLOR,
                 getResources().getColor(R.color.black)
         );
-        backTintView.setBackgroundColor(color);
+        if (backTintView != null)
+            backTintView.setBackgroundColor(color);
         storiesReaderSettings = new StoriesReaderSettings(
                 getIntent().getExtras()
         );
@@ -464,7 +465,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void closeStoryReader(int action) {
         if (closing) return;
-        backTintView.setVisibility(View.GONE);
+        if (backTintView != null)
+            backTintView.setVisibility(View.GONE);
         closing = true;
         InAppStoryService.getInstance().getListReaderConnector().closeReader();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
