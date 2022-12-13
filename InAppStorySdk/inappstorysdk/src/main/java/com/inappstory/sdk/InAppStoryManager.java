@@ -96,11 +96,15 @@ public class InAppStoryManager {
     public static boolean testGenerated = false;
 
     public static boolean isNull() {
-        return INSTANCE == null;
+        synchronized (lock) {
+            return INSTANCE == null;
+        }
     }
 
     public static void setInstance(InAppStoryManager manager) {
-        INSTANCE = manager;
+        synchronized (lock) {
+            INSTANCE = manager;
+        }
     }
 
     public Context getContext() {
@@ -873,13 +877,13 @@ public class InAppStoryManager {
         this.TEST_KEY = testKey;
         NetworkClient.setContext(context);
         this.userId = userId;
-        if (INSTANCE != null) {
+        if (!isNull()) {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
         }
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
-        INSTANCE = this;
+        setInstance(this);
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
@@ -891,9 +895,10 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().getDownloadManager().initDownloaders();
         }
     }
+    private static final Object lock = new Object();
 
     public static void logout() {
-        if (INSTANCE != null) {
+        if (!isNull()) {
             if (InAppStoryService.isNotNull()) {
                 InAppStoryService.getInstance().listStoriesIds.clear();
                 InAppStoryService.getInstance().getListSubscribers().clear();
@@ -910,7 +915,9 @@ public class InAppStoryManager {
     private static void localDestroy() {
 
         logout();
-        INSTANCE = null;
+        synchronized (lock) {
+            INSTANCE = null;
+        }
     }
 
 
@@ -931,7 +938,9 @@ public class InAppStoryManager {
      * @return current instance of {@link InAppStoryManager}
      */
     public static InAppStoryManager getInstance() {
-        return INSTANCE;
+        synchronized (lock) {
+            return INSTANCE;
+        }
     }
 
     /**
