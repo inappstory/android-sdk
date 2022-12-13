@@ -34,7 +34,8 @@ public class ZipLoader {
 
     }
 
-    private static volatile ZipLoader INSTANCE;
+    private static ZipLoader INSTANCE;
+    private static Object lock = new Object();
 
     public static String[] urlParts(String url) {
         String[] parts = url.split("/");
@@ -43,13 +44,11 @@ public class ZipLoader {
     }
 
     public static ZipLoader getInstance() {
-        if (INSTANCE == null) {
-            synchronized (ZipLoader.class) {
-                if (INSTANCE == null)
-                    INSTANCE = new ZipLoader();
-            }
+        synchronized (lock) {
+            if (INSTANCE == null)
+                INSTANCE = new ZipLoader();
+            return INSTANCE;
         }
-        return INSTANCE;
     }
 
     private static final ExecutorService downloadFileThread = Executors.newFixedThreadPool(1);

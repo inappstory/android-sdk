@@ -81,17 +81,16 @@ public class ScreensManager {
     private ScreensManager() {
 
     }
+    private static ScreensManager INSTANCE;
 
-    private static volatile ScreensManager INSTANCE;
+    private static Object lock = new Object();
 
     public static ScreensManager getInstance() {
-        if (INSTANCE == null) {
-            synchronized (ScreensManager.class) {
-                if (INSTANCE == null)
-                    INSTANCE = new ScreensManager();
-            }
+        synchronized (lock) {
+            if (INSTANCE == null)
+                INSTANCE = new ScreensManager();
+            return INSTANCE;
         }
-        return INSTANCE;
     }
 
 

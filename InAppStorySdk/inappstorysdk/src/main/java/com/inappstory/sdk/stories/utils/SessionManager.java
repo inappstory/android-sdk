@@ -33,16 +33,16 @@ import java.util.List;
 
 public class SessionManager {
 
-    private static volatile SessionManager INSTANCE;
+    private static SessionManager INSTANCE;
+
+    private static Object lock = new Object();
 
     public static SessionManager getInstance() {
-        if (INSTANCE == null) {
-            synchronized (SessionManager.class) {
-                if (INSTANCE == null)
-                    INSTANCE = new SessionManager();
-            }
+        synchronized (lock) {
+            if (INSTANCE == null)
+                INSTANCE = new SessionManager();
+            return INSTANCE;
         }
-        return INSTANCE;
     }
 
     public void useOrOpenSession(OpenSessionCallback callback) {
