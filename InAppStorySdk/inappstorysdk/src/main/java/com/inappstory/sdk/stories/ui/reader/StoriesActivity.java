@@ -129,6 +129,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     public void loadAnim() {
+        View backTintView = this.backTintView;
         if (backTintView != null) backTintView.setVisibility(View.GONE);
         try {
             isAnimation = true;
