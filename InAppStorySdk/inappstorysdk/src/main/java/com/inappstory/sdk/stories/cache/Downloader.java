@@ -136,7 +136,7 @@ public class Downloader {
 
 
     public static File getCoverVideo(@NonNull String url,
-                                     LruDiskCache cache) throws IOException {
+                                     LruDiskCache cache) {
         String key = cropUrl(url);
         if (cache.hasKey(key)) {
             return cache.get(key);
@@ -185,11 +185,7 @@ public class Downloader {
         File img = null;
         if (InAppStoryService.isNull()) return null;
         if (InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
-            try {
-                img = InAppStoryService.getInstance().getCommonCache().get(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            img = InAppStoryService.getInstance().getCommonCache().get(url);
         }
         if (img != null && img.exists()) {
             return img.getAbsolutePath();

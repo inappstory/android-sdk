@@ -89,12 +89,7 @@ public class ElementGenerator {
                 }
             }
         }
-        File fl = null;
-        try {
-            fl = InAppStoryService.getInstance().getCommonCache().get(prePath + imgPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        File fl = InAppStoryService.getInstance().getCommonCache().get(prePath + imgPath);
         if (fl == null) {
             ImageLoader.getInstance().displayImage(prePath + imgPath,
                     -1, (GeneratedImageView) generatedView.view,

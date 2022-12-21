@@ -8,6 +8,7 @@ import android.util.Base64;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 
@@ -100,15 +101,15 @@ public class WebPageConverter {
                 ImagePlaceholderValue placeholderValue = imgPlaceholders.get(placeholderName);
                 if (placeholderValue != null) {
                     String path = "";
-                    switch (placeholderValue.getType()) {
-                        case URL:
+                    if (placeholderValue.getType() == ImagePlaceholderType.URL) {
+                        try {
                             File file = cache.get(placeholderValue.getUrl());
                             if (file != null && file.exists() && file.length() > 0) {
                                 path = "file://" + file.getAbsolutePath();
                             }
-                            break;
-                        default:
-                            break;
+                        } catch (Exception e) {
+                            continue;
+                        }
                     }
                     innerWebData = innerWebData.replace(placeholderKey, path);
                 }

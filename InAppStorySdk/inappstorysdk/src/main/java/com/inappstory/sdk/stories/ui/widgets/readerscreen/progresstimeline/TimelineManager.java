@@ -61,19 +61,23 @@ public class TimelineManager {
                 for (int i = 0; i < timeline.getProgressBars().size(); i++) {
                     timeline.getProgressBars().get(i).stopInLooper();
                 }
-                //createCurrentAnimation(ind);
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (timeline.getProgressBars().size() < activeInd) return;
-                        for (int i = 0; i < activeInd; i++) {
-                            timeline.getProgressBars().get(i).setMax();
+                        try {
+                            TimelineProgressBar activeProgressBar = timeline.getProgressBars().get(activeInd);
+                            for (int i = 0; i < activeInd; i++) {
+                                timeline.getProgressBars().get(i).setMax();
+                            }
+                            for (int i = activeInd + 1; i < timeline.getProgressBars().size(); i++) {
+                                timeline.getProgressBars().get(i).clearInLooper();
+                            }
+                            activeProgressBar.setMin();
+                            activeProgressBar.createAnimation();
+                        } catch (Exception e) {
+
                         }
-                        for (int i = activeInd + 1; i < timeline.getProgressBars().size(); i++) {
-                            timeline.getProgressBars().get(i).clearInLooper();
-                        }
-                        timeline.getProgressBars().get(activeInd).setMin();
-                        timeline.getProgressBars().get(activeInd).createAnimation();
                     }
                 }, 100);
 
