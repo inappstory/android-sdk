@@ -150,19 +150,23 @@ public class LruDiskCache {
         }
     }
 
-    public File get(String key) throws IOException {
+    public File get(String key) {
         synchronized (journal) {
-            keyIsValid(key);
-            CacheJournalItem item = journal.get(key);
-            if (item != null) {
-                File file = new File(item.getName());
-                if (!file.exists()) {
-                    journal.delete(key, false);
-                    file = null;
+            try {
+                keyIsValid(key);
+                CacheJournalItem item = journal.get(key);
+                if (item != null) {
+                    File file = new File(item.getName());
+                    if (!file.exists()) {
+                        journal.delete(key, false);
+                        file = null;
+                    }
+                    journal.writeJournal();
+                    return file;
+                } else {
+                    return null;
                 }
-                journal.writeJournal();
-                return file;
-            } else {
+            } catch (Exception e) {
                 return null;
             }
         }

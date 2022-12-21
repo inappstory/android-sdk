@@ -178,11 +178,7 @@ public class Downloader {
         File img = null;
         if (InAppStoryService.isNull()) return null;
         if (InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
-            try {
-                img = InAppStoryService.getInstance().getCommonCache().get(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            img = InAppStoryService.getInstance().getCommonCache().get(url);
         }
         if (img != null && img.exists()) {
             return img.getAbsolutePath();
