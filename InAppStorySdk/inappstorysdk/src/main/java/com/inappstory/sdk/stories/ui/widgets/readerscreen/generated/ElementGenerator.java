@@ -92,7 +92,7 @@ public class ElementGenerator {
         File fl = null;
         try {
             fl = InAppStoryService.getInstance().getCommonCache().get(prePath + imgPath);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         if (fl == null) {

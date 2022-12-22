@@ -74,7 +74,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
         if (cache.hasKey(path)) {
             try {
                 fl = cache.get(path);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
