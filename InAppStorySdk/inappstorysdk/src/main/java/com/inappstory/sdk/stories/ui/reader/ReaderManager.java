@@ -151,7 +151,9 @@ public class ReaderManager {
     }
 
     void restartCurrentStory() {
-        getCurrentSubscriber().restartSlide();
+        ReaderPageManager subscriber = getCurrentSubscriber();
+        if (subscriber == null) return;
+        subscriber.restartSlide();
     }
 
     void onPageSelected(int source, int position) {
