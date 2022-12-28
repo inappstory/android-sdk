@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.reader.BothSideViewPager;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
@@ -113,11 +114,13 @@ public class ReaderPager extends BothSideViewPager {
         float pressedEndX = 0f;
         float pressedEndY = 0f;
         boolean distance = false;
+        int dir = getLayoutDirection();
+        InAppStoryManager.logger.showDLog("currentLayoutDirection", "Reader " + dir);
         boolean swipeLeftCondition = (getCurrentItem() ==
-                ((getLayoutDirection() == LAYOUT_DIRECTION_RTL) ?
+                ((dir == LAYOUT_DIRECTION_RTL) ?
                         0 : (getAdapter().getCount() - 1)));
         boolean swipeRightCondition = (getCurrentItem() ==
-                ((getLayoutDirection() == LAYOUT_DIRECTION_LTR) ?
+                ((dir == LAYOUT_DIRECTION_LTR) ?
                         0 : (getAdapter().getCount() - 1)));
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             pressedX = motionEvent.getX();

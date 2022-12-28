@@ -22,6 +22,7 @@ import android.webkit.WebViewClient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
+import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
@@ -118,8 +119,9 @@ public class IASWebView extends WebView {
 
     public String setDir(String html) {
         try {
-            int dir = getContext().getResources().getConfiguration().getLayoutDirection();
+            int dir = ViewCompat.getLayoutDirection(this);
             String dirString = (dir == View.LAYOUT_DIRECTION_RTL) ? "rtl" : "ltr";
+            InAppStoryManager.logger.showDLog("currentLayoutDirection", "WebView " + dir);
             return html.replace("{{%dir}}", dirString);
         } catch (Exception e) {
             return html;
