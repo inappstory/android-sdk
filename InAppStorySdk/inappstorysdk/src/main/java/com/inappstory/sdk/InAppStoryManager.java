@@ -452,25 +452,25 @@ public class InAppStoryManager {
     /**
      * use to customize default strings in stories runtime.
      *
-     * @param placeholders (placeholders) - key-value map (key - what we replace, value - replacement result)
+     * @param newPlaceholders (newPlaceholders) - key-value map (key - what we replace, value - replacement result)
      */
-    public void setPlaceholders(@NonNull Map<String, String> placeholders) {
+    public void setPlaceholders(@NonNull Map<String, String> newPlaceholders) {
         synchronized (placeholdersLock) {
             if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
             if (this.placeholders == null)
                 this.placeholders = new HashMap<>();
             else
                 this.placeholders.clear();
-            for (String key : placeholders.keySet()) {
-                String value = placeholders.get(key);
+            for (String key : newPlaceholders.keySet()) {
+                String value = newPlaceholders.get(key);
                 if (value == null) {
                     if (defaultPlaceholders.containsKey(key)) {
-                        placeholders.put(key, defaultPlaceholders.get(key));
+                        this.placeholders.put(key, defaultPlaceholders.get(key));
                     } else {
-                        placeholders.remove(key);
+                        this.placeholders.remove(key);
                     }
                 } else {
-                    placeholders.put(key, value);
+                    this.placeholders.put(key, value);
                 }
             }
         }
