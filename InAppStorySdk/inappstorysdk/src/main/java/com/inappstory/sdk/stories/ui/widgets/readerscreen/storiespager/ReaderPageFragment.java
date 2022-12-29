@@ -385,6 +385,7 @@ public class ReaderPageFragment extends Fragment {
             main = new CardView(context);
             main.setLayoutParams(contentLP);
             ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius));
+            ((CardView) main).setCardBackgroundColor(Color.TRANSPARENT);
             main.setElevation(0);
             RelativeLayout cardContent = new RelativeLayout(context);
             cardContent.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,

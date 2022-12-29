@@ -390,12 +390,15 @@ public class ReaderPageManager {
     }
 
     public void changeCurrentSlide() {
+        if (durations == null) return;
+        List<Integer> localDurations = new ArrayList<>(durations);
+        if (localDurations.size() < slideIndex) return;
         ProfilingManager.getInstance().addTask("slide_show",
                 storyId + "_" + slideIndex);
         isPaused = false;
         timelineManager.setCurrentSlide(slideIndex);
         timerManager.stopTimer();
-        timerManager.setCurrentDuration(durations.get(slideIndex));
+        timerManager.setCurrentDuration(localDurations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
         InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId,
                 parentManager.storyType);
