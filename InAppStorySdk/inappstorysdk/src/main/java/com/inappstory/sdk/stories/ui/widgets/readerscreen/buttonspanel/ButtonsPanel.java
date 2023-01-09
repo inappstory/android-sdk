@@ -202,22 +202,7 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     public void soundClick() {
-        sound.setEnabled(false);
-        sound.setClickable(false);
-        manager.soundClick(new ButtonClickCallback() {
-            @Override
-            public void onSuccess(int val) {
-                sound.setEnabled(true);
-                sound.setClickable(true);
-                sound.setActivated(val == 1);
-            }
-
-            @Override
-            public void onError() {
-                sound.setEnabled(true);
-                sound.setClickable(true);
-            }
-        });
+        manager.soundClick();
     }
 
     public void shareClick() {
