@@ -830,14 +830,14 @@ public class InAppStoryManager {
         return userId;
     }
 
-    private void clearCachedList(String id) {
+    public void clearCachedList(String id) {
         if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().listStoriesIds.remove(id);
         }
     }
 
 
-    private void clearCachedLists() {
+    public void clearCachedLists() {
         if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().listStoriesIds.clear();
         }

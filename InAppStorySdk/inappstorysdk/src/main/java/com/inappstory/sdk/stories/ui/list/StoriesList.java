@@ -450,7 +450,7 @@ public class StoriesList extends RecyclerView {
 
     private String cacheId;
 
-    private void setCacheId(String id) {
+    public void setCacheId(String id) {
         this.cacheId = id;
     }
 

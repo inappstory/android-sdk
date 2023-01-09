@@ -171,6 +171,14 @@ public class ReaderManager {
         subscriber.restartSlide();
     }
 
+    public void updateSoundStatus() {
+        synchronized (subscribers) {
+            for (ReaderPageManager pageManager : subscribers) {
+                pageManager.updateSoundStatus();
+            }
+        }
+    }
+
     void onPageSelected(int source, int position) {
         if (InAppStoryService.isNull()) return;
         sendStat(position, source);

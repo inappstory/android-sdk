@@ -210,15 +210,16 @@ public class ButtonsPanelManager {
 
     ButtonsPanel panel;
 
-    public void soundClick(ButtonClickCallback callback) {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().changeSoundStatus();
+    public void soundClick() {//ButtonClickCallback callback) {
         parentManager.changeSoundStatus();
+        // CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryService.getInstance().isSoundOn(), storyId));
+        /*if (callback != null)
+            callback.onSuccess(InAppStoryService.getInstance().isSoundOn() ? 1 : 0);*/
+    }
+
+    public void refreshSoundStatus() {
         if (panel != null)
             panel.refreshSoundStatus();
-        // CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryService.getInstance().isSoundOn(), storyId));
-        if (callback != null)
-            callback.onSuccess(InAppStoryService.getInstance().isSoundOn() ? 1 : 0);
     }
 
     public abstract static class ShareButtonClickCallback implements ButtonClickCallback {
