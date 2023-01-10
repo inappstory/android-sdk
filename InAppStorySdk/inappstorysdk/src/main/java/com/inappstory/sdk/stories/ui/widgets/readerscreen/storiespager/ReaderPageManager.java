@@ -426,10 +426,17 @@ public class ReaderPageManager {
     }
 
     public void changeSoundStatus() {
-        // buttonsPanelManager.refreshSoundStatus();
-        webViewManager.changeSoundStatus();
+        if (InAppStoryService.isNull()) return;
+        InAppStoryService.getInstance().changeSoundStatus();
+        if (parentManager != null) {
+            parentManager.updateSoundStatus();
+        }
     }
 
+    public void updateSoundStatus() {
+        buttonsPanelManager.refreshSoundStatus();
+        webViewManager.changeSoundStatus();
+    }
 
     public void slideLoadedInCache(int index) {
         slideLoadedInCache(index, false);

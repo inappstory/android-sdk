@@ -150,6 +150,14 @@ public class ReaderManager {
 
     }
 
+    public void updateSoundStatus() {
+        synchronized (subscribers) {
+            for (ReaderPageManager pageManager : subscribers) {
+                pageManager.updateSoundStatus();
+            }
+        }
+    }
+
     void restartCurrentStory() {
         ReaderPageManager subscriber = getCurrentSubscriber();
         if (subscriber == null) return;
