@@ -2,7 +2,10 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -53,6 +56,7 @@ public class Timeline extends LinearLayout {
     }
 
     private void init() {
+        setVisibility(INVISIBLE);
         setOrientation(LinearLayout.HORIZONTAL);
         bindViews();
         timelineManager = new TimelineManager();
@@ -71,22 +75,51 @@ public class Timeline extends LinearLayout {
     }
 
     public void setDurations(List<Integer> durations) {
-        this.durations = durations;
+        if (durations == null) return;
+        synchronized (lock) {
+            this.durations = durations;
+        }
+        checkTimelineVisibility();
         if (progressBars != null && progressBars.size() == durations.size()) {
             for (int i = 0; i < progressBars.size(); i++) {
                 setSlideDuration(i);
             }
         }
+        Log.e("durations", durations.toString());
+    }
 
+    private void checkTimelineVisibility() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (lock) {
+                    if (durations.isEmpty()) {
+                        setVisibility(INVISIBLE);
+                    } else if (durations.size() == 1) {
+                        if (durations.get(0) == 0)
+                            setVisibility(INVISIBLE);
+                        else {
+                            setVisibility(VISIBLE);
+                        }
+                    } else {
+                        setVisibility(VISIBLE);
+                    }
+                }
+            }
+        });
     }
 
     List<Integer> durations;
 
+    private final Object lock = new Object();
+
     ValueAnimator curAnimation;
 
-    public void setSlideDuration(int index) {
-        if (durations != null && progressBars.size() > index && durations.size() > index) {
-            progressBars.get(index).setDuration(1L * durations.get(index));
+    private void setSlideDuration(int index) {
+        synchronized (lock) {
+            if (durations != null && progressBars.size() > index && durations.size() > index) {
+                progressBars.get(index).setDuration(1L * durations.get(index));
+            }
         }
     }
 
