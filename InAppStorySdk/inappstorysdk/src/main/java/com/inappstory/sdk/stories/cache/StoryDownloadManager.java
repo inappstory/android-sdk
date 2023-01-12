@@ -436,10 +436,13 @@ public class StoryDownloadManager {
         }
         cur.id = id;
         cur.layout = story.layout;
+        cur.tags = story.tags;
         cur.title = story.title;
         cur.srcList = new ArrayList<>(story.getSrcList());
         cur.imagePlaceholdersList = new ArrayList<>(story.getImagePlaceholdersList());
         cur.durations = new ArrayList<>(story.durations);
+        cur.slidesShare = story.slidesShare;
+        cur.slidesPayload = story.slidesPayload;
         if (!cur.durations.isEmpty()) {
             cur.setSlidesCount(story.durations.size());
         } else {
