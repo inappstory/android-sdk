@@ -115,7 +115,7 @@ public class ReaderPager extends BothSideViewPager {
         float pressedEndY = 0f;
         boolean distance = false;
         int dir = getLayoutDirection();
-        InAppStoryManager.logger.showDLog("currentLayoutDirection", "Reader " + dir);
+        InAppStoryManager.showDLog("currentLayoutDirection", "Reader " + dir);
         boolean swipeLeftCondition = (getCurrentItem() ==
                 ((dir == LAYOUT_DIRECTION_RTL) ?
                         0 : (getAdapter().getCount() - 1)));
