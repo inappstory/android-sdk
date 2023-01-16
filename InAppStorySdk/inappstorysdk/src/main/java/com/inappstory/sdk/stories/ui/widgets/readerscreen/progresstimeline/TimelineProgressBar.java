@@ -175,7 +175,6 @@ public class TimelineProgressBar extends FrameLayout {
             public void run() {
                 if (duration == null || duration == 0) return;
                 long dur = (long) (getDuration() * Math.max(0f, 1f - progressForeground.getScaleX()));
-                InAppStoryManager.showDLog("jsDuration", getDuration() + " " + (1f - progressForeground.getScaleX()));
                 progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {

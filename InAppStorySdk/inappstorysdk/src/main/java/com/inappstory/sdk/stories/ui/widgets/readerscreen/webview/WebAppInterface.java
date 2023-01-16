@@ -105,7 +105,6 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyShowNextSlide(long delay) {
         if (delay != 0) {
-            InAppStoryManager.showDLog("jsDuration", delay + " showNext");
             manager.restartStoryWithDuration(delay);
         } else {
             manager.changeIndex(manager.index + 1);
