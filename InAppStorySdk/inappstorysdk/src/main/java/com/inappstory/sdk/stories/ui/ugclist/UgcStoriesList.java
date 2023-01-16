@@ -343,9 +343,9 @@ public class UgcStoriesList extends RecyclerView {
         loadStoriesLocal(JsonParser.mapToJsonString(filter));
     }
 
-    private String cacheId;
+    public String cacheId;
 
-    private void setCacheId(String id) {
+    public void setCacheId(String id) {
         this.cacheId = id;
     }
 
