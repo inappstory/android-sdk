@@ -121,7 +121,6 @@ public class IASWebView extends WebView {
         try {
             int dir = ViewCompat.getLayoutDirection(this);
             String dirString = (dir == View.LAYOUT_DIRECTION_RTL) ? "rtl" : "ltr";
-            InAppStoryManager.logger.showDLog("currentLayoutDirection", "WebView " + dir);
             return html.replace("{{%dir}}", dirString);
         } catch (Exception e) {
             return html;
