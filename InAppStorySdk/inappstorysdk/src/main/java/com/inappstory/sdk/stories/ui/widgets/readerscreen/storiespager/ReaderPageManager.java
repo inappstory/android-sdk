@@ -32,21 +32,28 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
+    private boolean checkIfManagersIsNull() {
+        return webViewManager == null || timerManager == null
+                || timelineManager == null || buttonsPanelManager == null;
+    }
 
     public void removeStoryFromFavorite() {
-        if (buttonsPanelManager != null)
-            buttonsPanelManager.removeStoryFromFavorite();
+        if (checkIfManagersIsNull()) return;
+        buttonsPanelManager.removeStoryFromFavorite();
     }
 
     public void screenshotShare() {
+        if (checkIfManagersIsNull()) return;
         webViewManager.screenshotShare();
     }
 
     public void swipeUp() {
+        if (checkIfManagersIsNull()) return;
         webViewManager.swipeUp();
     }
 
     public void gameComplete(String data) {
+        if (checkIfManagersIsNull()) return;
         webViewManager.gameComplete(data);
     }
 
@@ -70,6 +77,7 @@ public class ReaderPageManager {
 
     public void setSlideIndex(int slideIndex) {
 
+        if (checkIfManagersIsNull()) return;
         this.slideIndex = slideIndex;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         timelineManager.setCurrentSlide(slideIndex);
@@ -83,6 +91,7 @@ public class ReaderPageManager {
     int slideIndex;
 
     public void shareComplete(String id, boolean isSuccess) {
+        if (checkIfManagersIsNull()) return;
         webViewManager.shareComplete(id, isSuccess);
     }
 
@@ -197,6 +206,7 @@ public class ReaderPageManager {
     }
 
     public void startStoryTimers() {
+        if (checkIfManagersIsNull()) return;
         isPaused = false;
         timelineManager.setCurrentSlide(slideIndex);
         timelineManager.start();
@@ -206,8 +216,8 @@ public class ReaderPageManager {
     }
 
     public void storyOpen(int storyId) {
+        if (checkIfManagersIsNull()) return;
         isPaused = false;
-        if (webViewManager == null) return;
         if (storyId != this.storyId) {
             webViewManager.stopStory();
             timerManager.stopTimer();
@@ -220,8 +230,8 @@ public class ReaderPageManager {
 
 
     public void stopStory(int currentId) {
+        if (checkIfManagersIsNull()) return;
         if (currentId == storyId) return;
-        if (webViewManager == null) return;
         webViewManager.stopStory();
         timelineManager.stop();
         timerManager.stopTimer();
@@ -230,8 +240,8 @@ public class ReaderPageManager {
     }
 
     public void pauseSlide(boolean withBackground) {
+        if (checkIfManagersIsNull()) return;
         if (!withBackground && isPaused) return;
-        if (webViewManager == null) return;
         isPaused = true;
         timelineManager.pause();
         if (withBackground) {
@@ -245,8 +255,8 @@ public class ReaderPageManager {
     boolean isPaused;
 
     public void resumeSlide(boolean withBackground) {
+        if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
-        if (webViewManager == null) return;
         isPaused = false;
         timelineManager.resume();
         if (withBackground) {
@@ -258,6 +268,7 @@ public class ReaderPageManager {
     }
 
     public void restartSlide() {
+        if (checkIfManagersIsNull()) return;
         //webViewManager.restartStory();
         if (durations.size() <= slideIndex) return;
         timelineManager.setStoryDurations(durations, false);
@@ -269,6 +280,7 @@ public class ReaderPageManager {
     List<Integer> durations = new ArrayList<>();
 
     public void setStoryInfo(Story story) {
+        if (checkIfManagersIsNull()) return;
         //webViewManager.setIndex(story.lastIndex);
         timelineManager.setSlidesCount(story.getSlidesCount());
         this.durations = new ArrayList<>();
@@ -281,6 +293,7 @@ public class ReaderPageManager {
     }
 
     public void loadStoryAndSlide(int storyId, int slideIndex) {
+        if (checkIfManagersIsNull()) return;
         webViewManager.loadStory(storyId, slideIndex);
     }
 
@@ -308,6 +321,7 @@ public class ReaderPageManager {
     }
 
     public void restartCurrentWithDuration(long duration) {
+        if (checkIfManagersIsNull()) return;
         if (durations.size() <= slideIndex) return;
         durations.set(slideIndex, (int) duration);
         if (parentManager != null && parentManager.getCurrentStoryId() == storyId) {
@@ -319,6 +333,7 @@ public class ReaderPageManager {
 
 
     public void resetCurrentDuration() {
+        if (checkIfManagersIsNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
 
         if (story == null) return;
@@ -335,17 +350,20 @@ public class ReaderPageManager {
                 parentManager.showGoods(skus, widgetId, new ShowGoodsCallback() {
                     @Override
                     public void onPause() {
+                        if (checkIfManagersIsNull()) return;
                         parentManager.pause();
                     }
 
                     @Override
                     public void onResume(String widgetId) {
+                        if (checkIfManagersIsNull()) return;
                         parentManager.resume();
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
 
                     @Override
                     public void onEmptyResume(String widgetId) {
+                        if (checkIfManagersIsNull()) return;
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
                 }, storyId, slideIndex);
@@ -354,16 +372,19 @@ public class ReaderPageManager {
     }
 
     public void nextStory() {
+        if (checkIfManagersIsNull()) return;
         timerManager.setTimerDuration(0);
         parentManager.nextStory();
     }
 
     public void prevStory() {
+        if (checkIfManagersIsNull()) return;
         timerManager.setTimerDuration(0);
         parentManager.prevStory();
     }
 
     public void nextSlide() {
+        if (checkIfManagersIsNull()) return;
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
 
@@ -382,6 +403,7 @@ public class ReaderPageManager {
     }
 
     public void changeCurrentSlide() {
+        if (checkIfManagersIsNull()) return;
         if (durations == null) return;
         List<Integer> localDurations = new ArrayList<>(durations);
         if (localDurations.size() < slideIndex) return;
@@ -405,6 +427,7 @@ public class ReaderPageManager {
     ReaderManager parentManager;
 
     public void prevSlide() {
+        if (checkIfManagersIsNull()) return;
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
 
@@ -434,6 +457,7 @@ public class ReaderPageManager {
     }
 
     public void updateSoundStatus() {
+        if (checkIfManagersIsNull()) return;
         buttonsPanelManager.refreshSoundStatus();
         webViewManager.changeSoundStatus();
     }
@@ -444,7 +468,7 @@ public class ReaderPageManager {
 
     public void slideLoadedInCache(int index, boolean alreadyLoaded) {
         if (slideIndex == index) {
-            if (webViewManager == null) return;
+            if (checkIfManagersIsNull()) return;
             webViewManager.storyLoaded(storyId, index, alreadyLoaded);
             host.storyLoadedSuccess();
         }
@@ -490,6 +514,7 @@ public class ReaderPageManager {
 
     public void storyLoadedInCache() {
         if (InAppStoryService.isNull()) return;
+        if (checkIfManagersIsNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId);
         if (story == null) return;
         if (story.durations != null && !story.durations.isEmpty()) {
