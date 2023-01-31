@@ -306,7 +306,7 @@ public class ReaderPageManager {
         story.setLastIndex(index);
         if (slideIndex != index) {
             slideIndex = index;
-            changeCurrentSlide();
+            changeCurrentSlide(index);
         }
     }
 
@@ -390,23 +390,24 @@ public class ReaderPageManager {
 
         if (story == null) return;
         timerManager.setTimerDuration(0);
-
-        if (slideIndex < story.getSlidesCount() - 1) {
+        int lastIndex = slideIndex;
+        if (lastIndex < story.getSlidesCount() - 1) {
             if (webViewManager == null) return;
             webViewManager.stopStory();
-            slideIndex++;
-            story.setLastIndex(slideIndex);
-            changeCurrentSlide();
+            lastIndex++;
+            story.setLastIndex(lastIndex);
+            changeCurrentSlide(lastIndex);
+            slideIndex = lastIndex;
         } else {
             parentManager.nextStory();
         }
     }
 
-    public void changeCurrentSlide() {
+    public void changeCurrentSlide(int slideIndex) {
         if (checkIfManagersIsNull()) return;
         if (durations == null) return;
         List<Integer> localDurations = new ArrayList<>(durations);
-        if (localDurations.size() < slideIndex) return;
+        if (localDurations.size() <= slideIndex) return;
         ProfilingManager.getInstance().addTask("slide_show",
                 storyId + "_" + slideIndex);
         isPaused = false;
@@ -433,12 +434,14 @@ public class ReaderPageManager {
 
         if (story == null) return;
         timerManager.setTimerDuration(0);
-        if (slideIndex > 0) {
+        int lastIndex = slideIndex;
+        if (lastIndex > 0) {
             if (webViewManager == null) return;
             webViewManager.stopStory();
-            slideIndex--;
-            story.setLastIndex(slideIndex);
-            changeCurrentSlide();
+            lastIndex--;
+            story.setLastIndex(lastIndex);
+            changeCurrentSlide(lastIndex);
+            slideIndex = lastIndex;
         } else {
             parentManager.prevStory();
         }
