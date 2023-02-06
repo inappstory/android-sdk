@@ -33,6 +33,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:elevation="8dp"
+                    android:id="@+id/cell_gradient"
                     android:layout_height="match_parent"
                     android:background="@drawable/story_gradient_black" />
                 <androidx.appcompat.widget.AppCompatImageView

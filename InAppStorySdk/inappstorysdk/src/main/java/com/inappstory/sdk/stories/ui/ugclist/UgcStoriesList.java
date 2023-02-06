@@ -383,6 +383,8 @@ public class UgcStoriesList extends RecyclerView {
 
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
         checkAppearanceManager();
+        setOverScrollMode(getAppearanceManager().csListOverscroll() ?
+                OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
         adapter = new UgcStoriesAdapter(getContext(),
                 uniqueID,
                 storiesIds,

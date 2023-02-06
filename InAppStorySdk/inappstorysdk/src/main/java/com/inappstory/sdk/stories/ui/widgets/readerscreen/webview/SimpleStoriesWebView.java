@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
 import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
@@ -328,10 +329,17 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("goods_widget_complete " + widgetId);
     }
 
+    private boolean checkIfParentsHasCubeAnimation(ViewParent view) {
+        if (view == null) return false;
+        if (view instanceof ReaderPager) {
+            return ((ReaderPager) view).cubeAnimation;
+        }
+        return checkIfParentsHasCubeAnimation(view.getParentForAccessibility());
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
-        //if (!InAppStoryService.isConnected()) return true;
+        if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
 
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:

@@ -481,10 +481,14 @@ public class StoriesList extends RecyclerView {
         if (this.appearanceManager == null) {
             this.appearanceManager = new AppearanceManager();
         }
+
     }
 
     private void setOrRefreshAdapter(List<Integer> storiesIds) {
         checkAppearanceManager();
+
+        setOverScrollMode(getAppearanceManager().csListOverscroll() ?
+                OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
         adapter = new StoriesAdapter(getContext(),
                 uniqueID,
                 storiesIds,

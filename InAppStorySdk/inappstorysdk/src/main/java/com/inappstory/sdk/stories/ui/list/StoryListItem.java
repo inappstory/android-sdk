@@ -35,6 +35,7 @@ public class StoryListItem extends BaseStoryListItem {
     protected VideoPlayer video;
     protected AppCompatImageView hasAudioIcon;
     protected View border;
+    protected View gradient;
     public boolean isOpened;
     public boolean hasVideo;
 
@@ -77,6 +78,8 @@ public class StoryListItem extends BaseStoryListItem {
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
+            gradient = v.findViewById(R.id.cell_gradient);
+            gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
             title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
@@ -107,6 +110,8 @@ public class StoryListItem extends BaseStoryListItem {
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
             cv.setRadius(manager.csListItemRadius());
+            gradient = v.findViewById(R.id.cell_gradient);
+            gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);

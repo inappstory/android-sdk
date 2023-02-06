@@ -102,11 +102,14 @@ public class AppearanceManager {
     private ICustomGoodsWidget csCustomGoodsWidget;
     private ICustomGoodsItem csCustomGoodsItem;
 
+    private boolean csListOverscroll = true;
+
     private boolean csHasLike;
     private boolean csHasFavorite;
     private boolean csHasUGC;
     private boolean csHasShare;
     private boolean csTimerGradientEnable = true;
+    private boolean csListItemGradientEnable = true;
 
     private int csFavoriteIcon;
     private int csLikeIcon;
@@ -290,10 +293,13 @@ public class AppearanceManager {
         return csTimerGradientEnable;
     }
 
+    public boolean csListItemGradientEnable() {
+        return csListItemGradientEnable;
+    }
+
     public Typeface csCustomFont() {
         return csCustomFont;
     }
-
 
 
     public Typeface csCustomBoldFont() {
@@ -367,6 +373,11 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    public AppearanceManager csListOverscroll(boolean csListOverscroll) {
+        this.csListOverscroll = csListOverscroll;
+        return AppearanceManager.this;
+    }
+
     public StoryTouchListener csStoryTouchListener() {
         return this.storyTouchListener;
     }
@@ -405,6 +416,10 @@ public class AppearanceManager {
     public boolean csHasFavorite() {
         return csHasFavorite;
 
+    }
+
+    public boolean csListOverscroll() {
+        return csListOverscroll;
     }
 
     public boolean csHasUGC() {
@@ -464,6 +479,19 @@ public class AppearanceManager {
      */
     public AppearanceManager csTimerGradientEnable(boolean gradientEnable) {
         this.csTimerGradientEnable = gradientEnable;
+        return AppearanceManager.this;
+    }
+
+    /**
+     * use to turn on/off gradient in stories list cells (for non-custom)
+     *
+     * @param gradientEnable (gradientEnable) true - to use this feature
+     *                       true by default
+     * @return {@link AppearanceManager}
+     */
+
+    public AppearanceManager csListItemGradientEnable(boolean gradientEnable) {
+        this.csListItemGradientEnable = gradientEnable;
         return AppearanceManager.this;
     }
 
@@ -863,7 +891,6 @@ public class AppearanceManager {
     public ICustomGoodsWidget csCustomGoodsWidget() {
         return csCustomGoodsWidget;
     }
-
 
 
     public AppearanceManager csCustomGoodsWidget(ICustomGoodsWidget csCustomGoodsWidget) {
