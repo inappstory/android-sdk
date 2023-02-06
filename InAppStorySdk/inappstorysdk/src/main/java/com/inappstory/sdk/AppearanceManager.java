@@ -74,13 +74,6 @@ public class AppearanceManager {
     public static final int ANIMATION_COVER = 3;
     public static final int ANIMATION_FLAT = 4;
 
-    private boolean csListItemTitleVisibility = true;
-    private int csListItemTitleSize = -1;
-    private int csListItemTitleColor = Color.WHITE;
-
-
-    private int csListItemRadius = -1;
-
     public AppearanceManager clone() {
         return new AppearanceManager(this);
     }
@@ -146,6 +139,15 @@ public class AppearanceManager {
         this.csStoryReaderAnimation = other.csStoryReaderAnimation;
         this.csIsDraggable = other.csIsDraggable;
     }
+
+
+
+    private boolean csListItemTitleVisibility = true;
+    private int csListItemTitleSize = -1;
+    private int csListItemTitleColor = Color.WHITE;
+
+
+    private int csListItemRadius = -1;
 
     private boolean csListItemSourceVisibility = false;
     private int csListItemSourceSize = -1;
