@@ -33,14 +33,17 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     String readerSettings;
 
     ReaderManager manager;
+    int source = 0;
 
     public ReaderPagerAdapter(@NonNull FragmentManager fm,
+                              int source,
                               String readerSettings,
                               Serializable timerGradient,
                               List<Integer> ids,
                               ReaderManager manager) {
         super(fm);
         this.storiesIds.clear();
+        this.source = source;
         this.storiesIds.addAll(ids);
         this.readerSettings = readerSettings;
         this.timerGradient = timerGradient;
@@ -58,7 +61,6 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
             return new Bundle();
         }
     }
-
 
 
     public int getItemId(int position) {
@@ -80,6 +82,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         ReaderPageFragment frag = new ReaderPageFragment();
         Bundle a = new Bundle();
         a.putInt("story_id", storiesIds.get(position));
+        a.putInt("source", source);
         a.putString(CS_READER_SETTINGS, readerSettings);
         a.putSerializable(CS_TIMER_GRADIENT, timerGradient);
         frag.setArguments(a);

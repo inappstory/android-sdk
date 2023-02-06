@@ -84,7 +84,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void onPageSelected(int position) {
         if (isDestroyed) return;
 
-        readerManager.onPageSelected(getArguments().getInt("source", 0), position);
+        readerManager.onPageSelected(source, position);
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
@@ -173,7 +173,9 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 Story.StoryType.valueOf(getArguments().getString("storiesType", Story.StoryType.COMMON.name()));
         readerManager = new ReaderManager(arguments.getString("listID", null),
                 arguments.getString("feedId", null),
-                arguments.getString("feedSlug", null), type);
+                arguments.getString("feedSlug", null), type,
+                arguments.getInt("source", 0));
+
         if (currentIds != null && !currentIds.isEmpty()) {
             readerManager.setStoriesIds(currentIds);
             readerManager.firstStoryId = currentIds.get(ind);
@@ -206,6 +208,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);
     }
 
+    int source = 0;
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -217,10 +221,11 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         storiesViewPager.setParameters(readerAnimation);
-
+        source = (getArguments() != null) ? getArguments().getInt("source", 0) : 0;
         outerViewPagerAdapter =
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
+                        source,
                         readerSettings,
                         timerGradient,
                         currentIds, readerManager);

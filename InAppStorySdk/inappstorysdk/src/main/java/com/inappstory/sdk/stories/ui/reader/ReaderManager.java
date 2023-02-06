@@ -28,14 +28,36 @@ public class ReaderManager {
     private String listID;
     public Story.StoryType storyType;
 
+    public int source = 0;
+
     public ReaderManager() {
     }
 
-    public ReaderManager(String listID, String feedId, String feedSlug, Story.StoryType storyType) {
+    public ReaderManager(String listID, String feedId, String feedSlug, Story.StoryType storyType, int source) {
         this.listID = listID;
         this.feedId = feedId;
         this.feedSlug = feedSlug;
         this.storyType = storyType;
+        this.source = source;
+    }
+
+    private int lastSentId = 0;
+
+    public void sendShowStoryEvents(int storyId) {
+        if (InAppStoryService.getInstance() == null || InAppStoryService.getInstance().getDownloadManager() == null)
+            return;
+        if (lastSentId == storyId) return;
+        lastSentId = storyId;
+        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, storyType);
+        if (story != null) {
+            CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags,
+                    story.getSlidesCount(), source));
+            if (CallbackManager.getInstance().getShowStoryCallback() != null) {
+                CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, StringsUtils.getNonNull(story.title),
+                        StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
+                        CallbackManager.getInstance().getSourceFromInt(source));
+            }
+        }
     }
 
     public void close() {
@@ -184,7 +206,7 @@ public class ReaderManager {
         sendStat(position, source);
 
         lastPos = position;
-
+        lastSentId = 0;
         currentStoryId = storiesIds.get(position);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId, storyType);
         if (story != null) {
@@ -192,14 +214,6 @@ public class ReaderManager {
                 if (story.getSlidesCount() > startedSlideInd)
                     story.lastIndex = startedSlideInd;
                 cleanFirst();
-            }
-            CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags,
-                    story.getSlidesCount(), source));
-
-            if (CallbackManager.getInstance().getShowStoryCallback() != null) {
-                CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, StringsUtils.getNonNull(story.title),
-                        StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                        CallbackManager.getInstance().getSourceFromInt(source));
             }
 
             ProfilingManager.getInstance().addTask("slide_show",

@@ -436,6 +436,12 @@ public class ReaderPageManager {
 
     ReaderManager parentManager;
 
+    public void sendShowStoryEvents(int storyId) {
+        if (parentManager != null) {
+            parentManager.sendShowStoryEvents(storyId);
+        }
+    }
+
     public void prevSlide() {
         if (checkIfManagersIsNull()) return;
         if (InAppStoryService.isNull()) return;
@@ -506,6 +512,7 @@ public class ReaderPageManager {
 
     public void setWebViewManager(StoriesViewManager webViewManager, int storyId) {
         webViewManager.setPageManager(this);
+        webViewManager.source = parentManager.source;
         this.webViewManager = webViewManager;
         this.webViewManager.setStoryId(storyId);
     }

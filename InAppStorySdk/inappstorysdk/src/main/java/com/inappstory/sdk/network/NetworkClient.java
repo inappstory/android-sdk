@@ -153,9 +153,9 @@ public class NetworkClient {
     public static String getUAString(Context context) {
         String userAgent = "";
         if (context == null) return "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                + " " + System.getProperty("http.agent");
-        String agentString = System.getProperty("http.agent");
-        if (agentString != null && !agentString.isEmpty()) {
+                + " " + getSystemUA();
+        String agentString = getSystemUA();
+        if (!agentString.isEmpty()) {
             int appVersion = BuildConfig.VERSION_CODE;
             String appVersionName = BuildConfig.VERSION_NAME;
             String appPackageName = "";
@@ -169,7 +169,7 @@ public class NetworkClient {
                 e.printStackTrace();
             }
             userAgent = "InAppStorySDK/" + BuildConfig.VERSION_CODE
-                    + " " + System.getProperty("http.agent") + " " + "Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
+                    + " " + agentString + " " + "Application/" + appVersion + " (" + appPackageName + " " + appVersionName + ")";
         } else {
             userAgent = getDefaultUserAgentString(context);
         }
@@ -182,6 +182,11 @@ public class NetworkClient {
             }
         }
         return finalUA;
+    }
+
+    private static String getSystemUA() {
+        String res = System.getProperty("http.agent");
+        return (res != null) ? res.trim() : "";
     }
 
     //Test

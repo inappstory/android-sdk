@@ -27,6 +27,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outerevents.ShowSlide;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -400,6 +401,12 @@ public class StoriesViewManager {
         }
     }
 
+
+    private void sendShowStoryEvents() {
+        if (pageManager != null)
+            pageManager.sendShowStoryEvents(storyId);
+    }
+
     public void sendShowSlideEvents() {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
@@ -450,6 +457,8 @@ public class StoriesViewManager {
         }
     }
 
+    public int source = 0;
+
     public void storySendData(String data) {
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, Session.getInstance().id)
@@ -476,6 +485,7 @@ public class StoriesViewManager {
 
     public void playStory() {
         if (storyIsLoaded) {
+            sendShowStoryEvents();
             sendShowSlideEvents();
             storiesView.playVideo();
         }
