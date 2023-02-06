@@ -81,6 +81,72 @@ public class AppearanceManager {
 
     private int csListItemRadius = -1;
 
+    public AppearanceManager clone() {
+        return new AppearanceManager(this);
+    }
+
+    public AppearanceManager() {
+    }
+
+    public AppearanceManager(AppearanceManager other) {
+        this.csListItemTitleVisibility = other.csListItemTitleVisibility;
+        this.csListItemTitleSize = other.csListItemTitleSize;
+        this.csListItemTitleColor = other.csListItemTitleColor;
+        this.csListItemRadius = other.csListItemRadius;
+        this.csListItemSourceVisibility = other.csListItemSourceVisibility;
+        this.csListItemSourceSize = other.csListItemSourceSize;
+        this.csListItemSourceColor = other.csListItemSourceColor;
+        this.csListItemWidth = other.csListItemWidth;
+        this.csListItemHeight = other.csListItemHeight;
+        this.csListItemBorderVisibility = other.csListItemBorderVisibility;
+        this.csListItemBorderColor = other.csListItemBorderColor;
+        this.csFavoriteListItemInterface = other.csFavoriteListItemInterface;
+        this.csListItemInterface = other.csListItemInterface;
+        this.csListUGCItemInterface = other.csListUGCItemInterface;
+        this.csLoaderView = other.csLoaderView;
+        this.csGameLoaderView = other.csGameLoaderView;
+        this.storyTouchListener = other.storyTouchListener;
+        this.csCustomGoodsWidget = other.csCustomGoodsWidget;
+        this.csCustomGoodsItem = other.csCustomGoodsItem;
+        this.csListOverscroll = other.csListOverscroll;
+        this.csHasLike = other.csHasLike;
+        this.csHasFavorite = other.csHasFavorite;
+        this.csHasUGC = other.csHasUGC;
+        this.csHasShare = other.csHasShare;
+        this.csTimerGradientEnable = other.csTimerGradientEnable;
+        this.csListItemGradientEnable = other.csListItemGradientEnable;
+        this.csFavoriteIcon = other.csFavoriteIcon;
+        this.csLikeIcon = other.csLikeIcon;
+        this.csDislikeIcon = other.csDislikeIcon;
+        this.csShareIcon = other.csShareIcon;
+        this.csCloseIcon = other.csCloseIcon;
+        this.csRefreshIcon = other.csRefreshIcon;
+        this.csSoundIcon = other.csSoundIcon;
+        this.csNavBarColor = other.csNavBarColor;
+        this.csNightNavBarColor = other.csNightNavBarColor;
+        this.csReaderBackgroundColor = other.csReaderBackgroundColor;
+        this.csCustomFont = other.csCustomFont;
+        this.csCustomBoldFont = other.csCustomBoldFont;
+        this.csCustomItalicFont = other.csCustomItalicFont;
+        this.csCustomBoldItalicFont = other.csCustomBoldItalicFont;
+        this.csCustomSecondaryFont = other.csCustomSecondaryFont;
+        this.csCustomSecondaryBoldFont = other.csCustomSecondaryBoldFont;
+        this.csCustomSecondaryItalicFont = other.csCustomSecondaryItalicFont;
+        this.csCustomSecondaryBoldItalicFont = other.csCustomSecondaryBoldItalicFont;
+        this.csTimerGradient = other.csTimerGradient;
+        this.csReaderRadius = other.csReaderRadius;
+        this.csCoverQuality = other.csCoverQuality;
+        this.csCloseOnSwipe = other.csCloseOnSwipe;
+        this.csCloseOnOverscroll = other.csCloseOnOverscroll;
+        this.csListOpenedItemBorderVisibility = other.csListOpenedItemBorderVisibility;
+        this.csListOpenedItemBorderColor = other.csListOpenedItemBorderColor;
+        this.csListItemMargin = other.csListItemMargin;
+        this.csShowStatusBar = other.csShowStatusBar;
+        this.csClosePosition = other.csClosePosition;
+        this.csStoryReaderAnimation = other.csStoryReaderAnimation;
+        this.csIsDraggable = other.csIsDraggable;
+    }
+
     private boolean csListItemSourceVisibility = false;
     private int csListItemSourceSize = -1;
     private int csListItemSourceColor = Color.WHITE;
@@ -133,6 +199,11 @@ public class AppearanceManager {
 
     private StoriesGradientObject csTimerGradient;
     private int csReaderRadius = 0;
+    private int csCoverQuality;
+
+    private boolean csCloseOnSwipe = true;
+    private boolean csCloseOnOverscroll = true;
+
 
 
     public AppearanceManager csReaderBackgroundColor(int csReaderBackgroundColor) {
@@ -161,8 +232,6 @@ public class AppearanceManager {
     public StoriesGradientObject csTimerGradient() {
         return csTimerGradient;
     }
-
-    private int csCoverQuality;
 
     /**
      * use to set quality for story covers
@@ -245,10 +314,6 @@ public class AppearanceManager {
         this.csCloseOnOverscroll = closeOnOverscroll;
         return AppearanceManager.this;
     }
-
-    private boolean csCloseOnSwipe = true;
-    private boolean csCloseOnOverscroll = true;
-
     private static AppearanceManager commonInstance;
 
     public static AppearanceManager getCommonInstance() {
