@@ -361,7 +361,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
+        if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
@@ -377,7 +377,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
+        if (checkIfParentsHasCubeAnimation(getParentForAccessibility())) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
