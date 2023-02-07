@@ -54,7 +54,7 @@ Add jitpack maven repo to the root `build.gradle` in the `repositories` section 
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-	implementation 'com.github.inappstory:android-sdk:1.12.2'
+	implementation 'com.github.inappstory:android-sdk:1.12.3'
 ```
 
 Also for correct work in `dependencies` you need to add:
