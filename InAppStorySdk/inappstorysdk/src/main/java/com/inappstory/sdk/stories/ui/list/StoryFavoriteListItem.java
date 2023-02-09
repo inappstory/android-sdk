@@ -41,7 +41,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
         cv.setRadius(manager.csListItemRadius());
-        cv.setBackgroundColor(Color.WHITE);
         title = v.findViewById(R.id.title);
         return v;
     }
