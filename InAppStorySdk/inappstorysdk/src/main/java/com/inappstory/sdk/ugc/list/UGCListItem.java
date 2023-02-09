@@ -12,6 +12,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 public class UGCListItem extends BaseStoryListItem {
 
@@ -30,7 +31,7 @@ public class UGCListItem extends BaseStoryListItem {
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_ugc, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
-        cv.setRadius(manager.csListItemRadius());
+        cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
         cv.setBackgroundColor(Color.TRANSPARENT);
         title = v.findViewById(R.id.title);
         View outerLayout = v.findViewById(R.id.outerLayout);

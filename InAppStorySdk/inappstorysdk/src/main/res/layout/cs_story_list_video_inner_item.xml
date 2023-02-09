@@ -15,7 +15,7 @@
             android:layout_height="match_parent"/>
         <com.inappstory.sdk.imageloader.RoundedCornerLayout
             android:layout_width="match_parent"
-            android:layout_margin="5dp"
+            android:layout_margin="4dp"
             android:background="#000"
             android:id="@+id/item_cv"
             android:layout_height="match_parent">

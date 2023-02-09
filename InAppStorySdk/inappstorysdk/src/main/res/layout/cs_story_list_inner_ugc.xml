@@ -10,7 +10,7 @@
         android:layout_height="120dp">
         <com.inappstory.sdk.imageloader.RoundedCornerLayout
             android:layout_width="match_parent"
-            android:layout_margin="5dp"
+            android:layout_margin="4dp"
             android:id="@+id/inner_cv"
             android:layout_height="match_parent">
             <LinearLayout

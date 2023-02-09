@@ -72,7 +72,7 @@ public class StoryListItem extends BaseStoryListItem {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius());
+            cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
@@ -109,7 +109,7 @@ public class StoryListItem extends BaseStoryListItem {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius());
+            cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
             gradient = v.findViewById(R.id.cell_gradient);
             gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
             title = v.findViewById(R.id.title);
@@ -122,7 +122,7 @@ public class StoryListItem extends BaseStoryListItem {
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
+            ((GradientDrawable) border.getBackground()).setCornerRadius(manager.csListItemRadius());
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
@@ -240,9 +240,9 @@ public class StoryListItem extends BaseStoryListItem {
 
         RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
         cv.setBackgroundColor(Color.TRANSPARENT);
-        cv.setRadius(manager.csListItemRadius());
+        cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
         if (border != null)
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
+            ((GradientDrawable) border.getBackground()).setCornerRadius(manager.csListItemRadius());
         if (title != null) {
             title.setText(titleText);
             if (titleColor != null) {
