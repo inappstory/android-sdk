@@ -38,9 +38,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             return getFavoriteListItem.getFavoriteItem();
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
-        RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
-        cv.setRadius(manager.csListItemRadius());
-        title = v.findViewById(R.id.title);
         return v;
     }
 
@@ -133,7 +130,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             }, count);
             return;
         }
-        RelativeLayout imageViewLayout = itemView.findViewById(R.id.container);
         boolean lpC = false;
         View outerLayout = itemView.findViewById(R.id.outerLayout);
         if (manager.csListItemHeight() != null) {
@@ -144,104 +140,40 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             outerLayout.getLayoutParams().width = manager.csListItemWidth();
             lpC = true;
         }
+        RoundedCornerLayout container1 = itemView.findViewById(R.id.container1);
+        RoundedCornerLayout container2 = itemView.findViewById(R.id.container2);
+        RoundedCornerLayout container3 = itemView.findViewById(R.id.container3);
+        RoundedCornerLayout container4 = itemView.findViewById(R.id.container4);
+        container1.setRadius(manager.csReaderRadius());
+        container2.setRadius(manager.csReaderRadius());
+        container3.setRadius(manager.csReaderRadius());
+        container4.setRadius(manager.csReaderRadius());
         if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
-        if (title != null) {
-            title.setText("Favorites");
-            if (manager.csCustomFont() != null) {
-                title.setTypeface(manager.csCustomFont());
-            }
-            title.setTextColor(manager.csListItemTitleColor());
-        }
         List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-        int halfHeight = Sizes.dpToPxExt(55);
-        int halfWidth = Sizes.dpToPxExt(55);
-        int height = Sizes.dpToPxExt(110);
-        int width = Sizes.dpToPxExt(110);
-        if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
-                && manager.csListItemInterface().getVideoView() == null)) {
-            if (manager.csListItemHeight() != null) {
-                height = manager.csListItemHeight() - Sizes.dpToPxExt(10);
-                halfHeight = manager.csListItemHeight() / 2 - Sizes.dpToPxExt(5);
-            }
-            if (manager.csListItemWidth() != null) {
-                width = manager.csListItemWidth() - Sizes.dpToPxExt(10);
-                halfWidth = manager.csListItemWidth() / 2 - Sizes.dpToPxExt(5);
-            }
-        }
-        if (favImages.size() > 0 && imageViewLayout != null) {
-            AppCompatImageView image1 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image2 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image3 = new AppCompatImageView(itemView.getContext());
-            AppCompatImageView image4 = new AppCompatImageView(itemView.getContext());
 
-            RelativeLayout.LayoutParams piece2;
-            RelativeLayout.LayoutParams piece3;
-            RelativeLayout.LayoutParams piece4;
+        if (favImages.size() > 0) {
+            AppCompatImageView image1 = itemView.findViewById(R.id.image1);
+            AppCompatImageView image2 = itemView.findViewById(R.id.image2);
+            AppCompatImageView image3 = itemView.findViewById(R.id.image3);
+            AppCompatImageView image4 = itemView.findViewById(R.id.image4);
             switch (favImages.size()) {
                 case 1:
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
                     setImage(image1, favImages.get(0));
-                    imageViewLayout.addView(image1);
                     break;
                 case 2:
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
-                    image2.setLayoutParams(piece2);
-
                     setImage(image1, favImages.get(0));
                     setImage(image2, favImages.get(1));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
                     break;
                 case 3:
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            height - halfHeight);
-                    piece3 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            RelativeLayout.LayoutParams.MATCH_PARENT));
-                    image2.setLayoutParams(piece2);
-                    image3.setLayoutParams(piece3);
                     setImage(image1, favImages.get(0));
                     setImage(image2, favImages.get(1));
                     setImage(image3, favImages.get(2));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    imageViewLayout.addView(image3);
                     break;
                 default:
-
-                    piece2 = new RelativeLayout.LayoutParams(halfWidth,
-                            height - halfHeight);
-                    piece3 = new RelativeLayout.LayoutParams(width - halfWidth,
-                            halfHeight);
-                    piece4 = new RelativeLayout.LayoutParams(halfWidth,
-                            halfHeight);
-
-                    piece2.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
-                    piece3.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    piece4.addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE);
-                    piece4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                    image1.setLayoutParams(new RelativeLayout.LayoutParams(width - halfWidth,
-                            height - halfHeight));
-                    image2.setLayoutParams(piece2);
-                    image3.setLayoutParams(piece3);
-                    image4.setLayoutParams(piece4);
                     setImage(image1, favImages.get(0));
                     setImage(image2, favImages.get(1));
                     setImage(image3, favImages.get(2));
                     setImage(image4, favImages.get(3));
-                    imageViewLayout.addView(image1);
-                    imageViewLayout.addView(image2);
-                    imageViewLayout.addView(image3);
-                    imageViewLayout.addView(image4);
                     break;
 
             }
