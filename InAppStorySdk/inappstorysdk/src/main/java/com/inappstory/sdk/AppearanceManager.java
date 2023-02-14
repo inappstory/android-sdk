@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
+import com.inappstory.sdk.stories.ui.list.UGCListItemAppearance;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
@@ -200,12 +201,23 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldItalicFont;
 
     private StoriesGradientObject csTimerGradient;
+    private UGCListItemAppearance csUGCListItemAppearance
+            = new UGCListItemAppearance();
     private int csReaderRadius = 0;
     private int csCoverQuality;
 
     private boolean csCloseOnSwipe = true;
     private boolean csCloseOnOverscroll = true;
 
+    public AppearanceManager csUGCListItemAppearance(UGCListItemAppearance csUGCListItemAppearance) {
+        this.csUGCListItemAppearance = csUGCListItemAppearance;
+        return AppearanceManager.this;
+    }
+
+
+    public UGCListItemAppearance csUGCListItemAppearance() {
+        return csUGCListItemAppearance;
+    }
 
 
     public AppearanceManager csReaderBackgroundColor(int csReaderBackgroundColor) {

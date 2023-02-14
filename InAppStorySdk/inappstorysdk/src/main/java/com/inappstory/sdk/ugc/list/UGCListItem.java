@@ -4,14 +4,17 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.ui.list.UGCListItemAppearance;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class UGCListItem extends BaseStoryListItem {
@@ -33,7 +36,6 @@ public class UGCListItem extends BaseStoryListItem {
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
         cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
         cv.setBackgroundColor(Color.TRANSPARENT);
-        title = v.findViewById(R.id.title);
         View outerLayout = v.findViewById(R.id.outerLayout);
         if (manager.csListItemHeight() != null) {
             outerLayout.getLayoutParams().height = manager.csListItemHeight();
@@ -41,7 +43,30 @@ public class UGCListItem extends BaseStoryListItem {
         if (manager.csListItemWidth() != null) {
             outerLayout.getLayoutParams().width = manager.csListItemWidth();
         }
+        UGCListItemAppearance ugcListItemAppearance = manager.csUGCListItemAppearance();
+        if (ugcListItemAppearance != null) {
+            AppCompatImageView image = v.findViewById(R.id.image);
+            RelativeLayout.LayoutParams imageLp = (RelativeLayout.LayoutParams) image.getLayoutParams();
+            View background = v.findViewById(R.id.background);
+            int backgroundColor = getNonNullValue(ugcListItemAppearance.csBackgroundColor(),
+                    Color.parseColor("#0C62F3"));
+            int iconId = getNonNullValue(ugcListItemAppearance.csIconId(),
+                    R.drawable.ic_new_ugc);
+            int iconMargin = getNonNullValue(ugcListItemAppearance.csIconMargin(),
+                    Sizes.dpToPxExt(16));
+            image.setImageDrawable(itemView.getContext().getResources().getDrawable(iconId));
+            imageLp.setMargins(iconMargin, iconMargin, iconMargin, iconMargin);
+            background.setBackgroundColor(backgroundColor);
+            if (ugcListItemAppearance.csIconColor() != null) {
+                image.setColorFilter(ugcListItemAppearance.csIconColor());
+            }
+            image.requestLayout();
+        }
         return v;
+    }
+
+    private int getNonNullValue(Integer value, int defValue) {
+        return value != null ? value : defValue;
     }
 
     @Override
