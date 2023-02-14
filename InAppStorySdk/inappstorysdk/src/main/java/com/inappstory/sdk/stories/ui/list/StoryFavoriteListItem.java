@@ -144,10 +144,10 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         RoundedCornerLayout container2 = itemView.findViewById(R.id.container2);
         RoundedCornerLayout container3 = itemView.findViewById(R.id.container3);
         RoundedCornerLayout container4 = itemView.findViewById(R.id.container4);
-        container1.setRadius(manager.csReaderRadius());
-        container2.setRadius(manager.csReaderRadius());
-        container3.setRadius(manager.csReaderRadius());
-        container4.setRadius(manager.csReaderRadius());
+        container1.setRadius(manager.csListItemRadius() / 2);
+        container2.setRadius(manager.csListItemRadius() / 2);
+        container3.setRadius(manager.csListItemRadius() / 2);
+        container4.setRadius(manager.csListItemRadius() / 2);
         if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
         List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
 
