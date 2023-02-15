@@ -132,12 +132,12 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         }
         boolean lpC = false;
         View outerLayout = itemView.findViewById(R.id.outerLayout);
-        if (manager.csListItemHeight() != null) {
-            outerLayout.getLayoutParams().height = manager.csListItemHeight();
+        if (manager.getRealHeight() != null) {
+            outerLayout.getLayoutParams().height = manager.getRealHeight();
             lpC = true;
         }
-        if (manager.csListItemWidth() != null) {
-            outerLayout.getLayoutParams().width = manager.csListItemWidth();
+        if (manager.getRealWidth() != null) {
+            outerLayout.getLayoutParams().width = manager.getRealWidth();
             lpC = true;
         }
         RoundedCornerLayout container1 = itemView.findViewById(R.id.container1);

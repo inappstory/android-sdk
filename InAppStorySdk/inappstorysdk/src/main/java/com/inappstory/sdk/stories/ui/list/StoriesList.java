@@ -5,6 +5,7 @@ import static java.util.UUID.randomUUID;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -249,6 +250,7 @@ public class StoriesList extends RecyclerView {
         OldStatisticManager.getInstance().previewStatisticEvent(indexes);
     }
 
+
     StoriesAdapter adapter;
 
     @Override
@@ -257,7 +259,8 @@ public class StoriesList extends RecyclerView {
         super.setLayoutManager(layoutManager);
     }
 
-    LayoutManager layoutManager = new LinearLayoutManager(getContext(), HORIZONTAL, false);
+    private LayoutManager defaultLayoutManager = new LinearLayoutManager(getContext(), HORIZONTAL, false);
+    LayoutManager layoutManager = defaultLayoutManager;
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
         this.appearanceManager = appearanceManager;
@@ -409,6 +412,8 @@ public class StoriesList extends RecyclerView {
             adapter.hasFavItem = false;
         }
         adapter.notifyDataSetChanged();
+
+        adapter.notifyChanges();
     }
 
     public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
@@ -437,7 +442,7 @@ public class StoriesList extends RecyclerView {
         } else {
             adapter.notifyItemChanged(getAdapter().getItemCount() - 1);
         }
-
+        adapter.notifyChanges();
     }
 
 
@@ -501,7 +506,18 @@ public class StoriesList extends RecyclerView {
                 !isFavoriteList ? favoriteItemClick : null,
                 hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
                 !isFavoriteList ? ugcItemClick : null);
-        setLayoutManager(layoutManager);
+        if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
+            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()));
+            addItemDecoration(new ItemDecoration() {
+                @Override
+                public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
+                    super.getItemOffsets(outRect, view, parent, state);
+                    outRect.bottom = appearanceManager.csListItemMargin();
+                    outRect.top = appearanceManager.csListItemMargin();
+                }
+            });
+        } else
+            setLayoutManager(layoutManager);
         setAdapter(adapter);
     }
 

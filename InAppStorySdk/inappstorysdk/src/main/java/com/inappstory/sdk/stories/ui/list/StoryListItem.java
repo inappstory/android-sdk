@@ -63,11 +63,11 @@ public class StoryListItem extends BaseStoryListItem {
             View container = v.findViewById(R.id.container);
             if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
                     && manager.csListItemInterface().getVideoView() == null)) {
-                if (manager.csListItemHeight() != null) {
-                    container.getLayoutParams().height = manager.csListItemHeight();
+                if (manager.getRealHeight() != null) {
+                    container.getLayoutParams().height = manager.getRealHeight();
                 }
-                if (manager.csListItemWidth() != null) {
-                    container.getLayoutParams().width = manager.csListItemWidth();
+                if (manager.getRealWidth() != null) {
+                    container.getLayoutParams().width = manager.getRealWidth();
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
@@ -100,11 +100,11 @@ public class StoryListItem extends BaseStoryListItem {
                     && manager.csListItemInterface().getVideoView() == null)) {
 
                 View container = v.findViewById(R.id.container);
-                if (manager.csListItemHeight() != null) {
-                    container.getLayoutParams().height = manager.csListItemHeight();
+                if (manager.getRealHeight() != null) {
+                    container.getLayoutParams().height = manager.getRealHeight();
                 }
-                if (manager.csListItemWidth() != null) {
-                    container.getLayoutParams().width = manager.csListItemWidth();
+                if (manager.getRealWidth() != null) {
+                    container.getLayoutParams().width = manager.getRealWidth();
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);

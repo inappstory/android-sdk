@@ -62,6 +62,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         this.feedID = feedID;
     }
 
+    void notifyChanges() {
+        callback.storiesUpdated(storiesIds.size(), feed);
+    }
+
     public StoriesAdapter(Context context,
                           String listID,
                           List<Integer> storiesIds,
@@ -89,6 +93,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         hasFavItem = !isFavoriteList && InAppStoryService.isNotNull()
                 && manager != null && manager.csHasFavorite()
                 && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
+        notifyChanges();
     }
 
     public void refresh(List<Integer> storiesIds) {
@@ -99,6 +104,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         if (storiesIds == null) return -1;
         return storiesIds.indexOf(id);
     }
+
 
 
     AppearanceManager manager;
@@ -202,6 +208,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                     current.isOpened = true;
                     current.saveStoryOpened(Story.StoryType.COMMON);
                     notifyItemChanged(ind);
+                    notifyChanges();
                 } else {
                     if (!InAppStoryService.isConnected()) {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -213,6 +220,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                     current.isOpened = true;
                     current.saveStoryOpened(Story.StoryType.COMMON);
                     notifyItemChanged(ind);
+                    notifyChanges();
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(current.deeplink));

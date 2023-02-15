@@ -142,7 +142,6 @@ public class AppearanceManager {
     }
 
 
-
     private boolean csListItemTitleVisibility = true;
     private int csListItemTitleSize = -1;
     private int csListItemTitleColor = Color.WHITE;
@@ -156,6 +155,40 @@ public class AppearanceManager {
 
     private Integer csListItemWidth;
     private Integer csListItemHeight;
+    private Integer csColumnCount;
+    private Float csListItemRatio;
+
+
+    public Integer getRealWidth() {
+        if (csListItemHeight == null) return null;
+        if (csColumnCount == null) {
+            if (csListItemRatio == null) {
+                return csListItemWidth;
+            } else {
+                return (int)(csListItemHeight * csListItemRatio);
+            }
+        } else {
+            return getScaledWidth();
+        }
+    }
+
+    private int getScaledWidth() {
+        return (int) ((Sizes.getScreenSize().x -
+                (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
+    }
+
+    public Integer getRealHeight() {
+        if (csListItemHeight == null) return null;
+        if (csColumnCount == null) {
+            return csListItemHeight;
+        } else {
+            if (csListItemRatio == null) {
+                return (int) (getScaledWidth() * csListItemHeight / csListItemWidth);
+            } else {
+                return (int) (getScaledWidth() / csListItemRatio);
+            }
+        }
+    }
 
     private boolean csListItemBorderVisibility = true;
     private int csListItemBorderColor = Color.BLACK;
@@ -237,6 +270,17 @@ public class AppearanceManager {
     public int csReaderRadius() {
         return csReaderRadius;
     }
+
+    public AppearanceManager csColumnCount(int csColumnCount) {
+        this.csColumnCount = csColumnCount;
+        return AppearanceManager.this;
+    }
+
+    public Integer csColumnCount() {
+        return csColumnCount;
+    }
+
+
 
     public AppearanceManager csTimerGradient(StoriesGradientObject csTimerGradient) {
         this.csTimerGradient = csTimerGradient;
@@ -328,6 +372,7 @@ public class AppearanceManager {
         this.csCloseOnOverscroll = closeOnOverscroll;
         return AppearanceManager.this;
     }
+
     private static AppearanceManager commonInstance;
 
     public static AppearanceManager getCommonInstance() {
@@ -438,6 +483,12 @@ public class AppearanceManager {
     }
 
 
+    public AppearanceManager csListItemRatio(Float csListItemRatio) {
+        this.csListItemRatio = csListItemRatio;
+        return AppearanceManager.this;
+    }
+
+
     /**
      * use to set custom touch effect on list item
      *
@@ -467,6 +518,7 @@ public class AppearanceManager {
      * @param csListItemWidth (csListItemWidth)
      * @return {@link AppearanceManager}
      */
+    @Deprecated
     public AppearanceManager csListItemWidth(Integer csListItemWidth) {
         this.csListItemWidth = csListItemWidth;
         return AppearanceManager.this;
@@ -887,6 +939,11 @@ public class AppearanceManager {
         return csListItemHeight;
     }
 
+    public Float csListItemRatio() {
+        return csListItemRatio;
+    }
+
+    @Deprecated
     public Integer csListItemWidth() {
         return csListItemWidth;
     }

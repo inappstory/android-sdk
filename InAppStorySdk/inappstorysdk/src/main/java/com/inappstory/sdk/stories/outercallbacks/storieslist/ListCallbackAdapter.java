@@ -8,6 +8,11 @@ public class ListCallbackAdapter implements ListCallback {
     }
 
     @Override
+    public void storiesUpdated(int size, String feed) {
+
+    }
+
+    @Override
     public void loadError(String feed) {
 
     }
