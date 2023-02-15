@@ -163,25 +163,22 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             AppCompatImageView image2 = itemView.findViewById(R.id.image2);
             AppCompatImageView image3 = itemView.findViewById(R.id.image3);
             AppCompatImageView image4 = itemView.findViewById(R.id.image4);
+            clearImage(image1);
+            clearImage(image2);
+            clearImage(image3);
+            clearImage(image4);
             switch (favImages.size()) {
                 case 1:
                     setImage(image1, favImages.get(0));
-                    clearImage(image2);
-                    clearImage(image3);
-                    clearImage(image4);
-
                     break;
                 case 2:
                     setImage(image1, favImages.get(0));
                     setImage(image2, favImages.get(1));
-                    clearImage(image3);
-                    clearImage(image4);
                     break;
                 case 3:
                     setImage(image1, favImages.get(0));
                     setImage(image2, favImages.get(1));
                     setImage(image3, favImages.get(2));
-                    clearImage(image4);
                     break;
                 default:
                     setImage(image1, favImages.get(0));
