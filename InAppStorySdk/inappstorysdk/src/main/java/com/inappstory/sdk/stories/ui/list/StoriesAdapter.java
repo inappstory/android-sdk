@@ -63,7 +63,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     }
 
     void notifyChanges() {
-        callback.storiesUpdated(storiesIds.size(), feed);
+        if (callback != null)
+            callback.storiesUpdated(storiesIds.size(), feed);
     }
 
     public StoriesAdapter(Context context,
@@ -104,7 +105,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         if (storiesIds == null) return -1;
         return storiesIds.indexOf(id);
     }
-
 
 
     AppearanceManager manager;

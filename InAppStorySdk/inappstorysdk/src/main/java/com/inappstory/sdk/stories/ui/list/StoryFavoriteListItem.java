@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -41,6 +42,11 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         return v;
     }
 
+    private void clearImage(AppCompatImageView imageView) {
+        imageView.setImageBitmap(null);
+        imageView.setBackgroundColor(Color.TRANSPARENT);
+        imageView.setVisibility(View.INVISIBLE);
+    }
 
     private void setImage(AppCompatImageView imageView, FavoriteImage image) {
         if (image.getImage() != null && InAppStoryService.isNotNull()) {
@@ -50,6 +56,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         } else {
             imageView.setBackgroundColor(image.getBackgroundColor());
         }
+        imageView.setVisibility(View.VISIBLE);
     }
 
     private void loadFavoriteImages(final LoadFavoriteImagesCallback callback, final int count) {
@@ -159,15 +166,22 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             switch (favImages.size()) {
                 case 1:
                     setImage(image1, favImages.get(0));
+                    clearImage(image2);
+                    clearImage(image3);
+                    clearImage(image4);
+
                     break;
                 case 2:
                     setImage(image1, favImages.get(0));
                     setImage(image2, favImages.get(1));
+                    clearImage(image3);
+                    clearImage(image4);
                     break;
                 case 3:
                     setImage(image1, favImages.get(0));
                     setImage(image2, favImages.get(1));
                     setImage(image3, favImages.get(2));
+                    clearImage(image4);
                     break;
                 default:
                     setImage(image1, favImages.get(0));
