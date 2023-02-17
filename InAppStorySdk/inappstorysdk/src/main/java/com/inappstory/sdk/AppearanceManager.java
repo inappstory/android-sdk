@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
-import com.inappstory.sdk.stories.ui.list.UGCListItemAppearance;
+import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
@@ -139,6 +139,9 @@ public class AppearanceManager {
         this.csClosePosition = other.csClosePosition;
         this.csStoryReaderAnimation = other.csStoryReaderAnimation;
         this.csIsDraggable = other.csIsDraggable;
+        this.csListItemRatio = other.csListItemRatio;
+        this.csColumnCount = other.csColumnCount;
+        this.csUGCListItemSimpleAppearance = other.csUGCListItemSimpleAppearance;
     }
 
 
@@ -234,22 +237,22 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldItalicFont;
 
     private StoriesGradientObject csTimerGradient;
-    private UGCListItemAppearance csUGCListItemAppearance
-            = new UGCListItemAppearance();
+    private UGCListItemSimpleAppearance csUGCListItemSimpleAppearance
+            = new UGCListItemSimpleAppearance();
     private int csReaderRadius = 0;
     private int csCoverQuality;
 
     private boolean csCloseOnSwipe = true;
     private boolean csCloseOnOverscroll = true;
 
-    public AppearanceManager csUGCListItemAppearance(UGCListItemAppearance csUGCListItemAppearance) {
-        this.csUGCListItemAppearance = csUGCListItemAppearance;
+    public AppearanceManager csUGCListItemSimpleAppearance(UGCListItemSimpleAppearance csUGCListItemSimpleAppearance) {
+        this.csUGCListItemSimpleAppearance = csUGCListItemSimpleAppearance;
         return AppearanceManager.this;
     }
 
 
-    public UGCListItemAppearance csUGCListItemAppearance() {
-        return csUGCListItemAppearance;
+    public UGCListItemSimpleAppearance csUGCListItemSimpleAppearance() {
+        return csUGCListItemSimpleAppearance;
     }
 
 

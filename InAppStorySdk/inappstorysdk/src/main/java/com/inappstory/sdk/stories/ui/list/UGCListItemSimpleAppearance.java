@@ -3,27 +3,27 @@ package com.inappstory.sdk.stories.ui.list;
 
 import java.io.Serializable;
 
-public class UGCListItemAppearance implements Serializable {
-    public UGCListItemAppearance() {
+public class UGCListItemSimpleAppearance implements Serializable {
+    public UGCListItemSimpleAppearance() {
 
     }
 
-    public UGCListItemAppearance csBackgroundColor(int backgroundColor) {
+    public UGCListItemSimpleAppearance csBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
         return this;
     }
 
-    public UGCListItemAppearance csIconColor(int iconColor) {
+    public UGCListItemSimpleAppearance csIconColor(int iconColor) {
         this.iconColor = iconColor;
         return this;
     }
 
-    public UGCListItemAppearance csIconId(int iconId) {
+    public UGCListItemSimpleAppearance csIconId(int iconId) {
         this.iconId = iconId;
         return this;
     }
 
-    public UGCListItemAppearance csIconMargin(int iconMargin) {
+    public UGCListItemSimpleAppearance csIconMargin(int iconMargin) {
         this.iconMargin = iconMargin;
         return this;
     }

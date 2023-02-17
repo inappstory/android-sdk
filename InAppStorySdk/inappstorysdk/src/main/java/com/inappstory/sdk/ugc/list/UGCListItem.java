@@ -14,7 +14,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
-import com.inappstory.sdk.stories.ui.list.UGCListItemAppearance;
+import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class UGCListItem extends BaseStoryListItem {
@@ -43,7 +43,7 @@ public class UGCListItem extends BaseStoryListItem {
         if (manager.getRealWidth() != null) {
             outerLayout.getLayoutParams().width = manager.getRealWidth();
         }
-        UGCListItemAppearance ugcListItemAppearance = manager.csUGCListItemAppearance();
+        UGCListItemSimpleAppearance ugcListItemAppearance = manager.csUGCListItemSimpleAppearance();
         if (ugcListItemAppearance != null) {
             AppCompatImageView image = v.findViewById(R.id.image);
             RelativeLayout.LayoutParams imageLp = (RelativeLayout.LayoutParams) image.getLayoutParams();

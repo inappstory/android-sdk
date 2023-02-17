@@ -42,8 +42,9 @@ Another parameters can be set separately for list/onboardings/single:
 | csHasFavorite        			 | Boolean             | false                                  |Reader | Flag that is responsible for connecting the functionality of favorite stories                                                                                       |
 | csCloseOnSwipe          | Boolean             | true                                   |Reader | Flag that is responsible for closing stories by swiping down                                                                                                        |
 | csCloseOnOverscroll     | Boolean             | true                                   |Reader | Flag that is responsible for closing stories by swiping left on the last story or right on the first story                                                          |
-| csListItemWidth         | Integer             | null                                   |List | width of the list cell in pixels                                                                                                                                    |
 | csListItemHeight        | Integer             | null                                   |List | height of the list cell in pixels                                                                                                                                   |
+| csListItemRatio         | Float               | null                                   |List | ratio of the list cell (width to height)                 |
+| csColumnCount           | Integer             | null                                   |List | count of columns in grid mode. Use it only with csListItemRatio and only if you want grid (you still need to set font size properly) |
 | csListItemRadius        | Integer             | 16sp                                   |List | radius of the list cell in pixels                                                                                                                                   |
 | csListItemTitleSize     | Integer             | 14sp                                   |List | size of the title                                                                                                                                                   |
 | csListItemTitleColor    | Integer             | Color.WHITE                            |List | title color                                                                                                                                                         |
@@ -76,56 +77,41 @@ appearanceManager
     .csListItemTitleSize(Sizes.dpToPxExt(20))
 ```
 
+### Complex interfaces
+
+
 Also, there are several interfaces in the `AppearanceManager`.
 
-Next two uses to fully customize list cells:
+
+#### Fully custom cells
+
+Next three uses to fully customize list cells
+
+For stories cells:
 
 ```js
 appearanceManager
     .csListItemInterface(IStoriesListItem listItemInterface)
 ```
 
-and:
+For favorite cell:
 
 ```js
 appearanceManager
     .csFavoriteListItemInterface(IGetFavoriteListItem favoriteListItemInterface);
 ```
 
-This two interfaces can be set separately for each list. More information about this interfaces you can read [here](docs/StoriesList.md#istorieslistitem)
+For ugc cell:
+
+```js
+appearanceManager
+    .csListUGCItemInterface(IStoriesListUGCItem favoriteListItemInterface);
+```
+
+This two interfaces can be set separately for each list. More information about this interfaces you can read [here](docs/StoriesList.md#istorieslistitem), [here](docs/StoriesList.md#igetfavoritelistitem) and [here](https://github.com/inappstory/ugc-android-sdk#customization)
 
 Also `AppearanceManager` has allow you to customize loaders in story reader and game reader with next two interfaces.
 This interface must be set for the common `AppearanceManager`.
-
-
-#### Reader gradient
-
-`AppearanceManager` has two parameters thar responsible for gradient in reader under timer. `csTimerGradientEnable` can be used to turn on/off that gradient and `csTimerGradient` - to customize its appearance. To customize you should pass StoriesGradientObject to setter. 
-
-```js
-class StoriesGradientObject {
-    Integer csGradientHeight; //by default equals 100 dp
-    List<Integer> csColors; //by default equals {0x00000000, 0x50000000}
-    List<Float> csLocations; //by default equals {0f, 1f}
-}
-```
-
-You can set `csColors` and `csLocatios` must have equal size that has to be greater or equal than 2. Also if you want create a fullscreen gradient - you can set `csGradientHeight` as 0. 
-`StoriesGradientObject` parameters can be set through `Builder` pattern
-
-```js
-StoriesGradientObject gradient = new StoriesGradientObject()
-            .csColors(
-                mutableListOf(
-                    Color.parseColor("#90000000"),
-                    Color.parseColor("#00000000"),
-                    Color.parseColor("#00000000")
-                )
-            )
-            .csLocations(mutableListOf(0f, 0.2f, 1f))
-            .csGradientHeight(0)
-
-```
 
 #### ILoaderView
 
@@ -159,4 +145,61 @@ public interface IGameLoaderView {
     View getView(); // When inheriting from an interface, View must return itself
     void setProgress(int progress, int max); // Progress values - from 0 to 100, 100 is transmitted as max 
 }
+```
+
+#### Reader gradient
+
+`AppearanceManager` has two parameters thar responsible for gradient in reader under timer. `csTimerGradientEnable` can be used to turn on/off that gradient and `csTimerGradient` - to customize its appearance. To customize you should pass StoriesGradientObject to setter. 
+
+```js
+class StoriesGradientObject {
+    Integer csGradientHeight; //by default equals 100 dp
+    List<Integer> csColors; //by default equals {0x00000000, 0x50000000}
+    List<Float> csLocations; //by default equals {0f, 1f}
+}
+```
+
+You can set `csColors` and `csLocatios` must have equal size that has to be greater or equal than 2. Also if you want create a fullscreen gradient - you can set `csGradientHeight` as 0. 
+`StoriesGradientObject` parameters can be set through `Builder` pattern
+
+```js
+StoriesGradientObject gradient = new StoriesGradientObject()
+            .csColors(
+                mutableListOf(
+                    Color.parseColor("#90000000"),
+                    Color.parseColor("#00000000"),
+                    Color.parseColor("#00000000")
+                )
+            )
+            .csLocations(mutableListOf(0f, 0.2f, 1f))
+            .csGradientHeight(0)
+
+```
+
+#### Ugc cell (simple customization)
+
+If you don't use cells customization, you can set parametes for UGC editor cell with this method:
+
+
+```js
+appearanceManager
+    .csUGCListItemSimpleAppearance(UGCListItemSimpleAppearance ugcListItemSimpleAppearance);
+```
+
+```js
+class UGCListItemSimpleAppearance {
+    Integer iconColor; //by default is null, uses for tint icon image
+    Integer backgroundColor; //by default equals to Color("#0C62F3")
+    Integer iconMargin; //by default is 16dp
+    Integer iconId; //by default is icon from SDK
+}
+```
+
+`UGCListItemSimpleAppearance` parameters can be set through `Builder` pattern
+
+```js
+UGCListItemSimpleAppearance gradient = new UGCListItemSimpleAppearance()
+            .csIconColor(Color.RED)
+            .csBackgroundColor(Color.WHITE)
+
 ```
