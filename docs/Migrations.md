@@ -1,5 +1,12 @@
 ## Migration
 
+### From 1.13.x
+`AppearanceManager.csListItemWidth()` now is deprecated. `AppearanceManager.csListItemRatio()` was added. Use this one (only with `AppearanceManager.csListItemHeight()`).
+Appearance for default favorite cell was changed (now it looks similarly with iOS InAppStory SDK)
+`AppearanceManager.csColumnCount()` was added. Use it only with csListItemRatio and only if you want grid (you still need to set font size properly)
+`AppearanceManager.csUGCListItemSimpleAppearance()` was added. [Here](docs/AppearanceManager.md#ugc-cell-simple-customization) is described its usage.
+
+
 ### From 1.11.x
 Now parameters from methods in IGetFavoriteListItem (bindFavoriteItem and setImages) can contains more than 4 elements (and count may be more than 4)
 

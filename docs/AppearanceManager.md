@@ -180,13 +180,10 @@ StoriesGradientObject gradient = new StoriesGradientObject()
 
 If you don't use cells customization, you can set parametes for UGC editor cell with this method:
 
-
 ```js
 appearanceManager
     .csUGCListItemSimpleAppearance(UGCListItemSimpleAppearance ugcListItemSimpleAppearance);
-```
 
-```js
 class UGCListItemSimpleAppearance {
     Integer iconColor; //by default is null, uses for tint icon image
     Integer backgroundColor; //by default equals to Color("#0C62F3")
