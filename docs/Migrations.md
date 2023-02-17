@@ -6,6 +6,8 @@ Appearance for default favorite cell was changed (now it looks similarly with iO
 `AppearanceManager.csColumnCount()` was added. Use it only with csListItemRatio and only if you want grid (you still need to set font size properly)
 `AppearanceManager.csUGCListItemSimpleAppearance()` was added. [Here](docs/AppearanceManager.md#ugc-cell-simple-customization) is described its usage.
 
+### From 1.12.x
+New feature: UGC Feeds. [Here](docs/UgcStoriesList.md) is described its usage.
 
 ### From 1.11.x
 Now parameters from methods in IGetFavoriteListItem (bindFavoriteItem and setImages) can contains more than 4 elements (and count may be more than 4)
