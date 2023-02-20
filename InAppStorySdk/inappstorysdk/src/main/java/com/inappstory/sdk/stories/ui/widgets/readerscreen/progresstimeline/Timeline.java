@@ -41,7 +41,7 @@ public class Timeline extends LinearLayout {
     }
 
     private final LayoutParams PROGRESS_BAR_LAYOUT_PARAM = new LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
-    private final LayoutParams SPACE_LAYOUT_PARAM = new LayoutParams(Sizes.dpToPxExt(8), LayoutParams.WRAP_CONTENT);
+    private final LayoutParams SPACE_LAYOUT_PARAM = new LayoutParams(Sizes.dpToPxExt(4), LayoutParams.WRAP_CONTENT);
 
     private TimelineProgressBar createProgressBar() {
         TimelineProgressBar p = new TimelineProgressBar(getContext());
