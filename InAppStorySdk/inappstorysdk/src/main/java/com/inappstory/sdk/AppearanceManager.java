@@ -162,37 +162,6 @@ public class AppearanceManager {
     private Float csListItemRatio;
 
 
-    public Integer getRealWidth() {
-        if (csListItemHeight == null) return null;
-        if (csColumnCount == null) {
-            if (csListItemRatio == null) {
-                return csListItemWidth;
-            } else {
-                return (int)(csListItemHeight * csListItemRatio);
-            }
-        } else {
-            return getScaledWidth();
-        }
-    }
-
-    private int getScaledWidth() {
-        return (int) ((Sizes.getScreenSize().x -
-                (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
-    }
-
-    public Integer getRealHeight() {
-        if (csListItemHeight == null) return null;
-        if (csColumnCount == null) {
-            return csListItemHeight;
-        } else {
-            if (csListItemRatio == null) {
-                return (int) (getScaledWidth() * csListItemHeight / csListItemWidth);
-            } else {
-                return (int) (getScaledWidth() / csListItemRatio);
-            }
-        }
-    }
-
     private boolean csListItemBorderVisibility = true;
     private int csListItemBorderColor = Color.BLACK;
 
@@ -236,6 +205,13 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryItalicFont;
     private Typeface csCustomSecondaryBoldItalicFont;
 
+
+    private int csListItemMargin = Sizes.dpToPxExt(4);
+    private boolean csShowStatusBar = false;
+    private int csClosePosition = BOTTOM_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
+    private int csStoryReaderAnimation = ANIMATION_CUBE;
+    private boolean csIsDraggable = true;
+
     private StoriesGradientObject csTimerGradient;
     private UGCListItemSimpleAppearance csUGCListItemSimpleAppearance
             = new UGCListItemSimpleAppearance();
@@ -244,6 +220,39 @@ public class AppearanceManager {
 
     private boolean csCloseOnSwipe = true;
     private boolean csCloseOnOverscroll = true;
+
+
+    public Integer getRealWidth() {
+        if (csListItemHeight == null) return null;
+        if (csColumnCount == null) {
+            if (csListItemRatio == null) {
+                return csListItemWidth;
+            } else {
+                return (int)(csListItemHeight * csListItemRatio);
+            }
+        } else {
+            return getScaledWidth();
+        }
+    }
+
+    private int getScaledWidth() {
+        return (int) ((Sizes.getScreenSize().x -
+                (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
+    }
+
+    public Integer getRealHeight() {
+        if (csListItemHeight == null) return null;
+        if (csColumnCount == null) {
+            return csListItemHeight;
+        } else {
+            if (csListItemRatio == null) {
+                return (int) (getScaledWidth() * csListItemHeight / csListItemWidth);
+            } else {
+                return (int) (getScaledWidth() / csListItemRatio);
+            }
+        }
+    }
+
 
     public AppearanceManager csUGCListItemSimpleAppearance(UGCListItemSimpleAppearance csUGCListItemSimpleAppearance) {
         this.csUGCListItemSimpleAppearance = csUGCListItemSimpleAppearance;
@@ -1001,11 +1010,6 @@ public class AppearanceManager {
     }
 
 
-    private int csListItemMargin = Sizes.dpToPxExt(4);
-    private boolean csShowStatusBar = false;
-    private int csClosePosition = TOP_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
-    private int csStoryReaderAnimation = ANIMATION_CUBE;
-    private boolean csIsDraggable = true;
 
     public boolean csIsDraggable() {
         return csIsDraggable;
