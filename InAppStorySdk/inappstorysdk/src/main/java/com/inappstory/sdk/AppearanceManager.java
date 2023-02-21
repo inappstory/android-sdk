@@ -215,7 +215,7 @@ public class AppearanceManager {
     private StoriesGradientObject csTimerGradient;
     private UGCListItemSimpleAppearance csUGCListItemSimpleAppearance
             = new UGCListItemSimpleAppearance();
-    private int csReaderRadius = 0;
+    private int csReaderRadius = Sizes.dpToPxExt(8);
     private int csCoverQuality;
 
     private boolean csCloseOnSwipe = true;
