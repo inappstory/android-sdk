@@ -6,6 +6,6 @@ import java.util.HashMap;
 public class SessionEditor {
 
     public String url;
-    public SessionEditorConfig config;
+    public HashMap<String, Object> config;
     public HashMap<String, String> messages;
 }
