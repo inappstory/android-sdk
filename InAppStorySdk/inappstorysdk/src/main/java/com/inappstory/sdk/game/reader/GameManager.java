@@ -129,7 +129,7 @@ public class GameManager {
         if (options == null) {
             gameCompletedWithUrl(gameState, link, eventData);
         } else if (options.openUrl != null) {
-            gameCompletedWithUrl(gameState, link, eventData);
+            gameCompletedWithUrl(gameState, options.openUrl, eventData);
         } else {
             gameCompletedWithObject(gameState, options, eventData);
         }

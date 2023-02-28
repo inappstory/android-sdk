@@ -151,27 +151,29 @@ public class TextMultiInput extends LinearLayout {
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
         this.inputType = inputType;
-        mainText = new AppCompatEditText(getContext());
         LayoutParams mainTextLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1);
         mainTextLp.setMargins(0, 0, 0, 0);
+        mainText = new AppCompatEditText(getContext());
         mainText.setBackground(null);
-        mainText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+
+        mainText.setPaddingRelative(0, 0, 0, 0);
         switch (inputType) {
             case MAIL:
                 mainText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
                 mainText.setGravity(Gravity.CENTER);
-                mainTextLp.setMargins(Sizes.dpToPxExt(4), 0, Sizes.dpToPxExt(4), 0);
-                mainText.setLayoutParams(mainTextLp);
                 mainText.setSingleLine(true);
                 mainText.setMaxLines(1);
+                mainTextLp.setMargins(0, 0, 0, 0);
+                mainText.setLayoutParams(mainTextLp);
                 addView(mainText);
                 break;
             case TEXT:
-                mainText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+                mainText.setInputType(InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_FLAG_MULTI_LINE |
+                        InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
                 mainText.setSingleLine(false);
                 mainText.setMaxLines(3);
-                mainText.setPaddingRelative(0, 0, 0, 0);
                 mainText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
                 mainTextLp.setMargins(0, 0, 0, 0);
                 mainText.setLayoutParams(mainTextLp);
@@ -179,26 +181,29 @@ public class TextMultiInput extends LinearLayout {
                 break;
             case PHONE:
                 mainTextLp.setMargins(Sizes.dpToPxExt(4), 0, 0, 0);
-                countryCodeText = new AppCompatEditText(getContext());
-                LayoutParams lp2 = new LayoutParams(Sizes.dpToPxExt(60),
+                mainText.setLayoutParams(mainTextLp);
+                int countryCodeWidth = Sizes.dpToPxExt(60);
+                LayoutParams countryCodeLp = new LayoutParams(countryCodeWidth,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
+                countryCodeText = new AppCompatEditText(getContext());
+                phoneNumberHint = new AppCompatEditText(getContext());
+                countryCodeText.setPaddingRelative(0, 0, 0, 0);
+                phoneNumberHint.setPaddingRelative(0, 0, 0, 0);
+                countryCodeLp.setMargins(0, 0, 0, 0);
                 divider = new View(getContext());
                 divider.setLayoutParams(new ViewGroup.LayoutParams(Sizes.dpToPxExt(1),
                         Sizes.dpToPxExt(30)));
                 RelativeLayout rl = new RelativeLayout(getContext());
                 rl.setLayoutParams(mainTextLp);
-                RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT);
-                phoneNumberHint = new AppCompatEditText(getContext());
 
-                lp2.setMargins(0, 0, Sizes.dpToPxExt(4), 0);
-                countryCodeText.setLayoutParams(lp2);
+                countryCodeText.setLayoutParams(countryCodeLp);
                 countryCodeText.setBackground(null);
                 countryCodeText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(4)});
                 countryCodeText.setInputType(InputType.TYPE_CLASS_PHONE);
-
+                phoneNumberHint.setInputType(InputType.TYPE_CLASS_PHONE);
+                mainText.setInputType(InputType.TYPE_CLASS_PHONE);
                 countryCodeText.setGravity(Gravity.CENTER);
-                countryCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+                // countryCodeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
                 countryCodeText.addTextChangedListener(new MaskedWatcher(PHONE_CODE_MASK, "+"));
                 countryCodeText.addTextChangedListener(new TextWatcher() {
                     @Override
@@ -306,14 +311,10 @@ public class TextMultiInput extends LinearLayout {
                     }
                 });
                 phoneNumberHint.setBackground(null);
-                phoneNumberHint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    // mainText.setElevation(8);
-                }
-                mainText.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                //mainText.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
                 phoneNumberHint.setClickable(false);
                 phoneNumberHint.setFocusable(false);
-                phoneNumberHint.setLayoutParams(rlp);
+                phoneNumberHint.setLayoutParams(mainTextLp);
                 mainText.setSingleLine(true);
                 mainText.setMaxLines(1);
                 phoneNumberHint.setSingleLine(true);
@@ -327,6 +328,7 @@ public class TextMultiInput extends LinearLayout {
                 break;
         }
     }
+
 
     public class CustomDigitsKeyListener extends DigitsKeyListener {
         public CustomDigitsKeyListener() {
