@@ -124,16 +124,17 @@ public class GameManager {
 
     }
 
-    void gameCompleted(String gameState, String link, String eventData) {
-        GameFinishOptions options = JsonParser.fromJson(link, GameFinishOptions.class);
+    void gameCompleted(String gameState, String urlOrOptions, String eventData) {
+        GameFinishOptions options = JsonParser.fromJson(urlOrOptions, GameFinishOptions.class);
         if (options == null) {
-            gameCompletedWithUrl(gameState, link, eventData);
+            gameCompletedWithUrl(gameState, urlOrOptions, eventData);
         } else if (options.openUrl != null) {
-            gameCompletedWithUrl(gameState, link, eventData);
+            gameCompletedWithUrl(gameState, options.openUrl, eventData);
         } else {
             gameCompletedWithObject(gameState, options, eventData);
         }
     }
+
     void gameCompletedWithUrl(String gameState, String link, String eventData) {
         CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
                 slidesCount, index, eventData));

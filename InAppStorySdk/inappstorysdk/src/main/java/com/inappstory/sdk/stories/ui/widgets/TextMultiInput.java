@@ -160,11 +160,11 @@ public class TextMultiInput extends LinearLayout {
         switch (inputType) {
             case MAIL:
                 mainText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-                mainText.setGravity(Gravity.CENTER);
-                mainTextLp.setMargins(Sizes.dpToPxExt(4), 0, Sizes.dpToPxExt(4), 0);
-                mainText.setLayoutParams(mainTextLp);
-                mainText.setSingleLine(true);
+                mainText.setSingleLine(false);
                 mainText.setMaxLines(1);
+                mainText.setPaddingRelative(0, 0, 0, 0);
+                mainTextLp.setMargins(0, 0, 0, 0);
+                mainText.setLayoutParams(mainTextLp);
                 addView(mainText);
                 break;
             case TEXT:

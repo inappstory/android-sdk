@@ -6,6 +6,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -32,6 +33,7 @@ import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -296,11 +298,15 @@ public class GameActivity extends AppCompatActivity {
 
 
     public void tapOnLinkDefault(String link) {
-        Intent i = new Intent(Intent.ACTION_VIEW);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        i.setData(Uri.parse(link));
-        startActivity(i);
-        overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.setData(Uri.parse(link));
+            startActivity(i);
+            overridePendingTransition(R.anim.popup_show, R.anim.empty_animation);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "Can't open this url: " + link, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -673,6 +679,7 @@ public class GameActivity extends AppCompatActivity {
     void gameCompleted(String gameState, String link) {
         try {
             Intent intent = new Intent();
+            closing = true;
             if (Sizes.isTablet()) {
                 String observableUID = manager.observableId;
                 if (observableUID != null) {
