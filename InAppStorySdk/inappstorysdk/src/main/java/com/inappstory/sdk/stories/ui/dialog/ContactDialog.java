@@ -336,7 +336,7 @@ public class ContactDialog {
         borderContainer.setBackground(borderContainerGradient);
         parentContainer.setBackground(parentContainerGradient);
         if (inttype == PHONE) {
-            editText.getDivider().setBackgroundColor(
+               editText.getDivider().setBackgroundColor(
                     hex2color(dialogStructure.configV2.main.background.color));
         }
         if (inttype == PHONE) {
