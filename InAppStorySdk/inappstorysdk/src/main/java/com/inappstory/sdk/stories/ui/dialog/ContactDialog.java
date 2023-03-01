@@ -228,7 +228,7 @@ public class ContactDialog {
                     editText.getMainText().setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                     break;
             }
-        } else  {
+        } else {
             editText.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         }
         setTypeface(editText.getMainText(), dialogStructure.configV2.main.input.text.isBold(),
@@ -458,18 +458,31 @@ public class ContactDialog {
                 }
             }
         });
+        keyboardFocusCheck(activity, et);
+    }
 
+    private void keyboardFocusCheck(final Activity activity, final AppCompatEditText et) {
+        View focused = activity.getCurrentFocus();
+        Runnable focusedRunnable = new Runnable() {
+            @Override
+            public void run() {
+                keyboardFocus(activity, et);
+            }
+        };
+        if (focused != null) {
+            focused.postDelayed(focusedRunnable, 200);
+        } else {
+            new Handler().postDelayed(focusedRunnable, 500);
+        }
+    }
+
+    private void keyboardFocus(final Activity activity, final AppCompatEditText et) {
         if (!isTablet()) {
-            View view = activity.getCurrentFocus();
-            if (view != null) {
-                view.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        et.requestFocus();
-                        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
-                    }
-                }, 200);
+            if (activity != null && !(activity.isFinishing() || activity.isDestroyed())) {
+                et.requestFocus();
+                InputMethodManager imm =
+                        (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
             }
         }
     }
