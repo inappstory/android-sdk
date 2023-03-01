@@ -80,6 +80,7 @@ Next `AppearanceManager` parameters can be set for list appearance:
 | csHasFavorite                    | Boolean             | false  | Flag that responsible for usage `favorite` feature in stories list and it's reader |
 | csHasLike                        | Boolean             | false  | Flag that responsible for usage `like/dislike` feature in stories list's reader |
 | csHasShare                       | Boolean             | false  | Flag that responsible for usage `share` feature in stories list's reader  |
+| csListItemGradientEnable         | Boolean             | true   | Add gradient to default stories cells				    |
 | csListItemRadius                 | Integer             | 16dp   | radius for list cell in pixels                                          |
 | csListItemWidth                  | Integer             | null   | the width of the list cell in pixels                                    |
 | csListItemHeight                 | Integer             | null   | the height of the list cell in pixels                                   |
