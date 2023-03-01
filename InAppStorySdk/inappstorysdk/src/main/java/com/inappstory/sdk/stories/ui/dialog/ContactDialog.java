@@ -228,7 +228,7 @@ public class ContactDialog {
                     editText.getMainText().setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
                     break;
             }
-        } else  {
+        } else {
             editText.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         }
         setTypeface(editText.getMainText(), dialogStructure.configV2.main.input.text.isBold(),
@@ -400,12 +400,8 @@ public class ContactDialog {
         dialog.getWindow().setLayout(dialogWidth, WRAP_CONTENT);
         dialog.show();
         StatisticManager.getInstance().pauseStoryEvent(false);
-        final AppCompatEditText et;
-        if (inttype == PHONE) {
-            et = editText.getCountryCodeText();
-        } else {
-            et = editText.getMainText();
-        }
+        AppCompatEditText et = (inttype == PHONE) ?
+                editText.getCountryCodeText() : editText.getMainText();
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
@@ -442,7 +438,6 @@ public class ContactDialog {
             }
         });
         final int finalInttype = inttype;
-
         buttonBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -458,19 +453,22 @@ public class ContactDialog {
                 }
             }
         });
+        keyboardFocus(activity, et);
+    }
 
+    private void keyboardFocus(final Activity activity, final AppCompatEditText et) {
         if (!isTablet()) {
-            View view = activity.getCurrentFocus();
-            if (view != null) {
-                view.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (activity != null && !(activity.isFinishing() || activity.isDestroyed())) {
                         et.requestFocus();
-                        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        InputMethodManager imm =
+                                (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
                     }
-                }, 200);
-            }
+                }
+            }, 200);
         }
     }
 
