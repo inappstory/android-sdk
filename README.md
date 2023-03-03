@@ -54,7 +54,7 @@ Add jitpack maven repo to the root `build.gradle` in the `repositories` section 
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-	implementation 'com.github.inappstory:android-sdk:1.13.0-rc1'
+	implementation 'com.github.inappstory:android-sdk:1.13.0-rc3'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -75,11 +75,11 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 	}
 
 	-keep enum com.inappstory.sdk.eventbus.CsThreadMode { *; }
-	keepclassmembers class fqcn.of.javascript.interface.for.webview {
+	-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 	    public *;
 	}
 
-	-keep public class com.inappstory.sdk.** {
+	-keep class com.inappstory.sdk.** {
 	    *;
 	}
 ```
