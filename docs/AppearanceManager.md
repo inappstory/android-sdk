@@ -195,7 +195,7 @@ class UGCListItemSimpleAppearance {
 `UGCListItemSimpleAppearance` parameters can be set through `Builder` pattern
 
 ```js
-UGCListItemSimpleAppearance gradient = new UGCListItemSimpleAppearance()
+UGCListItemSimpleAppearance appearance = new UGCListItemSimpleAppearance()
             .csIconColor(Color.RED)
             .csBackgroundColor(Color.WHITE)
 
