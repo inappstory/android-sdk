@@ -32,6 +32,7 @@ public class IASWebView extends WebView {
         super(context, attrs, defStyleAttr);
         init();
     }
+
     protected void init() {
         getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
         setBackgroundColor(getResources().getColor(R.color.black));
