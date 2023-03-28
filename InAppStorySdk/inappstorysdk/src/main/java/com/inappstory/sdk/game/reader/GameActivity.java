@@ -635,18 +635,18 @@ public class GameActivity extends AppCompatActivity {
             }
         };
         setViews();
-        new Handler(getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // Log.e("jsonConfig", generateJsonConfig());
-                if (getIntentValues()) {
+        if (getIntentValues()) {
+            new Handler(getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // Log.e("jsonConfig", generateJsonConfig());
+
                     initWebView();
                     setLoader();
                     manager.loadGame();
                 }
-            }
-        }, 300);
-
+            }, 300);
+        }
       /*  new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
