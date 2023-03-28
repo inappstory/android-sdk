@@ -1,5 +1,7 @@
 package com.inappstory.sdk.listwidget;
 
+import static com.inappstory.sdk.InAppStoryManager.IAS_ERROR_TAG;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -14,8 +16,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -40,9 +42,11 @@ public class StoriesWidgetService extends RemoteViewsService {
     private static final String TEST_DOMAIN = "https://api.test.inappstory.com/";
     private static final String PRODUCT_DOMAIN = "https://api.inappstory.ru/";
 
-    public static void loadData(@NonNull Context context) throws DataException {
-        if (AppearanceManager.csWidgetAppearance() == null || AppearanceManager.csWidgetAppearance().getWidgetClass() == null)
-            throw new DataException("'widgetClass' must not be null", new Throwable("Widget data is not valid"));
+    public static void loadData(@NonNull Context context) {
+        if (AppearanceManager.csWidgetAppearance() == null || AppearanceManager.csWidgetAppearance().getWidgetClass() == null) {
+            InAppStoryManager.showELog(IAS_ERROR_TAG, "'widgetClass' must not be null");
+            return;
+        }
         if (ApiSettings.getInstance().getCmsUrl() == null) {
             ApiSettings
                     .getInstance()

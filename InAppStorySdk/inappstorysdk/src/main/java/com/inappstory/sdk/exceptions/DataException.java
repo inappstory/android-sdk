@@ -2,6 +2,7 @@ package com.inappstory.sdk.exceptions;
 
 import android.util.Log;
 
+@Deprecated
 public class DataException extends Exception {
     @Override
     public String getMessage() {

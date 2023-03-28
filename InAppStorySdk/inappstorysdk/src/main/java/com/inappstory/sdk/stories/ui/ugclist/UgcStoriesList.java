@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui.ugclist;
 import static java.util.UUID.randomUUID;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -20,9 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -218,12 +214,9 @@ public class UgcStoriesList extends RecyclerView {
 
 
     void refreshList() {
-        try {
-            adapter = null;
-            loadStoriesInner(lastPayload);
-        } catch (DataException e) {
-            e.printStackTrace();
-        }
+
+        adapter = null;
+        loadStoriesInner(lastPayload);
     }
 
     String lastPayload = "";
@@ -327,7 +320,7 @@ public class UgcStoriesList extends RecyclerView {
 
     LoadStoriesCallback lcallback;
 
-    public void loadStories(@NonNull String filter) throws DataException {
+    public void loadStories(@NonNull String filter) {
         if (filter.isEmpty()) {
             loadStories();
         } else {
@@ -335,11 +328,11 @@ public class UgcStoriesList extends RecyclerView {
         }
     }
 
-    public void loadStories() throws DataException {
+    public void loadStories() {
         loadStories(new HashMap<String, Object>());
     }
 
-    public void loadStories(@NonNull HashMap<String, Object> filter) throws DataException {
+    public void loadStories(@NonNull HashMap<String, Object> filter) {
         loadStoriesLocal(JsonParser.mapToJsonString(filter));
     }
 
@@ -349,7 +342,7 @@ public class UgcStoriesList extends RecyclerView {
         this.cacheId = id;
     }
 
-    private void loadStoriesLocal(String payload) throws DataException {
+    private void loadStoriesLocal(String payload) {
         if (InAppStoryService.isNull()
                 || cacheId == null
                 || cacheId.isEmpty()) {
@@ -397,13 +390,15 @@ public class UgcStoriesList extends RecyclerView {
     }
 
 
-    private void loadStoriesInner(final String payload) throws DataException {
+    private void loadStoriesInner(final String payload) {
         lastPayload = payload;
         if (InAppStoryManager.getInstance() == null) {
-            throw new DataException("'InAppStoryManager' can't be null", new Throwable("InAppStoryManager data is not valid"));
+            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "'InAppStoryManager' cannot be null");
+            return;
         }
         if (InAppStoryManager.getInstance().getUserId() == null) {
-            throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
+            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "Parameter 'userId' cannot be null");
+            return;
         }
 
         checkAppearanceManager();
