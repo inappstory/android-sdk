@@ -257,15 +257,20 @@ public class GameActivity extends AppCompatActivity {
             new Handler(getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    WindowInsets insets = getWindow().getDecorView().getRootWindowInsets();
-                    if (insets != null) {
+                    if (getWindow() != null) {
+                        WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
+                                    windowInsets.getSystemWindowInsetTop();
+                            closeButton.requestLayout();
+                        }
                         if (Sizes.isTablet()) {
 
                             View gameContainer = findViewById(R.id.gameContainer);
                             if (gameContainer != null) {
                                 Point size = Sizes.getScreenSize();
-                                size.y -= (insets.getSystemWindowInsetTop() +
-                                        insets.getSystemWindowInsetBottom());
+                                size.y -= (windowInsets.getSystemWindowInsetTop() +
+                                        windowInsets.getSystemWindowInsetBottom());
                                 gameContainer.getLayoutParams().height = size.y;
                                 gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
                                 gameContainer.requestLayout();
@@ -275,22 +280,7 @@ public class GameActivity extends AppCompatActivity {
                 }
             });
         }
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                if (Build.VERSION.SDK_INT >= 28) {
-                    if (getWindow() != null) {
-                        WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
-                        if (windowInsets != null) {
-                            ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
-                                    windowInsets.getSystemWindowInsetTop();
-                            closeButton.requestLayout();
-                        }
-                    }
-                }
-                closeButton.setVisibility(View.VISIBLE);
-            }
-        });
+        closeButton.setVisibility(View.VISIBLE);
         loaderContainer.addView(loaderView.getView());
     }
 
@@ -619,17 +609,16 @@ public class GameActivity extends AppCompatActivity {
             }
         };
         setViews();
-        new Handler(getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // Log.e("jsonConfig", generateJsonConfig());
-                if (getIntentValues()) {
+        if (getIntentValues()) {
+            new Handler(getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
                     initWebView();
                     setLoader();
                     manager.loadGame();
                 }
-            }
-        }, 300);
+            }, 300);
+        }
 
     }
 
@@ -672,22 +661,33 @@ public class GameActivity extends AppCompatActivity {
 
     void gameCompleted(String gameState, String link) {
         try {
+            int storyId;
+            int slideIndex;
+            String observableId;
+            if (manager.storyId == null) {
+                storyId = Integer.parseInt(getIntent().getStringExtra("storyId"));
+                slideIndex = getIntent().getIntExtra("slideIndex", 0);
+                observableId = getIntent().getStringExtra("observableId");
+            } else {
+                storyId = Integer.parseInt(manager.storyId);
+                slideIndex = manager.index;
+                observableId = manager.observableId;
+            }
             Intent intent = new Intent();
             if (Sizes.isTablet()) {
-                String observableUID = manager.observableId;
-                if (observableUID != null) {
+                if (observableId != null) {
                     MutableLiveData<GameCompleteEvent> liveData =
-                            ScreensManager.getInstance().getGameObserver(observableUID);
+                            ScreensManager.getInstance().getGameObserver(observableId);
                     if (liveData != null) {
                         liveData.postValue(new GameCompleteEvent(
                                 gameState,
-                                Integer.parseInt(manager.storyId),
-                                manager.index));
+                                storyId,
+                                slideIndex));
                     }
                 }
             } else {
-                intent.putExtra("storyId", manager.storyId);
-                intent.putExtra("slideIndex", manager.index);
+                intent.putExtra("storyId", storyId);
+                intent.putExtra("slideIndex", slideIndex);
                 if (gameState != null)
                     intent.putExtra("gameState", gameState);
             }
