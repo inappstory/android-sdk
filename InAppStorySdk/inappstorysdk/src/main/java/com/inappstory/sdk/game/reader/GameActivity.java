@@ -694,22 +694,33 @@ public class GameActivity extends AppCompatActivity {
 
     void gameCompleted(String gameState, String link) {
         try {
+            int storyId;
+            int slideIndex;
+            String observableId;
+            if (manager.storyId == null) {
+                storyId = Integer.parseInt(getIntent().getStringExtra("storyId"));
+                slideIndex = getIntent().getIntExtra("slideIndex", 0);
+                observableId = getIntent().getStringExtra("observableId");
+            } else {
+                storyId = Integer.parseInt(manager.storyId);
+                slideIndex = manager.index;
+                observableId = manager.observableId;
+            }
             Intent intent = new Intent();
             if (Sizes.isTablet()) {
-                String observableUID = manager.observableId;
-                if (observableUID != null) {
+                if (observableId != null) {
                     MutableLiveData<GameCompleteEvent> liveData =
-                            ScreensManager.getInstance().getGameObserver(observableUID);
+                            ScreensManager.getInstance().getGameObserver(observableId);
                     if (liveData != null) {
                         liveData.postValue(new GameCompleteEvent(
                                 gameState,
-                                Integer.parseInt(manager.storyId),
-                                manager.index));
+                                storyId,
+                                slideIndex));
                     }
                 }
             } else {
-                intent.putExtra("storyId", manager.storyId);
-                intent.putExtra("slideIndex", manager.index);
+                intent.putExtra("storyId", storyId);
+                intent.putExtra("slideIndex", slideIndex);
                 if (gameState != null)
                     intent.putExtra("gameState", gameState);
             }
