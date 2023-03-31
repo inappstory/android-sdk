@@ -661,15 +661,15 @@ public class GameActivity extends AppCompatActivity {
 
     void gameCompleted(String gameState, String link) {
         try {
-            int storyId;
+            String storyId;
             int slideIndex;
             String observableId;
             if (manager.storyId == null) {
-                storyId = Integer.parseInt(getIntent().getStringExtra("storyId"));
+                storyId = getIntent().getStringExtra("storyId");
                 slideIndex = getIntent().getIntExtra("slideIndex", 0);
                 observableId = getIntent().getStringExtra("observableId");
             } else {
-                storyId = Integer.parseInt(manager.storyId);
+                storyId = manager.storyId;
                 slideIndex = manager.index;
                 observableId = manager.observableId;
             }
@@ -681,7 +681,7 @@ public class GameActivity extends AppCompatActivity {
                     if (liveData != null) {
                         liveData.postValue(new GameCompleteEvent(
                                 gameState,
-                                storyId,
+                                storyId != null ? Integer.parseInt(storyId) : 0,
                                 slideIndex));
                     }
                 }

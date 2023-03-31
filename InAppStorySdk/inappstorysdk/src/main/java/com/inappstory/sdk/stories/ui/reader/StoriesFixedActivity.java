@@ -247,11 +247,14 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
             if (storiesFragment == null || storiesFragment.readerManager == null) return;
-            storiesFragment.readerManager.gameComplete(
-                    data.getStringExtra("gameState"),
-                    Integer.parseInt(data.getStringExtra("storyId")),
-                    data.getIntExtra("slideIndex", 0)
-            );
+            if (data != null) {
+                String storyId = data.getStringExtra("storyId");
+                storiesFragment.readerManager.gameComplete(
+                        data.getStringExtra("gameState"),
+                        storyId != null ? Integer.parseInt(storyId) : 0,
+                        data.getIntExtra("slideIndex", 0)
+                );
+            }
         }
     }
 
