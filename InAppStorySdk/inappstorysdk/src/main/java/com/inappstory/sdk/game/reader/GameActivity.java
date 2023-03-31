@@ -668,20 +668,24 @@ public class GameActivity extends AppCompatActivity {
     void gameCompleted(String gameState, String link) {
         try {
 
-            int storyId;
+            String storyId;
             int slideIndex;
             String observableId;
             if (manager.storyId == null) {
-                storyId = Integer.parseInt(getIntent().getStringExtra("storyId"));
+                storyId = getIntent().getStringExtra("storyId");
                 slideIndex = getIntent().getIntExtra("slideIndex", 0);
                 observableId = getIntent().getStringExtra("observableId");
             } else {
-                storyId = Integer.parseInt(manager.storyId);
+                storyId = manager.storyId;
                 slideIndex = manager.index;
                 observableId = manager.observableId;
             }
             Intent intent = new Intent();
             closing = true;
+            intent.putExtra("storyId", storyId);
+            intent.putExtra("slideIndex", slideIndex);
+            if (gameState != null)
+                intent.putExtra("gameState", gameState);
             if (Sizes.isTablet()) {
                 if (observableId != null) {
                     MutableLiveData<GameCompleteEvent> liveData =
@@ -689,15 +693,10 @@ public class GameActivity extends AppCompatActivity {
                     if (liveData != null) {
                         liveData.postValue(new GameCompleteEvent(
                                 gameState,
-                                storyId,
+                                Integer.parseInt(storyId),
                                 slideIndex));
                     }
                 }
-            } else {
-                intent.putExtra("storyId", storyId);
-                intent.putExtra("slideIndex", slideIndex);
-                if (gameState != null)
-                    intent.putExtra("gameState", gameState);
             }
             if (link != null)
                 manager.tapOnLink(link);

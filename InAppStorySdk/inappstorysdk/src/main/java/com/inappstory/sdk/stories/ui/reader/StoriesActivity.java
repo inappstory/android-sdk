@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -50,6 +51,8 @@ import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrame
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 import com.inappstory.sdk.utils.StringsUtils;
+
+import java.util.Set;
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -220,6 +223,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
             if (storiesFragment == null || storiesFragment.readerManager == null) return;
+            Set<String> keys = data.getExtras().keySet();
+            for (String key: keys) {
+                Log.e("onActivityResult", key + ": " + data.getExtras().get(key).toString());
+            }
             storiesFragment.readerManager.gameComplete(
                     data.getStringExtra("gameState"),
                     Integer.parseInt(data.getStringExtra("storyId")),
