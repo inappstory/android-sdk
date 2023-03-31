@@ -685,12 +685,11 @@ public class GameActivity extends AppCompatActivity {
                                 slideIndex));
                     }
                 }
-            } else {
-                intent.putExtra("storyId", storyId);
-                intent.putExtra("slideIndex", slideIndex);
-                if (gameState != null)
-                    intent.putExtra("gameState", gameState);
             }
+            intent.putExtra("storyId", storyId);
+            intent.putExtra("slideIndex", slideIndex);
+            if (gameState != null)
+                intent.putExtra("gameState", gameState);
             if (link != null)
                 manager.tapOnLink(link);
             setResult(RESULT_OK, intent);
