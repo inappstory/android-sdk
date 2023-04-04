@@ -7,7 +7,7 @@ Appearance for default favorite cell was changed (now it looks similarly with iO
 `AppearanceManager.csUGCListItemSimpleAppearance()` was added. [Here](AppearanceManager.md#ugc-cell-simple-customization) is described its usage.
 
 ### From 1.12.x
-New feature: UGC Feeds. [Here](docs/UgcStoriesList.md) is described its usage.
+New feature: UGC Feeds. [Here](UgcStoriesList.md) is described its usage.
 
 ### From 1.11.x
 Now parameters from methods in IGetFavoriteListItem (bindFavoriteItem and setImages) can contains more than 4 elements (and count may be more than 4)
@@ -106,7 +106,8 @@ interface IStoriesListItem {
 ### From 1.3.x to 1.4.x
 `targetSdkVersion` in SDK gradle file was updated from 29 to 30. It may be necessary to update `targetSdkVersion` in your project gradle file.
 
-`InAppStoryManager` and `StoriesList` callbacks were added (you should use them instead of `CsEventBus`). For more information read [here](https://github.com/inappstory/android-sdk#inappstorymanager-callbacks).
+`InAppStoryManager` and `StoriesList` callbacks were added (you should use them instead of `CsEventBus`). For more information read [here]
+(InAppStoryManager.md#callbacks).
 
 `InAppStoryManager.closeStoryReader()` method was added to SDK. 
 We recommend to use it instead of `CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM))`
