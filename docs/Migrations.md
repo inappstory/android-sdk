@@ -106,8 +106,7 @@ interface IStoriesListItem {
 ### From 1.3.x to 1.4.x
 `targetSdkVersion` in SDK gradle file was updated from 29 to 30. It may be necessary to update `targetSdkVersion` in your project gradle file.
 
-`InAppStoryManager` and `StoriesList` callbacks were added (you should use them instead of `CsEventBus`). For more information read [here]
-(InAppStoryManager.md#callbacks).
+`InAppStoryManager` and `StoriesList` callbacks were added (you should use them instead of `CsEventBus`). For more information read [here](InAppStoryManager.md#callbacks).
 
 `InAppStoryManager.closeStoryReader()` method was added to SDK. 
 We recommend to use it instead of `CsEventBus.getDefault().post(new CloseStoryReaderEvent(CloseStory.CUSTOM))`
