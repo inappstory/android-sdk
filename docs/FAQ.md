@@ -100,7 +100,7 @@ private fun requestParentForDisallow(view: ViewParent, disallow: Boolean) {
 }
 ```
 
-#### 16) SSL Pinning
+#### 17) SSL Pinning
 If you want to use SSL Pinning in your project, you need to add next line to your Application tag AndroidManifest.xml
 
 ```xml
