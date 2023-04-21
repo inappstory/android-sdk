@@ -25,6 +25,7 @@ A library for embedding stories into an application with customization.
 	* [Methods](docs/UgcStoriesList.md#methods)
 	* [Customization and Callbacks](docs/UgcStoriesList.md#customization-and-callbacks)
 * [Stories Reader Goods Widget](docs/Goods.md)
+* [Stories Widget Events](docs/Stories_Widgets_Events.md)
 * [Home Screen Widget](docs/Home_Screen_Widget.md)
 * [FAQ](docs/FAQ.md)
 * [Samples](https://github.com/inappstory/Android-Example)
