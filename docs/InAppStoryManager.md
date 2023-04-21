@@ -330,4 +330,4 @@ public interface StoryWidgetCallback {
         );
 }
 ```
-[Here](docs/Stories_Widgets_Events.md) you can find full information about this events for each widget.
+[Here](Stories_Widgets_Events.md) you can find full information about this events for each widget.
