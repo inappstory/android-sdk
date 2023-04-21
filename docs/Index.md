@@ -4,7 +4,7 @@ A library for embedding stories into an application with customization.
 
 ## Contents
 
-* [How to getting started](README.md)
+* [How to getting started](../README.md)
 * [Migrations](Migrations.md)
 * [InAppStoryManager](InAppStoryManager.md)
 	* [Initialization](InAppStoryManager.md#initialization)
