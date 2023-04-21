@@ -43,6 +43,8 @@ public class ReaderManager {
 
     private int lastSentId = 0;
 
+    int latestShowStoryAction = ShowStory.ACTION_OPEN;
+
     public void sendShowStoryEvents(int storyId) {
         if (InAppStoryService.getInstance() == null || InAppStoryService.getInstance().getDownloadManager() == null)
             return;
@@ -50,12 +52,13 @@ public class ReaderManager {
         lastSentId = storyId;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, storyType);
         if (story != null) {
-            CsEventBus.getDefault().post(new ShowStory(story.id, story.title, story.tags,
-                    story.getSlidesCount(), source));
+            CsEventBus.getDefault().post(new ShowStory(story.id, story.statTitle, story.tags,
+                    story.getSlidesCount(), source, latestShowStoryAction));
             if (CallbackManager.getInstance().getShowStoryCallback() != null) {
-                CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, StringsUtils.getNonNull(story.title),
+                CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, StringsUtils.getNonNull(story.statTitle),
                         StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                        CallbackManager.getInstance().getSourceFromInt(source));
+                        CallbackManager.getInstance().getSourceFromInt(source),
+                        CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction));
             }
         }
     }
@@ -128,6 +131,7 @@ public class ReaderManager {
                             st.lastIndex = slideIndex;
                         }
                     }
+                    latestShowStoryAction = ShowStory.ACTION_CUSTOM;
                     parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
                 }
             });
@@ -417,12 +421,12 @@ public class ReaderManager {
         return getSubscriberByStoryId(currentStoryId);
     }
 
-    public void nextStory() {
-        parentFragment.nextStory();
+    public void nextStory(int action) {
+        parentFragment.nextStory(action);
     }
 
-    public void prevStory() {
-        parentFragment.prevStory();
+    public void prevStory(int action) {
+        parentFragment.prevStory(action);
     }
 
 

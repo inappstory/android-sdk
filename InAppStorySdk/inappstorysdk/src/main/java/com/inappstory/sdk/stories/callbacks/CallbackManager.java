@@ -11,11 +11,13 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CustomActionCallb
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 public class CallbackManager {
 
@@ -77,6 +79,25 @@ public class CallbackManager {
                 break;
         }
         return sourceType;
+    }
+
+    public ShowStoryAction getShowStoryActionTypeFromInt(int intActionType) {
+        ShowStoryAction type = ShowStoryAction.OPEN;
+        switch (intActionType) {
+            case ShowStory.ACTION_AUTO:
+                type = ShowStoryAction.AUTO;
+                break;
+            case ShowStory.ACTION_CLICK:
+                type = ShowStoryAction.CLICK;
+                break;
+            case ShowStory.ACTION_CUSTOM:
+                type = ShowStoryAction.CUSTOM;
+                break;
+            case ShowStory.ACTION_SWIPE:
+                type = ShowStoryAction.SWIPE;
+                break;
+        }
+        return type;
     }
 
     public CloseReader getCloseTypeFromInt(int intCloseType) {

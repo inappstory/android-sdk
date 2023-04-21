@@ -221,13 +221,13 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.title, story.tags, story.getSlidesCount(),
+                        story.statTitle, story.tags, story.getSlidesCount(),
                         story.lastIndex, CloseStory.CUSTOM,
                         getIntent().getIntExtra("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
-                            StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
+                            StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, CloseReader.CUSTOM,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getIntent().getIntExtra("source", 0))
@@ -399,13 +399,13 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.getSlidesCount(),
+                    story.statTitle, story.tags, story.getSlidesCount(),
                     story.lastIndex, action,
                     getIntent().getIntExtra("source", 0)));
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         story.id,
-                        StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
+                        StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                         story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
                                 action),
                         CallbackManager.getInstance().getSourceFromInt(

@@ -5,5 +5,6 @@ public interface ShowStoryCallback {
                    String title,
                    String tags,
                    int slidesCount,
-                   SourceType source);
+                   SourceType source,
+                   ShowStoryAction action);
 }

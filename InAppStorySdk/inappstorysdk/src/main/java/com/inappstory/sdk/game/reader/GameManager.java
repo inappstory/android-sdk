@@ -3,6 +3,7 @@ package com.inappstory.sdk.game.reader;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
+import android.util.Log;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -165,15 +166,15 @@ public class GameManager {
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                 Integer.parseInt(storyId), Story.StoryType.COMMON);
-        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
+        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.statTitle,
                 story.tags, story.getSlidesCount(), story.lastIndex,
                 link));
         int cta = CallToAction.GAME;
-        CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
+        CsEventBus.getDefault().post(new CallToAction(story.id, story.statTitle,
                 story.tags, story.getSlidesCount(), story.lastIndex,
                 link, cta));
         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(story.id, StringsUtils.getNonNull(story.title),
+            CallbackManager.getInstance().getCallToActionCallback().callToAction(story.id, StringsUtils.getNonNull(story.statTitle),
                     StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex,
                     StringsUtils.getNonNull(link), ClickAction.GAME);
         }

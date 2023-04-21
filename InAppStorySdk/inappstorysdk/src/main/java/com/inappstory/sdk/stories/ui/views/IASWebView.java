@@ -3,8 +3,10 @@ package com.inappstory.sdk.stories.ui.views;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -31,6 +33,12 @@ public class IASWebView extends WebView {
     public IASWebView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
+    }
+
+    @Override
+    public void evaluateJavascript(@NonNull String script, @Nullable ValueCallback<String> resultCallback) {
+        Log.d("InAppStory_SDK_Game", script);
+        super.evaluateJavascript(script, resultCallback);
     }
 
     protected void init() {

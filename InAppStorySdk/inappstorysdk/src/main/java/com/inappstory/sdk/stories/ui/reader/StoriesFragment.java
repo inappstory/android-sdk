@@ -28,6 +28,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -295,6 +296,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     @Override
     public void onPageScrollStateChanged(int state) {
         if (InAppStoryService.isNull()) return;
+        if (state == ViewPager.SCROLL_STATE_DRAGGING)
+            readerManager.latestShowStoryAction = ShowStory.ACTION_SWIPE;
         if (state == ViewPager.SCROLL_STATE_IDLE) {
             if (getCurIndexById(readerManager.getCurrentStoryId()) ==
                     readerManager.getCurrentSlideIndex()) {
@@ -347,7 +350,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         }, delay);
     }
 
-    public void nextStory() {
+    public void nextStory(int action) {
+        readerManager.latestShowStoryAction = action;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -362,7 +366,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         });
     }
 
-    public void prevStory() {
+    public void prevStory(int action) {
+        readerManager.latestShowStoryAction = action;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

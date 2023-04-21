@@ -219,14 +219,14 @@ public class ScreensManager {
         intent2.putExtra("tags", story.tags);
         intent2.putExtra("options", options);
         intent2.putExtra("slidesCount", story.getSlidesCount());
-        intent2.putExtra("title", story.title);
+        intent2.putExtra("title", story.statTitle);
         intent2.putExtra("gameConfig", gameConfig);
         intent2.putExtra("gameResources", resources);
         intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
-        CsEventBus.getDefault().post(new StartGame(storyId, story.title, story.tags,
+        CsEventBus.getDefault().post(new StartGame(storyId, story.statTitle, story.tags,
                 story.getSlidesCount(), index));
         if (CallbackManager.getInstance().getGameCallback() != null) {
-            CallbackManager.getInstance().getGameCallback().startGame(storyId, StringsUtils.getNonNull(story.title),
+            CallbackManager.getInstance().getGameCallback().startGame(storyId, StringsUtils.getNonNull(story.statTitle),
                     StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index);
         }
         if (Sizes.isTablet()) {
