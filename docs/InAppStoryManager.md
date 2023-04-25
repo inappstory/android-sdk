@@ -94,6 +94,10 @@ public enum CloseReader {
 public enum ClickAction {
     BUTTON, SWIPE, GAME, DEEPLINK
 }
+
+public enum ShowStoryAction {
+    OPEN, CLICK, SWIPE, AUTO, CUSTOM
+}
 ```
 
 #### Handlers that overrides default behaviour
@@ -152,12 +156,13 @@ public interface ShowStoryCallback {
                    String title,
                    String tags,
                    int slidesCount,
-                   SourceType source);
+                   SourceType source,
+                   ShowStoryAction action);
 }
 ```
 
 2) When you close stories reader
-```
+```java
 InAppStoryManager.getInstance().setCloseStoryCallback(CloseStoryCallback closeStoryCallback);
 
 public interface CloseStoryCallback {
