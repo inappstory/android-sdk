@@ -58,6 +58,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -254,7 +255,7 @@ public class ScreensManager {
     private Long lastOpenTry = -1L;
 
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds, int index, int source, Integer slideIndex,
+                                  ArrayList<Integer> storiesIds, int index, int source, int firstAction, Integer slideIndex,
                                   String feed, String feedId, Story.StoryType type) {
         if (System.currentTimeMillis() - lastOpenTry < 1000) {
             return;
@@ -269,6 +270,7 @@ public class ScreensManager {
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
             bundle.putInt("source", source);
+            bundle.putInt("firstAction", firstAction);
             bundle.putString("storiesType", type.name());
             bundle.putString("feedId", feedId);
             bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
@@ -327,6 +329,7 @@ public class ScreensManager {
                             StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", index);
             intent2.putExtra("source", source);
+            intent2.putExtra("firstAction", firstAction);
             intent2.putExtra("storiesType", type.name());
             if (listID != null)
                 intent2.putExtra("listID", listID);
@@ -362,17 +365,11 @@ public class ScreensManager {
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 ctx.startActivity(intent2);
-                if (ctx instanceof Activity) {
-                    //   ((Activity) ctx).overridePendingTransition(0, 0);
-                }
             } else {
                 if (!(outerContext instanceof Activity)) {
                     intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
                 outerContext.startActivity(intent2);
-                if (outerContext instanceof Activity) {
-                    //   ((Activity) outerContext).overridePendingTransition(0, 0);
-                }
             }
         }
     }
@@ -393,6 +390,7 @@ public class ScreensManager {
                 storiesIds,
                 index,
                 source,
+                ShowStory.ACTION_OPEN,
                 0,
                 feed,
                 feedId,

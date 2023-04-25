@@ -33,12 +33,18 @@ public class ReaderManager {
     public ReaderManager() {
     }
 
-    public ReaderManager(String listID, String feedId, String feedSlug, Story.StoryType storyType, int source) {
+    public ReaderManager(String listID,
+                         String feedId,
+                         String feedSlug,
+                         Story.StoryType storyType,
+                         int source,
+                         int latestShowStoryAction) {
         this.listID = listID;
         this.feedId = feedId;
         this.feedSlug = feedSlug;
         this.storyType = storyType;
         this.source = source;
+        this.latestShowStoryAction = latestShowStoryAction;
     }
 
     private int lastSentId = 0;
@@ -137,8 +143,14 @@ public class ReaderManager {
             });
         } else {
             InAppStoryManager.getInstance().showStoryWithSlide(
-                    storyId + "", parentFragment.getContext(),
-                    slideIndex, parentFragment.readerSettings, storyType);
+                    storyId + "",
+                    parentFragment.getContext(),
+                    slideIndex,
+                    parentFragment.readerSettings,
+                    storyType,
+                    ShowStory.SINGLE,
+                    ShowStory.ACTION_CUSTOM
+            );
         }
     }
 

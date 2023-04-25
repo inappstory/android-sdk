@@ -115,7 +115,7 @@ public class GameManager {
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
-            InAppStoryManager.getInstance().showStory(
+            InAppStoryManager.getInstance().showStoryCustom(
                     options.openStory.id,
                     host,
                     AppearanceManager.getCommonInstance()

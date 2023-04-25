@@ -1253,14 +1253,29 @@ public class InAppStoryManager {
 
     private String lastSingleOpen = null;
 
-    private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide,
-                                final Story.StoryType type) {
+    private void showStoryInner(final String storyId,
+                                final Context context,
+                                final AppearanceManager manager,
+                                final IShowStoryCallback callback,
+                                final Integer slide,
+                                final Story.StoryType type,
+                                final int readerSource,
+                                final int readerAction) {
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStoryInner(storyId, context, manager, callback, slide, type);
+                    showStoryInner(
+                            storyId,
+                            context,
+                            manager,
+                            callback,
+                            slide,
+                            type,
+                            readerSource,
+                            readerAction
+                    );
                 }
             }, 1000);
             return;
@@ -1286,7 +1301,16 @@ public class InAppStoryManager {
                             @Override
                             public void run() {
                                 lastSingleOpen = null;
-                                showStoryInner(storyId, context, manager, callback, slide, type);
+                                showStoryInner(
+                                        storyId,
+                                        context,
+                                        manager,
+                                        callback,
+                                        slide,
+                                        type,
+                                        readerSource,
+                                        readerAction
+                                );
                                 // StoriesActivity.destroyed = 0;
                             }
                         }, 500);
@@ -1295,7 +1319,16 @@ public class InAppStoryManager {
                         localHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                showStoryInner(storyId, context, manager, callback, slide, type);
+                                showStoryInner(
+                                        storyId,
+                                        context,
+                                        manager,
+                                        callback,
+                                        slide,
+                                        type,
+                                        readerSource,
+                                        readerAction
+                                );
                                 ScreensManager.created = 0;
                             }
                         }, 350);
@@ -1354,11 +1387,18 @@ public class InAppStoryManager {
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
                     ScreensManager.getInstance().openStoriesReader(
-                            context, null,
-                            manager, stIds,
-                            0, ShowStory.SINGLE,
-                            slide, null,
-                            null, Story.StoryType.COMMON);
+                            context,
+                            null,
+                            manager,
+                            stIds,
+                            0,
+                            readerSource,
+                            readerAction,
+                            slide,
+                            null,
+                            null,
+                            Story.StoryType.COMMON
+                    );
                     localHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -1385,8 +1425,10 @@ public class InAppStoryManager {
 
     private void showStoryInner(final String storyId, final Context context,
                                 final AppearanceManager manager,
-                                final IShowStoryCallback callback, Story.StoryType type) {
-        showStoryInner(storyId, context, manager, callback, null, type);
+                                final IShowStoryCallback callback, Story.StoryType type,
+                                final int readerSource,
+                                final int readerAction) {
+        showStoryInner(storyId, context, manager, callback, null, type, readerSource, readerAction);
     }
 
     /**
@@ -1398,11 +1440,28 @@ public class InAppStoryManager {
      * @param callback (callback) custom action when story is loaded
      */
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
-        showStoryInner(storyId, context, manager, callback, Story.StoryType.COMMON);
+        showStoryInner(
+                storyId,
+                context,
+                manager,
+                callback,
+                Story.StoryType.COMMON,
+                ShowStory.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
     }
 
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback, Integer slide) {
-        showStoryInner(storyId, context, manager, callback, slide, Story.StoryType.COMMON);
+        showStoryInner(
+                storyId,
+                context,
+                manager,
+                callback,
+                slide,
+                Story.StoryType.COMMON,
+                ShowStory.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
     }
 
     /**
@@ -1413,12 +1472,22 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON);
+        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_OPEN);
     }
 
-    public void showStoryWithSlide(String storyId, Context context,
-                                   Integer slide,
-                                   String managerSettings, Story.StoryType type) {
+    public void showStoryCustom(String storyId, Context context, AppearanceManager manager) {
+        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_CUSTOM);
+    }
+
+    public void showStoryWithSlide(
+            String storyId,
+            Context context,
+            Integer slide,
+            String managerSettings,
+            Story.StoryType type,
+            final int readerSource,
+            final int readerAction
+    ) {
         AppearanceManager appearanceManager = new AppearanceManager();
         if (managerSettings != null) {
             StoriesReaderSettings settings = JsonParser.fromJson(managerSettings, StoriesReaderSettings.class);
@@ -1439,7 +1508,7 @@ public class InAppStoryManager {
             appearanceManager.csShareIcon(settings.shareIcon);
             appearanceManager.csSoundIcon(settings.soundIcon);
         }
-        showStoryInner(storyId, context, appearanceManager, null, slide, type);
+        showStoryInner(storyId, context, appearanceManager, null, slide, type, readerSource, readerAction);
     }
 
     public static class Builder {

@@ -44,6 +44,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -415,7 +416,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 Bundle bundle = new Bundle();
 
                 bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
-                bundle.putInt("source", getIntent().getIntExtra("source", 0));
+                bundle.putInt("source", getIntent().getIntExtra("source", ShowStory.SINGLE));
+                bundle.putInt("firstAction", getIntent().getIntExtra("firstAction", ShowStory.ACTION_OPEN));
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));

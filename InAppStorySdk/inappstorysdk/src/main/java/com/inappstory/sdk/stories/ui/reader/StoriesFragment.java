@@ -175,7 +175,8 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         readerManager = new ReaderManager(arguments.getString("listID", null),
                 arguments.getString("feedId", null),
                 arguments.getString("feedSlug", null), type,
-                arguments.getInt("source", 0));
+                arguments.getInt("source", ShowStory.SINGLE),
+                arguments.getInt("firstAction", ShowStory.ACTION_OPEN));
 
         if (currentIds != null && !currentIds.isEmpty()) {
             readerManager.setStoriesIds(currentIds);
