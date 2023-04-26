@@ -139,7 +139,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 .getStoryById(storiesIds.get(index), Story.StoryType.UGC);
         if (current != null) {
             if (callback != null) {
-                callback.itemClick(current.id, index, current.title, current.tags,
+                callback.itemClick(current.id, index, current.statTitle, current.tags,
                         current.getSlidesCount(), false, null);
             }
             if (current.deeplink != null) {
@@ -147,7 +147,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 //OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                            current.id, StringsUtils.getNonNull(current.title),
+                            current.id, StringsUtils.getNonNull(current.statTitle),
                             StringsUtils.getNonNull(current.tags), current.getSlidesCount(), 0,
                             current.deeplink, ClickAction.DEEPLINK);
                 }
@@ -187,7 +187,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             if (callback != null) {
                 Story lStory = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.UGC);
                 if (lStory != null) {
-                    callback.itemClick(lStory.id, index, StringsUtils.getNonNull(lStory.title), "", 0,
+                    callback.itemClick(lStory.id, index, StringsUtils.getNonNull(lStory.statTitle), "", 0,
                             false, "");
                 } else {
                     callback.itemClick(storiesIds.get(index), index, "", "", 0,

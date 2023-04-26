@@ -92,6 +92,8 @@ public class Story implements Parcelable {
     @SerializedName("title_color")
     public String titleColor;
 
+    @SerializedName("stat_title")
+    public String statTitle;
 
     @SerializedName("video_cover")
     public List<Image> videoUrl;
@@ -377,6 +379,7 @@ public class Story implements Parcelable {
         story.id = id;
         story.lastIndex = lastIndex;
         story.title = title;
+        story.statTitle = statTitle;
         story.source = source;
         story.backgroundColor = backgroundColor;
         story.image = image;
@@ -435,6 +438,7 @@ public class Story implements Parcelable {
         dest.writeInt(id);
         dest.writeInt(lastIndex);
         dest.writeString(title);
+        dest.writeString(statTitle);
         dest.writeString(source);
         dest.writeString(backgroundColor);
         dest.writeTypedList(image);

@@ -24,7 +24,6 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
@@ -297,12 +296,8 @@ public class StoriesList extends RecyclerView {
 
 
     void refreshList() {
-        try {
-            adapter = null;
-            loadStoriesInner();
-        } catch (DataException e) {
-            e.printStackTrace();
-        }
+        adapter = null;
+        loadStoriesInner();
     }
 
     public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
@@ -448,7 +443,7 @@ public class StoriesList extends RecyclerView {
 
     LoadStoriesCallback lcallback;
 
-    public void loadStories() throws DataException {
+    public void loadStories() {
         InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
         loadStoriesLocal();
     }
@@ -459,7 +454,7 @@ public class StoriesList extends RecyclerView {
         this.cacheId = id;
     }
 
-    private void loadStoriesLocal() throws DataException {
+    private void loadStoriesLocal() {
         if (InAppStoryService.isNull()
                 || cacheId == null
                 || cacheId.isEmpty()) {
@@ -522,13 +517,15 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    public void loadStoriesInner() throws DataException {
+    public void loadStoriesInner() {
 
         if (InAppStoryManager.getInstance() == null) {
-            throw new DataException("'InAppStoryManager' can't be null", new Throwable("InAppStoryManager data is not valid"));
+            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "'InAppStoryManager' cannot be null");
+            return;
         }
         if (InAppStoryManager.getInstance().getUserId() == null) {
-            throw new DataException("'userId' can't be null", new Throwable("InAppStoryManager data is not valid"));
+            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "Parameter 'userId' cannot be null");
+            return;
         }
 
         checkAppearanceManager();

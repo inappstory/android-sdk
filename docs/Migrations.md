@@ -1,5 +1,19 @@
 ## Migration
 
+### From 1.14.x
+Signature of `showStory` method in `ShowStoryCallback` was changed. (added `ShowStoryAction action` parameter)
+```java
+interface ShowStoryCallback {
+    
+    void showStory(int id,
+                   String title,
+                   String tags,
+                   int slidesCount,
+                   SourceType source,
+                   ShowStoryAction action);
+}
+```
+
 ### From 1.13.x
 `AppearanceManager.csListItemWidth()` now is deprecated. `AppearanceManager.csListItemRatio()` was added. Use this one (only with `AppearanceManager.csListItemHeight()`).
 Appearance for default favorite cell was changed (now it looks similarly with iOS InAppStory SDK)

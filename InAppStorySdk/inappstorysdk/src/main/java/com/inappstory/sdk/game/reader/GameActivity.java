@@ -433,7 +433,6 @@ public class GameActivity extends AppCompatActivity {
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
         options.apiBaseUrl = NetworkClient.getInstance().getBaseUrl();
-        options.appPackageId = NetworkClient.getInstance().getBaseUrl();
         int orientation = getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
@@ -534,7 +533,7 @@ public class GameActivity extends AppCompatActivity {
                             manager.storyId,
                             manager.index);
                 }
-                Log.d("InAppStory_SDK_Game", consoleMessage.messageLevel().name() + ": "
+                Log.d("InAppStory_SDK_Game", "Console: " + consoleMessage.messageLevel().name() + ": "
                         + consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId());
@@ -659,14 +658,15 @@ public class GameActivity extends AppCompatActivity {
     }
 
     void setAudioManagerMode(String mode) {
-        AudioManager audioManager = (AudioManager)
-                getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setMode(AudioModes.getModeVal(mode));
+            AudioManager audioManager = (AudioManager)
+                    getSystemService(Context.AUDIO_SERVICE);
+            audioManager.setMode(AudioModes.getModeVal(mode));
     }
 
 
     void gameCompleted(String gameState, String link) {
         try {
+
             String storyId;
             int slideIndex;
             String observableId;
@@ -681,6 +681,10 @@ public class GameActivity extends AppCompatActivity {
             }
             Intent intent = new Intent();
             closing = true;
+            intent.putExtra("storyId", storyId);
+            intent.putExtra("slideIndex", slideIndex);
+            if (gameState != null)
+                intent.putExtra("gameState", gameState);
             if (Sizes.isTablet()) {
                 if (observableId != null) {
                     MutableLiveData<GameCompleteEvent> liveData =
@@ -693,10 +697,6 @@ public class GameActivity extends AppCompatActivity {
                     }
                 }
             }
-            intent.putExtra("storyId", storyId);
-            intent.putExtra("slideIndex", slideIndex);
-            if (gameState != null)
-                intent.putExtra("gameState", gameState);
             if (link != null)
                 manager.tapOnLink(link);
             setResult(RESULT_OK, intent);

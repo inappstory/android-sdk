@@ -65,21 +65,21 @@ public class ButtonsPanelManager {
         final int val;
         if (like) {
             if (story.liked()) {
-                CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
+                CsEventBus.getDefault().post(new LikeStory(story.id, story.statTitle,
                         story.tags, story.getSlidesCount(), story.lastIndex, false));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            story.id, StringsUtils.getNonNull(story.title),
+                            story.id, StringsUtils.getNonNull(story.statTitle),
                             StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, false);
                 }
                 val = 0;
             } else {
-                CsEventBus.getDefault().post(new LikeStory(story.id, story.title,
+                CsEventBus.getDefault().post(new LikeStory(story.id, story.statTitle,
                         story.tags, story.getSlidesCount(), story.lastIndex, true));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            story.id, StringsUtils.getNonNull(story.title),
+                            story.id, StringsUtils.getNonNull(story.statTitle),
                             StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, true);
                 }
@@ -89,21 +89,21 @@ public class ButtonsPanelManager {
             }
         } else {
             if (story.disliked()) {
-                CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
+                CsEventBus.getDefault().post(new DislikeStory(story.id, story.statTitle,
                         story.tags, story.getSlidesCount(), story.lastIndex, false));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            story.id, StringsUtils.getNonNull(story.title),
+                            story.id, StringsUtils.getNonNull(story.statTitle),
                             StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, false);
                 }
                 val = 0;
             } else {
-                CsEventBus.getDefault().post(new DislikeStory(story.id, story.title,
+                CsEventBus.getDefault().post(new DislikeStory(story.id, story.statTitle,
                         story.tags, story.getSlidesCount(), story.lastIndex, true));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            story.id, StringsUtils.getNonNull(story.title),
+                            story.id, StringsUtils.getNonNull(story.statTitle),
                             StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, true);
                 }
@@ -161,11 +161,11 @@ public class ButtonsPanelManager {
         if (!story.favorite)
             StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex,
                     parentManager != null ? parentManager.getFeedId() : null);
-        CsEventBus.getDefault().post(new FavoriteStory(story.id, story.title,
+        CsEventBus.getDefault().post(new FavoriteStory(story.id, story.statTitle,
                 story.tags, story.getSlidesCount(), story.lastIndex, !story.favorite));
         if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
             CallbackManager.getInstance().getFavoriteStoryCallback().favoriteStory(
-                    story.id, StringsUtils.getNonNull(story.title),
+                    story.id, StringsUtils.getNonNull(story.statTitle),
                     StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                     story.lastIndex, !story.favorite);
         }
@@ -233,11 +233,11 @@ public class ButtonsPanelManager {
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex,
                 story.shareType(story.lastIndex),
                 parentManager != null ? parentManager.getFeedId() : null);
-        CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.title,
+        CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.statTitle,
                 story.tags, story.getSlidesCount(), story.lastIndex));
 
         if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
-            CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, StringsUtils.getNonNull(story.title),
+            CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, StringsUtils.getNonNull(story.statTitle),
                     StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex);
         }
         if (story.isScreenshotShare(story.lastIndex)) {

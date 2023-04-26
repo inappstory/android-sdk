@@ -57,6 +57,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -221,13 +222,13 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.title, story.tags, story.getSlidesCount(),
+                        story.statTitle, story.tags, story.getSlidesCount(),
                         story.lastIndex, CloseStory.CUSTOM,
                         getIntent().getIntExtra("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
-                            StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
+                            StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, CloseReader.CUSTOM,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getIntent().getIntExtra("source", 0))
@@ -357,7 +358,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
                 bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
-                bundle.putInt("source", getIntent().getIntExtra("source", 0));
+                bundle.putInt("source", getIntent().getIntExtra("source", ShowStory.SINGLE));
+                bundle.putInt("firstAction", getIntent().getIntExtra("firstAction", ShowStory.ACTION_OPEN));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
                 setAppearanceSettings(bundle);
@@ -399,13 +401,13 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
 
             CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.title, story.tags, story.getSlidesCount(),
+                    story.statTitle, story.tags, story.getSlidesCount(),
                     story.lastIndex, action,
                     getIntent().getIntExtra("source", 0)));
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         story.id,
-                        StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
+                        StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                         story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
                                 action),
                         CallbackManager.getInstance().getSourceFromInt(

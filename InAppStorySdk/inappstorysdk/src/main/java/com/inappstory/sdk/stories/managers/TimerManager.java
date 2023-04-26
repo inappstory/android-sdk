@@ -4,6 +4,7 @@ import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
@@ -33,7 +34,7 @@ public class TimerManager {
                 timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
                 if (pageManager != null)
-                    pageManager.nextSlide();
+                    pageManager.nextSlide(ShowStory.ACTION_AUTO);
                 return;
             }
             timerHandler.postDelayed(timerTask, 50);

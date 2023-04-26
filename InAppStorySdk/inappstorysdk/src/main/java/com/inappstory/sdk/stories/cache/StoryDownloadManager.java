@@ -438,6 +438,7 @@ public class StoryDownloadManager {
         cur.layout = story.layout;
         cur.tags = story.tags;
         cur.title = story.title;
+        cur.statTitle = story.statTitle;
         cur.srcList = new ArrayList<>(story.getSrcList());
         cur.imagePlaceholdersList = new ArrayList<>(story.getImagePlaceholdersList());
         cur.durations = new ArrayList<>(story.durations);

@@ -219,11 +219,10 @@ public class StoriesViewManager {
         ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
         if (innerWebData.contains("<video")) {
             isVideo = true;
-            converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
         } else {
             isVideo = false;
-            converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
         }
+        converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
     }
 
     WebPageConverter converter = new WebPageConverter();
@@ -367,11 +366,11 @@ public class StoriesViewManager {
     }
 
     public void storyShowNext() {
-        pageManager.nextStory();
+        pageManager.nextStory(ShowStory.ACTION_CUSTOM);
     }
 
     public void storyShowPrev() {
-        pageManager.prevStory();
+        pageManager.prevStory(ShowStory.ACTION_CUSTOM);
     }
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources, String options) {
@@ -410,11 +409,11 @@ public class StoriesViewManager {
     public void sendShowSlideEvents() {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
-            CsEventBus.getDefault().post(new ShowSlide(story.id, story.title,
+            CsEventBus.getDefault().post(new ShowSlide(story.id, story.statTitle,
                     story.tags, story.getSlidesCount(), index));
             ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
             if (showSlideCallback != null) {
-                showSlideCallback.showSlide(story.id, StringsUtils.getNonNull(story.title),
+                showSlideCallback.showSlide(story.id, StringsUtils.getNonNull(story.statTitle),
                         StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index,
                         story.getSlideEventPayload(PayloadTypes.SHOW_SLIDE, index));
             }

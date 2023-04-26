@@ -53,6 +53,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -91,13 +92,13 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
             if (story != null) {
                 CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.title, story.tags, story.getSlidesCount(),
+                        story.statTitle, story.tags, story.getSlidesCount(),
                         story.lastIndex, CloseStory.CLICK,
                         getArguments().getInt("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
-                            StringsUtils.getNonNull(story.title), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
+                            StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
                             story.lastIndex, CloseReader.CLICK,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getArguments().getInt("source", 0))
@@ -274,7 +275,9 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             Bundle args = new Bundle();
             args.putBoolean("isDialogFragment", true);
             args.putInt("index", getArguments().getInt("index", 0));
-            args.putInt("source", getArguments().getInt("source", 0));
+
+            args.putInt("source", getArguments().getInt("source", ShowStory.SINGLE));
+            args.putInt("firstAction", getArguments().getInt("firstAction", ShowStory.ACTION_OPEN));
             args.putString("storiesType", getArguments().getString("storiesType"));
             args.putInt("slideIndex", getArguments().getInt("slideIndex", 0));
             setAppearanceSettings(args);

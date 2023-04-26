@@ -15,10 +15,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.core.util.Pair;
 
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.exceptions.DataException;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -75,6 +75,7 @@ import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,8 +140,21 @@ public class InAppStoryManager {
 
     @SuppressLint(DEBUG_API)
     public static void showELog(String tag, String message) {
-        if (logger != null) logger.showELog(tag, message);
+        IASLogger currentLogger = logger != null ? logger : defaultLogger;
+        if (currentLogger != null) currentLogger.showELog(tag, message);
     }
+
+    private static final IASLogger defaultLogger = new IASLogger() {
+        @Override
+        public void showELog(String tag, String message) {
+            Log.e(tag, message);
+        }
+
+        @Override
+        public void showDLog(String tag, String message) {
+            Log.d(tag, message);
+        }
+    };
 
     @SuppressLint(DEBUG_API)
     public static void showDLog(String tag, String message) {
@@ -371,11 +385,16 @@ public class InAppStoryManager {
      */
 
     public void setTags(ArrayList<String> tags) {
-
+        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+            return;
+        }
         synchronized (tagsLock) {
             this.tags = tags;
         }
     }
+
+    private final static int TAG_LIMIT = 4000;
 
     private Object tagsLock = new Object();
 
@@ -389,6 +408,12 @@ public class InAppStoryManager {
         synchronized (tagsLock) {
             if (newTags == null || newTags.isEmpty()) return;
             if (tags == null) tags = new ArrayList<>();
+            String oldTagsString = TextUtils.join(",", tags);
+            String newTagsString = TextUtils.join(",", newTags);
+            if (getBytesLength(oldTagsString + newTagsString) > TAG_LIMIT - 1) {
+                showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+                return;
+            }
             for (String tag : newTags) {
                 addTag(tag);
             }
@@ -735,17 +760,36 @@ public class InAppStoryManager {
 
     private boolean isSandbox = false;
 
-    private InAppStoryManager(final Builder builder) throws DataException {
+    public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
+
+    private String getErrorStringFromContext(Context context, @StringRes int resourceId) {
+        if (context != null)
+            return context.getResources().getString(resourceId);
+        return "";
+    }
+
+    private InAppStoryManager(final Builder builder) {
+        if (builder.context == null) {
+            showELog(IAS_ERROR_TAG, "InAppStoryManager.Builder data is not valid. 'context' can't be null");
+            return;
+        }
         if (builder.apiKey == null &&
                 builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
-            throw new DataException("'apiKey' can't be null or empty. Set 'csApiKey' in 'constants.xml' or use 'builder.apiKey(<api_key>)'", new Throwable("config is not valid"));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_api_key_error));
+            return;
         }
-        if (builder.userId == null || builder.userId.length() > 255) {
-            throw new DataException("'userId' can't be null or longer than 255 characters. Use 'builder.userId(<user_id>)'", new Throwable("config is not valid"));
+        if (getBytesLength(builder.userId) > 255) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_user_length_error));
+            return;
+        }
+        if (builder.tags != null && getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_tags_length_error));
+            return;
         }
         long freeSpace = builder.context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
-            throw new DataException("there is no free space on device", new Throwable("initialization error"));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_min_free_space_error));
+            return;
         }
 
         KeyValueStorage.setContext(builder.context);
@@ -789,26 +833,29 @@ public class InAppStoryManager {
         }
     }
 
-    private void setUserIdInner(String userId) throws DataException {
+    private int getBytesLength(String value) {
+        if (value == null) return 0;
+        return value.getBytes(StandardCharsets.UTF_8).length;
+    }
+
+    private void setUserIdInner(String userId) {
         if (InAppStoryService.isNull()) return;
-        if (userId == null)
-            throw new DataException("'userId' can't be null, you can set '' instead", new Throwable("InAppStoryManager data is not valid"));
-        if (userId.length() < 255) {
-            if (this.userId.equals(userId)) return;
-            localOpensKey = null;
-            this.userId = userId;
-            if (InAppStoryService.getInstance().getFavoriteImages() != null)
-                InAppStoryService.getInstance().getFavoriteImages().clear();
-            InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.COMMON);
-            InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.UGC);
-            closeStoryReader(CloseStory.AUTO);
-            SessionManager.getInstance().closeSession(sendStatistic, true);
-            OldStatisticManager.getInstance().eventCount = 0;
-            InAppStoryService.getInstance().getDownloadManager().cleanTasks(false);
-            InAppStoryService.getInstance().setUserId(userId);
-        } else {
-            throw new DataException("'userId' can't be longer than 255 characters", new Throwable("InAppStoryManager data is not valid"));
+        if (userId == null || getBytesLength(userId) > 255) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            return;
         }
+        if (this.userId.equals(userId)) return;
+        localOpensKey = null;
+        this.userId = userId;
+        if (InAppStoryService.getInstance().getFavoriteImages() != null)
+            InAppStoryService.getInstance().getFavoriteImages().clear();
+        InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.COMMON);
+        InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.UGC);
+        closeStoryReader(CloseStory.AUTO);
+        SessionManager.getInstance().closeSession(sendStatistic, true);
+        OldStatisticManager.getInstance().eventCount = 0;
+        InAppStoryService.getInstance().getDownloadManager().cleanTasks(false);
+        InAppStoryService.getInstance().setUserId(userId);
     }
 
 
@@ -817,10 +864,9 @@ public class InAppStoryManager {
     /**
      * use to change user id in runtime
      *
-     * @param userId (userId)
-     * @throws DataException 'userId' can't be longer than 255 characters
+     * @param userId (userId) - can't be longer than 255 characters
      */
-    public void setUserId(String userId) throws DataException {
+    public void setUserId(@NonNull String userId) {
         setUserIdInner(userId);
     }
 
@@ -895,6 +941,7 @@ public class InAppStoryManager {
             InAppStoryService.getInstance().getDownloadManager().initDownloaders();
         }
     }
+
     private static final Object lock = new Object();
 
     public static void logout() {
@@ -1030,6 +1077,10 @@ public class InAppStoryManager {
             return;
         }
 
+        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            return;
+        }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
@@ -1202,28 +1253,47 @@ public class InAppStoryManager {
 
     private String lastSingleOpen = null;
 
-    private void showStoryInner(final String storyId, final Context context, final AppearanceManager manager, final IShowStoryCallback callback, final Integer slide,
-                                final Story.StoryType type) {
-        if (InAppStoryService.isNull()) {
+    private void showStoryInner(final String storyId,
+                                final Context context,
+                                final AppearanceManager manager,
+                                final IShowStoryCallback callback,
+                                final Integer slide,
+                                final Story.StoryType type,
+                                final int readerSource,
+                                final int readerAction) {
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showStoryInner(storyId, context, manager, callback, slide, type);
+                    showStoryInner(
+                            storyId,
+                            context,
+                            manager,
+                            callback,
+                            slide,
+                            type,
+                            readerSource,
+                            readerAction
+                    );
                 }
             }, 1000);
             return;
         }
-
+        if (this.userId == null || getBytesLength(this.userId) > 255) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            return;
+        }
         if (lastSingleOpen != null &&
                 lastSingleOpen.equals(storyId)) return;
         lastSingleOpen = storyId;
 
 
-        InAppStoryService.getInstance().getDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
+        service.getDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
             @Override
             public void getStory(Story story) {
                 if (story != null) {
-                    InAppStoryService.getInstance().getDownloadManager().addCompletedStoryTask(story,
+                    service.getDownloadManager().addCompletedStoryTask(story,
                             Story.StoryType.COMMON);
                     if (ScreensManager.created == -1) {
                         InAppStoryManager.closeStoryReader(CloseStory.AUTO);
@@ -1231,7 +1301,16 @@ public class InAppStoryManager {
                             @Override
                             public void run() {
                                 lastSingleOpen = null;
-                                showStoryInner(storyId, context, manager, callback, slide, type);
+                                showStoryInner(
+                                        storyId,
+                                        context,
+                                        manager,
+                                        callback,
+                                        slide,
+                                        type,
+                                        readerSource,
+                                        readerAction
+                                );
                                 // StoriesActivity.destroyed = 0;
                             }
                         }, 500);
@@ -1240,7 +1319,16 @@ public class InAppStoryManager {
                         localHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                showStoryInner(storyId, context, manager, callback, slide, type);
+                                showStoryInner(
+                                        storyId,
+                                        context,
+                                        manager,
+                                        callback,
+                                        slide,
+                                        type,
+                                        readerSource,
+                                        readerAction
+                                );
                                 ScreensManager.created = 0;
                             }
                         }, 350);
@@ -1292,18 +1380,25 @@ public class InAppStoryManager {
                         CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                         return;
                     }
-                    InAppStoryService.getInstance().getDownloadManager().putStories(
+                    service.getDownloadManager().putStories(
                             InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
                             type
                     );
                     ArrayList<Integer> stIds = new ArrayList<>();
                     stIds.add(story.id);
                     ScreensManager.getInstance().openStoriesReader(
-                            context, null,
-                            manager, stIds,
-                            0, ShowStory.SINGLE,
-                            slide, null,
-                            null, Story.StoryType.COMMON);
+                            context,
+                            null,
+                            manager,
+                            stIds,
+                            0,
+                            readerSource,
+                            readerAction,
+                            slide,
+                            null,
+                            null,
+                            Story.StoryType.COMMON
+                    );
                     localHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -1330,8 +1425,10 @@ public class InAppStoryManager {
 
     private void showStoryInner(final String storyId, final Context context,
                                 final AppearanceManager manager,
-                                final IShowStoryCallback callback, Story.StoryType type) {
-        showStoryInner(storyId, context, manager, callback, null, type);
+                                final IShowStoryCallback callback, Story.StoryType type,
+                                final int readerSource,
+                                final int readerAction) {
+        showStoryInner(storyId, context, manager, callback, null, type, readerSource, readerAction);
     }
 
     /**
@@ -1343,11 +1440,28 @@ public class InAppStoryManager {
      * @param callback (callback) custom action when story is loaded
      */
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback) {
-        showStoryInner(storyId, context, manager, callback, Story.StoryType.COMMON);
+        showStoryInner(
+                storyId,
+                context,
+                manager,
+                callback,
+                Story.StoryType.COMMON,
+                ShowStory.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
     }
 
     public void showStory(String storyId, Context context, AppearanceManager manager, IShowStoryCallback callback, Integer slide) {
-        showStoryInner(storyId, context, manager, callback, slide, Story.StoryType.COMMON);
+        showStoryInner(
+                storyId,
+                context,
+                manager,
+                callback,
+                slide,
+                Story.StoryType.COMMON,
+                ShowStory.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
     }
 
     /**
@@ -1358,12 +1472,22 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON);
+        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_OPEN);
     }
 
-    public void showStoryWithSlide(String storyId, Context context,
-                                   Integer slide,
-                                   String managerSettings, Story.StoryType type) {
+    public void showStoryCustom(String storyId, Context context, AppearanceManager manager) {
+        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_CUSTOM);
+    }
+
+    public void showStoryWithSlide(
+            String storyId,
+            Context context,
+            Integer slide,
+            String managerSettings,
+            Story.StoryType type,
+            final int readerSource,
+            final int readerAction
+    ) {
         AppearanceManager appearanceManager = new AppearanceManager();
         if (managerSettings != null) {
             StoriesReaderSettings settings = JsonParser.fromJson(managerSettings, StoriesReaderSettings.class);
@@ -1384,7 +1508,7 @@ public class InAppStoryManager {
             appearanceManager.csShareIcon(settings.shareIcon);
             appearanceManager.csSoundIcon(settings.soundIcon);
         }
-        showStoryInner(storyId, context, appearanceManager, null, slide, type);
+        showStoryInner(storyId, context, appearanceManager, null, slide, type, readerSource, readerAction);
     }
 
     public static class Builder {
@@ -1432,11 +1556,8 @@ public class InAppStoryManager {
         public Builder() {
         }
 
-        public Builder context(Context context) throws DataException {
-            if (context == null)
-                throw new DataException("Context must not be null", new Throwable("InAppStoryManager.Builder data is not valid"));
+        public Builder context(Context context) {
             Builder.this.context = context;
-
             return Builder.this;
         }
 
@@ -1483,13 +1604,8 @@ public class InAppStoryManager {
          * @param userId (userId) value for user id. Can't be longer than 255 characters.
          * @return {@link Builder}
          */
-        public Builder userId(String userId) throws DataException {
-            if (userId != null && userId.length() < 255) {
-                Builder.this.userId = userId;
-            } else {
-                throw new DataException("'userId' can't be null or longer than 255 characters",
-                        new Throwable("InAppStoryManager.Builder data is not valid"));
-            }
+        public Builder userId(@NonNull String userId) {
+            Builder.this.userId = userId;
             return Builder.this;
         }
 
@@ -1536,12 +1652,8 @@ public class InAppStoryManager {
          * main method to create {@link InAppStoryManager} instance.
          *
          * @return {@link InAppStoryManager}
-         * @throws DataException 'context' can't be null
          */
-        public InAppStoryManager create() throws DataException {
-            if (Builder.this.context == null) {
-                throw new DataException("'context' can't be null", new Throwable("InAppStoryManager.Builder data is not valid"));
-            }
+        public InAppStoryManager create() {
             return new InAppStoryManager(Builder.this);
         }
     }

@@ -13,6 +13,7 @@ import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outerevents.CallToAction;
 import com.inappstory.sdk.stories.outerevents.ClickOnButton;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -105,9 +106,9 @@ public class ReaderPageManager {
         if (payload == null || payload.isEmpty()) {
             int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
             if (coordinate >= 0.3 * sz && !isForbidden) {
-                nextSlide();
+                nextSlide(ShowStory.ACTION_CLICK);
             } else if (coordinate < 0.3 * sz) {
-                prevSlide();
+                prevSlide(ShowStory.ACTION_CLICK);
             }
         } else {
             tapOnLink(payload);
@@ -127,7 +128,7 @@ public class ReaderPageManager {
                     StringsUtils.getNonNull(widgetName),
                     JsonParser.toMap(widgetData),
                     story.id,
-                    StringsUtils.getNonNull(story.title),
+                    StringsUtils.getNonNull(story.statTitle),
                     StringsUtils.getNonNull(getFeedSlug()),
                     story.getSlidesCount(),
                     story.lastIndex,
@@ -147,7 +148,7 @@ public class ReaderPageManager {
             switch (object.getLink().getType()) {
                 case "url":
                     if (story != null) {
-                        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.title,
+                        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.statTitle,
                                 story.tags, story.getSlidesCount(), story.lastIndex,
                                 object.getLink().getTarget()));
                     }
@@ -162,12 +163,12 @@ public class ReaderPageManager {
                         }
                     }
                     if (story != null) {
-                        CsEventBus.getDefault().post(new CallToAction(story.id, story.title,
+                        CsEventBus.getDefault().post(new CallToAction(story.id, story.statTitle,
                                 story.tags, story.getSlidesCount(), story.lastIndex,
                                 object.getLink().getTarget(), cta));
                         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                             CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                                    story.id, StringsUtils.getNonNull(story.title),
+                                    story.id, StringsUtils.getNonNull(story.statTitle),
                                     StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex,
                                     object.getLink().getTarget(), action);
                         }
@@ -378,19 +379,19 @@ public class ReaderPageManager {
         });
     }
 
-    public void nextStory() {
+    public void nextStory(int action) {
         if (checkIfManagersIsNull()) return;
         timerManager.setTimerDuration(0);
-        parentManager.nextStory();
+        parentManager.nextStory(action);
     }
 
-    public void prevStory() {
+    public void prevStory(int action) {
         if (checkIfManagersIsNull()) return;
         timerManager.setTimerDuration(0);
-        parentManager.prevStory();
+        parentManager.prevStory(action);
     }
 
-    public void nextSlide() {
+    public void nextSlide(int action) {
         if (checkIfManagersIsNull()) return;
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
@@ -406,7 +407,7 @@ public class ReaderPageManager {
             changeCurrentSlide(lastIndex);
             slideIndex = lastIndex;
         } else {
-            parentManager.nextStory();
+            parentManager.nextStory(action);
         }
     }
 
@@ -442,7 +443,7 @@ public class ReaderPageManager {
         }
     }
 
-    public void prevSlide() {
+    public void prevSlide(int action) {
         if (checkIfManagersIsNull()) return;
         if (InAppStoryService.isNull()) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
@@ -458,7 +459,7 @@ public class ReaderPageManager {
             changeCurrentSlide(lastIndex);
             slideIndex = lastIndex;
         } else {
-            parentManager.prevStory();
+            parentManager.prevStory(action);
         }
     }
 
