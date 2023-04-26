@@ -106,9 +106,9 @@ public class ReaderPageManager {
         if (payload == null || payload.isEmpty()) {
             int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
             if (coordinate >= 0.3 * sz && !isForbidden) {
-                nextSlide(ShowStory.ACTION_CLICK);
+                nextSlide(ShowStory.ACTION_TAP);
             } else if (coordinate < 0.3 * sz) {
-                prevSlide(ShowStory.ACTION_CLICK);
+                prevSlide(ShowStory.ACTION_TAP);
             }
         } else {
             tapOnLink(payload);

@@ -87,8 +87,8 @@ public class CallbackManager {
             case ShowStory.ACTION_AUTO:
                 type = ShowStoryAction.AUTO;
                 break;
-            case ShowStory.ACTION_CLICK:
-                type = ShowStoryAction.CLICK;
+            case ShowStory.ACTION_TAP:
+                type = ShowStoryAction.TAP;
                 break;
             case ShowStory.ACTION_CUSTOM:
                 type = ShowStoryAction.CUSTOM;
