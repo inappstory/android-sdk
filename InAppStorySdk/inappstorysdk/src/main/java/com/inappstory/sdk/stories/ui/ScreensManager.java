@@ -312,7 +312,7 @@ public class ScreensManager {
                 storiesDialogFragment.show(
                         ((FragmentActivity) outerContext).getSupportFragmentManager(),
                         "DialogFragment");
-                ScreensManager.getInstance().currentScreen = storiesDialogFragment;
+                currentScreen = storiesDialogFragment;
             } catch (IllegalStateException e) {
                 InAppStoryService.createExceptionLog(e);
 
