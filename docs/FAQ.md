@@ -180,4 +180,4 @@ fun hideShimmer(layout: FrameLayout) {
 }
 ```
 
-[Here](https://github.com/inappstory/Android-Example/blob/main/kotlinexamples/src/main/java/com/inappstory/kotlinexamples/notification/NotificationSubscribeSample.kt) you can find complete example for this case
+[Here](https://github.com/inappstory/Android-Example/blob/main/kotlinexamples/src/main/java/com/inappstory/kotlinexamples/notification/NotificationSubscribeSample.kt) you can find complete example how to add shimmer animation over list
