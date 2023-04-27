@@ -125,3 +125,59 @@ And add network_security_config.xml
     </domain-config>
 </network-security-config>
 ```
+
+#### 17) List Placeholder
+If you want to add some placeholder with animation during stories loading - you need to subscribe to `ListCallback` through `storiesList.setCallback(ListCallback callback)`. Then in your UI you need to place any view with the same height as story cell.
+For example:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp">
+
+        <com.inappstory.sdk.stories.ui.list.StoriesList
+		android:id="@+id/stories_list"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:elevation="2dp" />
+
+         <com.examples.ListShimmerView
+		android:id="@+id/shimmer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+</RelativeLayout>
+```
+
+And then you can show and hide your shimmer:
+
+```kotlin
+void showStories() {
+	showShimmer()
+	storiesList.setCallback(object : ListCallbackAdapter() {
+                    override fun storiesLoaded(size: Int, feed: String) {
+                        hideShimmer()
+                    }
+		    
+		    override fun loadError(feed: String) {
+                        hideShimmer()
+                    }
+                }
+	)
+	storiesList.loadStories()
+}
+
+fun showShimmer() {
+	shimmer.visibility = View.VISIBLE
+}
+
+fun hideShimmer(layout: FrameLayout) {
+        GlobalScope.launch {
+            delay(500)
+            withContext(Dispatchers.Main) {
+                shimmer.visibility = View.GONE
+            }
+        }
+    }
+```
+
+[Here](https://github.com/inappstory/Android-Example/blob/main/kotlinexamples/src/main/java/com/inappstory/kotlinexamples/notification/NotificationSubscribeSample.kt) you can find complete example for this case
