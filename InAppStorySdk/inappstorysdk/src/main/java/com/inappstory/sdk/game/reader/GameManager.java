@@ -3,7 +3,6 @@ package com.inappstory.sdk.game.reader;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
-import android.util.Log;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -15,7 +14,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.share.IASShareModel;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -215,10 +214,10 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
+        IASShareModel shareObj = JsonParser.fromJson(data, IASShareModel.class);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             CallbackManager.getInstance().getShareCallback()
-                    .onShare(StringsUtils.getNonNull(shareObj.getText()),
+                    .onShareOld(StringsUtils.getNonNull(shareObj.getText()),
                             StringsUtils.getNonNull(shareObj.getTitle()),
                             StringsUtils.getNonNull(data),
                             StringsUtils.getNonNull(id));

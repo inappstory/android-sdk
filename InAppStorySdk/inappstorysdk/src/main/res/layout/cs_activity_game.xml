@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/black"
     tools:context=".game.reader.GameActivity">
 
@@ -55,7 +56,7 @@
         android:paddingTop="8dp"
         android:paddingRight="8dp"
         android:paddingBottom="8dp"
-        android:src="@drawable/ic_stories_close"
+        app:srcCompat="@drawable/ic_stories_close"
         android:tint="@color/white"
         android:tintMode="src_atop" />
 </RelativeLayout>

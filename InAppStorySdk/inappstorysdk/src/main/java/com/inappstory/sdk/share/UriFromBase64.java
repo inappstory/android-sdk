@@ -18,11 +18,11 @@ import java.util.concurrent.Callable;
 
 public class UriFromBase64 implements Callable<ArrayList<Uri>> {
     Context context;
-    ArrayList<JSShareFile> shareFiles;
+    ArrayList<IASShareFile> shareFiles;
 
 
     public UriFromBase64(Context context,
-                         ArrayList<JSShareFile> shareFiles) {
+                         ArrayList<IASShareFile> shareFiles) {
         this.context = context;
         this.shareFiles = shareFiles;
     }
@@ -69,7 +69,7 @@ public class UriFromBase64 implements Callable<ArrayList<Uri>> {
     @Override
     public ArrayList<Uri> call() throws Exception {
         ArrayList<Uri> response = new ArrayList<>();
-        for (JSShareFile shareFile : shareFiles) {
+        for (IASShareFile shareFile : shareFiles) {
             Uri uri = saveImage(context,
                     getBitmapFromBase64String(shareFile.getFile()),
                     shareFile.getName(),

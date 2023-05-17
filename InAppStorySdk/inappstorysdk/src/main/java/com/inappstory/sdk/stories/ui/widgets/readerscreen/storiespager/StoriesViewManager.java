@@ -16,7 +16,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.share.JSShareModel;
+import com.inappstory.sdk.share.IASShareModel;
 import com.inappstory.sdk.share.ShareManager;
 import com.inappstory.sdk.stories.api.models.PayloadTypes;
 import com.inappstory.sdk.stories.api.models.Session;
@@ -326,14 +326,18 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
+        IASShareModel shareObj = JsonParser.fromJson(data, IASShareModel.class);
+        if (shareObj == null) return;
         if (CallbackManager.getInstance().getShareCallback() != null) {
-            CallbackManager.getInstance().getShareCallback()
-                    .onShare(StringsUtils.getNonNull(shareObj.getText()),
-                            StringsUtils.getNonNull(shareObj.getTitle()),
-                            StringsUtils.getNonNull(data),
-                            StringsUtils.getNonNull(id)
-                    );
+            Story story = InAppStoryService.getInstance() != null ?
+                    InAppStoryService.getInstance().getDownloadManager()
+                            .getStoryById(storyId, pageManager.getStoryType()) : null;
+            if (story != null) {
+                pageManager.parentManager.showShareView(
+                        story.getSlideEventPayload(PayloadTypes.SHARE_STORY, index),
+                        shareObj, storyId, index
+                );
+            }
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 ScreensManager.getInstance().setTempShareId(id);

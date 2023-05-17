@@ -39,7 +39,7 @@ public class ShareManager {
         }
     }
 
-    public void shareDefault(final Activity context, final JSShareModel shareObject) {
+    public void shareDefault(final Activity context, final IASShareModel shareObject) {
         final Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());

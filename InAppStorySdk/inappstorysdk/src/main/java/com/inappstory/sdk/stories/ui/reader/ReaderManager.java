@@ -7,6 +7,7 @@ import android.os.Looper;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.share.IASShareModel;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -111,6 +112,14 @@ public class ReaderManager {
         if (subscribers == null) return;
         for (ReaderPageManager subscriber : subscribers) {
             subscriber.removeStoryFromFavorite();
+        }
+    }
+
+    public void showShareView(String slidePayload, IASShareModel shareModel,
+                              int storyId, int slideIndex) {
+        pause();
+        if (parentFragment != null) {
+            parentFragment.showShareView(slidePayload, shareModel, storyId, slideIndex);
         }
     }
 

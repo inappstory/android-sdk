@@ -259,7 +259,7 @@ public class ButtonsPanelManager {
                     callback.onSuccess(0);
                 if (CallbackManager.getInstance().getShareCallback() != null) {
                     CallbackManager.getInstance().getShareCallback()
-                            .onShare(StringsUtils.getNonNull(response.getUrl()),
+                            .onShareOld(StringsUtils.getNonNull(response.getUrl()),
                                     StringsUtils.getNonNull(response.getTitle()),
                                     StringsUtils.getNonNull(response.getDescription()),
                                     Integer.toString(storyId));
@@ -281,6 +281,7 @@ public class ButtonsPanelManager {
                     sendIntent.setAction(Intent.ACTION_SEND);
                     sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
                     sendIntent.putExtra(Intent.EXTRA_TEXT, response.getUrl());
+
                     sendIntent.setType("text/plain");
                     PendingIntent pi = PendingIntent.getBroadcast(context, 989,
                             new Intent(context, StoryShareBroadcastReceiver.class),

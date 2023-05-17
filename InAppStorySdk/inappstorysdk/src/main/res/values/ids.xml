@@ -3,6 +3,8 @@
     <item name="ias_stories_pager" type="id"/>
     <item name="ias_inv_mask" type="id"/>
 
+    <item name="ias_stories_share_container" type="id"/>
+
 
 
     <item name="ias_black_top" type="id"/>

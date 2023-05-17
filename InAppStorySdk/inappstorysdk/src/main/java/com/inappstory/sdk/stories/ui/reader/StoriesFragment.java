@@ -7,6 +7,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -17,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import androidx.fragment.app.Fragment;
@@ -26,7 +28,10 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.share.IASShareModel;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.ShareActions;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -78,6 +83,13 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
     public void removeAllStoriesFromFavorite() {
         if (readerManager != null)
             readerManager.removeAllStoriesFromFavorite();
+    }
+
+    public void showShareView(String slidePayload, IASShareModel shareModel,
+                              int storyId, int slideIndex) {
+        if (CallbackManager.getInstance().getShareCallback() != null) {
+
+        }
     }
 
 
@@ -151,18 +163,20 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     ReaderPager storiesViewPager;
 
+    FrameLayout shareContainer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Context context = getContext();
         try {
             requireArguments();
         } catch (IllegalStateException e) {
             closeFragment();
-            return new View(getContext());
+            return new View(context);
         }
-
         Bundle arguments = getArguments();
+
 
         currentIds = arguments.getIntegerArrayList("stories_ids");
         readerSettings = arguments.getString(CS_READER_SETTINGS);
@@ -188,13 +202,21 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
 
         created = true;
-        RelativeLayout resView = new RelativeLayout(getContext());
+
+        RelativeLayout resView = new RelativeLayout(context);
         //   resView.setBackgroundColor(getResources().getColor(R.color.black));
-        storiesViewPager = new ReaderPager(getContext());
+        storiesViewPager = new ReaderPager(context);
         storiesViewPager.setHost(this);
         storiesViewPager.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        invMask = new View(getContext());
+        shareContainer = new FrameLayout(context);
+        shareContainer.setId(R.id.ias_stories_share_container);
+        shareContainer.setClickable(true);
+        shareContainer.setVisibility(View.GONE);
+        shareContainer.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        invMask = new View(context);
         invMask.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         invMask.setVisibility(View.GONE);
@@ -203,10 +225,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         invMask.setClickable(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             storiesViewPager.setElevation(4);
+            shareContainer.setElevation(16f);
             invMask.setElevation(10);
         }
         resView.addView(storiesViewPager);
         resView.addView(invMask);
+        resView.addView(shareContainer);
         return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);
     }
 
@@ -286,6 +310,14 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         super.onResume();
     }
 
+    ShareActions shareActions = new ShareActions() {
+        @Override
+        public void closeShareView(boolean shared) {
+            if (shareContainer != null) {
+                shareContainer.setVisibility(View.GONE);
+            }
+        }
+    };
 
     private int getCurIndexById(int id) {
         if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
@@ -319,6 +351,12 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Override
     public boolean onBackPressed() {
+        if (shareContainer != null
+                && shareContainer.getVisibility() == View.VISIBLE
+                && CallbackManager.getInstance().getShareCallback() != null) {
+            CallbackManager.getInstance().getShareCallback().onBackPress(shareActions);
+            return true;
+        }
         return false;
     }
 
