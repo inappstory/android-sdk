@@ -328,7 +328,7 @@ public class StoriesViewManager {
     public void share(String id, String data) {
         IASShareModel shareObj = JsonParser.fromJson(data, IASShareModel.class);
         if (shareObj == null) return;
-        if (CallbackManager.getInstance().getShareCallback() != null) {
+        if (CallbackManager.getInstance().getReaderTopContainerCallback() != null) {
             Story story = InAppStoryService.getInstance() != null ?
                     InAppStoryService.getInstance().getDownloadManager()
                             .getStoryById(storyId, pageManager.getStoryType()) : null;
@@ -338,6 +338,8 @@ public class StoriesViewManager {
                         shareObj, storyId, index
                 );
             }
+        } else if (CallbackManager.getInstance().getShareCallback() != null) {
+            
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 ScreensManager.getInstance().setTempShareId(id);

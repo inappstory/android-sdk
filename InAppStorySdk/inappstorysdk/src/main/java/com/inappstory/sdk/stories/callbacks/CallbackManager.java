@@ -37,6 +37,7 @@ public class CallbackManager {
     public CallToActionCallback getCallToActionCallback() {
         return callToActionCallback;
     }
+
     public StoryWidgetCallback getStoryWidgetCallback() {
         return storyWidgetCallback;
     }
@@ -198,6 +199,7 @@ public class CallbackManager {
     private UrlClickCallback urlClickCallback;
     private AppClickCallback appClickCallback;
     private ShareCallback shareCallback;
+    private ReaderTopContainerCallback readerTopContainerCallback;
 
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         this.urlClickCallback = urlClickCallback;
@@ -205,6 +207,16 @@ public class CallbackManager {
 
     public void setAppClickCallback(AppClickCallback appClickCallback) {
         this.appClickCallback = appClickCallback;
+    }
+
+    public void setReaderTopContainerCallback(
+            ReaderTopContainerCallback readerTopContainerCallback
+    ) {
+        this.readerTopContainerCallback = readerTopContainerCallback;
+    }
+
+    public ReaderTopContainerCallback getReaderTopContainerCallback() {
+        return readerTopContainerCallback;
     }
 
     public void setShareCallback(ShareCallback shareCallback) {
@@ -227,6 +239,7 @@ public class CallbackManager {
     private CallbackManager() {
 
     }
+
     private static CallbackManager INSTANCE;
     private static final Object lock = new Object();
 
@@ -237,8 +250,6 @@ public class CallbackManager {
             return INSTANCE;
         }
     }
-
-
 
 
 }

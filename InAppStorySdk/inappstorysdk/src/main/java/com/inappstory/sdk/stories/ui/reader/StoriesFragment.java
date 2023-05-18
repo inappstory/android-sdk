@@ -31,7 +31,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.share.IASShareModel;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.callbacks.ShareActions;
+import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -40,9 +40,9 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.stories.utils.StatusBarController;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
@@ -87,7 +87,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     public void showShareView(String slidePayload, IASShareModel shareModel,
                               int storyId, int slideIndex) {
-        if (CallbackManager.getInstance().getShareCallback() != null) {
+        if (CallbackManager.getInstance().getReaderTopContainerCallback() != null) {
 
         }
     }
@@ -310,9 +310,11 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         super.onResume();
     }
 
-    ShareActions shareActions = new ShareActions() {
+    OverlappingContainerActions shareActions = new OverlappingContainerActions() {
         @Override
-        public void closeShareView(boolean shared) {
+        public void closeView(HashMap<String, Object> data) {
+            boolean shared = false;
+            if (data.containsKey("shared")) shared = (boolean) data.get("shared");
             if (shareContainer != null) {
                 shareContainer.setVisibility(View.GONE);
             }
@@ -354,7 +356,7 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         if (shareContainer != null
                 && shareContainer.getVisibility() == View.VISIBLE
                 && CallbackManager.getInstance().getShareCallback() != null) {
-            CallbackManager.getInstance().getShareCallback().onBackPress(shareActions);
+            CallbackManager.getInstance().getReaderTopContainerCallback().onBackPress(shareActions);
             return true;
         }
         return false;
