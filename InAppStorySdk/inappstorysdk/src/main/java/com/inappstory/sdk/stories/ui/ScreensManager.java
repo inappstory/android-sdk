@@ -97,6 +97,14 @@ public class ScreensManager {
         }
     }
 
+    public void clearShareIds() {
+        setTempShareStatus(false);
+        setTempShareStoryId(0);
+        setTempShareId(null);
+        setOldTempShareStoryId(0);
+        setOldTempShareId(null);
+    }
+
     public static long created = 0;
 
     public void setOldTempShareId(String tempShareId) {

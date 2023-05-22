@@ -317,9 +317,11 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     @Override
     public void onResume() {
-        manager.onResume();
         super.onResume();
-        resumeGame();
+        if (!shareViewIsShown) {
+            manager.onResume();
+            resumeGame();
+        }
     }
 
     @Override
@@ -741,10 +743,17 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         shareComplete(id, shared);
         if (!shared)
             resumeGame();
+        shareViewIsShown = false;
+
+        ScreensManager.getInstance().clearShareIds();
     }
+
+
+    boolean shareViewIsShown = false;
 
     @Override
     public void viewIsOpened() {
+        shareViewIsShown = true;
         pauseGame();
     }
 }

@@ -357,15 +357,7 @@ public class ReaderManager {
                         ScreensManager.getInstance().getTempShareStatus());
             }
         }
-        ScreensManager.getInstance().setTempShareStatus(false);
-        ScreensManager.getInstance().setTempShareStoryId(0);
-        ScreensManager.getInstance().setTempShareId(null);
-        ScreensManager.getInstance().setOldTempShareStoryId(0);
-        ScreensManager.getInstance().setOldTempShareId(null);
-    }
-
-    void saveShareId() {
-
+        ScreensManager.getInstance().clearShareIds();
     }
 
     public int getCurrentStoryId() {

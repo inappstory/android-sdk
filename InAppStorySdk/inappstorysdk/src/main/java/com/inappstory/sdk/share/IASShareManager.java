@@ -6,6 +6,7 @@ import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -20,7 +21,7 @@ public class IASShareManager {
 
     public static final int SHARE_EVENT = 909;
 
-    private <T extends BroadcastReceiver> void sendIntent(Activity context, Intent sendIntent, Class<T> receiver) {
+    private <T extends BroadcastReceiver> void sendIntent(Context context, Intent sendIntent, Class<T> receiver) {
         int shareFlag = FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             shareFlag |= FLAG_IMMUTABLE;
@@ -28,21 +29,19 @@ public class IASShareManager {
         PendingIntent pi = PendingIntent.getBroadcast(context, SHARE_EVENT,
                 new Intent(context, receiver),
                 shareFlag);
-        Intent finalIntent = null;
+        Intent finalIntent;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-            context.startActivityForResult(finalIntent, SHARE_EVENT);
         } else {
-            if (InAppStoryService.isNull()) return;
             finalIntent = Intent.createChooser(sendIntent, null);
-            finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(finalIntent);
         }
+        finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(finalIntent);
     }
 
     public <T extends BroadcastReceiver> void shareDefault(
             final Class<T> receiver,
-            final Activity context,
+            final Context context,
             final IASShareData shareObject) {
         final Intent sendingIntent = new Intent();
         sendingIntent.setAction(Intent.ACTION_SEND);
@@ -74,7 +73,7 @@ public class IASShareManager {
 
     public <T extends BroadcastReceiver> void shareToSpecificApp(
             final Class<T> receiver,
-            final Activity context,
+            final Context context,
             final IASShareData shareObject,
             String packageName) {
         final Intent sendingIntent = new Intent();

@@ -204,13 +204,16 @@ public class GameManager {
 
 
     void onResume() {
-        ScreensManager.getInstance().setTempShareStoryId(0);
-        ScreensManager.getInstance().setTempShareId(null);
-        if (ScreensManager.getInstance().getOldTempShareId() != null) {
-            host.shareComplete(ScreensManager.getInstance().getOldTempShareId(), true);
+        String shareId = null;
+        if (ScreensManager.getInstance().getTempShareId() != null) {
+            shareId = ScreensManager.getInstance().getTempShareId();
+        } else if (ScreensManager.getInstance().getOldTempShareId() != null) {
+            shareId = ScreensManager.getInstance().getOldTempShareId();
         }
-        ScreensManager.getInstance().setOldTempShareStoryId(0);
-        ScreensManager.getInstance().setOldTempShareId(null);
+        if (shareId != null) {
+            host.shareComplete(shareId, false);
+        }
+        ScreensManager.getInstance().clearShareIds();
     }
 
     void shareData(String id, String data) {
