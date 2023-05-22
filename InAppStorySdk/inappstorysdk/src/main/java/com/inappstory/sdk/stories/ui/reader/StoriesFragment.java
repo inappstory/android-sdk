@@ -408,12 +408,18 @@ public class StoriesFragment extends Fragment
     }
 
     @Override
-    public void closeView(HashMap<String, Object> data) {
-        if (readerManager != null) readerManager.resumeWithShareId();
-        boolean shared = false;
-        if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-        if (!shared)
-            resume();
+    public void closeView(final HashMap<String, Object> data) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (readerManager != null) readerManager.resumeWithShareId();
+                boolean shared = false;
+                if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+                if (!shared)
+                    resume();
+            }
+        });
+
     }
 
     @Override

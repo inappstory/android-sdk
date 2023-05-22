@@ -731,21 +731,27 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     @Override
-    public void closeView(HashMap<String, Object> data) {
-        boolean shared = false;
-        if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-        String id;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            id = ScreensManager.getInstance().getTempShareId();
-        } else {
-            id = ScreensManager.getInstance().getOldTempShareId();
-        }
-        shareComplete(id, shared);
-        if (!shared)
-            resumeGame();
-        shareViewIsShown = false;
+    public void closeView(final HashMap<String, Object> data) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                boolean shared = false;
+                if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+                String id;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    id = ScreensManager.getInstance().getTempShareId();
+                } else {
+                    id = ScreensManager.getInstance().getOldTempShareId();
+                }
+                shareComplete(id, shared);
+                if (!shared)
+                    resumeGame();
+                shareViewIsShown = false;
 
-        ScreensManager.getInstance().clearShareIds();
+                ScreensManager.getInstance().clearShareIds();
+            }
+        });
+
     }
 
 
@@ -753,7 +759,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     @Override
     public void viewIsOpened() {
-        shareViewIsShown = true;
-        pauseGame();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                shareViewIsShown = true;
+                pauseGame();
+            }
+        });
     }
 }
