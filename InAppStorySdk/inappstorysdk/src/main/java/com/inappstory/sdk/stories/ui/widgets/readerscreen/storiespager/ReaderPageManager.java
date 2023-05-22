@@ -6,6 +6,7 @@ import android.os.Looper;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -436,6 +437,16 @@ public class ReaderPageManager {
     }
 
     ReaderManager parentManager;
+
+    public void showShareView(IASShareData shareData) {
+        if (parentManager != null) {
+
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
+            if (story != null)
+                parentManager.showShareView(story.getSlideEventPayload("SHARE_STORY", slideIndex),
+                        shareData, storyId, slideIndex);
+        }
+    }
 
     public void sendShowStoryEvents(int storyId) {
         if (parentManager != null) {

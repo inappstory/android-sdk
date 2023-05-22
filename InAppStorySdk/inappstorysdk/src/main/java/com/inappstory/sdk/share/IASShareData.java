@@ -4,7 +4,7 @@ import com.inappstory.sdk.network.SerializedName;
 
 import java.util.ArrayList;
 
-public class IASShareModel {
+public class IASShareData {
     public String getText() {
         return text;
     }

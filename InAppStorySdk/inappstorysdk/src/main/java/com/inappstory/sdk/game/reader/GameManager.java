@@ -14,7 +14,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.share.IASShareModel;
+import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -214,21 +214,17 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        IASShareModel shareObj = JsonParser.fromJson(data, IASShareModel.class);
-        if (CallbackManager.getInstance().getShareCallback() != null) {
-            CallbackManager.getInstance().getShareCallback()
-                    .onShareOld(StringsUtils.getNonNull(shareObj.getText()),
-                            StringsUtils.getNonNull(shareObj.getTitle()),
-                            StringsUtils.getNonNull(data),
-                            StringsUtils.getNonNull(id));
+        IASShareData shareObj = JsonParser.fromJson(data, IASShareData.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            ScreensManager.getInstance().setTempShareId(id);
+            ScreensManager.getInstance().setTempShareStoryId(-1);
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                ScreensManager.getInstance().setTempShareId(id);
-                ScreensManager.getInstance().setTempShareStoryId(-1);
-            } else {
-                ScreensManager.getInstance().setOldTempShareId(id);
-                ScreensManager.getInstance().setOldTempShareStoryId(-1);
-            }
+            ScreensManager.getInstance().setOldTempShareId(id);
+            ScreensManager.getInstance().setOldTempShareStoryId(-1);
+        }
+        if (CallbackManager.getInstance().getShareCallback() != null) {
+            host.shareCustom(shareObj);
+        } else {
             host.shareDefault(shareObj);
         }
     }

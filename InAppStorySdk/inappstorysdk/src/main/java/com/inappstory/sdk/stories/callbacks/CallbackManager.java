@@ -199,7 +199,6 @@ public class CallbackManager {
     private UrlClickCallback urlClickCallback;
     private AppClickCallback appClickCallback;
     private ShareCallback shareCallback;
-    private ReaderTopContainerCallback readerTopContainerCallback;
 
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         this.urlClickCallback = urlClickCallback;
@@ -209,23 +208,14 @@ public class CallbackManager {
         this.appClickCallback = appClickCallback;
     }
 
-    public void setReaderTopContainerCallback(
-            ReaderTopContainerCallback readerTopContainerCallback
-    ) {
-        this.readerTopContainerCallback = readerTopContainerCallback;
-    }
-
-    public ReaderTopContainerCallback getReaderTopContainerCallback() {
-        return readerTopContainerCallback;
-    }
-
-    public void setShareCallback(ShareCallback shareCallback) {
-        this.shareCallback = shareCallback;
+    public void setShareCallback(ShareCallback readerTopContainerCallback) {
+        this.shareCallback = readerTopContainerCallback;
     }
 
     public ShareCallback getShareCallback() {
         return shareCallback;
     }
+
 
 
     public UrlClickCallback getUrlClickCallback() {

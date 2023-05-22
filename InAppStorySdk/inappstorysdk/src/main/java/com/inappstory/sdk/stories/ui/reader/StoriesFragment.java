@@ -18,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import androidx.fragment.app.Fragment;
@@ -28,13 +27,14 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.share.IASShareModel;
+import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
+import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
@@ -45,7 +45,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
-public class StoriesFragment extends Fragment implements BackPressHandler, ViewPager.OnPageChangeListener {
+public class StoriesFragment extends Fragment
+        implements BackPressHandler, ViewPager.OnPageChangeListener, OverlapFragmentObserver {
 
     public StoriesFragment() {
         super();
@@ -85,10 +86,19 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
             readerManager.removeAllStoriesFromFavorite();
     }
 
-    public void showShareView(String slidePayload, IASShareModel shareModel,
+    public void showShareView(String slidePayload, IASShareData shareData,
                               int storyId, int slideIndex) {
-        if (CallbackManager.getInstance().getReaderTopContainerCallback() != null) {
-
+        ShareCallback callback = CallbackManager.getInstance().getShareCallback();
+        Context context = getContext();
+        if (callback != null && context != null) {
+            ScreensManager.getInstance().openOverlapContainerForShare(
+                    context,
+                    this,
+                    slidePayload,
+                    storyId,
+                    slideIndex,
+                    shareData
+            );
         }
     }
 
@@ -163,7 +173,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     ReaderPager storiesViewPager;
 
-    FrameLayout shareContainer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -209,13 +218,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         storiesViewPager.setHost(this);
         storiesViewPager.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        shareContainer = new FrameLayout(context);
-        shareContainer.setId(R.id.ias_stories_share_container);
-        shareContainer.setClickable(true);
-        shareContainer.setVisibility(View.GONE);
-        shareContainer.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-
         invMask = new View(context);
         invMask.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -225,12 +227,10 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         invMask.setClickable(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             storiesViewPager.setElevation(4);
-            shareContainer.setElevation(16f);
             invMask.setElevation(10);
         }
         resView.addView(storiesViewPager);
         resView.addView(invMask);
-        resView.addView(shareContainer);
         return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);
     }
 
@@ -310,16 +310,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
         super.onResume();
     }
 
-    OverlappingContainerActions shareActions = new OverlappingContainerActions() {
-        @Override
-        public void closeView(HashMap<String, Object> data) {
-            boolean shared = false;
-            if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-            if (shareContainer != null) {
-                shareContainer.setVisibility(View.GONE);
-            }
-        }
-    };
 
     private int getCurIndexById(int id) {
         if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
@@ -353,12 +343,6 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
 
     @Override
     public boolean onBackPressed() {
-        if (shareContainer != null
-                && shareContainer.getVisibility() == View.VISIBLE
-                && CallbackManager.getInstance().getShareCallback() != null) {
-            CallbackManager.getInstance().getReaderTopContainerCallback().onBackPress(shareActions);
-            return true;
-        }
         return false;
     }
 
@@ -421,5 +405,19 @@ public class StoriesFragment extends Fragment implements BackPressHandler, ViewP
                 }
             }
         });
+    }
+
+    @Override
+    public void closeView(HashMap<String, Object> data) {
+        if (readerManager != null) readerManager.resumeWithShareId();
+        boolean shared = false;
+        if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+        if (!shared)
+            resume();
+    }
+
+    @Override
+    public void viewIsOpened() {
+
     }
 }

@@ -16,8 +16,8 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.share.IASShareModel;
-import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.PayloadTypes;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -37,6 +37,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStorie
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -326,31 +327,31 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        IASShareModel shareObj = JsonParser.fromJson(data, IASShareModel.class);
-        if (shareObj == null) return;
-        if (CallbackManager.getInstance().getReaderTopContainerCallback() != null) {
+        IASShareData shareData = JsonParser.fromJson(data, IASShareData.class);
+        if (shareData == null) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            ScreensManager.getInstance().setTempShareId(id);
+            ScreensManager.getInstance().setTempShareStoryId(storyId);
+        } else {
+            ScreensManager.getInstance().setOldTempShareId(id);
+            ScreensManager.getInstance().setOldTempShareStoryId(storyId);
+        }
+        if (CallbackManager.getInstance().getShareCallback() != null) {
             Story story = InAppStoryService.getInstance() != null ?
                     InAppStoryService.getInstance().getDownloadManager()
                             .getStoryById(storyId, pageManager.getStoryType()) : null;
             if (story != null) {
                 pageManager.parentManager.showShareView(
                         story.getSlideEventPayload(PayloadTypes.SHARE_STORY, index),
-                        shareObj, storyId, index
+                        shareData, storyId, index
                 );
             }
-        } else if (CallbackManager.getInstance().getShareCallback() != null) {
-            
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                ScreensManager.getInstance().setTempShareId(id);
-                ScreensManager.getInstance().setTempShareStoryId(storyId);
-            } else {
-                ScreensManager.getInstance().setOldTempShareId(id);
-                ScreensManager.getInstance().setOldTempShareStoryId(storyId);
-            }
-            if (storiesView.getContext() instanceof Activity) {
-                new ShareManager().shareDefault((Activity) storiesView.getContext(), shareObj);
-            }
+        } else if (storiesView.getContext() instanceof Activity) {
+            new IASShareManager().shareDefault(
+                    StoryShareBroadcastReceiver.class,
+                    (Activity) storiesView.getContext(),
+                    shareData
+            );
         }
     }
 

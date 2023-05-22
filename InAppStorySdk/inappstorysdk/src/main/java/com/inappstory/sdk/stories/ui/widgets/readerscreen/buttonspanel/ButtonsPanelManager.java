@@ -1,11 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
-import static android.app.PendingIntent.FLAG_IMMUTABLE;
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-
-import android.app.PendingIntent;
+import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -14,6 +10,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -29,6 +27,7 @@ import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 public class ButtonsPanelManager {
     public void setStoryId(int storyId) {
@@ -248,8 +247,6 @@ public class ButtonsPanelManager {
         }
         if (callback != null)
             callback.onClick();
-        //CsEventBus.getDefault().post(new PauseStoryReaderEvent(false));
-
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");
         NetworkClient.getApi().share(Integer.toString(storyId), null).enqueue(new NetworkCallback<ShareObject>() {
             @Override
@@ -257,52 +254,27 @@ public class ButtonsPanelManager {
                 ProfilingManager.getInstance().setReady(shareUID);
                 if (callback != null)
                     callback.onSuccess(0);
-                if (CallbackManager.getInstance().getShareCallback() != null) {
-                    CallbackManager.getInstance().getShareCallback()
-                            .onShareOld(StringsUtils.getNonNull(response.getUrl()),
-                                    StringsUtils.getNonNull(response.getTitle()),
-                                    StringsUtils.getNonNull(response.getDescription()),
-                                    Integer.toString(storyId));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    ScreensManager.getInstance().setTempShareId(null);
+                    ScreensManager.getInstance().setTempShareStoryId(storyId);
                 } else {
-                  /*  Intent sendIntent = new Intent();
-                    sendIntent.setAction(Intent.ACTION_SEND);
-                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, response.getUrl());
-                    sendIntent.setType("text/plain");
-                    Intent finalIntent = Intent.createChooser(sendIntent, null);
-                    finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    InAppStoryService.getInstance().getContext().startActivity(finalIntent);
-*/
-                    int shareFlag = FLAG_UPDATE_CURRENT;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        shareFlag |= FLAG_IMMUTABLE;
-                    }
-                    Intent sendIntent = new Intent();
-                    sendIntent.setAction(Intent.ACTION_SEND);
-                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, response.getTitle());
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, response.getUrl());
-
-                    sendIntent.setType("text/plain");
-                    PendingIntent pi = PendingIntent.getBroadcast(context, 989,
-                            new Intent(context, StoryShareBroadcastReceiver.class),
-                            shareFlag);
-                    Intent finalIntent = null;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                        finalIntent = Intent.createChooser(sendIntent, null, pi.getIntentSender());
-                        // finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ScreensManager.getInstance().setTempShareId(null);
-                        ScreensManager.getInstance().setTempShareStoryId(storyId);
-                        context.startActivity(finalIntent);
-                    } else {
-                        finalIntent = Intent.createChooser(sendIntent, null);
-                        //  finalIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(finalIntent);
-                        ScreensManager.getInstance().setOldTempShareId(null);
-                        ScreensManager.getInstance().setOldTempShareStoryId(storyId);
-                    }
+                    ScreensManager.getInstance().setOldTempShareId(null);
+                    ScreensManager.getInstance().setOldTempShareStoryId(storyId);
                 }
 
-
+                IASShareData shareData = new IASShareData();
+                shareData.files = new ArrayList<>();
+                shareData.title = response.getTitle();
+                shareData.text = response.getUrl();
+                if (parentManager != null && CallbackManager.getInstance().getShareCallback() != null) {
+                    parentManager.showShareView(shareData);
+                } else {
+                    new IASShareManager().shareDefault(
+                            StoryShareBroadcastReceiver.class,
+                            (Activity) context,
+                            shareData
+                    );
+                }
             }
 
             @Override

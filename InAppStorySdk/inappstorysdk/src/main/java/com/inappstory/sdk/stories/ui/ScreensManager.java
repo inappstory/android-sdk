@@ -54,6 +54,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -63,6 +64,7 @@ import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
@@ -140,8 +142,8 @@ public class ScreensManager {
         this.tempShareStoryId = tempShareStoryId;
     }
 
-
     public BaseReaderScreen currentScreen;
+    public OverlapFragmentObserver overlapFragmentObserver;
 
     public void closeStoryReader(int action) {
         if (currentScreen != null)
@@ -196,6 +198,37 @@ public class ScreensManager {
         return gameObservables.get(id);
     }
 
+    public void cleanOverlapFragmentObserver() {
+        this.overlapFragmentObserver = null;
+    }
+
+    public void openOverlapContainerForShare(
+            Context context,
+            OverlapFragmentObserver observer,
+            String slidePayload,
+            int storyId,
+            int slideIndex,
+            IASShareData shareData
+    ) {
+        try {
+            if (!(context instanceof FragmentActivity)) return;
+            this.overlapFragmentObserver = observer;
+            OverlapFragment storiesDialogFragment = new OverlapFragment();
+            storiesDialogFragment.setCancelable(false);
+            Bundle bundle = new Bundle();
+            bundle.putString("slidePayload", slidePayload);
+            bundle.putInt("storyId", storyId);
+            bundle.putInt("slideIndex", slideIndex);
+            bundle.putString("shareData", JsonParser.getJson(shareData));
+            storiesDialogFragment.setArguments(bundle);
+            storiesDialogFragment.show(((FragmentActivity) context).getSupportFragmentManager(),
+                    "OverlapFragment");
+        } catch (IllegalStateException e) {
+            InAppStoryService.createExceptionLog(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void openGameReader(Context context,
                                int storyId,

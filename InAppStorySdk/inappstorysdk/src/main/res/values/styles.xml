@@ -43,6 +43,14 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
+    <style name="OverlapDialogTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
 
     <style name="StoriesSDKAppTheme.NonTransparent" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">false</item>

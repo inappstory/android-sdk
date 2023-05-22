@@ -352,6 +352,7 @@ public class InAppStoryManager {
         CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
     }
 
+
     /**
      * use to customize share functional
      */

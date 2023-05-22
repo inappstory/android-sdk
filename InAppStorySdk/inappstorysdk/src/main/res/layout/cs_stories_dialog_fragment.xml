@@ -6,7 +6,6 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_weight="1"
         android:id="@+id/dialog_fragment"
 
         android:background="@android:color/transparent"
@@ -16,7 +15,5 @@
         android:layout_height="60dp"
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"
-        android:layout_alignParentBottom="true">
-
-    </LinearLayout>
+        android:layout_alignParentBottom="true"/>
 </RelativeLayout>

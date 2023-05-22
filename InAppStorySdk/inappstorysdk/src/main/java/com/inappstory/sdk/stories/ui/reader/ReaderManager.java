@@ -7,7 +7,7 @@ import android.os.Looper;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.share.IASShareModel;
+import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -115,11 +115,11 @@ public class ReaderManager {
         }
     }
 
-    public void showShareView(String slidePayload, IASShareModel shareModel,
+    public void showShareView(String slidePayload, IASShareData shareData,
                               int storyId, int slideIndex) {
-        pause();
+        //pause();
         if (parentFragment != null) {
-            parentFragment.showShareView(slidePayload, shareModel, storyId, slideIndex);
+            parentFragment.showShareView(slidePayload, shareData, storyId, slideIndex);
         }
     }
 

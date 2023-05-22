@@ -1,6 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
-import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
+import static com.inappstory.sdk.share.IASShareManager.SHARE_EVENT;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -48,8 +48,8 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.share.IASShareModel;
-import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -57,20 +57,23 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
     private IASWebView webView;
     private ImageView loader;
     private View closeButton;
@@ -382,8 +385,23 @@ public class GameActivity extends AppCompatActivity {
 
     boolean gameReaderGestureBack = false;
 
-    public void shareDefault(IASShareModel shareObject) {
-        new ShareManager().shareDefault(GameActivity.this, shareObject);
+    public void shareCustom(IASShareData shareObject) {
+        int storyId = -1;
+        try {
+            storyId = Integer.parseInt(manager.storyId);
+        } catch (NumberFormatException ignored) {
+        }
+        ScreensManager.getInstance().openOverlapContainerForShare(
+                this, this, null, storyId, manager.index, shareObject
+        );
+    }
+
+    public void shareDefault(IASShareData shareObject) {
+        new IASShareManager().shareDefault(
+                StoryShareBroadcastReceiver.class,
+                GameActivity.this,
+                shareObject
+        );
     }
 
     public void shareComplete(String id, boolean success) {
@@ -655,9 +673,9 @@ public class GameActivity extends AppCompatActivity {
     }
 
     void setAudioManagerMode(String mode) {
-            AudioManager audioManager = (AudioManager)
-                    getSystemService(Context.AUDIO_SERVICE);
-            audioManager.setMode(AudioModes.getModeVal(mode));
+        AudioManager audioManager = (AudioManager)
+                getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setMode(AudioModes.getModeVal(mode));
     }
 
 
@@ -710,4 +728,23 @@ public class GameActivity extends AppCompatActivity {
         webView.evaluateJavascript(data, null);
     }
 
+    @Override
+    public void closeView(HashMap<String, Object> data) {
+        boolean shared = false;
+        if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+        String id;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            id = ScreensManager.getInstance().getTempShareId();
+        } else {
+            id = ScreensManager.getInstance().getOldTempShareId();
+        }
+        shareComplete(id, shared);
+        if (!shared)
+            resumeGame();
+    }
+
+    @Override
+    public void viewIsOpened() {
+        pauseGame();
+    }
 }
