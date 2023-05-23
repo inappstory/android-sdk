@@ -65,7 +65,13 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
                 String ctType = response.headers.get("Content-Type");
                 return new WebResourceResponse(ctType, "BINARY",
                         new FileInputStream(file));
+            } catch (NullPointerException e) {
+                InAppStoryService.createExceptionLog(new Throwable(
+                        "StoriesReaderWebViewClient: headers is null for " + request.getUrl().toString(),
+                        e.getCause()));
+                return super.shouldInterceptRequest(view, request);
             } catch (Exception e) {
+
                 InAppStoryService.createExceptionLog(e);
                 return super.shouldInterceptRequest(view, request);
             }

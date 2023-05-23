@@ -125,7 +125,12 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public void resumeVideo() {
-        loadUrl("javascript:(function(){story_slide_resume();})()");
+        loadUrl("javascript:(function() {" +
+                "if ('story_slide_resume' in window) " +
+                "{" +
+                " window.story_slide_resume(); " +
+                "}" +
+                "})()");
         logMethod("story_slide_resume");
     }
 
