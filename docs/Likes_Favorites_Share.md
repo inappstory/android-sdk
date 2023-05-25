@@ -72,6 +72,13 @@ ShareCallback shareCallback = new InAppStoryManager.ShareCallback() {
 InAppStoryManager.getInstance().setShareCallback(shareCallback);
 ```
 
+`OverlappingContainerActions` is an interface that has to be used to close container for your custom share panel after successful or unsuccessful sharing. It has next signature:
+```java
+public interface OverlappingContainerActions {
+    void closeView(HashMap<String, Object> data); //after sharing you have to pass here an map with key "shared" and sharing result as boolean (true if successful)
+}
+```
+
 Variable `data` in method `getView` contains pair of key-value: 
 ```java
 IASShareData shareData = data.get("shareData"). 
