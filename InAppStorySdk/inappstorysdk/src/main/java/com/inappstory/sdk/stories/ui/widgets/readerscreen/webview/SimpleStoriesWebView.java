@@ -90,24 +90,41 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         return escaped;
     }
 
+
     public void pauseVideo() {
-        loadUrl("javascript:(function(){story_slide_pause();})()");
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_pause' in window) " +
+                "{" +
+                " window.story_slide_pause(); " +
+                "}" +
+                "})()");
 
         logMethod("story_slide_pause");
     }
 
 
     public void playVideo() {
-        if (InAppStoryService.getInstance().isSoundOn()) {
-            loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
-        } else {
-            loadUrl("javascript:(function(){story_slide_start('{\"muted\": true}');})()");
-        }
+        String funAfterCheck =
+                (InAppStoryService.getInstance() != null
+                        && InAppStoryService.getInstance().isSoundOn()) ?
+                        "story_slide_start('{\"muted\": false}');" :
+                        "story_slide_start('{\"muted\": true}');";
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_start' in window) " +
+                "{" +
+                " window." + funAfterCheck +
+                "}" +
+                "})()");
         logMethod("story_slide_start");
     }
 
     public void stopVideo() {
-        loadUrl("javascript:(function(){story_slide_stop();})()");
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_stop' in window) " +
+                "{" +
+                " window.story_slide_stop(); " +
+                "}" +
+                "})()");
 
         logMethod("story_slide_stop");
     }
