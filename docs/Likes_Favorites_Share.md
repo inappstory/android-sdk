@@ -47,13 +47,76 @@ public interface ClickOnShareStoryCallback {
 
 You can also customize default share behaviour (for example - to create your custom share dialog) with next handler:
 ```java
-InAppStoryManager.getInstance().setShareCallback(new InAppStoryManager.ShareCallback() {
+ShareCallback shareCallback = new InAppStoryManager.ShareCallback() {
+   @NonNull
     @Override
-    public void onShare(String url, String title, String description, String shareId) {
-        doAction(url, title, description);
+    public View getView(@NonNull Context context, 
+                        @NonNull HashMap<String, Object> data, 
+                        @NonNull OverlappingContainerActions actions) {
+        return getViewWithSharePanel(context, shareData, actions);
     }
-});
+
+    @Override
+    public void viewIsVisible(View view) {
+	startSharePanelShowAnimation(view)		
+    }
+
+
+    @Override
+    public boolean onBackPress(@NonNull OverlappingContainerActions actions) {
+    	startSharePanelHideAnimation(actions)
+        return true;
+    }
+}
+
+InAppStoryManager.getInstance().setShareCallback(shareCallback);
 ```
+
+`OverlappingContainerActions` is an interface that has to be used to close container for your custom share panel after successful or unsuccessful sharing. It has next signature:
+```java
+public interface OverlappingContainerActions {
+    void closeView(HashMap<String, Object> data); //after sharing you have to pass here an map with key "shared" and sharing result as boolean (true if successful)
+}
+```
+
+Variable `data` in method `getView` contains pair of key-value: 
+```java
+IASShareData shareData = data.get("shareData"). 
+```
+
+IASShareData is a class that contains share files or share url. You can use them directly, or if you don't want to customize share logic - you can use class `IASShareManager`. It contains 2 methods: `shareToSpecificApp` and `shareDefault` which takes a parameter `BroadcastReceiver receiver`. For example - you can realize next method and use it from your custom share panel:
+```java
+private void share(@NonNull Context context,
+                       @NonNull IASShareData data,
+                       @NonNull OverlappingContainerActions actions,
+                       String packageName) {
+        IASShareManager shareManager = new IASShareManager();
+        if (packageName != null)
+            shareManager.shareToSpecificApp(
+                    ShareBroadcastReceiver.class,
+                    (Activity) context,
+                    data,
+                    packageName);
+        else
+            shareManager.shareDefault(
+                    ShareBroadcastReceiver.class,
+                    (Activity) context,
+                    data
+            );
+    }
+```
+
+And `ShareBroadcastReceiver` looks like:
+
+```java
+class ShareBroadcastReceiver extends BroadcastReceiver {
+	@Override
+    	public void onReceive(Context context, Intent intent) {
+		//Here you need to notify your share callback about successful sharing
+	}
+}
+```
+[Here](https://github.com/inappstory/Android-Example/tree/main/kotlinexamples/src/main/java/com/inappstory/kotlinexamples/share) you can look at complete example with custom sharing
 
 ### Favorites
 To include favorite functionality in you app use `csHasFavorite(true)` property in `AppearanceManager` class. It turns on favorite cell in lists and favorite button in reader and can be set separately for current list or in common instance.
