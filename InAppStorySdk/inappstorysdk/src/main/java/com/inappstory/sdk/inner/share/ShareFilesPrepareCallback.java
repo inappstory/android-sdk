@@ -5,5 +5,5 @@ import android.net.Uri;
 import java.util.List;
 
 public interface ShareFilesPrepareCallback {
-    void onPrepared(List<Uri> files);
+    void onPrepared(List<String> files);
 }

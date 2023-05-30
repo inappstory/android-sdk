@@ -1,8 +1,6 @@
 package com.inappstory.sdk.inner.share;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 
 import com.inappstory.sdk.stories.utils.TaskRunner;
 
@@ -14,10 +12,10 @@ public class InnerShareFilesPrepare {
             final ShareFilesPrepareCallback callback,
             ArrayList<InnerShareFile> files
     ) {
-        new TaskRunner().executeAsync(new UriFromBase64(context, files),
-                new TaskRunner.Callback<ArrayList<Uri>>() {
+        new TaskRunner().executeAsync(new FilePathFromBase64(context, files),
+                new TaskRunner.Callback<ArrayList<String>>() {
                     @Override
-                    public void onComplete(ArrayList<Uri> result) {
+                    public void onComplete(ArrayList<String> result) {
                         callback.onPrepared(result);
                     }
                 });

@@ -105,7 +105,7 @@ public class StoriesFragment extends Fragment
         } else {
             new InnerShareFilesPrepare().prepareFiles(context, new ShareFilesPrepareCallback() {
                 @Override
-                public void onPrepared(List<Uri> files) {
+                public void onPrepared(List<String> files) {
                     shareCustomOrDefault(
                             slidePayload,
                             new IASShareData(shareData.getText(), files),

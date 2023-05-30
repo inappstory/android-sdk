@@ -236,7 +236,6 @@ public class ButtonsPanelManager {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.isShareProcess())
             return;
-        service.isShareProcess(true);
         if (InAppStoryManager.isNull()) return;
         Story story = service.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
         if (story == null) return;
@@ -254,6 +253,7 @@ public class ButtonsPanelManager {
             parentManager.screenshotShare();
             return;
         }
+        service.isShareProcess(true);
         if (callback != null)
             callback.onClick();
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");
@@ -280,6 +280,8 @@ public class ButtonsPanelManager {
                 super.onError(code, message);
                 if (callback != null)
                     callback.onError();
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (service != null) service.isShareProcess(false);
             }
 
             @Override

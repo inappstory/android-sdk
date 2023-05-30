@@ -16,13 +16,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-public class UriFromBase64 implements Callable<ArrayList<Uri>> {
+public class FilePathFromBase64 implements Callable<ArrayList<String>> {
     Context context;
     ArrayList<InnerShareFile> shareFiles;
 
 
-    public UriFromBase64(Context context,
-                         ArrayList<InnerShareFile> shareFiles) {
+    public FilePathFromBase64(Context context,
+                              ArrayList<InnerShareFile> shareFiles) {
         this.context = context;
         this.shareFiles = shareFiles;
     }
@@ -33,7 +33,7 @@ public class UriFromBase64 implements Callable<ArrayList<Uri>> {
         return BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
     }
 
-    private Uri saveImage(Context context, Bitmap image, String name, String type) {
+    private String saveImage(Context context, Bitmap image, String name, String type) {
         File imagesFolder = new File(context.getCacheDir(), "images");
         Uri uri = null;
         Bitmap.CompressFormat compressFormat;
@@ -59,18 +59,18 @@ public class UriFromBase64 implements Callable<ArrayList<Uri>> {
             image.compress(compressFormat, 100, stream);
             stream.flush();
             stream.close();
-            uri = FileProvider.getUriForFile(context, context.getPackageName() + ".com.inappstory.fileprovider", file);
+            return file.getAbsolutePath();
         } catch (IOException e) {
             InAppStoryService.createExceptionLog(e);
+            return null;
         }
-        return uri;
     }
 
     @Override
-    public ArrayList<Uri> call() throws Exception {
-        ArrayList<Uri> response = new ArrayList<>();
+    public ArrayList<String> call() throws Exception {
+        ArrayList<String> response = new ArrayList<>();
         for (InnerShareFile shareFile : shareFiles) {
-            Uri uri = saveImage(context,
+            String uri = saveImage(context,
                     getBitmapFromBase64String(shareFile.getFile()),
                     shareFile.getName(),
                     shareFile.getType());

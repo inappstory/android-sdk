@@ -9,16 +9,16 @@ import java.util.List;
 
 public class IASShareData {
     public String url;
-    public List<Uri> files;
+    public List<String> files;
 
-    public @NonNull List<Uri> getFiles() {
+    public @NonNull List<String> getFiles() {
         if (files == null) return new ArrayList<>();
         return files;
     }
 
     public IASShareData() {}
 
-    public IASShareData(List<Uri> files) {
+    public IASShareData(List<String> files) {
         this.files = files;
     }
 
@@ -26,7 +26,7 @@ public class IASShareData {
         this.url = url;
     }
 
-    public IASShareData(String url, List<Uri> files) {
+    public IASShareData(String url, List<String> files) {
         this.url = url;
         this.files = files;
     }

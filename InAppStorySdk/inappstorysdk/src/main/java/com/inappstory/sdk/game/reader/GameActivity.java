@@ -397,7 +397,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         if (!shareObject.getFiles().isEmpty()) {
             new InnerShareFilesPrepare().prepareFiles(this, new ShareFilesPrepareCallback() {
                 @Override
-                public void onPrepared(List<Uri> files) {
+                public void onPrepared(List<String> files) {
                     shareData.files = files;
                     shareCustomOrDefault(shareData);
                 }
