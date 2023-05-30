@@ -23,7 +23,6 @@ import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -43,7 +42,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -54,6 +52,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;

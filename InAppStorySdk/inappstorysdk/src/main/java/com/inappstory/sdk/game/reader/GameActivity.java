@@ -46,8 +46,11 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
+import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -71,6 +74,7 @@ import com.inappstory.sdk.utils.ZipLoader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
@@ -387,24 +391,42 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     boolean gameReaderGestureBack = false;
 
-    public void shareCustom(IASShareData shareObject) {
-        int storyId = -1;
-        try {
-            storyId = Integer.parseInt(manager.storyId);
-        } catch (NumberFormatException ignored) {
+    public void share(InnerShareData shareObject) {
+        final IASShareData shareData = new IASShareData();
+        shareData.url = shareObject.text;
+        if (!shareObject.getFiles().isEmpty()) {
+            new InnerShareFilesPrepare().prepareFiles(this, new ShareFilesPrepareCallback() {
+                @Override
+                public void onPrepared(List<Uri> files) {
+                    shareData.files = files;
+                    shareCustomOrDefault(shareData);
+                }
+            }, shareObject.getFiles());
+        } else {
+            shareCustomOrDefault(shareData);
         }
-        ScreensManager.getInstance().openOverlapContainerForShare(
-                this, this, null, storyId, manager.index, shareObject
-        );
+
     }
 
-    public void shareDefault(IASShareData shareObject) {
-        new IASShareManager().shareDefault(
-                StoryShareBroadcastReceiver.class,
-                GameActivity.this,
-                shareObject
-        );
+    private void shareCustomOrDefault(IASShareData shareObject) {
+        if (CallbackManager.getInstance().getShareCallback() != null) {
+            int storyId = -1;
+            try {
+                storyId = Integer.parseInt(manager.storyId);
+            } catch (NumberFormatException ignored) {
+            }
+            ScreensManager.getInstance().openOverlapContainerForShare(
+                    this, this, null, storyId, manager.index, shareObject
+            );
+        } else {
+            new IASShareManager().shareDefault(
+                    StoryShareBroadcastReceiver.class,
+                    GameActivity.this,
+                    shareObject
+            );
+        }
     }
+
 
     public void shareComplete(String id, boolean success) {
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");

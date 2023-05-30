@@ -1,8 +1,8 @@
-package com.inappstory.sdk.share;
+package com.inappstory.sdk.inner.share;
 
 import com.inappstory.sdk.network.SerializedName;
 
-public class IASShareFile {
+public class InnerShareFile {
     public String getFile() {
         return file;
     }

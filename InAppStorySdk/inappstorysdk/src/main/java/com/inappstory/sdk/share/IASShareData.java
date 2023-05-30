@@ -1,27 +1,33 @@
 package com.inappstory.sdk.share;
 
-import com.inappstory.sdk.network.SerializedName;
+import android.net.Uri;
+
+import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class IASShareData {
-    public String getText() {
-        return text;
+    public String url;
+    public List<Uri> files;
+
+    public @NonNull List<Uri> getFiles() {
+        if (files == null) return new ArrayList<>();
+        return files;
     }
 
-    public String getTitle() {
-        return title;
+    public IASShareData() {}
+
+    public IASShareData(List<Uri> files) {
+        this.files = files;
     }
 
-    @SerializedName("text")
-    public String text;
-    @SerializedName("title")
-    public String title;
-
-    public ArrayList<IASShareFile> getFiles() {
-        return files != null ? files : new ArrayList<IASShareFile>();
+    public IASShareData(String url) {
+        this.url = url;
     }
 
-    @SerializedName("files")
-    public ArrayList<IASShareFile> files;
+    public IASShareData(String url, List<Uri> files) {
+        this.url = url;
+        this.files = files;
+    }
 }

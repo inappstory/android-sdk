@@ -16,7 +16,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.PayloadTypes;
 import com.inappstory.sdk.stories.api.models.Session;
@@ -327,7 +327,11 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        IASShareData shareData = JsonParser.fromJson(data, IASShareData.class);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || service.isShareProcess())
+            return;
+        service.isShareProcess(true);
+        InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
         if (shareData == null) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             ScreensManager.getInstance().setTempShareId(id);
@@ -336,23 +340,16 @@ public class StoriesViewManager {
             ScreensManager.getInstance().setOldTempShareId(id);
             ScreensManager.getInstance().setOldTempShareStoryId(storyId);
         }
-        if (CallbackManager.getInstance().getShareCallback() != null) {
-            Story story = InAppStoryService.getInstance() != null ?
-                    InAppStoryService.getInstance().getDownloadManager()
-                            .getStoryById(storyId, pageManager.getStoryType()) : null;
-            if (story != null) {
-                pageManager.parentManager.showShareView(
-                        story.getSlideEventPayload(PayloadTypes.SHARE_STORY, index),
-                        shareData, storyId, index
-                );
-            }
-        } else if (storiesView.getContext() instanceof Activity) {
-            new IASShareManager().shareDefault(
-                    StoryShareBroadcastReceiver.class,
-                    (Activity) storiesView.getContext(),
-                    shareData
+        Story story = InAppStoryService.getInstance() != null ?
+                InAppStoryService.getInstance().getDownloadManager()
+                        .getStoryById(storyId, pageManager.getStoryType()) : null;
+        if (story != null) {
+            pageManager.parentManager.showShareView(
+                    story.getSlideEventPayload(PayloadTypes.SHARE_STORY, index),
+                    shareData, storyId, index
             );
         }
+
     }
 
     public void storyStartedEvent() {

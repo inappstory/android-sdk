@@ -27,7 +27,12 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
+import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.IASShareManager;
+import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
@@ -40,6 +45,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -86,22 +92,55 @@ public class StoriesFragment extends Fragment
             readerManager.removeAllStoriesFromFavorite();
     }
 
-    public void showShareView(String slidePayload, IASShareData shareData,
-                              int storyId, int slideIndex) {
-        ShareCallback callback = CallbackManager.getInstance().getShareCallback();
+    public void showShareView(final String slidePayload, final InnerShareData shareData,
+                              final int storyId, final int slideIndex) {
         Context context = getContext();
-        if (callback != null && context != null) {
+        if (shareData.getFiles().isEmpty()) {
+            shareCustomOrDefault(
+                    slidePayload,
+                    new IASShareData(shareData.getText()),
+                    storyId,
+                    slideIndex
+            );
+        } else {
+            new InnerShareFilesPrepare().prepareFiles(context, new ShareFilesPrepareCallback() {
+                @Override
+                public void onPrepared(List<Uri> files) {
+                    shareCustomOrDefault(
+                            slidePayload,
+                            new IASShareData(shareData.getText(), files),
+                            storyId,
+                            slideIndex
+                    );
+                }
+            }, shareData.getFiles());
+        }
+    }
+
+    private void shareCustomOrDefault(String slidePayload,
+                                      IASShareData shareObject,
+                                      int storyId,
+                                      int slideIndex) {
+        Context context = getContext();
+        ShareCallback callback = CallbackManager.getInstance().getShareCallback();
+        if (context == null) return;
+        if (callback != null) {
             ScreensManager.getInstance().openOverlapContainerForShare(
                     context,
                     this,
                     slidePayload,
                     storyId,
                     slideIndex,
-                    shareData
+                    shareObject
+            );
+        } else {
+            new IASShareManager().shareDefault(
+                    StoryShareBroadcastReceiver.class,
+                    context,
+                    shareObject
             );
         }
     }
-
 
     @Override
     public void onPageSelected(int position) {
@@ -412,6 +451,7 @@ public class StoriesFragment extends Fragment
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+
                 if (readerManager != null) readerManager.resumeWithShareId();
                 boolean shared = false;
                 if (data.containsKey("shared")) shared = (boolean) data.get("shared");

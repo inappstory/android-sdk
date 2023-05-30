@@ -7,7 +7,7 @@ import android.os.Looper;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -115,7 +115,7 @@ public class ReaderManager {
         }
     }
 
-    public void showShareView(String slidePayload, IASShareData shareData,
+    public void showShareView(String slidePayload, InnerShareData shareData,
                               int storyId, int slideIndex) {
         //pause();
         if (parentFragment != null) {
@@ -344,6 +344,11 @@ public class ReaderManager {
     }
 
     void resumeWithShareId() {
+        synchronized (subscribers) {
+            for (ReaderPageManager pageManager : subscribers) {
+                pageManager.unlockShareButton();
+            }
+        }
         if (ScreensManager.getInstance().getOldTempShareId() != null) {
             ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId());
             if (rm != null) {

@@ -3,7 +3,6 @@ package com.inappstory.sdk.share;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,11 +10,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
+import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.inner.share.UriFromBase64;
 import com.inappstory.sdk.stories.utils.TaskRunner;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class IASShareManager {
 
@@ -45,30 +45,26 @@ public class IASShareManager {
             final IASShareData shareObject) {
         final Intent sendingIntent = new Intent();
         sendingIntent.setAction(Intent.ACTION_SEND);
-        sendingIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());
 
-        if (shareObject.getText() != null)
-            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareObject.getText());
-        if (shareObject.getFiles().isEmpty()) {
+        if (shareObject.url != null)
+            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareObject.url);
+        List<Uri> files = shareObject.getFiles();
+        if (files.isEmpty()) {
             sendingIntent.setType("text/plain");
-            sendIntent(context, sendingIntent, receiver);
         } else {
             sendingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             sendingIntent.setType("image/*");
-            new TaskRunner().executeAsync(new UriFromBase64(context, shareObject.getFiles()),
-                    new TaskRunner.Callback<ArrayList<Uri>>() {
-                        @Override
-                        public void onComplete(ArrayList<Uri> result) {
-                            if (result.size() > 1) {
-                                sendingIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
-                                sendingIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, result);
-                            } else if (!result.isEmpty()) {
-                                sendingIntent.putExtra(Intent.EXTRA_STREAM, result.get(0));
-                            }
-                            sendIntent(context, sendingIntent, receiver);
-                        }
-                    });
+            if (files.size() > 1) {
+                sendingIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                sendingIntent.putParcelableArrayListExtra(
+                        Intent.EXTRA_STREAM,
+                        new ArrayList(files)
+                );
+            } else {
+                sendingIntent.putExtra(Intent.EXTRA_STREAM, files.get(0));
+            }
         }
+        sendIntent(context, sendingIntent, receiver);
     }
 
     public <T extends BroadcastReceiver> void shareToSpecificApp(
@@ -78,31 +74,28 @@ public class IASShareManager {
             String packageName) {
         final Intent sendingIntent = new Intent();
         sendingIntent.setAction(Intent.ACTION_SEND);
-        sendingIntent.putExtra(Intent.EXTRA_SUBJECT, shareObject.getTitle());
+
+        if (shareObject.url != null)
+            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareObject.url);
         if (packageName != null) {
             sendingIntent.setPackage(packageName);
         }
-        if (shareObject.getText() != null)
-            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareObject.getText());
-        if (shareObject.getFiles().isEmpty()) {
+        List<Uri> files = shareObject.getFiles();
+        if (files.isEmpty()) {
             sendingIntent.setType("text/plain");
-            sendIntent(context, sendingIntent, receiver);
         } else {
             sendingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             sendingIntent.setType("image/*");
-            new TaskRunner().executeAsync(new UriFromBase64(context, shareObject.getFiles()),
-                    new TaskRunner.Callback<ArrayList<Uri>>() {
-                        @Override
-                        public void onComplete(ArrayList<Uri> result) {
-                            if (result.size() > 1) {
-                                sendingIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
-                                sendingIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, result);
-                            } else if (!result.isEmpty()) {
-                                sendingIntent.putExtra(Intent.EXTRA_STREAM, result.get(0));
-                            }
-                            sendIntent(context, sendingIntent, receiver);
-                        }
-                    });
+            if (files.size() > 1) {
+                sendingIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                sendingIntent.putParcelableArrayListExtra(
+                        Intent.EXTRA_STREAM,
+                        new ArrayList(files)
+                );
+            } else {
+                sendingIntent.putExtra(Intent.EXTRA_STREAM, files.get(0));
+            }
         }
+        sendIntent(context, sendingIntent, receiver);
     }
 }

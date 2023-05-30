@@ -10,7 +10,7 @@ import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -42,6 +42,13 @@ public class ButtonsPanelManager {
 
     public void setParentManager(ReaderPageManager parentManager) {
         this.parentManager = parentManager;
+    }
+
+    public void unlockShareButton() {
+        if (panel != null && panel.share != null) {
+            panel.share.setClickable(true);
+            panel.share.setEnabled(true);
+        }
     }
 
     public ButtonsPanelManager(ButtonsPanel panel) {
@@ -226,8 +233,12 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final Context context, final ShareButtonClickCallback callback) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || service.isShareProcess())
+            return;
+        service.isShareProcess(true);
         if (InAppStoryManager.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+        Story story = service.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
         if (story == null) return;
         StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex,
                 story.shareType(story.lastIndex),
@@ -241,8 +252,6 @@ public class ButtonsPanelManager {
         }
         if (story.isScreenshotShare(story.lastIndex)) {
             parentManager.screenshotShare();
-            if (callback != null)
-                callback.onSuccess(0);
             return;
         }
         if (callback != null)
@@ -252,8 +261,6 @@ public class ButtonsPanelManager {
             @Override
             public void onSuccess(ShareObject response) {
                 ProfilingManager.getInstance().setReady(shareUID);
-                if (callback != null)
-                    callback.onSuccess(0);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                     ScreensManager.getInstance().setTempShareId(null);
                     ScreensManager.getInstance().setTempShareStoryId(storyId);
@@ -261,19 +268,10 @@ public class ButtonsPanelManager {
                     ScreensManager.getInstance().setOldTempShareId(null);
                     ScreensManager.getInstance().setOldTempShareStoryId(storyId);
                 }
-
-                IASShareData shareData = new IASShareData();
-                shareData.files = new ArrayList<>();
-                shareData.title = response.getTitle();
+                InnerShareData shareData = new InnerShareData();
                 shareData.text = response.getUrl();
-                if (parentManager != null && CallbackManager.getInstance().getShareCallback() != null) {
+                if (parentManager != null) {
                     parentManager.showShareView(shareData);
-                } else {
-                    new IASShareManager().shareDefault(
-                            StoryShareBroadcastReceiver.class,
-                            (Activity) context,
-                            shareData
-                    );
                 }
             }
 

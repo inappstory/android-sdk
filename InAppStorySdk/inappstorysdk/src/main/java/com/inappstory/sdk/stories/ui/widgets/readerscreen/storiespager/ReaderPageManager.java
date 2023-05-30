@@ -6,7 +6,7 @@ import android.os.Looper;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -37,6 +37,9 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
+    public void unlockShareButton() {
+        buttonsPanelManager.unlockShareButton();
+    }
 
     public void removeStoryFromFavorite() {
         if (checkIfManagersIsNull()) return;
@@ -438,7 +441,7 @@ public class ReaderPageManager {
 
     ReaderManager parentManager;
 
-    public void showShareView(IASShareData shareData) {
+    public void showShareView(InnerShareData shareData) {
         if (parentManager != null) {
 
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());

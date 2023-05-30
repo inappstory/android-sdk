@@ -231,8 +231,7 @@ public class ButtonsPanel extends LinearLayout {
 
             @Override
             public void onSuccess(int val) {
-                share.setEnabled(true);
-                share.setClickable(true);
+
             }
 
             @Override
