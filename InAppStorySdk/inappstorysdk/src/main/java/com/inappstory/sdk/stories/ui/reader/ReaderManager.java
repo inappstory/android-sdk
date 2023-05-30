@@ -360,7 +360,7 @@ public class ReaderManager {
                         true);
             }
         } else if (ScreensManager.getInstance().getTempShareId() != null) {
-            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId());
+            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getTempShareStoryId());
             if (rm != null) {
                 rm.shareComplete("" + ScreensManager.getInstance().getTempShareId(),
                         ScreensManager.getInstance().getTempShareStatus());
