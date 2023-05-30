@@ -42,26 +42,31 @@ public class IASShareManager {
         context.startActivity(finalIntent);
     }
 
-    private Intent prepareIntent(Context context, IASShareData shareObject) {
+    public List<Uri> getUrisFromShareData(Context context, IASShareData shareData) {
+        List<String> filePaths = shareData.getFiles();
+        ArrayList<Uri> files = new ArrayList<>();
+        for (String path : filePaths) {
+            files.add(
+                    FileProvider.getUriForFile(
+                            context,
+                            context.getPackageName() + ".com.inappstory.fileprovider",
+                            new File(path)
+                    )
+            );
+        }
+        return files;
+    }
+
+    private Intent prepareIntent(Context context, IASShareData shareData) {
         final Intent sendingIntent = new Intent();
         sendingIntent.setAction(Intent.ACTION_SEND);
 
-        if (shareObject.url != null)
-            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareObject.url);
-        List<String> filePaths = shareObject.getFiles();
-        if (filePaths.isEmpty()) {
+        if (shareData.url != null)
+            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareData.url);
+        List<Uri> files = getUrisFromShareData(context, shareData);
+        if (files.isEmpty()) {
             sendingIntent.setType("text/plain");
         } else {
-            ArrayList<Uri> files = new ArrayList<>();
-            for (String path : filePaths) {
-                files.add(
-                        FileProvider.getUriForFile(
-                                context,
-                                context.getPackageName() + ".com.inappstory.fileprovider",
-                                new File(path)
-                        )
-                );
-            }
             sendingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             sendingIntent.setType("image/*");
             if (files.size() > 1) {
