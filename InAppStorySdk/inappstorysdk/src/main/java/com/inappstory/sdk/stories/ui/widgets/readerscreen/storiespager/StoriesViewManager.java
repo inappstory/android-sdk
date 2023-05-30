@@ -348,6 +348,8 @@ public class StoriesViewManager {
                     story.getSlideEventPayload(PayloadTypes.SHARE_STORY, index),
                     shareData, storyId, index
             );
+        } else {
+            service.isShareProcess(false);
         }
 
     }

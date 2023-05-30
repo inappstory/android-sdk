@@ -409,6 +409,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     private void shareCustomOrDefault(IASShareData shareObject) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.isShareProcess(false);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             int storyId = -1;
             try {
@@ -428,11 +431,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     public void shareComplete(String id, boolean success) {
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
-            service.isShareProcess(false);
-
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 

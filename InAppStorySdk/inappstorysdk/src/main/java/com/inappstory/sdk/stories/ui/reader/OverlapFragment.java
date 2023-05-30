@@ -48,9 +48,6 @@ public class OverlapFragment extends DialogFragment {
             if (observer != null) observer.closeView(data);
             ScreensManager.getInstance().cleanOverlapFragmentObserver();
             dismissAllowingStateLoss();
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service != null)
-                service.isShareProcess(false);
         }
     };
 

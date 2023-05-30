@@ -120,6 +120,10 @@ public class ReaderManager {
         //pause();
         if (parentFragment != null) {
             parentFragment.showShareView(slidePayload, shareData, storyId, slideIndex);
+        } else {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service != null)
+                service.isShareProcess(false);
         }
     }
 
@@ -340,10 +344,6 @@ public class ReaderManager {
     }
 
     public void shareComplete() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
-            service.isShareProcess(false);
-
         ScreensManager.getInstance().setTempShareStatus(true);
     }
 

@@ -121,6 +121,9 @@ public class StoriesFragment extends Fragment
                                       IASShareData shareObject,
                                       int storyId,
                                       int slideIndex) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.isShareProcess(false);
         Context context = getContext();
         ShareCallback callback = CallbackManager.getInstance().getShareCallback();
         if (context == null) return;
