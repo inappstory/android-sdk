@@ -84,7 +84,7 @@ Variable `data` in method `getView` contains pair of key-value:
 IASShareData shareData = data.get("shareData"). 
 ```
 
-IASShareData is a class that contains share files or share url. You can use them directly, or if you don't want to customize share logic - you can use class `IASShareManager`. It contains 2 methods: `shareToSpecificApp` and `shareDefault` which takes a parameter `BroadcastReceiver receiver`. For example - you can realize next method and use it from your custom share panel:
+IASShareData is a class that contains share files (list of file paths) or share url. You can use them directly, or if you don't want to customize share logic - you can use class `IASShareManager`. It contains 2 methods: `shareToSpecificApp` and `shareDefault` which takes a parameter `BroadcastReceiver receiver`. For example - you can realize next method and use it from your custom share panel:
 ```java
 private void share(@NonNull Context context,
                        @NonNull IASShareData data,
@@ -94,13 +94,13 @@ private void share(@NonNull Context context,
         if (packageName != null)
             shareManager.shareToSpecificApp(
                     ShareBroadcastReceiver.class,
-                    (Activity) context,
+                    context,
                     data,
                     packageName);
         else
             shareManager.shareDefault(
                     ShareBroadcastReceiver.class,
-                    (Activity) context,
+                    context,
                     data
             );
     }
