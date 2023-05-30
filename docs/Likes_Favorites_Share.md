@@ -84,7 +84,7 @@ Variable `data` in method `getView` contains pair of key-value:
 IASShareData shareData = data.get("shareData"). 
 ```
 
-IASShareData is a class that contains share files (list of file paths) or share url. You can use them directly, or if you don't want to customize share logic - you can use class `IASShareManager`. It contains 2 methods: `shareToSpecificApp` and `shareDefault` which takes a parameter `BroadcastReceiver receiver`. For example - you can realize next method and use it from your custom share panel:
+IASShareData is a class that contains share files (list of file paths) or share url. You can use them directly, or if you don't want to customize share logic - you can use class `IASShareManager`. It contains 2 methods: `shareToSpecificApp`, `shareDefault` which takes a parameter `BroadcastReceiver receiver`. For example - you can realize next method and use it from your custom share panel:
 ```java
 private void share(@NonNull Context context,
                        @NonNull IASShareData data,
@@ -116,6 +116,35 @@ class ShareBroadcastReceiver extends BroadcastReceiver {
 	}
 }
 ```
+
+If you want to customize share logic and you want to share images (from game or slide screenshots) - you can use method `getUrisFromShareData(Context context, IASShareData shareData)` from class `IASShareManager`. For example:
+
+```java
+Intent getShareIntent(Context context, IASShareData shareData) {
+	final Intent sendingIntent = new Intent();
+	sendingIntent.setAction(Intent.ACTION_SEND);
+
+	List<Uri> files = getUrisFromShareData(context, shareData);
+
+	if (files.isEmpty()) {
+		sendingIntent.setType("text/plain");
+	} else {
+		sendingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+		sendingIntent.setType("image/*");
+		if (files.size() > 1) {
+			sendingIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+			sendingIntent.putParcelableArrayListExtra(
+				Intent.EXTRA_STREAM,
+				new ArrayList<>(files)
+			);
+		} else {
+			sendingIntent.putExtra(Intent.EXTRA_STREAM, files.get(0));
+		}
+	}
+	return sendingIntent;
+}
+```
+
 [Here](https://github.com/inappstory/Android-Example/tree/main/kotlinexamples/src/main/java/com/inappstory/kotlinexamples/share) you can look at complete example with custom sharing
 
 ### Favorites
