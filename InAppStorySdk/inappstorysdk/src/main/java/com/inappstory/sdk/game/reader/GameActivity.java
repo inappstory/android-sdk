@@ -427,8 +427,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
     }
 
-
     public void shareComplete(String id, boolean success) {
+
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.isShareProcess(false);
+
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
@@ -771,6 +775,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 shareViewIsShown = false;
 
                 ScreensManager.getInstance().clearShareIds();
+
             }
         });
 

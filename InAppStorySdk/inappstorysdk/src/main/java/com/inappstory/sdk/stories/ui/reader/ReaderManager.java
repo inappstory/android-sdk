@@ -340,6 +340,10 @@ public class ReaderManager {
     }
 
     public void shareComplete() {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.isShareProcess(false);
+
         ScreensManager.getInstance().setTempShareStatus(true);
     }
 
