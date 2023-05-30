@@ -123,9 +123,8 @@ If you want to customize share logic and you want to share images (from game or 
 Intent getShareIntent(Context context, IASShareData shareData) {
 	final Intent sendingIntent = new Intent();
 	sendingIntent.setAction(Intent.ACTION_SEND);
-
-	List<Uri> files = getUrisFromShareData(context, shareData);
-
+	IASShareManager shareManager = new IASShareManager();
+	List<Uri> files = shareManager.getUrisFromShareData(context, shareData);
 	if (files.isEmpty()) {
 		sendingIntent.setType("text/plain");
 	} else {
