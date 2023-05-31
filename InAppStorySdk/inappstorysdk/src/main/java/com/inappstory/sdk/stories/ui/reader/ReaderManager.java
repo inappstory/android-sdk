@@ -343,8 +343,8 @@ public class ReaderManager {
         StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
     }
 
-    public void shareComplete() {
-        ScreensManager.getInstance().setTempShareStatus(true);
+    public void shareComplete(boolean shared) {
+        ScreensManager.getInstance().setTempShareStatus(shared);
     }
 
     void resumeWithShareId() {

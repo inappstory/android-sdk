@@ -298,8 +298,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     Story.StoryType type = Story.StoryType.COMMON;
 
-    public void shareComplete() {
-        storiesFragment.readerManager.shareComplete();
+    public void shareComplete(boolean shared) {
+        storiesFragment.readerManager.shareComplete(shared);
     }
 
     @Override

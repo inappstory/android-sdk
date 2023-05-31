@@ -173,8 +173,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     @Override
-    public void shareComplete() {
-
+    public void shareComplete(boolean shared) {
+        storiesFragment.readerManager.shareComplete(shared);
     }
 
     @Override

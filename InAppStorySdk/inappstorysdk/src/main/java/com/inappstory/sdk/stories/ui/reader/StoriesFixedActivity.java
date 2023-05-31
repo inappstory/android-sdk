@@ -107,8 +107,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     StoriesFragment storiesFragment;
 
-    public void shareComplete() {
-        storiesFragment.readerManager.shareComplete();
+    public void shareComplete(boolean shared) {
+        storiesFragment.readerManager.shareComplete(shared);
     }
 
     @Override
