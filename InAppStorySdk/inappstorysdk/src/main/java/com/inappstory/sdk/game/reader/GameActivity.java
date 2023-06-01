@@ -75,6 +75,7 @@ import com.inappstory.sdk.utils.ZipLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
@@ -488,6 +489,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         options.sdkVersion = BuildConfig.VERSION_NAME;
         options.apiKey = InAppStoryManager.getInstance().getApiKey();
         options.sessionId = CachedSessionData.getInstance(this).sessionId;
+        String language;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            language = Locale.getDefault().toLanguageTag();
+        } else {
+            language = Locale.getDefault().getLanguage();
+        }
+        options.lang = language;
         options.deviceId = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         options.placeholders = generatePlaceholders();
