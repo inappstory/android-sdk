@@ -10,11 +10,19 @@ import com.inappstory.sdk.network.SerializedName;
 public class ShareObject {
     @SerializedName("url")
     String url;
+
     @SerializedName("title")
     String title;
 
+    @SerializedName("payload")
+    String payload;
+
     public String getUrl() {
         return url;
+    }
+
+    public String getPayload() {
+        return payload;
     }
 
     public String getTitle() {

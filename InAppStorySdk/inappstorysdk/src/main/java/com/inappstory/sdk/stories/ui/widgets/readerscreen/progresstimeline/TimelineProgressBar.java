@@ -2,9 +2,14 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -14,30 +19,99 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Random;
 
-public class TimelineProgressBar extends FrameLayout {
+public class TimelineProgressBar extends View {
     Context context;
 
     String id;
+    private Paint backgroundPaint;
+    private Paint foregroundPaint;
+    private int timelineHeight = Sizes.dpToPxExt(3);
+    int timelineWidth = getWidth();
+    int radius = timelineHeight / 2;
+    RectF backgroundRect;
+    RectF foregroundRect;
+
+    private Paint getBackgroundPaint() {
+        if (backgroundPaint == null) {
+            backgroundPaint = new Paint();
+            backgroundPaint.setColor(Color.parseColor("#8affffff"));
+        }
+        return backgroundPaint;
+    }
+
+    private Paint getForegroundPaint() {
+        if (foregroundPaint == null) {
+            foregroundPaint = new Paint();
+            foregroundPaint.setColor(Color.parseColor("#ffffff"));
+        }
+        return foregroundPaint;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    private RectF getForegroundRect() {
+        if (foregroundRect == null)
+            foregroundRect = new RectF(
+                    0,
+                    0,
+                    currentProgress * timelineWidth,
+                    timelineHeight
+            );
+        return foregroundRect;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        Log.e("rectWidth", "" + getWidth());
+        canvas.drawRoundRect(new RectF(0, 0, getWidth(), timelineHeight),
+                radius, radius, getBackgroundPaint());
+        if (progressForegroundVisibility) {
+            canvas.drawRoundRect(
+                    new RectF(
+                            0,
+                            0,
+                            currentProgress * getWidth(),
+                            timelineHeight
+                    ),
+                    radius,
+                    radius,
+                    getForegroundPaint()
+            );
+        }
+        super.onDraw(canvas);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        timelineWidth = getWidth();
+    }
 
     public TimelineProgressBar(@NonNull Context context) {
         super(context);
+        this.timelineHeight = Sizes.dpToPxExt(3, context);
+        this.radius = timelineHeight / 2;
         this.context = context;
         init();
     }
 
-    View progressBackground;
-    View progressForeground;
+    boolean progressForegroundVisibility = false;
 
     public void setDuration(Long duration) {
         this.duration = duration;
-
     }
 
     Long duration;
 
+
+    float currentProgress = 0;
 
     public Long getDuration() {
         if (duration == null || duration == 0) return 1000L;
@@ -48,35 +122,30 @@ public class TimelineProgressBar extends FrameLayout {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (progressForeground.getVisibility() == VISIBLE) {
-                    progressForeground.setVisibility(INVISIBLE);
-                    progressForeground.setScaleX(0.0001f);
+                if (progressForegroundVisibility) {
+                    progressForegroundVisibility = false;
+                    setCurrentProgress(0);
                 }
             }
         });
     }
 
     public void clearInLooper() {
-        if (progressForeground.getVisibility() == VISIBLE) {
-            progressForeground.setVisibility(INVISIBLE);
-            progressForeground.setScaleX(0.0001f);
+        if (progressForegroundVisibility) {
+            progressForegroundVisibility = false;
+            setCurrentProgress(0);
         }
     }
 
     public void setMin() {
-        if (progressForeground.getVisibility() == INVISIBLE)
-            progressForeground.setVisibility(VISIBLE);
-        progressForeground.setScaleX(0.0001f);
-        //progressForeground.setVisibility(INVISIBLE);
+        progressForegroundVisibility = true;
+        setCurrentProgress(0);
     }
 
 
     public void setMax() {
-        if (progressForeground.getVisibility() == INVISIBLE)
-            progressForeground.setVisibility(VISIBLE);
-        progressForeground.setScaleX(1f);
-
-        //progressForeground.setVisibility(INVISIBLE);
+        progressForegroundVisibility = true;
+        setCurrentProgress(1f);
     }
 
     public TimelineProgressBar(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -100,15 +169,15 @@ public class TimelineProgressBar extends FrameLayout {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                progressForeground.clearAnimation();
-                progressForeground.animate().cancel();
+                clearAnimation();
+                animate().cancel();
             }
         });
     }
 
     public void stopInLooper() {
-        progressForeground.clearAnimation();
-        progressForeground.animate().cancel();
+        clearAnimation();
+        animate().cancel();
     }
 
     public void start() {
@@ -116,32 +185,33 @@ public class TimelineProgressBar extends FrameLayout {
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                progressForeground.clearAnimation();
-                progressForeground.animate().cancel();
-                progressForeground.setScaleX(0.0001f);
+                clearAnimation();
+                animate().cancel();
+                setCurrentProgress(0);
                 if (duration == null || duration == 0) return;
-                progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
                         float val = (1f * animation.getCurrentPlayTime()) / animation.getDuration();
                         if (isActive)
-                            progressForeground.setScaleX(val);
+                            setCurrentProgress(val);
                     }
                 }).setDuration(getDuration()).start();
             }
         }, 100);
     }
 
+    private void setCurrentProgress(float progress) {
+        currentProgress = progress;
+    }
 
     public void pause() {
 
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                progressForeground.clearAnimation();
-                progressForeground.animate().cancel();
-                // if (currentAnimation == null) return;
-                // currentAnimation.pause();
+                clearAnimation();
+                animate().cancel();
             }
         });
     }
@@ -151,16 +221,16 @@ public class TimelineProgressBar extends FrameLayout {
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                progressForeground.clearAnimation();
-                progressForeground.animate().cancel();
-                progressForeground.setScaleX(0.0001f);
+                clearAnimation();
+                animate().cancel();
+                setCurrentProgress(0);
                 if (duration == null || duration == 0) return;
-                progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
                         float val = (1f * animation.getCurrentPlayTime()) / animation.getDuration();
                         if (isActive)
-                            progressForeground.setScaleX(Math.min(val, 1f));
+                            setCurrentProgress(Math.min(val, 1f));
                         //scaleX(1f).
                     }
                 }).setDuration(getDuration()).start();
@@ -174,16 +244,17 @@ public class TimelineProgressBar extends FrameLayout {
             @Override
             public void run() {
                 if (duration == null || duration == 0) return;
-                long dur = (long) (getDuration() * Math.max(0f, 1f - progressForeground.getScaleX()));
-                InAppStoryManager.showDLog("jsDuration", getDuration() + " " + (1f - progressForeground.getScaleX()));
-                progressForeground.animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                long dur = (long) (getDuration() * Math.max(0f, 1f - currentProgress));
+                InAppStoryManager.showDLog("jsDuration", getDuration() +
+                        " " + (1f - currentProgress));
+                animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
 
-                        float val = 1f - ((1f * animation.getDuration() - animation.getCurrentPlayTime()) / (getDuration()));
+                        float val = 1f - ((1f * animation.getDuration() -
+                                animation.getCurrentPlayTime()) / (getDuration()));
                         if (isActive)
-                            progressForeground.setScaleX(Math.min(Math.max(0f, val), 1f));
-                        //scaleX(1f).
+                            setCurrentProgress(Math.min(Math.max(0f, val), 1f));
                     }
                 }).setDuration(dur).start();
 
@@ -205,10 +276,10 @@ public class TimelineProgressBar extends FrameLayout {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        if (progressForeground.getVisibility() == INVISIBLE) {
-                            progressForeground.setVisibility(VISIBLE);
+                        if (!progressForegroundVisibility) {
+                            progressForegroundVisibility = true;
                         }
-                        progressForeground.setScaleX(progress);
+                        setCurrentProgress(progress);
                     }
                 });
             }
@@ -218,10 +289,8 @@ public class TimelineProgressBar extends FrameLayout {
 
     private void init() {
         id = new Random().nextDouble() + "";
-        LayoutInflater.from(context).inflate(R.layout.cs_progress_bar, this);
-        progressForeground = findViewById(R.id.progress_foreground);
-        progressBackground = findViewById(R.id.progress_background);
-        progressForeground.setPivotX(-progressForeground.getWidth() / 2);
+        getBackgroundPaint();
+        getForegroundPaint();
     }
 
 }

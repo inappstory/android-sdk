@@ -257,37 +257,39 @@ public class ButtonsPanelManager {
         if (callback != null)
             callback.onClick();
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");
-        NetworkClient.getApi().share(Integer.toString(storyId), null).enqueue(new NetworkCallback<ShareObject>() {
-            @Override
-            public void onSuccess(ShareObject response) {
-                ProfilingManager.getInstance().setReady(shareUID);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    ScreensManager.getInstance().setTempShareId(null);
-                    ScreensManager.getInstance().setTempShareStoryId(storyId);
-                } else {
-                    ScreensManager.getInstance().setOldTempShareId(null);
-                    ScreensManager.getInstance().setOldTempShareStoryId(storyId);
-                }
-                InnerShareData shareData = new InnerShareData();
-                shareData.text = response.getUrl();
-                if (parentManager != null) {
-                    parentManager.showShareView(shareData);
-                }
-            }
+        NetworkClient.getApi().share(Integer.toString(storyId), story.lastIndex, null)
+                .enqueue(new NetworkCallback<ShareObject>() {
+                    @Override
+                    public void onSuccess(ShareObject response) {
+                        ProfilingManager.getInstance().setReady(shareUID);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                            ScreensManager.getInstance().setTempShareId(null);
+                            ScreensManager.getInstance().setTempShareStoryId(storyId);
+                        } else {
+                            ScreensManager.getInstance().setOldTempShareId(null);
+                            ScreensManager.getInstance().setOldTempShareStoryId(storyId);
+                        }
+                        InnerShareData shareData = new InnerShareData();
+                        shareData.text = response.getUrl();
+                        shareData.payload = response.getPayload();
+                        if (parentManager != null) {
+                            parentManager.showShareView(shareData);
+                        }
+                    }
 
-            @Override
-            public void onError(int code, String message) {
-                super.onError(code, message);
-                if (callback != null)
-                    callback.onError();
-                InAppStoryService service = InAppStoryService.getInstance();
-                if (service != null) service.isShareProcess(false);
-            }
+                    @Override
+                    public void onError(int code, String message) {
+                        super.onError(code, message);
+                        if (callback != null)
+                            callback.onError();
+                        InAppStoryService service = InAppStoryService.getInstance();
+                        if (service != null) service.isShareProcess(false);
+                    }
 
-            @Override
-            public Type getType() {
-                return ShareObject.class;
-            }
-        });
+                    @Override
+                    public Type getType() {
+                        return ShareObject.class;
+                    }
+                });
     }
 }

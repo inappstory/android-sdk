@@ -446,8 +446,7 @@ public class ReaderPageManager {
 
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
             if (story != null)
-                parentManager.showShareView(story.getSlideEventPayload("SHARE_STORY", slideIndex),
-                        shareData, storyId, slideIndex);
+                parentManager.showShareView(shareData, storyId, slideIndex);
         }
     }
 

@@ -13,10 +13,16 @@ public class InnerShareData {
         return title;
     }
 
+    public String getPayload() {
+        return payload;
+    }
+
     @SerializedName("text")
     public String text;
     @SerializedName("title")
     public String title;
+    @SerializedName("payload")
+    public String payload;
 
     public ArrayList<InnerShareFile> getFiles() {
         return files != null ? files : new ArrayList<InnerShareFile>();

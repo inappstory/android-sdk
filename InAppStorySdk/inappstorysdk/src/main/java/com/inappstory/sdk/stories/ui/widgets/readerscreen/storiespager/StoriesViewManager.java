@@ -345,7 +345,6 @@ public class StoriesViewManager {
                         .getStoryById(storyId, pageManager.getStoryType()) : null;
         if (story != null) {
             pageManager.parentManager.showShareView(
-                    story.getSlideEventPayload(PayloadTypes.SHARE_STORY, index),
                     shareData, storyId, index
             );
         } else {

@@ -61,8 +61,8 @@ public class IASShareManager {
         final Intent sendingIntent = new Intent();
         sendingIntent.setAction(Intent.ACTION_SEND);
 
-        if (shareData.url != null)
-            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareData.url);
+        if (shareData.getUrl() != null)
+            sendingIntent.putExtra(Intent.EXTRA_TEXT, shareData.getUrl());
         List<Uri> files = getUrisFromShareData(context, shareData);
         if (files.isEmpty()) {
             sendingIntent.setType("text/plain");

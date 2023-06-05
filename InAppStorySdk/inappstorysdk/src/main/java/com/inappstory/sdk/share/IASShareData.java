@@ -1,6 +1,5 @@
 package com.inappstory.sdk.share;
 
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
@@ -8,8 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IASShareData {
-    public String url;
+    String url;
     public List<String> files;
+    String payload;
+
+    public String getUrl() {
+        return url;
+    }
 
     public @NonNull List<String> getFiles() {
         if (files == null) return new ArrayList<>();
@@ -29,5 +33,16 @@ public class IASShareData {
     public IASShareData(String url, List<String> files) {
         this.url = url;
         this.files = files;
+    }
+
+    public IASShareData(String url, String payload) {
+        this.url = url;
+        this.payload = payload;
+    }
+
+    public IASShareData(String url, List<String> files, String payload) {
+        this.url = url;
+        this.files = files;
+        this.payload = payload;
     }
 }

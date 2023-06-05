@@ -393,8 +393,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     boolean gameReaderGestureBack = false;
 
     public void share(InnerShareData shareObject) {
-        final IASShareData shareData = new IASShareData();
-        shareData.url = shareObject.text;
+        final IASShareData shareData = new IASShareData(
+                shareObject.getText(), shareObject.getPayload()
+        );
         if (!shareObject.getFiles().isEmpty()) {
             new InnerShareFilesPrepare().prepareFiles(this, new ShareFilesPrepareCallback() {
                 @Override

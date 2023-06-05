@@ -115,11 +115,11 @@ public class ReaderManager {
         }
     }
 
-    public void showShareView(String slidePayload, InnerShareData shareData,
+    public void showShareView(InnerShareData shareData,
                               int storyId, int slideIndex) {
         //pause();
         if (parentFragment != null) {
-            parentFragment.showShareView(slidePayload, shareData, storyId, slideIndex);
+            parentFragment.showShareView(shareData, storyId, slideIndex);
         } else {
             InAppStoryService service = InAppStoryService.getInstance();
             if (service != null)

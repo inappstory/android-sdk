@@ -92,13 +92,16 @@ public class StoriesFragment extends Fragment
             readerManager.removeAllStoriesFromFavorite();
     }
 
-    public void showShareView(final String slidePayload, final InnerShareData shareData,
+    public void showShareView(final InnerShareData shareData,
                               final int storyId, final int slideIndex) {
         Context context = getContext();
         if (shareData.getFiles().isEmpty()) {
             shareCustomOrDefault(
-                    slidePayload,
-                    new IASShareData(shareData.getText()),
+                    shareData.getPayload(),
+                    new IASShareData(
+                            shareData.getText(),
+                            shareData.getPayload()
+                    ),
                     storyId,
                     slideIndex
             );
@@ -107,8 +110,12 @@ public class StoriesFragment extends Fragment
                 @Override
                 public void onPrepared(List<String> files) {
                     shareCustomOrDefault(
-                            slidePayload,
-                            new IASShareData(shareData.getText(), files),
+                            shareData.getPayload(),
+                            new IASShareData(
+                                    shareData.getText(),
+                                    files,
+                                    shareData.getPayload()
+                            ),
                             storyId,
                             slideIndex
                     );
