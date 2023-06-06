@@ -67,6 +67,7 @@ import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
+import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
@@ -342,6 +343,10 @@ public class ScreensManager {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                } else {
+                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
+                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
+                    bundle.putSerializable(CS_TIMER_GRADIENT, defaultGradient);
                 }
             }
             storiesDialogFragment.setArguments(bundle);
@@ -398,9 +403,19 @@ public class ScreensManager {
                 intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
                 intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
                 intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius());
                 intent2.putExtra(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
+                if (manager.csTimerGradient() != null) {
+                    try {
+                        intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
+                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
+                    intent2.putExtra(CS_TIMER_GRADIENT, defaultGradient);
+                }
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

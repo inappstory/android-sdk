@@ -32,8 +32,6 @@ public class TimelineProgressBar extends View {
     private int timelineHeight = Sizes.dpToPxExt(3);
     int timelineWidth = getWidth();
     int radius = timelineHeight / 2;
-    RectF backgroundRect;
-    RectF foregroundRect;
 
     private Paint getBackgroundPaint() {
         if (backgroundPaint == null) {
@@ -56,22 +54,20 @@ public class TimelineProgressBar extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    private RectF getForegroundRect() {
-        if (foregroundRect == null)
-            foregroundRect = new RectF(
-                    0,
-                    0,
-                    currentProgress * timelineWidth,
-                    timelineHeight
-            );
-        return foregroundRect;
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.e("rectWidth", "" + getWidth());
-        canvas.drawRoundRect(new RectF(0, 0, getWidth(), timelineHeight),
-                radius, radius, getBackgroundPaint());
+        Log.e("rectWidth", "" + currentProgress + " " + progressForegroundVisibility);
+        canvas.drawRoundRect(
+                new RectF(
+                        0,
+                        0,
+                        getWidth(),
+                        timelineHeight
+                ),
+                radius,
+                radius,
+                getBackgroundPaint()
+        );
         if (progressForegroundVisibility) {
             canvas.drawRoundRect(
                     new RectF(
@@ -85,7 +81,7 @@ public class TimelineProgressBar extends View {
                     getForegroundPaint()
             );
         }
-        super.onDraw(canvas);
+        invalidate();
     }
 
     @Override
@@ -188,6 +184,7 @@ public class TimelineProgressBar extends View {
                 clearAnimation();
                 animate().cancel();
                 setCurrentProgress(0);
+                progressForegroundVisibility = true;
                 if (duration == null || duration == 0) return;
                 animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
@@ -276,9 +273,7 @@ public class TimelineProgressBar extends View {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        if (!progressForegroundVisibility) {
-                            progressForegroundVisibility = true;
-                        }
+                        progressForegroundVisibility = true;
                         setCurrentProgress(progress);
                     }
                 });
