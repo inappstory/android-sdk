@@ -187,7 +187,7 @@ public class BothSideViewPager extends ViewPager {
         super.clearOnPageChangeListeners();
         mPageChangeListeners.clear();
     }
-    
+
     private class SidesPageChangeListener implements OnPageChangeListener {
 
         private final OnPageChangeListener mListener;
