@@ -15,6 +15,10 @@ public class IASShareData {
         return url;
     }
 
+    public String getPayload() {
+        return payload;
+    }
+
     public @NonNull List<String> getFiles() {
         if (files == null) return new ArrayList<>();
         return files;

@@ -332,7 +332,6 @@ public class StoriesViewManager {
             return;
         service.isShareProcess(true);
         InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
-        if (shareData == null) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             ScreensManager.getInstance().setTempShareId(id);
             ScreensManager.getInstance().setTempShareStoryId(storyId);
@@ -343,7 +342,8 @@ public class StoriesViewManager {
         Story story = InAppStoryService.getInstance() != null ?
                 InAppStoryService.getInstance().getDownloadManager()
                         .getStoryById(storyId, pageManager.getStoryType()) : null;
-        if (story != null) {
+        if (story != null && shareData != null) {
+            shareData.payload = story.getSlideEventPayload(index);
             pageManager.parentManager.showShareView(
                     shareData, storyId, index
             );
@@ -420,7 +420,7 @@ public class StoriesViewManager {
             if (showSlideCallback != null) {
                 showSlideCallback.showSlide(story.id, StringsUtils.getNonNull(story.statTitle),
                         StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index,
-                        story.getSlideEventPayload(PayloadTypes.SHOW_SLIDE, index));
+                        story.getSlideEventPayload(index));
             }
         }
     }

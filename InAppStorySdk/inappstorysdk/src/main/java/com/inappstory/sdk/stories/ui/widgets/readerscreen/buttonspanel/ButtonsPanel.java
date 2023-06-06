@@ -202,8 +202,8 @@ public class ButtonsPanel extends LinearLayout {
     }
 
     public void soundClick() {
-       // sound.setEnabled(false);
-      //  sound.setClickable(false);
+        // sound.setEnabled(false);
+        //  sound.setClickable(false);
         manager.soundClick(/*new ButtonClickCallback() {
             @Override
             public void onSuccess(int val) {
@@ -223,7 +223,7 @@ public class ButtonsPanel extends LinearLayout {
     public void shareClick() {
         share.setEnabled(false);
         share.setClickable(false);
-        manager.shareClick(getContext(), new ButtonsPanelManager.ShareButtonClickCallback() {
+        manager.shareClick(new ButtonsPanelManager.ShareButtonClickCallback() {
             @Override
             void onClick() {
                 manager.getParentManager().pauseSlide(false);

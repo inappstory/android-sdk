@@ -232,24 +232,25 @@ public class ButtonsPanelManager {
         abstract void onClick();
     }
 
-    public void shareClick(final Context context, final ShareButtonClickCallback callback) {
+    public void shareClick(final ShareButtonClickCallback callback) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || service.isShareProcess())
             return;
         if (InAppStoryManager.isNull()) return;
-        Story story = service.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+        final Story story = service.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
         if (story == null) return;
-        StatisticManager.getInstance().sendShareStory(story.id, story.lastIndex,
-                story.shareType(story.lastIndex),
+        final int slideIndex = story.lastIndex;
+        StatisticManager.getInstance().sendShareStory(story.id, slideIndex,
+                story.shareType(slideIndex),
                 parentManager != null ? parentManager.getFeedId() : null);
         CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.statTitle,
-                story.tags, story.getSlidesCount(), story.lastIndex));
+                story.tags, story.getSlidesCount(), slideIndex));
 
         if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
             CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex);
+                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), slideIndex);
         }
-        if (story.isScreenshotShare(story.lastIndex)) {
+        if (story.isScreenshotShare(slideIndex)) {
             parentManager.screenshotShare();
             return;
         }
@@ -257,7 +258,7 @@ public class ButtonsPanelManager {
         if (callback != null)
             callback.onClick();
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");
-        NetworkClient.getApi().share(Integer.toString(storyId), story.lastIndex, null)
+        NetworkClient.getApi().share(Integer.toString(storyId), null)
                 .enqueue(new NetworkCallback<ShareObject>() {
                     @Override
                     public void onSuccess(ShareObject response) {
@@ -271,7 +272,7 @@ public class ButtonsPanelManager {
                         }
                         InnerShareData shareData = new InnerShareData();
                         shareData.text = response.getUrl();
-                        shareData.payload = response.getPayload();
+                        shareData.payload = story.getSlideEventPayload(slideIndex);
                         if (parentManager != null) {
                             parentManager.showShareView(shareData);
                         }

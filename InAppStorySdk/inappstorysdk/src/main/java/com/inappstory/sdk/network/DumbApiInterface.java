@@ -87,7 +87,7 @@ public class DumbApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request share(String id, Integer slideIndex, String expand) {
+    public Request share(String id, String expand) {
         return new DumbRequest();
     }
 

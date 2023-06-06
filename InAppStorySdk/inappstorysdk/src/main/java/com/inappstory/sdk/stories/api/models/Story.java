@@ -34,10 +34,10 @@ public class Story implements Parcelable {
         return getReplacedField(tmp);
     }
 
-    public String getSlideEventPayload(String eventType, int slideIndex) {
+    public String getSlideEventPayload(int slideIndex) {
         if (slidesPayload == null) return null;
         for (PayloadObject payloadObject : slidesPayload) {
-            if (slideIndex == payloadObject.slideIndex && eventType.equals(payloadObject.getEventType())) {
+            if (slideIndex == payloadObject.slideIndex) {
                 return payloadObject.getPayload();
             }
         }

@@ -14,15 +14,8 @@ public class ShareObject {
     @SerializedName("title")
     String title;
 
-    @SerializedName("payload")
-    String payload;
-
     public String getUrl() {
         return url;
-    }
-
-    public String getPayload() {
-        return payload;
     }
 
     public String getTitle() {

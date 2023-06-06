@@ -133,7 +133,6 @@ public interface ApiInterface {
     @GET("v2/story-share/{id}")
     Request share(
             @Path("id") String id,
-            @Query("slideIndex") Integer slideIndex,
             @Query("expand") String expand
     );
 
