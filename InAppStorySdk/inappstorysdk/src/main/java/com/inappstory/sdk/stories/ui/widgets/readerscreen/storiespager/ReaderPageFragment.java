@@ -56,8 +56,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timel
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import org.brotli.dec.BrotliInputStream;
-
 import java.util.List;
 
 public class ReaderPageFragment extends Fragment {
