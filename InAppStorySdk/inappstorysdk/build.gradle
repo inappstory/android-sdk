@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 650
-        versionName "1.15.0-rc1"
+        versionCode 651
+        versionName "1.15.0-rc2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -39,6 +39,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.webkit:webkit:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'org.brotli:dec:0.1.2'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:2.6.8'
     testImplementation 'org.json:json:20180813'
