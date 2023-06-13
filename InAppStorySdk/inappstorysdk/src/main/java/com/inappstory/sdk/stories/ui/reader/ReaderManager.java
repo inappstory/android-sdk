@@ -6,7 +6,6 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -59,8 +58,6 @@ public class ReaderManager {
         lastSentId = storyId;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, storyType);
         if (story != null) {
-            CsEventBus.getDefault().post(new ShowStory(story.id, story.statTitle, story.tags,
-                    story.getSlidesCount(), source, latestShowStoryAction));
             if (CallbackManager.getInstance().getShowStoryCallback() != null) {
                 CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, StringsUtils.getNonNull(story.statTitle),
                         StringsUtils.getNonNull(story.tags), story.getSlidesCount(),

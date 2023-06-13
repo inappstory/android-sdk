@@ -2,9 +2,6 @@ package com.inappstory.sdk.network;
 
 
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.ui.ugclist.UgcPayload;
-
-import java.util.HashMap;
 
 /**
  * InAppStory API. Contains all request

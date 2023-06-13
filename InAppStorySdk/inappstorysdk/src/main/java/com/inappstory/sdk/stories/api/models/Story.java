@@ -7,14 +7,11 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.Required;
 import com.inappstory.sdk.network.SerializedName;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
-import com.inappstory.sdk.stories.utils.PlaceholderKeyConverter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Paperrose on 08.07.2018.
@@ -27,6 +24,17 @@ public class Story implements Parcelable {
 
     public enum StoryType {
         COMMON, UGC
+    }
+
+    public static StoryType storyTypeFromName(String storyType) {
+        if (storyType.equals(StoryType.UGC.name())) {
+            return StoryType.UGC;
+        }
+        return StoryType.COMMON;
+    }
+
+    public static String nameFromStoryType(StoryType storyType) {
+        return storyType.name();
     }
 
     public String getTitle() {

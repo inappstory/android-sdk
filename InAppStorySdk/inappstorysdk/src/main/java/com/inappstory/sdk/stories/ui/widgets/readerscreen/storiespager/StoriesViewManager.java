@@ -9,24 +9,20 @@ import android.os.Looper;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.share.IASShareManager;
-import com.inappstory.sdk.stories.api.models.PayloadTypes;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
-import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -37,7 +33,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStorie
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -198,7 +193,6 @@ public class StoriesViewManager {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().noConnection();
                 }
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
                 return;
             }
             pageManager.storyLoadStart();
@@ -380,9 +374,26 @@ public class StoriesViewManager {
 
     public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources, String options) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
-        ScreensManager.getInstance().openGameReader(context, storyId, index,
-                pageManager != null ? pageManager.getFeedId() : null, gameUrl,
-                preloadPath, gameConfig, resources, pageManager.getStoryType(), options);
+        InAppStoryService service = InAppStoryService.getInstance();
+        GameStoryData data = null;
+        if (service != null && service.getDownloadManager() != null) {
+            Story.StoryType type = pageManager != null ? pageManager.getStoryType() : Story.StoryType.COMMON;
+            Story story = service.getDownloadManager().getStoryById(storyId, type);
+            if (story != null) {
+                data = new GameStoryData(
+                        story.id,
+                        story.lastIndex,
+                        story.slidesCount,
+                        story.statTitle,
+                        story.tags,
+                        pageManager != null ? pageManager.getFeedId() : null,
+                        type
+                );
+            }
+        }
+
+        ScreensManager.getInstance().openGameReader(context, data, null, gameUrl,
+                preloadPath, gameConfig, resources, options);
     }
 
     private boolean storyIsLoaded = false;
@@ -414,8 +425,6 @@ public class StoriesViewManager {
     public void sendShowSlideEvents() {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
-            CsEventBus.getDefault().post(new ShowSlide(story.id, story.statTitle,
-                    story.tags, story.getSlidesCount(), index));
             ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
             if (showSlideCallback != null) {
                 showSlideCallback.showSlide(story.id, StringsUtils.getNonNull(story.statTitle),

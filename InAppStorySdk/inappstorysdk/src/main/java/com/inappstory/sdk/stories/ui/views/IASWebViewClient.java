@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.ui.views;
 
 import android.annotation.TargetApi;
-import android.content.ContentResolver;
 import android.os.Build;
 import android.util.Log;
 import android.webkit.MimeTypeMap;

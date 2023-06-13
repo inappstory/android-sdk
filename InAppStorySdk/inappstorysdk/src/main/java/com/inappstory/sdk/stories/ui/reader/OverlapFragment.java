@@ -14,10 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;

@@ -2,7 +2,6 @@ package com.inappstory.sdk.network;
 
 import static java.util.UUID.randomUUID;
 
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;

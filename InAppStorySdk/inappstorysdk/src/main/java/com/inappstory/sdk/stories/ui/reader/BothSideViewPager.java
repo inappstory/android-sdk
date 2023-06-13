@@ -12,7 +12,6 @@ import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-
 import java.util.HashMap;
 
 public class BothSideViewPager extends ViewPager {

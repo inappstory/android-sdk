@@ -4,7 +4,6 @@ package com.inappstory.sdk.stories.utils;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
-import android.util.Base64;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -13,7 +12,6 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

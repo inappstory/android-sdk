@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets;
 
 import android.content.Context;
-import android.os.Build;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;

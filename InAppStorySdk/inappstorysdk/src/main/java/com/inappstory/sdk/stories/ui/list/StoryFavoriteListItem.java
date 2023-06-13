@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -19,7 +18,6 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
 import java.util.ArrayList;

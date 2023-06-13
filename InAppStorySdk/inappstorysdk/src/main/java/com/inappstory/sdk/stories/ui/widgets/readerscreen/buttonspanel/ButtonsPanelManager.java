@@ -1,33 +1,23 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outerevents.ClickOnShareStory;
-import com.inappstory.sdk.stories.outerevents.DislikeStory;
-import com.inappstory.sdk.stories.outerevents.FavoriteStory;
-import com.inappstory.sdk.stories.outerevents.LikeStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
-import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 
 public class ButtonsPanelManager {
     public void setStoryId(int storyId) {
@@ -71,8 +61,6 @@ public class ButtonsPanelManager {
         final int val;
         if (like) {
             if (story.liked()) {
-                CsEventBus.getDefault().post(new LikeStory(story.id, story.statTitle,
-                        story.tags, story.getSlidesCount(), story.lastIndex, false));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
                             story.id, StringsUtils.getNonNull(story.statTitle),
@@ -81,8 +69,6 @@ public class ButtonsPanelManager {
                 }
                 val = 0;
             } else {
-                CsEventBus.getDefault().post(new LikeStory(story.id, story.statTitle,
-                        story.tags, story.getSlidesCount(), story.lastIndex, true));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
                             story.id, StringsUtils.getNonNull(story.statTitle),
@@ -95,8 +81,6 @@ public class ButtonsPanelManager {
             }
         } else {
             if (story.disliked()) {
-                CsEventBus.getDefault().post(new DislikeStory(story.id, story.statTitle,
-                        story.tags, story.getSlidesCount(), story.lastIndex, false));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
                             story.id, StringsUtils.getNonNull(story.statTitle),
@@ -105,8 +89,6 @@ public class ButtonsPanelManager {
                 }
                 val = 0;
             } else {
-                CsEventBus.getDefault().post(new DislikeStory(story.id, story.statTitle,
-                        story.tags, story.getSlidesCount(), story.lastIndex, true));
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
                             story.id, StringsUtils.getNonNull(story.statTitle),
@@ -167,8 +149,6 @@ public class ButtonsPanelManager {
         if (!story.favorite)
             StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex,
                     parentManager != null ? parentManager.getFeedId() : null);
-        CsEventBus.getDefault().post(new FavoriteStory(story.id, story.statTitle,
-                story.tags, story.getSlidesCount(), story.lastIndex, !story.favorite));
         if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
             CallbackManager.getInstance().getFavoriteStoryCallback().favoriteStory(
                     story.id, StringsUtils.getNonNull(story.statTitle),
@@ -216,11 +196,8 @@ public class ButtonsPanelManager {
 
     ButtonsPanel panel;
 
-    public void soundClick() {//ButtonClickCallback callback) {
+    public void soundClick() {
         parentManager.changeSoundStatus();
-        // CsEventBus.getDefault().post(new SoundOnOffEvent(InAppStoryService.getInstance().isSoundOn(), storyId));
-        /*if (callback != null)
-            callback.onSuccess(InAppStoryService.getInstance().isSoundOn() ? 1 : 0);*/
     }
 
     public void refreshSoundStatus() {
@@ -243,8 +220,6 @@ public class ButtonsPanelManager {
         StatisticManager.getInstance().sendShareStory(story.id, slideIndex,
                 story.shareType(slideIndex),
                 parentManager != null ? parentManager.getFeedId() : null);
-        CsEventBus.getDefault().post(new ClickOnShareStory(story.id, story.statTitle,
-                story.tags, story.getSlidesCount(), slideIndex));
 
         if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
             CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, StringsUtils.getNonNull(story.statTitle),

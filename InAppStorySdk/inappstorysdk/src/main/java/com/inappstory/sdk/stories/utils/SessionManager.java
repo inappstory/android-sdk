@@ -11,19 +11,17 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.StatisticPermissions;
-import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.SessionResponse;
+import com.inappstory.sdk.stories.api.models.StatisticPermissions;
+import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 
@@ -195,7 +193,6 @@ public class SessionManager {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().sessionError();
                 }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 synchronized (openProcessLock) {
                     openProcess = false;
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -220,7 +217,6 @@ public class SessionManager {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().sessionError();
                 }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.OPEN_SESSION));
                 synchronized (openProcessLock) {
                     openProcess = false;
                     new Handler(Looper.getMainLooper()).post(new Runnable() {

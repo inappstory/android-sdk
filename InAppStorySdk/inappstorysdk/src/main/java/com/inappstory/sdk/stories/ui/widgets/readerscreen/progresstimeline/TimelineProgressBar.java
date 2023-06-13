@@ -10,15 +10,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.Random;

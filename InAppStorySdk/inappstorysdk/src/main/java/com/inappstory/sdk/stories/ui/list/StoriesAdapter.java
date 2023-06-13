@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui.list;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,21 +14,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
-import com.inappstory.sdk.stories.outerevents.CallToAction;
-import com.inappstory.sdk.stories.outerevents.ClickOnStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -180,9 +173,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         clickTimestamp = System.currentTimeMillis();
         Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
-            CsEventBus.getDefault().post(new ClickOnStory(current.id, index, current.statTitle,
-                    current.tags, current.getSlidesCount(),
-                    isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feed));
             if (callback != null) {
                 callback.itemClick(current.id, index,
                         StringsUtils.getNonNull(current.statTitle),
@@ -194,9 +184,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
-                CsEventBus.getDefault().post(new CallToAction(current.id, current.statTitle,
-                        current.tags, current.getSlidesCount(), 0,
-                        current.deeplink, CallToAction.DEEPLINK));
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
                             current.id, StringsUtils.getNonNull(current.statTitle),
@@ -214,7 +201,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
                             CallbackManager.getInstance().getErrorCallback().noConnection();
                         }
-                        CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                         return;
                     }
                     current.isOpened = true;
@@ -237,13 +223,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().emptyLinkError();
                 }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                 return;
             }
         } else {
-            CsEventBus.getDefault().post(new ClickOnStory(storiesIds.get(index), index, null,
-                    null, 0, isFavoriteList ? ClickOnStory.FAVORITE : ClickOnStory.LIST, feed));
-
             if (callback != null) {
                 Story lStory = InAppStoryService.getInstance().getDownloadManager()
                         .getStoryById(storiesIds.get(index), Story.StoryType.COMMON);

@@ -1,27 +1,14 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 import static com.inappstory.sdk.AppearanceManager.ANIMATION_CUBE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
-import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
 import android.app.Activity;
@@ -51,7 +38,6 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -221,10 +207,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
-                CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.statTitle, story.tags, story.getSlidesCount(),
-                        story.lastIndex, CloseStory.CUSTOM,
-                        getIntent().getIntExtra("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
@@ -399,11 +381,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             InAppStoryService.getInstance().getListReaderConnector().closeReader();
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-
-            CsEventBus.getDefault().post(new CloseStory(story.id,
-                    story.statTitle, story.tags, story.getSlidesCount(),
-                    story.lastIndex, action,
-                    getIntent().getIntExtra("source", 0)));
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         story.id,

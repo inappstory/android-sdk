@@ -1,15 +1,12 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
-import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -252,7 +249,6 @@ class SlidesDownloader {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().cacheError();
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
         synchronized (pageTasksLock) {
             Objects.requireNonNull(pageTasks.get(key)).loadType = -1;
             callback.onError(key.storyId);

@@ -49,17 +49,15 @@ import androidx.lifecycle.MutableLiveData;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.reader.GameActivity;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
@@ -239,38 +237,48 @@ public class ScreensManager {
     }
 
     public void openGameReader(Context context,
-                               int storyId,
-                               int index,
-                               String feedId,
+                               GameStoryData data,
+                               String gameId,
                                String gameUrl,
                                String preloadPath,
                                String gameConfig,
                                String resources,
-                               Story.StoryType type,
                                String options) {
         if (InAppStoryService.isNull()) {
             return;
         }
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
+        if (data != null) {
+            intent2.putExtra("storyId", Integer.toString(data.storyId));
+            intent2.putExtra("slideIndex", data.slideIndex);
+            intent2.putExtra("slidesCount", data.slidesCount);
+            intent2.putExtra("feedId", data.feedId);
+            intent2.putExtra("storyType", Story.nameFromStoryType(data.type));
+            intent2.putExtra("tags", data.tags);
+            intent2.putExtra("title", data.title);
+            if (CallbackManager.getInstance().getGameCallback() != null) {
+                CallbackManager.getInstance().getGameCallback().startGame(
+                        data.storyId,
+                        StringsUtils.getNonNull(data.title),
+                        StringsUtils.getNonNull(data.tags),
+                        data.slidesCount,
+                        data.slideIndex
+                );
+            }
+            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                CallbackManager.getInstance().getGameReaderCallback().startGame(
+                        data, gameId
+                );
+            }
+        }
 
-        intent2.putExtra("storyId", Integer.toString(storyId));
-        intent2.putExtra("slideIndex", index);
-        intent2.putExtra("feedId", feedId);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, type);
-        intent2.putExtra("tags", story.tags);
         intent2.putExtra("options", options);
-        intent2.putExtra("slidesCount", story.getSlidesCount());
-        intent2.putExtra("title", story.statTitle);
+        intent2.putExtra("gameId", gameId);
         intent2.putExtra("gameConfig", gameConfig);
         intent2.putExtra("gameResources", resources);
         intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
-        CsEventBus.getDefault().post(new StartGame(storyId, story.statTitle, story.tags,
-                story.getSlidesCount(), index));
-        if (CallbackManager.getInstance().getGameCallback() != null) {
-            CallbackManager.getInstance().getGameCallback().startGame(storyId, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index);
-        }
+
         if (Sizes.isTablet()) {
             if (currentScreen != null) {
                 String observableUID = randomUUID().toString();

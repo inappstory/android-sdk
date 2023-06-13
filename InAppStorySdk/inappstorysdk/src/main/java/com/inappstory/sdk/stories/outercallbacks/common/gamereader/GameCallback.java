@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.common.gamereader;
 
+@Deprecated
 public interface GameCallback {
     void startGame(int id,
                    String title,

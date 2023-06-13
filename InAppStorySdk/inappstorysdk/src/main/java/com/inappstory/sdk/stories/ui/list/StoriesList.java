@@ -23,13 +23,11 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
-import com.inappstory.sdk.stories.outerevents.StoriesLoaded;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -544,7 +542,6 @@ public class StoriesList extends RecyclerView {
                     }
                     setOrRefreshAdapter(storiesIds);
                     ProfilingManager.getInstance().setReady(listUid);
-                    CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
                     if (callback != null)
                         callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
                 }
@@ -572,7 +569,6 @@ public class StoriesList extends RecyclerView {
                             public void storiesLoaded(List<Integer> storiesIds) {
                                 setOrRefreshAdapter(storiesIds);
                                 ProfilingManager.getInstance().setReady(listUid);
-                                CsEventBus.getDefault().post(new StoriesLoaded(storiesIds.size(), getFeed()));
                                 if (callback != null)
                                     callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
                             }

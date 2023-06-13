@@ -44,21 +44,20 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -96,6 +95,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     boolean showClose = true;
 
     private boolean onBackPressedLocked = false;
+
+    public String gameCenterId;
 
     @Override
     public void onBackPressed() {
@@ -143,10 +144,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     void showGoods(final String skusString, final String widgetId) {
+        final GameStoryData dataModel = getStoryDataModel();
+        if (dataModel == null) return;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                ScreensManager.getInstance().showGoods(skusString, GameActivity.this, new ShowGoodsCallback() {
+                ScreensManager.getInstance().showGoods(
+                        skusString,
+                        GameActivity.this,
+                        new ShowGoodsCallback() {
                             @Override
                             public void onPause() {
                                 pauseGame();
@@ -162,9 +168,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             public void onEmptyResume(String widgetId) {
                                 goodsWidgetComplete(widgetId);
                             }
-                        }, true, widgetId,
-                        Integer.parseInt(manager.storyId),
-                        manager.index, manager.feedId);
+                        },
+                        true,
+                        widgetId,
+                        dataModel.storyId,
+                        dataModel.slideIndex,
+                        dataModel.feedId
+                );
             }
         });
     }
@@ -195,7 +205,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
 
     void updateUI() {
-        ProfilingManager.getInstance().setReady("game_" + manager.storyId + "_" + manager.index);
+        GameStoryData dataModel = getStoryDataModel();
+        if (dataModel != null)
+            ProfilingManager.getInstance().setReady("game_" + dataModel.storyId + "_" + dataModel.slideIndex);
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -416,12 +428,14 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             service.isShareProcess(false);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             int storyId = -1;
-            try {
-                storyId = Integer.parseInt(manager.storyId);
-            } catch (NumberFormatException ignored) {
+            int slideIndex = 0;
+            GameStoryData dataModel = getStoryDataModel();
+            if (dataModel != null) {
+                storyId = dataModel.storyId;
+                slideIndex = dataModel.slideIndex;
             }
             ScreensManager.getInstance().openOverlapContainerForShare(
-                    this, this, null, storyId, manager.index, shareObject
+                    this, this, null, storyId, slideIndex, shareObject
             );
         } else {
             new IASShareManager().shareDefault(
@@ -448,13 +462,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             finish();
             return false;
         }
-        manager.observableId = getIntent().getStringExtra("observableId");
+        manager.gameCenterId = getIntent().getStringExtra("gameId");
         manager.resources = getIntent().getStringExtra("gameResources");
-        manager.storyId = getIntent().getStringExtra("storyId");
-        manager.index = getIntent().getIntExtra("slideIndex", 0);
-        manager.slidesCount = getIntent().getIntExtra("slidesCount", 0);
-        manager.title = getIntent().getStringExtra("title");
-        manager.tags = getIntent().getStringExtra("tags");
+        manager.dataModel = getStoryDataModel();
         manager.gameConfig = getIntent().getStringExtra("gameConfig");
         if (manager.gameConfig != null) {
             if (manager.gameConfig.contains("{{%sdkVersion}}"))
@@ -562,6 +572,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
 
     private void initWebView() {
+        final GameStoryData dataModel = getStoryDataModel();
         webView.setWebChromeClient(new WebChromeClient() {
             boolean init = false;
 
@@ -578,10 +589,11 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                if (manager != null && webView != null) {
+
+                if (dataModel != null && webView != null) {
                     webView.sendWebConsoleLog(consoleMessage,
-                            manager.storyId,
-                            manager.index);
+                            Integer.toString(dataModel.storyId),
+                            dataModel.slideIndex);
                 }
                 Log.d("InAppStory_SDK_Game", "Console: " + consoleMessage.messageLevel().name() + ": "
                         + consoleMessage.message() + " -- From line "
@@ -608,8 +620,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 }
             }
         });
-        webView.addJavascriptInterface(new GameJSInterface(GameActivity.this,
-                manager.index, manager.storyId, manager), "Android");
+        webView.addJavascriptInterface(
+                new GameJSInterface(
+                        GameActivity.this,
+                        manager
+                ),
+                "Android"
+        );
     }
 
 
@@ -679,20 +696,27 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     private void closeGame() {
         if (closing) return;
-        if (manager == null || manager.storyId == null) {
+        GameStoryData dataModel = getStoryDataModel();
+        if (manager == null || dataModel == null) {
             finish();
             return;
         }
         ZipLoader.getInstance().terminate();
         closing = true;
-        CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(manager.storyId),
-                manager.title, manager.tags,
-                manager.slidesCount, manager.index));
         if (CallbackManager.getInstance().getGameCallback() != null) {
             CallbackManager.getInstance().getGameCallback().closeGame(
-                    Integer.parseInt(manager.storyId),
-                    StringsUtils.getNonNull(manager.title), StringsUtils.getNonNull(manager.tags),
-                    manager.slidesCount, manager.index);
+                    dataModel.storyId,
+                    StringsUtils.getNonNull(dataModel.title),
+                    StringsUtils.getNonNull(dataModel.tags),
+                    dataModel.slidesCount,
+                    dataModel.slideIndex
+            );
+        }
+        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+            CallbackManager.getInstance().getGameReaderCallback().closeGame(
+                    dataModel,
+                    getIntent().getStringExtra("gameId")
+            );
         }
         if (manager.gameLoaded) {
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
@@ -713,45 +737,57 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         audioManager.setMode(AudioModes.getModeVal(mode));
     }
 
+    GameStoryData storyDataModel;
+
+    private GameStoryData getStoryDataModel() {
+        if (storyDataModel == null) {
+            if (getIntent().getStringExtra("storyId") == null) return null;
+            storyDataModel = new GameStoryData(
+                    Integer.parseInt(getIntent().getStringExtra("storyId")),
+                    getIntent().getIntExtra("slideIndex", 0),
+                    getIntent().getIntExtra("slidesCount", 0),
+                    getIntent().getStringExtra("title"),
+                    getIntent().getStringExtra("tags"),
+                    getIntent().getStringExtra("feedId"),
+                    Story.storyTypeFromName(getIntent().getStringExtra("storyType"))
+            );
+        }
+        return storyDataModel;
+    }
 
     void gameCompleted(String gameState, String link) {
         try {
-
-            String storyId;
-            int slideIndex;
-            String observableId;
-            if (manager.storyId == null) {
-                storyId = getIntent().getStringExtra("storyId");
-                slideIndex = getIntent().getIntExtra("slideIndex", 0);
-                observableId = getIntent().getStringExtra("observableId");
-            } else {
-                storyId = manager.storyId;
-                slideIndex = manager.index;
-                observableId = manager.observableId;
-            }
-            Intent intent = new Intent();
-            closing = true;
-            intent.putExtra("storyId", storyId);
-            intent.putExtra("slideIndex", slideIndex);
-            if (gameState != null)
-                intent.putExtra("gameState", gameState);
-            if (Sizes.isTablet()) {
-                if (observableId != null) {
-                    MutableLiveData<GameCompleteEvent> liveData =
-                            ScreensManager.getInstance().getGameObserver(observableId);
-                    if (liveData != null) {
-                        liveData.postValue(new GameCompleteEvent(
-                                gameState,
-                                Integer.parseInt(storyId),
-                                slideIndex));
+            GameStoryData dataModel = getStoryDataModel();
+            if (dataModel != null) {
+                Intent intent = new Intent();
+                closing = true;
+                intent.putExtra("storyId", dataModel.storyId);
+                intent.putExtra("slideIndex", dataModel.slideIndex);
+                if (gameState != null)
+                    intent.putExtra("gameState", gameState);
+                if (Sizes.isTablet()) {
+                    String observableUID = getIntent().getStringExtra("observableUID");
+                    if (observableUID != null) {
+                        MutableLiveData<GameCompleteEvent> liveData =
+                                ScreensManager.getInstance().getGameObserver(observableUID);
+                        if (liveData != null) {
+                            liveData.postValue(
+                                    new GameCompleteEvent(
+                                            gameState,
+                                            dataModel.storyId,
+                                            dataModel.slideIndex
+                                    )
+                            );
+                        }
                     }
                 }
+
+                setResult(RESULT_OK, intent);
+                finish();
+            } else {
+                if (link != null)
+                    manager.tapOnLink(link);
             }
-            if (link != null)
-                manager.tapOnLink(link);
-            setResult(RESULT_OK, intent);
-            finish();
-            //overridePendingTransition(0, 0);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             closing = false;

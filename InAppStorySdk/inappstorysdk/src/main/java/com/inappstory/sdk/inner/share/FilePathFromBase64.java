@@ -6,8 +6,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Base64;
 
-import androidx.core.content.FileProvider;
-
 import com.inappstory.sdk.InAppStoryService;
 
 import java.io.File;

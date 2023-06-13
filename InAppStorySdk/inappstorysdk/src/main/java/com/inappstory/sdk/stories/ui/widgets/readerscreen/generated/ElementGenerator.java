@@ -24,7 +24,6 @@ import com.inappstory.sdk.stories.api.models.slidestructure.Element;
 import com.inappstory.sdk.stories.api.models.slidestructure.Source;
 
 import java.io.File;
-import java.io.IOException;
 
 public class ElementGenerator {
     public static GeneratedView generate(Element element, Context context, int ySize, int xSize) {
