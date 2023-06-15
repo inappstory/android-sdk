@@ -7,7 +7,10 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.webkit.URLUtil;
@@ -297,11 +300,26 @@ public class InAppStoryService {
     TimerManager timerManager;
 
     public static boolean isConnected() {
-        if (getInstance() == null || getInstance().getContext() == null) return false;
+        InAppStoryService service = getInstance();
+        if (service == null) return false;
+        Context ctx = service.getContext();
+        if (ctx == null) return false;
         try {
-            ConnectivityManager cm = (ConnectivityManager) getInstance().getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo info = cm.getActiveNetworkInfo();
-            return (info != null && info.isConnected());
+            ConnectivityManager connectivityManager = (ConnectivityManager) ctx
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Network nw = connectivityManager.getActiveNetwork();
+                if (nw == null) return false;
+                NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(nw);
+                return actNw != null && (
+                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
+                                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH));
+            } else {
+                NetworkInfo nwInfo = connectivityManager.getActiveNetworkInfo();
+                return nwInfo != null && nwInfo.isConnected();
+            }
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             return true;
