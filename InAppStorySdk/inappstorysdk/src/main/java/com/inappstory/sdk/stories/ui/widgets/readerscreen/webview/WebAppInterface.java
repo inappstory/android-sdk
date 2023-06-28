@@ -67,14 +67,20 @@ public class WebAppInterface {
     @JavascriptInterface
     public void openGameReader(String gameFile, String coverFile,
                                String initCode, String gameResources, String options) {
-        manager.openGameReader(gameFile, coverFile, initCode, gameResources, options);
+        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, options);
         logMethod(gameFile);
+    }
+
+    @JavascriptInterface
+    public void openGameFromGameCenter(String gameInstanceId) {
+        manager.openGameReaderFromGameCenter(gameInstanceId);
+        logMethod(gameInstanceId);
     }
 
     @JavascriptInterface
     public void openGameReader(String gameFile, String coverFile,
                                String initCode, String gameResources) {
-        manager.openGameReader(gameFile, coverFile, initCode, gameResources, null);
+        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, null);
         logMethod(gameFile);
     }
 

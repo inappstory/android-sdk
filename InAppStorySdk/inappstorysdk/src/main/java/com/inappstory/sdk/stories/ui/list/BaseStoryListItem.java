@@ -10,6 +10,9 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import android.view.View.MeasureSpec;
+
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
 
@@ -25,8 +28,6 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
 
     public boolean isUGC;
     protected IStoriesListUGCItem getUGCListItem;
-
-
 
 
     public BaseStoryListItem(@NonNull View itemView, AppearanceManager manager,
@@ -62,6 +63,31 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
                               String videoUrl,
                               ClickCallback callback);
 
+   /* public void measure(int widthMeasureSpec, int heightMeasureSpec, float aspectRatio) {
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = widthMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = heightMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : MeasureSpec.getSize(heightMeasureSpec);
+        if (heightMode == MeasureSpec.EXACTLY && widthMode == MeasureSpec.EXACTLY) {
+            measuredWidth = widthSize;
+            measuredHeight = heightSize;
+        } else if (heightMode == MeasureSpec.EXACTLY) {
+            measuredWidth = (int) Math.min(widthSize, heightSize * aspectRatio);
+            measuredHeight = (int) (measuredWidth / aspectRatio);
+        } else if (widthMode == MeasureSpec.EXACTLY) {
+            measuredHeight = (int) Math.min(heightSize, widthSize / aspectRatio);
+            measuredWidth = (int) (measuredHeight * aspectRatio);
+        } else {
+            if (widthSize > heightSize * aspectRatio) {
+                measuredHeight = heightSize;
+                measuredWidth = (int) (measuredHeight * aspectRatio);
+            } else {
+                measuredWidth = widthSize;
+                measuredHeight = (int) (measuredWidth / aspectRatio);
+            }
+
+        }
+    }*/
 
     public abstract void bindFavorite();
 

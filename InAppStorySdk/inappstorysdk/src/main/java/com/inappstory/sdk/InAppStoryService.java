@@ -15,10 +15,15 @@ import android.os.Handler;
 import android.util.Log;
 import android.webkit.URLUtil;
 
+import com.inappstory.sdk.game.cache.GameCacheManager;
+import com.inappstory.sdk.game.cache.GameLoadCallback;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -30,6 +35,7 @@ import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -201,6 +207,13 @@ public class InAppStoryService {
     }
 
     StoryDownloadManager downloadManager;
+    GameCacheManager gameCacheManager = new GameCacheManager();
+    public GameCacheManager gameCacheManager() {
+        if (gameCacheManager == null) {
+            gameCacheManager = new GameCacheManager();
+        }
+        return gameCacheManager;
+    }
     public static InAppStoryService INSTANCE;
 
     void logout() {
@@ -375,6 +388,33 @@ public class InAppStoryService {
             InAppStoryManager.getInstance().setDefaultImagePlaceholder(key,
                     defaultVal);
         }
+    }
+
+    public void downloadGame(final Context context, final String gameId, final GameStoryData data) {
+        gameCacheManager().getGame(gameId, new GameLoadCallback() {
+            @Override
+            public void onSuccess(GameCenterData gameCenterData) {
+                try {
+                    ScreensManager.getInstance().openGameReader(
+                            context,
+                            data,
+                            gameId,
+                            gameCenterData.url,
+                            gameCenterData.splashScreen.url,
+                            gameCenterData.initCode,
+                            JsonParser.getJson(gameCenterData.resources),
+                            JsonParser.getJson(gameCenterData.options));
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+
     }
 
     public void runStatisticThread() {

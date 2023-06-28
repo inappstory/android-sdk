@@ -372,10 +372,16 @@ public class StoriesViewManager {
         pageManager.prevStory(ShowStory.ACTION_CUSTOM);
     }
 
-    public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources, String options) {
-        ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
+    public void openGameReaderFromGameCenter(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && context != null) {
+            service.downloadGame(context, gameId, getGameStoryData());
+        }
+    }
+
+    private GameStoryData getGameStoryData() {
         GameStoryData data = null;
+        InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && service.getDownloadManager() != null) {
             Story.StoryType type = pageManager != null ? pageManager.getStoryType() : Story.StoryType.COMMON;
             Story story = service.getDownloadManager().getStoryById(storyId, type);
@@ -391,9 +397,20 @@ public class StoriesViewManager {
                 );
             }
         }
-
-        ScreensManager.getInstance().openGameReader(context, data, null, gameUrl,
-                preloadPath, gameConfig, resources, options);
+        return data;
+    }
+    public void openGameReaderWithoutGameCenter(String gameUrl, String splashScreenPath, String gameConfig, String resources, String options) {
+        ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
+        ScreensManager.getInstance().openGameReader(
+                context,
+                getGameStoryData(),
+                null,
+                gameUrl,
+                splashScreenPath,
+                gameConfig,
+                resources,
+                options
+        );
     }
 
     private boolean storyIsLoaded = false;

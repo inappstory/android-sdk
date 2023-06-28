@@ -174,6 +174,7 @@ public class SessionManager {
                 CachedSessionData cachedSessionData = new CachedSessionData();
                 cachedSessionData.userId = InAppStoryService.getInstance().getUserId();
                 cachedSessionData.placeholders = response.placeholders;
+                cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                 cachedSessionData.sessionId = response.session.id;
                 cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
                 cachedSessionData.token = ApiSettings.getInstance().getApiKey();

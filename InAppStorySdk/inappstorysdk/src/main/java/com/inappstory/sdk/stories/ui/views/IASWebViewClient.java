@@ -27,7 +27,6 @@ public class IASWebViewClient extends WebViewClient {
                 Log.d("InAppStory_SDK_Game", request.getUrl().toString() + " " + type);
 
         }
-        // Log.e("shouldInterceptRequest", request.getUrl().toString() + " " + request.getRequestHeaders().toString());
         return super.shouldInterceptRequest(view, request);
     }
 

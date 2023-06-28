@@ -37,11 +37,11 @@ public class UGCListItem extends BaseStoryListItem {
         cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
         cv.setBackgroundColor(Color.TRANSPARENT);
         View outerLayout = v.findViewById(R.id.outerLayout);
-        if (manager.getRealHeight() != null) {
-            outerLayout.getLayoutParams().height = manager.getRealHeight();
+        if (manager.getRealHeight(itemView.getContext()) != null) {
+            outerLayout.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
         }
-        if (manager.getRealWidth() != null) {
-            outerLayout.getLayoutParams().width = manager.getRealWidth();
+        if (manager.getRealWidth(itemView.getContext()) != null) {
+            outerLayout.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
         }
         UGCListItemSimpleAppearance ugcListItemAppearance = manager.csUGCListItemSimpleAppearance();
         if (ugcListItemAppearance != null) {

@@ -32,7 +32,7 @@ public class GameManager {
     String path;
     String gameCenterId;
     String resources;
-    String loaderPath;
+    String splashImagePath;
 
     boolean gameLoaded;
     String gameConfig;

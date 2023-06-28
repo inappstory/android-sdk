@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.list;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -137,12 +138,12 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         }
         boolean lpC = false;
         View outerLayout = itemView.findViewById(R.id.outerLayout);
-        if (manager.getRealHeight() != null) {
-            outerLayout.getLayoutParams().height = manager.getRealHeight();
+        if (manager.getRealHeight(itemView.getContext()) != null) {
+            outerLayout.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
             lpC = true;
         }
-        if (manager.getRealWidth() != null) {
-            outerLayout.getLayoutParams().width = manager.getRealWidth();
+        if (manager.getRealWidth(itemView.getContext()) != null) {
+            outerLayout.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
             lpC = true;
         }
         RoundedCornerLayout container1 = itemView.findViewById(R.id.container1);

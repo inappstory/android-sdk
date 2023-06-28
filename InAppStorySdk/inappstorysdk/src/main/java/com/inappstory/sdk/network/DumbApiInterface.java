@@ -14,6 +14,11 @@ public class DumbApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request getGameByInstanceId(String id) {
+        return new DumbRequest();
+    }
+
+    @Override
     public Request getStories(String test, Integer favorite, String tags, String fields) {
         return new DumbRequest();
     }

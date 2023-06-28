@@ -22,6 +22,11 @@ public interface ApiInterface {
             @Query("expand") String expand
     );
 
+    @POST("v2/game/{id}/launch")
+    Request getGameByInstanceId(
+            @Path("id") String id
+    );
+
     @GET("v2/story")
     Request getStories(
             @Query("test") String test,

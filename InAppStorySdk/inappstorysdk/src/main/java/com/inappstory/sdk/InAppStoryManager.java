@@ -236,6 +236,13 @@ public class InAppStoryManager {
         closeStoryReader(CloseStory.CUSTOM);
     }
 
+    public void openGame(String gameId) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && context != null) {
+            service.downloadGame(context, gameId, null);
+        }
+    }
+
     /**
      * use to force close story reader
      */

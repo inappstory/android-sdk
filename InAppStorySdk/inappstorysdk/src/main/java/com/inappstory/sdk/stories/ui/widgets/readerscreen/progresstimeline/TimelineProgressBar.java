@@ -53,7 +53,6 @@ public class TimelineProgressBar extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.e("rectWidth", "" + currentProgress + " " + progressForegroundVisibility);
         canvas.drawRoundRect(
                 new RectF(
                         0,

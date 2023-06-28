@@ -207,7 +207,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     void updateUI() {
         GameStoryData dataModel = getStoryDataModel();
         if (dataModel != null)
-            ProfilingManager.getInstance().setReady("game_" + dataModel.storyId + "_" + dataModel.slideIndex);
+            ProfilingManager.getInstance().setReady("game_init" + dataModel.storyId + "_" + dataModel.slideIndex);
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -478,7 +478,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
             }
         }
-        manager.loaderPath = getIntent().getStringExtra("preloadPath");
+        manager.splashImagePath = getIntent().getStringExtra("splashImagePath");
         return true;
     }
 
@@ -631,9 +631,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
 
     private void setLoader() {
-        if (manager.loaderPath != null && !manager.loaderPath.isEmpty()
+        if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()
                 && InAppStoryService.isNotNull())
-            ImageLoader.getInstance().displayImage(manager.loaderPath, -1, loader,
+            ImageLoader.getInstance().displayImage(manager.splashImagePath, -1, loader,
                     InAppStoryService.getInstance().getCommonCache());
         else
             loader.setBackgroundColor(Color.BLACK);
@@ -787,6 +787,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             } else {
                 if (link != null)
                     manager.tapOnLink(link);
+                finish();
             }
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);

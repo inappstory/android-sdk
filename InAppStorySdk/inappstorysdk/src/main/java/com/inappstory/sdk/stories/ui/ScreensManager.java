@@ -33,6 +33,7 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -40,6 +41,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -240,7 +242,7 @@ public class ScreensManager {
                                GameStoryData data,
                                String gameId,
                                String gameUrl,
-                               String preloadPath,
+                               String splashImagePath,
                                String gameConfig,
                                String resources,
                                String options) {
@@ -277,7 +279,7 @@ public class ScreensManager {
         intent2.putExtra("gameId", gameId);
         intent2.putExtra("gameConfig", gameConfig);
         intent2.putExtra("gameResources", resources);
-        intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
+        intent2.putExtra("splashImagePath", splashImagePath != null ? splashImagePath : "");
 
         if (Sizes.isTablet()) {
             if (currentScreen != null) {
@@ -306,13 +308,19 @@ public class ScreensManager {
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, int firstAction, Integer slideIndex,
                                   String feed, String feedId, Story.StoryType type) {
+
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && outerContext instanceof Activity) {
+            if (((Activity) outerContext).isInMultiWindowMode()) {
+                Toast.makeText(outerContext, "Unsupported in split mode", Toast.LENGTH_LONG).show();
+                //  return;
+            }
+        }*/
         if (System.currentTimeMillis() - lastOpenTry < 1000) {
             return;
         }
         lastOpenTry = System.currentTimeMillis();
         closeGameReader();
         closeUGCEditor();
-
         if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
             closeStoryReader(CloseStory.CUSTOM);
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
