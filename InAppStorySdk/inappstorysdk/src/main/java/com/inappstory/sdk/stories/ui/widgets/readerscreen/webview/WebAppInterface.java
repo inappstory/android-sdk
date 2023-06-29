@@ -72,7 +72,7 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void openGameFromGameCenter(String gameInstanceId) {
+    public void openGame(String gameInstanceId) {
         manager.openGameReaderFromGameCenter(gameInstanceId);
         logMethod(gameInstanceId);
     }
