@@ -32,6 +32,7 @@ import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -390,7 +391,10 @@ public class InAppStoryService {
         }
     }
 
-    public void downloadGame(final Context context, final String gameId, final GameStoryData data) {
+    public void downloadGame(final Context context,
+                             final String gameId,
+                             final GameStoryData data,
+                             final GameLoadedCallback callback) {
         gameCacheManager().getGame(gameId, new GameLoadCallback() {
             @Override
             public void onSuccess(GameCenterData gameCenterData) {
@@ -407,11 +411,12 @@ public class InAppStoryService {
                 } catch (Exception ignored) {
 
                 }
+                if (callback != null) callback.complete(true);
             }
 
             @Override
             public void onError() {
-
+                if (callback != null) callback.complete(false);
             }
         });
 

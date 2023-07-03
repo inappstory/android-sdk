@@ -58,6 +58,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
+import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -236,10 +237,10 @@ public class InAppStoryManager {
         closeStoryReader(CloseStory.CUSTOM);
     }
 
-    public void openGame(String gameId) {
+    public void openGame(String gameId, GameLoadedCallback callback) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && context != null) {
-            service.downloadGame(context, gameId, null);
+            service.downloadGame(context, gameId, null, callback);
         }
     }
 

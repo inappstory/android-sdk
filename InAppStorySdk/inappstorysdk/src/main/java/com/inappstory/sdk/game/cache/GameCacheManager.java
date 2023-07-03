@@ -71,18 +71,20 @@ public class GameCacheManager {
                             @Override
                             public void onError(int code, String message) {
                                 super.onError(code, message);
+                                callback.onError();
                             }
 
                             @Override
                             public void onTimeout() {
                                 super.onTimeout();
+                                callback.onError();
                             }
                         });
             }
 
             @Override
             public void onError() {
-
+                callback.onError();
             }
         });
     }
