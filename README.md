@@ -2,38 +2,6 @@
 
 A library for embedding stories into an application with customization.
 
-## Contents
-
-* [How to getting started](README.md#getting-started)
-* [Migrations](docs/Migrations.md)
-* [InAppStoryManager](docs/InAppStoryManager.md)
-	* [Initialization](docs/InAppStoryManager.md#initialization)
-	* [Methods](docs/InAppStoryManager.md#methods)
-	* [Callbacks](docs/InAppStoryManager.md#callbacks)
-* [StoriesList](docs/StoriesList.md)
-	* [Initialization](docs/StoriesList.md#initialization)
-	* [Methods](docs/StoriesList.md#methods)
-	* [Customization](docs/StoriesList.md#customization)
-	* [Callbacks](docs/StoriesList.md#callbacks)
-* [AppearanceManager](docs/AppearanceManager.md)
-* [Likes, Favorites, Share](docs/Likes_Favorites_Share.md)
-* [Tags and placeholders](docs/Tags_Placeholders.md)
-	* [Tags](docs/Tags_Placeholders.md#tags)
-	* [Placeholders](docs/Tags_Placeholders.md#placeholders)
-	* [Image placeholders](docs/Tags_Placeholders.md#image-placeholders)
-* [Work with sound](docs/Sound.md)
-* [Onboardings](docs/Onboardings.md)
-* [Single Stories](docs/Single_Stories.md)
-* [UgcStoriesList](docs/UgcStoriesList.md)
-	* [Initialization](docs/UgcStoriesList.md#initialization)
-	* [Methods](docs/UgcStoriesList.md#methods)
-	* [Customization and Callbacks](docs/UgcStoriesList.md#customization-and-callbacks)
-* [Stories Reader Goods Widget](docs/Goods.md)
-* [Home Screen Widget](docs/Home_Screen_Widget.md)
-* [Stories Widget Events](docs/Stories_Widgets_Events.md)
-* [FAQ](docs/FAQ.md)
-* [Samples](https://github.com/inappstory/Android-Example)
-
 ## Requirements
 
 The minimum SDK version is 19 (Android 4.4).
@@ -54,7 +22,7 @@ Add jitpack maven repo to the root `build.gradle` in the `repositories` section 
 
 In the project `build.gradle` (app level) in the `dependencies` section add:
 ```gradle
-	implementation 'com.github.inappstory:android-sdk:1.14.0'
+	implementation 'com.github.inappstory:android-sdk:1.15.0'
 ```
 
 Also for correct work in `dependencies` you need to add:
@@ -70,11 +38,6 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 ```gradle
 	-keepattributes *Annotation*
 
-	-keepclassmembers class * {
-	    @com.inappstory.sdk.eventbus.CsSubscribe <methods>;
-	}
-
-	-keep enum com.inappstory.sdk.eventbus.CsThreadMode { *; }
 	-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 	    public *;
 	}
@@ -90,15 +53,13 @@ If your project uses `ProGuard` obfuscation, add following rules to proguard con
 
 SDK can be initialized from any point with `Context` access (`Application`, `Activity`, `Fragment`, etc.)
 
-```js
-	new InAppStoryManager.Builder()
+```kotlin
+	InAppStoryManager.Builder()
      		.apiKey(apiKey) //Non-null String
       		.context(context) //Context
       		.userId(userId) //Non-null String
 	    	.create();
 ```
->**Attention!**   
->Methods create() and userId() can generate DataException if SDK was not initialized. Strictly recommend to catch DataException for additional info.
 
 **Context and userId - is not optional parameters. UserId can't be longer than 255 characters.** Api key is a SDK authorization key. It can be set through `Builder` or in `values/constants.xml`
 ```xml
@@ -122,12 +83,9 @@ After initialization you can use `InAppStoryManager` class via `InAppStoryManage
 
 After SDK initialization you can load stories in `StoriesList`
 
-```js
+```kotlin
 	storiesList.loadStories(); 
 ```
 This method also can be used to reload list (for example in PtR case)
 
->**Attention!**  
->This method can generate DataException if SDK was not initialized. Strictly recommend to catch `DataException` for additional info.
-
-For more information you can read [the full SDK guide](README.md#contents), [FAQ](docs/FAQ.md) or check [Samples](https://github.com/inappstory/Android-Example).
+For more information you can read [full SDK guide](https://docs.inappstory.ru/sdk-guides/android/how-to-get-started.html) or check [Samples](https://github.com/inappstory/Android-Example).
