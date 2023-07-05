@@ -966,6 +966,7 @@ public class InAppStoryManager {
         }
     }
 
+    @Deprecated
     public static void destroy() {
         logout();
     }
