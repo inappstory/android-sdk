@@ -18,7 +18,7 @@ public class ApiLogResponse {
     public long contentLength;
 
     public void generateError(int statusCode, String errorBody, HashMap<String, String> headers) {
-        isError = true;
+        this.isError = true;
         this.status = statusCode;
         this.errorBody = errorBody;
         generateHeaders(headers);
