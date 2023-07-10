@@ -697,20 +697,22 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private void closeGame() {
         if (closing) return;
         GameStoryData dataModel = getStoryDataModel();
-        if (manager == null || dataModel == null) {
+        ZipLoader.getInstance().terminate();
+        if (manager == null) {
             finish();
             return;
         }
-        ZipLoader.getInstance().terminate();
         closing = true;
-        if (CallbackManager.getInstance().getGameCallback() != null) {
-            CallbackManager.getInstance().getGameCallback().closeGame(
-                    dataModel.storyId,
-                    StringsUtils.getNonNull(dataModel.title),
-                    StringsUtils.getNonNull(dataModel.tags),
-                    dataModel.slidesCount,
-                    dataModel.slideIndex
-            );
+        if (dataModel != null) {
+            if (CallbackManager.getInstance().getGameCallback() != null) {
+                CallbackManager.getInstance().getGameCallback().closeGame(
+                        dataModel.storyId,
+                        StringsUtils.getNonNull(dataModel.title),
+                        StringsUtils.getNonNull(dataModel.tags),
+                        dataModel.slidesCount,
+                        dataModel.slideIndex
+                );
+            }
         }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().closeGame(
