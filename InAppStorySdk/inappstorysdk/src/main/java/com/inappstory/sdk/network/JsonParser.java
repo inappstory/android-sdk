@@ -357,9 +357,9 @@ public class JsonParser {
                 result = array;
             } else if (field.getType().equals(Map.class) ||
                     containsInterface(field.getType().getInterfaces(), Map.class)) {
-                JSONObject mapObject = new JSONObject();
-                Map<String, Object> valMap = (Map<String, Object>) val;
-                Set<String> keys = valMap.keySet();
+                JSONObject mapObject = new JSONObject((Map<String, Object>) val);
+                //Map<String, Object> valMap = (Map<String, Object>) val;
+               /* Set<String> keys = valMap.keySet();
                 for (String key : keys) {
                     Object valObj = valMap.get(key);
                     if (valObj instanceof List) {
@@ -374,7 +374,7 @@ public class JsonParser {
                     } else {
                         mapObject.put(key, getJsonObject(null));
                     }
-                }
+                }*/
                 result = mapObject;
             } else {
                 result = getJsonObject(val);
