@@ -3,27 +3,21 @@ package com.inappstory.sdk.game.reader;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
-import android.util.Log;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.share.JSShareModel;
 import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outerevents.CallToAction;
-import com.inappstory.sdk.stories.outerevents.ClickOnButton;
-import com.inappstory.sdk.stories.outerevents.FinishGame;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -35,20 +29,15 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class GameManager {
-    String storyId;
     String path;
-    String feedId;
+    String gameCenterId;
     String resources;
-    String observableId;
-    String loaderPath;
-    String title;
-    String tags;
-    int index;
-    int slidesCount;
+    String splashImagePath;
 
     boolean gameLoaded;
     String gameConfig;
 
+    GameStoryData dataModel;
     ZipLoadCallback callback;
 
     public GameManager(GameActivity host) {
@@ -69,12 +58,13 @@ public class GameManager {
 
     void storySetData(String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
-        KeyValueStorage.saveString("story" + storyId
+        if (dataModel == null) return;
+        KeyValueStorage.saveString("story" + dataModel.storyId
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            NetworkClient.getApi().sendStoryData(storyId, data, Session.getInstance().id)
+            NetworkClient.getApi().sendStoryData(Integer.toString(dataModel.storyId), data, Session.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {
@@ -101,16 +91,26 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        StatisticManager.getInstance().sendGameEvent(name, data, feedId);
+        StatisticManager.getInstance().sendGameEvent(name, data, dataModel.feedId);
     }
 
-    void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
-        CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
-                slidesCount, index, eventData));
-        if (CallbackManager.getInstance().getGameCallback() != null) {
+    private void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
+        if (CallbackManager.getInstance().getGameCallback() != null && dataModel != null) {
             CallbackManager.getInstance().getGameCallback().finishGame(
-                    Integer.parseInt(storyId), title, tags,
-                    slidesCount, index, eventData);
+                    dataModel.storyId,
+                    dataModel.title,
+                    dataModel.tags,
+                    dataModel.slidesCount,
+                    dataModel.slideIndex,
+                    eventData
+            );
+        }
+        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+            CallbackManager.getInstance().getGameReaderCallback().finishGame(
+                    dataModel,
+                    eventData,
+                    gameCenterId
+            );
         }
         if (options.openStory != null
                 && options.openStory.id != null
@@ -136,13 +136,23 @@ public class GameManager {
         }
     }
 
-    void gameCompletedWithUrl(String gameState, String link, String eventData) {
-        CsEventBus.getDefault().post(new FinishGame(Integer.parseInt(storyId), title, tags,
-                slidesCount, index, eventData));
-        if (CallbackManager.getInstance().getGameCallback() != null) {
+    private void gameCompletedWithUrl(String gameState, String link, String eventData) {
+        if (CallbackManager.getInstance().getGameCallback() != null && dataModel != null) {
             CallbackManager.getInstance().getGameCallback().finishGame(
-                    Integer.parseInt(storyId), StringsUtils.getNonNull(title), StringsUtils.getNonNull(tags),
-                    slidesCount, index, StringsUtils.getNonNull(eventData));
+                    dataModel.storyId,
+                    StringsUtils.getNonNull(dataModel.title),
+                    StringsUtils.getNonNull(dataModel.tags),
+                    dataModel.slidesCount,
+                    dataModel.slideIndex,
+                    StringsUtils.getNonNull(eventData)
+            );
+        }
+        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+            CallbackManager.getInstance().getGameReaderCallback().finishGame(
+                    dataModel,
+                    eventData,
+                    gameCenterId
+            );
         }
         host.gameCompleted(gameState, link);
     }
@@ -164,21 +174,17 @@ public class GameManager {
 
     void tapOnLink(String link) {
         if (InAppStoryService.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                Integer.parseInt(storyId), Story.StoryType.COMMON);
-        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.statTitle,
-                story.tags, story.getSlidesCount(), story.lastIndex,
-                link));
-        int cta = CallToAction.GAME;
-        CsEventBus.getDefault().post(new CallToAction(story.id, story.statTitle,
-                story.tags, story.getSlidesCount(), story.lastIndex,
-                link, cta));
         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(story.id, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex,
-                    StringsUtils.getNonNull(link), ClickAction.GAME);
+            CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                    dataModel.storyId,
+                    StringsUtils.getNonNull(dataModel.title),
+                    StringsUtils.getNonNull(dataModel.tags),
+                    dataModel.slidesCount,
+                    dataModel.slideIndex,
+                    StringsUtils.getNonNull(link),
+                    ClickAction.GAME
+            );
         }
-        // OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
                     StringsUtils.getNonNull(link)
@@ -205,32 +211,32 @@ public class GameManager {
 
 
     void onResume() {
-        ScreensManager.getInstance().setTempShareStoryId(0);
-        ScreensManager.getInstance().setTempShareId(null);
-        if (ScreensManager.getInstance().getOldTempShareId() != null) {
-            host.shareComplete(ScreensManager.getInstance().getOldTempShareId(), true);
+        String shareId = null;
+        if (ScreensManager.getInstance().getTempShareId() != null) {
+            shareId = ScreensManager.getInstance().getTempShareId();
+        } else if (ScreensManager.getInstance().getOldTempShareId() != null) {
+            shareId = ScreensManager.getInstance().getOldTempShareId();
         }
-        ScreensManager.getInstance().setOldTempShareStoryId(0);
-        ScreensManager.getInstance().setOldTempShareId(null);
+        if (shareId != null) {
+            host.shareComplete(shareId, false);
+        }
+        ScreensManager.getInstance().clearShareIds();
     }
 
     void shareData(String id, String data) {
-        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
-        if (CallbackManager.getInstance().getShareCallback() != null) {
-            CallbackManager.getInstance().getShareCallback()
-                    .onShare(StringsUtils.getNonNull(shareObj.getText()),
-                            StringsUtils.getNonNull(shareObj.getTitle()),
-                            StringsUtils.getNonNull(data),
-                            StringsUtils.getNonNull(id));
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || service.isShareProcess())
+            return;
+        service.isShareProcess(true);
+        InnerShareData shareObj = JsonParser.fromJson(data, InnerShareData.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            ScreensManager.getInstance().setTempShareId(id);
+            ScreensManager.getInstance().setTempShareStoryId(-1);
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                ScreensManager.getInstance().setTempShareId(id);
-                ScreensManager.getInstance().setTempShareStoryId(-1);
-            } else {
-                ScreensManager.getInstance().setOldTempShareId(id);
-                ScreensManager.getInstance().setOldTempShareStoryId(-1);
-            }
-            host.shareDefault(shareObj);
+            ScreensManager.getInstance().setOldTempShareId(id);
+            ScreensManager.getInstance().setOldTempShareStoryId(-1);
         }
+        host.share(shareObj);
+
     }
 }

@@ -15,10 +15,15 @@ import android.os.Handler;
 import android.util.Log;
 import android.webkit.URLUtil;
 
+import com.inappstory.sdk.game.cache.GameCacheManager;
+import com.inappstory.sdk.game.cache.GameLoadCallback;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
+import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -27,12 +32,13 @@ import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
-import com.inappstory.sdk.stories.ui.list.StoriesListManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.io.File;
@@ -64,6 +70,22 @@ public class InAppStoryService {
     public InAppStoryService() {
 
     }
+
+    private boolean sharingProcess = false;
+    private static final Object shareLock = new Object();
+
+    public boolean isShareProcess() {
+        synchronized (shareLock) {
+            return sharingProcess;
+        }
+    }
+
+    public void isShareProcess(boolean sharingProcess) {
+        synchronized (shareLock) {
+            this.sharingProcess = sharingProcess;
+        }
+    }
+
 
     public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
 
@@ -186,6 +208,13 @@ public class InAppStoryService {
     }
 
     StoryDownloadManager downloadManager;
+    GameCacheManager gameCacheManager = new GameCacheManager();
+    public GameCacheManager gameCacheManager() {
+        if (gameCacheManager == null) {
+            gameCacheManager = new GameCacheManager();
+        }
+        return gameCacheManager;
+    }
     public static InAppStoryService INSTANCE;
 
     void logout() {
@@ -326,6 +355,7 @@ public class InAppStoryService {
         }
     }
 
+
     public Map<String, String> getPlaceholders() {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager != null)
@@ -359,6 +389,37 @@ public class InAppStoryService {
             InAppStoryManager.getInstance().setDefaultImagePlaceholder(key,
                     defaultVal);
         }
+    }
+
+    public void downloadGame(final Context context,
+                             final String gameId,
+                             final GameStoryData data,
+                             final GameLoadedCallback callback) {
+        gameCacheManager().getGame(gameId, new GameLoadCallback() {
+            @Override
+            public void onSuccess(GameCenterData gameCenterData) {
+                try {
+                    ScreensManager.getInstance().openGameReader(
+                            context,
+                            data,
+                            gameId,
+                            gameCenterData.url,
+                            gameCenterData.splashScreen.url,
+                            gameCenterData.initCode,
+                            JsonParser.getJson(gameCenterData.resources),
+                            JsonParser.getJson(gameCenterData.options));
+                } catch (Exception ignored) {
+
+                }
+                if (callback != null) callback.complete(true);
+            }
+
+            @Override
+            public void onError() {
+                if (callback != null) callback.complete(false);
+            }
+        });
+
     }
 
     public void runStatisticThread() {

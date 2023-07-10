@@ -30,7 +30,8 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         String img = url;
-        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img) || manager == null)
+        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img) || manager == null ||
+                img.contains(".ttf") || img.contains(".otf"))
             return super.shouldInterceptRequest(view, url);
         InAppStoryManager.showDLog("webView_int_url", url);
         File file = manager.getCurrentFile(img);
@@ -40,7 +41,13 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
                 String ctType = response.headers.get("Content-Type");
                 return new WebResourceResponse(ctType, "BINARY",
                         new FileInputStream(file));
+            } catch (NullPointerException e) {
+                InAppStoryService.createExceptionLog(new Throwable(
+                        "StoriesReaderWebViewClient: headers is null for " + url,
+                        e.getCause()));
+                return super.shouldInterceptRequest(view, url);
             } catch (Exception e) {
+
                 InAppStoryService.createExceptionLog(e);
                 return super.shouldInterceptRequest(view, url);
             }
@@ -54,7 +61,8 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest
             request) {
         String img = request.getUrl().toString();
-        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
+        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img) ||
+                img.contains(".ttf") || img.contains(".otf"))
             return super.shouldInterceptRequest(view, request);
         InAppStoryManager.showDLog("webView_int_resource", img);
 
@@ -65,7 +73,13 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
                 String ctType = response.headers.get("Content-Type");
                 return new WebResourceResponse(ctType, "BINARY",
                         new FileInputStream(file));
+            } catch (NullPointerException e) {
+                InAppStoryService.createExceptionLog(new Throwable(
+                        "StoriesReaderWebViewClient: headers is null for " + request.getUrl().toString(),
+                        e.getCause()));
+                return super.shouldInterceptRequest(view, request);
             } catch (Exception e) {
+
                 InAppStoryService.createExceptionLog(e);
                 return super.shouldInterceptRequest(view, request);
             }

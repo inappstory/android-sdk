@@ -18,7 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.core.util.Pair;
 
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -44,11 +43,10 @@ import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -60,9 +58,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
+import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.outerevents.OnboardingLoad;
-import com.inappstory.sdk.stories.outerevents.OnboardingLoadError;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -240,6 +237,13 @@ public class InAppStoryManager {
         closeStoryReader(CloseStory.CUSTOM);
     }
 
+    public void openGame(String gameId, GameLoadedCallback callback) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && context != null) {
+            service.downloadGame(context, gameId, null, callback);
+        }
+    }
+
     /**
      * use to force close story reader
      */
@@ -270,11 +274,17 @@ public class InAppStoryManager {
         CallbackManager.getInstance().setClickOnShareStoryCallback(clickOnShareStoryCallback);
     }
 
+
+    @Deprecated
+    public void setGameCallback(GameCallback gameCallback) {
+        CallbackManager.getInstance().setGameCallback(gameCallback);
+    }
+
     /**
      * use to set callback on game start/close/finish
      */
-    public void setGameCallback(GameCallback gameCallback) {
-        CallbackManager.getInstance().setGameCallback(gameCallback);
+    public void setGameReaderCallback(GameReaderCallback gameReaderCallback) {
+        CallbackManager.getInstance().setGameReaderCallback(gameReaderCallback);
     }
 
     /**
@@ -351,6 +361,7 @@ public class InAppStoryManager {
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
     }
+
 
     /**
      * use to customize share functional
@@ -955,6 +966,7 @@ public class InAppStoryManager {
         }
     }
 
+    @Deprecated
     public static void destroy() {
         logout();
     }
@@ -1014,7 +1026,6 @@ public class InAppStoryManager {
                                        final AppearanceManager manager, final String feed, final String feedId) {
         Story.StoryType storyType = Story.StoryType.COMMON;
         if (response == null || response.size() == 0) {
-            CsEventBus.getDefault().post(new OnboardingLoad(0, feed));
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
                 CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, StringsUtils.getNonNull(feed));
             }
@@ -1060,7 +1071,6 @@ public class InAppStoryManager {
                 feed,
                 feedId,
                 Story.StoryType.COMMON);
-        CsEventBus.getDefault().post(new OnboardingLoad(response.size(), feed));
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
         }
@@ -1145,11 +1155,9 @@ public class InAppStoryManager {
     }
 
     private void loadOnboardingError(String feed) {
-        CsEventBus.getDefault().post(new OnboardingLoadError(feed));
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadOnboardingError(StringsUtils.getNonNull(feed));
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_ONBOARD, feed));
     }
 
 
@@ -1360,7 +1368,6 @@ public class InAppStoryManager {
                                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                                     CallbackManager.getInstance().getErrorCallback().noConnection();
                                 }
-                                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.LINK));
                                 return;
                             }
                             try {
@@ -1377,7 +1384,6 @@ public class InAppStoryManager {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
                             CallbackManager.getInstance().getErrorCallback().emptyLinkError();
                         }
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.EMPTY_LINK));
                         return;
                     }
                     service.getDownloadManager().putStories(

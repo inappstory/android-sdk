@@ -2,14 +2,11 @@ package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
-import com.inappstory.sdk.listwidget.ListLoadedEvent;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -22,9 +19,6 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
-import com.inappstory.sdk.stories.outerevents.SingleLoad;
-import com.inappstory.sdk.stories.outerevents.SingleLoadError;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
@@ -93,7 +87,6 @@ public class StoryDownloadManager {
                             return;
                         }
                         ProfilingManager.getInstance().setReady(storyUID);
-                        CsEventBus.getDefault().post(new SingleLoad(id));
                         if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
                             CallbackManager.getInstance().getSingleLoadCallback().singleLoad(id);
                         }
@@ -122,9 +115,6 @@ public class StoryDownloadManager {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
                             CallbackManager.getInstance().getErrorCallback().loadSingleError();
                         }
-                        CsEventBus.getDefault().post(new SingleLoadError());
-
-                        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                         if (storyByIdCallback != null)
                             storyByIdCallback.loadError(-1);
                     }
@@ -137,7 +127,6 @@ public class StoryDownloadManager {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().loadSingleError();
                 }
-                CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_SINGLE));
                 if (storyByIdCallback != null)
                     storyByIdCallback.loadError(-1);
             }
@@ -541,7 +530,6 @@ public class StoryDownloadManager {
                     }
                     StoriesWidgetService.getInstance().refreshFactory();
                 }
-                CsEventBus.getDefault().post(new ListLoadedEvent());
                 if (response == null || response.size() == 0) {
                     if (AppearanceManager.csWidgetAppearance() != null
                             && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {

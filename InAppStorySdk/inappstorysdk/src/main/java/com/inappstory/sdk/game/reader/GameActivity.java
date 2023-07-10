@@ -1,6 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
-import static com.inappstory.sdk.share.ShareManager.SHARE_EVENT;
+import static com.inappstory.sdk.share.IASShareManager.SHARE_EVENT;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -21,17 +21,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.DisplayCutout;
 import android.view.View;
 import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -47,33 +44,40 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
+import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.share.JSShareModel;
-import com.inappstory.sdk.share.ShareManager;
+import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.outerevents.CloseGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
     private IASWebView webView;
     private ImageView loader;
     private View closeButton;
@@ -91,6 +95,8 @@ public class GameActivity extends AppCompatActivity {
     boolean showClose = true;
 
     private boolean onBackPressedLocked = false;
+
+    public String gameCenterId;
 
     @Override
     public void onBackPressed() {
@@ -138,10 +144,15 @@ public class GameActivity extends AppCompatActivity {
     }
 
     void showGoods(final String skusString, final String widgetId) {
+        final GameStoryData dataModel = getStoryDataModel();
+        if (dataModel == null) return;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                ScreensManager.getInstance().showGoods(skusString, GameActivity.this, new ShowGoodsCallback() {
+                ScreensManager.getInstance().showGoods(
+                        skusString,
+                        GameActivity.this,
+                        new ShowGoodsCallback() {
                             @Override
                             public void onPause() {
                                 pauseGame();
@@ -157,9 +168,13 @@ public class GameActivity extends AppCompatActivity {
                             public void onEmptyResume(String widgetId) {
                                 goodsWidgetComplete(widgetId);
                             }
-                        }, true, widgetId,
-                        Integer.parseInt(manager.storyId),
-                        manager.index, manager.feedId);
+                        },
+                        true,
+                        widgetId,
+                        dataModel.storyId,
+                        dataModel.slideIndex,
+                        dataModel.feedId
+                );
             }
         });
     }
@@ -190,7 +205,9 @@ public class GameActivity extends AppCompatActivity {
 
 
     void updateUI() {
-        ProfilingManager.getInstance().setReady("game_" + manager.storyId + "_" + manager.index);
+        GameStoryData dataModel = getStoryDataModel();
+        if (dataModel != null)
+            ProfilingManager.getInstance().setReady("game_init" + dataModel.storyId + "_" + dataModel.slideIndex);
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -317,9 +334,11 @@ public class GameActivity extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        manager.onResume();
         super.onResume();
-        resumeGame();
+        if (!shareViewIsShown) {
+            manager.onResume();
+            resumeGame();
+        }
     }
 
     @Override
@@ -385,8 +404,46 @@ public class GameActivity extends AppCompatActivity {
 
     boolean gameReaderGestureBack = false;
 
-    public void shareDefault(JSShareModel shareObject) {
-        new ShareManager().shareDefault(GameActivity.this, shareObject);
+    public void share(InnerShareData shareObject) {
+        final IASShareData shareData = new IASShareData(
+                shareObject.getText(), shareObject.getPayload()
+        );
+        if (!shareObject.getFiles().isEmpty()) {
+            new InnerShareFilesPrepare().prepareFiles(this, new ShareFilesPrepareCallback() {
+                @Override
+                public void onPrepared(List<String> files) {
+                    shareData.files = files;
+                    shareCustomOrDefault(shareData);
+                }
+            }, shareObject.getFiles());
+        } else {
+            shareCustomOrDefault(shareData);
+        }
+
+    }
+
+    private void shareCustomOrDefault(IASShareData shareObject) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.isShareProcess(false);
+        if (CallbackManager.getInstance().getShareCallback() != null) {
+            int storyId = -1;
+            int slideIndex = 0;
+            GameStoryData dataModel = getStoryDataModel();
+            if (dataModel != null) {
+                storyId = dataModel.storyId;
+                slideIndex = dataModel.slideIndex;
+            }
+            ScreensManager.getInstance().openOverlapContainerForShare(
+                    this, this, null, storyId, slideIndex, shareObject
+            );
+        } else {
+            new IASShareManager().shareDefault(
+                    StoryShareBroadcastReceiver.class,
+                    GameActivity.this,
+                    shareObject
+            );
+        }
     }
 
     public void shareComplete(String id, boolean success) {
@@ -405,13 +462,9 @@ public class GameActivity extends AppCompatActivity {
             finish();
             return false;
         }
-        manager.observableId = getIntent().getStringExtra("observableId");
+        manager.gameCenterId = getIntent().getStringExtra("gameId");
         manager.resources = getIntent().getStringExtra("gameResources");
-        manager.storyId = getIntent().getStringExtra("storyId");
-        manager.index = getIntent().getIntExtra("slideIndex", 0);
-        manager.slidesCount = getIntent().getIntExtra("slidesCount", 0);
-        manager.title = getIntent().getStringExtra("title");
-        manager.tags = getIntent().getStringExtra("tags");
+        manager.dataModel = getStoryDataModel();
         manager.gameConfig = getIntent().getStringExtra("gameConfig");
         if (manager.gameConfig != null) {
             if (manager.gameConfig.contains("{{%sdkVersion}}"))
@@ -425,7 +478,7 @@ public class GameActivity extends AppCompatActivity {
                 manager.gameConfig = manager.gameConfig.replace("{{%sdkPlaceholders}}", replacedPlaceholders);
             }
         }
-        manager.loaderPath = getIntent().getStringExtra("preloadPath");
+        manager.splashImagePath = getIntent().getStringExtra("splashImagePath");
         return true;
     }
 
@@ -447,6 +500,13 @@ public class GameActivity extends AppCompatActivity {
         options.sdkVersion = BuildConfig.VERSION_NAME;
         options.apiKey = InAppStoryManager.getInstance().getApiKey();
         options.sessionId = CachedSessionData.getInstance(this).sessionId;
+        String language;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            language = Locale.getDefault().toLanguageTag();
+        } else {
+            language = Locale.getDefault().getLanguage();
+        }
+        options.lang = language;
         options.deviceId = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         options.placeholders = generatePlaceholders();
@@ -512,6 +572,7 @@ public class GameActivity extends AppCompatActivity {
 
 
     private void initWebView() {
+        final GameStoryData dataModel = getStoryDataModel();
         webView.setWebChromeClient(new WebChromeClient() {
             boolean init = false;
 
@@ -528,10 +589,11 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                if (manager != null && webView != null) {
+
+                if (dataModel != null && webView != null) {
                     webView.sendWebConsoleLog(consoleMessage,
-                            manager.storyId,
-                            manager.index);
+                            Integer.toString(dataModel.storyId),
+                            dataModel.slideIndex);
                 }
                 Log.d("InAppStory_SDK_Game", "Console: " + consoleMessage.messageLevel().name() + ": "
                         + consoleMessage.message() + " -- From line "
@@ -558,15 +620,20 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         });
-        webView.addJavascriptInterface(new GameJSInterface(GameActivity.this,
-                manager.index, manager.storyId, manager), "Android");
+        webView.addJavascriptInterface(
+                new GameJSInterface(
+                        GameActivity.this,
+                        manager
+                ),
+                "Android"
+        );
     }
 
 
     private void setLoader() {
-        if (manager.loaderPath != null && !manager.loaderPath.isEmpty()
+        if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()
                 && InAppStoryService.isNotNull())
-            ImageLoader.getInstance().displayImage(manager.loaderPath, -1, loader,
+            ImageLoader.getInstance().displayImage(manager.splashImagePath, -1, loader,
                     InAppStoryService.getInstance().getCommonCache());
         else
             loader.setBackgroundColor(Color.BLACK);
@@ -629,20 +696,29 @@ public class GameActivity extends AppCompatActivity {
 
     private void closeGame() {
         if (closing) return;
-        if (manager == null || manager.storyId == null) {
+        GameStoryData dataModel = getStoryDataModel();
+        ZipLoader.getInstance().terminate();
+        if (manager == null) {
             finish();
             return;
         }
-        ZipLoader.getInstance().terminate();
         closing = true;
-        CsEventBus.getDefault().post(new CloseGame(Integer.parseInt(manager.storyId),
-                manager.title, manager.tags,
-                manager.slidesCount, manager.index));
-        if (CallbackManager.getInstance().getGameCallback() != null) {
-            CallbackManager.getInstance().getGameCallback().closeGame(
-                    Integer.parseInt(manager.storyId),
-                    StringsUtils.getNonNull(manager.title), StringsUtils.getNonNull(manager.tags),
-                    manager.slidesCount, manager.index);
+        if (dataModel != null) {
+            if (CallbackManager.getInstance().getGameCallback() != null) {
+                CallbackManager.getInstance().getGameCallback().closeGame(
+                        dataModel.storyId,
+                        StringsUtils.getNonNull(dataModel.title),
+                        StringsUtils.getNonNull(dataModel.tags),
+                        dataModel.slidesCount,
+                        dataModel.slideIndex
+                );
+            }
+        }
+        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+            CallbackManager.getInstance().getGameReaderCallback().closeGame(
+                    dataModel,
+                    getIntent().getStringExtra("gameId")
+            );
         }
         if (manager.gameLoaded) {
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
@@ -658,50 +734,63 @@ public class GameActivity extends AppCompatActivity {
     }
 
     void setAudioManagerMode(String mode) {
-            AudioManager audioManager = (AudioManager)
-                    getSystemService(Context.AUDIO_SERVICE);
-            audioManager.setMode(AudioModes.getModeVal(mode));
+        AudioManager audioManager = (AudioManager)
+                getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setMode(AudioModes.getModeVal(mode));
     }
 
+    GameStoryData storyDataModel;
+
+    private GameStoryData getStoryDataModel() {
+        if (storyDataModel == null) {
+            if (getIntent().getStringExtra("storyId") == null) return null;
+            storyDataModel = new GameStoryData(
+                    Integer.parseInt(getIntent().getStringExtra("storyId")),
+                    getIntent().getIntExtra("slideIndex", 0),
+                    getIntent().getIntExtra("slidesCount", 0),
+                    getIntent().getStringExtra("title"),
+                    getIntent().getStringExtra("tags"),
+                    getIntent().getStringExtra("feedId"),
+                    Story.storyTypeFromName(getIntent().getStringExtra("storyType"))
+            );
+        }
+        return storyDataModel;
+    }
 
     void gameCompleted(String gameState, String link) {
         try {
-
-            String storyId;
-            int slideIndex;
-            String observableId;
-            if (manager.storyId == null) {
-                storyId = getIntent().getStringExtra("storyId");
-                slideIndex = getIntent().getIntExtra("slideIndex", 0);
-                observableId = getIntent().getStringExtra("observableId");
-            } else {
-                storyId = manager.storyId;
-                slideIndex = manager.index;
-                observableId = manager.observableId;
-            }
-            Intent intent = new Intent();
-            closing = true;
-            intent.putExtra("storyId", storyId);
-            intent.putExtra("slideIndex", slideIndex);
-            if (gameState != null)
-                intent.putExtra("gameState", gameState);
-            if (Sizes.isTablet()) {
-                if (observableId != null) {
-                    MutableLiveData<GameCompleteEvent> liveData =
-                            ScreensManager.getInstance().getGameObserver(observableId);
-                    if (liveData != null) {
-                        liveData.postValue(new GameCompleteEvent(
-                                gameState,
-                                Integer.parseInt(storyId),
-                                slideIndex));
+            GameStoryData dataModel = getStoryDataModel();
+            if (dataModel != null) {
+                Intent intent = new Intent();
+                closing = true;
+                intent.putExtra("storyId", dataModel.storyId);
+                intent.putExtra("slideIndex", dataModel.slideIndex);
+                if (gameState != null)
+                    intent.putExtra("gameState", gameState);
+                if (Sizes.isTablet()) {
+                    String observableUID = getIntent().getStringExtra("observableUID");
+                    if (observableUID != null) {
+                        MutableLiveData<GameCompleteEvent> liveData =
+                                ScreensManager.getInstance().getGameObserver(observableUID);
+                        if (liveData != null) {
+                            liveData.postValue(
+                                    new GameCompleteEvent(
+                                            gameState,
+                                            dataModel.storyId,
+                                            dataModel.slideIndex
+                                    )
+                            );
+                        }
                     }
                 }
+
+                setResult(RESULT_OK, intent);
+                finish();
+            } else {
+                if (link != null)
+                    manager.tapOnLink(link);
+                finish();
             }
-            if (link != null)
-                manager.tapOnLink(link);
-            setResult(RESULT_OK, intent);
-            finish();
-            //overridePendingTransition(0, 0);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             closing = false;
@@ -713,4 +802,42 @@ public class GameActivity extends AppCompatActivity {
         webView.evaluateJavascript(data, null);
     }
 
+    @Override
+    public void closeView(final HashMap<String, Object> data) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                boolean shared = false;
+                if (data.containsKey("shared")) shared = (boolean) data.get("shared");
+                String id;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    id = ScreensManager.getInstance().getTempShareId();
+                } else {
+                    id = ScreensManager.getInstance().getOldTempShareId();
+                }
+                shareComplete(id, shared);
+                if (!shared)
+                    resumeGame();
+                shareViewIsShown = false;
+
+                ScreensManager.getInstance().clearShareIds();
+
+            }
+        });
+
+    }
+
+
+    boolean shareViewIsShown = false;
+
+    @Override
+    public void viewIsOpened() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                shareViewIsShown = true;
+                pauseGame();
+            }
+        });
+    }
 }

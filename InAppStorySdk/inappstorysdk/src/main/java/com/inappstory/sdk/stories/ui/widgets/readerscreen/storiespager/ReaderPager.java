@@ -109,7 +109,6 @@ public class ReaderPager extends BothSideViewPager {
         if (cubeAnimation) {
             return true;
         }
-        // Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         float pressedEndX = 0f;
         float pressedEndY = 0f;
         boolean distance = false;
@@ -122,7 +121,6 @@ public class ReaderPager extends BothSideViewPager {
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             pressedX = motionEvent.getX();
             pressedY = motionEvent.getY();
-            //CsEventBus.getDefault().post(new WidgetTapEvent());
         } else if (!(motionEvent.getAction() == MotionEvent.ACTION_UP
                 || motionEvent.getAction() == MotionEvent.ACTION_CANCEL)) {
             pressedEndX = motionEvent.getX() - pressedX;
@@ -134,7 +132,6 @@ public class ReaderPager extends BothSideViewPager {
             pressedEndX = motionEvent.getX() - pressedX;
             if (pressedEndY > 400) {
                 host.swipeDownEvent(getCurrentItem());
-                // CsEventBus.getDefault().post(new SwipeDownEvent());
                 return true;
             }
             if (pressedEndY < -400) {

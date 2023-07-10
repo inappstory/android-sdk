@@ -1,33 +1,24 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
-import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.Request;
-import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.StoriesReaderWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -35,8 +26,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleSto
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.Map;
 
 /**
@@ -90,24 +79,41 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         return escaped;
     }
 
+
     public void pauseVideo() {
-        loadUrl("javascript:(function(){story_slide_pause();})()");
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_pause' in window) " +
+                "{" +
+                " window.story_slide_pause(); " +
+                "}" +
+                "})()");
 
         logMethod("story_slide_pause");
     }
 
 
     public void playVideo() {
-        if (InAppStoryService.getInstance().isSoundOn()) {
-            loadUrl("javascript:(function(){story_slide_start('{\"muted\": false}');})()");
-        } else {
-            loadUrl("javascript:(function(){story_slide_start('{\"muted\": true}');})()");
-        }
+        String funAfterCheck =
+                (InAppStoryService.getInstance() != null
+                        && InAppStoryService.getInstance().isSoundOn()) ?
+                        "story_slide_start('{\"muted\": false}');" :
+                        "story_slide_start('{\"muted\": true}');";
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_start' in window) " +
+                "{" +
+                " window." + funAfterCheck +
+                "}" +
+                "})()");
         logMethod("story_slide_start");
     }
 
     public void stopVideo() {
-        loadUrl("javascript:(function(){story_slide_stop();})()");
+        loadUrl("javascript:(function(){" +
+                "if ('story_slide_stop' in window) " +
+                "{" +
+                " window.story_slide_stop(); " +
+                "}" +
+                "})()");
 
         logMethod("story_slide_stop");
     }
@@ -125,7 +131,12 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public void resumeVideo() {
-        loadUrl("javascript:(function(){story_slide_resume();})()");
+        loadUrl("javascript:(function() {" +
+                "if ('story_slide_resume' in window) " +
+                "{" +
+                " window.story_slide_resume(); " +
+                "}" +
+                "})()");
         logMethod("story_slide_resume");
     }
 

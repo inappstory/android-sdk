@@ -23,7 +23,6 @@ import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,6 +33,7 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,9 +41,9 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -51,21 +51,23 @@ import androidx.lifecycle.MutableLiveData;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.game.reader.GameActivity;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.outerevents.StartGame;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
+import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
@@ -93,6 +95,14 @@ public class ScreensManager {
                 INSTANCE = new ScreensManager();
             return INSTANCE;
         }
+    }
+
+    public void clearShareIds() {
+        setTempShareStatus(false);
+        setTempShareStoryId(0);
+        setTempShareId(null);
+        setOldTempShareStoryId(0);
+        setOldTempShareId(null);
     }
 
     public static long created = 0;
@@ -140,8 +150,8 @@ public class ScreensManager {
         this.tempShareStoryId = tempShareStoryId;
     }
 
-
     public BaseReaderScreen currentScreen;
+    public OverlapFragmentObserver overlapFragmentObserver;
 
     public void closeStoryReader(int action) {
         if (currentScreen != null)
@@ -196,40 +206,81 @@ public class ScreensManager {
         return gameObservables.get(id);
     }
 
+    public void cleanOverlapFragmentObserver() {
+        this.overlapFragmentObserver = null;
+    }
+
+    public void openOverlapContainerForShare(
+            Context context,
+            OverlapFragmentObserver observer,
+            String slidePayload,
+            int storyId,
+            int slideIndex,
+            IASShareData shareData
+    ) {
+        try {
+            if (!(context instanceof FragmentActivity)) return;
+            this.overlapFragmentObserver = observer;
+            OverlapFragment storiesDialogFragment = new OverlapFragment();
+            storiesDialogFragment.setCancelable(false);
+            Bundle bundle = new Bundle();
+            bundle.putString("slidePayload", slidePayload);
+            bundle.putInt("storyId", storyId);
+            bundle.putInt("slideIndex", slideIndex);
+            bundle.putString("shareData", JsonParser.getJson(shareData));
+            storiesDialogFragment.setArguments(bundle);
+            storiesDialogFragment.show(((FragmentActivity) context).getSupportFragmentManager(),
+                    "OverlapFragment");
+        } catch (IllegalStateException e) {
+            InAppStoryService.createExceptionLog(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void openGameReader(Context context,
-                               int storyId,
-                               int index,
-                               String feedId,
+                               GameStoryData data,
+                               String gameId,
                                String gameUrl,
-                               String preloadPath,
+                               String splashImagePath,
                                String gameConfig,
                                String resources,
-                               Story.StoryType type,
                                String options) {
         if (InAppStoryService.isNull()) {
             return;
         }
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
+        if (data != null) {
+            intent2.putExtra("storyId", Integer.toString(data.storyId));
+            intent2.putExtra("slideIndex", data.slideIndex);
+            intent2.putExtra("slidesCount", data.slidesCount);
+            intent2.putExtra("feedId", data.feedId);
+            intent2.putExtra("storyType", Story.nameFromStoryType(data.type));
+            intent2.putExtra("tags", data.tags);
+            intent2.putExtra("title", data.title);
+            if (CallbackManager.getInstance().getGameCallback() != null) {
+                CallbackManager.getInstance().getGameCallback().startGame(
+                        data.storyId,
+                        StringsUtils.getNonNull(data.title),
+                        StringsUtils.getNonNull(data.tags),
+                        data.slidesCount,
+                        data.slideIndex
+                );
+            }
+            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                CallbackManager.getInstance().getGameReaderCallback().startGame(
+                        data, gameId
+                );
+            }
+        }
 
-        intent2.putExtra("storyId", Integer.toString(storyId));
-        intent2.putExtra("slideIndex", index);
-        intent2.putExtra("feedId", feedId);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, type);
-        intent2.putExtra("tags", story.tags);
         intent2.putExtra("options", options);
-        intent2.putExtra("slidesCount", story.getSlidesCount());
-        intent2.putExtra("title", story.statTitle);
+        intent2.putExtra("gameId", gameId);
         intent2.putExtra("gameConfig", gameConfig);
         intent2.putExtra("gameResources", resources);
-        intent2.putExtra("preloadPath", preloadPath != null ? preloadPath : "");
-        CsEventBus.getDefault().post(new StartGame(storyId, story.statTitle, story.tags,
-                story.getSlidesCount(), index));
-        if (CallbackManager.getInstance().getGameCallback() != null) {
-            CallbackManager.getInstance().getGameCallback().startGame(storyId, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index);
-        }
+        intent2.putExtra("splashImagePath", splashImagePath != null ? splashImagePath : "");
+
         if (Sizes.isTablet()) {
             if (currentScreen != null) {
                 String observableUID = randomUUID().toString();
@@ -257,13 +308,19 @@ public class ScreensManager {
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, int firstAction, Integer slideIndex,
                                   String feed, String feedId, Story.StoryType type) {
+
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && outerContext instanceof Activity) {
+            if (((Activity) outerContext).isInMultiWindowMode()) {
+                Toast.makeText(outerContext, "Unsupported in split mode", Toast.LENGTH_LONG).show();
+                //  return;
+            }
+        }*/
         if (System.currentTimeMillis() - lastOpenTry < 1000) {
             return;
         }
         lastOpenTry = System.currentTimeMillis();
         closeGameReader();
         closeUGCEditor();
-
         if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
             closeStoryReader(CloseStory.CUSTOM);
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
@@ -302,6 +359,10 @@ public class ScreensManager {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                } else {
+                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
+                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
+                    bundle.putSerializable(CS_TIMER_GRADIENT, defaultGradient);
                 }
             }
             storiesDialogFragment.setArguments(bundle);
@@ -358,9 +419,19 @@ public class ScreensManager {
                 intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
                 intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
                 intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius());
                 intent2.putExtra(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
+                if (manager.csTimerGradient() != null) {
+                    try {
+                        intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
+                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
+                    intent2.putExtra(CS_TIMER_GRADIENT, defaultGradient);
+                }
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

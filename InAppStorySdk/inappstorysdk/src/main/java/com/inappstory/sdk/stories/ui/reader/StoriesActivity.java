@@ -20,7 +20,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -38,7 +37,6 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -52,8 +50,6 @@ import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrame
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 import com.inappstory.sdk.utils.StringsUtils;
-
-import java.util.Set;
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -246,10 +242,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
-                CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.statTitle, story.tags, story.getSlidesCount(),
-                        story.lastIndex, CloseStory.CUSTOM,
-                        getIntent().getIntExtra("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
@@ -298,8 +290,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     Story.StoryType type = Story.StoryType.COMMON;
 
-    public void shareComplete() {
-        storiesFragment.readerManager.shareComplete();
+    public void shareComplete(boolean shared) {
+        storiesFragment.readerManager.shareComplete(shared);
     }
 
     @Override
@@ -490,10 +482,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
-                CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.statTitle, story.tags, story.getSlidesCount(),
-                        story.lastIndex, action,
-                        getIntent().getIntExtra("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,

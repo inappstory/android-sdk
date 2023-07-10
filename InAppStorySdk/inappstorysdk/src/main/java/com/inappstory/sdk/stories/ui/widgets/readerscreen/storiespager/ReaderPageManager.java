@@ -4,15 +4,13 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outerevents.CallToAction;
-import com.inappstory.sdk.stories.outerevents.ClickOnButton;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -36,6 +34,9 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
+    public void unlockShareButton() {
+        buttonsPanelManager.unlockShareButton();
+    }
 
     public void removeStoryFromFavorite() {
         if (checkIfManagersIsNull()) return;
@@ -140,22 +141,15 @@ public class ReaderPageManager {
         StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         if (object != null) {
 
-            int cta = CallToAction.BUTTON;
             ClickAction action = ClickAction.BUTTON;
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                     storyId, getStoryType()
             );
             switch (object.getLink().getType()) {
                 case "url":
-                    if (story != null) {
-                        CsEventBus.getDefault().post(new ClickOnButton(story.id, story.statTitle,
-                                story.tags, story.getSlidesCount(), story.lastIndex,
-                                object.getLink().getTarget()));
-                    }
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         switch (object.getType()) {
                             case "swipeUpLink":
-                                cta = CallToAction.SWIPE;
                                 action = ClickAction.SWIPE;
                                 break;
                             default:
@@ -163,9 +157,6 @@ public class ReaderPageManager {
                         }
                     }
                     if (story != null) {
-                        CsEventBus.getDefault().post(new CallToAction(story.id, story.statTitle,
-                                story.tags, story.getSlidesCount(), story.lastIndex,
-                                object.getLink().getTarget(), cta));
                         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                             CallbackManager.getInstance().getCallToActionCallback().callToAction(
                                     story.id, StringsUtils.getNonNull(story.statTitle),
@@ -436,6 +427,15 @@ public class ReaderPageManager {
     }
 
     ReaderManager parentManager;
+
+    public void showShareView(InnerShareData shareData) {
+        if (parentManager != null) {
+
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
+            if (story != null)
+                parentManager.showShareView(shareData, storyId, slideIndex);
+        }
+    }
 
     public void sendShowStoryEvents(int storyId) {
         if (parentManager != null) {

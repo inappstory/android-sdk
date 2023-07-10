@@ -5,9 +5,9 @@ import android.os.Handler;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
 import java.lang.reflect.Type;
@@ -149,7 +149,6 @@ public class OldStatisticManager {
                 sendingStatistic.addAll(statistic);
                 statistic.clear();
 
-                //   CsEventBus.getDefault().post(new DebugEvent(statistic.toString()));
                 final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
                 NetworkClient.getApi().sessionUpdate(
                         new StatisticSendObject(Session.getInstance().id,

@@ -13,6 +13,8 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 
+import org.brotli.dec.BrotliInputStream;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 public final class NetworkHandler implements InvocationHandler {
     /**
@@ -70,35 +73,33 @@ public final class NetworkHandler implements InvocationHandler {
         requestLog.url = url.toString();
         requestLog.timestamp = System.currentTimeMillis();
         requestLog.id = requestId;
+
         if (req.getHeaders() != null) {
             for (Object key : req.getHeaders().keySet()) {
-                requestLog.headers.add(new ApiLogRequestHeader(key.toString(), req.getHeader(key)));
+                // requestLog.headers.add(new ApiLogRequestHeader(key.toString(), req.getHeader(key)));
                 connection.setRequestProperty(key.toString(), req.getHeader(key));
             }
         }
         if (InAppStoryService.getInstance() != null && InAppStoryService.getInstance().getUserId() != null) {
             connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
-            requestLog.headers.add(
-                    new ApiLogRequestHeader("X-User-id", InAppStoryService.getInstance().getUserId()));
-        }
-        connection.setRequestProperty("X-Request-ID", randomUUID().toString());
-        requestLog.headers.add(
-                new ApiLogRequestHeader("X-Request-ID", connection.getRequestProperty("X-Request-ID")));
 
+        }
+        connection.setRequestProperty("Accept-Encoding", "br, gzip");
+        connection.setRequestProperty("X-Request-ID", randomUUID().toString());
         if (req.isFormEncoded()) {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            requestLog.headers.add(
-                    new ApiLogRequestHeader("Content-Type", "application/x-www-form-urlencoded"));
         }
         if (!sessionKill && !Session.needToUpdate() && !req.getUrl().contains("session/open")) {
             connection.setRequestProperty("auth-session-id", Session.getInstance().id);
-
-            requestLog.headers.add(
-                    new ApiLogRequestHeader("auth-session-id", Session.getInstance().id));
         }
 
 
         InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getRequestProperties().toString());
+
+        for (Map.Entry<String, List<String>> entry : connection.getRequestProperties().entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null && !entry.getValue().isEmpty())
+                requestLog.headers.add(new ApiLogRequestHeader(entry.getKey(), entry.getValue().get(0)));
+        }
         if (!req.getMethod().equals(GET) && !req.getMethod().equals(HEAD) && !req.getBody().isEmpty()) {
             InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + req.getBody());
             requestLog.body = req.getBody();
@@ -121,25 +122,33 @@ public final class NetworkHandler implements InvocationHandler {
         } else {
             InAppStoryManager.sendApiRequestLog(requestLog);
         }
+
         int statusCode = connection.getResponseCode();
         Response respObject = null;
         InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getURL().toString() + " \nStatus Code: " + statusCode);
         //apiLog.duration = System.currentTimeMillis() - start;
         long contentLength = 0;
-
+        String decompression = null;
+        HashMap<String, String> responseHeaders = getHeaders(connection);
+        if (responseHeaders.containsKey("Content-Encoding")) {
+            decompression = responseHeaders.get("Content-Encoding");
+        }
+        if (responseHeaders.containsKey("content-encoding")) {
+            decompression = responseHeaders.get("content-encoding");
+        }
         if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
-            String res = getResponseFromStream(connection.getInputStream());
+            String res = getResponseFromStream(connection.getInputStream(), decompression);
             contentLength = res.length();
             InAppStoryManager.showDLog("InAppStory_Network", requestId + " Response: " + res);
 
             respObject = new Response.Builder().contentLength(contentLength).
-                    headers(getHeaders(connection)).code(statusCode).body(res).build();
+                    headers(responseHeaders).code(statusCode).body(res).build();
         } else {
-            String res = getResponseFromStream(connection.getErrorStream());
+            String res = getResponseFromStream(connection.getErrorStream(), decompression);
             contentLength = res.length();
             InAppStoryManager.showDLog("InAppStory_Network", requestId + " Error: " + res);
             respObject = new Response.Builder().contentLength(contentLength).
-                    headers(getHeaders(connection)).code(statusCode).errorBody(res).build();
+                    headers(responseHeaders).code(statusCode).errorBody(res).build();
         }
         ApiLogResponse responseLog = new ApiLogResponse();
         responseLog.id = requestId;
@@ -156,8 +165,23 @@ public final class NetworkHandler implements InvocationHandler {
     }
 
     //Test
-    public static String getResponseFromStream(InputStream inputStream) throws Exception {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+    public static String getResponseFromStream(InputStream inputStream, String decompression) throws Exception {
+        BufferedReader bufferedReader;
+        if (decompression != null) {
+            switch (decompression) {
+                case "br":
+                    bufferedReader = new BufferedReader(new InputStreamReader(new BrotliInputStream(inputStream)));
+                    break;
+                case "gzip":
+                    bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
+                    break;
+                default:
+                    bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            }
+        } else {
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        }
+
         String inputLine;
         StringBuffer response = new StringBuffer();
         while ((inputLine = bufferedReader.readLine()) != null) {
@@ -167,7 +191,7 @@ public final class NetworkHandler implements InvocationHandler {
         return response.toString();
     }
 
-    private static HashMap<String, String> getHeaders(@NonNull final HttpURLConnection connection) {
+    public static HashMap<String, String> getHeaders(@NonNull final HttpURLConnection connection) {
         final HashMap<String, String> headers = new HashMap<>();
         for (final Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
             final String key = header.getKey();

@@ -6,7 +6,7 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -58,8 +58,6 @@ public class ReaderManager {
         lastSentId = storyId;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, storyType);
         if (story != null) {
-            CsEventBus.getDefault().post(new ShowStory(story.id, story.statTitle, story.tags,
-                    story.getSlidesCount(), source, latestShowStoryAction));
             if (CallbackManager.getInstance().getShowStoryCallback() != null) {
                 CallbackManager.getInstance().getShowStoryCallback().showStory(story.id, StringsUtils.getNonNull(story.statTitle),
                         StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
@@ -111,6 +109,18 @@ public class ReaderManager {
         if (subscribers == null) return;
         for (ReaderPageManager subscriber : subscribers) {
             subscriber.removeStoryFromFavorite();
+        }
+    }
+
+    public void showShareView(InnerShareData shareData,
+                              int storyId, int slideIndex) {
+        //pause();
+        if (parentFragment != null) {
+            parentFragment.showShareView(shareData, storyId, slideIndex);
+        } else {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service != null)
+                service.isShareProcess(false);
         }
     }
 
@@ -330,11 +340,16 @@ public class ReaderManager {
         StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
     }
 
-    public void shareComplete() {
-        ScreensManager.getInstance().setTempShareStatus(true);
+    public void shareComplete(boolean shared) {
+        ScreensManager.getInstance().setTempShareStatus(shared);
     }
 
     void resumeWithShareId() {
+        synchronized (subscribers) {
+            for (ReaderPageManager pageManager : subscribers) {
+                pageManager.unlockShareButton();
+            }
+        }
         if (ScreensManager.getInstance().getOldTempShareId() != null) {
             ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId());
             if (rm != null) {
@@ -342,21 +357,13 @@ public class ReaderManager {
                         true);
             }
         } else if (ScreensManager.getInstance().getTempShareId() != null) {
-            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId());
+            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getTempShareStoryId());
             if (rm != null) {
                 rm.shareComplete("" + ScreensManager.getInstance().getTempShareId(),
                         ScreensManager.getInstance().getTempShareStatus());
             }
         }
-        ScreensManager.getInstance().setTempShareStatus(false);
-        ScreensManager.getInstance().setTempShareStoryId(0);
-        ScreensManager.getInstance().setTempShareId(null);
-        ScreensManager.getInstance().setOldTempShareStoryId(0);
-        ScreensManager.getInstance().setOldTempShareId(null);
-    }
-
-    void saveShareId() {
-
+        ScreensManager.getInstance().clearShareIds();
     }
 
     public int getCurrentStoryId() {

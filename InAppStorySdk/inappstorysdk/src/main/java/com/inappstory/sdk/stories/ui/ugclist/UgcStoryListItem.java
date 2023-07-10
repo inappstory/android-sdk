@@ -61,11 +61,11 @@ public class UgcStoryListItem extends BaseStoryListItem {
             View container = v.findViewById(R.id.container);
             if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
                     && manager.csListItemInterface().getVideoView() == null)) {
-                if (manager.getRealHeight() != null) {
-                    container.getLayoutParams().height = manager.getRealHeight();
+                if (manager.getRealHeight(itemView.getContext()) != null) {
+                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
                 }
-                if (manager.getRealWidth() != null) {
-                    container.getLayoutParams().width = manager.getRealWidth();
+                if (manager.getRealWidth(itemView.getContext()) != null) {
+                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
@@ -96,11 +96,11 @@ public class UgcStoryListItem extends BaseStoryListItem {
                     && manager.csListItemInterface().getVideoView() == null)) {
 
                 View container = v.findViewById(R.id.container);
-                if (manager.getRealHeight() != null) {
-                    container.getLayoutParams().height = manager.getRealHeight();
+                if (manager.getRealHeight(itemView.getContext()) != null) {
+                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
                 }
-                if (manager.getRealWidth() != null) {
-                    container.getLayoutParams().width = manager.getRealWidth();
+                if (manager.getRealWidth(itemView.getContext()) != null) {
+                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);

@@ -28,8 +28,8 @@ public class StoriesGradientObject implements Serializable {
     public List<Float> csLocations = new ArrayList<>();
 
     public StoriesGradientObject() {
+        csColors.add(Color.parseColor("#20000000"));
         csColors.add(Color.parseColor("#00000000"));
-        csColors.add(Color.parseColor("#50000000"));
         csLocations.add(0f);
         csLocations.add(1f);
     }

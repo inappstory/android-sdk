@@ -12,7 +12,6 @@ import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-
 import java.util.HashMap;
 
 public class BothSideViewPager extends ViewPager {
@@ -187,7 +186,7 @@ public class BothSideViewPager extends ViewPager {
         super.clearOnPageChangeListeners();
         mPageChangeListeners.clear();
     }
-
+    
     private class SidesPageChangeListener implements OnPageChangeListener {
 
         private final OnPageChangeListener mListener;

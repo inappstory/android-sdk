@@ -18,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.lrudiskcache.Utils;
@@ -290,7 +289,6 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
     @Override
     public void onLoaded() {
         isVideoLoaded = true;
-        CsEventBus.getDefault().post(new CheckGeneratorEvent());
     }
 
     @Override

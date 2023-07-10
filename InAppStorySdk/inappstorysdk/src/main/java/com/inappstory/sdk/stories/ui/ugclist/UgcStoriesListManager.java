@@ -6,11 +6,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
-import com.inappstory.sdk.stories.ui.list.StoriesList;
-
-import java.util.List;
 
 class UgcStoriesListManager implements ListManager {
 

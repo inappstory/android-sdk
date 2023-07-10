@@ -1,25 +1,9 @@
 package com.inappstory.sdk.stories.ui.reader;
 
 import static com.inappstory.sdk.AppearanceManager.ANIMATION_CUBE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
-import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -46,13 +30,11 @@ import androidx.lifecycle.Observer;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
-import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -91,10 +73,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
 
             if (story != null) {
-                CsEventBus.getDefault().post(new CloseStory(story.id,
-                        story.statTitle, story.tags, story.getSlidesCount(),
-                        story.lastIndex, CloseStory.CLICK,
-                        getArguments().getInt("source", 0)));
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             story.id,
@@ -173,8 +151,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     @Override
-    public void shareComplete() {
-
+    public void shareComplete(boolean shared) {
+        storiesFragment.readerManager.shareComplete(shared);
     }
 
     @Override

@@ -15,6 +15,8 @@ public class SessionResponse {
     @SerializedName("server_timestamp")
     public Long serverTimestamp;
 
+    @SerializedName("preview_aspect_ratio")
+    public float previewAspectRatio;
     public SessionEditor editor;
     @SerializedName("cache")
     public List<CacheFontObject> cachedFonts;
@@ -28,6 +30,10 @@ public class SessionResponse {
     @SerializedName("is_allow_crash")
     public Boolean isAllowCrash;
 
+    public float getPreviewAspectRatio() {
+        if (previewAspectRatio > 0) return previewAspectRatio;
+        return 1f;
+    }
 
     @SerializedName("placeholders")
     public List<StoryPlaceholder> placeholders;

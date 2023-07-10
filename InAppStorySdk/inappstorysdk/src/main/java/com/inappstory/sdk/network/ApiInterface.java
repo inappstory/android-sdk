@@ -2,9 +2,6 @@ package com.inappstory.sdk.network;
 
 
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.ui.ugclist.UgcPayload;
-
-import java.util.HashMap;
 
 /**
  * InAppStory API. Contains all request
@@ -23,6 +20,11 @@ public interface ApiInterface {
             @Path("id") String id,
             @Query("src_list") Integer srcList,
             @Query("expand") String expand
+    );
+
+    @POST("v2/game/{id}/launch")
+    Request getGameByInstanceId(
+            @Path("id") String id
     );
 
     @GET("v2/story")

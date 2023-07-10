@@ -9,17 +9,14 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 public class GameJSInterface {
     Context mContext;
-    int lindex;
-    String storyId;
     GameManager manager;
 
 
     /**
      * Instantiate the interface and set the context
      */
-    GameJSInterface(Context c, int lindex, String storyId, GameManager gameManager) {
-        this.lindex = lindex;
-        this.storyId = storyId;
+    GameJSInterface(Context c, GameManager gameManager) {
+
         mContext = c;
         this.manager = gameManager;
     }

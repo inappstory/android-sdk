@@ -7,8 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatTextView;
 
-import com.inappstory.sdk.eventbus.CsEventBus;
-
 public class GeneratedTextView extends AppCompatTextView implements GeneratedViewCallback {
 
     boolean isLoaded;
@@ -28,8 +26,6 @@ public class GeneratedTextView extends AppCompatTextView implements GeneratedVie
     @Override
     public void onLoaded() {
         isLoaded = true;
-
-        CsEventBus.getDefault().post(new CheckGeneratorEvent());
     }
 
     @Override

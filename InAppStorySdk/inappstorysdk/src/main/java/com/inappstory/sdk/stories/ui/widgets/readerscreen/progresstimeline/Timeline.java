@@ -85,7 +85,6 @@ public class Timeline extends LinearLayout {
                 setSlideDuration(i);
             }
         }
-        Log.e("durations", durations.toString());
     }
 
     private void checkTimelineVisibility() {

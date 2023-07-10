@@ -7,8 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import com.inappstory.sdk.eventbus.CsEventBus;
-
 public class GeneratedImageView extends AppCompatImageView implements GeneratedViewCallback {
     boolean isLoaded;
 
@@ -28,7 +26,6 @@ public class GeneratedImageView extends AppCompatImageView implements GeneratedV
     @Override
     public void onLoaded() {
         isLoaded = true;
-        CsEventBus.getDefault().post(new CheckGeneratorEvent());
     }
 
     @Override

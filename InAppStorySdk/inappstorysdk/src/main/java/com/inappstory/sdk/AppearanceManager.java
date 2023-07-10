@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
@@ -222,17 +223,32 @@ public class AppearanceManager {
     private boolean csCloseOnOverscroll = true;
 
 
-    public Integer getRealWidth() {
-        if (csListItemHeight == null) return null;
-        if (csColumnCount == null) {
-            if (csListItemRatio == null) {
-                return csListItemWidth;
-            } else {
-                return (int)(csListItemHeight * csListItemRatio);
-            }
-        } else {
+    public Integer getRealWidth(Context context) {
+        if (csColumnCount != null && csColumnCount > 0) {
             return getScaledWidth();
+        } else {
+            if (csListItemWidth != null && csListItemWidth > 0)
+                return csListItemWidth;
+            float ratio = getCurrentRatio(context);
+            if (csListItemHeight != null && csListItemHeight > 0) {
+                return (int) (csListItemHeight * ratio);
+            } else {
+                return (int) (Sizes.dpToPxExt(120, context) * ratio);
+            }
         }
+    }
+
+    private float getCurrentRatio(Context context) {
+        if (csListItemHeight != null
+                && csListItemWidth != null
+                && csListItemHeight > 0
+                && csListItemWidth > 0
+        )
+            return 1f * csListItemHeight / csListItemWidth;
+        if (csListItemRatio != null && csListItemRatio > 0) return csListItemRatio;
+        CachedSessionData sessionData = CachedSessionData.getInstance(context);
+        if (sessionData != null) return sessionData.previewAspectRatio;
+        return 1f;
     }
 
     private int getScaledWidth() {
@@ -240,15 +256,17 @@ public class AppearanceManager {
                 (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
     }
 
-    public Integer getRealHeight() {
-        if (csListItemHeight == null) return null;
-        if (csColumnCount == null) {
-            return csListItemHeight;
+    public Integer getRealHeight(Context context) {
+        float ratio = getCurrentRatio(context);
+        if (csColumnCount != null && csColumnCount > 0) {
+            return (int) (getScaledWidth() / ratio);
         } else {
-            if (csListItemRatio == null) {
-                return (int) (getScaledWidth() * csListItemHeight / csListItemWidth);
+            if (csListItemHeight != null && csListItemHeight > 0)
+                return csListItemHeight;
+            if (csListItemWidth != null && csListItemWidth > 0) {
+                return (int) (csListItemWidth / ratio);
             } else {
-                return (int) (getScaledWidth() / csListItemRatio);
+                return Sizes.dpToPxExt(120, context);
             }
         }
     }
@@ -291,7 +309,6 @@ public class AppearanceManager {
     public Integer csColumnCount() {
         return csColumnCount;
     }
-
 
 
     public AppearanceManager csTimerGradient(StoriesGradientObject csTimerGradient) {
@@ -1008,7 +1025,6 @@ public class AppearanceManager {
     public int csStoryReaderAnimation() {
         return csStoryReaderAnimation;
     }
-
 
 
     public boolean csIsDraggable() {

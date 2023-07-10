@@ -13,6 +13,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.NetworkHandler;
+import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
@@ -83,6 +85,7 @@ public class JsApiNetwork {
             connection.setRequestProperty("X-User-id", InAppStoryService.getInstance().getUserId());
         connection.setRequestProperty("auth-session-id", Session.getInstance().id);
 
+        connection.setRequestProperty("Accept-Encoding", "br, gzip");
         boolean hasBody = !method.equals(GET) && body != null && !body.isEmpty();
         if (hasBody) {
             connection.setRequestProperty("Content-Type", "application/json");
@@ -133,19 +136,43 @@ public class JsApiNetwork {
             response.headers = jheaders.toString();
         }
         String respBody = null;
+
+        String decompression = null;
+        HashMap<String, String> responseHeaders = NetworkHandler.getHeaders(connection);
+        if (responseHeaders.containsKey("Content-Encoding")) {
+            decompression = responseHeaders.get("Content-Encoding");
+        }
+        if (responseHeaders.containsKey("content-encoding")) {
+            decompression = responseHeaders.get("content-encoding");
+        }
+        Response respObject = null;
+        long contentLength = 0;
+        String res = "";
+        if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
+            res = getResponseFromStream(connection.getInputStream(), decompression);
+            contentLength = res.length();
+            InAppStoryManager.showDLog("InAppStory_Network", requestId + " Response: " + res);
+
+            respObject = new Response.Builder().contentLength(contentLength).
+                    headers(responseHeaders).code(statusCode).body(res).build();
+        } else {
+            res = getResponseFromStream(connection.getErrorStream(), decompression);
+            contentLength = res.length();
+            InAppStoryManager.showDLog("InAppStory_Network", requestId + " Error: " + res);
+            respObject = new Response.Builder().contentLength(contentLength).
+                    headers(responseHeaders).code(statusCode).errorBody(res).build();
+        }
+
         ApiLogResponse responseLog = new ApiLogResponse();
         responseLog.id = logRequestId;
         responseLog.timestamp = System.currentTimeMillis();
         responseLog.contentLength = connection.getContentLength();
-        try {
-            respBody = getResponseFromStream(connection.getInputStream());
-            responseLog.generateJsonResponse(response.status, respBody, logHeaders);
-        } catch (IOException e) {
-            InAppStoryService.createExceptionLog(e);
-            respBody = getResponseFromStream(connection.getErrorStream());
-            responseLog.generateError(response.status, respBody, logHeaders);
+        if (respObject.body != null) {
+            responseLog.generateJsonResponse(respObject.code, respObject.body, respObject.headers);
+        } else {
+            responseLog.generateError(respObject.code, respObject.errorBody, respObject.headers);
         }
-        response.data = respBody;
+        response.data = res;
         connection.disconnect();
         InAppStoryManager.sendApiResponseLog(responseLog);
         return response;

@@ -9,24 +9,20 @@ import android.os.Looper;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
+import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.share.JSShareModel;
-import com.inappstory.sdk.share.ShareManager;
-import com.inappstory.sdk.stories.api.models.PayloadTypes;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.NoConnectionEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
-import com.inappstory.sdk.stories.outerevents.ShowSlide;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -197,7 +193,6 @@ public class StoriesViewManager {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().noConnection();
                 }
-                CsEventBus.getDefault().post(new NoConnectionEvent(NoConnectionEvent.READER));
                 return;
             }
             pageManager.storyLoadStart();
@@ -326,26 +321,30 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        JSShareModel shareObj = JsonParser.fromJson(data, JSShareModel.class);
-        if (CallbackManager.getInstance().getShareCallback() != null) {
-            CallbackManager.getInstance().getShareCallback()
-                    .onShare(StringsUtils.getNonNull(shareObj.getText()),
-                            StringsUtils.getNonNull(shareObj.getTitle()),
-                            StringsUtils.getNonNull(data),
-                            StringsUtils.getNonNull(id)
-                    );
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || service.isShareProcess())
+            return;
+        service.isShareProcess(true);
+        InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            ScreensManager.getInstance().setTempShareId(id);
+            ScreensManager.getInstance().setTempShareStoryId(storyId);
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                ScreensManager.getInstance().setTempShareId(id);
-                ScreensManager.getInstance().setTempShareStoryId(storyId);
-            } else {
-                ScreensManager.getInstance().setOldTempShareId(id);
-                ScreensManager.getInstance().setOldTempShareStoryId(storyId);
-            }
-            if (storiesView.getContext() instanceof Activity) {
-                new ShareManager().shareDefault((Activity) storiesView.getContext(), shareObj);
-            }
+            ScreensManager.getInstance().setOldTempShareId(id);
+            ScreensManager.getInstance().setOldTempShareStoryId(storyId);
         }
+        Story story = InAppStoryService.getInstance() != null ?
+                InAppStoryService.getInstance().getDownloadManager()
+                        .getStoryById(storyId, pageManager.getStoryType()) : null;
+        if (story != null && shareData != null) {
+            shareData.payload = story.getSlideEventPayload(index);
+            pageManager.parentManager.showShareView(
+                    shareData, storyId, index
+            );
+        } else {
+            service.isShareProcess(false);
+        }
+
     }
 
     public void storyStartedEvent() {
@@ -373,11 +372,45 @@ public class StoriesViewManager {
         pageManager.prevStory(ShowStory.ACTION_CUSTOM);
     }
 
-    public void openGameReader(String gameUrl, String preloadPath, String gameConfig, String resources, String options) {
+    public void openGameReaderFromGameCenter(String gameId) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && context != null) {
+            service.downloadGame(context, gameId, getGameStoryData(), null);
+        }
+    }
+
+    private GameStoryData getGameStoryData() {
+        GameStoryData data = null;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && service.getDownloadManager() != null) {
+            Story.StoryType type = pageManager != null ? pageManager.getStoryType() : Story.StoryType.COMMON;
+            Story story = service.getDownloadManager().getStoryById(storyId, type);
+            if (story != null) {
+                data = new GameStoryData(
+                        story.id,
+                        story.lastIndex,
+                        story.slidesCount,
+                        story.statTitle,
+                        story.tags,
+                        pageManager != null ? pageManager.getFeedId() : null,
+                        type
+                );
+            }
+        }
+        return data;
+    }
+    public void openGameReaderWithoutGameCenter(String gameUrl, String splashScreenPath, String gameConfig, String resources, String options) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
-        ScreensManager.getInstance().openGameReader(context, storyId, index,
-                pageManager != null ? pageManager.getFeedId() : null, gameUrl,
-                preloadPath, gameConfig, resources, pageManager.getStoryType(), options);
+        ScreensManager.getInstance().openGameReader(
+                context,
+                getGameStoryData(),
+                null,
+                gameUrl,
+                splashScreenPath,
+                gameConfig,
+                resources,
+                options
+        );
     }
 
     private boolean storyIsLoaded = false;
@@ -409,13 +442,11 @@ public class StoriesViewManager {
     public void sendShowSlideEvents() {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
-            CsEventBus.getDefault().post(new ShowSlide(story.id, story.statTitle,
-                    story.tags, story.getSlidesCount(), index));
             ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
             if (showSlideCallback != null) {
                 showSlideCallback.showSlide(story.id, StringsUtils.getNonNull(story.statTitle),
                         StringsUtils.getNonNull(story.tags), story.getSlidesCount(), index,
-                        story.getSlideEventPayload(PayloadTypes.SHOW_SLIDE, index));
+                        story.getSlideEventPayload(index));
             }
         }
     }

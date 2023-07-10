@@ -266,6 +266,7 @@ public class JsonParser {
     }
 
     public static String getJson(Object instance) throws Exception {
+        if (instance == null) return null;
         if (instance instanceof List || instance instanceof ArrayList) {
             JSONArray arr = new JSONArray();
             for (int i = 0; i < ((List) instance).size(); i++) {

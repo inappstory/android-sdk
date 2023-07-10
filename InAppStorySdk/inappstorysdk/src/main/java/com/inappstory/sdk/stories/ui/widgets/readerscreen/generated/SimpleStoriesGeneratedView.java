@@ -15,8 +15,6 @@ import android.widget.RelativeLayout;
 import androidx.core.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsSubscribe;
-import com.inappstory.sdk.eventbus.CsThreadMode;
 import com.inappstory.sdk.stories.api.models.slidestructure.Element;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -56,7 +54,6 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         });
     }
 
-    @CsSubscribe(threadMode = CsThreadMode.MAIN)
     public void checkGenerator(CheckGeneratorEvent event) {
         for (View v : temp2) {
             if (v instanceof GeneratedViewCallback && !((GeneratedViewCallback) v).isLoaded())

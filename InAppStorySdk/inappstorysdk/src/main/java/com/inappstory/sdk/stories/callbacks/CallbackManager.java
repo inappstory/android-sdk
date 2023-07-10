@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.callbacks;
 
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -26,8 +27,12 @@ public class CallbackManager {
     }
 
 
+    @Deprecated
     public GameCallback getGameCallback() {
         return gameCallback;
+    }
+    public GameReaderCallback getGameReaderCallback() {
+        return gameReaderCallback;
     }
 
     public OnboardingLoadCallback getOnboardingLoadCallback() {
@@ -37,6 +42,7 @@ public class CallbackManager {
     public CallToActionCallback getCallToActionCallback() {
         return callToActionCallback;
     }
+
     public StoryWidgetCallback getStoryWidgetCallback() {
         return storyWidgetCallback;
     }
@@ -118,6 +124,8 @@ public class CallbackManager {
 
     private ErrorCallback errorCallback;
     private GameCallback gameCallback;
+
+    private GameReaderCallback gameReaderCallback;
     private OnboardingLoadCallback onboardingLoadCallback;
     private StoryWidgetCallback storyWidgetCallback;
 
@@ -142,6 +150,9 @@ public class CallbackManager {
 
     public void setGameCallback(GameCallback gameCallback) {
         this.gameCallback = gameCallback;
+    }
+    public void setGameReaderCallback(GameReaderCallback gameReaderCallback) {
+        this.gameReaderCallback = gameReaderCallback;
     }
 
     public void setOnboardingLoadCallback(OnboardingLoadCallback onboardingLoadCallback) {
@@ -207,13 +218,14 @@ public class CallbackManager {
         this.appClickCallback = appClickCallback;
     }
 
-    public void setShareCallback(ShareCallback shareCallback) {
-        this.shareCallback = shareCallback;
+    public void setShareCallback(ShareCallback readerTopContainerCallback) {
+        this.shareCallback = readerTopContainerCallback;
     }
 
     public ShareCallback getShareCallback() {
         return shareCallback;
     }
+
 
 
     public UrlClickCallback getUrlClickCallback() {
@@ -227,6 +239,7 @@ public class CallbackManager {
     private CallbackManager() {
 
     }
+
     private static CallbackManager INSTANCE;
     private static final Object lock = new Object();
 
@@ -237,8 +250,6 @@ public class CallbackManager {
             return INSTANCE;
         }
     }
-
-
 
 
 }

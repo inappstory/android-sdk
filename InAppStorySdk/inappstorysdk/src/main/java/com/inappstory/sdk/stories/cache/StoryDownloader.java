@@ -3,10 +3,8 @@ package com.inappstory.sdk.stories.cache;
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
 
 import android.os.Handler;
-import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.eventbus.CsEventBus;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -21,7 +19,6 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.StoriesErrorEvent;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -217,7 +214,6 @@ class StoryDownloader {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().cacheError();
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.CACHE));
         synchronized (storyTasksLock) {
             if (storyTasks != null)
                 storyTasks.remove(key);
@@ -342,7 +338,6 @@ class StoryDownloader {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError(StringsUtils.getNonNull(feed));
         }
-        CsEventBus.getDefault().post(new StoriesErrorEvent(StoriesErrorEvent.LOAD_LIST, feed));
     }
 
     private static final String UGC_FEED = "UGC";

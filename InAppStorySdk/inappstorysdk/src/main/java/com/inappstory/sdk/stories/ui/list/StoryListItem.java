@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -63,11 +64,11 @@ public class StoryListItem extends BaseStoryListItem {
             View container = v.findViewById(R.id.container);
             if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
                     && manager.csListItemInterface().getVideoView() == null)) {
-                if (manager.getRealHeight() != null) {
-                    container.getLayoutParams().height = manager.getRealHeight();
+                if (manager.getRealHeight(itemView.getContext()) != null) {
+                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
                 }
-                if (manager.getRealWidth() != null) {
-                    container.getLayoutParams().width = manager.getRealWidth();
+                if (manager.getRealWidth(itemView.getContext()) != null) {
+                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
@@ -100,11 +101,11 @@ public class StoryListItem extends BaseStoryListItem {
                     && manager.csListItemInterface().getVideoView() == null)) {
 
                 View container = v.findViewById(R.id.container);
-                if (manager.getRealHeight() != null) {
-                    container.getLayoutParams().height = manager.getRealHeight();
+                if (manager.getRealHeight(itemView.getContext()) != null) {
+                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
                 }
-                if (manager.getRealWidth() != null) {
-                    container.getLayoutParams().width = manager.getRealWidth();
+                if (manager.getRealWidth(itemView.getContext()) != null) {
+                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
@@ -237,7 +238,6 @@ public class StoryListItem extends BaseStoryListItem {
             }
             return;
         }
-
         RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
         cv.setBackgroundColor(Color.TRANSPARENT);
         cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));

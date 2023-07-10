@@ -104,6 +104,11 @@ public class ReaderPageFragment extends Fragment {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) close.getLayoutParams();
             RelativeLayout.LayoutParams storiesProgressViewLP = (RelativeLayout.LayoutParams) timeline.getLayoutParams();
             int cp = readerSettings.closePosition;
+            int viewsMargin = Sizes.dpToPxExt(8);
+            storiesProgressViewLP.leftMargin =
+                    storiesProgressViewLP.rightMargin =
+                            layoutParams.rightMargin = viewsMargin;
+
             switch (cp) {
                 case TOP_RIGHT:
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
@@ -118,12 +123,12 @@ public class ReaderPageFragment extends Fragment {
                 case BOTTOM_RIGHT:
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
-                    storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
-                    layoutParams.topMargin = Sizes.dpToPxExt(8);
+                    storiesProgressViewLP.topMargin = viewsMargin;
+                    layoutParams.topMargin = viewsMargin;
                     break;
                 case BOTTOM_LEFT:
-                    storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
-                    layoutParams.topMargin = Sizes.dpToPxExt(8);
+                    storiesProgressViewLP.topMargin = viewsMargin;
+                    layoutParams.topMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     break;
@@ -140,12 +145,12 @@ public class ReaderPageFragment extends Fragment {
                 case BOTTOM_START:
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
-                    storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
-                    layoutParams.topMargin = Sizes.dpToPxExt(8);
+                    storiesProgressViewLP.topMargin = viewsMargin;
+                    layoutParams.topMargin = viewsMargin;
                     break;
                 case BOTTOM_END:
-                    storiesProgressViewLP.topMargin = Sizes.dpToPxExt(12);
-                    layoutParams.topMargin = Sizes.dpToPxExt(8);
+                    storiesProgressViewLP.topMargin = viewsMargin;
+                    layoutParams.topMargin = viewsMargin;
                     layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
                     layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
                     break;
@@ -386,6 +391,7 @@ public class ReaderPageFragment extends Fragment {
             ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius));
             ((CardView) main).setCardBackgroundColor(Color.TRANSPARENT);
             main.setElevation(0);
+
             RelativeLayout cardContent = new RelativeLayout(context);
             cardContent.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                     CardView.LayoutParams.MATCH_PARENT));
@@ -415,6 +421,7 @@ public class ReaderPageFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             readerContainer.setElevation(9);
         }
+
         // readerContainer.addView(createProgressContainer(context));
         readerContainer.addView(createWebViewContainer(context));
         if (readerSettings.timerGradientEnable)
@@ -493,6 +500,7 @@ public class ReaderPageFragment extends Fragment {
         );
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             gradientView.setElevation(8);
+            gradientView.setOutlineProvider(null);
         }
         gradientView.setClickable(false);
         if (timerGradient != null) {
@@ -538,6 +546,7 @@ public class ReaderPageFragment extends Fragment {
         }
 
         gradientView.setLayoutParams(lp);
+
         relativeLayout.addView(gradientView);
     }
 
@@ -550,7 +559,7 @@ public class ReaderPageFragment extends Fragment {
         tclp.setMargins(offset, offset, offset, 0);
         timelineContainer.setLayoutParams(tclp);
         timelineContainer.setId(R.id.ias_timeline_container);
-        timelineContainer.setMinimumHeight(Sizes.dpToPxExt(40));
+        timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             timelineContainer.setElevation(20);
         }
@@ -558,16 +567,15 @@ public class ReaderPageFragment extends Fragment {
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 Sizes.dpToPxExt(3)));
-        timeline.setPaddingRelative(Sizes.dpToPxExt(8), 0, Sizes.dpToPxExt(8), 0);
 
         close = new AppCompatImageView(context);
         close.setId(R.id.ias_close_button);
-        close.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(40), Sizes.dpToPxExt(40)));
-        close.setPaddingRelative(0, Sizes.dpToPxExt(8), 0, Sizes.dpToPxExt(8));
+        close.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(30), Sizes.dpToPxExt(30)));
         close.setBackground(null);
         close.setImageDrawable(getResources().getDrawable(readerSettings.closeIcon));
         timelineContainer.addView(timeline);
         timelineContainer.addView(close);
+
         return timelineContainer;
     }
 

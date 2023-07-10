@@ -11,6 +11,7 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.network.NetworkHandler;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
@@ -201,6 +202,7 @@ public class Downloader {
 
         URL urlS = new URL(url);
         HttpURLConnection urlConnection = (HttpURLConnection) urlS.openConnection();
+        urlConnection.setRequestProperty("Accept-Encoding", "br, gzip");
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
@@ -219,8 +221,16 @@ public class Downloader {
             if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
             headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
         }
+        String decompression = null;
+        HashMap<String, String> responseHeaders = NetworkHandler.getHeaders(urlConnection);
+        if (responseHeaders.containsKey("Content-Encoding")) {
+            decompression = responseHeaders.get("Content-Encoding");
+        }
+        if (responseHeaders.containsKey("content-encoding")) {
+            decompression = responseHeaders.get("content-encoding");
+        }
         if (status > 350) {
-            String res = getResponseFromStream(urlConnection.getErrorStream());
+            String res = getResponseFromStream(urlConnection.getErrorStream(), decompression);
             apiLogResponse.generateFile(status, res, headers);
             return null;
         }
