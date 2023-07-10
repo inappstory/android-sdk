@@ -268,13 +268,13 @@ public class ScreensManager {
                         data.slideIndex
                 );
             }
-            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-                CallbackManager.getInstance().getGameReaderCallback().startGame(
-                        data, gameId
-                );
-            }
-        }
 
+        }
+        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+            CallbackManager.getInstance().getGameReaderCallback().startGame(
+                    data, gameId
+            );
+        }
         intent2.putExtra("options", options);
         intent2.putExtra("gameId", gameId);
         intent2.putExtra("gameConfig", gameConfig);
