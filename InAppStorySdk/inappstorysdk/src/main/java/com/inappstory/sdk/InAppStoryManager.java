@@ -244,6 +244,10 @@ public class InAppStoryManager {
         }
     }
 
+    public void closeGame() {
+        ScreensManager.getInstance().closeGameReader();
+    }
+
     /**
      * use to force close story reader
      */
