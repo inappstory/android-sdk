@@ -167,7 +167,7 @@ public class Story implements Parcelable {
     }
 
     @SerializedName("has_swipe_up")
-    private Boolean hasSwipeUp;
+    public Boolean hasSwipeUp;
 
     @SerializedName("src_list")
     public List<ResourceMappingObject> srcList;
