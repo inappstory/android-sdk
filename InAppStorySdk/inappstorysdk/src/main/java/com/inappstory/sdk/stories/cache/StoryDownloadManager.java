@@ -425,6 +425,7 @@ public class StoryDownloadManager {
         }
         cur.id = id;
         cur.layout = story.layout;
+        cur.hasAudio = story.hasAudio;
         cur.tags = story.tags;
         cur.hasSwipeUp = story.hasSwipeUp();
         cur.title = story.title;
