@@ -406,8 +406,10 @@ public class InAppStoryManager {
         }
         synchronized (tagsLock) {
             this.tags = tags;
+            clearCachedLists();
         }
     }
+
 
     private final static int TAG_LIMIT = 4000;
 
@@ -432,6 +434,7 @@ public class InAppStoryManager {
             for (String tag : newTags) {
                 addTag(tag);
             }
+            clearCachedLists();
         }
     }
 
@@ -447,6 +450,7 @@ public class InAppStoryManager {
             for (String tag : removedTags) {
                 removeTag(tag);
             }
+            clearCachedLists();
         }
     }
 
@@ -487,6 +491,7 @@ public class InAppStoryManager {
             } else {
                 placeholders.put(key, value);
             }
+
         }
     }
 
@@ -893,15 +898,17 @@ public class InAppStoryManager {
     }
 
     public void clearCachedList(String id) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().listStoriesIds.remove(id);
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null) {
+            inAppStoryService.listStoriesIds.remove(id);
         }
     }
 
 
     public void clearCachedLists() {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().listStoriesIds.clear();
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null) {
+            inAppStoryService.listStoriesIds.clear();
         }
     }
 
