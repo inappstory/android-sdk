@@ -105,7 +105,7 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         parentManager.storyClick();
         if (payload == null || payload.isEmpty()) {
-            int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
+            int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400, host.getContext()));
             if (coordinate >= 0.3 * sz && !isForbidden) {
                 nextSlide(ShowStory.ACTION_TAP);
             } else if (coordinate < 0.3 * sz) {

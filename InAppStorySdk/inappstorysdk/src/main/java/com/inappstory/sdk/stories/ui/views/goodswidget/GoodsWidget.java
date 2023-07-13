@@ -63,12 +63,12 @@ public class GoodsWidget extends RecyclerView {
                                            @NonNull RecyclerView parent,
                                            @NonNull RecyclerView.State state) {
                     int position = parent.getChildAdapterPosition(view);
-                    outRect.left = Sizes.dpToPxExt(8);
-                    outRect.right = Sizes.dpToPxExt(8);
+                    outRect.left = Sizes.dpToPxExt(8, getContext());
+                    outRect.right = Sizes.dpToPxExt(8, getContext());
                     if (position == 0) {
-                        outRect.left = Sizes.dpToPxExt(16);
+                        outRect.left = Sizes.dpToPxExt(16, getContext());
                     } else if (position == adapter.getItemCount() - 1) {
-                        outRect.right = Sizes.dpToPxExt(16);
+                        outRect.right = Sizes.dpToPxExt(16, getContext());
                     }
                 }
             });

@@ -73,7 +73,7 @@ public class StoryListItem extends BaseStoryListItem {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
+            cv.setRadius(Math.max(manager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
@@ -81,7 +81,7 @@ public class StoryListItem extends BaseStoryListItem {
             border = v.findViewById(R.id.border);
             gradient = v.findViewById(R.id.cell_gradient);
             gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
@@ -110,7 +110,7 @@ public class StoryListItem extends BaseStoryListItem {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
+            cv.setRadius(Math.max(manager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
             gradient = v.findViewById(R.id.cell_gradient);
             gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
             title = v.findViewById(R.id.title);
@@ -119,11 +119,11 @@ public class StoryListItem extends BaseStoryListItem {
             video = v.findViewById(R.id.video);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
-            ((GradientDrawable) border.getBackground()).setCornerRadius(manager.csListItemRadius());
+            ((GradientDrawable) border.getBackground()).setCornerRadius(manager.csListItemRadius(itemView.getContext()));
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
@@ -185,7 +185,7 @@ public class StoryListItem extends BaseStoryListItem {
                 v.getLocationOnScreen(location);
                 int x = location[0];
                 int y = location[1];
-                ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
+                ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
                         y + v.getHeight() / 2);
                 if (StoryListItem.this.callback != null)
                     StoryListItem.this.callback.onItemClick(getAbsoluteAdapterPosition());
@@ -240,9 +240,9 @@ public class StoryListItem extends BaseStoryListItem {
         }
         RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
         cv.setBackgroundColor(Color.TRANSPARENT);
-        cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
+        cv.setRadius(Math.max(manager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
         if (border != null)
-            ((GradientDrawable) border.getBackground()).setCornerRadius(manager.csListItemRadius());
+            ((GradientDrawable) border.getBackground()).setCornerRadius(manager.csListItemRadius(itemView.getContext()));
         if (title != null) {
             title.setText(titleText);
             if (titleColor != null) {

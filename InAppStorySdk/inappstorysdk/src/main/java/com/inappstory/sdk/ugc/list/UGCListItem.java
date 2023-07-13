@@ -34,7 +34,7 @@ public class UGCListItem extends BaseStoryListItem {
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_ugc, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
-        cv.setRadius(Math.max(manager.csListItemRadius() - Sizes.dpToPxExt(4), 0));
+        cv.setRadius(Math.max(manager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
         cv.setBackgroundColor(Color.TRANSPARENT);
         View outerLayout = v.findViewById(R.id.outerLayout);
         if (manager.getRealHeight(itemView.getContext()) != null) {
@@ -53,7 +53,7 @@ public class UGCListItem extends BaseStoryListItem {
             int iconId = getNonNullValue(ugcListItemAppearance.csIconId(),
                     R.drawable.ic_new_ugc);
             int iconMargin = getNonNullValue(ugcListItemAppearance.csIconMargin(),
-                    Sizes.dpToPxExt(16));
+                    Sizes.dpToPxExt(16, itemView.getContext()));
             image.setImageDrawable(itemView.getContext().getResources().getDrawable(iconId));
             imageLp.setMargins(iconMargin, iconMargin, iconMargin, iconMargin);
             background.setBackgroundColor(backgroundColor);

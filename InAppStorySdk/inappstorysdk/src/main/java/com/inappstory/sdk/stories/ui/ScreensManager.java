@@ -350,7 +350,7 @@ public class ScreensManager {
                 bundle.putInt(CS_LIKE_ICON, manager.csLikeIcon());
                 bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
-                bundle.putInt(CS_READER_RADIUS, manager.csReaderRadius());
+                bundle.putInt(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
                 bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
                 bundle.putInt(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
                 if (manager.csTimerGradient() != null) {
@@ -419,7 +419,7 @@ public class ScreensManager {
                 intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
                 intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
                 intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius());
+                intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
                 intent2.putExtra(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
                 if (manager.csTimerGradient() != null) {
                     try {

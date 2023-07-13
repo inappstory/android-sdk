@@ -379,7 +379,7 @@ public class StoriesList extends RecyclerView {
                     v.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
+                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, getContext()),
                             y + v.getHeight() / 2);
 
                 }
@@ -505,8 +505,8 @@ public class StoriesList extends RecyclerView {
                 @Override
                 public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
                     super.getItemOffsets(outRect, view, parent, state);
-                    outRect.bottom = appearanceManager.csListItemMargin();
-                    outRect.top = appearanceManager.csListItemMargin();
+                    outRect.bottom = appearanceManager.csListItemMargin(getContext());
+                    outRect.top = appearanceManager.csListItemMargin(getContext());
                 }
             });
         } else

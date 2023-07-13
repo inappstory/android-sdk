@@ -70,13 +70,13 @@ public class UgcStoryListItem extends BaseStoryListItem {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius());
+            cv.setRadius(manager.csListItemRadius(itemView.getContext()));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
@@ -105,18 +105,18 @@ public class UgcStoryListItem extends BaseStoryListItem {
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius());
+            cv.setRadius(manager.csListItemRadius(itemView.getContext()));
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             video = v.findViewById(R.id.video);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize());
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
             source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
             source.setTextColor(manager.csListItemSourceColor());
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius(itemView.getContext())));
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
@@ -228,9 +228,9 @@ public class UgcStoryListItem extends BaseStoryListItem {
 
         RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
         cv.setBackgroundColor(Color.TRANSPARENT);
-        cv.setRadius(manager.csListItemRadius());
+        cv.setRadius(manager.csListItemRadius(itemView.getContext()));
         if (border != null)
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius()));
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius(itemView.getContext())));
         if (title != null) {
             title.setText(titleText);
             if (titleColor != null) {

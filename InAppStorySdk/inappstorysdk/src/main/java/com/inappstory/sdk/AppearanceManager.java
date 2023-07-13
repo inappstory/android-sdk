@@ -207,7 +207,7 @@ public class AppearanceManager {
     private Typeface csCustomSecondaryBoldItalicFont;
 
 
-    private int csListItemMargin = Sizes.dpToPxExt(4);
+    private int csListItemMargin = -1;
     private boolean csShowStatusBar = false;
     private int csClosePosition = BOTTOM_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
     private int csStoryReaderAnimation = ANIMATION_CUBE;
@@ -216,7 +216,7 @@ public class AppearanceManager {
     private StoriesGradientObject csTimerGradient;
     private UGCListItemSimpleAppearance csUGCListItemSimpleAppearance
             = new UGCListItemSimpleAppearance();
-    private int csReaderRadius = Sizes.dpToPxExt(8);
+    private int csReaderRadius = -1;
     private int csCoverQuality;
 
     private boolean csCloseOnSwipe = true;
@@ -297,7 +297,8 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    public int csReaderRadius() {
+    public int csReaderRadius(Context context) {
+        if (csReaderRadius == -1) return Sizes.dpToPxExt(4, context);
         return csReaderRadius;
     }
 
@@ -815,8 +816,8 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    public int csListItemRadius() {
-        if (csListItemRadius == -1) return Sizes.dpToPxExt(16);
+    public int csListItemRadius(Context context) {
+        if (csListItemRadius == -1) return Sizes.dpToPxExt(16, context);
         return csListItemRadius;
     }
 
@@ -955,8 +956,8 @@ public class AppearanceManager {
         return csListItemTitleVisibility;
     }
 
-    public int csListItemTitleSize() {
-        if (csListItemTitleSize == -1) return Sizes.dpToPxExt(14);
+    public int csListItemTitleSize(Context context) {
+        if (csListItemTitleSize == -1) return Sizes.dpToPxExt(14, context);
         return csListItemTitleSize;
     }
 
@@ -1010,7 +1011,8 @@ public class AppearanceManager {
         return csListOpenedItemBorderColor;
     }
 
-    public int csListItemMargin() {
+    public int csListItemMargin(Context context) {
+        if (csListItemMargin == -1) return Sizes.dpToPxExt(4, context);
         return csListItemMargin;
     }
 

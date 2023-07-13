@@ -104,7 +104,7 @@ public class ReaderPageFragment extends Fragment {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) close.getLayoutParams();
             RelativeLayout.LayoutParams storiesProgressViewLP = (RelativeLayout.LayoutParams) timeline.getLayoutParams();
             int cp = readerSettings.closePosition;
-            int viewsMargin = Sizes.dpToPxExt(8);
+            int viewsMargin = Sizes.dpToPxExt(8, getContext());
             storiesProgressViewLP.leftMargin =
                     storiesProgressViewLP.rightMargin =
                             layoutParams.rightMargin = viewsMargin;
@@ -350,7 +350,10 @@ public class ReaderPageFragment extends Fragment {
     private void createRefreshButton(Context context) {
         refresh = new ImageView(context);
         refresh.setId(R.id.ias_refresh_button);
-        RelativeLayout.LayoutParams refreshLp = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(32), Sizes.dpToPxExt(32));
+        RelativeLayout.LayoutParams refreshLp = new RelativeLayout.LayoutParams(
+                Sizes.dpToPxExt(32, getContext()),
+                Sizes.dpToPxExt(32, getContext())
+        );
         refreshLp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             refresh.setElevation(18);
@@ -381,14 +384,14 @@ public class ReaderPageFragment extends Fragment {
         aboveButtonsPanel.setBackgroundColor(Color.BLACK);
         aboveButtonsPanel.setVisibility(View.GONE);
         RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                Sizes.dpToPxExt(readerSettings.radius));
+                Sizes.dpToPxExt(readerSettings.radius, context));
         aboveLp.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         aboveButtonsPanel.setLayoutParams(aboveLp);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             main = new CardView(context);
             main.setLayoutParams(contentLP);
-            ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius));
+            ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius, getContext()));
             ((CardView) main).setCardBackgroundColor(Color.TRANSPARENT);
             main.setElevation(0);
 
@@ -555,22 +558,25 @@ public class ReaderPageFragment extends Fragment {
         RelativeLayout timelineContainer = new RelativeLayout(context);
         RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
-        int offset = Sizes.dpToPxExt(Math.max(0, readerSettings.radius - 16)) / 2;
+        int offset = Sizes.dpToPxExt(Math.max(0, readerSettings.radius - 16), getContext()) / 2;
         tclp.setMargins(offset, offset, offset, 0);
         timelineContainer.setLayoutParams(tclp);
         timelineContainer.setId(R.id.ias_timeline_container);
-        timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30));
+        timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             timelineContainer.setElevation(20);
         }
         timeline = new Timeline(context);
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                Sizes.dpToPxExt(3)));
+                Sizes.dpToPxExt(3, getContext())));
 
         close = new AppCompatImageView(context);
         close.setId(R.id.ias_close_button);
-        close.setLayoutParams(new RelativeLayout.LayoutParams(Sizes.dpToPxExt(30), Sizes.dpToPxExt(30)));
+        close.setLayoutParams(new RelativeLayout.LayoutParams(
+                Sizes.dpToPxExt(30, getContext()),
+                Sizes.dpToPxExt(30, getContext()))
+        );
         close.setBackground(null);
         close.setImageDrawable(getResources().getDrawable(readerSettings.closeIcon));
         timelineContainer.addView(timeline);

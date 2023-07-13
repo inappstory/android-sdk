@@ -179,9 +179,9 @@ public class TextMultiInput extends LinearLayout {
                 addView(mainText);
                 break;
             case PHONE:
-                mainTextLp.setMargins(Sizes.dpToPxExt(4), 0, 0, 0);
+                mainTextLp.setMargins(Sizes.dpToPxExt(4, getContext()), 0, 0, 0);
                 mainText.setLayoutParams(mainTextLp);
-                int countryCodeWidth = Sizes.dpToPxExt(60);
+                int countryCodeWidth = Sizes.dpToPxExt(60, getContext());
                 LayoutParams countryCodeLp = new LayoutParams(countryCodeWidth,
                         ViewGroup.LayoutParams.WRAP_CONTENT);
                 countryCodeText = new AppCompatEditText(getContext());
@@ -190,8 +190,8 @@ public class TextMultiInput extends LinearLayout {
                 phoneNumberHint.setPaddingRelative(0, 0, 0, 0);
                 countryCodeLp.setMargins(0, 0, 0, 0);
                 divider = new View(getContext());
-                divider.setLayoutParams(new ViewGroup.LayoutParams(Sizes.dpToPxExt(1),
-                        Sizes.dpToPxExt(30)));
+                divider.setLayoutParams(new ViewGroup.LayoutParams(Sizes.dpToPxExt(1, getContext()),
+                        Sizes.dpToPxExt(30, getContext())));
                 RelativeLayout rl = new RelativeLayout(getContext());
                 rl.setLayoutParams(mainTextLp);
 

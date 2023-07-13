@@ -302,7 +302,7 @@ public class UgcStoriesList extends RecyclerView {
                     v.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8),
+                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, getContext()),
                             y + v.getHeight() / 2);
 
                 }

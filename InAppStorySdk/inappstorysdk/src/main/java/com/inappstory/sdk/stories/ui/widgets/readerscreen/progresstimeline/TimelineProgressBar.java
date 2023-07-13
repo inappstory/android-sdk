@@ -26,7 +26,7 @@ public class TimelineProgressBar extends View {
     String id;
     private Paint backgroundPaint;
     private Paint foregroundPaint;
-    private int timelineHeight = Sizes.dpToPxExt(3);
+    private int timelineHeight = Sizes.dpToPxExt(3, getContext());
     int timelineWidth = getWidth();
     int radius = timelineHeight / 2;
 

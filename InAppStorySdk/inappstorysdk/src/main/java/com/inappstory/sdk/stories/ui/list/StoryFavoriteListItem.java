@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -150,10 +151,11 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         RoundedCornerLayout container2 = itemView.findViewById(R.id.container2);
         RoundedCornerLayout container3 = itemView.findViewById(R.id.container3);
         RoundedCornerLayout container4 = itemView.findViewById(R.id.container4);
-        container1.setRadius(manager.csListItemRadius() / 2);
-        container2.setRadius(manager.csListItemRadius() / 2);
-        container3.setRadius(manager.csListItemRadius() / 2);
-        container4.setRadius(manager.csListItemRadius() / 2);
+        Context context = itemView.getContext();
+        container1.setRadius(manager.csListItemRadius(context) / 2);
+        container2.setRadius(manager.csListItemRadius(context) / 2);
+        container3.setRadius(manager.csListItemRadius(context) / 2);
+        container4.setRadius(manager.csListItemRadius(context) / 2);
         if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
         List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
 

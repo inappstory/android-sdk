@@ -18,17 +18,17 @@ public class RoundedCornerLayout extends FrameLayout {
 
     public RoundedCornerLayout(Context context) {
         super(context);
-        radius = Sizes.dpToPxExt(16);
+        radius = Sizes.dpToPxExt(16, context);
     }
 
     public RoundedCornerLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        radius = Sizes.dpToPxExt(16);
+        radius = Sizes.dpToPxExt(16, context);
     }
 
     public RoundedCornerLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        radius = Sizes.dpToPxExt(16);
+        radius = Sizes.dpToPxExt(16, context);
     }
 
     int radius;

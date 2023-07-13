@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.list;
 
+import android.content.Context;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -40,10 +41,11 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
         getFavoriteListItem = manager.csFavoriteListItemInterface();
         getListItem = manager.csListItemInterface();
         getUGCListItem = manager.csListUGCItemInterface();
-        if (manager.csListItemMargin() >= 0) {
+        Context context = itemView.getContext();
+        if (manager.csListItemMargin(context) >= 0) {
             RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) itemView.getLayoutParams();
-            lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin() / 2), 0,
-                    Sizes.dpToPxExt(manager.csListItemMargin() / 2), 0);
+            lp.setMargins(Sizes.dpToPxExt(manager.csListItemMargin(context) / 2, context), 0,
+                    Sizes.dpToPxExt(manager.csListItemMargin(context) / 2, context), 0);
             itemView.setLayoutParams(lp);
         }
 

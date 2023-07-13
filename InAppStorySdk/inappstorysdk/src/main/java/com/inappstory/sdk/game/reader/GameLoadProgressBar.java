@@ -34,7 +34,10 @@ public class GameLoadProgressBar extends ProgressBar implements IGameLoaderView 
         setBackground(getResources().getDrawable(R.drawable.cs_circle_shape));
         setMax(100);
         setProgress(0);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(Sizes.dpToPxExt(40), Sizes.dpToPxExt(40));
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                Sizes.dpToPxExt(40, getContext()),
+                Sizes.dpToPxExt(40, getContext())
+        );
         lp.addRule(CENTER_IN_PARENT);
         setLayoutParams(lp);
     }
