@@ -759,6 +759,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     void gameCompleted(String gameState, String link) {
         try {
+            if (manager != null && link != null)
+                manager.tapOnLink(link);
             GameStoryData dataModel = getStoryDataModel();
             if (dataModel != null) {
                 Intent intent = new Intent();
@@ -787,8 +789,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 setResult(RESULT_OK, intent);
                 finish();
             } else {
-                if (link != null)
-                    manager.tapOnLink(link);
                 finish();
             }
         } catch (Exception e) {
