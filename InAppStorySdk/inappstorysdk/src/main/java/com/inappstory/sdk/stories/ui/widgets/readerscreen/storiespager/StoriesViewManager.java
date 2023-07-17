@@ -375,7 +375,7 @@ public class StoriesViewManager {
     public void openGameReaderFromGameCenter(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && context != null) {
-            service.downloadGame(context, gameId, getGameStoryData(), null);
+            service.openGameReaderWithGC(context, getGameStoryData(), gameId);
         }
     }
 

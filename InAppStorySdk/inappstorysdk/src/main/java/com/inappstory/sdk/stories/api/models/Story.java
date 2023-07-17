@@ -162,6 +162,7 @@ public class Story implements Parcelable {
     @SerializedName("image")
     public List<Image> image;
 
+
     public boolean hasSwipeUp() {
         return hasSwipeUp != null ? hasSwipeUp : false;
     }
@@ -229,8 +230,17 @@ public class Story implements Parcelable {
         return deeplink;
     }
 
+    public String getGameInstanceId() {
+        if (gameInstance != null)
+            return gameInstance.id;
+        return null;
+    }
+
     @SerializedName("deeplink")
     public String deeplink;
+
+    @SerializedName("game_instance")
+    public GameInstance gameInstance;
 
     @SerializedName("is_opened")
     public boolean isOpened;
@@ -242,6 +252,7 @@ public class Story implements Parcelable {
         if (backgroundColor == null) return "#FFFFFF";
         return backgroundColor;
     }
+
 
     public List<ResourceMappingObject> getSrcList() {
         if (srcList == null) srcList = new ArrayList<>();
@@ -350,7 +361,6 @@ public class Story implements Parcelable {
             InAppStoryService.getInstance().saveStoryOpened(id, type);
         }
     }
-
 
 
     @SerializedName("like_functional")

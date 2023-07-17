@@ -209,12 +209,14 @@ public class InAppStoryService {
 
     StoryDownloadManager downloadManager;
     GameCacheManager gameCacheManager = new GameCacheManager();
+
     public GameCacheManager gameCacheManager() {
         if (gameCacheManager == null) {
             gameCacheManager = new GameCacheManager();
         }
         return gameCacheManager;
     }
+
     public static InAppStoryService INSTANCE;
 
     void logout() {
@@ -391,35 +393,21 @@ public class InAppStoryService {
         }
     }
 
-    public void downloadGame(final Context context,
-                             final String gameId,
-                             final GameStoryData data,
-                             final GameLoadedCallback callback) {
-        gameCacheManager().getGame(gameId, new GameLoadCallback() {
-            @Override
-            public void onSuccess(GameCenterData gameCenterData) {
-                try {
-                    ScreensManager.getInstance().openGameReader(
-                            context,
-                            data,
-                            gameId,
-                            gameCenterData.url,
-                            gameCenterData.splashScreen.url,
-                            gameCenterData.initCode,
-                            JsonParser.getJson(gameCenterData.resources),
-                            JsonParser.getJson(gameCenterData.options));
-                } catch (Exception ignored) {
-
-                }
-                if (callback != null) callback.complete(true);
-            }
-
-            @Override
-            public void onError() {
-                if (callback != null) callback.complete(false);
-            }
-        });
-
+    public void openGameReaderWithGC(
+            Context context,
+            GameStoryData data,
+            String gameId
+    ) {
+        ScreensManager.getInstance().openGameReader(
+                context,
+                data,
+                gameId,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     public void runStatisticThread() {

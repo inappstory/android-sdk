@@ -172,85 +172,119 @@ public class TimelineProgressBar extends View {
         animate().cancel();
     }
 
+    private final int animationStep = 25;
     public void start() {
         if (!isActive) return;
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+        setPaused(false);
+        final Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                clearAnimation();
-                animate().cancel();
                 setCurrentProgress(0);
                 progressForegroundVisibility = true;
                 if (duration == null || duration == 0) return;
-                animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                final long startTime = System.currentTimeMillis();
+                final Long totalDuration = getDuration();
+                final Runnable loopedRunnable = new Runnable() {
                     @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        float val = (1f * animation.getCurrentPlayTime()) / animation.getDuration();
-                        if (isActive)
-                            setCurrentProgress(val);
+                    public void run() {
+                        long curTime = System.currentTimeMillis();
+                        float val = (curTime - startTime) / (1f * totalDuration);
+                        if (isActive) {
+                            setCurrentProgress(Math.min(val, 1f));
+                            if ((curTime - startTime <= totalDuration) && !isPaused()) {
+                                handler.postDelayed(this, animationStep);
+                            }
+                        }
                     }
-                }).setDuration(getDuration()).start();
+                };
+                handler.post(loopedRunnable);
             }
         }, 100);
     }
+
 
     private void setCurrentProgress(float progress) {
         currentProgress = progress;
     }
 
-    public void pause() {
+    boolean paused = false;
+    private Object pauseLock = new Object();
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                clearAnimation();
-                animate().cancel();
-            }
-        });
+    public void pause() {
+        synchronized (pauseLock) {
+            setPaused(true);
+        }
+    }
+
+    private void setPaused(boolean isPaused) {
+        synchronized (pauseLock) {
+            paused = isPaused;
+        }
+    }
+
+    private boolean isPaused() {
+        synchronized (pauseLock) {
+            return paused;
+        }
     }
 
     public void restart() {
         if (!isActive) return;
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+        setPaused(false);
+        final Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                clearAnimation();
-                animate().cancel();
                 setCurrentProgress(0);
                 if (duration == null || duration == 0) return;
-                animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                final long startTime = System.currentTimeMillis();
+                final Long totalDuration = getDuration();
+                final Runnable loopedRunnable = new Runnable() {
                     @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        float val = (1f * animation.getCurrentPlayTime()) / animation.getDuration();
-                        if (isActive)
+                    public void run() {
+                        long curTime = System.currentTimeMillis();
+                        float val = (curTime - startTime) / (1f * totalDuration);
+                        if (isActive) {
                             setCurrentProgress(Math.min(val, 1f));
-                        //scaleX(1f).
+                            if (curTime - startTime <= totalDuration && !isPaused()) {
+                                handler.postDelayed(this, animationStep);
+                            }
+                        }
                     }
-                }).setDuration(getDuration()).start();
+                };
+                handler.post(loopedRunnable);
             }
         }, 100);
     }
 
     public void resume() {
         if (!isActive) return;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        setPaused(false);
+        final Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
             @Override
             public void run() {
                 if (duration == null || duration == 0) return;
-                long dur = (long) (getDuration() * Math.max(0f, 1f - currentProgress));
-                InAppStoryManager.showDLog("jsDuration", getDuration() +
-                        " " + (1f - currentProgress));
-                animate().setUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                final long dur = (long) (getDuration() * Math.max(0f, 1f - currentProgress));
+                final long startTime = System.currentTimeMillis();
+                final Long totalDuration = getDuration();
+                final Runnable loopedRunnable = new Runnable() {
                     @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-
-                        float val = 1f - ((1f * animation.getDuration() -
-                                animation.getCurrentPlayTime()) / (getDuration()));
-                        if (isActive)
+                    public void run() {
+                        long curTime = System.currentTimeMillis();
+                        float val = 1f - ((dur -
+                                (curTime - startTime)) / (1f * totalDuration));
+                        Log.e("newTimelineResume", val + " " + (dur - (curTime - startTime)) + " " + totalDuration);
+                        if (isActive) {
                             setCurrentProgress(Math.min(Math.max(0f, val), 1f));
+                            if (curTime - startTime <= dur && !isPaused()) {
+                                handler.postDelayed(this, animationStep);
+                            }
+                        }
                     }
-                }).setDuration(dur).start();
-
+                };
+                handler.post(loopedRunnable);
             }
         });
     }

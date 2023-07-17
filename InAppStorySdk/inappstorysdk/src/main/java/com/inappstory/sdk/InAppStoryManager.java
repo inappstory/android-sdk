@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.core.util.Pair;
 
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -237,10 +238,10 @@ public class InAppStoryManager {
         closeStoryReader(CloseStory.CUSTOM);
     }
 
-    public void openGame(String gameId, GameLoadedCallback callback) {
+    public void openGame(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && context != null) {
-            service.downloadGame(context, gameId, null, callback);
+            service.openGameReaderWithGC(context, null, gameId);
         }
     }
 
@@ -1365,7 +1366,30 @@ public class InAppStoryManager {
                     }
                     if (callback != null)
                         callback.onShow();
-                    if (story.deeplink != null) {
+                    String gameInstanceId = story.getGameInstanceId();
+                    if (gameInstanceId != null) {
+                        lastSingleOpen = null;
+                        if (!InAppStoryService.isConnected()) {
+
+                            if (CallbackManager.getInstance().getErrorCallback() != null) {
+                                CallbackManager.getInstance().getErrorCallback().noConnection();
+                            }
+                            return;
+                        }
+                        service.openGameReaderWithGC(
+                                context,
+                                new GameStoryData(
+                                        story.id,
+                                        0,
+                                        story.slidesCount,
+                                        story.title,
+                                        story.tags,
+                                        null,
+                                        type
+                                ),
+                                gameInstanceId);
+                        return;
+                    } else if (story.deeplink != null) {
                         lastSingleOpen = null;
                         if (type == Story.StoryType.COMMON)
                             OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
