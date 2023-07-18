@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.game.reader.IASLoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
@@ -1101,15 +1102,12 @@ public class AppearanceManager {
         if (commonInstance != null
                 && commonInstance.csLoaderView() != null) {
             v = commonInstance.csLoaderView().getView();
+            relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+            v.setLayoutParams(relativeParams);
         } else {
-            v = new ProgressBar(context) {{
-                setIndeterminate(true);
-                getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-            }};
+            v = new IASLoadProgressBar(context);
         }
-        relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-        v.setLayoutParams(relativeParams);
         return v;
     }
 

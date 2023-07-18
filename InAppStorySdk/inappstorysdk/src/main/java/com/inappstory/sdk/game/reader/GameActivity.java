@@ -231,7 +231,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
         if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
-            loaderView = new GameLoadProgressBar(GameActivity.this,
+            loaderView = new IASLoadProgressBar(GameActivity.this,
                     null,
                     android.R.attr.progressBarStyle);
         } else {
@@ -754,6 +754,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             manager.loadGame();
                         }
                     }, 300);
+                } else {
+                    GameStoryData dataModel = getStoryDataModel();
+                    if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                        CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
+                                dataModel,
+                                getIntent().getStringExtra("gameId")
+                        );
+                    }
+                    finish();
                 }
             }
         });

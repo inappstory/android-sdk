@@ -7,4 +7,6 @@ public interface GameReaderCallback {
     void finishGame(GameStoryData data, String gameId,
                     String result);
     void closeGame(GameStoryData data, String gameId);
+
+    void gameLoadError(GameStoryData data, String gameId);
 }

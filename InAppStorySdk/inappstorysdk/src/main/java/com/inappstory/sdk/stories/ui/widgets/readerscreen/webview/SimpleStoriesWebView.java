@@ -308,7 +308,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 @Override
                 public void onProgressChanged(WebView view, int newProgress) {
                     if (getManager().getProgressBar() != null)
-                        getManager().getProgressBar().setProgress(newProgress);
+                        getManager().getProgressBar().setProgress(newProgress, 100);
 
                 }
 

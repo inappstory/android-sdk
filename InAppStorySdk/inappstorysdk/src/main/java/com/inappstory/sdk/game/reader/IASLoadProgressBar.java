@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -18,7 +17,7 @@ import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class GameLoadProgressBar extends View implements IGameLoaderView {
+public class IASLoadProgressBar extends View implements IGameLoaderView {
 
     private int currentFrame = 0;             // Allocate paint outside onDraw to avoid unnecessary object creation
     private boolean isIndeterminate = true;
@@ -27,7 +26,7 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
 
     private int max = 100;
 
-    public GameLoadProgressBar(Context context) {
+    public IASLoadProgressBar(Context context) {
         this(context, null);
         initSize();
     }
@@ -51,12 +50,12 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
         return COLOR_PAINT;
     }
 
-    public GameLoadProgressBar(Context context, AttributeSet attrs) {
+    public IASLoadProgressBar(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
         initSize();
     }
 
-    public GameLoadProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
+    public IASLoadProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initSize();
     }
@@ -65,8 +64,8 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
         STROKE_WIDTH = Sizes.dpToPxExt(6, getContext());
         STROKE_SIZE_HALF = STROKE_WIDTH / 2;
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(56, getContext()),
-                Sizes.dpToPxExt(56, getContext())
+                Sizes.dpToPxExt(40, getContext()),
+                Sizes.dpToPxExt(40, getContext())
         );
         lp.addRule(CENTER_IN_PARENT);
         setLayoutParams(lp);

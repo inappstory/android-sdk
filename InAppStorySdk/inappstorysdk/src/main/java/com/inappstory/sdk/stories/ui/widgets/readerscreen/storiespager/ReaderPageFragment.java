@@ -336,14 +336,12 @@ public class ReaderPageFragment extends Fragment {
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        createRefreshButton(context);
+
         if (!Sizes.isTablet() && readerSettings.backgroundColor != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
         res.addView(linearLayout);
-        res.addView(refresh);
-
         return res;
     }
 
@@ -351,14 +349,14 @@ public class ReaderPageFragment extends Fragment {
         refresh = new ImageView(context);
         refresh.setId(R.id.ias_refresh_button);
         RelativeLayout.LayoutParams refreshLp = new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(32, getContext()),
-                Sizes.dpToPxExt(32, getContext())
+                Sizes.dpToPxExt(40, getContext()),
+                Sizes.dpToPxExt(40, getContext())
         );
         refreshLp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             refresh.setElevation(18);
         }
-        ((ImageView) refresh).setScaleType(ImageView.ScaleType.FIT_CENTER);
+        ((ImageView) refresh).setScaleType(ImageView.ScaleType.FIT_XY);
         refresh.setVisibility(View.GONE);
         ((ImageView) refresh).setImageDrawable(getResources().getDrawable(readerSettings.refreshIcon));
         refresh.setLayoutParams(refreshLp);
@@ -432,6 +430,8 @@ public class ReaderPageFragment extends Fragment {
 
         createLoader();
         readerContainer.addView(loader);
+        createRefreshButton(context);
+        readerContainer.addView(refresh);
         return readerContainer;
     }
 

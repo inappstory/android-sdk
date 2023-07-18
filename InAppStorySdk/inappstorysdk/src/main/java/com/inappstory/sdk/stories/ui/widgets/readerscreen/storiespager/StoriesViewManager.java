@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.game.reader.IASLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -28,7 +29,6 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
-import com.inappstory.sdk.stories.ui.widgets.CoreProgressBar;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStoriesGeneratedView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
@@ -252,7 +252,7 @@ public class StoriesViewManager {
     }
 
 
-    public CoreProgressBar getProgressBar() {
+    public IASLoadProgressBar getProgressBar() {
         return progressBar;
     }
 
@@ -265,9 +265,9 @@ public class StoriesViewManager {
         }
     }
 
-    private CoreProgressBar progressBar;
+    private IASLoadProgressBar progressBar;
 
-    public void setProgressBar(CoreProgressBar progressBar) {
+    public void setProgressBar(IASLoadProgressBar progressBar) {
         this.progressBar = progressBar;
     }
 

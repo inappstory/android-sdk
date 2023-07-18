@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
@@ -171,7 +172,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        Story current = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+        InAppStoryService service = InAppStoryService.getInstance();
+        Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(current.id, index,
@@ -181,7 +183,29 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         isFavoriteList,
                         StringsUtils.getNonNull(feed));
             }
-            if (current.deeplink != null) {
+            String gameInstanceId = current.getGameInstanceId();
+            if (gameInstanceId != null) {
+                if (!InAppStoryService.isConnected()) {
+
+                    if (CallbackManager.getInstance().getErrorCallback() != null) {
+                        CallbackManager.getInstance().getErrorCallback().noConnection();
+                    }
+                    return;
+                }
+                service.openGameReaderWithGC(
+                        context,
+                        new GameStoryData(
+                                current.id,
+                                0,
+                                current.slidesCount,
+                                current.title,
+                                current.tags,
+                                feed,
+                                Story.StoryType.COMMON
+                        ),
+                        gameInstanceId);
+                return;
+            } else if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
