@@ -238,6 +238,7 @@ public class InAppStoryManager {
         closeStoryReader(CloseStory.CUSTOM);
     }
 
+    @Deprecated
     public void openGame(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && context != null) {

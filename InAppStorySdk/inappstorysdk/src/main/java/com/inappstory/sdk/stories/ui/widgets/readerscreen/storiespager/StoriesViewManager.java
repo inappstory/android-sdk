@@ -10,7 +10,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.game.reader.IASLoadProgressBar;
+import com.inappstory.sdk.game.reader.GameLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
@@ -252,7 +252,7 @@ public class StoriesViewManager {
     }
 
 
-    public IASLoadProgressBar getProgressBar() {
+    public GameLoadProgressBar getProgressBar() {
         return progressBar;
     }
 
@@ -265,9 +265,9 @@ public class StoriesViewManager {
         }
     }
 
-    private IASLoadProgressBar progressBar;
+    private GameLoadProgressBar progressBar;
 
-    public void setProgressBar(IASLoadProgressBar progressBar) {
+    public void setProgressBar(GameLoadProgressBar progressBar) {
         this.progressBar = progressBar;
     }
 

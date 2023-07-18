@@ -2,16 +2,14 @@ package com.inappstory.sdk;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.game.reader.IASLoadProgressBar;
+import com.inappstory.sdk.game.reader.GameLoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
@@ -1106,7 +1104,7 @@ public class AppearanceManager {
             relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
             v.setLayoutParams(relativeParams);
         } else {
-            v = new IASLoadProgressBar(context);
+            v = new GameLoadProgressBar(context);
         }
         return v;
     }

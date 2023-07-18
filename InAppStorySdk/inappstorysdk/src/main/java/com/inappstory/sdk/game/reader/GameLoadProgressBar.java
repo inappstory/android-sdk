@@ -17,7 +17,7 @@ import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class IASLoadProgressBar extends View implements IGameLoaderView {
+public class GameLoadProgressBar extends View implements IGameLoaderView {
 
     private int currentFrame = 0;             // Allocate paint outside onDraw to avoid unnecessary object creation
     private boolean isIndeterminate = true;
@@ -26,7 +26,7 @@ public class IASLoadProgressBar extends View implements IGameLoaderView {
 
     private int max = 100;
 
-    public IASLoadProgressBar(Context context) {
+    public GameLoadProgressBar(Context context) {
         this(context, null);
         initSize();
     }
@@ -50,12 +50,12 @@ public class IASLoadProgressBar extends View implements IGameLoaderView {
         return COLOR_PAINT;
     }
 
-    public IASLoadProgressBar(Context context, AttributeSet attrs) {
+    public GameLoadProgressBar(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
         initSize();
     }
 
-    public IASLoadProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
+    public GameLoadProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initSize();
     }

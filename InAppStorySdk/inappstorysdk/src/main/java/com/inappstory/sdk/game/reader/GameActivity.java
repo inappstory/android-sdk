@@ -231,9 +231,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
         if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
-            loaderView = new IASLoadProgressBar(GameActivity.this,
-                    null,
-                    android.R.attr.progressBarStyle);
+            loaderView = new GameLoadProgressBar(GameActivity.this);
         } else {
             loaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
         }
