@@ -245,6 +245,13 @@ public class InAppStoryManager {
         }
     }
 
+    public void openGame(String gameId, @NonNull Context context) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            service.openGameReaderWithGC(context, null, gameId);
+        }
+    }
+
     public void closeGame() {
         ScreensManager.getInstance().closeGameReader();
     }
