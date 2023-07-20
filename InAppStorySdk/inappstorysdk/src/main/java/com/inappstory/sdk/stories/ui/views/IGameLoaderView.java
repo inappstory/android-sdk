@@ -2,9 +2,7 @@ package com.inappstory.sdk.stories.ui.views;
 
 import android.view.View;
 
-public interface IGameLoaderView {
+@Deprecated
+public interface IGameLoaderView extends IProgressLoaderView  {
     View getView();
-    void setProgress(int progress, int max);
-
-    void setIndeterminate(boolean indeterminate);
 }

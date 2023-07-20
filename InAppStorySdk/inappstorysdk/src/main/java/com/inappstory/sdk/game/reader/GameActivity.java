@@ -69,6 +69,8 @@ import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
+import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
+import com.inappstory.sdk.stories.ui.views.IProgressLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -96,7 +98,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private View closeButton;
     private View webViewContainer;
     private RelativeLayout loaderContainer;
-    private IGameLoaderView loaderView;
+    private IProgressLoaderView loaderView;
     private View baseContainer;
 
     private View refreshGame;
@@ -261,13 +263,19 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
         refreshGame = findViewById(R.id.gameRefresh);
-        if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
-            loaderView = new GameLoadProgressBar(GameActivity.this);
+        IGameReaderLoaderView gameReaderLoaderView = AppearanceManager.getCommonInstance().csGameReaderLoaderView();
+        IGameLoaderView gameLoaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
+        if (gameReaderLoaderView != null) {
+            loaderView = gameReaderLoaderView;
+            customLoaderView = gameReaderLoaderView.getView(GameActivity.this);
+        } else if (gameLoaderView != null) {
+            loaderView = gameLoaderView;
+            customLoaderView = gameLoaderView.getView();
         } else {
-            loaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
+            GameLoadProgressBar loadProgressBar = new GameLoadProgressBar(GameActivity.this);
+            loaderView = loadProgressBar;
+            customLoaderView = loadProgressBar;
         }
-
-        customLoaderView = loaderView.getView();
         loaderView.setIndeterminate(true);
         if (Sizes.isTablet() && baseContainer != null) {
             baseContainer.setOnClickListener(new View.OnClickListener() {

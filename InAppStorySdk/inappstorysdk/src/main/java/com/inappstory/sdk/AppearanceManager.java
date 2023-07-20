@@ -16,9 +16,11 @@ import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
+import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.ILoaderView;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
+import com.inappstory.sdk.stories.ui.views.IStoryReaderLoaderView;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsItem;
 import com.inappstory.sdk.stories.ui.views.goodswidget.ICustomGoodsWidget;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -98,7 +100,9 @@ public class AppearanceManager {
         this.csListItemInterface = other.csListItemInterface;
         this.csListUGCItemInterface = other.csListUGCItemInterface;
         this.csLoaderView = other.csLoaderView;
+        this.csStoryLoaderView = other.csStoryLoaderView;
         this.csGameLoaderView = other.csGameLoaderView;
+        this.csGameReaderLoaderView = other.csGameReaderLoaderView;
         this.storyTouchListener = other.storyTouchListener;
         this.csCustomGoodsWidget = other.csCustomGoodsWidget;
         this.csCustomGoodsItem = other.csCustomGoodsItem;
@@ -169,7 +173,11 @@ public class AppearanceManager {
     private IStoriesListItem csListItemInterface;
     private IStoriesListUGCItem csListUGCItemInterface;
     private ILoaderView csLoaderView;
+
+    private IStoryReaderLoaderView csStoryLoaderView;
     private IGameLoaderView csGameLoaderView;
+
+    private IGameReaderLoaderView csGameReaderLoaderView;
     private StoryTouchListener storyTouchListener;
     private static WidgetAppearance csWidgetAppearance;
 
@@ -1058,8 +1066,15 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
+    @Deprecated
     public AppearanceManager csLoaderView(ILoaderView csLoaderView) {
         this.csLoaderView = csLoaderView;
+        return AppearanceManager.this;
+    }
+
+
+    public AppearanceManager csStoryLoaderView(IStoryReaderLoaderView csStoryLoaderView) {
+        this.csStoryLoaderView = csStoryLoaderView;
         return AppearanceManager.this;
     }
 
@@ -1067,9 +1082,22 @@ public class AppearanceManager {
         return csLoaderView;
     }
 
+    public IStoryReaderLoaderView csStoryLoaderView() {
+        return csStoryLoaderView;
+    }
+
     public AppearanceManager csGameLoaderView(IGameLoaderView csGameLoaderView) {
         this.csGameLoaderView = csGameLoaderView;
         return AppearanceManager.this;
+    }
+
+    public AppearanceManager csGameReaderLoaderView(IGameReaderLoaderView csGameReaderLoaderView) {
+        this.csGameReaderLoaderView = csGameReaderLoaderView;
+        return AppearanceManager.this;
+    }
+
+    public IGameReaderLoaderView csGameReaderLoaderView() {
+        return csGameReaderLoaderView;
     }
 
     public IGameLoaderView csGameLoaderView() {
@@ -1095,18 +1123,22 @@ public class AppearanceManager {
     }
 
     public static View getLoader(Context context) {
-        View v = null;
-        RelativeLayout.LayoutParams relativeParams;
-        if (commonInstance != null
-                && commonInstance.csLoaderView() != null) {
-            v = commonInstance.csLoaderView().getView();
-            relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-            v.setLayoutParams(relativeParams);
-        } else {
-            v = new GameLoadProgressBar(context);
+        if (commonInstance != null) {
+            RelativeLayout.LayoutParams relativeParams;
+            View v = null;
+            if (commonInstance.csStoryLoaderView() != null) {
+                v = commonInstance.csStoryLoaderView().getView(context);
+            } else if (commonInstance.csLoaderView() != null) {
+                v = commonInstance.csLoaderView().getView();
+            }
+            if (v != null) {
+                relativeParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                v.setLayoutParams(relativeParams);
+                return v;
+            }
         }
-        return v;
+        return new GameLoadProgressBar(context);
     }
 
 }

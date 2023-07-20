@@ -5,37 +5,45 @@ import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.SweepGradient;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import androidx.core.content.ContextCompat;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
+import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class GameLoadProgressBar extends View implements IGameLoaderView {
+public class GameLoadProgressBar extends View implements IGameReaderLoaderView {
 
     private int currentFrame = 0;             // Allocate paint outside onDraw to avoid unnecessary object creation
     private boolean isIndeterminate = true;
 
     private int progress = 0;
 
-    private int max = 100;
-
     public GameLoadProgressBar(Context context) {
         this(context, null);
         initSize();
     }
 
+    private final int strokeWidthDP = 4;
 
-    private float STROKE_WIDTH = Sizes.dpToPxExt(6);
+    private final int sizeDP = 36;
+    private final boolean rounded = false;
+    private float STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP);
     private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
 
     private static Paint COLOR_PAINT;
+    private static Paint GRADIENT_PAINT;
 
     Paint getColorPaint(Resources resources) {
         if (COLOR_PAINT == null) {
@@ -43,11 +51,39 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
             COLOR_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
             COLOR_PAINT.setStyle(Paint.Style.STROKE);
             COLOR_PAINT.setStrokeWidth(STROKE_WIDTH);
-            COLOR_PAINT.setStrokeCap(Paint.Cap.ROUND);
+            if (rounded)
+                COLOR_PAINT.setStrokeCap(Paint.Cap.ROUND);
             COLOR_PAINT.setAntiAlias(true);
         }
 
         return COLOR_PAINT;
+    }
+
+    Paint getColorGradientPaint(Resources resources) {
+        if (GRADIENT_PAINT == null) {
+            GRADIENT_PAINT = new Paint();
+            GRADIENT_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
+            GRADIENT_PAINT.setStyle(Paint.Style.STROKE);
+            GRADIENT_PAINT.setStrokeWidth(STROKE_WIDTH);
+            if (rounded)
+                GRADIENT_PAINT.setStrokeCap(Paint.Cap.ROUND);
+
+            float size = Sizes.dpToPxExt(sizeDP, getContext()) / 2f;
+            Shader sweepGradient = new SweepGradient(
+                    size,
+                    size,
+                    gradientColors,
+                    positions
+            );
+            float rotate = 200f;
+            Matrix gradientMatrix = new Matrix();
+            gradientMatrix.preRotate(rotate, size, size);
+            sweepGradient.setLocalMatrix(gradientMatrix);
+            GRADIENT_PAINT.setShader(sweepGradient);
+            GRADIENT_PAINT.setAntiAlias(true);
+        }
+
+        return GRADIENT_PAINT;
     }
 
     public GameLoadProgressBar(Context context, AttributeSet attrs) {
@@ -61,11 +97,11 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
     }
 
     private void initSize() {
-        STROKE_WIDTH = Sizes.dpToPxExt(6, getContext());
+        STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP, getContext());
         STROKE_SIZE_HALF = STROKE_WIDTH / 2;
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(40, getContext()),
-                Sizes.dpToPxExt(40, getContext())
+                Sizes.dpToPxExt(sizeDP, getContext()),
+                Sizes.dpToPxExt(sizeDP, getContext())
         );
         lp.addRule(CENTER_IN_PARENT);
         setLayoutParams(lp);
@@ -122,29 +158,30 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
         drawIndeterminateOutlineArc(canvas, 72f * (currentState % 90) / 90f, value);
     }
 
-    private void drawIndeterminateOutlineArc(Canvas canvas, float angle, float value) {
+    int[] gradientColors = {Color.parseColor("#00FFFFFF"), Color.parseColor("#FFFFFF")};
+    float[] positions = {0f, 1f};
 
+    private void drawIndeterminateOutlineArc(Canvas canvas, float angle, float value) {
         canvas.save();
         canvas.drawArc(
                 arcRect,
-                value > 0 ? -144 + angle: -144 + angle + 288 * (1 + value),
+                value > 0 ? -144 + angle : -144 + angle + 288 * (1 + value),
                 288 * Math.abs(value),
                 false,
-                getColorPaint(getResources())
+                getColorGradientPaint(getResources())
         );
         canvas.restore();
     }
 
 
     @Override
-    public View getView() {
+    public View getView(Context context) {
         return this;
     }
 
     @Override
     public void setProgress(int progress, int max) {
         this.progress = progress;
-        this.max = max;
     }
 
     @Override
