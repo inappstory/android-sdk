@@ -5,6 +5,7 @@ import static com.inappstory.sdk.share.IASShareManager.SHARE_EVENT;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -97,6 +98,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private RelativeLayout loaderContainer;
     private IGameLoaderView loaderView;
     private View baseContainer;
+
+    private View refreshGame;
     GameManager manager;
     private PermissionRequest audioRequest;
     private boolean isFullscreen = false;
@@ -139,7 +142,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
     }
 
-    void hideView(final View view) {
+    private void hideView(final View view) {
         if (view == null) return;
         onBackPressedLocked = true;
         view.animate().alpha(0).setDuration(500).setListener(new AnimatorListenerAdapter() {
@@ -151,6 +154,31 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 onBackPressedLocked = false;
             }
         });
+    }
+
+    private void changeView(final View view1, final View view2) {
+        if (view1 == null || view2 == null) return;
+        onBackPressedLocked = true;
+        view1.setAlpha(0f);
+        view1.setVisibility(View.VISIBLE);
+        view2.setVisibility(View.VISIBLE);
+        ValueAnimator valueAnimator = ValueAnimator.ofFloat(0f, 1f).setDuration(500);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                view1.setAlpha((float) animation.getAnimatedValue());
+                view2.setAlpha(1f - (float) animation.getAnimatedValue());
+            }
+        });
+        valueAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                view2.setVisibility(View.GONE);
+                onBackPressedLocked = false;
+            }
+        });
+        valueAnimator.start();
     }
 
     void showGoods(final String skusString, final String widgetId) {
@@ -232,11 +260,14 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         loader = findViewById(R.id.loader);
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
+        refreshGame = findViewById(R.id.gameRefresh);
         if (AppearanceManager.getCommonInstance().csGameLoaderView() == null) {
             loaderView = new GameLoadProgressBar(GameActivity.this);
         } else {
             loaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
         }
+
+        customLoaderView = loaderView.getView();
         loaderView.setIndeterminate(true);
         if (Sizes.isTablet() && baseContainer != null) {
             baseContainer.setOnClickListener(new View.OnClickListener() {
@@ -260,6 +291,20 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 getWindow().setStatusBarColor(Color.BLACK);
             }
         }
+
+        refreshGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeView(customLoaderView, refreshGame);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        downloadGame();
+                    }
+                }, 500);
+
+            }
+        });
        /* if (!isFullscreen) {
 
         } else {
@@ -309,7 +354,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             });
         }
         closeButton.setVisibility(View.VISIBLE);
-        loaderContainer.addView(loaderView.getView());
+        loaderContainer.addView(customLoaderView);
     }
 
 
@@ -488,35 +533,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 finish();
                 return;
             }
-            downloadGame(manager.gameCenterId, new GameDownloadCallback() {
-                        @Override
-                        public void complete(GameCenterData gameCenterData) {
-                            try {
-                                replaceGameInstanceStorageData(gameCenterData.instanceUserData);
-                            } catch (JSONException ignored) {
-
-                            }
-                            manager.splashImagePath = gameCenterData.splashScreen.url;
-                            manager.resources = getIntent().getStringExtra("gameResources");
-                            manager.gameConfig = gameCenterData.initCode;
-                            manager.path = gameCenterData.url;
-                            try {
-                                GameScreenOptions options = gameCenterData.options;
-                                manager.resources = JsonParser.getJson(gameCenterData.resources);
-                                isFullscreen = options != null && options.fullScreen;
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                            replaceConfigs();
-                            callback.complete(true);
-                        }
-
-                        @Override
-                        public void error() {
-                            callback.complete(false);
-                        }
-                    }
-            );
+            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+            GameCenterData oldData = inAppStoryService.gameCacheManager().getCachedGame(manager.gameCenterId);
+            if (oldData != null && oldData.splashScreen != null) {
+                updateLoader(oldData.splashScreen.url);
+            }
+            downloadGame();
         } else {
             GameScreenOptions options =
                     JsonParser.fromJson(getIntent().getStringExtra("options"), GameScreenOptions.class);
@@ -528,6 +550,40 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             callback.complete(true);
         }
 
+    }
+
+    private void downloadGame() {
+        downloadGame(manager.gameCenterId, new GameDownloadCallback() {
+                    @Override
+                    public void complete(GameCenterData gameCenterData) {
+                        try {
+                            replaceGameInstanceStorageData(gameCenterData.instanceUserData);
+                        } catch (JSONException ignored) {
+
+                        }
+                        if (gameCenterData.splashScreen != null)
+                            updateLoader(gameCenterData.splashScreen.url);
+                        manager.resources = getIntent().getStringExtra("gameResources");
+                        manager.gameConfig = gameCenterData.initCode;
+                        manager.path = gameCenterData.url;
+                        try {
+                            GameScreenOptions options = gameCenterData.options;
+                            manager.resources = JsonParser.getJson(gameCenterData.resources);
+                            isFullscreen = options != null && options.fullScreen;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        replaceConfigs();
+                        gameLoadedCallback.complete(true);
+                    }
+
+                    @Override
+                    public void error() {
+
+                        gameLoadedCallback.complete(false);
+                    }
+                }
+        );
     }
 
     private void replaceConfigs() {
@@ -712,6 +768,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     }
 
+    private void updateLoader(String newPath) {
+        if ((manager.splashImagePath != null
+                && !manager.splashImagePath.isEmpty())
+                || newPath == null
+                || newPath.isEmpty())
+            return;
+        manager.splashImagePath = newPath;
+    }
+
     private void setLoader() {
         if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()
                 && InAppStoryService.isNotNull())
@@ -761,32 +826,43 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
         };
         setViews();
-        checkIntentValues(new GameLoadedCallback() {
-            @Override
-            public void complete(boolean success) {
-                loaderView.setIndeterminate(false);
-                if (success) {
-                    new Handler(getMainLooper()).postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            initWebView();
-                            setLoader();
-                            manager.loadGame();
-                        }
-                    }, 300);
-                } else {
-                    GameStoryData dataModel = getStoryDataModel();
-                    if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-                        CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
-                                dataModel,
-                                getIntent().getStringExtra("gameId")
-                        );
-                    }
-                    finish();
-                }
-            }
-        });
+        checkIntentValues(gameLoadedCallback);
     }
+
+    GameLoadedCallback gameLoadedCallback = new GameLoadedCallback() {
+        @Override
+        public void complete(boolean success) {
+            if (success) {
+                loaderView.setIndeterminate(false);
+                new Handler(getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        initWebView();
+                        setLoader();
+                        manager.loadGame();
+                    }
+                }, 300);
+            } else {
+                GameStoryData dataModel = getStoryDataModel();
+                if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                    CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
+                            dataModel,
+                            getIntent().getStringExtra("gameId")
+                    );
+                }
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        changeView(refreshGame, customLoaderView);
+                    }
+                });
+
+            }
+        }
+    };
+
+    View customLoaderView = null;
+
 
     private void closeGame() {
         if (closing) return;

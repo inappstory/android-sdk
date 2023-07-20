@@ -25,8 +25,16 @@ public class GameCacheManager {
         if (game != null) {
             callback.onSuccess(game.data);
         } else {*/
-            getGameFromGameCenter(gameId, callback);
-      //  }
+        getGameFromGameCenter(gameId, callback);
+        //  }
+    }
+
+    public GameCenterData getCachedGame(String gameId) {
+        CachedGame game = cachedGames.get(gameId);
+        if (game != null) {
+            return game.data;
+        }
+        return null;
     }
 
     private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {
@@ -38,6 +46,14 @@ public class GameCacheManager {
                         new NetworkCallback<GameCenterData>() {
                             @Override
                             public void onSuccess(final GameCenterData response) {
+                                if (response.url == null ||
+                                        response.url.isEmpty() ||
+                                        response.initCode == null ||
+                                        response.initCode.isEmpty()
+                                ) {
+                                    callback.onError();
+                                    return;
+                                }
                                 cachedGames.put(gameId, new CachedGame(response));
                                 if (response.splashScreen != null && response.splashScreen.url != null) {
                                     try {

@@ -1,6 +1,9 @@
 package com.inappstory.sdk.stories.api.models;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.game.reader.GameScreenOptions;
+import com.inappstory.sdk.network.Required;
 import com.inappstory.sdk.network.SerializedName;
 
 import java.util.List;
@@ -15,8 +18,10 @@ public class GameCenterData {
     public List<WebResource> resources;
     @SerializedName("options")
     public GameScreenOptions options;
+    @Required
     @SerializedName("downloadUrl")
     public String url;
+    @Required
     @SerializedName("initCode")
     public String initCode;
 
