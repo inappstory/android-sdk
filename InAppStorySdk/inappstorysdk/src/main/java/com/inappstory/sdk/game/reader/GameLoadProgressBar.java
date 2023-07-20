@@ -125,7 +125,6 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
     private void drawIndeterminateOutlineArc(Canvas canvas, float angle, float value) {
 
         canvas.save();
-        Log.e("drawArcValue", "angle: " + angle);
         canvas.drawArc(
                 arcRect,
                 value > 0 ? -144 + angle: -144 + angle + 288 * (1 + value),

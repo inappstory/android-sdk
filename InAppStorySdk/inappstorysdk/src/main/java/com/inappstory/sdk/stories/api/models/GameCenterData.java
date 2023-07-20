@@ -4,6 +4,7 @@ import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.network.SerializedName;
 
 import java.util.List;
+import java.util.Map;
 
 public class GameCenterData {
     @SerializedName("id")
@@ -18,4 +19,7 @@ public class GameCenterData {
     public String url;
     @SerializedName("initCode")
     public String initCode;
+
+    @SerializedName("instanceUserData")
+    public Map<String, Object> instanceUserData;
 }

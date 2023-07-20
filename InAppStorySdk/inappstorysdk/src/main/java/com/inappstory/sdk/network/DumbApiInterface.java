@@ -72,6 +72,11 @@ public class DumbApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request sendGameData(String id, String data) {
+        return new DumbRequest();
+    }
+
+    @Override
     public Request sendStoryData(String id, String data, String sessionId) {
         return new DumbRequest();
     }

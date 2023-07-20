@@ -219,6 +219,10 @@ public class InAppStoryService {
 
     public static InAppStoryService INSTANCE;
 
+    public void clearGames() {
+        gameCacheManager().clearGames();
+    }
+
     void logout() {
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         SessionManager.getInstance().closeSession(true, false);

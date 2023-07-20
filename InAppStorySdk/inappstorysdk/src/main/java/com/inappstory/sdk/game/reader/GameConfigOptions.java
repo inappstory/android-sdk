@@ -8,6 +8,7 @@ public class GameConfigOptions {
     public String apiKey;
     public String appPackageId;
     public String deviceId;
+
     public String userId;
     public String sdkVersion;
     public String apiBaseUrl;
@@ -16,4 +17,6 @@ public class GameConfigOptions {
     public String screenOrientation;
     public boolean fullScreen;
     public SafeAreaInsets safeAreaInsets;
+
+    public String gameInstanceId;
 }

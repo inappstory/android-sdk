@@ -54,7 +54,30 @@ public class GameManager {
         String[] urlParts = ZipLoader.urlParts(path);
         ZipLoader.getInstance().downloadAndUnzip(resourceList, path, urlParts[0], callback, "game");
     }
+    void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
+        if (InAppStoryService.isNull()) return;
+        String id = gameInstanceId;
+        if (id == null) id = gameCenterId;
+        if (id == null) return;
+        KeyValueStorage.saveString("gameInstance_" + gameInstanceId
+                + "__" + InAppStoryService.getInstance().getUserId(), data);
 
+        if (!InAppStoryService.getInstance().getSendStatistic()) return;
+        if (sendToServer) {
+            NetworkClient.getApi().sendGameData(gameInstanceId, data)
+                    .enqueue(new NetworkCallback<Response>() {
+                        @Override
+                        public void onSuccess(Response response) {
+
+                        }
+
+                        @Override
+                        public Type getType() {
+                            return null;
+                        }
+                    });
+        }
+    }
 
     void storySetData(String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;

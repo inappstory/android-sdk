@@ -882,7 +882,6 @@ public class InAppStoryManager {
         InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.UGC);
         closeStoryReader(CloseStory.AUTO);
         SessionManager.getInstance().closeSession(sendStatistic, true);
-        clearCachedLists();
         OldStatisticManager.getInstance().eventCount = 0;
         InAppStoryService.getInstance().getDownloadManager().cleanTasks(false);
         InAppStoryService.getInstance().setUserId(userId);

@@ -27,6 +27,14 @@ public interface ApiInterface {
             @Path("id") String id
     );
 
+
+
+    @FormUrlEncoded
+    @PUT("v2/game/{id}/instance-user-data")
+    Request sendGameData(
+            @Path("id") String id,
+            @Field("data") String data);
+
     @GET("v2/story")
     Request getStories(
             @Query("test") String test,

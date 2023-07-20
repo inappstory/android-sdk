@@ -27,13 +27,29 @@ public class GameJSInterface {
 
 
     @JavascriptInterface
+    public int pausePlaybackOtherApp() {
+        return manager.pausePlaybackOtherApp();
+    }
+
+    @JavascriptInterface
     public void storySetLocalData(int storyId, String data, boolean sendToServer) {
         manager.storySetData(data, sendToServer);
     }
 
     @JavascriptInterface
-    public int pausePlaybackOtherApp() {
-        return manager.pausePlaybackOtherApp();
+    public void gameInstanceSetLocalData(String gameInstanceId, String data, boolean sendToServer) {
+        manager.gameInstanceSetData(gameInstanceId, data, sendToServer);
+    }
+
+    @JavascriptInterface
+    public String gameInstanceGetLocalData(String gameInstanceId) {
+        if (InAppStoryService.isNull()) return "";
+        String id = gameInstanceId;
+        if (id == null) id = manager.gameCenterId;
+        if (id == null) return "";
+        String res = KeyValueStorage.getString("gameInstance_" + id
+                + "__" + InAppStoryService.getInstance().getUserId());
+        return res == null ? "" : res;
     }
 
     @JavascriptInterface

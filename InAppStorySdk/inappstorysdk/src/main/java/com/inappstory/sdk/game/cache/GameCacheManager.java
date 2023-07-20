@@ -16,13 +16,17 @@ import java.util.HashMap;
 public class GameCacheManager {
     HashMap<String, CachedGame> cachedGames = new HashMap<>();
 
+    public void clearGames() {
+        cachedGames.clear();
+    }
+
     public void getGame(String gameId, GameLoadCallback callback) {
-        CachedGame game = cachedGames.get(gameId);
+       /* CachedGame game = cachedGames.get(gameId);
         if (game != null) {
             callback.onSuccess(game.data);
-        } else {
+        } else {*/
             getGameFromGameCenter(gameId, callback);
-        }
+      //  }
     }
 
     private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {
@@ -35,7 +39,7 @@ public class GameCacheManager {
                             @Override
                             public void onSuccess(final GameCenterData response) {
                                 cachedGames.put(gameId, new CachedGame(response));
-                                if (response.splashScreen != null) {
+                                if (response.splashScreen != null && response.splashScreen.url != null) {
                                     try {
                                         Downloader.downloadOrGetFile(
                                                 response.splashScreen.url,
@@ -59,7 +63,10 @@ public class GameCacheManager {
                                                 }
                                         );
                                     } catch (Exception ignored) {
+                                        callback.onSuccess(response);
                                     }
+                                } else {
+                                    callback.onSuccess(response);
                                 }
                             }
 

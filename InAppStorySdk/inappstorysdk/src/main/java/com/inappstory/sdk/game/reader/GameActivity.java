@@ -69,12 +69,16 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
+import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,8 +107,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     boolean showClose = true;
 
     private boolean onBackPressedLocked = false;
-
-    public String gameCenterId;
 
     @Override
     public void onBackPressed() {
@@ -463,6 +465,19 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         GameActivity.this.overridePendingTransition(R.anim.empty_animation, R.anim.alpha_fade_out);
     }
 
+    private void replaceGameInstanceStorageData(Map<String, Object> serverData) throws JSONException {
+        if (serverData == null || serverData.isEmpty()) return;
+        String storageId = "gameInstance_" + manager.gameCenterId
+                + "__" + InAppStoryService.getInstance().getUserId();
+        String localStringData = KeyValueStorage.getString(storageId);
+        Map<String, Object> localData = JsonParser.toObjectMap(new JSONObject(localStringData));
+        HashMap<String, Object> newData = new HashMap<>(localData);
+        for (String key : serverData.keySet()) {
+            newData.put(key, serverData.get(key));
+        }
+        KeyValueStorage.saveString(storageId, JsonParser.mapToJsonString(newData));
+    }
+
     private void checkIntentValues(final GameLoadedCallback callback) {
         manager.gameCenterId = getIntent().getStringExtra("gameId");
         manager.path = getIntent().getStringExtra("gameUrl");
@@ -476,6 +491,11 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             downloadGame(manager.gameCenterId, new GameDownloadCallback() {
                         @Override
                         public void complete(GameCenterData gameCenterData) {
+                            try {
+                                replaceGameInstanceStorageData(gameCenterData.instanceUserData);
+                            } catch (JSONException ignored) {
+
+                            }
                             manager.splashImagePath = gameCenterData.splashScreen.url;
                             manager.resources = getIntent().getStringExtra("gameResources");
                             manager.gameConfig = gameCenterData.initCode;
@@ -566,6 +586,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
         }
         options.safeAreaInsets = insets;
+        if (manager.gameCenterId != null)
+            options.gameInstanceId = manager.gameCenterId;
         try {
             return JsonParser.getJson(options);
         } catch (Exception e) {

@@ -6,6 +6,7 @@ import android.os.Handler;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
@@ -176,9 +177,12 @@ public class StoryDownloadManager {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
         try {
-            if (InAppStoryService.isNull()) return;
-            InAppStoryService.getInstance().getCommonCache().clearCache();
-            InAppStoryService.getInstance().getFastCache().clearCache();
+            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+            if (inAppStoryService != null) {
+                inAppStoryService.listStoriesIds.clear();
+                inAppStoryService.getCommonCache().clearCache();
+                inAppStoryService.getFastCache().clearCache();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

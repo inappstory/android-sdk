@@ -235,7 +235,16 @@ public class SessionManager {
         });
     }
 
+    private void clearCaches() {
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null) {
+            inAppStoryService.listStoriesIds.clear();
+            inAppStoryService.clearGames();
+        }
+    }
+
     public void closeSession(boolean sendStatistic, final boolean changeUserId) {
+        clearCaches();
         if (Session.getInstance().id != null) {
             List<List<Object>> stat = new ArrayList<>();
             stat.addAll(sendStatistic ? OldStatisticManager.getInstance().statistic :
