@@ -62,7 +62,6 @@ public class GameManager {
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
 
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             NetworkClient.getApi().sendGameData(gameInstanceId, data)
                     .enqueue(new NetworkCallback<Response>() {
@@ -85,7 +84,6 @@ public class GameManager {
         KeyValueStorage.saveString("story" + dataModel.storyId
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
 
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             NetworkClient.getApi().sendStoryData(Integer.toString(dataModel.storyId), data, Session.getInstance().id)
                     .enqueue(new NetworkCallback<Response>() {
