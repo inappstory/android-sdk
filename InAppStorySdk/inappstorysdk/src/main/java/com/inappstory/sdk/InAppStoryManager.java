@@ -1373,62 +1373,6 @@ public class InAppStoryManager {
                     }
                     if (callback != null)
                         callback.onShow();
-                    String gameInstanceId = story.getGameInstanceId();
-                    if (gameInstanceId != null) {
-                        lastSingleOpen = null;
-                        if (!InAppStoryService.isConnected()) {
-
-                            if (CallbackManager.getInstance().getErrorCallback() != null) {
-                                CallbackManager.getInstance().getErrorCallback().noConnection();
-                            }
-                            return;
-                        }
-                        service.openGameReaderWithGC(
-                                context,
-                                new GameStoryData(
-                                        story.id,
-                                        0,
-                                        story.slidesCount,
-                                        story.title,
-                                        story.tags,
-                                        null,
-                                        type
-                                ),
-                                gameInstanceId);
-                        return;
-                    } else if (story.deeplink != null) {
-                        lastSingleOpen = null;
-                        if (type == Story.StoryType.COMMON)
-                            OldStatisticManager.getInstance().addDeeplinkClickStatistic(story.id);
-
-                        StatisticManager.getInstance().sendDeeplinkStory(story.id, story.deeplink, null);
-                        if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                            CallbackManager.getInstance().getUrlClickCallback().onUrlClick(story.deeplink);
-                        } else {
-
-                            if (!InAppStoryService.isConnected()) {
-
-                                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                                    CallbackManager.getInstance().getErrorCallback().noConnection();
-                                }
-                                return;
-                            }
-                            try {
-                                Intent i = new Intent(Intent.ACTION_VIEW);
-                                i.setData(Uri.parse(story.deeplink));
-                                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                context.startActivity(i);
-                            } catch (Exception e) {
-                            }
-                        }
-                        return;
-                    }
-                    if (story.isHideInReader()) {
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().emptyLinkError();
-                        }
-                        return;
-                    }
                     service.getDownloadManager().putStories(
                             InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
                             type
