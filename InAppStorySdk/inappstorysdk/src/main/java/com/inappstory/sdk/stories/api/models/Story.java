@@ -296,7 +296,7 @@ public class Story implements Parcelable {
                     (
                             (type == null && (objType == null || objType.equals("image")))
                                     ||
-                                    object.getType().equals(type)
+                                    (object.getType() != null && object.getType().equals(type))
                     )
             )
                 res.add(object.getKey());
@@ -313,7 +313,7 @@ public class Story implements Parcelable {
                     (
                             (type == null && (objType == null || objType.equals("image")))
                                     ||
-                                    object.getType().equals(type)
+                                    (object.getType() != null && object.getType().equals(type))
                     )
             )
                 res.add(object.getUrl());
