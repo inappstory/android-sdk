@@ -523,12 +523,16 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         String storageId = "gameInstance_" + manager.gameCenterId
                 + "__" + InAppStoryService.getInstance().getUserId();
         String localStringData = KeyValueStorage.getString(storageId);
-        Map<String, Object> localData = JsonParser.toObjectMap(new JSONObject(localStringData));
-        HashMap<String, Object> newData = new HashMap<>(localData);
-        for (String key : serverData.keySet()) {
-            newData.put(key, serverData.get(key));
+        if (localStringData == null) {
+            KeyValueStorage.saveString(storageId, JsonParser.mapToJsonString(serverData));
+        } else {
+            Map<String, Object> localData = JsonParser.toObjectMap(new JSONObject(localStringData));
+            HashMap<String, Object> newData = new HashMap<>(localData);
+            for (String key : serverData.keySet()) {
+                newData.put(key, serverData.get(key));
+            }
+            KeyValueStorage.saveString(storageId, JsonParser.mapToJsonString(newData));
         }
-        KeyValueStorage.saveString(storageId, JsonParser.mapToJsonString(newData));
     }
 
     private void checkIntentValues(final GameLoadedCallback callback) {
@@ -569,7 +573,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         } catch (JSONException ignored) {
 
                         }
-                        if (gameCenterData.splashScreen != null)
+                        if (gameCenterData.splashScreen != null && gameCenterData.splashScreen.url != null)
                             updateLoader(gameCenterData.splashScreen.url);
                         manager.resources = getIntent().getStringExtra("gameResources");
                         manager.gameConfig = gameCenterData.initCode;
