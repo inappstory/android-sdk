@@ -174,16 +174,18 @@ public class GameManager {
 
     void tapOnLink(String link) {
         if (InAppStoryService.isNull()) return;
-        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                    dataModel.storyId,
-                    StringsUtils.getNonNull(dataModel.title),
-                    StringsUtils.getNonNull(dataModel.tags),
-                    dataModel.slidesCount,
-                    dataModel.slideIndex,
-                    StringsUtils.getNonNull(link),
-                    ClickAction.GAME
-            );
+        if (dataModel != null) {
+            if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                        dataModel.storyId,
+                        StringsUtils.getNonNull(dataModel.title),
+                        StringsUtils.getNonNull(dataModel.tags),
+                        dataModel.slidesCount,
+                        dataModel.slideIndex,
+                        StringsUtils.getNonNull(link),
+                        ClickAction.GAME
+                );
+            }
         }
         if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
