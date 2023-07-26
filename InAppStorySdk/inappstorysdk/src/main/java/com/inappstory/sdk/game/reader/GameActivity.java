@@ -272,7 +272,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             loaderView = gameLoaderView;
             customLoaderView = gameLoaderView.getView();
         } else {
-            GameLoadProgressBar loadProgressBar = new GameLoadProgressBar(GameActivity.this);
+            GameReaderLoadProgressBar loadProgressBar = new GameReaderLoadProgressBar(GameActivity.this);
             loaderView = loadProgressBar;
             customLoaderView = loadProgressBar;
         }

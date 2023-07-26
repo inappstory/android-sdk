@@ -9,7 +9,7 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.game.reader.GameLoadProgressBar;
+import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
@@ -1138,7 +1138,7 @@ public class AppearanceManager {
                 return v;
             }
         }
-        return new GameLoadProgressBar(context);
+        return new GameReaderLoadProgressBar(context);
     }
 
 }

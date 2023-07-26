@@ -15,9 +15,12 @@ import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -54,6 +57,7 @@ public class GameManager {
         String[] urlParts = ZipLoader.urlParts(path);
         ZipLoader.getInstance().downloadAndUnzip(resourceList, path, urlParts[0], callback, "game");
     }
+
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         String id = gameInstanceId;
@@ -78,6 +82,12 @@ public class GameManager {
                         }
                     });
         }
+    }
+
+    void openUrl(String data) {
+        UrlObject urlObject = JsonParser.fromJson(data, UrlObject.class);
+        if (urlObject != null && urlObject.url != null && !urlObject.url.isEmpty())
+            tapOnLink(urlObject.url);
     }
 
     void storySetData(String data, boolean sendToServer) {
@@ -198,18 +208,26 @@ public class GameManager {
 
     void tapOnLink(String link) {
         if (InAppStoryService.isNull()) return;
-        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                    dataModel.storyId,
-                    StringsUtils.getNonNull(dataModel.title),
-                    StringsUtils.getNonNull(dataModel.tags),
-                    dataModel.slidesCount,
-                    dataModel.slideIndex,
-                    StringsUtils.getNonNull(link),
-                    ClickAction.GAME
+        SlideData data = null;
+        if (dataModel != null) {
+            data = new SlideData(
+                    new StoryData(
+                            dataModel.storyId,
+                            StringsUtils.getNonNull(dataModel.title),
+                            StringsUtils.getNonNull(dataModel.tags),
+                            dataModel.slidesCount
+                    ),
+                    dataModel.slideIndex
             );
         }
-        if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+
+        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+            CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                    data,
+                    StringsUtils.getNonNull(link),
+                    ClickAction.GAME_READER
+            );
+        } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
                     StringsUtils.getNonNull(link)
             );

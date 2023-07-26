@@ -11,6 +11,8 @@ import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -141,32 +143,36 @@ public class ReaderPageManager {
         StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         if (object != null) {
 
-            ClickAction action = ClickAction.BUTTON;
+            ClickAction action = ClickAction.STORY_READER_BUTTON;
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                     storyId, getStoryType()
             );
             switch (object.getLink().getType()) {
                 case "url":
                     if (object.getType() != null && !object.getType().isEmpty()) {
-                        switch (object.getType()) {
-                            case "swipeUpLink":
-                                action = ClickAction.SWIPE;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    if (story != null) {
-                        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                                    story.id, StringsUtils.getNonNull(story.statTitle),
-                                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), story.lastIndex,
-                                    object.getLink().getTarget(), action);
+                        if ("swipeUpLink".equals(object.getType())) {
+                            action = ClickAction.STORY_READER_SWIPE;
                         }
                     }
                     if (getStoryType() == Story.StoryType.COMMON)
                         OldStatisticManager.getInstance().addLinkOpenStatistic();
-                    if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                    if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                        if (story != null) {
+                            CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                                    new SlideData(
+                                            new StoryData(
+                                                    story.id,
+                                                    StringsUtils.getNonNull(story.statTitle),
+                                                    StringsUtils.getNonNull(story.tags),
+                                                    story.getSlidesCount()
+                                            ),
+                                            story.lastIndex
+                                    ),
+                                    object.getLink().getTarget(),
+                                    action
+                            );
+                        }
+                    } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                         CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
                                 object.getLink().getTarget()
                         );
@@ -176,13 +182,9 @@ public class ReaderPageManager {
                     break;
                 case "json":
                     if (object.getType() != null && !object.getType().isEmpty()) {
-                        switch (object.getType()) {
-                            case "swipeUpItems":
-                                if (story != null)
-                                    showGoods(object.getLink().getTarget(), object.getElementId(), story.id, story.lastIndex);
-                                break;
-                            default:
-                                break;
+                        if ("swipeUpItems".equals(object.getType())) {
+                            if (story != null)
+                                showGoods(object.getLink().getTarget(), object.getElementId(), story.id, story.lastIndex);
                         }
                     }
                     break;

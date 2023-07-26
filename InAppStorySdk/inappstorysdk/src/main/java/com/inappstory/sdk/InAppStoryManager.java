@@ -371,6 +371,7 @@ public class InAppStoryManager {
     /**
      * use to set callback on click on buttons in stories (without additional info)
      */
+    @Deprecated
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         CallbackManager.getInstance().setUrlClickCallback(urlClickCallback);
     }

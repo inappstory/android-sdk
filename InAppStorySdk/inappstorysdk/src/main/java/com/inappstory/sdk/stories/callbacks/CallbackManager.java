@@ -210,6 +210,7 @@ public class CallbackManager {
     private AppClickCallback appClickCallback;
     private ShareCallback shareCallback;
 
+    @Deprecated
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {
         this.urlClickCallback = urlClickCallback;
     }
@@ -228,6 +229,7 @@ public class CallbackManager {
 
 
 
+    @Deprecated
     public UrlClickCallback getUrlClickCallback() {
         return urlClickCallback;
     }

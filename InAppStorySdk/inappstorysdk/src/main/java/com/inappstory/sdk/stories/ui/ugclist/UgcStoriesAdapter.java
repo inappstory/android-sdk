@@ -18,6 +18,8 @@ import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -157,16 +159,25 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         ),
                         gameInstanceId);
                 return;
-            } if (current.deeplink != null) {
+            }
+            if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, null);
                 //OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                            current.id, StringsUtils.getNonNull(current.statTitle),
-                            StringsUtils.getNonNull(current.tags), current.getSlidesCount(), 0,
-                            current.deeplink, ClickAction.DEEPLINK);
-                }
-                if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                            new SlideData(
+                                    new StoryData(
+                                            current.id,
+                                            StringsUtils.getNonNull(current.statTitle),
+                                            StringsUtils.getNonNull(current.tags),
+                                            current.getSlidesCount()
+                                    ),
+                                    0
+                            ),
+                            current.deeplink,
+                            ClickAction.UGC_STORY_FEED_DEEPLINK
+                    );
+                } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                     current.isOpened = true;
                     current.saveStoryOpened(Story.StoryType.UGC);

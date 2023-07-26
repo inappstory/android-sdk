@@ -37,6 +37,11 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
+    public void openUrl(String data) {
+        manager.openUrl(data);
+    }
+
+    @JavascriptInterface
     public void gameInstanceSetLocalData(String gameInstanceId, String data, boolean sendToServer) {
         manager.gameInstanceSetData(gameInstanceId, data, sendToServer);
     }
