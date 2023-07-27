@@ -24,6 +24,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -313,18 +314,26 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
             }
         });
-       /* if (!isFullscreen) {
 
-        } else {
+        closeButton.setVisibility(View.VISIBLE);
+        loaderContainer.addView(customLoaderView);
+
+    }
+
+    Boolean forceFullscreen = false;
+
+    private void setLayout() {
+        if (isFullscreen) {
             int systemUiVisibility = 0;
             int navigationBarColor = Color.TRANSPARENT;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 systemUiVisibility = systemUiVisibility | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
             }
             systemUiVisibility = systemUiVisibility |
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+
             getWindow().getDecorView().setSystemUiVisibility(systemUiVisibility);
             getWindow().getAttributes().flags = getWindow().getAttributes().flags |
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
@@ -332,8 +341,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 getWindow().setNavigationBarColor(navigationBarColor);
             }
-
-        }*/
+        }
         if (Build.VERSION.SDK_INT >= 28) {
             new Handler(getMainLooper()).post(new Runnable() {
                 @Override
@@ -361,10 +369,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 }
             });
         }
-        closeButton.setVisibility(View.VISIBLE);
-        loaderContainer.addView(customLoaderView);
     }
-
 
     public void tapOnLinkDefault(String link) {
         try {
@@ -555,13 +560,14 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             GameScreenOptions options =
                     JsonParser.fromJson(getIntent().getStringExtra("options"), GameScreenOptions.class);
             isFullscreen = options != null && options.fullScreen;
+            if (forceFullscreen != null)
+                isFullscreen = forceFullscreen;
             manager.resources = getIntent().getStringExtra("gameResources");
             manager.gameConfig = getIntent().getStringExtra("gameConfig");
             manager.splashImagePath = getIntent().getStringExtra("splashImagePath");
             replaceConfigs();
             callback.complete(true);
         }
-
     }
 
     private void downloadGame() {
@@ -582,6 +588,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             GameScreenOptions options = gameCenterData.options;
                             manager.resources = JsonParser.getJson(gameCenterData.resources);
                             isFullscreen = options != null && options.fullScreen;
+                            if (forceFullscreen != null)
+                                isFullscreen = forceFullscreen;
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -814,7 +822,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             finish();
             return;
         }
-
         ScreensManager.getInstance().currentGameActivity = this;
         manager = new GameManager(this);
         manager.callback = new ZipLoadCallback() {
@@ -845,6 +852,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         @Override
         public void complete(boolean success) {
             if (success) {
+                setLayout();
                 loaderView.setIndeterminate(false);
                 new Handler(getMainLooper()).postDelayed(new Runnable() {
                     @Override
