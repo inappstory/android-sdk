@@ -64,7 +64,7 @@
                 android:layout_alignParentEnd="true"
                 android:background="@null"
                 android:elevation="10dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="8dp"
                 app:srcCompat="@drawable/ic_stories_close" />

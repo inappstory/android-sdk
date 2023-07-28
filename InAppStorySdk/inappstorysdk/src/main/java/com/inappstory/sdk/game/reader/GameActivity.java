@@ -359,7 +359,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
                         if (windowInsets != null) {
                             ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
-                                    windowInsets.getSystemWindowInsetTop();
+                                    Math.max(windowInsets.getSystemWindowInsetTop(), Sizes.dpToPxExt(16));
                             closeButton.requestLayout();
                         }
                         if (Sizes.isTablet()) {
@@ -377,6 +377,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     }
                 }
             });
+        } else {
+
         }
     }
 
