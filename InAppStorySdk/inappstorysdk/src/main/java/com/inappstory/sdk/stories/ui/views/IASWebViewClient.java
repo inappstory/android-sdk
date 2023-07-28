@@ -14,6 +14,8 @@ import android.webkit.WebViewClient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class IASWebViewClient extends WebViewClient {
@@ -35,12 +37,19 @@ public class IASWebViewClient extends WebViewClient {
                         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                                 MimeTypeMap.getFileExtensionFromUrl(filePath)
                         );
-                        return new WebResourceResponse(
+                        WebResourceResponse response = new WebResourceResponse(
                                 mimeType,
                                 "utf-8",
                                 new FileInputStream(file)
                         );
+                        Map<String, String> currentHeaders = response.getResponseHeaders();
+                        HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+                        newHeaders.put("Access-Control-Allow-Origin", "*");
+                        response.setResponseHeaders(newHeaders);
+                        return response;
                     }
+
+
                 }
             }
         } catch (FileNotFoundException ignored) {
