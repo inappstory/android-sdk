@@ -323,8 +323,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
             }
         });
-
-        closeButton.setVisibility(View.VISIBLE);
         loaderContainer.addView(customLoaderView);
 
     }
@@ -351,6 +349,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 getWindow().setNavigationBarColor(navigationBarColor);
             }
         }
+    }
+
+    private void checkInsets() {
         if (Build.VERSION.SDK_INT >= 28) {
             new Handler(getMainLooper()).post(new Runnable() {
                 @Override
@@ -375,10 +376,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             }
                         }
                     }
+
+                    closeButton.setVisibility(View.VISIBLE);
                 }
             });
         } else {
-
+            closeButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -807,6 +810,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 || newPath.isEmpty())
             return;
         manager.splashImagePath = newPath;
+        setLoader();
     }
 
     private void setLoader() {
@@ -847,7 +851,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
             @Override
             public void onError() {
-
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        changeView(refreshGame, customLoaderView);
+                    }
+                });
             }
 
             @Override
@@ -857,6 +866,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
         };
         setViews();
+        checkInsets();
         checkIntentValues(gameLoadedCallback);
     }
 
@@ -875,6 +885,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     }
                 }, 300);
             } else {
+                closeButton.setVisibility(View.VISIBLE);
                 GameStoryData dataModel = getStoryDataModel();
                 if (CallbackManager.getInstance().getGameReaderCallback() != null) {
                     CallbackManager.getInstance().getGameReaderCallback().gameLoadError(

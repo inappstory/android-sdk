@@ -61,6 +61,7 @@
                 android:id="@+id/close_button"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:visibility="gone"
                 android:layout_alignParentEnd="true"
                 android:background="@null"
                 android:elevation="10dp"

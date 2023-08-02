@@ -182,7 +182,8 @@ public class ZipLoader {
 
                                 @Override
                                 public void onError() {
-
+                                    if (callback != null)
+                                        callback.onError();
                                 }
                             }, hash);
                     if (file == null) {
