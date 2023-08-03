@@ -26,21 +26,16 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
-import android.webkit.MimeTypeMap;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -90,9 +85,6 @@ import com.inappstory.sdk.utils.ZipLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -262,6 +254,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             @Override
             public void run() {
                 closeButton.setVisibility(showClose ? View.VISIBLE : View.GONE);
+                refreshGame.removeCallbacks(showRefresh);
                 hideView(loaderContainer);
             }
         });
@@ -585,7 +578,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     private void downloadGame() {
-        downloadGame(manager.gameCenterId, new GameDownloadCallback() {
+        downloadGame(
+                manager.gameCenterId,
+                new GameDownloadCallback() {
                     @Override
                     public void complete(GameCenterData gameCenterData) {
                         try {
@@ -824,11 +819,19 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     @Override
     protected void onDestroy() {
+        refreshGame.removeCallbacks(showRefresh);
         if (ScreensManager.getInstance().currentGameActivity == this)
             ScreensManager.getInstance().currentGameActivity = null;
         super.onDestroy();
     }
 
+
+    Runnable showRefresh = new Runnable() {
+        @Override
+        public void run() {
+            changeView(refreshGame, customLoaderView);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
@@ -847,16 +850,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);
+                refreshGame.postDelayed(showRefresh, 5000);
             }
 
             @Override
             public void onError() {
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        changeView(refreshGame, customLoaderView);
-                    }
-                });
+                refreshGame.post(showRefresh);
             }
 
             @Override
@@ -893,12 +892,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             getIntent().getStringExtra("gameId")
                     );
                 }
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        changeView(refreshGame, customLoaderView);
-                    }
-                });
+                webView.post(showRefresh);
 
             }
         }

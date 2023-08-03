@@ -33,6 +33,7 @@ public class ZipLoader {
     private ZipLoader() {
 
     }
+
     private static ZipLoader INSTANCE;
     private static final Object lock = new Object();
 
@@ -126,7 +127,10 @@ public class ZipLoader {
                 public void run() {
                     File fl = new File(file.getAbsolutePath() + INDEX_NAME);
                     try {
-                        callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
+                        if (fl.exists())
+                            callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
+                        else
+                            callback.onError();
                     } catch (Exception e) {
                         InAppStoryService.createExceptionLog(e);
                         e.printStackTrace();
