@@ -89,28 +89,28 @@ public class SimpleCustomGoodsItem implements ICustomGoodsItem {
                 R.id.title,
                 goodsCellMainTextColor,
                 goodsCellTitleSize,
-                Sizes.dpToPxExt(16, context),
+                Sizes.dpToPxExt(14, context),
                 view
         );
         setTextFieldParameters(
                 R.id.description,
                 goodsCellMainTextColor,
                 goodsCellDescriptionSize,
-                Sizes.dpToPxExt(14, context),
+                Sizes.dpToPxExt(12, context),
                 view
         );
         setTextFieldParameters(
                 R.id.price,
                 goodsCellMainTextColor,
                 goodsCellPriceSize,
-                Sizes.dpToPxExt(17, context),
+                Sizes.dpToPxExt(14, context),
                 view
         );
         setTextFieldParameters(
                 R.id.oldPrice,
                 goodsCellOldPriceTextColor,
                 goodsCellOldPriceSize,
-                Sizes.dpToPxExt(17, context),
+                Sizes.dpToPxExt(14, context),
                 view
         );
 

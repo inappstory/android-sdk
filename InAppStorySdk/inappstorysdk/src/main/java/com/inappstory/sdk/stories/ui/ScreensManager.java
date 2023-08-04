@@ -22,7 +22,6 @@ import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -39,6 +38,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -479,7 +481,6 @@ public class ScreensManager {
         }
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     public void showGoods(String skusString, Activity activity, final ShowGoodsCallback showGoodsCallback,
                           boolean fullScreen, final String widgetId,
                           final int storyId, final int slideIndex, final String feedId) {
@@ -548,13 +549,24 @@ public class ScreensManager {
                         }
                     });
         } else {
-            AlertDialog.Builder builder = (Sizes.isTablet() && !fullScreen) ? new AlertDialog.Builder(activity) :
-                    new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);
+            AlertDialog.Builder builder;
+            if (Sizes.isTablet() && !fullScreen) {
+                builder = new AlertDialog.Builder(activity);
+            } else {
+                builder = new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);
+            }
             dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
             builder.setView(dialogView);
             goodsDialog = builder.create();
+            goodsDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-
+            goodsDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            WindowManager.LayoutParams attrs = goodsDialog.getWindow().getAttributes();
+            attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
+            goodsDialog.getWindow().setAttributes(attrs);
+            View decorView = goodsDialog.getWindow().getDecorView();
+            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
             goodsDialog.show();
 
             if (StatisticManager.getInstance() != null) {
@@ -574,8 +586,8 @@ public class ScreensManager {
             final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
             bottomLine.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
             bottomLine.getLayoutParams().height = iGoodsWidgetAppearance.getBackgroundHeight();
+            Log.e("goodsWidgetHeight", "" + iGoodsWidgetAppearance.getBackgroundHeight());
             bottomLine.requestLayout();
-            final View goodsContainer = goodsDialog.findViewById(R.id.goods_container);
             final ImageView refresh = goodsDialog.findViewById(R.id.refresh_button);
             refresh.setImageDrawable(activity.getResources().getDrawable(AppearanceManager.getCommonInstance().csRefreshIcon()));
             goodsDialog.findViewById(R.id.close_area).setOnClickListener(new View.OnClickListener() {

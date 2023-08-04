@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="210dp"
-    android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_width="158dp"
+    android:layout_height="224dp"
     android:orientation="vertical">
 
     <com.inappstory.sdk.imageloader.RoundedCornerLayout
         android:id="@+id/item_cv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="158dp"
+        android:layout_height="158dp">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/image"
-            android:layout_width="210dp"
-            android:layout_height="210dp"
+            android:layout_width="158dp"
+            android:layout_height="158dp"
             android:scaleType="centerCrop" />
     </com.inappstory.sdk.imageloader.RoundedCornerLayout>
 
@@ -22,22 +21,21 @@
         android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textColor="@color/black"
-        android:textSize="14sp"
+        android:textSize="10sp"
         tools:text="СОВЕРШЕННЫЙ КРЕМ ДЛЯ ЛИЦА" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:ellipsize="marquee"
         android:singleLine="true"
         android:textColor="@color/black"
-        android:textSize="16sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         tools:text="Valmont essence of gold sturgeon" />
 
@@ -50,12 +48,10 @@
             android:id="@+id/price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:ellipsize="marquee"
             android:singleLine="true"
             android:textColor="@color/black"
-            android:textSize="17sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             tools:text="от 5 рублей" />
 
@@ -64,12 +60,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:ellipsize="marquee"
             android:singleLine="true"
             android:textColor="#40000000"
-            android:textSize="17sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             tools:text="от 10 рублей" />
     </LinearLayout>
