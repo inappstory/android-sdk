@@ -496,7 +496,7 @@ public class ScreensManager {
         final String localTaskId;
         if (widgetId != null) localTaskId = widgetId;
         else localTaskId = randomUUID().toString();
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView() != null) {
+        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView(activity) != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
             builder.setView(dialogView);
@@ -519,7 +519,7 @@ public class ScreensManager {
             }
             ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
                     .addView(AppearanceManager.getCommonInstance()
-                            .csCustomGoodsWidget().getWidgetView());
+                            .csCustomGoodsWidget().getWidgetView(activity));
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
                     new GetGoodsDataCallback() {
                         @Override

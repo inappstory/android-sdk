@@ -205,6 +205,7 @@ public class AppearanceManager {
     private int csReaderBackgroundColor = Color.BLACK;
 
     private Typeface csCustomFont;
+
     private Typeface csCustomBoldFont;
     private Typeface csCustomItalicFont;
     private Typeface csCustomBoldItalicFont;

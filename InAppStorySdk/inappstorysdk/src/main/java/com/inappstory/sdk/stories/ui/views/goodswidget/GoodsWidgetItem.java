@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.views.goodswidget;
 
+import android.content.Context;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,8 +12,8 @@ public class GoodsWidgetItem extends RecyclerView.ViewHolder {
     GoodsWidgetAdapter adapter;
     ICustomGoodsItem customGoodsItem;
 
-    public GoodsWidgetItem(ICustomGoodsItem customGoodsItem, GoodsWidgetAdapter adapter) {
-        super(customGoodsItem.getView());
+    public GoodsWidgetItem(ICustomGoodsItem customGoodsItem, GoodsWidgetAdapter adapter, Context context) {
+        super(customGoodsItem.getView(context));
         this.customGoodsItem = customGoodsItem;
         this.adapter = adapter;
     }

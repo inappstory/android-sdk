@@ -2,15 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="210dp"
-    android:layout_margin="8dp"
     android:layout_height="wrap_content"
+    android:layout_margin="8dp"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/image"
-        android:scaleType="centerCrop"
-        android:layout_width="210dp"
-        android:layout_height="210dp" />
+    <com.inappstory.sdk.imageloader.RoundedCornerLayout
+        android:id="@+id/item_cv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:background="#000">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/image"
+            android:layout_width="210dp"
+            android:layout_height="210dp"
+            android:scaleType="centerCrop" />
+    </com.inappstory.sdk.imageloader.RoundedCornerLayout>
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/description"
@@ -52,12 +60,13 @@
             android:textSize="17sp"
             android:textStyle="bold"
             tools:text="от 5 рублей" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/oldPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:ellipsize="marquee"
             android:singleLine="true"
