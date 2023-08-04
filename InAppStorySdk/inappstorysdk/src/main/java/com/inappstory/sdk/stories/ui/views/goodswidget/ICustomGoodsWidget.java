@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public interface ICustomGoodsWidget {
     View getWidgetView(Context context);
-    ICustomGoodsItem getItem(Context context);
+    ICustomGoodsItem getItem();
     IGoodsWidgetAppearance getWidgetAppearance();
     RecyclerView.ItemDecoration getDecoration();
     void getSkus(ArrayList<String> skus, GetGoodsDataCallback callback);

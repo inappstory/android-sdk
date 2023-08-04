@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.URLUtil;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -146,7 +147,7 @@ public class SimpleCustomGoodsItem implements ICustomGoodsItem {
             oldPrice.setPaintFlags(oldPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
-        if (data.image != null) {
+        if (data.image != null && URLUtil.isNetworkUrl(data.image)) {
             if (InAppStoryService.getInstance() != null)
                 ImageLoader.getInstance().displayImage(
                         data.image,

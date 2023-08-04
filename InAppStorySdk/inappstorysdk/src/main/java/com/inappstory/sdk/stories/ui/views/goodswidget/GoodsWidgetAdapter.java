@@ -57,7 +57,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
         ICustomGoodsItem customGoodsItem = AppearanceManager
                 .getCommonInstance()
                 .csCustomGoodsWidget()
-                .getItem(nParent.getContext());
+                .getItem();
         if (customGoodsItem != null) {
             return new GoodsWidgetItem(customGoodsItem, this, nParent.getContext());
         } else {
