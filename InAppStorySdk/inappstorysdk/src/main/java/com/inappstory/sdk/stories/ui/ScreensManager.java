@@ -568,6 +568,8 @@ public class ScreensManager {
             int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
             decorView.setSystemUiVisibility(uiOptions);
             goodsDialog.show();
+            //  goodsDialog.findViewById(R.id.goods_container).setTranslationY(Sizes.dpToPxExt(240));
+            // goodsDialog.findViewById(R.id.goods_container).animate().translationY(0).setDuration(600).start();
 
             if (StatisticManager.getInstance() != null) {
                 StatisticManager.getInstance().sendGoodsOpen(storyId,
@@ -584,7 +586,9 @@ public class ScreensManager {
                 ((GoodsWidgetAppearanceAdapter) iGoodsWidgetAppearance).context = activity;
             }
             final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
+            View closeButtonBackground = goodsDialog.findViewById(R.id.hide_goods_container);
             bottomLine.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
+            closeButtonBackground.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
             bottomLine.getLayoutParams().height = iGoodsWidgetAppearance.getBackgroundHeight();
             Log.e("goodsWidgetHeight", "" + iGoodsWidgetAppearance.getBackgroundHeight());
             bottomLine.requestLayout();
@@ -600,8 +604,6 @@ public class ScreensManager {
                     .setBackgroundColor(iGoodsWidgetAppearance.getDimColor());
             loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
             loaderContainer.setVisibility(View.VISIBLE);
-
-            //   goodsContainer.animate().translationY(0).setDuration(600).start();
             final GetGoodsDataCallback callback = new GetGoodsDataCallback() {
                 @Override
                 public void onSuccess(ArrayList<GoodsItemData> data) {
@@ -644,7 +646,8 @@ public class ScreensManager {
             hideGoods.setImageDrawable(iGoodsWidgetAppearance.getCloseButtonImage());
             hideGoods.setColorFilter(
                     new PorterDuffColorFilter(iGoodsWidgetAppearance.getCloseButtonColor(),
-                            PorterDuff.Mode.SRC_ATOP));
+                            PorterDuff.Mode.SRC_ATOP)
+            );
             hideGoods.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

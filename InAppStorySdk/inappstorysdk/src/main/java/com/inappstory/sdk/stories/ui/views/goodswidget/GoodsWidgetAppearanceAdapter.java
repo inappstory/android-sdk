@@ -37,6 +37,6 @@ public class GoodsWidgetAppearanceAdapter implements IGoodsWidgetAppearance {
 
     @Override
     public int getCloseButtonColor() {
-        return Color.BLACK;
+        return Color.parseColor("#737373");
     }
 }
