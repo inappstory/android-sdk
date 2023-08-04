@@ -6,6 +6,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -103,7 +104,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private IProgressLoaderView loaderView;
     private View baseContainer;
 
-    private View refreshGame;
+    private ImageView refreshGame;
     GameManager manager;
     private PermissionRequest audioRequest;
     private boolean isFullscreen = false;
@@ -260,12 +261,14 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         });
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void setViews() {
         webView = findViewById(R.id.gameWebview);
         loader = findViewById(R.id.loader);
         baseContainer = findViewById(R.id.draggable_frame);
         loaderContainer = findViewById(R.id.loaderContainer);
         refreshGame = findViewById(R.id.gameRefresh);
+        refreshGame.setImageDrawable(getResources().getDrawable(AppearanceManager.getCommonInstance().csRefreshIcon()));
         IGameReaderLoaderView gameReaderLoaderView = AppearanceManager.getCommonInstance().csGameReaderLoaderView();
         IGameLoaderView gameLoaderView = AppearanceManager.getCommonInstance().csGameLoaderView();
         if (gameReaderLoaderView != null) {
