@@ -4,8 +4,10 @@ import static java.util.UUID.randomUUID;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
@@ -20,6 +22,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -87,6 +92,10 @@ public class ZipLoader {
         }
     }
 
+    private void deleteFileIfNotPass(File file) {
+        //if (file.exists()) file.delete();
+    }
+
     private boolean downloadResources(final List<WebResource> resources,
                                       final File file,
                                       final ZipLoadCallback callback,
@@ -97,9 +106,6 @@ public class ZipLoader {
         if (InAppStoryService.isNull()) return false;
         String pathName = file.getAbsolutePath();
         final File filePath = new File(pathName + "/src/");
-        //  if (!filePath.exists()) {
-        //      filePath.mkdirs();
-        //  }
         int cnt = curSize;
         boolean downloaded = false;
         for (WebResource resource : resources) {
@@ -109,9 +115,34 @@ public class ZipLoader {
                 String fileName = resource.key;
                 if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
                     continue;
+                File resourceFile = new File(filePath.getAbsolutePath() + "/" + fileName);
+                if (resourceFile.exists()) {
+                    Log.e("FileCheck", "PreCheck Resource: " + "File - " + resourceFile.length() + "; Web - " + resource.size);
+                    if (resourceFile.length() != resource.size) {
+                        deleteFileIfNotPass(resourceFile);
+                    } else {
+                        String fileSha1 = getFileSHA1(resourceFile);
+                        Log.e("FileCheck", "PreCheck Resource: " + "File - " + fileSha1 + "; Web - " + resource.sha1);
+                        if (!fileSha1.equals(resource.sha1)) {
+                            deleteFileIfNotPass(resourceFile);
+                        }
+                    }
+                }
                 downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, InAppStoryService.getInstance().getCommonCache(),
-                        new File(filePath.getAbsolutePath() + "/" + fileName),
+                        resourceFile,
                         null);
+                if (resourceFile.exists()) {
+                    Log.e("FileCheck", "PreCheck Resource: " + "File - " + resourceFile.length() + "; Web - " + resource.size);
+                    if (resourceFile.length() != resource.size) {
+                        deleteFileIfNotPass(resourceFile);
+                    } else {
+                        String fileSha1 = getFileSHA1(resourceFile);
+                        Log.e("FileCheck", "PreCheck Resource: " + "File - " + fileSha1 + "; Web - " + resource.sha1);
+                        if (!fileSha1.equals(resource.sha1)) {
+                            deleteFileIfNotPass(resourceFile);
+                        }
+                    }
+                }
                 cnt += resource.size;
                 if (callback != null)
                     callback.onProgress(cnt, totalSize);
@@ -141,11 +172,46 @@ public class ZipLoader {
         return downloaded;
     }
 
+    public static String getFileSHA1(File file) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            FileInputStream fis = new FileInputStream(file);
+            byte[] dataBytes = new byte[1024];
+
+            int nread = 0;
+
+            while ((nread = fis.read(dataBytes)) != -1) {
+                md.update(dataBytes, 0, nread);
+            }
+
+            byte[] mdbytes = md.digest();
+
+            StringBuffer sb = new StringBuffer("");
+            for (int i = 0; i < mdbytes.length; i++) {
+                sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16)
+                        .substring(1));
+            }
+            return sb.toString();
+        } catch (Exception ex) {
+            return "";
+        }
+    }
+
     public void downloadAndUnzip(final List<WebResource> resources,
                                  final String url,
                                  final String pathName,
                                  final ZipLoadCallback callback,
                                  final String profilingPrefix) {
+        downloadAndUnzip(resources, url, pathName, null, callback, profilingPrefix);
+    }
+
+    public void downloadAndUnzip(final List<WebResource> resources,
+                                 String outUrl,
+                                 final String pathName,
+                                 final String instanceId,
+                                 final ZipLoadCallback callback,
+                                 final String profilingPrefix) {
+        final String url = outUrl.split("\\?")[0];
         terminate = false;
         downloadFileThread.submit(new Callable() {
             @Override
@@ -157,14 +223,23 @@ public class ZipLoader {
                         for (WebResource resource : resources) {
                             totalSize += resource.size;
                         }
+
                     final int fTotalSize = totalSize;
                     String hash = randomUUID().toString();
-
+                    File gameDir = new File(InAppStoryService.getInstance().getCommonCache().getCacheDir() +
+                            File.separator + "zip" +
+                            File.separator + pathName +
+                            File.separator);
+                    ArrayList<File> filesToDelete = new ArrayList<>();
+                    if (gameDir.exists()) {
+                        filesToDelete.addAll(Arrays.asList(gameDir.listFiles()));
+                    }
                     File getFile = new File(
                             InAppStoryService.getInstance().getCommonCache().getCacheDir() +
                                     File.separator + "zip" +
                                     File.separator + pathName +
-                                    File.separator + url.hashCode() + ".zip");
+                                    File.separator + url.hashCode() + ".zip"
+                    );
                     if (pathName.contains("\\") || pathName.contains("/")) return null;
                     if (!getFile.getAbsolutePath().startsWith(
                             InAppStoryService.getInstance().getCommonCache().getCacheDir() +
@@ -196,8 +271,16 @@ public class ZipLoader {
                         return null;
                     }
                     ProfilingManager.getInstance().setReady(hash);
-                    File directory = new File(file.getParent() + File.separator + url.hashCode());
+                    File directory = new File(
+                            file.getParent() +
+                                    File.separator + url.hashCode() +
+                                    (instanceId != null ? (File.separator + instanceId) : ""));
                     String resourcesHash;
+                    for (File fileToDelete : filesToDelete) {
+                        if (fileToDelete.getAbsolutePath().contains(File.separator + url.hashCode()))
+                            continue;
+                        FileManager.deleteRecursive(fileToDelete);
+                    }
                     if (directory.exists()) {
                         resourcesHash = ProfilingManager.getInstance().addTask(
                                 profilingPrefix + "_resources_download");

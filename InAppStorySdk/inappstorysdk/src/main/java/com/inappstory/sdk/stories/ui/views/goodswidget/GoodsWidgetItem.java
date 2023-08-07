@@ -18,12 +18,15 @@ public class GoodsWidgetItem extends RecyclerView.ViewHolder {
         this.adapter = adapter;
     }
 
-    public void bind(GoodsItemData data) {
+    public void bind(GoodsItemData data, final GetGoodsDataCallback callback) {
         this.data = data;
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppearanceManager.getCommonInstance().csCustomGoodsWidget().onItemClick(GoodsWidgetItem.this.data);
+                AppearanceManager.getCommonInstance().csCustomGoodsWidget().onItemClick(
+                        GoodsWidgetItem.this.data,
+                        callback
+                );
                 if (adapter != null)
                     adapter.onItemClick(GoodsWidgetItem.this.data);
             }

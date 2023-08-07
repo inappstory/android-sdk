@@ -23,9 +23,12 @@ import java.util.ArrayList;
 public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     ArrayList<GoodsItemData> items = new ArrayList<>();
     GoodsWidget.GoodsWidgetConfig config;
+    GetGoodsDataCallback callback;
 
     public GoodsWidgetAdapter(ArrayList<GoodsItemData> items,
-                              GoodsWidget.GoodsWidgetConfig config) {
+                              GoodsWidget.GoodsWidgetConfig config,
+                              GetGoodsDataCallback callback) {
+        this.callback = callback;
         if (items != null)
             this.items.addAll(items);
         this.config = config;
@@ -71,7 +74,7 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
 
     @Override
     public void onBindViewHolder(@NonNull GoodsWidgetItem holder, int position) {
-        holder.bind(this.items.get(position));
+        holder.bind(this.items.get(position), callback);
     }
 
 

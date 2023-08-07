@@ -7,4 +7,6 @@ public class GameSplashScreen {
     public String url;
     @SerializedName("size")
     public int size;
+    @SerializedName("sha1")
+    public String sha1;
 }

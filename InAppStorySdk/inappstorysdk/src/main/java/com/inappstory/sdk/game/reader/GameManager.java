@@ -55,7 +55,14 @@ public class GameManager {
         }
 
         String[] urlParts = ZipLoader.urlParts(path);
-        ZipLoader.getInstance().downloadAndUnzip(resourceList, path, urlParts[0], callback, "game");
+        ZipLoader.getInstance().downloadAndUnzip(
+                resourceList,
+                path,
+                urlParts[0],
+                gameCenterId,
+                callback,
+                "game"
+        );
     }
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {

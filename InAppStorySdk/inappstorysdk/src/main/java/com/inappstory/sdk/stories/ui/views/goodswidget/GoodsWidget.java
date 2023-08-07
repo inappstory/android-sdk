@@ -45,8 +45,8 @@ public class GoodsWidget extends RecyclerView {
     }
 
     GoodsWidgetConfig config;
-    public void setItems(ArrayList<GoodsItemData> items) {
-        adapter = new GoodsWidgetAdapter(items, config);
+    public void setItems(ArrayList<GoodsItemData> items, GetGoodsDataCallback callback) {
+        adapter = new GoodsWidgetAdapter(items, config, callback);
         setAdapter(adapter);
     }
 
