@@ -28,6 +28,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.PermissionRequest;
+import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -53,15 +54,19 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
+import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.GameDownloadCallback;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -86,11 +91,13 @@ import com.inappstory.sdk.utils.ZipLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
 
@@ -300,6 +307,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
         });
         webViewContainer = findViewById(R.id.webViewContainer);
+
+        initWebView();
         if (Sizes.isTablet()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 getWindow().setStatusBarColor(Color.BLACK);
@@ -550,20 +559,23 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
     }
 
+    boolean hasSplashFile = false;
+
     private void checkIntentValues(final GameLoadedCallback callback) {
         manager.gameCenterId = getIntent().getStringExtra("gameId");
         manager.path = getIntent().getStringExtra("gameUrl");
         manager.dataModel = getStoryDataModel();
         if (manager.path == null) {
             if (manager.gameCenterId == null) {
-                callback.complete(false);
+                callback.complete(false, null);
                 finish();
                 return;
             }
-            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-            GameCenterData oldData = inAppStoryService.gameCacheManager().getCachedGame(manager.gameCenterId);
-            if (oldData != null && oldData.splashScreen != null) {
-                updateLoader(oldData.splashScreen.url);
+            String splashPath = KeyValueStorage.getString("gameInstanceSplash_" + manager.gameCenterId);
+            if (splashPath != null) {
+                File splash = new File(splashPath);
+                hasSplashFile = splash.exists();
+                setLoader(splash);
             }
             downloadGame();
         } else {
@@ -576,7 +588,57 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             manager.gameConfig = getIntent().getStringExtra("gameConfig");
             manager.splashImagePath = getIntent().getStringExtra("splashImagePath");
             replaceConfigs();
-            callback.complete(true);
+            setLoaderOld();
+            callback.complete(true, null);
+        }
+    }
+
+    private void downloadSplash(final GameSplashScreen splashScreen) {
+        boolean needToDownload = URLUtil.isValidUrl(splashScreen.url);
+        final String oldSplashPath = KeyValueStorage.getString("gameInstanceSplash_" + manager.gameCenterId);
+        if (oldSplashPath != null) {
+            File splash = new File(oldSplashPath);
+            if (splash.exists()) {
+                if (FileManager.getFileSHA1(splash).equals(splashScreen.sha1) && splash.length() == splashScreen.size)
+                    needToDownload = false;
+            }
+            setLoader(splash);
+        }
+        if (needToDownload) {
+            Downloader.downloadFileBackground(splashScreen.url, InAppStoryService.getInstance().getCommonCache(), new FileLoadProgressCallback() {
+                @Override
+                public void onProgress(int loadedSize, int totalSize) {
+
+                }
+
+                @Override
+                public void onSuccess(File file) {
+                    if (file != null && file.exists()) {
+                        if (FileManager.getFileSHA1(file).equals(splashScreen.sha1)
+                                && file.length() == splashScreen.size) {
+                            KeyValueStorage.saveString("gameInstanceSplash_" + manager.gameCenterId, file.getAbsolutePath());
+                            if (!hasSplashFile) {
+                                setLoader(file);
+                            } else {
+                                if (oldSplashPath != null) {
+                                    File splash = new File(oldSplashPath);
+                                    if (splash.exists()) {
+                                        splash.delete();
+                                    }
+                                    setLoader(splash);
+                                }
+                            }
+                        } else {
+                            file.delete();
+                        }
+                    }
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
         }
     }
 
@@ -586,13 +648,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 new GameDownloadCallback() {
                     @Override
                     public void complete(GameCenterData gameCenterData) {
+                        if (gameCenterData.splashScreen != null)
+                            downloadSplash(gameCenterData.splashScreen);
                         try {
                             replaceGameInstanceStorageData(gameCenterData.instanceUserData);
                         } catch (JSONException ignored) {
 
                         }
-                        if (gameCenterData.splashScreen != null && gameCenterData.splashScreen.url != null)
-                            updateLoader(gameCenterData.splashScreen.url);
                         manager.resources = getIntent().getStringExtra("gameResources");
                         manager.gameConfig = gameCenterData.initCode;
                         manager.path = gameCenterData.url;
@@ -606,13 +668,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             throw new RuntimeException(e);
                         }
                         replaceConfigs();
-                        gameLoadedCallback.complete(true);
+                        gameLoadedCallback.complete(true, gameCenterData);
                     }
 
                     @Override
                     public void error() {
 
-                        gameLoadedCallback.complete(false);
+                        gameLoadedCallback.complete(false, null);
                     }
                 }
         );
@@ -801,17 +863,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     }
 
-    private void updateLoader(String newPath) {
-        if ((manager.splashImagePath != null
-                && !manager.splashImagePath.isEmpty())
-                || newPath == null
-                || newPath.isEmpty())
-            return;
-        manager.splashImagePath = newPath;
-        setLoader();
+    private void setLoader(File splashFile) {
+        if (splashFile == null || !splashFile.exists()) {
+            loader.setBackgroundColor(Color.BLACK);
+        } else {
+            ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
+        }
     }
 
-    private void setLoader() {
+    private void setLoaderOld() {
         if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()
                 && InAppStoryService.isNotNull())
             ImageLoader.getInstance().displayImage(manager.splashImagePath, -1, loader,
@@ -835,6 +895,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             changeView(refreshGame, customLoaderView);
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
@@ -874,18 +935,11 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     GameLoadedCallback gameLoadedCallback = new GameLoadedCallback() {
         @Override
-        public void complete(boolean success) {
+        public void complete(boolean success, final GameCenterData data) {
             if (success) {
                 setLayout();
                 loaderView.setIndeterminate(false);
-                new Handler(getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        initWebView();
-                        setLoader();
-                        manager.loadGame();
-                    }
-                }, 300);
+                manager.loadGame(data);
             } else {
                 closeButton.setVisibility(View.VISIBLE);
                 GameStoryData dataModel = getStoryDataModel();
@@ -896,7 +950,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     );
                 }
                 webView.post(showRefresh);
-
             }
         }
     };

@@ -55,35 +55,7 @@ public class GameCacheManager {
                                     return;
                                 }
                                 cachedGames.put(gameId, new CachedGame(response));
-                                if (response.splashScreen != null && response.splashScreen.url != null) {
-                                    try {
-                                        Downloader.downloadOrGetFile(
-                                                response.splashScreen.url,
-                                                InAppStoryService.getInstance().getCommonCache(),
-                                                null,
-                                                new FileLoadProgressCallback() {
-                                                    @Override
-                                                    public void onProgress(int loadedSize, int totalSize) {
-
-                                                    }
-
-                                                    @Override
-                                                    public void onSuccess(File file) {
-                                                        callback.onSuccess(response);
-                                                    }
-
-                                                    @Override
-                                                    public void onError() {
-                                                        callback.onSuccess(response);
-                                                    }
-                                                }
-                                        );
-                                    } catch (Exception ignored) {
-                                        callback.onSuccess(response);
-                                    }
-                                } else {
-                                    callback.onSuccess(response);
-                                }
+                                callback.onSuccess(response);
                             }
 
                             @Override

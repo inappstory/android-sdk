@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileManager;
+import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
@@ -99,13 +100,19 @@ public class ZipLoader {
     private boolean downloadResources(final List<WebResource> resources,
                                       final File file,
                                       final ZipLoadCallback callback,
+                                      final String instanceId,
                                       final int totalSize,
                                       final int curSize) {
         if (resources == null) return true;
         if (terminate) return false;
         if (InAppStoryService.isNull()) return false;
         String pathName = file.getAbsolutePath();
-        final File filePath = new File(pathName + "/src/");
+        final File filePath = new File(
+                pathName +
+                File.separator +
+                (instanceId != null ? ("resources_" + instanceId) : "src") +
+                File.separator
+        );
         int cnt = curSize;
         boolean downloaded = false;
         for (WebResource resource : resources) {
@@ -117,14 +124,17 @@ public class ZipLoader {
                     continue;
                 File resourceFile = new File(filePath.getAbsolutePath() + "/" + fileName);
                 if (resourceFile.exists()) {
-                    Log.e("FileCheck", "PreCheck Resource: " + "File - " + resourceFile.length() + "; Web - " + resource.size);
                     if (resourceFile.length() != resource.size) {
                         deleteFileIfNotPass(resourceFile);
                     } else {
-                        String fileSha1 = getFileSHA1(resourceFile);
-                        Log.e("FileCheck", "PreCheck Resource: " + "File - " + fileSha1 + "; Web - " + resource.sha1);
+                        String fileSha1 = FileManager.getFileSHA1(resourceFile);
                         if (!fileSha1.equals(resource.sha1)) {
                             deleteFileIfNotPass(resourceFile);
+                        } else {
+                            cnt += resource.size;
+                            if (callback != null)
+                                callback.onProgress(cnt, totalSize);
+                            continue;
                         }
                     }
                 }
@@ -132,12 +142,10 @@ public class ZipLoader {
                         resourceFile,
                         null);
                 if (resourceFile.exists()) {
-                    Log.e("FileCheck", "PreCheck Resource: " + "File - " + resourceFile.length() + "; Web - " + resource.size);
                     if (resourceFile.length() != resource.size) {
                         deleteFileIfNotPass(resourceFile);
                     } else {
-                        String fileSha1 = getFileSHA1(resourceFile);
-                        Log.e("FileCheck", "PreCheck Resource: " + "File - " + fileSha1 + "; Web - " + resource.sha1);
+                        String fileSha1 = FileManager.getFileSHA1(resourceFile);
                         if (!fileSha1.equals(resource.sha1)) {
                             deleteFileIfNotPass(resourceFile);
                         }
@@ -172,43 +180,21 @@ public class ZipLoader {
         return downloaded;
     }
 
-    public static String getFileSHA1(File file) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
-            FileInputStream fis = new FileInputStream(file);
-            byte[] dataBytes = new byte[1024];
 
-            int nread = 0;
-
-            while ((nread = fis.read(dataBytes)) != -1) {
-                md.update(dataBytes, 0, nread);
-            }
-
-            byte[] mdbytes = md.digest();
-
-            StringBuffer sb = new StringBuffer("");
-            for (int i = 0; i < mdbytes.length; i++) {
-                sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16)
-                        .substring(1));
-            }
-            return sb.toString();
-        } catch (Exception ex) {
-            return "";
-        }
-    }
 
     public void downloadAndUnzip(final List<WebResource> resources,
                                  final String url,
                                  final String pathName,
                                  final ZipLoadCallback callback,
                                  final String profilingPrefix) {
-        downloadAndUnzip(resources, url, pathName, null, callback, profilingPrefix);
+        downloadAndUnzip(resources, url, pathName, null, null, callback, profilingPrefix);
     }
 
     public void downloadAndUnzip(final List<WebResource> resources,
                                  String outUrl,
                                  final String pathName,
                                  final String instanceId,
+                                 final GameCenterData gameCenterData,
                                  final ZipLoadCallback callback,
                                  final String profilingPrefix) {
         final String url = outUrl.split("\\?")[0];
@@ -240,6 +226,27 @@ public class ZipLoader {
                                     File.separator + pathName +
                                     File.separator + url.hashCode() + ".zip"
                     );
+                    if (getFile.exists()) {
+                        if (gameCenterData != null &&
+                                gameCenterData.archiveSize != null &&
+                                gameCenterData.archiveSize > 0 &&
+                                gameCenterData.archiveSha1 != null &&
+                                !gameCenterData.archiveSha1.isEmpty() &&
+                                (
+                                        getFile.length() != gameCenterData.archiveSize ||
+                                                !FileManager.getFileSHA1(getFile).equals(gameCenterData.archiveSha1)
+                                )
+                        ) {
+                            getFile.delete();
+                            File directory = new File(
+                                    getFile.getParent() +
+                                            File.separator + url.hashCode());
+                            if (directory.exists()) {
+                                deleteFolderRecursive(directory, true);
+                            }
+                            return null;
+                        }
+                    }
                     if (pathName.contains("\\") || pathName.contains("/")) return null;
                     if (!getFile.getAbsolutePath().startsWith(
                             InAppStoryService.getInstance().getCommonCache().getCacheDir() +
@@ -265,26 +272,36 @@ public class ZipLoader {
                                         callback.onError();
                                 }
                             }, hash);
-                    if (file == null) {
+                    if (file == null || !file.exists()) {
                         if (callback != null)
                             callback.onError();
                         return null;
+                    } else {
+                        if (gameCenterData != null &&
+                                gameCenterData.archiveSize != null &&
+                                gameCenterData.archiveSize > 0 &&
+                                gameCenterData.archiveSha1 != null &&
+                                !gameCenterData.archiveSha1.isEmpty() &&
+                                (
+                                        file.length() != gameCenterData.archiveSize ||
+                                        !FileManager.getFileSHA1(file).equals(gameCenterData.archiveSha1)
+                                )
+                        ) {
+                            file.delete();
+                            if (callback != null)
+                                callback.onError();
+                            return null;
+                        }
                     }
                     ProfilingManager.getInstance().setReady(hash);
                     File directory = new File(
                             file.getParent() +
-                                    File.separator + url.hashCode() +
-                                    (instanceId != null ? (File.separator + instanceId) : ""));
+                                    File.separator + url.hashCode());
                     String resourcesHash;
-                    for (File fileToDelete : filesToDelete) {
-                        if (fileToDelete.getAbsolutePath().contains(File.separator + url.hashCode()))
-                            continue;
-                        FileManager.deleteRecursive(fileToDelete);
-                    }
                     if (directory.exists()) {
                         resourcesHash = ProfilingManager.getInstance().addTask(
                                 profilingPrefix + "_resources_download");
-                        if (downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
+                        if (downloadResources(resources, directory, callback, instanceId, fTotalSize + (int) file.length(),
                                 (int) file.length()))
                             ProfilingManager.getInstance().setReady(resourcesHash);
                         if (InAppStoryService.getInstance().getCommonCache().get(directory.getName()) == null) {
@@ -297,7 +314,7 @@ public class ZipLoader {
                         InAppStoryService.getInstance().getCommonCache().put(directory.getName(), directory);
                         resourcesHash = ProfilingManager.getInstance().addTask(
                                 profilingPrefix + "_resources_download");
-                        if (downloadResources(resources, directory, callback, fTotalSize + (int) file.length(),
+                        if (downloadResources(resources, directory, callback, instanceId, fTotalSize + (int) file.length(),
                                 (int) file.length()))
                             ProfilingManager.getInstance().setReady(resourcesHash);
                     } else {

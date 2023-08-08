@@ -25,6 +25,12 @@ public class GameCenterData {
     @SerializedName("initCode")
     public String initCode;
 
+    @SerializedName("archiveSize")
+    public Long archiveSize;
+
+    @SerializedName("archiveSha1")
+    public String archiveSha1;
+
     @SerializedName("instanceUserData")
     public Map<String, Object> instanceUserData;
 }

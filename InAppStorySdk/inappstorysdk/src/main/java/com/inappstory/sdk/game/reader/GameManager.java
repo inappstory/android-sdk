@@ -14,6 +14,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.Response;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -47,7 +48,7 @@ public class GameManager {
         this.host = host;
     }
 
-    void loadGame() {
+    void loadGame(GameCenterData gameCenterData) {
         ArrayList<WebResource> resourceList = new ArrayList<>();
 
         if (resources != null) {
@@ -60,6 +61,7 @@ public class GameManager {
                 path,
                 urlParts[0],
                 gameCenterId,
+                gameCenterData,
                 callback,
                 "game"
         );
