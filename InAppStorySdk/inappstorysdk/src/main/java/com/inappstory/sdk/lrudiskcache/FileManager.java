@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,6 +38,18 @@ public class FileManager {
             }
         }
         return result;
+    }
+
+    public static ArrayList<String> recursiveFileList(File directory) {
+        ArrayList<String> res = new ArrayList<>();
+        for (File file : directory.listFiles()) {
+            if (file.isDirectory()) {
+                res.addAll(recursiveFileList(file));
+            } else {
+                res.add(file.getAbsolutePath());
+            }
+        }
+        return res;
     }
 
     public File getCacheDir() {

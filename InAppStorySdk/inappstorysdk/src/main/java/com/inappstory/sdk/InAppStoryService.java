@@ -19,6 +19,7 @@ import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.GameLoadCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.JsonParser;
@@ -266,7 +267,9 @@ public class InAppStoryService {
 
 
     private LruDiskCache fastCache; //use for covers
-    private LruDiskCache commonCache; //use for slides, games, etc.
+    private LruDiskCache commonCache; //use for slides, etc.
+
+    private LruDiskCache infiniteCache; //use for games, etc.
 
     private Object cacheLock = new Object();
 
@@ -284,8 +287,9 @@ public class InAppStoryService {
                 try {
                     fastCache = LruDiskCache.create(
                             context.getCacheDir(),
-                            IAS_PREFIX + "fastCache",
-                            MB_10, true);
+                            IAS_PREFIX,
+                            MB_10, CacheType.FAST
+                    );
                 } catch (IOException e) {
                     InAppStoryService.createExceptionLog(e);
                 }
@@ -293,6 +297,28 @@ public class InAppStoryService {
             return fastCache;
         }
     }
+
+    public LruDiskCache getInfiniteCache() {
+        synchronized (cacheLock) {
+            if (infiniteCache == null) {
+                try {
+                    long cacheType = context.getCacheDir().getFreeSpace();
+                    if (cacheType > 0) {
+                        infiniteCache = LruDiskCache.create(
+                                context.getFilesDir(),
+                                IAS_PREFIX,
+                                cacheType,
+                                CacheType.INFINITE
+                        );
+                    }
+                } catch (IOException e) {
+                    InAppStoryService.createExceptionLog(e);
+                }
+            }
+            return infiniteCache;
+        }
+    }
+
 
     public LruDiskCache getCommonCache() {
         synchronized (cacheLock) {
@@ -314,8 +340,9 @@ public class InAppStoryService {
                     if (cacheType > 0) {
                         commonCache = LruDiskCache.create(
                                 context.getCacheDir(),
-                                IAS_PREFIX + "commonCache",
-                                cacheType, false);
+                                IAS_PREFIX,
+                                cacheType, CacheType.COMMON
+                        );
                     }
                 } catch (IOException e) {
                     InAppStoryService.createExceptionLog(e);

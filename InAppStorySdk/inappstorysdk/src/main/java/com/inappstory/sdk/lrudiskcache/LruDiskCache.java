@@ -13,6 +13,7 @@ public class LruDiskCache {
 
     private static LruDiskCache fastCache;
     private static LruDiskCache commonCache;
+    private static LruDiskCache infiniteCache;
 
     public static final long MB_1 = 1024 * 1024;
     public static final long MB_5 = 5 * MB_1;
@@ -21,11 +22,15 @@ public class LruDiskCache {
     public static final long MB_100 = 100 * MB_1;
     public static final long MB_200 = 200 * MB_1;
 
+    public static final long MB_2000 = 2000 * MB_1;
+
     public static void clear() throws IOException {
         if (fastCache != null) fastCache.clearCache();
         if (commonCache != null) commonCache.clearCache();
+        if (infiniteCache != null) infiniteCache.clearCache();
         fastCache = null;
         commonCache = null;
+        infiniteCache = null;
     }
 
     public File getCacheDir() {
@@ -34,18 +39,25 @@ public class LruDiskCache {
 
     private static Object cacheLock = new Object();
 
-    public static LruDiskCache create(File cacheDir, String subPath, long cacheSize, boolean isFastCache) throws IOException {
+    public static LruDiskCache create(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
         synchronized (cacheLock) {
             if (cacheSize < MB_1)
                 cacheSize = MB_1;
-            if (isFastCache) {
-                if (fastCache == null)
-                    fastCache = new LruDiskCache(cacheDir, subPath, cacheSize);
-                return fastCache;
-            } else {
-                if (commonCache == null)
-                    commonCache = new LruDiskCache(cacheDir, subPath, cacheSize);
-                return commonCache;
+            switch (cacheType) {
+                case COMMON:
+                    if (commonCache == null)
+                        commonCache = new LruDiskCache(cacheDir, subPath + "commonCache", cacheSize);
+                    return commonCache;
+                case FAST:
+                    if (fastCache == null)
+                        fastCache = new LruDiskCache(cacheDir, subPath + "fastCache", cacheSize);
+                    return fastCache;
+                case INFINITE:
+                    if (infiniteCache == null)
+                        infiniteCache = new LruDiskCache(cacheDir, subPath + "infiniteCache", cacheSize);
+                    return infiniteCache;
+                default:
+                    return null;
             }
         }
     }

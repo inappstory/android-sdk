@@ -182,6 +182,7 @@ public class StoryDownloadManager {
                 inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getCommonCache().clearCache();
                 inAppStoryService.getFastCache().clearCache();
+                inAppStoryService.getInfiniteCache().clearCache();
             }
         } catch (IOException e) {
             e.printStackTrace();

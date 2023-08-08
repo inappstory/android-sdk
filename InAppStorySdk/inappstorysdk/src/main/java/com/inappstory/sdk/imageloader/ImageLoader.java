@@ -23,6 +23,7 @@ import android.widget.RemoteViews;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
@@ -119,10 +120,11 @@ public class ImageLoader {
             else {
                 if (cache == null) {
                     cache = LruDiskCache.create(
-
                             context.getCacheDir(),
-                            IAS_PREFIX + "fastCache",
-                            MB_10, true);
+                            IAS_PREFIX,
+                            MB_10,
+                            CacheType.COMMON
+                    );
                 }
                 bitmap[0] = getWidgetBitmap(url, cornerRadius, true, ratio, null, cache);
                 memoryCache2.put(url, bitmap[0]);
@@ -143,8 +145,10 @@ public class ImageLoader {
                 if (cache == null) {
                     cache = LruDiskCache.create(
                             context.getCacheDir(),
-                            IAS_PREFIX + "fastCache",
-                            MB_10, true);
+                            IAS_PREFIX,
+                            MB_10,
+                            CacheType.FAST
+                    );
                 }
                 bitmap = getWidgetBitmap(null, cornerRadius, true, ratio, color, cache);
                 memoryCache2.put(color, bitmap);
