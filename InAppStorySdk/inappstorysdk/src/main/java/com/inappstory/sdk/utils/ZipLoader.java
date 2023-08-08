@@ -94,7 +94,7 @@ public class ZipLoader {
     }
 
     private void deleteFileIfNotPass(File file) {
-        //if (file.exists()) file.delete();
+        if (file.exists()) file.delete();
     }
 
     private boolean downloadResources(final List<WebResource> resources,
@@ -109,9 +109,9 @@ public class ZipLoader {
         String pathName = file.getAbsolutePath();
         final File filePath = new File(
                 pathName +
-                File.separator +
-                (instanceId != null ? ("resources_" + instanceId) : "src") +
-                File.separator
+                        File.separator +
+                        (instanceId != null ? ("resources_" + instanceId) : "src") +
+                        File.separator
         );
         int cnt = curSize;
         boolean downloaded = false;
@@ -124,36 +124,25 @@ public class ZipLoader {
                     continue;
                 File resourceFile = new File(filePath.getAbsolutePath() + "/" + fileName);
                 if (resourceFile.exists()) {
-                    if (resourceFile.length() != resource.size) {
+                    if (!FileManager.checkShaAndSize(resourceFile, resource.size, resource.sha1)) {
                         deleteFileIfNotPass(resourceFile);
                     } else {
-                        String fileSha1 = FileManager.getFileSHA1(resourceFile);
-                        if (!fileSha1.equals(resource.sha1)) {
-                            deleteFileIfNotPass(resourceFile);
-                        } else {
-                            cnt += resource.size;
-                            if (callback != null)
-                                callback.onProgress(cnt, totalSize);
-                            continue;
-                        }
+                        cnt += resource.size;
+                        if (callback != null)
+                            callback.onProgress(cnt, totalSize);
+                        continue;
                     }
                 }
                 downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, InAppStoryService.getInstance().getCommonCache(),
                         resourceFile,
                         null);
-                if (resourceFile.exists()) {
-                    if (resourceFile.length() != resource.size) {
-                        deleteFileIfNotPass(resourceFile);
-                    } else {
-                        String fileSha1 = FileManager.getFileSHA1(resourceFile);
-                        if (!fileSha1.equals(resource.sha1)) {
-                            deleteFileIfNotPass(resourceFile);
-                        }
-                    }
+                if (!FileManager.checkShaAndSize(resourceFile, resource.size, resource.sha1)) {
+                    deleteFileIfNotPass(resourceFile);
+                } else {
+                    cnt += resource.size;
+                    if (callback != null)
+                        callback.onProgress(cnt, totalSize);
                 }
-                cnt += resource.size;
-                if (callback != null)
-                    callback.onProgress(cnt, totalSize);
             } catch (Exception e) {
                 InAppStoryService.createExceptionLog(e);
                 e.printStackTrace();
@@ -179,7 +168,6 @@ public class ZipLoader {
         }
         return downloaded;
     }
-
 
 
     public void downloadAndUnzip(final List<WebResource> resources,
@@ -228,14 +216,7 @@ public class ZipLoader {
                     );
                     if (getFile.exists()) {
                         if (gameCenterData != null &&
-                                gameCenterData.archiveSize != null &&
-                                gameCenterData.archiveSize > 0 &&
-                                gameCenterData.archiveSha1 != null &&
-                                !gameCenterData.archiveSha1.isEmpty() &&
-                                (
-                                        getFile.length() != gameCenterData.archiveSize ||
-                                                !FileManager.getFileSHA1(getFile).equals(gameCenterData.archiveSha1)
-                                )
+                                !FileManager.checkShaAndSize(getFile, gameCenterData.archiveSize, gameCenterData.archiveSha1)
                         ) {
                             getFile.delete();
                             File directory = new File(
@@ -278,14 +259,7 @@ public class ZipLoader {
                         return null;
                     } else {
                         if (gameCenterData != null &&
-                                gameCenterData.archiveSize != null &&
-                                gameCenterData.archiveSize > 0 &&
-                                gameCenterData.archiveSha1 != null &&
-                                !gameCenterData.archiveSha1.isEmpty() &&
-                                (
-                                        file.length() != gameCenterData.archiveSize ||
-                                        !FileManager.getFileSHA1(file).equals(gameCenterData.archiveSha1)
-                                )
+                                !FileManager.checkShaAndSize(file, gameCenterData.archiveSize, gameCenterData.archiveSha1)
                         ) {
                             file.delete();
                             if (callback != null)

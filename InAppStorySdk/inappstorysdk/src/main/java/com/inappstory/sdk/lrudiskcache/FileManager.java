@@ -160,10 +160,8 @@ public class FileManager {
         }
     }
 
-    public static void checkAndCreateFileDirectory(File fileDirectory) {
-        if (fileDirectory != null && !fileDirectory.exists()) {
-            fileDirectory.mkdirs();
-        }
+    public static boolean checkShaAndSize(File file, Long size, String sha) {
+        if (size == null || size <= 0 || sha == null || sha.isEmpty()) return true;
+        return file.length() == size && getFileSHA1(file).equals(sha);
     }
-
 }

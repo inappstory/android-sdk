@@ -599,7 +599,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         if (oldSplashPath != null) {
             File splash = new File(oldSplashPath);
             if (splash.exists()) {
-                if (FileManager.getFileSHA1(splash).equals(splashScreen.sha1) && splash.length() == splashScreen.size)
+                if (FileManager.checkShaAndSize(splash, splashScreen.size, splashScreen.sha1))
                     needToDownload = false;
             }
             setLoader(splash);
@@ -614,8 +614,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 @Override
                 public void onSuccess(File file) {
                     if (file != null && file.exists()) {
-                        if (FileManager.getFileSHA1(file).equals(splashScreen.sha1)
-                                && file.length() == splashScreen.size) {
+                        if (FileManager.checkShaAndSize(file, splashScreen.size, splashScreen.sha1)) {
                             KeyValueStorage.saveString("gameInstanceSplash_" + manager.gameCenterId, file.getAbsolutePath());
                             if (!hasSplashFile) {
                                 setLoader(file);
