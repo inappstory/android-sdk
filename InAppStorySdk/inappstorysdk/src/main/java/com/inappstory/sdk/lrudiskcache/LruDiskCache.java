@@ -1,5 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
+import com.inappstory.sdk.stories.cache.DownloadFileState;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -86,6 +88,19 @@ public class LruDiskCache {
         }
     }
 
+    public File put(String key, File file, long fileSize, long downloadedSize) throws IOException {
+        synchronized (journal) {
+            keyIsValid(key);
+            String name = file.getAbsolutePath();
+            long time = System.currentTimeMillis();
+            CacheJournalItem item = new CacheJournalItem(key, name, time, fileSize, downloadedSize);
+            File cacheFile = manager.put(file, name);
+            journal.delete(key, false);
+            journal.put(item, cacheSize);
+            journal.writeJournal();
+            return cacheFile;
+        }
+    }
 
     public void delete(String key) throws IOException {
         delete(key, true);
@@ -165,7 +180,7 @@ public class LruDiskCache {
         }
     }
 
-    public File get(String key) {
+    public DownloadFileState get(String key) {
         synchronized (journal) {
             try {
                 keyIsValid(key);
@@ -177,13 +192,13 @@ public class LruDiskCache {
                         file = null;
                     }
                     journal.writeJournal();
-                    return file;
-                } else {
-                    return null;
+                    if (file != null)
+                        return new DownloadFileState(file, item.getSize(), item.getDownloadedSize());
                 }
             } catch (Exception e) {
                 return null;
             }
+            return null;
         }
     }
 

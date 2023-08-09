@@ -10,6 +10,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.cache.DownloadFileState;
+import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -175,7 +177,7 @@ public class ZipLoader {
                                  final String pathName,
                                  final ZipLoadCallback callback,
                                  final String profilingPrefix) {
-        downloadAndUnzip(resources, url, pathName, null, null, callback, profilingPrefix);
+        downloadAndUnzip(resources, url, pathName, null, null, callback, null, profilingPrefix);
     }
 
     public void downloadAndUnzip(final List<WebResource> resources,
@@ -184,6 +186,7 @@ public class ZipLoader {
                                  final String instanceId,
                                  final GameCenterData gameCenterData,
                                  final ZipLoadCallback callback,
+                                 final DownloadInterruption interruption,
                                  final String profilingPrefix) {
         final String url = outUrl.split("\\?")[0];
         terminate = false;
@@ -200,10 +203,12 @@ public class ZipLoader {
 
                     final int fTotalSize = totalSize;
                     String hash = randomUUID().toString();
-                    File gameDir = new File(InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
+                    File gameDir = new File(
+                            InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
                             File.separator + "zip" +
                             File.separator + pathName +
-                            File.separator);
+                            File.separator
+                    );
                     ArrayList<File> filesToDelete = new ArrayList<>();
                     if (gameDir.exists()) {
                         filesToDelete.addAll(Arrays.asList(gameDir.listFiles()));
@@ -232,8 +237,9 @@ public class ZipLoader {
                         }
                     }
                     Long timings = System.currentTimeMillis();
+                    DownloadFileState fileState;
                     if (!getFile.exists()) {
-                        getFile = Downloader.downloadOrGetFile(
+                        fileState = Downloader.downloadOrGetFile(
                                 url,
                                 InAppStoryService.getInstance().getInfiniteCache(),
                                 getFile,
@@ -254,8 +260,14 @@ public class ZipLoader {
                                             callback.onError();
                                     }
                                 },
+                                interruption,
                                 hash
                         );
+                        if (fileState != null && fileState.file != null && (fileState.downloadedSize == fileState.totalSize)) {
+                            getFile = fileState.file;
+                        } else {
+                            getFile = null;
+                        }
                     }
 
                     Log.e("GameDownloadTimings", "Download: " + (System.currentTimeMillis() - timings));

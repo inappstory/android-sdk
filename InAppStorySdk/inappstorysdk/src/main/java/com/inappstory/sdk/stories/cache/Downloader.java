@@ -10,6 +10,7 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.NetworkHandler;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
@@ -60,14 +61,20 @@ public class Downloader {
 
 
     @WorkerThread
-    public static File downloadOrGetFile(@NonNull String url,
-                                         LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
-        return downloadOrGetFile(url, cache, img, callback, null);
+    public static DownloadFileState downloadOrGetFile(@NonNull String url,
+                                                      LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+        return downloadOrGetFile(url, cache, img, callback, null, null);
     }
 
     @WorkerThread
-    public static File downloadOrGetFile(@NonNull String url,
-                                         LruDiskCache cache, File img, FileLoadProgressCallback callback, String hash) throws Exception {
+    public static DownloadFileState downloadOrGetFile(
+            @NonNull String url,
+            LruDiskCache cache,
+            File img,
+            FileLoadProgressCallback callback,
+            DownloadInterruption interruption,
+            String hash
+    ) throws Exception {
         String requestId = UUID.randomUUID().toString();
         ApiLogRequest requestLog = new ApiLogRequest();
         ApiLogResponse responseLog = new ApiLogResponse();
@@ -78,16 +85,23 @@ public class Downloader {
         responseLog.id = requestId;
         String key = cropUrl(url);
         HashMap<String, String> headers = new HashMap<>();
-
+        long offset = 0;
         if (cache.hasKey(key)) {
-            File file = cache.get(key);
-            if (file != null && file.exists()) {
-                if (callback != null)
-                    callback.onSuccess(file);
-                headers.put("From Cache", "true");
-                responseLog.generateFile(200, file.getAbsolutePath(), headers);
-                InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
-                return file;
+            DownloadFileState fileState = cache.get(key);
+            if (fileState != null
+                    && fileState.file != null
+                    && fileState.file.exists()
+            ) {
+                if (fileState.downloadedSize != fileState.totalSize) {
+                    offset = fileState.totalSize - fileState.downloadedSize;
+                } else {
+                    if (callback != null)
+                        callback.onSuccess(fileState.file);
+                    headers.put("From Cache", "true");
+                    responseLog.generateFile(200, fileState.file.getAbsolutePath(), headers);
+                    InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
+                    return fileState;
+                }
             }
         }
 
@@ -98,38 +112,64 @@ public class Downloader {
         if (img == null) {
             img = cache.getFileFromKey(key);
         }
-        File file = downloadFile(url, img, callback, responseLog);
-        if (file != null) {
-            cache.put(key, file);
-            if (callback != null)
-                callback.onSuccess(file);
+        DownloadFileState fileState = downloadFile(
+                url,
+                img,
+                callback,
+                responseLog,
+                interruption,
+                offset
+        );
+        if (fileState != null && fileState.file != null) {
+            cache.put(key, fileState.file, fileState.totalSize, fileState.downloadedSize);
+            if (fileState.totalSize == fileState.downloadedSize) {
+                if (callback != null)
+                    callback.onSuccess(fileState.file);
+            } else {
+                if (callback != null)
+                    callback.onError();
+            }
         } else {
             if (callback != null)
                 callback.onError();
         }
-
         responseLog.responseHeaders.add(new ApiLogRequestHeader("From Cache", "false"));
         InAppStoryManager.sendApiResponseLog(responseLog);
-        return file;
+        return fileState;
 
     }
 
     @NonNull
     @WorkerThread
-    public static boolean downloadOrGetResourceFile(@NonNull String url, @NonNull String hashKey,
-                                                    LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+    public static boolean downloadOrGetResourceFile(
+            @NonNull String url,
+            @NonNull String hashKey,
+            LruDiskCache cache,
+            File img,
+            FileLoadProgressCallback callback
+    ) throws Exception {
         String key = hashKey + "_" + cropUrl(url);
+        long offset = 0;
         if (cache.hasKey(key)) {
-            File file = cache.get(key);
-            if (file != null && file.exists()) {
-                return false;
+            DownloadFileState fileState = cache.get(key);
+            if (fileState != null &&
+                    fileState.file != null &&
+                    fileState.file.exists()
+            ) {
+                if (fileState.totalSize == fileState.downloadedSize)
+                    return false;
+                else {
+                    offset = fileState.totalSize - fileState.downloadedSize;
+                }
             }
         }
         if (img == null) {
             img = cache.getFileFromKey(key);
         }
-        File file = downloadFile(url, img, callback, new ApiLogResponse());
-        cache.put(key, file);
+        DownloadFileState fileState = downloadFile(url, img, callback, new ApiLogResponse(), null, offset);
+        if (fileState != null) {
+            cache.put(key, fileState.file, fileState.totalSize, fileState.downloadedSize);
+        }
         return true;
     }
 
@@ -138,10 +178,9 @@ public class Downloader {
                                      LruDiskCache cache) throws IOException {
         String key = cropUrl(url);
         if (cache.hasKey(key)) {
-            return cache.get(key);
-        } else {
-            return null;
+            return FileManager.getFullFile(cache.get(key));
         }
+        return null;
     }
 
 
@@ -152,13 +191,26 @@ public class Downloader {
         fontDownloader.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return downloadOrGetFile(url, cache, null, null);
+                return FileManager.getFullFile(downloadOrGetFile(url, cache, null, null));
             }
         });
     }
 
-    public static void downloadFileBackground(final String url, final LruDiskCache cache,
-                                              final FileLoadProgressCallback callback) {
+
+    public static void downloadFileBackground(
+            final String url,
+            final LruDiskCache cache,
+            final FileLoadProgressCallback callback
+    ) {
+        downloadFileBackground(url, cache, callback, null);
+    }
+
+    public static void downloadFileBackground(
+            final String url,
+            final LruDiskCache cache,
+            final FileLoadProgressCallback callback,
+            final DownloadInterruption interruption
+    ) {
         tmpFileDownloader.submit(new Callable() {
             @Override
             public File call() {
@@ -168,7 +220,16 @@ public class Downloader {
                     return null;
                 }
                 try {
-                    return downloadOrGetFile(url, cache, null, callback);
+                    return FileManager.getFullFile(
+                            downloadOrGetFile(
+                                    url,
+                                    cache,
+                                    null,
+                                    callback,
+                                    interruption,
+                                    null
+                            )
+                    );
                 } catch (Exception e) {
                     if (callback != null)
                         callback.onError();
@@ -184,7 +245,7 @@ public class Downloader {
         File img = null;
         if (InAppStoryService.isNull()) return null;
         if (InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
-            img = InAppStoryService.getInstance().getCommonCache().get(url);
+            img = FileManager.getFullFile(InAppStoryService.getInstance().getCommonCache().get(url));
         }
         if (img != null && img.exists()) {
             return img.getAbsolutePath();
@@ -192,11 +253,13 @@ public class Downloader {
         return null;
     }
 
-    private static File downloadFile(
+    private static DownloadFileState downloadFile(
             String url,
             File outputFile,
             FileLoadProgressCallback callback,
-            ApiLogResponse apiLogResponse
+            ApiLogResponse apiLogResponse,
+            DownloadInterruption interruption,
+            long downloadOffset
     ) throws Exception {
 
         InAppStoryManager.showDLog("InAppStory_File", url);
@@ -245,8 +308,8 @@ public class Downloader {
             return null;
         }
 
-        FileOutputStream fileOutput = new FileOutputStream(outputFile);
-        FileLock lock = fileOutput.getChannel().lock();
+        FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+        FileLock lock = fileOutputStream.getChannel().lock();
         InputStream inputStream = urlConnection.getInputStream();
 
         String contentType = urlConnection.getHeaderField("Content-Type");
@@ -261,19 +324,29 @@ public class Downloader {
         int bufferLength = 0;
         int cnt = 0;
         while ((bufferLength = inputStream.read(buffer)) > 0) {
-            fileOutput.write(buffer, 0, bufferLength);
-            cnt += bufferLength;
-            if (callback != null)
-                callback.onProgress(cnt, sz);
+            if (interruption != null && interruption.active) {
+                fileOutputStream.flush();
+                try {
+                    lock.release();
+                } catch (Exception e) {
+                }
+                fileOutputStream.close();
+                return new DownloadFileState(outputFile, sz, outputFile.length());
+            } else {
+                fileOutputStream.write(buffer, 0, bufferLength);
+                cnt += bufferLength;
+                if (callback != null)
+                    callback.onProgress(cnt, sz);
+            }
         }
-        fileOutput.flush();
+        fileOutputStream.flush();
         try {
             lock.release();
         } catch (Exception e) {
         }
-        fileOutput.close();
+        fileOutputStream.close();
         apiLogResponse.generateFile(status, outputFile.getAbsolutePath(), headers);
-        return outputFile;
+        return new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
 
     }
 

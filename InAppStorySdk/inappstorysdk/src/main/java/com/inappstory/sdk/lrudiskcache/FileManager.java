@@ -1,6 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -130,6 +131,13 @@ public class FileManager {
                 throw formatException("Unable to use cache directory %s", cacheDir);
             }
         }
+    }
+
+
+    public static File getFullFile(DownloadFileState fileState) {
+        if (fileState != null)
+            return fileState.getFullFile();
+        return null;
     }
 
     public File put(File extFile, String name) throws IOException {

@@ -65,6 +65,7 @@ import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -605,39 +606,44 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             setLoader(splash);
         }
         if (needToDownload) {
-            Downloader.downloadFileBackground(splashScreen.url, InAppStoryService.getInstance().getInfiniteCache(), new FileLoadProgressCallback() {
-                @Override
-                public void onProgress(long loadedSize, long totalSize) {
+            Downloader.downloadFileBackground(
+                    splashScreen.url,
+                    InAppStoryService.getInstance().getInfiniteCache(),
+                    new FileLoadProgressCallback() {
+                        @Override
+                        public void onProgress(long loadedSize, long totalSize) {
 
-                }
+                        }
 
-                @Override
-                public void onSuccess(File file) {
-                    if (file != null && file.exists()) {
-                        if (FileManager.checkShaAndSize(file, splashScreen.size, splashScreen.sha1)) {
-                            KeyValueStorage.saveString("gameInstanceSplash_" + manager.gameCenterId, file.getAbsolutePath());
-                            if (!hasSplashFile) {
-                                setLoader(file);
-                            } else {
-                                if (oldSplashPath != null) {
-                                    File splash = new File(oldSplashPath);
-                                    if (splash.exists()) {
-                                        splash.delete();
+                        @Override
+                        public void onSuccess(File file) {
+                            if (file != null && file.exists()) {
+                                if (FileManager.checkShaAndSize(file, splashScreen.size, splashScreen.sha1)) {
+                                    KeyValueStorage.saveString("gameInstanceSplash_" + manager.gameCenterId, file.getAbsolutePath());
+                                    if (!hasSplashFile) {
+                                        setLoader(file);
+                                    } else {
+                                        if (oldSplashPath != null) {
+                                            File splash = new File(oldSplashPath);
+                                            if (splash.exists()) {
+                                                splash.delete();
+                                            }
+                                            setLoader(splash);
+                                        }
                                     }
-                                    setLoader(splash);
+                                } else {
+                                    file.delete();
                                 }
                             }
-                        } else {
-                            file.delete();
                         }
-                    }
-                }
 
-                @Override
-                public void onError() {
+                        @Override
+                        public void onError() {
 
-                }
-            });
+                        }
+                    },
+                    interruption
+            );
         }
     }
 
@@ -890,6 +896,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     @Override
     protected void onDestroy() {
+        interruption.active = true;
         refreshGame.removeCallbacks(showRefresh);
         if (ScreensManager.getInstance().currentGameActivity == this)
             ScreensManager.getInstance().currentGameActivity = null;
@@ -943,6 +950,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     long gameModelRequestTimings;
+    DownloadInterruption interruption = new DownloadInterruption();
+
     GameLoadedCallback gameLoadedCallback = new GameLoadedCallback() {
         @Override
         public void complete(final GameCenterData data, String error) {
