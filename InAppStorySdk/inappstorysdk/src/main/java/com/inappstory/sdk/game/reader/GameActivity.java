@@ -919,7 +919,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             @Override
             public void onLoad(String baseUrl, String data) {
                 manager.gameLoaded = true;
-                Log.e("GameDownloadTimings", "Before webView starts: " + (System.currentTimeMillis() - gameModelRequestTimings));
                 webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);
@@ -950,7 +949,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 setLayout();
                 loaderView.setIndeterminate(false);
                 manager.loadGame(data);
-                Log.e("GameDownloadTimings", "Game model: " + (System.currentTimeMillis() - gameModelRequestTimings));
             } else {
                 closeButton.setVisibility(View.VISIBLE);
                 GameStoryData dataModel = getStoryDataModel();

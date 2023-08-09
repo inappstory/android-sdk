@@ -66,8 +66,13 @@ public class Downloader {
     }
 
     @WorkerThread
-    public static File downloadOrGetFile(@NonNull String url,
-                                         LruDiskCache cache, File img, FileLoadProgressCallback callback, String hash) throws Exception {
+    public static File downloadOrGetFile(
+            @NonNull String url,
+            LruDiskCache cache,
+            File img,
+            FileLoadProgressCallback callback,
+            String hash
+    ) throws Exception {
         String requestId = UUID.randomUUID().toString();
         ApiLogRequest requestLog = new ApiLogRequest();
         ApiLogResponse responseLog = new ApiLogResponse();
