@@ -4,5 +4,5 @@ import com.inappstory.sdk.stories.api.models.GameCenterData;
 
 public interface GameLoadCallback {
     void onSuccess(GameCenterData data);
-    void onError();
+    void onError(String message);
 }

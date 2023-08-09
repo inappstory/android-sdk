@@ -116,7 +116,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         Downloader.downloadFileBackground(url, InAppStoryService.getInstance().getFastCache(),
                 new FileLoadProgressCallback() {
                     @Override
-                    public void onProgress(int loadedSize, int totalSize) {
+                    public void onProgress(long loadedSize, long totalSize) {
 
                     }
 

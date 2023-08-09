@@ -192,7 +192,12 @@ public class Downloader {
         return null;
     }
 
-    private static File downloadFile(String url, File outputFile, FileLoadProgressCallback callback, ApiLogResponse apiLogResponse) throws Exception {
+    private static File downloadFile(
+            String url,
+            File outputFile,
+            FileLoadProgressCallback callback,
+            ApiLogResponse apiLogResponse
+    ) throws Exception {
 
         InAppStoryManager.showDLog("InAppStory_File", url);
         outputFile.getParentFile().mkdirs();
@@ -214,7 +219,12 @@ public class Downloader {
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
 
-        int sz = urlConnection.getContentLength();
+        long sz = urlConnection.getContentLength();
+        long freeSpace = outputFile.getFreeSpace();
+        if (freeSpace > 0 && sz > freeSpace) {
+            urlConnection.disconnect();
+            return null;
+        }
         apiLogResponse.contentLength = sz;
         for (String headerKey : urlConnection.getHeaderFields().keySet()) {
             if (headerKey == null) continue;

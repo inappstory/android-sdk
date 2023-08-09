@@ -567,7 +567,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         manager.dataModel = getStoryDataModel();
         if (manager.path == null) {
             if (manager.gameCenterId == null) {
-                callback.complete(false, null);
+                callback.complete(null, "No game path or id");
                 finish();
                 return;
             }
@@ -589,7 +589,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             manager.splashImagePath = getIntent().getStringExtra("splashImagePath");
             replaceConfigs();
             setLoaderOld();
-            callback.complete(true, null);
+            callback.complete(null, null);
         }
     }
 
@@ -607,7 +607,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         if (needToDownload) {
             Downloader.downloadFileBackground(splashScreen.url, InAppStoryService.getInstance().getInfiniteCache(), new FileLoadProgressCallback() {
                 @Override
-                public void onProgress(int loadedSize, int totalSize) {
+                public void onProgress(long loadedSize, long totalSize) {
 
                 }
 
@@ -641,12 +641,20 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
     }
 
+
     private void downloadGame() {
         downloadGame(
                 manager.gameCenterId,
                 new GameDownloadCallback() {
                     @Override
                     public void complete(GameCenterData gameCenterData) {
+                        long freeSpace = 0L;
+                        if (InAppStoryService.getInstance() != null) {
+                            if (gameCenterData.getTotalSize() >
+                                    InAppStoryService.getInstance().getInfiniteCache().getCacheDir().getFreeSpace()) {
+                                gameLoadedCallback.complete(gameCenterData, "No free space");
+                            }
+                        }
                         if (gameCenterData.splashScreen != null)
                             downloadSplash(gameCenterData.splashScreen);
                         try {
@@ -667,13 +675,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             throw new RuntimeException(e);
                         }
                         replaceConfigs();
-                        gameLoadedCallback.complete(true, gameCenterData);
+                        gameLoadedCallback.complete(gameCenterData, null);
                     }
 
                     @Override
-                    public void error() {
+                    public void error(String error) {
 
-                        gameLoadedCallback.complete(false, null);
+                        gameLoadedCallback.complete(null, error);
                     }
                 }
         );
@@ -848,6 +856,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             final String gameId,
             final GameDownloadCallback callback
     ) {
+        gameModelRequestTimings = System.currentTimeMillis();
         gameCacheManager.getGame(gameId, new GameLoadCallback() {
             @Override
             public void onSuccess(GameCenterData gameCenterData) {
@@ -855,8 +864,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
 
             @Override
-            public void onError() {
-                if (callback != null) callback.error();
+            public void onError(String error) {
+                if (callback != null) callback.error(error);
             }
         });
 
@@ -910,6 +919,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             @Override
             public void onLoad(String baseUrl, String data) {
                 manager.gameLoaded = true;
+                Log.e("GameDownloadTimings", "Before webView starts: " + (System.currentTimeMillis() - gameModelRequestTimings));
                 webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);
@@ -922,8 +932,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
 
             @Override
-            public void onProgress(int loadedSize, int totalSize) {
-                int percent = (int) ((loadedSize * 100) / (totalSize));
+            public void onProgress(long loadedSize, long totalSize) {
+                int percent = (int) ((loadedSize * 100) / totalSize);
                 loaderView.setProgress(percent, 100);
             }
         };
@@ -932,13 +942,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         checkIntentValues(gameLoadedCallback);
     }
 
+    long gameModelRequestTimings;
     GameLoadedCallback gameLoadedCallback = new GameLoadedCallback() {
         @Override
-        public void complete(boolean success, final GameCenterData data) {
-            if (success) {
+        public void complete(final GameCenterData data, String error) {
+            if (error == null) {
                 setLayout();
                 loaderView.setIndeterminate(false);
                 manager.loadGame(data);
+                Log.e("GameDownloadTimings", "Game model: " + (System.currentTimeMillis() - gameModelRequestTimings));
             } else {
                 closeButton.setVisibility(View.VISIBLE);
                 GameStoryData dataModel = getStoryDataModel();
@@ -948,6 +960,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             getIntent().getStringExtra("gameId")
                     );
                 }
+                InAppStoryManager.showDLog("Game_Loading", error);
                 webView.post(showRefresh);
             }
         }

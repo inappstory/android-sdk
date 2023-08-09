@@ -11,6 +11,8 @@ public class LruDiskCache {
     private FileManager manager;
     private long cacheSize;
 
+    public CacheType cacheType;
+
     private static LruDiskCache fastCache;
     private static LruDiskCache commonCache;
     private static LruDiskCache infiniteCache;
@@ -46,15 +48,15 @@ public class LruDiskCache {
             switch (cacheType) {
                 case COMMON:
                     if (commonCache == null)
-                        commonCache = new LruDiskCache(cacheDir, subPath + "commonCache", cacheSize);
+                        commonCache = new LruDiskCache(cacheDir, subPath + "commonCache", cacheSize, cacheType);
                     return commonCache;
                 case FAST:
                     if (fastCache == null)
-                        fastCache = new LruDiskCache(cacheDir, subPath + "fastCache", cacheSize);
+                        fastCache = new LruDiskCache(cacheDir, subPath + "fastCache", cacheSize, cacheType);
                     return fastCache;
                 case INFINITE:
                     if (infiniteCache == null)
-                        infiniteCache = new LruDiskCache(cacheDir, subPath + "infiniteCache", cacheSize);
+                        infiniteCache = new LruDiskCache(cacheDir, subPath + "infiniteCache", cacheSize, cacheType);
                     return infiniteCache;
                 default:
                     return null;
@@ -62,10 +64,11 @@ public class LruDiskCache {
         }
     }
 
-    private LruDiskCache(File cacheDir, String subPath, long cacheSize) throws IOException {
+    private LruDiskCache(File cacheDir, String subPath, long cacheSize, CacheType cacheType) throws IOException {
         this.manager = new FileManager(cacheDir, subPath);
         this.journal = new CacheJournal(manager);
         this.cacheSize = cacheSize;
+        this.cacheType = cacheType;
     }
 
     public File put(String key, File file) throws IOException {

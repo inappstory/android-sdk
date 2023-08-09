@@ -140,7 +140,7 @@ public class StoryListItem extends BaseStoryListItem {
         if (InAppStoryService.isNull()) return;
         Downloader.downloadFileBackground(url, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
             @Override
-            public void onProgress(int loadedSize, int totalSize) {
+            public void onProgress(long loadedSize, long totalSize) {
 
             }
 

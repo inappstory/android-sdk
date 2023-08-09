@@ -231,6 +231,7 @@ public class ZipLoader {
                             }
                         }
                     }
+                    Long timings = System.currentTimeMillis();
                     if (!getFile.exists()) {
                         getFile = Downloader.downloadOrGetFile(
                                 url,
@@ -238,7 +239,7 @@ public class ZipLoader {
                                 getFile,
                                 new FileLoadProgressCallback() {
                                     @Override
-                                    public void onProgress(int loadedSize, int totalSize) {
+                                    public void onProgress(long loadedSize, long totalSize) {
                                         callback.onProgress(loadedSize, fTotalSize + totalSize);
                                     }
 
@@ -256,11 +257,14 @@ public class ZipLoader {
                                 hash
                         );
                     }
+
+                    Log.e("GameDownloadTimings", "Download: " + (System.currentTimeMillis() - timings));
                     if (getFile == null || !getFile.exists()) {
                         if (callback != null)
                             callback.onError();
                         return null;
                     } else {
+                        timings = System.currentTimeMillis();
                         if (gameCenterData != null &&
                                 !FileManager.checkShaAndSize(getFile, gameCenterData.archiveSize, gameCenterData.archiveSha1)
                         ) {
@@ -269,6 +273,7 @@ public class ZipLoader {
                                 callback.onError();
                             return null;
                         }
+                        Log.e("GameDownloadTimings", "Check Sha: " + (System.currentTimeMillis() - timings));
                     }
                     ProfilingManager.getInstance().setReady(hash);
                     File directory = new File(
@@ -286,14 +291,18 @@ public class ZipLoader {
                         }
                     } else if (getFile.exists()) {
                         String unzipHash = ProfilingManager.getInstance().addTask(profilingPrefix + "_unzip");
+                        timings = System.currentTimeMillis();
                         FileUnzipper.unzip(getFile, directory);
+                        Log.e("GameDownloadTimings", "Unzip: " + (System.currentTimeMillis() - timings));
                         ProfilingManager.getInstance().setReady(unzipHash);
                         InAppStoryService.getInstance().getInfiniteCache().put(directory.getName(), directory);
                         resourcesHash = ProfilingManager.getInstance().addTask(
                                 profilingPrefix + "_resources_download");
+                        timings = System.currentTimeMillis();
                         if (downloadResources(resources, directory, callback, instanceId, fTotalSize + (int) getFile.length(),
                                 (int) getFile.length()))
                             ProfilingManager.getInstance().setReady(resourcesHash);
+                        Log.e("GameDownloadTimings", "Download resources: " + (System.currentTimeMillis() - timings));
                     } else {
                         if (callback != null)
                             callback.onError();

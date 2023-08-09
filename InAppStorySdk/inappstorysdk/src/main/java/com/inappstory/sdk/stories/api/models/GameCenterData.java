@@ -33,4 +33,15 @@ public class GameCenterData {
 
     @SerializedName("instanceUserData")
     public Map<String, Object> instanceUserData;
+
+    public long getTotalSize() {
+        long totalSize = archiveSize != null ? archiveSize : 0;
+        if (splashScreen != null && splashScreen.size != null) totalSize += splashScreen.size;
+        if (resources != null) {
+            for (WebResource resource: resources) {
+                totalSize += resource.size;
+            }
+        }
+        return totalSize;
+    }
 }

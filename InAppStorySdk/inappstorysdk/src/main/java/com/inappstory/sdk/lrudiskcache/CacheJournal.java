@@ -28,6 +28,7 @@ public class CacheJournal {
 
     public void put(CacheJournalItem item, long cacheSize) throws IOException {
         long fileSize = item.getSize();
+        if (fileSize > cacheSize) return;
         removeOld(fileSize, cacheSize);
         putLink(item);
     }

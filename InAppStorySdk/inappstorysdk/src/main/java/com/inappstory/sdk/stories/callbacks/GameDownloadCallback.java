@@ -5,6 +5,6 @@ import com.inappstory.sdk.stories.api.models.GameCenterData;
 public interface GameDownloadCallback {
     void complete(GameCenterData data);
 
-    void error();
+    void error(String error);
 
 }

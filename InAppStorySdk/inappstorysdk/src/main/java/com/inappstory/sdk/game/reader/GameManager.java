@@ -3,6 +3,7 @@ package com.inappstory.sdk.game.reader;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
+import android.util.Log;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;

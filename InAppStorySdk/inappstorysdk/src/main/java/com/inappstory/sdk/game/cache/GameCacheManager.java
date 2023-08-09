@@ -51,7 +51,7 @@ public class GameCacheManager {
                                         response.initCode == null ||
                                         response.initCode.isEmpty()
                                 ) {
-                                    callback.onError();
+                                    callback.onError("Invalid game data");
                                     return;
                                 }
                                 cachedGames.put(gameId, new CachedGame(response));
@@ -66,20 +66,20 @@ public class GameCacheManager {
                             @Override
                             public void onError(int code, String message) {
                                 super.onError(code, message);
-                                callback.onError();
+                                callback.onError(message);
                             }
 
                             @Override
                             public void onTimeout() {
                                 super.onTimeout();
-                                callback.onError();
+                                callback.onError("Game loading run out of time");
                             }
                         });
             }
 
             @Override
             public void onError() {
-                callback.onError();
+                callback.onError("Open session error");
             }
         });
     }
