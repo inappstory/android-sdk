@@ -179,9 +179,6 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                     );
                 } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
-                    current.isOpened = true;
-                    current.saveStoryOpened(Story.StoryType.UGC);
-                    notifyItemChanged(ind);
                 } else {
                     if (!InAppStoryService.isConnected()) {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -189,9 +186,6 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         }
                         return;
                     }
-                    current.isOpened = true;
-                    current.saveStoryOpened(Story.StoryType.UGC);
-                    notifyItemChanged(ind);
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(current.deeplink));
@@ -201,6 +195,9 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         InAppStoryService.createExceptionLog(ignored);
                     }
                 }
+                current.isOpened = true;
+                current.saveStoryOpened(Story.StoryType.UGC);
+                notifyItemChanged(ind);
                 return;
             }
             if (current.isHideInReader()) {

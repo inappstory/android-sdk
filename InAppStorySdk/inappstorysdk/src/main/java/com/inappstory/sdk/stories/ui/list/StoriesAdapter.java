@@ -206,6 +206,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                 Story.StoryType.COMMON
                         ),
                         gameInstanceId);
+
+                current.isOpened = true;
+                current.saveStoryOpened(Story.StoryType.COMMON);
+                notifyItemChanged(ind);
+                notifyChanges();
                 return;
             } else if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
@@ -226,10 +231,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                     );
                 } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
-                    current.isOpened = true;
-                    current.saveStoryOpened(Story.StoryType.COMMON);
-                    notifyItemChanged(ind);
-                    notifyChanges();
                 } else {
                     if (!InAppStoryService.isConnected()) {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -237,10 +238,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         }
                         return;
                     }
-                    current.isOpened = true;
-                    current.saveStoryOpened(Story.StoryType.COMMON);
-                    notifyItemChanged(ind);
-                    notifyChanges();
                     try {
                         Intent i = new Intent(Intent.ACTION_VIEW);
                         i.setData(Uri.parse(current.deeplink));
@@ -250,6 +247,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         InAppStoryService.createExceptionLog(ignored);
                     }
                 }
+
+                current.isOpened = true;
+                current.saveStoryOpened(Story.StoryType.COMMON);
+                notifyItemChanged(ind);
+                notifyChanges();
                 return;
             }
             if (current.isHideInReader()) {
