@@ -1,9 +1,10 @@
 package com.inappstory.sdk.stories.cache;
 
+import com.inappstory.sdk.utils.ProgressCallback;
+
 import java.io.File;
 
-public interface FileLoadProgressCallback {
-    void onProgress(long loadedSize, long totalSize);
+public interface FileLoadProgressCallback extends ProgressCallback {
     void onSuccess(File file);
-    void onError();
+    void onError(String error);
 }

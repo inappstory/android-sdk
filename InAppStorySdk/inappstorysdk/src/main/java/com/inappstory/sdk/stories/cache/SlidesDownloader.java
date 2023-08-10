@@ -89,7 +89,7 @@ class SlidesDownloader {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
                 } else {
-                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                    if (InAppStoryService.getInstance().getCommonCache().getFullFile(url) == null) {
                         synchronized (pageTasksLock) {
                             pageTasks.get(key).loadType = 0;
                         }
@@ -101,7 +101,7 @@ class SlidesDownloader {
                 if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
                     remove = true;
                 } else {
-                    if (InAppStoryService.getInstance().getCommonCache().get(url) == null) {
+                    if (InAppStoryService.getInstance().getCommonCache().getFullFile(url) == null) {
                         synchronized (pageTasksLock) {
                             pageTasks.get(key).loadType = 0;
                         }

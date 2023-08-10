@@ -319,6 +319,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         refreshGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                interruption.active = false;
                 changeView(customLoaderView, refreshGame);
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -638,7 +639,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         }
 
                         @Override
-                        public void onError() {
+                        public void onError(String error) {
 
                         }
                     },
@@ -862,7 +863,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             final String gameId,
             final GameDownloadCallback callback
     ) {
-        gameModelRequestTimings = System.currentTimeMillis();
         gameCacheManager.getGame(gameId, new GameLoadCallback() {
             @Override
             public void onSuccess(GameCenterData gameCenterData) {
@@ -926,7 +926,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             @Override
             public void onLoad(String baseUrl, String data) {
                 manager.gameLoaded = true;
-                Log.e("GameDownloadTimings", "Before webView starts: " + (System.currentTimeMillis() - gameModelRequestTimings));
                 webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);
@@ -934,8 +933,10 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
 
             @Override
-            public void onError() {
+            public void onError(String error) {
                 refreshGame.post(showRefresh);
+
+                InAppStoryManager.showDLog("Game_Loading", error);
             }
 
             @Override
@@ -949,7 +950,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         checkIntentValues(gameLoadedCallback);
     }
 
-    long gameModelRequestTimings;
     DownloadInterruption interruption = new DownloadInterruption();
 
     GameLoadedCallback gameLoadedCallback = new GameLoadedCallback() {
@@ -959,7 +959,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 setLayout();
                 loaderView.setIndeterminate(false);
                 manager.loadGame(data);
-                Log.e("GameDownloadTimings", "Game model: " + (System.currentTimeMillis() - gameModelRequestTimings));
             } else {
                 closeButton.setVisibility(View.VISIBLE);
                 GameStoryData dataModel = getStoryDataModel();

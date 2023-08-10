@@ -132,7 +132,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                     }
 
                     @Override
-                    public void onError() {
+                    public void onError(String error) {
 
                     }
                 });

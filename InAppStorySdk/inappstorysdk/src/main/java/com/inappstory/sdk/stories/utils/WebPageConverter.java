@@ -79,7 +79,7 @@ public class WebPageConverter {
         for (int i = 0; i < resourceKeys.size(); i++) {
             String video = resourceUrls.get(i);
             String videoKey = resourceKeys.get(i);
-            File file = cache.get(video);
+            File file = cache.getFullFile(video);
             if (file != null && file.exists() && file.length() > 0) {
                 video = "file://" + file.getAbsolutePath();
             }
@@ -100,7 +100,7 @@ public class WebPageConverter {
                 if (placeholderValue != null) {
                     String path = "";
                     if (placeholderValue.getType() == ImagePlaceholderType.URL) {
-                        File file = cache.get(placeholderValue.getUrl());
+                        File file = cache.getFullFile(placeholderValue.getUrl());
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
                         }

@@ -151,7 +151,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
             }
 
             @Override
-            public void onError() {
+            public void onError(String error) {
 
             }
         });

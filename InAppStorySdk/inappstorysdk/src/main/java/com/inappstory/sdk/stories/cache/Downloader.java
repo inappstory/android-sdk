@@ -61,8 +61,12 @@ public class Downloader {
 
 
     @WorkerThread
-    public static DownloadFileState downloadOrGetFile(@NonNull String url,
-                                                      LruDiskCache cache, File img, FileLoadProgressCallback callback) throws Exception {
+    public static DownloadFileState downloadOrGetFile(
+            @NonNull String url,
+            LruDiskCache cache,
+            File img,
+            FileLoadProgressCallback callback
+    ) throws Exception {
         return downloadOrGetFile(url, cache, img, callback, null, null);
     }
 
@@ -93,7 +97,7 @@ public class Downloader {
                     && fileState.file.exists()
             ) {
                 if (fileState.downloadedSize != fileState.totalSize) {
-                    offset = fileState.totalSize - fileState.downloadedSize;
+                    offset = fileState.downloadedSize;
                 } else {
                     if (callback != null)
                         callback.onSuccess(fileState.file);
@@ -127,11 +131,11 @@ public class Downloader {
                     callback.onSuccess(fileState.file);
             } else {
                 if (callback != null)
-                    callback.onError();
+                    callback.onError("Partial content");
             }
         } else {
             if (callback != null)
-                callback.onError();
+                callback.onError("File haven't downloaded");
         }
         responseLog.responseHeaders.add(new ApiLogRequestHeader("From Cache", "false"));
         InAppStoryManager.sendApiResponseLog(responseLog);
@@ -159,16 +163,23 @@ public class Downloader {
                 if (fileState.totalSize == fileState.downloadedSize)
                     return false;
                 else {
-                    offset = fileState.totalSize - fileState.downloadedSize;
+                    offset = fileState.downloadedSize;
                 }
             }
         }
         if (img == null) {
             img = cache.getFileFromKey(key);
         }
-        DownloadFileState fileState = downloadFile(url, img, callback, new ApiLogResponse(), null, offset);
-        if (fileState != null) {
-            cache.put(key, fileState.file, fileState.totalSize, fileState.downloadedSize);
+        DownloadFileState downloadFileState = downloadFile(
+                url,
+                img,
+                callback,
+                new ApiLogResponse(),
+                null,
+                offset
+        );
+        if (downloadFileState != null) {
+            cache.put(key, downloadFileState.file, downloadFileState.totalSize, downloadFileState.downloadedSize);
         }
         return true;
     }
@@ -178,7 +189,7 @@ public class Downloader {
                                      LruDiskCache cache) throws IOException {
         String key = cropUrl(url);
         if (cache.hasKey(key)) {
-            return FileManager.getFullFile(cache.get(key));
+            return cache.getFullFile(key);
         }
         return null;
     }
@@ -216,7 +227,7 @@ public class Downloader {
             public File call() {
                 if (cache == null) {
                     if (callback != null)
-                        callback.onError();
+                        callback.onError("Cache does not exist");
                     return null;
                 }
                 try {
@@ -231,8 +242,9 @@ public class Downloader {
                             )
                     );
                 } catch (Exception e) {
+                    e.printStackTrace();
                     if (callback != null)
-                        callback.onError();
+                        callback.onError(e.getMessage());
                     return null;
                 }
             }
@@ -245,7 +257,7 @@ public class Downloader {
         File img = null;
         if (InAppStoryService.isNull()) return null;
         if (InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
-            img = FileManager.getFullFile(InAppStoryService.getInstance().getCommonCache().get(url));
+            img = InAppStoryService.getInstance().getCommonCache().getFullFile(url);
         }
         if (img != null && img.exists()) {
             return img.getAbsolutePath();
@@ -274,6 +286,7 @@ public class Downloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
+        urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
         try {
             urlConnection.connect();
         } catch (Exception e) {
@@ -288,12 +301,25 @@ public class Downloader {
             urlConnection.disconnect();
             return null;
         }
-        apiLogResponse.contentLength = sz;
+        boolean allowPartial = false;
+
         for (String headerKey : urlConnection.getHeaderFields().keySet()) {
             if (headerKey == null) continue;
             if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
             headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
+            if (headerKey.equals("Content-Range")) {
+                String rangeHeader = urlConnection.getHeaderFields().get(headerKey).get(0);
+                if (!rangeHeader.equals("none")) {
+                    allowPartial = true;
+                    try {
+                        sz = Long.parseLong(rangeHeader.split("/")[1]);
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
         }
+        apiLogResponse.contentLength = sz;
         String decompression = null;
         HashMap<String, String> responseHeaders = NetworkHandler.getHeaders(urlConnection);
         if (responseHeaders.containsKey("Content-Encoding")) {
@@ -308,7 +334,7 @@ public class Downloader {
             return null;
         }
 
-        FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+        FileOutputStream fileOutputStream = new FileOutputStream(outputFile, allowPartial);
         FileLock lock = fileOutputStream.getChannel().lock();
         InputStream inputStream = urlConnection.getInputStream();
 
@@ -318,36 +344,41 @@ public class Downloader {
             KeyValueStorage.saveString(outputFile.getName(), contentType);
         else
             KeyValueStorage.saveString(outputFile.getName(), "image/jpeg");
-
-
         byte[] buffer = new byte[1024];
         int bufferLength = 0;
         int cnt = 0;
-        while ((bufferLength = inputStream.read(buffer)) > 0) {
-            if (interruption != null && interruption.active) {
-                fileOutputStream.flush();
-                try {
-                    lock.release();
-                } catch (Exception e) {
+        try {
+            while ((bufferLength = inputStream.read(buffer)) > 0) {
+                if (interruption != null && interruption.active) {
+                    releaseStreamAndFile(fileOutputStream, lock);
+                    if (allowPartial)
+                        return new DownloadFileState(outputFile, sz, outputFile.length());
+                    return null;
+                } else {
+                    fileOutputStream.write(buffer, 0, bufferLength);
+                    cnt += bufferLength;
+                    if (callback != null)
+                        callback.onProgress(downloadOffset + cnt, sz);
                 }
-                fileOutputStream.close();
-                return new DownloadFileState(outputFile, sz, outputFile.length());
-            } else {
-                fileOutputStream.write(buffer, 0, bufferLength);
-                cnt += bufferLength;
-                if (callback != null)
-                    callback.onProgress(cnt, sz);
             }
+            releaseStreamAndFile(fileOutputStream, lock);
+            apiLogResponse.generateFile(status, outputFile.getAbsolutePath(), headers);
+            return new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
+        } catch (Exception e) {
+            releaseStreamAndFile(fileOutputStream, lock);
+            if (allowPartial)
+                return new DownloadFileState(outputFile, sz, outputFile.length());
+            return null;
         }
+    }
+
+    private static void releaseStreamAndFile(FileOutputStream fileOutputStream, FileLock lock) throws IOException {
         fileOutputStream.flush();
         try {
             lock.release();
-        } catch (Exception e) {
+        } catch (Exception e2) {
         }
         fileOutputStream.close();
-        apiLogResponse.generateFile(status, outputFile.getAbsolutePath(), headers);
-        return new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
-
     }
 
     public static void compressFile(File srcFile, String mimeType) throws IOException {
