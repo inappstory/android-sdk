@@ -158,7 +158,7 @@ public class StoryListItem extends BaseStoryListItem {
             }
 
             @Override
-            public void onError() {
+            public void onError(String error) {
 
             }
         });

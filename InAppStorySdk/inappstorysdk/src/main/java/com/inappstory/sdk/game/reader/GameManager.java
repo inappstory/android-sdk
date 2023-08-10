@@ -64,6 +64,7 @@ public class GameManager {
                 gameCenterId,
                 gameCenterData,
                 callback,
+                host.interruption,
                 "game"
         );
     }

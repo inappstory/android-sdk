@@ -10,6 +10,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.cache.DownloadFileState;
+import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -158,7 +160,7 @@ public class ZipLoader {
                         if (fl.exists())
                             callback.onLoad(FILE + fl.getAbsolutePath(), getStringFromFile(fl));
                         else
-                            callback.onError();
+                            callback.onError("No index file");
                     } catch (Exception e) {
                         InAppStoryService.createExceptionLog(e);
                         e.printStackTrace();
@@ -175,7 +177,7 @@ public class ZipLoader {
                                  final String pathName,
                                  final ZipLoadCallback callback,
                                  final String profilingPrefix) {
-        downloadAndUnzip(resources, url, pathName, null, null, callback, profilingPrefix);
+        downloadAndUnzip(resources, url, pathName, null, null, callback, null, profilingPrefix);
     }
 
     public void downloadAndUnzip(final List<WebResource> resources,
@@ -184,6 +186,7 @@ public class ZipLoader {
                                  final String instanceId,
                                  final GameCenterData gameCenterData,
                                  final ZipLoadCallback callback,
+                                 final DownloadInterruption interruption,
                                  final String profilingPrefix) {
         final String url = outUrl.split("\\?")[0];
         terminate = false;
@@ -191,6 +194,17 @@ public class ZipLoader {
             @Override
             public Void call() {
                 try {
+                    if (pathName.contains("\\") || pathName.contains("/")) return null;
+                    File gameDir = new File(
+                            InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
+                                    File.separator + "zip" +
+                                    File.separator + pathName +
+                                    File.separator
+                    );
+                    File getFile = new File(gameDir, url.hashCode() + ".zip");
+                    if (!getFile.getAbsolutePath().startsWith(
+                            InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
+                                    File.separator + "zip")) return null;
                     if (InAppStoryService.isNull()) return null;
                     long totalSize = 0;
                     if (resources != null)
@@ -200,34 +214,22 @@ public class ZipLoader {
 
                     final long fTotalSize = totalSize;
 
-                    long allFilesSize = 0;
-                    if (gameCenterData != null && gameCenterData.archiveSize != null) {
-                        allFilesSize = fTotalSize + gameCenterData.archiveSize;
-                    }
+
                     String hash = randomUUID().toString();
-                    File gameDir = new File(InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
-                            File.separator + "zip" +
-                            File.separator + pathName +
-                            File.separator);
-                    ArrayList<File> filesToDelete = new ArrayList<>();
-                    if (gameDir.exists()) {
-                        filesToDelete.addAll(Arrays.asList(gameDir.listFiles()));
+
+                    if (gameDir.exists() && gameDir.isDirectory()) {
+                        for (File gameDirFile : gameDir.listFiles()) {
+                            if (gameDirFile.getAbsolutePath().contains("" + url.hashCode())) continue;
+                            deleteFolderRecursive(gameDirFile, true);
+                        }
                     }
-                    File getFile = new File(
-                            InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
-                                    File.separator + "zip" +
-                                    File.separator + pathName +
-                                    File.separator + url.hashCode() + ".zip"
-                    );
-                    if (pathName.contains("\\") || pathName.contains("/")) return null;
-                    if (!getFile.getAbsolutePath().startsWith(
-                            InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
-                                    File.separator + "zip")) return null;
-                    if (getFile.exists()) {
+                    File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(url);
+                    if (cachedArchive != null && cachedArchive.exists()) {
                         if (gameCenterData != null &&
-                                !FileManager.checkShaAndSize(getFile, gameCenterData.archiveSize, gameCenterData.archiveSha1)
+                                !FileManager.checkShaAndSize(cachedArchive, gameCenterData.archiveSize, gameCenterData.archiveSha1)
                         ) {
-                            getFile.delete();
+                            InAppStoryService.getInstance().getInfiniteCache().delete(pathName);
+
                             File directory = new File(
                                     getFile.getParent() +
                                             File.separator + url.hashCode());
@@ -236,8 +238,9 @@ public class ZipLoader {
                             }
                         }
                     }
-                    if (!getFile.exists()) {
-                        getFile = Downloader.downloadOrGetFile(
+                    DownloadFileState fileState;
+                    if (cachedArchive == null || !cachedArchive.exists()) {
+                        fileState = Downloader.downloadOrGetFile(
                                 url,
                                 InAppStoryService.getInstance().getInfiniteCache(),
                                 getFile,
@@ -253,18 +256,24 @@ public class ZipLoader {
                                     }
 
                                     @Override
-                                    public void onError() {
+                                    public void onError(String error) {
                                         if (callback != null)
-                                            callback.onError();
+                                            callback.onError(error);
                                     }
                                 },
+                                interruption,
                                 hash
                         );
+                        if (fileState != null && fileState.file != null && (fileState.downloadedSize == fileState.totalSize)) {
+                            getFile = fileState.file;
+                        } else {
+                            getFile = null;
+                        }
                     }
 
                     if (getFile == null || !getFile.exists()) {
                         if (callback != null)
-                            callback.onError();
+                            callback.onError("File download interrupted");
                         return null;
                     } else {
                         if (gameCenterData != null &&
@@ -272,7 +281,7 @@ public class ZipLoader {
                         ) {
                             getFile.delete();
                             if (callback != null)
-                                callback.onError();
+                                callback.onError("Wrong file sha or size");
                             return null;
                         }
                     }
@@ -281,7 +290,8 @@ public class ZipLoader {
                             getFile.getParent() +
                                     File.separator + url.hashCode());
                     String resourcesHash;
-                    if (allFilesSize == 0) allFilesSize = fTotalSize + getFile.length();
+                    final long allFilesSize = fTotalSize + getFile.length();
+
                     if (directory.exists()) {
                         resourcesHash = ProfilingManager.getInstance().addTask(
                                 profilingPrefix + "_resources_download");
@@ -299,20 +309,17 @@ public class ZipLoader {
                         }
                     } else if (getFile.exists()) {
                         String unzipHash = ProfilingManager.getInstance().addTask(profilingPrefix + "_unzip");
-                        final long finalAllFilesSize = allFilesSize;
                         final File finalGetFile = getFile;
-                        long timing = System.currentTimeMillis();
                         FileUnzipper.unzip(getFile, directory, new ProgressCallback() {
                             @Override
                             public void onProgress(long loadedSize, long totalSize) {
                                 callback.onProgress(
                                         finalGetFile.length() +
-                                                (long) (0.2f * finalAllFilesSize * loadedSize / totalSize),
-                                        (long) (1.2 * finalAllFilesSize)
+                                                (long) (0.2f * allFilesSize * loadedSize / totalSize),
+                                        (long) (1.2 * allFilesSize)
                                 );
                             }
                         });
-                        Log.e("UnzipProgress", (System.currentTimeMillis() - timing) + "");
                         ProfilingManager.getInstance().setReady(unzipHash);
                         InAppStoryService.getInstance().getInfiniteCache().put(directory.getName(), directory);
                         resourcesHash = ProfilingManager.getInstance().addTask(
@@ -328,12 +335,13 @@ public class ZipLoader {
                             ProfilingManager.getInstance().setReady(resourcesHash);
                     } else {
                         if (callback != null)
-                            callback.onError();
+                            callback.onError("Zip file or unzipped directory not exists");
                     }
                 } catch (Exception e) {
                     InAppStoryService.createExceptionLog(e);
+                    e.printStackTrace();
                     if (callback != null)
-                        callback.onError();
+                        callback.onError(e.getMessage());
                 }
                 return null;
             }

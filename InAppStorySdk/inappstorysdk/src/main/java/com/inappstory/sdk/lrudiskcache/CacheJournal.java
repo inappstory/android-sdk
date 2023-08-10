@@ -96,6 +96,7 @@ public class CacheJournal {
                     stream.writeUTF(item.getName());
                     stream.writeLong(item.getTime());
                     stream.writeLong(item.getSize());
+                    stream.writeLong(item.getDownloadedSize());
                 }
             } catch (IOException ex) {
                 if (stream != null) {
@@ -140,7 +141,6 @@ public class CacheJournal {
                     } catch (IOException ignored) {
                     }
                     return;
-                    //throw new IllegalArgumentException("Invalid journal format version");
                 }
                 int count = stream.readInt();
                 long currentSize = 0;
@@ -150,7 +150,13 @@ public class CacheJournal {
                     long time = stream.readLong();
                     long size = stream.readLong();
                     currentSize += size;
-                    CacheJournalItem item = new CacheJournalItem(key, name, time, size);
+                    CacheJournalItem item;
+                    try {
+                        long downloadedSize = stream.readLong();
+                        item = new CacheJournalItem(key, name, time, size, downloadedSize);
+                    } catch (Exception e) {
+                        item = new CacheJournalItem(key, name, time, size);
+                    }
                     putLink(item);
                 }
                 setCurrentCacheSize(currentSize);

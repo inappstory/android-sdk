@@ -6,11 +6,35 @@ public class CacheJournalItem {
     private long time;
     private long size;
 
+    private long downloadedSize;
+
+    public long getDownloadedSize() {
+        return downloadedSize;
+    }
+
+    public void setDownloadedSize(long downloadedSize) {
+        this.downloadedSize = downloadedSize;
+    }
+
+    public boolean isReady() {
+        return downloadedSize == size;
+    }
+
+
     public CacheJournalItem(String key, String name, long time, long size) {
         this.key = key;
         this.name = name;
         this.time = time;
         this.size = size;
+        this.downloadedSize = size;
+    }
+
+    public CacheJournalItem(String key, String name, long time, long size, long downloadedSize) {
+        this.key = key;
+        this.name = name;
+        this.time = time;
+        this.size = size;
+        this.downloadedSize = downloadedSize;
     }
 
     public void copy(CacheJournalItem item, long time) {
@@ -22,6 +46,16 @@ public class CacheJournalItem {
         this.name = name;
         this.time = time;
         this.size = size;
+        this.downloadedSize = size;
+    }
+
+
+    public void set(String key, String name, long time, long size, long downloadedSize) {
+        this.key = key;
+        this.name = name;
+        this.time = time;
+        this.size = size;
+        this.downloadedSize = downloadedSize;
     }
 
     public String getKey() {
@@ -61,10 +95,8 @@ public class CacheJournalItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         CacheJournalItem item = (CacheJournalItem) o;
         if (time != item.time) return false;
-        if (size != item.size) return false;
         if (!key.equals(item.key)) return false;
         return name.equals(item.name);
     }

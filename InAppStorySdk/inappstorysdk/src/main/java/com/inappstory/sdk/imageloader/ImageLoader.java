@@ -25,6 +25,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -184,9 +185,9 @@ public class ImageLoader {
 
         Bitmap bitmap = null;
         try {
-            File file = Downloader.downloadOrGetFile(url, cache, null, null);
-            if (file == null) return null;
-            bitmap = decodeFile(file);
+            DownloadFileState fileState = Downloader.downloadOrGetFile(url, cache, null, null);
+            if (fileState == null || fileState.file == null) return null;
+            bitmap = decodeFile(fileState.file);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -231,9 +232,9 @@ public class ImageLoader {
             return bmp;
         }
         try {
-            File f = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
-            if (f == null) return null;
-            Bitmap bitmap = decodeFile(f);
+            DownloadFileState fileState = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
+            if (fileState == null || fileState.file == null) return null;
+            Bitmap bitmap = decodeFile(fileState.file);
             if (getThumbnail) {
                 if (ratio != null && ratio > 0) {
                     bitmap = ThumbnailUtils.extractThumbnail(bitmap, (int) (ratio * 300), 300);

@@ -6,5 +6,5 @@ import java.io.File;
 
 public interface FileLoadProgressCallback extends ProgressCallback {
     void onSuccess(File file);
-    void onError();
+    void onError(String error);
 }

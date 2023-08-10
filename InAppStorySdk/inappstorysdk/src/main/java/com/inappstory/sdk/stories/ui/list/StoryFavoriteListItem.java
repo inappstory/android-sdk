@@ -223,7 +223,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             }
 
             @Override
-            public void onError() {
+            public void onError(String error) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {

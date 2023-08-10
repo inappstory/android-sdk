@@ -12,6 +12,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
@@ -258,7 +259,7 @@ public class StoriesViewManager {
 
     public File getCurrentFile(String img) {
         try {
-            return InAppStoryService.getInstance().getCommonCache().get(img);
+            return InAppStoryService.getInstance().getCommonCache().getFullFile(img);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             return null;

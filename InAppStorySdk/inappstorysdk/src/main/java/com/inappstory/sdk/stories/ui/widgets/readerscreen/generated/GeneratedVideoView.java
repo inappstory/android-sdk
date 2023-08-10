@@ -72,7 +72,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
         File fl = null;
         if (cache.hasKey(path)) {
             try {
-                fl = cache.get(path);
+                fl = cache.getFullFile(path);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -171,7 +171,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
                 storyId = Utils.hash(Downloader.cropUrl(url));
             if (file == null)
                 if (cache.hasKey(url)) {
-                    file = cache.get(url);
+                    file = cache.getFullFile(url);
                 }
             if (file != null && file.exists()) {
                 boolean fileIsNotLocked = file.renameTo(file);
