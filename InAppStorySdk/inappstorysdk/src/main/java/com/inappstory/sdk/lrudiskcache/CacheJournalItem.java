@@ -6,6 +6,8 @@ public class CacheJournalItem {
     private long time;
     private long size;
 
+    private long downloadedSize;
+
     public long getDownloadedSize() {
         return downloadedSize;
     }
@@ -18,8 +20,6 @@ public class CacheJournalItem {
         return downloadedSize == size;
     }
 
-
-    private long downloadedSize;
 
     public CacheJournalItem(String key, String name, long time, long size) {
         this.key = key;

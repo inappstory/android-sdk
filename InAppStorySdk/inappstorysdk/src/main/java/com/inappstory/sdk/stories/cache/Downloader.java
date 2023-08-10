@@ -334,7 +334,7 @@ public class Downloader {
             return null;
         }
 
-        FileOutputStream fileOutputStream = new FileOutputStream(outputFile, allowPartial);
+        FileOutputStream fileOutputStream = new FileOutputStream(outputFile, allowPartial && downloadOffset > 0);
         FileLock lock = fileOutputStream.getChannel().lock();
         InputStream inputStream = urlConnection.getInputStream();
 

@@ -96,6 +96,7 @@ public class CacheJournal {
                     stream.writeUTF(item.getName());
                     stream.writeLong(item.getTime());
                     stream.writeLong(item.getSize());
+                    stream.writeLong(item.getDownloadedSize());
                 }
             } catch (IOException ex) {
                 if (stream != null) {
