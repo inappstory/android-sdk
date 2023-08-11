@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileManager;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -194,18 +195,25 @@ public class ZipLoader {
             @Override
             public Void call() {
                 try {
+                    InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+                    if (inAppStoryService == null) {
+                        if (callback != null) {
+                            callback.onError("InAppStoryService is not created");
+                        }
+                        return null;
+                    }
+                    LruDiskCache cache = inAppStoryService.getInfiniteCache();
                     if (pathName.contains("\\") || pathName.contains("/")) return null;
                     File gameDir = new File(
-                            InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
+                            inAppStoryService.getInfiniteCache().getCacheDir() +
                                     File.separator + "zip" +
                                     File.separator + pathName +
                                     File.separator
                     );
                     File getFile = new File(gameDir, url.hashCode() + ".zip");
                     if (!getFile.getAbsolutePath().startsWith(
-                            InAppStoryService.getInstance().getInfiniteCache().getCacheDir() +
+                            cache.getCacheDir() +
                                     File.separator + "zip")) return null;
-                    if (InAppStoryService.isNull()) return null;
                     long totalSize = 0;
                     if (resources != null)
                         for (WebResource resource : resources) {
@@ -219,17 +227,18 @@ public class ZipLoader {
 
                     if (gameDir.exists() && gameDir.isDirectory()) {
                         for (File gameDirFile : gameDir.listFiles()) {
-                            if (gameDirFile.getAbsolutePath().contains("" + url.hashCode())) continue;
+                            if (gameDirFile.getAbsolutePath().contains("" + url.hashCode()))
+                                continue;
                             deleteFolderRecursive(gameDirFile, true);
                         }
                     }
                     File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(url);
-                    if (cachedArchive != null && cachedArchive.exists()) {
+                    if (cachedArchive != null) {
                         if (gameCenterData != null &&
                                 !FileManager.checkShaAndSize(cachedArchive, gameCenterData.archiveSize, gameCenterData.archiveSha1)
                         ) {
-                            InAppStoryService.getInstance().getInfiniteCache().delete(pathName);
-
+                            InAppStoryService.getInstance().getInfiniteCache().delete(url);
+                            cachedArchive = null;
                             File directory = new File(
                                     getFile.getParent() +
                                             File.separator + url.hashCode());
@@ -240,6 +249,11 @@ public class ZipLoader {
                     }
                     DownloadFileState fileState;
                     if (cachedArchive == null || !cachedArchive.exists()) {
+                        if (gameCenterData != null && gameCenterData.getTotalSize() >
+                                cache.getCacheDir().getFreeSpace()) {
+                            callback.onError("No free space for download");
+                            return null;
+                        }
                         fileState = Downloader.downloadOrGetFile(
                                 url,
                                 InAppStoryService.getInstance().getInfiniteCache(),

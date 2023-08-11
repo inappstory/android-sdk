@@ -34,11 +34,19 @@ public class GameCenterData {
     @SerializedName("instanceUserData")
     public Map<String, Object> instanceUserData;
 
+    @SerializedName("archiveUncompressedSize")
+    public Long archiveUncompressedSize;
+
     public long getTotalSize() {
-        long totalSize = archiveSize != null ? archiveSize : 0;
+        long totalSize = 0;
+        if (archiveUncompressedSize != null && archiveUncompressedSize > 0
+                && archiveSize != null && archiveSize > 0)
+            totalSize += archiveUncompressedSize + archiveSize;
+        else
+            return 0;
         if (splashScreen != null && splashScreen.size != null) totalSize += splashScreen.size;
         if (resources != null) {
-            for (WebResource resource: resources) {
+            for (WebResource resource : resources) {
                 totalSize += resource.size;
             }
         }

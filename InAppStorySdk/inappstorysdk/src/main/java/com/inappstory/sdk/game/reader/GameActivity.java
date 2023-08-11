@@ -656,12 +656,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     @Override
                     public void complete(GameCenterData gameCenterData) {
                         long freeSpace = 0L;
-                        if (InAppStoryService.getInstance() != null) {
-                            if (gameCenterData.getTotalSize() >
-                                    InAppStoryService.getInstance().getInfiniteCache().getCacheDir().getFreeSpace()) {
-                                gameLoadedCallback.complete(gameCenterData, "No free space");
-                            }
-                        }
                         if (gameCenterData.splashScreen != null)
                             downloadSplash(gameCenterData.splashScreen);
                         try {

@@ -14,7 +14,7 @@ public class DownloadFileState {
     public long downloadedSize;
 
     public File getFullFile() {
-        if (downloadedSize == totalSize)
+        if (downloadedSize == totalSize && file.exists())
             return file;
         return null;
     }
