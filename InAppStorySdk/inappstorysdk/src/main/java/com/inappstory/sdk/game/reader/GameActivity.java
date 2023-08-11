@@ -595,17 +595,20 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
     }
 
-    private void downloadSplash(final GameSplashScreen splashScreen) {
-        boolean needToDownload = URLUtil.isValidUrl(splashScreen.url);
+    private void downloadSplash(final GameCenterData gameCenterData) {
+        final GameSplashScreen splashScreen = gameCenterData.splashScreen;
+        boolean needToDownload = splashScreen != null && URLUtil.isValidUrl(splashScreen.url);
         final String oldSplashPath = KeyValueStorage.getString("gameInstanceSplash_" + manager.gameCenterId);
         if (oldSplashPath != null) {
             File splash = new File(oldSplashPath);
             if (splash.exists()) {
-                if (FileManager.checkShaAndSize(splash, splashScreen.size, splashScreen.sha1))
+                setLoader(splash);
+                if (needToDownload && FileManager.checkShaAndSize(splash, splashScreen.size, splashScreen.sha1))
                     needToDownload = false;
             }
-            setLoader(splash);
+
         }
+
         if (needToDownload) {
             Downloader.downloadFileBackground(
                     splashScreen.url,
@@ -646,6 +649,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     interruption
             );
         }
+        if (splashScreen == null || !URLUtil.isValidUrl(splashScreen.url)) {
+            KeyValueStorage.removeString("gameInstanceSplash_" + manager.gameCenterId);
+            if (oldSplashPath != null) {
+                File splash = new File(oldSplashPath);
+                if (splash.exists()) {
+                    splash.deleteOnExit();
+                }
+            }
+        }
     }
 
 
@@ -656,8 +668,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     @Override
                     public void complete(GameCenterData gameCenterData) {
                         long freeSpace = 0L;
-                        if (gameCenterData.splashScreen != null)
-                            downloadSplash(gameCenterData.splashScreen);
+                        downloadSplash(gameCenterData);
                         try {
                             replaceGameInstanceStorageData(gameCenterData.instanceUserData);
                         } catch (JSONException ignored) {
