@@ -7,8 +7,6 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -18,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.core.util.Pair;
 
-import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -59,13 +56,11 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -962,13 +957,14 @@ public class InAppStoryManager {
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         setInstance(this);
+        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) NetworkClient.clear();
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
                 .apiKey(this.API_KEY)
                 .testKey(this.TEST_KEY)
                 .setWebUrl(cmsUrl)
-                .cmsUrl(cmsUrl);
+                .host(cmsUrl);
         if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().getDownloadManager().initDownloaders();
         }

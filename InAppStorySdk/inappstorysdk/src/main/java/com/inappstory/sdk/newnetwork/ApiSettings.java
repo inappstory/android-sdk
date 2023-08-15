@@ -1,7 +1,9 @@
-package com.inappstory.sdk.network;
+package com.inappstory.sdk.newnetwork;
+
+import com.inappstory.sdk.network.NetworkClient;
 
 /**
- * Класс для задания и хранения настроек по доступу к текущей витрине.
+ * Класс для задания и хранения настроек по доступу к бекенду.
  */
 
 public class ApiSettings {

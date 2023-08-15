@@ -47,14 +47,14 @@ public class StoriesWidgetService extends RemoteViewsService {
             InAppStoryManager.showELog(IAS_ERROR_TAG, "'widgetClass' must not be null");
             return;
         }
-        if (ApiSettings.getInstance().getCmsUrl() == null) {
+        if (ApiSettings.getInstance().getHost() == null) {
             ApiSettings
                     .getInstance()
                     .cacheDirPath(context.getCacheDir().getAbsolutePath())
                     .apiKey(context.getResources().getString(R.string.csApiKey))
                     .setWebUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
                             "https://api.test.inappstory.com/" : "https://api.inappstory.ru/")
-                    .cmsUrl(AppearanceManager.csWidgetAppearance().isSandbox() ?
+                    .host(AppearanceManager.csWidgetAppearance().isSandbox() ?
                             "https://api.test.inappstory.com/" : "https://api.inappstory.ru/");
         }
 

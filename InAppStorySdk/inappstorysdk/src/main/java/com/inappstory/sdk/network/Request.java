@@ -63,13 +63,13 @@ public class Request<T> {
     public Set<String> getVarKeys() {
         return vars != null ? vars.keySet() : new HashSet<String>();
     }
+    public boolean isFormEncoded() {
+        return isFormEncoded;
+    }
 
     private String url;
     private String method;
 
-    public boolean isFormEncoded() {
-        return isFormEncoded;
-    }
 
     private boolean isFormEncoded;
     private HashMap<String, String> headers;

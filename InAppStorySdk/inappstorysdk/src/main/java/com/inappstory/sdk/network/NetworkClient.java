@@ -98,7 +98,7 @@ public class NetworkClient {
     public static ApiInterface getApi() {
         synchronized (syncLock) {
             if (instance == null || instance.getBaseUrl() == null) {
-                if (ApiSettings.getInstance().getCmsUrl() == null) {
+                if (ApiSettings.getInstance().getHost() == null) {
                     return new DumbApiInterface();
                 }
                 String packageName = appContext.getPackageName();
@@ -110,7 +110,7 @@ public class NetworkClient {
                 }
                 instance = new Builder()
                         .context(appContext)
-                        .baseUrl(ApiSettings.getInstance().getCmsUrl())
+                        .baseUrl(ApiSettings.getInstance().getHost())
                         .addHeader("Accept", "application/json")
                         .addHeader("Accept-Language", language)
                         .addHeader("X-Device-Id", Settings.Secure.getString(appContext.getContentResolver(),
@@ -131,7 +131,7 @@ public class NetworkClient {
         if (statinstance == null) {
             statinstance = new NetworkClient.Builder()
                     .context(appContext)
-                    .baseUrl(ApiSettings.getInstance().getCmsUrl())
+                    .baseUrl(ApiSettings.getInstance().getHost())
                     .addHeader("User-Agent", getUAString(appContext)).build();
         }
         if (statApiInterface == null) {
