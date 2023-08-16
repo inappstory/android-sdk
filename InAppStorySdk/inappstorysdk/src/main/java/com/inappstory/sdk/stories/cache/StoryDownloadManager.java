@@ -6,7 +6,6 @@ import android.os.Handler;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
@@ -209,27 +208,31 @@ public class StoryDownloadManager {
         }
     }
 
-    void slideLoaded(int storyId, int index, Story.StoryType type) {
+    void slideLoaded(SlideTaskData key) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == storyId && subscriber.getStoryType() == type) {
-                    subscriber.slideLoadedInCache(index);
+                if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.storyType) {
+                    subscriber.slideLoadedInCache(key.index);
                     return;
                 }
             }
         }
     }
 
-    HashMap<Integer, Long> storyErrorDelayed = new HashMap<>();
+    HashMap<StoryTaskData, Long> storyErrorDelayed = new HashMap<>();
+    HashMap<SlideTaskData, Long> slideErrorDelayed = new HashMap<>();
 
-    void storyError(int storyId) {
+    void storyError(StoryTaskData storyTaskData) {
         synchronized (lock) {
             if (subscribers.isEmpty()) {
-                storyErrorDelayed.put(storyId, System.currentTimeMillis());
+                storyErrorDelayed.put(
+                        storyTaskData,
+                        System.currentTimeMillis()
+                );
                 return;
             }
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == storyId) {
+                if (subscriber.getStoryId() == storyTaskData.storyId) {
                     subscriber.storyLoadError();
                     return;
                 }
@@ -237,8 +240,25 @@ public class StoryDownloadManager {
         }
     }
 
-    void storyLoaded(int storyId, Story.StoryType type) {
+    void slideError(SlideTaskData slideTaskData) {
+        synchronized (lock) {
+            if (subscribers.isEmpty()) {
+                slideErrorDelayed.put(
+                        slideTaskData,
+                        System.currentTimeMillis()
+                );
+                return;
+            }
+            for (ReaderPageManager subscriber : subscribers) {
+                if (subscriber.getStoryId() == slideTaskData.storyId) {
+                    subscriber.slideLoadError(slideTaskData.index);
+                    return;
+                }
+            }
+        }
+    }
 
+    void storyLoaded(int storyId, Story.StoryType type) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == storyId && subscriber.getStoryType() == type) {
@@ -312,11 +332,11 @@ public class StoryDownloadManager {
         }
     }
 
-    public boolean checkIfPageLoaded(int storyId, int index, Story.StoryType type) {
+    public int checkIfPageLoaded(int storyId, int index, Story.StoryType type) {
         try {
-            return slidesDownloader.checkIfPageLoaded(new SlideTaskKey(storyId, index, type));
+            return slidesDownloader.checkIfPageLoaded(new SlideTaskData(storyId, index, type));
         } catch (IOException e) {
-            return false;
+            return 0;
         }
     }
 
@@ -351,26 +371,43 @@ public class StoryDownloadManager {
             }
 
             @Override
-            public void onError(int storyId) {
-                storyError(storyId);
+            public void onError(StoryTaskData storyTaskData) {
+                storyError(storyTaskData);
             }
         }, StoryDownloadManager.this);
 
         this.slidesDownloader = new SlidesDownloader(new DownloadPageCallback() {
             @Override
-            public boolean downloadFile(String url, String storyId, int index) {
+            public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
-                    Downloader.downloadOrGetFile(url, InAppStoryService.getInstance().getCommonCache(), null, null);
-                    return true;
+                    DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), InAppStoryService.getInstance().getCommonCache(), null, null);
+                    if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
+                        Downloader.downloadOrGetFile(urlWithAlter.getAlter(), InAppStoryService.getInstance().getCommonCache(), null, null);
+                        if (state != null && state.getFullFile() != null) return DownloadPageFileStatus.SUCCESS;
+                        return DownloadPageFileStatus.SKIP;
+                    }
+                    if (state != null && state.getFullFile() != null)
+                        return DownloadPageFileStatus.SUCCESS;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    return false;
                 }
+                return DownloadPageFileStatus.ERROR;
             }
 
             @Override
-            public void onError(int storyId) {
-                storyError(storyId);
+            public void onError(StoryTaskData storyTaskData) {
+                storyError(storyTaskData);
+            }
+
+            @Override
+            public void onSlideError(SlideTaskData taskData) {
+                slideError(taskData);
+                storyDownloader.setStoryLoadType(
+                        new StoryTaskData(
+                                taskData.storyId,
+                                taskData.storyType
+                        ),
+                        -2);
             }
         }, StoryDownloadManager.this);
     }
@@ -385,13 +422,8 @@ public class StoryDownloadManager {
 
 
     public void reloadStory(int storyId, Story.StoryType type) {
-        storyDownloader.reloadPage(storyId, new ArrayList<Integer>(), type);
-    }
-
-    public void reloadPage(int storyId, int index, ArrayList<Integer> addIds, Story.StoryType type) {
-        if (storyDownloader.reloadPage(storyId, addIds, type)) {
-            slidesDownloader.reloadPage(storyId, index, type);
-        }
+        slidesDownloader.removeSlideTasks(new StoryTaskData(storyId, type));
+        storyDownloader.reload(storyId, new ArrayList<Integer>(), type);
     }
 
     public void setCurrentSlide(int storyId, int slideIndex) {

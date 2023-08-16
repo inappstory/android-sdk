@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -260,6 +261,7 @@ public class ReaderPageManager {
     public void resumeSlide(boolean withBackground) {
         if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
+        if (!currentSlideIsLoaded) return;
         isPaused = false;
         timelineManager.resume();
         if (withBackground) {
@@ -397,8 +399,9 @@ public class ReaderPageManager {
             webViewManager.stopStory();
             lastIndex++;
             story.lastIndex = lastIndex;
-            changeCurrentSlide(lastIndex);
             slideIndex = lastIndex;
+            changeCurrentSlide(lastIndex);
+            Log.e("nextSlide" , "" + lastIndex);
         } else {
             parentManager.nextStory(action);
         }
@@ -409,6 +412,8 @@ public class ReaderPageManager {
         if (durations == null) return;
         List<Integer> localDurations = new ArrayList<>(durations);
         if (localDurations.size() <= slideIndex) return;
+
+        currentSlideIsLoaded = false;
         ProfilingManager.getInstance().addTask("slide_show",
                 storyId + "_" + slideIndex);
         isPaused = false;
@@ -458,8 +463,8 @@ public class ReaderPageManager {
             webViewManager.stopStory();
             lastIndex--;
             story.lastIndex = lastIndex;
-            changeCurrentSlide(lastIndex);
             slideIndex = lastIndex;
+            changeCurrentSlide(lastIndex);
         } else {
             parentManager.prevStory(action);
         }
@@ -492,9 +497,11 @@ public class ReaderPageManager {
         if (slideIndex == index) {
             if (checkIfManagersIsNull()) return;
             webViewManager.storyLoaded(storyId, index, alreadyLoaded);
-            host.storyLoadedSuccess();
+            //host.storyLoadedSuccess();
         }
     }
+
+    boolean currentSlideIsLoaded = false;
 
 
     void storyInfoLoaded() {
@@ -533,6 +540,12 @@ public class ReaderPageManager {
     public void storyLoadError() {
         if (host != null)
             host.storyLoadError();
+    }
+
+    public void slideLoadError(int slideIndex) {
+        if (this.slideIndex == slideIndex)
+            if (host != null)
+                host.slideLoadError();
     }
 
     public void storyLoadedInCache() {

@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.views;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.util.Log;
 import android.webkit.URLUtil;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -15,6 +16,8 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesVi
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 public class StoriesReaderWebViewClient extends IASWebViewClient {
     StoriesViewManager manager;
@@ -86,7 +89,6 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
         } else
             return super.shouldInterceptRequest(view, request);
     }
-
 
     @Override
     public void onPageFinished(WebView view, String url) {

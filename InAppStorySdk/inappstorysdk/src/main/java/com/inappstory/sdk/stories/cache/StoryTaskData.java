@@ -4,8 +4,8 @@ import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.Objects;
 
-class StoryTaskKey {
-    public StoryTaskKey(Integer storyId, Story.StoryType storyType) {
+class StoryTaskData {
+    public StoryTaskData(Integer storyId, Story.StoryType storyType) {
         this.storyId = storyId;
         this.storyType = storyType;
     }
@@ -17,7 +17,7 @@ class StoryTaskKey {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StoryTaskKey that = (StoryTaskKey) o;
+        StoryTaskData that = (StoryTaskData) o;
         return Objects.equals(storyId, that.storyId) && storyType == that.storyType;
     }
 

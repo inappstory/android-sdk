@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -188,12 +189,14 @@ public class ReaderPageFragment extends Fragment {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+
                 showLoader();
             }
         });
     }
 
     public void storyLoadedSuccess() {
+        Log.e("hideLoader", "storyLoadedSuccess");
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -271,6 +274,8 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void hideLoader() {
+
+        if (loader == null || loader.getVisibility() == View.GONE) return;
         Animation anim = new AlphaAnimation(1f, 0f);
         anim.setDuration(200);
         anim.setAnimationListener(new Animation.AnimationListener() {
@@ -290,15 +295,32 @@ public class ReaderPageFragment extends Fragment {
             @Override
             public void onAnimationEnd(Animation animation) {
                 if (loader == null) return;
-                loader.setVisibility(View.GONE);
-                loader.setAlpha(1f);
+                stopAndHideLoader();
             }
         });
-        if (loader == null) return;
         loader.startAnimation(anim);
     }
 
+    private void stopAndHideLoader() {
+        loader.clearAnimation();
+        loader.setVisibility(View.GONE);
+        loader.setAlpha(1f);
+    }
+
     public void storyLoadError() {
+        Log.e("hideLoader", "storyLoadError");
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                refresh.setVisibility(View.VISIBLE);
+                hideLoader();
+                close.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    public void slideLoadError() {
+        Log.e("hideLoader", "slideLoadError");
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

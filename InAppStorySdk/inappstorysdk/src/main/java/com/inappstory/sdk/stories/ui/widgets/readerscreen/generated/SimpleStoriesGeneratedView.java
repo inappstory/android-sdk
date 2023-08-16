@@ -90,7 +90,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
-    public void pauseVideo() {
+    public void slidePause() {
         for (GeneratedVideoView videoView : tempVideos) {
             videoView.pausePlay();
         }
@@ -106,7 +106,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     HashMap<View, ValueAnimator> animatorHashMap = new HashMap<>();
 
     @Override
-    public void playVideo() {
+    public void slideStart() {
         for (GeneratedVideoView videoView : tempVideos) {
             videoView.startPlay();
         }

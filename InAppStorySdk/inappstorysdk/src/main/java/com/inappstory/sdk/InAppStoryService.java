@@ -13,18 +13,16 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
+import android.util.Pair;
 import android.webkit.URLUtil;
 
 import com.inappstory.sdk.game.cache.GameCacheManager;
-import com.inappstory.sdk.game.cache.GameLoadCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -33,7 +31,6 @@ import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
-import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -401,6 +398,13 @@ public class InAppStoryService {
         InAppStoryManager manager = InAppStoryManager.getInstance();
         if (manager != null)
             return manager.getImagePlaceholdersValues();
+        return new HashMap<>();
+    }
+
+    public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null)
+            return manager.getImagePlaceholdersValuesWithDefaults();
         return new HashMap<>();
     }
 

@@ -59,11 +59,11 @@ class StoryDownloader {
     private final ExecutorService loader = Executors.newFixedThreadPool(1);
 
     private final Object storyTasksLock = new Object();
-    private HashMap<StoryTaskKey, StoryTask> storyTasks = new HashMap<>();
+    private HashMap<StoryTaskData, StoryTaskWithPriority> storyTasks = new HashMap<>();
 
     void addCompletedStoryTask(int storyId, Story.StoryType type) {
         synchronized (storyTasksLock) {
-            storyTasks.put(new StoryTaskKey(storyId, type), new StoryTask(-1, 3));
+            storyTasks.put(new StoryTaskData(storyId, type), new StoryTaskWithPriority(-1, 3));
         }
     }
 
@@ -84,7 +84,7 @@ class StoryDownloader {
     boolean uploadAdditional() {
         synchronized (storyTasksLock) {
             if (!storyTasks.isEmpty()) {
-                for (StoryTaskKey i : storyTasks.keySet()) {
+                for (StoryTaskData i : storyTasks.keySet()) {
                     if (getStoryLoadType(i) <= 1) return false;
                 }
             }
@@ -92,54 +92,56 @@ class StoryDownloader {
         }
     }
 
-    ArrayList<StoryTaskKey> firstPriority = new ArrayList<>();
-    ArrayList<StoryTaskKey> secondPriority = new ArrayList<>();
+    ArrayList<StoryTaskData> firstPriority = new ArrayList<>();
+    ArrayList<StoryTaskData> secondPriority = new ArrayList<>();
 
-    void changePriority(StoryTaskKey storyId, ArrayList<Integer> addIds, Story.StoryType type) {
+    void changePriority(StoryTaskData storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         secondPriority.remove(storyId);
         for (Integer id : addIds) {
-            StoryTaskKey key = new StoryTaskKey(id, type);
+            StoryTaskData key = new StoryTaskData(id, type);
             secondPriority.remove(key);
         }
-        for (StoryTaskKey id : firstPriority) {
+        for (StoryTaskData id : firstPriority) {
             if (!secondPriority.contains(id))
                 secondPriority.add(id);
         }
         firstPriority.clear();
         firstPriority.add(storyId);
         for (Integer id : addIds) {
-            StoryTaskKey key = new StoryTaskKey(id, type);
+            StoryTaskData key = new StoryTaskData(id, type);
             firstPriority.add(key);
         }
 
     }
 
-    void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) throws Exception {
+    void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         synchronized (storyTasksLock) {
-
             if (storyTasks == null) storyTasks = new HashMap<>();
-            for (StoryTaskKey storyTaskKey : storyTasks.keySet()) {
-                if (storyTasks.get(storyTaskKey).loadType > 0 &&
-                        storyTasks.get(storyTaskKey).loadType != 3
-                        && storyTasks.get(storyTaskKey).loadType != 6) {
-                    storyTasks.get(storyTaskKey).loadType += 3;
+            for (StoryTaskData storyTaskKey : storyTasks.keySet()) {
+                StoryTaskWithPriority storyTaskWithPriority = storyTasks.get(storyTaskKey);
+                if (storyTaskWithPriority != null &&
+                        storyTaskWithPriority.loadType > 0 &&
+                        storyTaskWithPriority.loadType != 3 &&
+                        storyTaskWithPriority.loadType != 6
+                ) {
+                    storyTaskWithPriority.loadType += 3;
                 }
             }
             for (Integer storyIntKey : addIds) {
-                StoryTaskKey key = new StoryTaskKey(storyIntKey, type);
-                StoryTask task = storyTasks.get(key);
+                StoryTaskData key = new StoryTaskData(storyIntKey, type);
+                StoryTaskWithPriority task = storyTasks.get(key);
                 if (task != null) {
                     if (task.loadType != 3 &&
                             task.loadType != 6) {
                         task.loadType = 4;
                     }
                 } else {
-                    StoryTask st = new StoryTask(4);
+                    StoryTaskWithPriority st = new StoryTaskWithPriority(4);
                     storyTasks.put(key, st);
                 }
             }
-            StoryTaskKey keyByStoryId = new StoryTaskKey(storyId, type);
-            StoryTask taskByStoryId = storyTasks.get(keyByStoryId);
+            StoryTaskData keyByStoryId = new StoryTaskData(storyId, type);
+            StoryTaskWithPriority taskByStoryId = storyTasks.get(keyByStoryId);
             if (taskByStoryId != null) {
                 if (taskByStoryId.loadType != 3) {
                     if (taskByStoryId.loadType == 6) {
@@ -155,23 +157,23 @@ class StoryDownloader {
                     return;
                 }
             } else {
-                storyTasks.put(keyByStoryId, new StoryTask(1));
+                storyTasks.put(keyByStoryId, new StoryTaskWithPriority(1));
             }
             changePriority(keyByStoryId, addIds, type);
         }
     }
 
 
-    private StoryTaskKey getMaxPriorityStoryTaskKey() throws Exception {
+    private StoryTaskData getMaxPriorityStoryTaskKey() throws Exception {
         synchronized (storyTasksLock) {
             if (storyTasks == null || storyTasks.size() == 0) return null;
             if (firstPriority == null || secondPriority == null) return null;
-            for (StoryTaskKey key : firstPriority) {
+            for (StoryTaskData key : firstPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
             }
-            for (StoryTaskKey key : secondPriority) {
+            for (StoryTaskData key : secondPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
@@ -180,12 +182,12 @@ class StoryDownloader {
         }
     }
 
-    void setStoryLoadType(StoryTaskKey key, int loadType) {
+    void setStoryLoadType(StoryTaskData key, int loadType) {
         if (!storyTasks.containsKey(key)) return;
         Objects.requireNonNull(storyTasks.get(key)).loadType = loadType;
     }
 
-    int getStoryLoadType(StoryTaskKey key) {
+    int getStoryLoadType(StoryTaskData key) {
         if (!storyTasks.containsKey(key)) return -5;
         return Objects.requireNonNull(storyTasks.get(key)).loadType;
     }
@@ -194,23 +196,17 @@ class StoryDownloader {
     private Handler handler;
     private Handler errorHandler;
 
-    boolean reloadPage(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
+    void reload(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         synchronized (storyTasksLock) {
-            StoryTaskKey key = new StoryTaskKey(storyId, type);
+            StoryTaskData key = new StoryTaskData(storyId, type);
             if (storyTasks == null) storyTasks = new HashMap<>();
-            if (getStoryLoadType(key) == -5 || getStoryLoadType(key) == -1) {
-                try {
-                    addStoryTask(storyId, addIds, type);
-                } catch (Exception e) {
-
-                }
-                return false;
-            }
+            storyTasks.remove(key);
         }
-        return true;
+        addStoryTask(storyId, addIds, type);
     }
 
-    private void loadStoryError(final StoryTaskKey key) {
+
+    private void loadStoryError(final StoryTaskData key) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().cacheError();
         }
@@ -221,8 +217,8 @@ class StoryDownloader {
                 firstPriority.remove(key);
             if (secondPriority != null)
                 secondPriority.remove(key);
-            setStoryLoadType(key, -1);
-            callback.onError(key.storyId);
+            setStoryLoadType(key, -2);
+            callback.onError(key);
         }
     }
 
@@ -231,7 +227,7 @@ class StoryDownloader {
 
         @Override
         public void run() {
-            StoryTaskKey tKey = null;
+            StoryTaskData tKey = null;
             try {
                 tKey = getMaxPriorityStoryTaskKey();
             } catch (Exception e) {
@@ -241,7 +237,7 @@ class StoryDownloader {
                 handler.postDelayed(queueStoryReadRunnable, 100);
                 return;
             }
-            final StoryTaskKey key = tKey;
+            final StoryTaskData key = tKey;
             synchronized (storyTasksLock) {
                 if (getStoryLoadType(key) == 4) {
                     setStoryLoadType(key, 5);
@@ -279,7 +275,7 @@ class StoryDownloader {
     };
 
 
-    void loadStoryResult(StoryTaskKey key, Response response) {
+    void loadStoryResult(StoryTaskData key, Response response) {
         if (response.body != null) {
             Story story = JsonParser.fromJson(response.body, Story.class);
             int loadType;
@@ -305,7 +301,7 @@ class StoryDownloader {
     }
 
 
-    void loadStory(StoryTaskKey key) {
+    void loadStory(StoryTaskData key) {
         try {
             String storyUID;
             Response response;

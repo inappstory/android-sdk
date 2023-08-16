@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.cache;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoryPageTask {
+public class SlideTaskStatus {
     int priority = 0;
     List<String> urls = new ArrayList<>();
     List<String> videoUrls = new ArrayList<>();
@@ -11,7 +11,7 @@ public class StoryPageTask {
 
     @Override
     public String toString() {
-        return "StoryPageTask{" +
+        return "SlideTask{" +
                 ", loadType=" + loadType +
                 '}';
     }
