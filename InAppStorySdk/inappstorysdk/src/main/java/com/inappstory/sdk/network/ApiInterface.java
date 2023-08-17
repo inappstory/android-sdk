@@ -1,6 +1,7 @@
 package com.inappstory.sdk.network;
 
 
+import com.inappstory.sdk.newnetwork.annotations.api.ExcludeHeaders;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 /**
@@ -86,6 +87,7 @@ public interface ApiInterface {
             @Query("spend_ms") Long spendMs);
 
     @FormUrlEncoded
+    @ExcludeHeaders
     @POST("exception")
     Request sendException(
             @Query("s") String session,

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public final class NetworkHandler implements InvocationHandler {
+
     public NetworkHandler() {
     }
 

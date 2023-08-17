@@ -1,17 +1,14 @@
 package com.inappstory.sdk.stories.api.models.logs;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.newnetwork.constants.HttpMethods;
 import com.inappstory.sdk.newnetwork.models.Request;
-import com.inappstory.sdk.newnetwork.utils.UrlFromRequest;
+import com.inappstory.sdk.newnetwork.utils.GetUrl;
 
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class ApiLogRequest {
     public long timestamp;
@@ -34,7 +31,7 @@ public class ApiLogRequest {
         this.headers = new ArrayList<>();
     }
     public void buildFromRequest(Request request, String requestId) throws MalformedURLException {
-        URL url = new UrlFromRequest().get(request);
+        URL url = new GetUrl().fromRequest(request);
         this.method = request.getMethod();
         this.url = url.toString();
         this.id = requestId;

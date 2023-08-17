@@ -187,13 +187,6 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             }
             String gameInstanceId = current.getGameInstanceId();
             if (gameInstanceId != null) {
-                if (!InAppStoryService.isConnected()) {
-
-                    if (CallbackManager.getInstance().getErrorCallback() != null) {
-                        CallbackManager.getInstance().getErrorCallback().noConnection();
-                    }
-                    return;
-                }
                 service.openGameReaderWithGC(
                         context,
                         new GameStoryData(

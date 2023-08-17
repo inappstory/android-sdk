@@ -12,7 +12,6 @@ import java.util.Locale;
 
 public class NetworkClient {
     private static ApiInterface apiInterface;
-    private static ApiInterface statApiInterface;
 
     private Context context;
 
@@ -27,24 +26,20 @@ public class NetworkClient {
     }
 
     public HashMap<String, String> getHeaders() {
+        if (context == null) return null;
         return headers;
     }
 
-    private HashMap<String, String> headers;
-
     private static NetworkClient instance;
-    private static NetworkClient statinstance;
 
-    public NetworkClient(Context context, String baseUrl, HashMap<String, String> headers) {
-        this.context = context.getApplicationContext();
+    private NetworkClient(Context context, String baseUrl) {
+        this.appContext = context.getApplicationContext();
         this.baseUrl = baseUrl;
-        this.headers = headers;
     }
 
     public static class Builder {
         private Context context;
         private String baseUrl;
-        private HashMap<String, String> headers;
 
         public Builder baseUrl(String url) {
             this.baseUrl = url;
@@ -52,18 +47,12 @@ public class NetworkClient {
         }
 
         public Builder context(Context context) {
-            this.context = context;
-            return this;
-        }
-
-        public Builder addHeader(String key, String header) {
-            if (headers == null) headers = new HashMap<>();
-            headers.put(key, header);
+            this.context = context.getApplicationContext();
             return this;
         }
 
         public NetworkClient build() {
-            return new NetworkClient(context, baseUrl, headers);
+            return new NetworkClient(context, baseUrl);
         }
     }
 
@@ -72,20 +61,10 @@ public class NetworkClient {
         return instance;
     }
 
-
-    public static Context getAppContext() {
-        return appContext;
-    }
-
-    private static Context appContext;
-
-    public static void setContext(Context context) {
-        appContext = context;
-    }
+    private Context appContext;
 
     public static void clear() {
         instance = null;
-        statinstance = null;
         apiInterface = null;
     }
 
@@ -97,26 +76,10 @@ public class NetworkClient {
                 if (ApiSettings.getInstance().getHost() == null) {
                     return new DummyApiInterface();
                 }
-                String packageName = appContext.getPackageName();
-                String language;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    language = Locale.getDefault().toLanguageTag();
-                } else {
-                    language = Locale.getDefault().getLanguage();
-                }
                 instance = new Builder()
                         .context(appContext)
                         .baseUrl(ApiSettings.getInstance().getHost())
-                        .addHeader("Accept", "application/json")
-                        .addHeader("Accept-Language", language)
-                        .addHeader("X-Device-Id",
-                                Settings.Secure.getString(appContext.getContentResolver(),
-                                Settings.Secure.ANDROID_ID)
-                        )
-                        .addHeader("X-APP-PACKAGE-ID", packageName != null ? packageName : "-")
-                        .addHeader("User-Agent", new UserAgent().generate(appContext))
-                        .addHeader("Authorization", "Bearer " +
-                                ApiSettings.getInstance().getApiKey()).build();
+                        .build();
                 apiInterface = null;
             }
             if (apiInterface == null) {
@@ -125,20 +88,6 @@ public class NetworkClient {
             return apiInterface;
         }
     }
-
-    public static ApiInterface getStatApi() {
-        if (statinstance == null) {
-            statinstance = new Builder()
-                    .context(appContext)
-                    .baseUrl(ApiSettings.getInstance().getHost())
-                    .addHeader("User-Agent", new UserAgent().generate(appContext)).build();
-        }
-        if (statApiInterface == null) {
-            statApiInterface = NetworkHandler.implement(ApiInterface.class);
-        }
-        return statApiInterface;
-    }
-
 
 
 }

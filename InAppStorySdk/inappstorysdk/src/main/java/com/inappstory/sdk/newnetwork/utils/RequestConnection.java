@@ -14,7 +14,7 @@ import java.net.URL;
 
 public class RequestConnection {
     public HttpURLConnection build(Request request, String requestId) throws IOException {
-        URL url = new UrlFromRequest().get(request);
+        URL url = new GetUrl().fromRequest(request);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
