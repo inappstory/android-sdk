@@ -8,17 +8,17 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
@@ -400,6 +400,7 @@ public class StoriesViewManager {
         }
         return data;
     }
+
     public void openGameReaderWithoutGameCenter(String gameUrl, String splashScreenPath, String gameConfig, String resources, String options) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
         ScreensManager.getInstance().openGameReader(
@@ -468,13 +469,22 @@ public class StoriesViewManager {
     }
 
     public void storySetLocalData(String data, boolean sendToServer) {
-        KeyValueStorage.saveString("story" + storyId
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
-
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        KeyValueStorage.saveString("story" + storyId + "__" + service.getUserId(), data);
+        if (!service.getSendStatistic()) return;
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            return;
+        }
         if (sendToServer) {
-            NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, Session.getInstance().id)
-                    .enqueue(new NetworkCallback<Response>() {
+            networkClient.enqueue(
+                    networkClient.getApi().sendStoryData(
+                            Integer.toString(storyId),
+                            data,
+                            Session.getInstance().id
+                    ),
+                    new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {
 
@@ -484,7 +494,8 @@ public class StoriesViewManager {
                         public Type getType() {
                             return null;
                         }
-                    });
+                    }
+            );
         }
     }
 
@@ -492,8 +503,20 @@ public class StoriesViewManager {
 
     public void storySendData(String data) {
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
-        NetworkClient.getApi().sendStoryData(Integer.toString(storyId), data, Session.getInstance().id)
-                .enqueue(new NetworkCallback<Response>() {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        if (!service.getSendStatistic()) return;
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            return;
+        }
+        networkClient.enqueue(
+                networkClient.getApi().sendStoryData(
+                        Integer.toString(storyId),
+                        data,
+                        Session.getInstance().id
+                ),
+                new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
 
@@ -503,7 +526,8 @@ public class StoriesViewManager {
                     public Type getType() {
                         return null;
                     }
-                });
+                }
+        );
     }
 
     public void stopStory() {

@@ -1,8 +1,8 @@
 package com.inappstory.sdk.stories.api.models;
 
 
-import com.inappstory.sdk.network.Required;
-import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.network.annotations.models.Required;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 import java.util.ArrayList;
 import java.util.List;

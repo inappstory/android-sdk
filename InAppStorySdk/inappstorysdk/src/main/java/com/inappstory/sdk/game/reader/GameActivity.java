@@ -55,8 +55,11 @@ import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.utils.HostFromSecretKey;
+import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
@@ -98,7 +101,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
 
@@ -714,14 +716,23 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
     }
 
+
     private String generateJsonConfig() {
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
-        options.apiBaseUrl = NetworkClient.getInstance().getBaseUrl();
+        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (networkClient == null) {
+            options.apiBaseUrl = new HostFromSecretKey(
+                    ApiSettings.getInstance().getApiKey()
+            ).get(inAppStoryManager != null && inAppStoryManager.isSandbox());
+        } else {
+            options.apiBaseUrl = networkClient.getBaseUrl();
+        }
         int orientation = getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
-        options.userAgent = NetworkClient.getUAString(this);
+        options.userAgent = new UserAgent().generate(this);
         String appPackageName = "";
         try {
             appPackageName = getPackageManager().getPackageInfo(getPackageName(), 0).packageName;

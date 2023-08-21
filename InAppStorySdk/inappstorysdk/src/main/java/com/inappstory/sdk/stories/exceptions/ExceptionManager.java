@@ -1,9 +1,9 @@
 package com.inappstory.sdk.stories.exceptions;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -26,29 +26,35 @@ public class ExceptionManager {
         copiedLog.file = log.file;
         copiedLog.session = log.session;
         copiedLog.line = log.line;
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            return;
+        }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
                 if (Session.getInstance().statisticPermissions != null
                         && Session.getInstance().statisticPermissions.allowCrash)
-                    NetworkClient.getStatApi().sendException(
-                            copiedLog.session,
-                            copiedLog.timestamp / 1000,
-                            copiedLog.message,
-                            copiedLog.file,
-                            copiedLog.line,
-                            copiedLog.stacktrace
-                    ).enqueue(new NetworkCallback() {
-                        @Override
-                        public void onSuccess(Object response) {
-                            SharedPreferencesAPI.removeString(SAVED_EX);
-                        }
+                    networkClient.enqueue(
+                            networkClient.getApi().sendException(
+                                    copiedLog.session,
+                                    copiedLog.timestamp / 1000,
+                                    copiedLog.message,
+                                    copiedLog.file,
+                                    copiedLog.line,
+                                    copiedLog.stacktrace
+                            ),
+                            new NetworkCallback() {
+                                @Override
+                                public void onSuccess(Object response) {
+                                    SharedPreferencesAPI.removeString(SAVED_EX);
+                                }
 
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    });
+                                @Override
+                                public Type getType() {
+                                    return null;
+                                }
+                            });
                 else
                     SharedPreferencesAPI.removeString(SAVED_EX);
             }

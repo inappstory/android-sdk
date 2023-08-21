@@ -1,15 +1,14 @@
 package com.inappstory.sdk.game.cache;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.NetworkCallback;
+import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
+
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
-import java.io.File;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
@@ -21,12 +20,7 @@ public class GameCacheManager {
     }
 
     public void getGame(String gameId, GameLoadCallback callback) {
-       /* CachedGame game = cachedGames.get(gameId);
-        if (game != null) {
-            callback.onSuccess(game.data);
-        } else {*/
         getGameFromGameCenter(gameId, callback);
-        //  }
     }
 
     public GameCenterData getCachedGame(String gameId) {
@@ -38,11 +32,16 @@ public class GameCacheManager {
     }
 
     private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {
-
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            callback.onError(NC_IS_UNAVAILABLE);
+            return;
+        }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                NetworkClient.getApi().getGameByInstanceId(gameId).enqueue(
+                networkClient.enqueue(
+                        networkClient.getApi().getGameByInstanceId(gameId),
                         new NetworkCallback<GameCenterData>() {
                             @Override
                             public void onSuccess(final GameCenterData response) {
@@ -64,17 +63,16 @@ public class GameCacheManager {
                             }
 
                             @Override
-                            public void onError(int code, String message) {
-                                super.onError(code, message);
+                            public void errorDefault(String message) {
                                 callback.onError(message);
                             }
 
                             @Override
-                            public void onTimeout() {
-                                super.onTimeout();
+                            public void timeoutError() {
                                 callback.onError("Game loading run out of time");
                             }
-                        });
+                        }
+                );
             }
 
             @Override

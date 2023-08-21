@@ -18,11 +18,11 @@ import androidx.core.util.Pair;
 
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.network.utils.KeyConverter;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -86,6 +86,11 @@ import java.util.Set;
 public class InAppStoryManager {
 
     private static InAppStoryManager INSTANCE;
+
+    public static NetworkClient getNetworkClient() {
+        if (InAppStoryManager.getInstance() == null) return null;
+        return InAppStoryManager.getInstance().networkClient;
+    }
 
     public static boolean testGenerated = false;
 
@@ -703,51 +708,58 @@ public class InAppStoryManager {
         });
     }
 
+    NetworkClient networkClient;
+
     private void favoriteRemoveAll() {
         if (InAppStoryService.isNull()) return;
+        if (networkClient == null) return;
         final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
-        NetworkClient.getApi().removeAllFavorites().enqueue(new NetworkCallback<Response>() {
-            @Override
-            public void onSuccess(Response response) {
-                ProfilingManager.getInstance().setReady(favUID);
-                if (InAppStoryService.isNotNull()) {
-                    InAppStoryService.getInstance().getDownloadManager()
-                            .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                    InAppStoryService.getInstance().getDownloadManager()
-                            .clearAllFavoriteStatus(Story.StoryType.UGC);
-                    InAppStoryService.getInstance().getFavoriteImages().clear();
-                    InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
-                }
+        networkClient.enqueue(
+                networkClient.getApi().removeAllFavorites(),
+                new NetworkCallback<Response>() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        ProfilingManager.getInstance().setReady(favUID);
+                        if (InAppStoryService.isNotNull()) {
+                            InAppStoryService.getInstance().getDownloadManager()
+                                    .clearAllFavoriteStatus(Story.StoryType.COMMON);
+                            InAppStoryService.getInstance().getDownloadManager()
+                                    .clearAllFavoriteStatus(Story.StoryType.UGC);
+                            InAppStoryService.getInstance().getFavoriteImages().clear();
+                            InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
+                        }
 
-                if (ScreensManager.getInstance().currentScreen != null) {
-                    ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
-                }
-            }
+                        if (ScreensManager.getInstance().currentScreen != null) {
+                            ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
+                        }
+                    }
 
-            @Override
-            public void onError(int code, String message) {
-                ProfilingManager.getInstance().setReady(favUID);
-                super.onError(code, message);
-            }
+                    @Override
+                    public void onError(int code, String message) {
+                        ProfilingManager.getInstance().setReady(favUID);
+                        super.onError(code, message);
+                    }
 
-            @Override
-            public void onTimeout() {
-                super.onTimeout();
-                ProfilingManager.getInstance().setReady(favUID);
-            }
+                    @Override
+                    public void timeoutError() {
+                        super.timeoutError();
+                        ProfilingManager.getInstance().setReady(favUID);
+                    }
 
-            @Override
-            public Type getType() {
-                return null;
-            }
-        });
+                    @Override
+                    public Type getType() {
+                        return null;
+                    }
+                });
     }
 
 
     private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
         if (InAppStoryService.isNull()) return;
+        if (networkClient == null) return;
         final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
-        NetworkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0).enqueue(
+        networkClient.enqueue(
+                networkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
@@ -771,8 +783,8 @@ public class InAppStoryManager {
                     }
 
                     @Override
-                    public void onTimeout() {
-                        super.onTimeout();
+                    public void timeoutError() {
+                        super.timeoutError();
                         ProfilingManager.getInstance().setReady(favUID);
                     }
 
@@ -820,7 +832,8 @@ public class InAppStoryManager {
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         createServiceThread(builder.context, builder.userId);
-        if (InAppStoryService.isNotNull()) {
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null) {
             long commonCacheSize = MB_100;
             long fastCacheSize = MB_10;
             switch (builder.cacheSize) {
@@ -832,29 +845,32 @@ public class InAppStoryManager {
                     commonCacheSize = MB_200;
                     break;
             }
-            InAppStoryService.getInstance().getFastCache().setCacheSize(fastCacheSize);
-            InAppStoryService.getInstance().getCommonCache().setCacheSize(commonCacheSize);
+            inAppStoryService.getFastCache().setCacheSize(fastCacheSize);
+            inAppStoryService.getCommonCache().setCacheSize(commonCacheSize);
         }
-        String domain = KeyConverter.getStringFromKey(
-                builder.apiKey != null ? builder.apiKey : builder.context
-                        .getResources().getString(R.string.csApiKey));
+        String domain = new HostFromSecretKey(
+                builder.apiKey
+        ).get(builder.sandbox);
+
         this.isSandbox = builder.sandbox;
-        initManager(builder.context,
-                domain != null ? domain : (builder.sandbox ? TEST_DOMAIN
-                        : PRODUCT_DOMAIN),
+        initManager(
+                builder.context,
+                domain,
                 builder.apiKey != null ? builder.apiKey : builder.context
                         .getResources().getString(R.string.csApiKey),
                 builder.testKey != null ? builder.testKey : null,
                 builder.userId,
                 builder.tags != null ? builder.tags : null,
                 builder.placeholders != null ? builder.placeholders : null,
-                builder.imagePlaceholders != null ? builder.imagePlaceholders : null);
+                builder.imagePlaceholders != null ? builder.imagePlaceholders : null
+        );
         new ExceptionManager().sendSavedException();
     }
 
     private static void generateException() {
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().genException = true;
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null) {
+            inAppStoryService.genException = true;
         }
     }
 
@@ -864,7 +880,8 @@ public class InAppStoryManager {
     }
 
     private void setUserIdInner(String userId) {
-        if (InAppStoryService.isNull()) return;
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService == null) return;
         if (userId == null || getBytesLength(userId) > 255) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
@@ -872,15 +889,15 @@ public class InAppStoryManager {
         if (this.userId.equals(userId)) return;
         localOpensKey = null;
         this.userId = userId;
-        if (InAppStoryService.getInstance().getFavoriteImages() != null)
-            InAppStoryService.getInstance().getFavoriteImages().clear();
-        InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        InAppStoryService.getInstance().getDownloadManager().refreshLocals(Story.StoryType.UGC);
+        if (inAppStoryService.getFavoriteImages() != null)
+            inAppStoryService.getFavoriteImages().clear();
+        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
+        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
         closeStoryReader(CloseStory.AUTO);
         SessionManager.getInstance().closeSession(sendStatistic, true);
         OldStatisticManager.getInstance().eventCount = 0;
-        InAppStoryService.getInstance().getDownloadManager().cleanTasks(false);
-        InAppStoryService.getInstance().setUserId(userId);
+        inAppStoryService.getDownloadManager().cleanTasks(false);
+        inAppStoryService.setUserId(userId);
     }
 
 
@@ -948,7 +965,6 @@ public class InAppStoryManager {
             setImagePlaceholders(imagePlaceholders);
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
-        NetworkClient.setContext(context);
         this.userId = userId;
         if (!isNull()) {
             localHandler.removeCallbacksAndMessages(null);
@@ -957,16 +973,23 @@ public class InAppStoryManager {
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         setInstance(this);
-        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) NetworkClient.clear();
+        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
+            if (networkClient != null) {
+                networkClient.clear();
+                networkClient = null;
+            }
+        }
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
                 .apiKey(this.API_KEY)
                 .testKey(this.TEST_KEY)
-                .setWebUrl(cmsUrl)
                 .host(cmsUrl);
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().getDownloadManager().initDownloaders();
+
+        networkClient = new NetworkClient(context, cmsUrl);
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null) {
+            inAppStoryService.getDownloadManager().initDownloaders();
         }
     }
 
@@ -974,11 +997,12 @@ public class InAppStoryManager {
 
     public static void logout() {
         if (!isNull()) {
-            if (InAppStoryService.isNotNull()) {
-                InAppStoryService.getInstance().listStoriesIds.clear();
-                InAppStoryService.getInstance().getListSubscribers().clear();
-                InAppStoryService.getInstance().getDownloadManager().cleanTasks();
-                InAppStoryService.getInstance().logout();
+            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+            if (inAppStoryService != null) {
+                inAppStoryService.listStoriesIds.clear();
+                inAppStoryService.getListSubscribers().clear();
+                inAppStoryService.getDownloadManager().cleanTasks();
+                inAppStoryService.logout();
             }
         }
     }
@@ -1077,7 +1101,9 @@ public class InAppStoryManager {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        InAppStoryService.getInstance().getDownloadManager().uploadingAdditional(stories, storyType);
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null)
+            inAppStoryService.getDownloadManager().uploadingAdditional(stories, storyType);
         ScreensManager.getInstance().openStoriesReader(
                 outerContext,
                 null,
@@ -1123,44 +1149,46 @@ public class InAppStoryManager {
                 final String localFeed;
                 if (feed != null) localFeed = feed;
                 else localFeed = ONBOARDING_FEED;
-                NetworkClient.getApi().getOnboardingFeed(
-                        localFeed,
-                        limit,
-                        localTags == null ? getTagsString() : localTags
-                ).enqueue(new LoadFeedCallback() {
-                    @Override
-                    public void onSuccess(Feed response) {
-                        if (InAppStoryManager.isNull()) return;
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        List<Story> notOpened = new ArrayList<>();
-                        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                        if (opens == null) opens = new HashSet<>();
-                        if (response.stories != null) {
-                            for (Story story : response.stories) {
-                                boolean add = true;
-                                for (String opened : opens) {
-                                    if (Integer.toString(story.id).equals(opened)) {
-                                        add = false;
+                networkClient.enqueue(
+                        networkClient.getApi().getOnboardingFeed(
+                                localFeed,
+                                limit,
+                                localTags == null ? getTagsString() : localTags
+                        ),
+                        new LoadFeedCallback() {
+                            @Override
+                            public void onSuccess(Feed response) {
+                                if (InAppStoryManager.isNull()) return;
+                                ProfilingManager.getInstance().setReady(onboardUID);
+                                List<Story> notOpened = new ArrayList<>();
+                                Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                                if (opens == null) opens = new HashSet<>();
+                                if (response.stories != null) {
+                                    for (Story story : response.stories) {
+                                        boolean add = true;
+                                        for (String opened : opens) {
+                                            if (Integer.toString(story.id).equals(opened)) {
+                                                add = false;
+                                            }
+                                        }
+                                        if (add) notOpened.add(story);
                                     }
                                 }
-                                if (add) notOpened.add(story);
+                                showLoadedOnboardings(notOpened, outerContext, manager, localFeed, response.getFeedId());
                             }
-                        }
-                        showLoadedOnboardings(notOpened, outerContext, manager, localFeed, response.getFeedId());
-                    }
 
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        loadOnboardingError(localFeed);
-                    }
+                            @Override
+                            public void onError(int code, String message) {
+                                ProfilingManager.getInstance().setReady(onboardUID);
+                                loadOnboardingError(localFeed);
+                            }
 
-                    @Override
-                    public void onTimeout() {
-                        ProfilingManager.getInstance().setReady(onboardUID);
-                        loadOnboardingError(localFeed);
-                    }
-                });
+                            @Override
+                            public void timeoutError() {
+                                ProfilingManager.getInstance().setReady(onboardUID);
+                                loadOnboardingError(localFeed);
+                            }
+                        });
             }
 
             @Override

@@ -1,9 +1,8 @@
 package com.inappstory.sdk.stories.cache;
 
-import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -12,7 +11,8 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.network.NetworkHandler;
+import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
+import com.inappstory.sdk.network.utils.ResponseStringFromStream;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
@@ -29,6 +29,7 @@ import java.net.URL;
 import java.nio.channels.FileLock;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -321,7 +322,7 @@ public class Downloader {
         }
         apiLogResponse.contentLength = sz;
         String decompression = null;
-        HashMap<String, String> responseHeaders = NetworkHandler.getHeaders(urlConnection);
+        HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(urlConnection);
         if (responseHeaders.containsKey("Content-Encoding")) {
             decompression = responseHeaders.get("Content-Encoding");
         }
@@ -329,12 +330,16 @@ public class Downloader {
             decompression = responseHeaders.get("content-encoding");
         }
         if (status > 350) {
-            String res = getResponseFromStream(urlConnection.getErrorStream(), decompression);
+            String res = new ResponseStringFromStream().get(
+                    urlConnection.getErrorStream(),
+                    decompression
+            );
             apiLogResponse.generateFile(status, res, headers);
             return null;
         }
 
-        FileOutputStream fileOutputStream = new FileOutputStream(outputFile, allowPartial && downloadOffset > 0);
+        FileOutputStream fileOutputStream = new FileOutputStream(outputFile,
+                allowPartial && downloadOffset > 0);
         FileLock lock = fileOutputStream.getChannel().lock();
         InputStream inputStream = urlConnection.getInputStream();
 

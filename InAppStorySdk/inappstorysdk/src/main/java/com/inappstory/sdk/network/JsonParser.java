@@ -2,6 +2,11 @@ package com.inappstory.sdk.network;
 
 import android.util.Pair;
 
+
+import com.inappstory.sdk.network.annotations.models.Ignore;
+import com.inappstory.sdk.network.annotations.models.Required;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 public class JsonParser {

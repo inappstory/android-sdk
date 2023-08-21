@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.statistic;
 
 import static android.content.Context.TELEPHONY_SERVICE;
-import static com.inappstory.sdk.network.NetworkClient.getUAString;
 import static java.util.UUID.randomUUID;
 
 import android.content.Context;
@@ -12,11 +11,12 @@ import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.utils.GetUrl;
+import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.stories.api.models.Session;
 
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -161,18 +161,6 @@ public class ProfilingManager {
         }
     };
 
-    static URL getURL(String path, Map<String, String> queryParams) throws Exception {
-        String url = NetworkClient.getInstance().getBaseUrl() + "profiling/" + path;
-        String varStr = "";
-        if (queryParams != null && queryParams.keySet().size() > 0) {
-            for (Object key : queryParams.keySet()) {
-                varStr += "&" + key + "=" + queryParams.get(key);
-            }
-            varStr = "?" + varStr.substring(1);
-        }
-        return new URL(url + varStr);
-    }
-
     private boolean isAllowToSend() {
         return !Session.needToUpdate()
                 && Session.getInstance().isAllowProfiling();
@@ -207,8 +195,15 @@ public class ProfilingManager {
             qParams.put("c", cc);
         qParams.put("n", task.name);
         qParams.put("v", "" + (task.endTime - task.startTime));
-        HttpURLConnection connection = (HttpURLConnection) getURL("timing", qParams).openConnection();
-        connection.setRequestProperty("User-Agent", getUAString(context));
+        HttpURLConnection connection = (HttpURLConnection) new GetUrl()
+                .fromRequest(
+                        new Request.Builder()
+                                .url("profiling/timing")
+                                .vars(qParams)
+                                .build()
+                )
+                .openConnection();
+        connection.setRequestProperty("User-Agent", new UserAgent().generate(context));
         connection.setConnectTimeout(30000);
         connection.setReadTimeout(30000);
         connection.setRequestMethod("POST");

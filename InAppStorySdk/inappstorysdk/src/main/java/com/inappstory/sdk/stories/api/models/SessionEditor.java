@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.api.models;
 
 
-import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 import java.util.HashMap;
 import java.util.List;

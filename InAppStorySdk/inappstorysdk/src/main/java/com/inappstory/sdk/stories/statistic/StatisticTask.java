@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.statistic;
 
-import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.models.PhoneAppData;
 
 public class StatisticTask {

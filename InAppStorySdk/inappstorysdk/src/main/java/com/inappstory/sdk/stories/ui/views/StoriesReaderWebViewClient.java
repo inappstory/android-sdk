@@ -9,8 +9,9 @@ import android.webkit.WebView;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.Request;
-import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 
 import java.io.File;
@@ -37,7 +38,10 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
         File file = manager.getCurrentFile(img);
         if (file != null && file.exists()) {
             try {
-                Response response = new Request.Builder().head().url(url).build().execute();
+                NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+                Response response = networkClient.execute(
+                        new Request.Builder().head().url(url).build()
+                );
                 String ctType = response.headers.get("Content-Type");
                 return new WebResourceResponse(ctType, "BINARY",
                         new FileInputStream(file));
@@ -69,7 +73,10 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
         File file = manager.getCurrentFile(img);
         if (file != null && file.exists()) {
             try {
-                Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
+                NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+                Response response = networkClient.execute(
+                        new Request.Builder().head().url(request.getUrl().toString()).build()
+                );
                 String ctType = response.headers.get("Content-Type");
                 return new WebResourceResponse(ctType, "BINARY",
                         new FileInputStream(file));

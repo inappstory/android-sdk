@@ -2,9 +2,10 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.os.Handler;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
@@ -128,6 +129,10 @@ public class OldStatisticManager {
 
     public boolean sendStatistic() {
         if (!InAppStoryService.isConnected()) return true;
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            return true;
+        }
         if (Session.needToUpdate())
             return false;
         synchronized (openProcessLock) {
@@ -149,41 +154,37 @@ public class OldStatisticManager {
                 sendingStatistic.addAll(statistic);
                 statistic.clear();
 
-                final String updateUUID = ProfilingManager.getInstance().addTask("api_session_update");
-                NetworkClient.getApi().sessionUpdate(
-                        new StatisticSendObject(Session.getInstance().id,
-                                sendingStatistic)).enqueue(new NetworkCallback<SessionResponse>() {
-                    @Override
-                    public void onSuccess(SessionResponse response) {
-                        ProfilingManager.getInstance().setReady(updateUUID);
-                        cleanStatistic();
-                    }
+                final String updateUUID = ProfilingManager.getInstance().addTask(
+                        "api_session_update"
+                );
+                networkClient.enqueue(
+                        networkClient.getApi().sessionUpdate(
+                                new StatisticSendObject(
+                                        Session.getInstance().id,
+                                        sendingStatistic
+                                )
+                        ),
+                        new NetworkCallback<SessionResponse>() {
+                            @Override
+                            public void onSuccess(SessionResponse response) {
+                                ProfilingManager.getInstance().setReady(updateUUID);
+                                cleanStatistic();
+                            }
 
-                    @Override
-                    public void onError(int code, String message) {
-                        super.onError(code, message);
-                        ProfilingManager.getInstance().setReady(updateUUID);
-                        cleanStatistic();
-                        synchronized (openProcessLock) {
-                            statistic.addAll(sendingStatistic);
-                        }
-                    }
+                            @Override
+                            public void errorDefault(String message) {
+                                ProfilingManager.getInstance().setReady(updateUUID);
+                                cleanStatistic();
+                                synchronized (openProcessLock) {
+                                    statistic.addAll(sendingStatistic);
+                                }
+                            }
 
-                    @Override
-                    public void onTimeout() {
-                        super.onTimeout();
-                        ProfilingManager.getInstance().setReady(updateUUID);
-                        cleanStatistic();
-                        synchronized (openProcessLock) {
-                            statistic.addAll(sendingStatistic);
-                        }
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return SessionResponse.class;
-                    }
-                });
+                            @Override
+                            public Type getType() {
+                                return SessionResponse.class;
+                            }
+                        });
 
             }
         } catch (Exception e) {

@@ -1,7 +1,10 @@
 package com.inappstory.sdk.network;
 
+
+import com.inappstory.sdk.InAppStoryManager;
+
 /**
- * Класс для задания и хранения настроек по доступу к текущей витрине.
+ * Класс для задания и хранения настроек по доступу к бекенду.
  */
 
 public class ApiSettings {
@@ -33,18 +36,6 @@ public class ApiSettings {
     private String testKey;
     private String host;
 
-
-    public String getWebUrl() {
-        return webUrl;
-    }
-
-    public ApiSettings setWebUrl(String webUrl) {
-        ApiSettings.this.webUrl = webUrl;
-        return ApiSettings.this;
-    }
-
-    private String webUrl;
-
     public static ApiSettings getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ApiSettings();
@@ -54,11 +45,6 @@ public class ApiSettings {
 
     public ApiSettings cacheDirPath(String cacheDirPath) {
         ApiSettings.this.cacheDirPath = cacheDirPath;
-        return ApiSettings.this;
-    }
-
-    public ApiSettings cmsId(String cmsId) {
-        ApiSettings.this.cmsId = cmsId;
         return ApiSettings.this;
     }
 
@@ -72,8 +58,10 @@ public class ApiSettings {
     }
 
     public ApiSettings apiKey(String cmsKey) {
-        if (ApiSettings.this.apiKey != null && cmsKey != null && !ApiSettings.this.apiKey.equals(cmsKey))
-            NetworkClient.clear();
+        if (ApiSettings.this.apiKey != null && cmsKey != null && !ApiSettings.this.apiKey.equals(cmsKey)) {
+            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+            if (networkClient != null) networkClient.clear();
+        }
         ApiSettings.this.apiKey = cmsKey;
         return ApiSettings.this;
     }

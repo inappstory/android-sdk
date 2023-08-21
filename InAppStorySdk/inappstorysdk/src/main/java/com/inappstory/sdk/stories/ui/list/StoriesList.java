@@ -533,17 +533,23 @@ public class StoriesList extends RecyclerView {
         if (InAppStoryService.isNotNull()) {
             lcallback = new LoadStoriesCallback() {
                 @Override
-                public void storiesLoaded(List<Integer> storiesIds) {
+                public void storiesLoaded(final List<Integer> storiesIds) {
                     if (cacheId != null && !cacheId.isEmpty()) {
                         if (InAppStoryService.isNotNull()) {
                             InAppStoryService.getInstance()
                                     .listStoriesIds.put(cacheId, storiesIds);
                         }
                     }
-                    setOrRefreshAdapter(storiesIds);
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            setOrRefreshAdapter(storiesIds);
+                            if (callback != null)
+                                callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+                        }
+                    });
                     ProfilingManager.getInstance().setReady(listUid);
-                    if (callback != null)
-                        callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+
                 }
 
                 @Override
@@ -566,11 +572,17 @@ public class StoriesList extends RecyclerView {
                         boolean hasFav = (appearanceManager != null && !isFavoriteList && appearanceManager.csHasFavorite());
                         lcallback = new LoadStoriesCallback() {
                             @Override
-                            public void storiesLoaded(List<Integer> storiesIds) {
-                                setOrRefreshAdapter(storiesIds);
+                            public void storiesLoaded(final List<Integer> storiesIds) {
+                                post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        setOrRefreshAdapter(storiesIds);
+                                        if (callback != null)
+                                            callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+                                    }
+                                });
                                 ProfilingManager.getInstance().setReady(listUid);
-                                if (callback != null)
-                                    callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+
                             }
 
                             @Override

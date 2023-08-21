@@ -1,8 +1,8 @@
 package com.inappstory.sdk.stories.api.models.logs;
 
-import com.inappstory.sdk.newnetwork.constants.HttpMethods;
-import com.inappstory.sdk.newnetwork.models.Request;
-import com.inappstory.sdk.newnetwork.utils.GetUrl;
+import com.inappstory.sdk.network.constants.HttpMethods;
+import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.utils.GetUrl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,10 +39,6 @@ public class ApiLogRequest {
             body = request.getBody();
             bodyRaw = request.getBodyRaw();
             bodyUrlEncoded = request.getBodyEncoded();
-            if (request.isFormEncoded()) {
-                this.headers.add(
-                        new ApiLogRequestHeader("Content-Type", "application/json"));
-            }
         }
     }
 

@@ -8,7 +8,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CurrentState;
 import com.inappstory.sdk.stories.api.models.Session;
 
@@ -508,31 +508,36 @@ public class StatisticManager {
 
 
     private void sendTask(final StatisticTask task) {
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) return;
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    Response response = NetworkClient.getStatApi().sendStat(
-                            task.event,
-                            task.sessionId,
-                            task.userId,
-                            task.timestamp,
-                            task.feedId,
-                            task.storyId,
-                            task.whence,
-                            task.cause,
-                            task.slideIndex,
-                            task.slideTotal,
-                            task.durationMs,
-                            task.widgetId,
-                            task.widgetLabel,
-                            task.widgetValue,
-                            task.widgetAnswer,
-                            task.widgetAnswerLabel,
-                            task.widgetAnswerScore,
-                            task.layoutIndex,
-                            task.target,
-                            task.mode).execute();
+                    Response response = networkClient.execute(
+                            networkClient.getApi().sendStat(
+                                    task.event,
+                                    task.sessionId,
+                                    task.userId,
+                                    task.timestamp,
+                                    task.feedId,
+                                    task.storyId,
+                                    task.whence,
+                                    task.cause,
+                                    task.slideIndex,
+                                    task.slideTotal,
+                                    task.durationMs,
+                                    task.widgetId,
+                                    task.widgetLabel,
+                                    task.widgetValue,
+                                    task.widgetAnswer,
+                                    task.widgetAnswerLabel,
+                                    task.widgetAnswerScore,
+                                    task.layoutIndex,
+                                    task.target,
+                                    task.mode
+                            )
+                    );
                     if (response.code > 199 && response.code < 210) {
                         return true;
                     } else {

@@ -1,20 +1,22 @@
 package com.inappstory.sdk.game.reader;
 
+import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
+
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
-import android.util.Log;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
+
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.UrlObject;
@@ -74,14 +76,17 @@ public class GameManager {
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
-
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            return;
+        }
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            NetworkClient.getApi().sendGameData(gameInstanceId, data)
-                    .enqueue(new NetworkCallback<Response>() {
+            networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
+                    new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {
 
@@ -91,7 +96,8 @@ public class GameManager {
                         public Type getType() {
                             return null;
                         }
-                    });
+                    }
+            );
         }
     }
 
@@ -104,13 +110,23 @@ public class GameManager {
     void storySetData(String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         if (dataModel == null) return;
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            callback.onError(NC_IS_UNAVAILABLE);
+            return;
+        }
         KeyValueStorage.saveString("story" + dataModel.storyId
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            NetworkClient.getApi().sendStoryData(Integer.toString(dataModel.storyId), data, Session.getInstance().id)
-                    .enqueue(new NetworkCallback<Response>() {
+            networkClient.enqueue(
+                    networkClient.getApi().sendStoryData(
+                            Integer.toString(dataModel.storyId),
+                            data,
+                            Session.getInstance().id
+                    ),
+                    new NetworkCallback<Response>() {
                         @Override
                         public void onSuccess(Response response) {
 

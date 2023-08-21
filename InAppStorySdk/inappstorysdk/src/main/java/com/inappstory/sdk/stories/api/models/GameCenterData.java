@@ -1,10 +1,8 @@
 package com.inappstory.sdk.stories.api.models;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.game.reader.GameScreenOptions;
-import com.inappstory.sdk.network.Required;
-import com.inappstory.sdk.network.SerializedName;
+import com.inappstory.sdk.network.annotations.models.Required;
+import com.inappstory.sdk.network.annotations.models.SerializedName;
 
 import java.util.List;
 import java.util.Map;

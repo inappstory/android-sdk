@@ -1,7 +1,18 @@
 package com.inappstory.sdk.network;
 
 
-import com.inappstory.sdk.newnetwork.annotations.api.ExcludeHeaders;
+import com.inappstory.sdk.network.annotations.api.Body;
+import com.inappstory.sdk.network.annotations.api.DELETE;
+import com.inappstory.sdk.network.annotations.api.ExcludeHeaders;
+import com.inappstory.sdk.network.annotations.api.Field;
+import com.inappstory.sdk.network.annotations.api.FormUrlEncoded;
+import com.inappstory.sdk.network.annotations.api.GET;
+import com.inappstory.sdk.network.annotations.api.POST;
+import com.inappstory.sdk.network.annotations.api.PUT;
+import com.inappstory.sdk.network.annotations.api.Path;
+import com.inappstory.sdk.network.annotations.api.Query;
+import com.inappstory.sdk.network.annotations.api.QueryObject;
+import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 /**
@@ -87,8 +98,14 @@ public interface ApiInterface {
             @Query("spend_ms") Long spendMs);
 
     @FormUrlEncoded
-    @ExcludeHeaders
     @POST("exception")
+    @ExcludeHeaders({
+            "Accept",
+            "Accept-Language",
+            "X-Device-Id",
+            "X-APP-PACKAGE-ID",
+            "Authorization"
+    })
     Request sendException(
             @Query("s") String session,
             @Query("ts") Long timestamp,
@@ -99,6 +116,13 @@ public interface ApiInterface {
 
 
     @GET("stat/{event_name}")
+    @ExcludeHeaders({
+            "Accept",
+            "Accept-Language",
+            "X-Device-Id",
+            "X-APP-PACKAGE-ID",
+            "Authorization"
+    })
     Request sendStat(
             @Path("event_name") String eventName,
             @Query("s") String sessionId,
@@ -150,6 +174,9 @@ public interface ApiInterface {
 
     @FormUrlEncoded
     @POST("v2/session/open")
+    @ExcludeHeaders({
+            "auth-session-id"
+    })
     Request sessionOpen(
             @Query("expand") String expand,
             @Field("features") String features,

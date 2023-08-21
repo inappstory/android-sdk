@@ -9,9 +9,9 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
@@ -46,27 +46,15 @@ public class StoryDownloadManager {
 
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
-    Object storiesLock = new Object();
-
-    public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback,
-                                 final int id,
-                                 Story.StoryType type) {
-        List<Story> lStories = new ArrayList<>();
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            if (stories != null)
-                lStories.addAll(stories);
-        }
-        for (Story story : lStories) {
-            if (story.id == id) {
-                storyByIdCallback.getStory(story);
-                return;
-            }
-        }
-    }
+    final Object storiesLock = new Object();
 
     public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback,
                                        final String id, final Story.StoryType type) {
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            storyByIdCallback.loadError(-1);
+            return;
+        }
         if (InAppStoryService.isNull()) {
             storyByIdCallback.loadError(-1);
             return;
@@ -79,47 +67,46 @@ public class StoryDownloadManager {
                     return;
                 }
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
-                NetworkClient.getApi().getStoryById(id, 1, EXPAND_STRING
-                ).enqueue(new NetworkCallback<Story>() {
-                    @Override
-                    public void onSuccess(final Story response) {
-                        if (InAppStoryService.isNull()) {
-                            storyByIdCallback.loadError(-1);
-                            return;
-                        }
-                        ProfilingManager.getInstance().setReady(storyUID);
-                        if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
-                            CallbackManager.getInstance().getSingleLoadCallback().singleLoad(id);
-                        }
-                        ArrayList<Story> st = new ArrayList<>();
-                        st.add(response);
-                        uploadingAdditional(st, type);
-                        setStory(response, response.id, type);
-                        if (storyByIdCallback != null)
-                            storyByIdCallback.getStory(response);
-                    }
+                networkClient.enqueue(
+                        networkClient.getApi().getStoryById(
+                                id,
+                                1,
+                                EXPAND_STRING
+                        ),
+                        new NetworkCallback<Story>() {
+                            @Override
+                            public void onSuccess(final Story response) {
+                                if (InAppStoryService.isNull()) {
+                                    storyByIdCallback.loadError(-1);
+                                    return;
+                                }
+                                ProfilingManager.getInstance().setReady(storyUID);
+                                if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
+                                    CallbackManager.getInstance().getSingleLoadCallback().singleLoad(id);
+                                }
+                                ArrayList<Story> st = new ArrayList<>();
+                                st.add(response);
+                                uploadingAdditional(st, type);
+                                setStory(response, response.id, type);
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.getStory(response);
+                            }
 
-                    @Override
-                    public Type getType() {
-                        return Story.class;
-                    }
+                            @Override
+                            public Type getType() {
+                                return Story.class;
+                            }
 
-                    @Override
-                    public void onTimeout() {
-                        onError(-1, "Timeout");
-                    }
-
-                    @Override
-                    public void onError(int code, String message) {
-
-                        ProfilingManager.getInstance().setReady(storyUID);
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadSingleError();
-                        }
-                        if (storyByIdCallback != null)
-                            storyByIdCallback.loadError(-1);
-                    }
-                });
+                            @Override
+                            public void errorDefault(String message) {
+                                ProfilingManager.getInstance().setReady(storyUID);
+                                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                                    CallbackManager.getInstance().getErrorCallback().loadSingleError();
+                                }
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.loadError(-1);
+                            }
+                        });
             }
 
             @Override
@@ -388,17 +375,6 @@ public class StoryDownloadManager {
         storyDownloader.reloadPage(storyId, new ArrayList<Integer>(), type);
     }
 
-    public void reloadPage(int storyId, int index, ArrayList<Integer> addIds, Story.StoryType type) {
-        if (storyDownloader.reloadPage(storyId, addIds, type)) {
-            slidesDownloader.reloadPage(storyId, index, type);
-        }
-    }
-
-    public void setCurrentSlide(int storyId, int slideIndex) {
-        slidesDownloader.setCurrentSlide(storyId, slideIndex);
-    }
-
-
     public void clearAllFavoriteStatus(Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
         for (Story story : stories) {
@@ -537,7 +513,7 @@ public class StoryDownloadManager {
                     }
                     StoriesWidgetService.getInstance().refreshFactory();
                 }
-                if (response == null || response.size() == 0) {
+                if (response.size() == 0) {
                     if (AppearanceManager.csWidgetAppearance() != null
                             && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
                         StoriesWidgetService.loadEmpty(context,
@@ -601,7 +577,7 @@ public class StoryDownloadManager {
                                     }
                                 }
                             }
-                            if (response2 != null && response2.size() > 0) {
+                            if (response2.size() > 0) {
                                 setLocalsOpened(response2, Story.StoryType.COMMON);
                                 for (Story story : response2) {
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
@@ -632,13 +608,7 @@ public class StoryDownloadManager {
                         }
 
                         @Override
-                        public void onTimeout() {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
-                            super.onTimeout();
-                        }
-
-                        @Override
-                        public void onError(int code, String m) {
+                        public void errorDefault(String m) {
                             ProfilingManager.getInstance().setReady(loadFavUID);
                             if (callback != null) {
                                 List<Integer> ids = new ArrayList<>();
@@ -670,7 +640,6 @@ public class StoryDownloadManager {
             }
         };
         SimpleListCallback loadCallbackWithoutFav = new SimpleListCallback() {
-
             @Override
             public void onSuccess(final List<Story> response, Object... args) {
                 uploadingAdditional(response, Story.StoryType.COMMON);
@@ -716,10 +685,10 @@ public class StoryDownloadManager {
 
 
     public void refreshLocals(Story.StoryType type) {
-        List<Story> lStories = new ArrayList<>();
+        List<Story> lStories;
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
-            lStories.addAll(stories);
+            lStories = new ArrayList<>(stories);
         }
         synchronized (storiesLock) {
             for (Story story : lStories) {
