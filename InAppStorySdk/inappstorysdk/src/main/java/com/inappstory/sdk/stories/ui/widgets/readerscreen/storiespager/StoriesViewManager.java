@@ -107,7 +107,7 @@ public class StoriesViewManager {
     }
 
     public int storyId;
-    boolean slideInCache = false;
+    int slideInCache = 0;
 
     public void setPageManager(ReaderPageManager pageManager) {
         this.pageManager = pageManager;
@@ -158,8 +158,36 @@ public class StoriesViewManager {
         }
     }
 
+    public class ShowRefresh implements Runnable {
+        int slideIndex = -1;
+
+        public ShowRefresh(int slideIndex) {
+            this.slideIndex = slideIndex;
+        }
+
+        @Override
+        public void run() {
+            if (this.slideIndex == index)
+                pageManager.slideLoadError(index);
+        }
+    }
+
+    ShowRefresh showRefresh;
+
+    Handler showRefreshHandler = new Handler(Looper.getMainLooper());
+
     public void loadWebData(String layout, String webdata) {
         if (!(storiesView instanceof SimpleStoriesWebView)) return;
+        if (showRefresh != null) {
+            try {
+                showRefreshHandler.removeCallbacks(showRefresh);
+            } catch (Exception e) {
+
+            }
+            showRefresh = null;
+        }
+        showRefresh = new ShowRefresh(index);
+        showRefreshHandler.postDelayed(showRefresh, 3000);
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
     }
 
@@ -168,36 +196,63 @@ public class StoriesViewManager {
         ((SimpleStoriesGeneratedView) storiesView).initViews(slideStructure);
     }
 
-    public void loadStory(final int id, final int index) {
-        if (loadedId == id && loadedIndex == index) return;
 
+    boolean notFirstLoading = false;
+
+    public void loadStory(final int id, final int index) {
         if (InAppStoryService.isNull())
             return;
-
         final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, pageManager.getStoryType());
-        if (story == null || story.checkIfEmpty()) {
-            return;
+        synchronized (this) {
+            if (loadedId == id && loadedIndex == index) return;
+            if (story == null || story.checkIfEmpty()) {
+                return;
+            }
+            if (story.getSlidesCount() <= index) return;
+            storyId = id;
+            this.index = index;
+            loadedIndex = index;
+            loadedId = id;
         }
-        if (story.getSlidesCount() <= index) return;
-        storyId = id;
-        this.index = index;
-        loadedIndex = index;
-        loadedId = id;
-
         slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index,
                 pageManager.getStoryType());
-        if (slideInCache) {
+        if (slideInCache == 1) {
             innerLoad(story);
             pageManager.slideLoadedInCache(index, true);
         } else {
-            if (!InAppStoryService.isConnected()) {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().noConnection();
+
+            if (slideInCache == -1) {
+                setWebViewSettingsAndLoadEmpty(story);
+                pageManager.slideLoadError(index);
+            } else {
+                if (notFirstLoading) {
+                    setWebViewSettingsAndLoadEmpty(story);
+                } else {
+                    notFirstLoading = true;
                 }
-                return;
+                if (!InAppStoryService.isConnected()) {
+                    if (CallbackManager.getInstance().getErrorCallback() != null) {
+                        CallbackManager.getInstance().getErrorCallback().noConnection();
+                    }
+                    return;
+                }
+                pageManager.storyLoadStart();
             }
-            pageManager.storyLoadStart();
         }
+    }
+
+    void setWebViewSettingsAndLoadEmpty(Story story) {
+        String layout = story.getLayout();
+        if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
+        WebPageConvertCallback callback = new WebPageConvertCallback() {
+            @Override
+            public void onConvert(String webData, String webLayout, int lastIndex) {
+                if (index != lastIndex) return;
+                loadWebData(webLayout, webData);
+            }
+        };
+        ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        converter.replaceEmptyAndLoad(index, layout, callback);
     }
 
     void setWebViewSettings(Story story) throws IOException {
@@ -420,11 +475,22 @@ public class StoriesViewManager {
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
         storyIsLoaded = true;
+
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopStory();
         } else {
+            pageManager.currentSlideIsLoaded = true;
+            pageManager.host.storyLoadedSuccess();
+            if (showRefresh != null) {
+                try {
+                    showRefreshHandler.removeCallbacks(showRefresh);
+                } catch (Exception e) {
+
+                }
+                showRefresh = null;
+            }
             playStory();
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -542,7 +608,7 @@ public class StoriesViewManager {
         if (storyIsLoaded) {
             sendShowStoryEvents();
             sendShowSlideEvents();
-            storiesView.playVideo();
+            storiesView.slideStart();
         }
     }
 
@@ -551,7 +617,7 @@ public class StoriesViewManager {
     }
 
     public void pauseStory() {
-        storiesView.pauseVideo();
+        storiesView.slidePause();
     }
 
     public void resumeStory() {

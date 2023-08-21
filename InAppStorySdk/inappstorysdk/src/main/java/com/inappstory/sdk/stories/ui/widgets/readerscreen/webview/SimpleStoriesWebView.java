@@ -9,8 +9,10 @@ import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
@@ -38,11 +40,12 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     public void restartVideo() {
         stopVideo();
-        playVideo();
+        slideStart();
     }
 
     private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_method_call", manager.storyId + " " + payload);
+        InAppStoryManager.showDLog("JS_method_call",
+                manager.storyId + " " + manager.loadedIndex + " " + payload);
     }
 
     public void gameComplete(String data) {
@@ -80,7 +83,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
 
-    public void pauseVideo() {
+    public void slidePause() {
         loadUrl("javascript:(function(){" +
                 "if ('story_slide_pause' in window) " +
                 "{" +
@@ -91,8 +94,11 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("story_slide_pause");
     }
 
+    //OnClickListener clickListener;
 
-    public void playVideo() {
+    public void slideStart() {
+      //  clickListener = null;
+     //   setOnClickListener(null);
         String funAfterCheck =
                 (InAppStoryService.getInstance() != null
                         && InAppStoryService.getInstance().isSoundOn()) ?
@@ -197,24 +203,17 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     boolean notFirstLoading = false;
 
     public void loadWebData(String outerLayout, String outerData) {
-        String tmpData = outerData;
-        String tmpLayout = outerLayout;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            Map<String, String> localPlaceholders = service.getPlaceholders();
-            for (String key : localPlaceholders.keySet()) {
-                String modifiedKey = "%" + key + "%";
-                String value = localPlaceholders.get(key);
-                if (value != null) {
-                    tmpData = tmpData.replace(modifiedKey, value);
-                    tmpLayout = tmpLayout.replace(modifiedKey, value);
-                }
-            }
-        }
-        final String data = tmpData;
-        final String lt = tmpLayout;
+        final String data = outerData;
+        final String lt = outerLayout;
 
-        if (!notFirstLoading) {
+      /*  clickListener = new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                manager.storyClick(null);
+            }
+        };
+        setOnClickListener(clickListener);*/
+        if (!notFirstLoading || data.isEmpty()) {
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -320,6 +319,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                                 Integer.toString(manager.storyId),
                                 manager.index);
                     }
+
                     Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
                             + consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
@@ -378,8 +378,9 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return true;
             }
-        } else if (Sizes.isTablet() && motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            getManager().getPageManager().resumeSlide(false);
+        } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+            if (Sizes.isTablet())
+                getManager().getPageManager().resumeSlide(false);
         }
         return c;
     }

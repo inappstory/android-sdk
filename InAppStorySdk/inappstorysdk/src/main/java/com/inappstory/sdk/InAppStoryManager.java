@@ -11,10 +11,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
-import androidx.core.util.Pair;
 
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
@@ -578,6 +578,40 @@ public class InAppStoryManager {
             return resultPlaceholders;
         }
     }
+
+    public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
+        synchronized (placeholdersLock) {
+            Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> resultPlaceholders = new HashMap<>();
+            Map<String, ImagePlaceholderValue> tempPlaceholders = new HashMap<>();
+            if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
+            if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
+
+            tempPlaceholders.putAll(defaultImagePlaceholders);
+            tempPlaceholders.putAll(imagePlaceholders);
+            for (Map.Entry<String, ImagePlaceholderValue> entry : tempPlaceholders.entrySet()) {
+                if (defaultImagePlaceholders.containsKey(entry.getKey())) {
+                    resultPlaceholders.put(
+                            entry.getKey(),
+                            new Pair<>(
+                                    entry.getValue(),
+                                    //entry.getValue()
+                                    defaultImagePlaceholders.get(entry.getKey())
+                            )
+                    );
+                } else {
+                    resultPlaceholders.put(
+                            entry.getKey(),
+                            new Pair<>(
+                                    entry.getValue(),
+                                    entry.getValue()
+                            )
+                    );
+                }
+            }
+            return resultPlaceholders;
+        }
+    }
+
 
     public void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
         synchronized (placeholdersLock) {

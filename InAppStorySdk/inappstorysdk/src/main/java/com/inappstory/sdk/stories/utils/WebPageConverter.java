@@ -4,6 +4,8 @@ package com.inappstory.sdk.stories.utils;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
+import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
@@ -88,36 +90,80 @@ public class WebPageConverter {
         return innerWebData;
     }
 
-    private String replacePlaceholders(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
-        Map<String, ImagePlaceholderValue> imgPlaceholders =
-                InAppStoryService.getInstance().getImagePlaceholdersValues();
+    private String replaceImagePlaceholders(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
+                InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults();
         Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
         for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
             String placeholderKey = entry.getKey();
             String placeholderName = entry.getValue();
             if (placeholderKey != null && placeholderName != null) {
-                ImagePlaceholderValue placeholderValue = imgPlaceholders.get(placeholderName);
+                Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
+                        = imgPlaceholders.get(placeholderName);
                 if (placeholderValue != null) {
                     String path = "";
-                    if (placeholderValue.getType() == ImagePlaceholderType.URL) {
-                        File file = cache.getFullFile(placeholderValue.getUrl());
+                    if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
+                        File file = cache.getFullFile(placeholderValue.first.getUrl());
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
+                        } else {
+                            if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
+                                file = cache.getFullFile(placeholderValue.second.getUrl());
+                                if (file != null && file.exists() && file.length() > 0) {
+                                    path = "file://" + file.getAbsolutePath();
+                                }
+                            }
                         }
                     }
                     innerWebData = innerWebData.replace(placeholderKey, path);
                 }
             }
         }
+        Log.e("WebData", innerWebData);
         return innerWebData;
     }
 
-    public void replaceDataAndLoad(String innerWebData, Story story, final int index, String layout,
+    public void replaceEmptyAndLoad(int index, String layout,
+                                    WebPageConvertCallback callback) {
+        try {
+            String wData = layout
+                    .replace("//_ratio = 0.66666666666,", "")
+                    .replace("{{%content}}", "");
+            callback.onConvert("", wData, index);
+        } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
+        }
+    }
+
+    private Pair<String, String> replacePlaceholders(String outerData, String outerLayout) {
+        String tmpData = outerData;
+        String tmpLayout = outerLayout;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            Map<String, String> localPlaceholders = service.getPlaceholders();
+            for (String key : localPlaceholders.keySet()) {
+                String modifiedKey = "%" + key + "%";
+                String value = localPlaceholders.get(key);
+                if (value != null) {
+                    tmpData = tmpData.replace(modifiedKey, value);
+                    tmpLayout = tmpLayout.replace(modifiedKey, value);
+                }
+            }
+        }
+        return new Pair<>(tmpData, tmpLayout);
+    }
+
+    public void replaceDataAndLoad(String innerWebData, Story story, int index, String layout,
                                    WebPageConvertCallback callback) throws IOException {
+        String localData = innerWebData;
+        String newLayout = layout;
         if (InAppStoryService.isNotNull()) {
             LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
-            innerWebData = replaceResources(innerWebData, story, index, cache);
-            innerWebData = replacePlaceholders(innerWebData, story, index, cache);
+            localData = replaceResources(localData, story, index, cache);
+            localData = replaceImagePlaceholders(localData, story, index, cache);
+            Pair<String, String> replaced = replacePlaceholders(localData, newLayout);
+            newLayout = replaced.second;
+            localData = replaced.first;
         }
 
         /*for (int i = 0; i < imgs.size(); i++) {
@@ -144,10 +190,10 @@ public class WebPageConverter {
             }
         }*/
         try {
-            String wData = layout
+            String wData = newLayout
                     .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", innerWebData);
-            callback.onConvert(innerWebData, wData, index);
+                    .replace("{{%content}}", localData);
+            callback.onConvert(localData, wData, index);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
         }

@@ -3,8 +3,8 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 
 public interface SimpleStoriesView {
-    void pauseVideo();
-    void playVideo();
+    void slidePause();
+    void slideStart();
     void restartVideo();
     void stopVideo();
     void swipeUp();

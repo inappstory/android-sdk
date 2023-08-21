@@ -1,18 +1,16 @@
 package com.inappstory.sdk.stories.cache;
 
-import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
 
 import android.os.Handler;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.network.NetworkCallback;
+import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.Response;
+import com.inappstory.sdk.network.SimpleApiCallback;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -61,11 +59,11 @@ class StoryDownloader {
     private final ExecutorService loader = Executors.newFixedThreadPool(1);
 
     private final Object storyTasksLock = new Object();
-    private HashMap<StoryTaskKey, StoryTask> storyTasks = new HashMap<>();
+    private HashMap<StoryTaskData, StoryTaskWithPriority> storyTasks = new HashMap<>();
 
     void addCompletedStoryTask(int storyId, Story.StoryType type) {
         synchronized (storyTasksLock) {
-            storyTasks.put(new StoryTaskKey(storyId, type), new StoryTask(-1, 3));
+            storyTasks.put(new StoryTaskData(storyId, type), new StoryTaskWithPriority(-1, 3));
         }
     }
 
@@ -86,7 +84,7 @@ class StoryDownloader {
     boolean uploadAdditional() {
         synchronized (storyTasksLock) {
             if (!storyTasks.isEmpty()) {
-                for (StoryTaskKey i : storyTasks.keySet()) {
+                for (StoryTaskData i : storyTasks.keySet()) {
                     if (getStoryLoadType(i) <= 1) return false;
                 }
             }
@@ -94,54 +92,56 @@ class StoryDownloader {
         }
     }
 
-    ArrayList<StoryTaskKey> firstPriority = new ArrayList<>();
-    ArrayList<StoryTaskKey> secondPriority = new ArrayList<>();
+    ArrayList<StoryTaskData> firstPriority = new ArrayList<>();
+    ArrayList<StoryTaskData> secondPriority = new ArrayList<>();
 
-    void changePriority(StoryTaskKey storyId, ArrayList<Integer> addIds, Story.StoryType type) {
+    void changePriority(StoryTaskData storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         secondPriority.remove(storyId);
         for (Integer id : addIds) {
-            StoryTaskKey key = new StoryTaskKey(id, type);
+            StoryTaskData key = new StoryTaskData(id, type);
             secondPriority.remove(key);
         }
-        for (StoryTaskKey id : firstPriority) {
+        for (StoryTaskData id : firstPriority) {
             if (!secondPriority.contains(id))
                 secondPriority.add(id);
         }
         firstPriority.clear();
         firstPriority.add(storyId);
         for (Integer id : addIds) {
-            StoryTaskKey key = new StoryTaskKey(id, type);
+            StoryTaskData key = new StoryTaskData(id, type);
             firstPriority.add(key);
         }
 
     }
 
-    void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) throws Exception {
+    void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         synchronized (storyTasksLock) {
-
             if (storyTasks == null) storyTasks = new HashMap<>();
-            for (StoryTaskKey storyTaskKey : storyTasks.keySet()) {
-                if (storyTasks.get(storyTaskKey).loadType > 0 &&
-                        storyTasks.get(storyTaskKey).loadType != 3
-                        && storyTasks.get(storyTaskKey).loadType != 6) {
-                    storyTasks.get(storyTaskKey).loadType += 3;
+            for (StoryTaskData storyTaskKey : storyTasks.keySet()) {
+                StoryTaskWithPriority storyTaskWithPriority = storyTasks.get(storyTaskKey);
+                if (storyTaskWithPriority != null &&
+                        storyTaskWithPriority.loadType > 0 &&
+                        storyTaskWithPriority.loadType != 3 &&
+                        storyTaskWithPriority.loadType != 6
+                ) {
+                    storyTaskWithPriority.loadType += 3;
                 }
             }
             for (Integer storyIntKey : addIds) {
-                StoryTaskKey key = new StoryTaskKey(storyIntKey, type);
-                StoryTask task = storyTasks.get(key);
+                StoryTaskData key = new StoryTaskData(storyIntKey, type);
+                StoryTaskWithPriority task = storyTasks.get(key);
                 if (task != null) {
                     if (task.loadType != 3 &&
                             task.loadType != 6) {
                         task.loadType = 4;
                     }
                 } else {
-                    StoryTask st = new StoryTask(4);
+                    StoryTaskWithPriority st = new StoryTaskWithPriority(4);
                     storyTasks.put(key, st);
                 }
             }
-            StoryTaskKey keyByStoryId = new StoryTaskKey(storyId, type);
-            StoryTask taskByStoryId = storyTasks.get(keyByStoryId);
+            StoryTaskData keyByStoryId = new StoryTaskData(storyId, type);
+            StoryTaskWithPriority taskByStoryId = storyTasks.get(keyByStoryId);
             if (taskByStoryId != null) {
                 if (taskByStoryId.loadType != 3) {
                     if (taskByStoryId.loadType == 6) {
@@ -157,23 +157,23 @@ class StoryDownloader {
                     return;
                 }
             } else {
-                storyTasks.put(keyByStoryId, new StoryTask(1));
+                storyTasks.put(keyByStoryId, new StoryTaskWithPriority(1));
             }
             changePriority(keyByStoryId, addIds, type);
         }
     }
 
 
-    private StoryTaskKey getMaxPriorityStoryTaskKey() throws Exception {
+    private StoryTaskData getMaxPriorityStoryTaskKey() throws Exception {
         synchronized (storyTasksLock) {
             if (storyTasks == null || storyTasks.size() == 0) return null;
             if (firstPriority == null || secondPriority == null) return null;
-            for (StoryTaskKey key : firstPriority) {
+            for (StoryTaskData key : firstPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
             }
-            for (StoryTaskKey key : secondPriority) {
+            for (StoryTaskData key : secondPriority) {
                 if (getStoryLoadType(key) != 1 && getStoryLoadType(key) != 4)
                     continue;
                 return key;
@@ -182,12 +182,12 @@ class StoryDownloader {
         }
     }
 
-    void setStoryLoadType(StoryTaskKey key, int loadType) {
+    void setStoryLoadType(StoryTaskData key, int loadType) {
         if (!storyTasks.containsKey(key)) return;
         Objects.requireNonNull(storyTasks.get(key)).loadType = loadType;
     }
 
-    int getStoryLoadType(StoryTaskKey key) {
+    int getStoryLoadType(StoryTaskData key) {
         if (!storyTasks.containsKey(key)) return -5;
         return Objects.requireNonNull(storyTasks.get(key)).loadType;
     }
@@ -196,23 +196,17 @@ class StoryDownloader {
     private Handler handler;
     private Handler errorHandler;
 
-    boolean reloadPage(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
+    void reload(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         synchronized (storyTasksLock) {
-            StoryTaskKey key = new StoryTaskKey(storyId, type);
+            StoryTaskData key = new StoryTaskData(storyId, type);
             if (storyTasks == null) storyTasks = new HashMap<>();
-            if (getStoryLoadType(key) == -5 || getStoryLoadType(key) == -1) {
-                try {
-                    addStoryTask(storyId, addIds, type);
-                } catch (Exception e) {
-
-                }
-                return false;
-            }
+            storyTasks.remove(key);
         }
-        return true;
+        addStoryTask(storyId, addIds, type);
     }
 
-    private void loadStoryError(final StoryTaskKey key) {
+
+    private void loadStoryError(final StoryTaskData key) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().cacheError();
         }
@@ -223,8 +217,8 @@ class StoryDownloader {
                 firstPriority.remove(key);
             if (secondPriority != null)
                 secondPriority.remove(key);
-            setStoryLoadType(key, -1);
-            callback.onError(key.storyId);
+            setStoryLoadType(key, -2);
+            callback.onError(key);
         }
     }
 
@@ -233,7 +227,7 @@ class StoryDownloader {
 
         @Override
         public void run() {
-            StoryTaskKey tKey = null;
+            StoryTaskData tKey = null;
             try {
                 tKey = getMaxPriorityStoryTaskKey();
             } catch (Exception e) {
@@ -243,7 +237,7 @@ class StoryDownloader {
                 handler.postDelayed(queueStoryReadRunnable, 100);
                 return;
             }
-            final StoryTaskKey key = tKey;
+            final StoryTaskData key = tKey;
             synchronized (storyTasksLock) {
                 if (getStoryLoadType(key) == 4) {
                     setStoryLoadType(key, 5);
@@ -281,7 +275,7 @@ class StoryDownloader {
     };
 
 
-    void loadStoryResult(StoryTaskKey key, Response response) {
+    void loadStoryResult(StoryTaskData key, Response response) {
         if (response.body != null) {
             Story story = JsonParser.fromJson(response.body, Story.class);
             int loadType;
@@ -307,30 +301,19 @@ class StoryDownloader {
     }
 
 
-    void loadStory(StoryTaskKey key) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-
+    void loadStory(StoryTaskData key) {
         try {
-            if (networkClient == null) throw new Throwable(NC_IS_UNAVAILABLE);
             String storyUID;
             Response response;
             if (key.storyType == Story.StoryType.UGC) {
                 storyUID = ProfilingManager.getInstance().addTask("api_story_ugc");
-                response = networkClient.execute(
-                        networkClient.getApi().getUgcStoryById(
-                                Integer.toString(key.storyId),
-                                1,
-                                EXPAND_STRING
-                        )
-                );
+                response = NetworkClient.getApi().getUgcStoryById(Integer.toString(key.storyId), 1,
+                        EXPAND_STRING).execute();
             } else {
                 storyUID = ProfilingManager.getInstance().addTask("api_story");
-                response = networkClient.execute(
-                        networkClient.getApi().getStoryById(Integer.toString(key.storyId),
-                                1,
-                                EXPAND_STRING
-                        )
-                );
+                response = NetworkClient.getApi().getStoryById(Integer.toString(key.storyId),
+                        1,
+                        EXPAND_STRING).execute();
             }
             ProfilingManager.getInstance().setReady(storyUID);
             loadStoryResult(key, response);
@@ -341,21 +324,9 @@ class StoryDownloader {
     }
 
     void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
-
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.errorDefault(NC_IS_UNAVAILABLE);
-            return;
-        }
-        networkClient.enqueue(
-                networkClient.getApi().getStories(
-                        ApiSettings.getInstance().getTestKey(),
-                        1,
-                        null,
-                        "id, background_color, image"
-                ),
-                callback
-        );
+        NetworkClient.getApi().getStories(
+                ApiSettings.getInstance().getTestKey(), 1,
+                null, "id, background_color, image").enqueue(callback);
     }
 
 
@@ -367,13 +338,7 @@ class StoryDownloader {
 
     private static final String UGC_FEED = "UGC";
 
-
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.onError(NC_IS_UNAVAILABLE);
-            return;
-        }
         if (InAppStoryService.isNull()) {
             generateCommonLoadListError(UGC_FEED);
             callback.onError("");
@@ -385,13 +350,11 @@ class StoryDownloader {
                 public void onSuccess() {
                     if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getUgcStories(
+                    NetworkClient.getApi().getUgcStories(
                                     payload,
                                     null,
-                                    "slides_count"
-                            ),
-                            new NetworkCallback<List<Story>>() {
+                                    "slides_count")
+                            .enqueue(new NetworkCallback<List<Story>>() {
                                 @Override
                                 public void onSuccess(List<Story> response) {
                                     if (InAppStoryService.isNull() || response == null) {
@@ -409,7 +372,14 @@ class StoryDownloader {
                                 }
 
                                 @Override
-                                public void errorDefault(String message) {
+                                public void onTimeout() {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    generateCommonLoadListError(UGC_FEED);
+                                    callback.onError("");
+                                }
+
+                                @Override
+                                public void onError(int code, String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(UGC_FEED);
                                     callback.onError(message);
@@ -440,11 +410,6 @@ class StoryDownloader {
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.onError(NC_IS_UNAVAILABLE);
-            return;
-        }
         if (InAppStoryService.isNull()) {
             generateCommonLoadListError(feed);
             callback.onError("");
@@ -456,15 +421,13 @@ class StoryDownloader {
                 public void onSuccess() {
                     if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getFeed(
+                    NetworkClient.getApi().getFeed(
                                     feed,
                                     ApiSettings.getInstance().getTestKey(),
                                     0,
                                     InAppStoryService.getInstance().getTagsString(),
-                                    null
-                            ),
-                            new LoadFeedCallback() {
+                                    null)
+                            .enqueue(new LoadFeedCallback() {
                                 @Override
                                 public void onSuccess(Feed response) {
                                     if (InAppStoryService.isNull() || response == null) {
@@ -477,7 +440,14 @@ class StoryDownloader {
                                 }
 
                                 @Override
-                                public void errorDefault(String message) {
+                                public void onTimeout() {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    generateCommonLoadListError(feed);
+                                    callback.onError("");
+                                }
+
+                                @Override
+                                public void onError(int code, String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(feed);
                                     callback.onError(message);
@@ -509,11 +479,6 @@ class StoryDownloader {
 
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.onError(NC_IS_UNAVAILABLE);
-            return;
-        }
         if (InAppStoryService.isNull()) {
             generateCommonLoadListError(null);
             callback.onError("");
@@ -526,14 +491,12 @@ class StoryDownloader {
                     if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
                             ? "api_favorite_list" : "api_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getStories(
+                    NetworkClient.getApi().getStories(
                                     ApiSettings.getInstance().getTestKey(),
                                     isFavorite ? 1 : 0,
                                     isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
-                                    null
-                            ),
-                            new LoadListCallback() {
+                                    null)
+                            .enqueue(new LoadListCallback() {
                                 @Override
                                 public void onSuccess(List<Story> response) {
                                     if (InAppStoryService.isNull()) {
@@ -546,7 +509,14 @@ class StoryDownloader {
                                 }
 
                                 @Override
-                                public void errorDefault(String message) {
+                                public void onTimeout() {
+                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                    generateCommonLoadListError(null);
+                                    callback.onError("");
+                                }
+
+                                @Override
+                                public void onError(int code, String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
