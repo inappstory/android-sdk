@@ -6,11 +6,12 @@ import android.os.Handler;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
@@ -66,7 +67,8 @@ public class StoryDownloadManager {
 
     public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback,
                                        final String id, final Story.StoryType type) {
-        if (InAppStoryService.isNull()) {
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null || InAppStoryService.isNull()) {
             storyByIdCallback.loadError(-1);
             return;
         }
@@ -78,47 +80,47 @@ public class StoryDownloadManager {
                     return;
                 }
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
-                NetworkClient.getApi().getStoryById(id, 1, EXPAND_STRING
-                ).enqueue(new NetworkCallback<Story>() {
-                    @Override
-                    public void onSuccess(final Story response) {
-                        if (InAppStoryService.isNull()) {
-                            storyByIdCallback.loadError(-1);
-                            return;
-                        }
-                        ProfilingManager.getInstance().setReady(storyUID);
-                        if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
-                            CallbackManager.getInstance().getSingleLoadCallback().singleLoad(id);
-                        }
-                        ArrayList<Story> st = new ArrayList<>();
-                        st.add(response);
-                        uploadingAdditional(st, type);
-                        setStory(response, response.id, type);
-                        if (storyByIdCallback != null)
-                            storyByIdCallback.getStory(response);
-                    }
+                networkClient.enqueue(
+                        networkClient.getApi().getStoryById(
+                                id,
+                                1,
+                                EXPAND_STRING
+                        ),
+                        new NetworkCallback<Story>() {
+                            @Override
+                            public void onSuccess(final Story response) {
+                                if (InAppStoryService.isNull()) {
+                                    storyByIdCallback.loadError(-1);
+                                    return;
+                                }
+                                ProfilingManager.getInstance().setReady(storyUID);
+                                if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
+                                    CallbackManager.getInstance().getSingleLoadCallback().singleLoad(id);
+                                }
+                                ArrayList<Story> st = new ArrayList<>();
+                                st.add(response);
+                                uploadingAdditional(st, type);
+                                setStory(response, response.id, type);
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.getStory(response);
+                            }
 
-                    @Override
-                    public Type getType() {
-                        return Story.class;
-                    }
+                            @Override
+                            public Type getType() {
+                                return Story.class;
+                            }
 
-                    @Override
-                    public void onTimeout() {
-                        onError(-1, "Timeout");
-                    }
+                            @Override
+                            public void errorDefault(String message) {
 
-                    @Override
-                    public void onError(int code, String message) {
-
-                        ProfilingManager.getInstance().setReady(storyUID);
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().loadSingleError();
-                        }
-                        if (storyByIdCallback != null)
-                            storyByIdCallback.loadError(-1);
-                    }
-                });
+                                ProfilingManager.getInstance().setReady(storyUID);
+                                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                                    CallbackManager.getInstance().getErrorCallback().loadSingleError();
+                                }
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.loadError(-1);
+                            }
+                        });
             }
 
             @Override
@@ -383,7 +385,8 @@ public class StoryDownloadManager {
                     DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), InAppStoryService.getInstance().getCommonCache(), null, null);
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
                         Downloader.downloadOrGetFile(urlWithAlter.getAlter(), InAppStoryService.getInstance().getCommonCache(), null, null);
-                        if (state != null && state.getFullFile() != null) return DownloadPageFileStatus.SUCCESS;
+                        if (state != null && state.getFullFile() != null)
+                            return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;
                     }
                     if (state != null && state.getFullFile() != null)
@@ -664,13 +667,7 @@ public class StoryDownloadManager {
                         }
 
                         @Override
-                        public void onTimeout() {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
-                            super.onTimeout();
-                        }
-
-                        @Override
-                        public void onError(int code, String m) {
+                        public void errorDefault(String message) {
                             ProfilingManager.getInstance().setReady(loadFavUID);
                             if (callback != null) {
                                 List<Integer> ids = new ArrayList<>();

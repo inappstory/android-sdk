@@ -4,13 +4,14 @@ import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRIN
 
 import android.os.Handler;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkCallback;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.Response;
-import com.inappstory.sdk.network.SimpleApiCallback;
+import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
+import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -302,18 +303,29 @@ class StoryDownloader {
 
 
     void loadStory(StoryTaskData key) {
+
         try {
+            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
             String storyUID;
             Response response;
             if (key.storyType == Story.StoryType.UGC) {
                 storyUID = ProfilingManager.getInstance().addTask("api_story_ugc");
-                response = NetworkClient.getApi().getUgcStoryById(Integer.toString(key.storyId), 1,
-                        EXPAND_STRING).execute();
+                response = networkClient.execute(
+                        networkClient.getApi().getUgcStoryById(
+                                Integer.toString(key.storyId),
+                                1,
+                                EXPAND_STRING
+                        )
+                );
             } else {
                 storyUID = ProfilingManager.getInstance().addTask("api_story");
-                response = NetworkClient.getApi().getStoryById(Integer.toString(key.storyId),
-                        1,
-                        EXPAND_STRING).execute();
+                response = networkClient.execute(
+                        networkClient.getApi().getStoryById(
+                                Integer.toString(key.storyId),
+                                1,
+                                EXPAND_STRING
+                        )
+                );
             }
             ProfilingManager.getInstance().setReady(storyUID);
             loadStoryResult(key, response);
@@ -324,9 +336,20 @@ class StoryDownloader {
     }
 
     void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
-        NetworkClient.getApi().getStories(
-                ApiSettings.getInstance().getTestKey(), 1,
-                null, "id, background_color, image").enqueue(callback);
+        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (networkClient == null) {
+            callback.errorDefault("No network client");
+            return;
+        }
+        networkClient.enqueue(
+                networkClient.getApi().getStories(
+                        ApiSettings.getInstance().getTestKey(),
+                        1,
+                        null,
+                        "id, background_color, image"
+                ),
+                callback
+        );
     }
 
 
@@ -339,7 +362,8 @@ class StoryDownloader {
     private static final String UGC_FEED = "UGC";
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
-        if (InAppStoryService.isNull()) {
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (InAppStoryService.isNull() || networkClient == null) {
             generateCommonLoadListError(UGC_FEED);
             callback.onError("");
             return;
@@ -350,11 +374,13 @@ class StoryDownloader {
                 public void onSuccess() {
                     if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
-                    NetworkClient.getApi().getUgcStories(
+                    networkClient.enqueue(
+                            networkClient.getApi().getUgcStories(
                                     payload,
                                     null,
-                                    "slides_count")
-                            .enqueue(new NetworkCallback<List<Story>>() {
+                                    "slides_count"
+                            ),
+                            new NetworkCallback<List<Story>>() {
                                 @Override
                                 public void onSuccess(List<Story> response) {
                                     if (InAppStoryService.isNull() || response == null) {
@@ -372,14 +398,7 @@ class StoryDownloader {
                                 }
 
                                 @Override
-                                public void onTimeout() {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(UGC_FEED);
-                                    callback.onError("");
-                                }
-
-                                @Override
-                                public void onError(int code, String message) {
+                                public void errorDefault(String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(UGC_FEED);
                                     callback.onError(message);
@@ -410,7 +429,8 @@ class StoryDownloader {
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
-        if (InAppStoryService.isNull()) {
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (InAppStoryService.isNull() || networkClient == null) {
             generateCommonLoadListError(feed);
             callback.onError("");
             return;
@@ -421,13 +441,14 @@ class StoryDownloader {
                 public void onSuccess() {
                     if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
-                    NetworkClient.getApi().getFeed(
+                    networkClient.enqueue(
+                            networkClient.getApi().getFeed(
                                     feed,
                                     ApiSettings.getInstance().getTestKey(),
                                     0,
                                     InAppStoryService.getInstance().getTagsString(),
-                                    null)
-                            .enqueue(new LoadFeedCallback() {
+                                    null),
+                            new LoadFeedCallback() {
                                 @Override
                                 public void onSuccess(Feed response) {
                                     if (InAppStoryService.isNull() || response == null) {
@@ -440,14 +461,7 @@ class StoryDownloader {
                                 }
 
                                 @Override
-                                public void onTimeout() {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(feed);
-                                    callback.onError("");
-                                }
-
-                                @Override
-                                public void onError(int code, String message) {
+                                public void errorDefault(String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(feed);
                                     callback.onError(message);
@@ -479,7 +493,8 @@ class StoryDownloader {
 
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
-        if (InAppStoryService.isNull()) {
+        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        if (InAppStoryService.isNull() || networkClient == null) {
             generateCommonLoadListError(null);
             callback.onError("");
             return;
@@ -491,12 +506,14 @@ class StoryDownloader {
                     if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
                             ? "api_favorite_list" : "api_story_list");
-                    NetworkClient.getApi().getStories(
+                    networkClient.enqueue(
+                            networkClient.getApi().getStories(
                                     ApiSettings.getInstance().getTestKey(),
                                     isFavorite ? 1 : 0,
                                     isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
-                                    null)
-                            .enqueue(new LoadListCallback() {
+                                    null
+                            ),
+                            new LoadListCallback() {
                                 @Override
                                 public void onSuccess(List<Story> response) {
                                     if (InAppStoryService.isNull()) {
@@ -509,14 +526,7 @@ class StoryDownloader {
                                 }
 
                                 @Override
-                                public void onTimeout() {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError("");
-                                }
-
-                                @Override
-                                public void onError(int code, String message) {
+                                public void errorDefault(String message) {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
