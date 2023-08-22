@@ -111,9 +111,7 @@ public class Downloader {
         }
 
         InAppStoryManager.sendApiRequestLog(requestLog);
-        if (hash != null) {
-            ProfilingManager.getInstance().addTask("game_download", hash);
-        }
+
         if (img == null) {
             img = cache.getFileFromKey(key);
         }

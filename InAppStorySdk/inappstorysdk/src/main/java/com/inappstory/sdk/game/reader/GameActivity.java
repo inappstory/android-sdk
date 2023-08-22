@@ -54,6 +54,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
@@ -598,15 +599,21 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     private void downloadSplash(final GameCenterData gameCenterData) {
+        final FileChecker fileChecker = new FileChecker();
         final GameSplashScreen splashScreen = gameCenterData.splashScreen;
         boolean needToDownload = splashScreen != null && URLUtil.isValidUrl(splashScreen.url);
         final String oldSplashPath = KeyValueStorage.getString("gameInstanceSplash_" + manager.gameCenterId);
         if (oldSplashPath != null) {
             File splash = new File(oldSplashPath);
+            if (needToDownload && fileChecker.checkWithShaAndSize(
+                    splash,
+                    splashScreen.size,
+                    splashScreen.sha1,
+                    false
+            ))
+                needToDownload = false;
             if (splash.exists()) {
                 setLoader(splash);
-                if (needToDownload && FileManager.checkShaAndSize(splash, splashScreen.size, splashScreen.sha1))
-                    needToDownload = false;
             }
 
         }
@@ -623,22 +630,23 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
                         @Override
                         public void onSuccess(File file) {
-                            if (file != null && file.exists()) {
-                                if (FileManager.checkShaAndSize(file, splashScreen.size, splashScreen.sha1)) {
-                                    KeyValueStorage.saveString("gameInstanceSplash_" + manager.gameCenterId, file.getAbsolutePath());
-                                    if (!hasSplashFile) {
-                                        setLoader(file);
-                                    } else {
-                                        if (oldSplashPath != null) {
-                                            File splash = new File(oldSplashPath);
-                                            if (splash.exists()) {
-                                                splash.delete();
-                                            }
-                                            setLoader(splash);
-                                        }
-                                    }
+                            if (fileChecker.checkWithShaAndSize(
+                                    file,
+                                    splashScreen.size,
+                                    splashScreen.sha1,
+                                    true
+                            )) {
+                                KeyValueStorage.saveString("gameInstanceSplash_" + manager.gameCenterId, file.getAbsolutePath());
+                                if (!hasSplashFile) {
+                                    setLoader(file);
                                 } else {
-                                    file.delete();
+                                    if (oldSplashPath != null) {
+                                        File splash = new File(oldSplashPath);
+                                        if (splash.exists()) {
+                                            splash.delete();
+                                        }
+                                        setLoader(splash);
+                                    }
                                 }
                             }
                         }

@@ -3,9 +3,12 @@ package com.inappstory.sdk.lrudiskcache;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -14,7 +17,7 @@ import java.util.List;
 public class FileManager {
     public FileManager(File cacheDir, String subPath) throws IOException {
         this.cacheDir = cacheDir;
-        prepare(subPath);
+        prepareCacheDir(subPath);
     }
 
     public long getFileSize(final File file) {
@@ -81,6 +84,24 @@ public class FileManager {
         }
     }
 
+    public static String getStringFromFile(File fl) throws Exception {
+        FileInputStream fin = new FileInputStream(fl);
+        String ret = convertStreamToString(fin);
+        fin.close();
+        return ret;
+    }
+
+    private static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
     public static boolean deleteRecursive(File fileOrDirectory) {
         boolean res = true;
         if (fileOrDirectory.isDirectory()) {
@@ -93,6 +114,22 @@ public class FileManager {
         return res;
     }
 
+    public static void deleteFolderRecursive(File fileOrDirectory, boolean deleteRoot) {
+
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteFolderRecursive(child, true);
+            }
+        }
+        if (deleteRoot) {
+            try {
+                fileOrDirectory.delete();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
     public File get(String name) {
         return new File(cacheDir, name);
     }
@@ -101,7 +138,7 @@ public class FileManager {
         return new File(cacheDir, name).exists();
     }
 
-    public boolean checkAndUse(File baseDir, String subPath) throws IOException {
+    private boolean checkAndUse(File baseDir, String subPath) throws IOException {
         File file = new File(baseDir + subPath);
         if (!file.exists()) {
             if (!file.mkdirs()) {
@@ -124,7 +161,7 @@ public class FileManager {
         return true;
     }
 
-    public void prepare(String subPath) throws IOException {
+    public void prepareCacheDir(String subPath) throws IOException {
         if (!checkAndUse(cacheDir, subPath)) {
             if (!checkAndUse(InAppStoryManager.getInstance().getContext().getFilesDir(),
                     subPath)) {

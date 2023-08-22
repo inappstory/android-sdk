@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
@@ -109,6 +110,7 @@ public class ZipLoader {
         if (resources == null) return true;
         if (terminate) return false;
         if (InAppStoryService.isNull()) return false;
+        FileChecker fileChecker = new FileChecker();
         String pathName = file.getAbsolutePath();
         final File filePath = new File(
                 pathName +
@@ -126,26 +128,29 @@ public class ZipLoader {
                 if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty())
                     continue;
                 File resourceFile = new File(filePath.getAbsolutePath() + "/" + fileName);
-                if (resourceFile.exists()) {
-                    if (!FileManager.checkShaAndSize(resourceFile, resource.size, resource.sha1)) {
-                        deleteFileIfNotPass(resourceFile);
-                    } else {
-                        cnt += resource.size;
-                        if (callback != null)
-                            callback.onProgress(cnt, totalSize);
-                        continue;
-                    }
+                if (fileChecker.checkWithShaAndSize(
+                        resourceFile,
+                        resource.size,
+                        resource.sha1,
+                        true
+                )) {
+                    cnt += resource.size;
+                    if (callback != null)
+                        callback.onProgress(cnt, totalSize);
+                    continue;
                 }
                 downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, InAppStoryService.getInstance().getInfiniteCache(),
                         resourceFile,
                         null);
-                if (!FileManager.checkShaAndSize(resourceFile, resource.size, resource.sha1)) {
-                    deleteFileIfNotPass(resourceFile);
-                } else {
-                    cnt += resource.size;
-                    if (callback != null)
-                        callback.onProgress(cnt, totalSize);
-                }
+                fileChecker.checkWithShaAndSize(
+                        resourceFile,
+                        resource.size,
+                        resource.sha1,
+                        true
+                );
+                cnt += resource.size;
+                if (callback != null)
+                    callback.onProgress(cnt, totalSize);
             } catch (Exception e) {
                 InAppStoryService.createExceptionLog(e);
                 e.printStackTrace();
@@ -221,7 +226,7 @@ public class ZipLoader {
                         }
 
                     final long fTotalSize = totalSize;
-
+                    FileChecker fileChecker = new FileChecker();
 
                     String hash = randomUUID().toString();
 
@@ -235,7 +240,12 @@ public class ZipLoader {
                     File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(url);
                     if (cachedArchive != null) {
                         if (gameCenterData != null &&
-                                !FileManager.checkShaAndSize(cachedArchive, gameCenterData.archiveSize, gameCenterData.archiveSha1)
+                                !fileChecker.checkWithShaAndSize(
+                                        cachedArchive,
+                                        gameCenterData.archiveSize,
+                                        gameCenterData.archiveSha1,
+                                        true
+                                )
                         ) {
                             InAppStoryService.getInstance().getInfiniteCache().delete(url);
                             cachedArchive = null;
@@ -254,6 +264,8 @@ public class ZipLoader {
                             callback.onError("No free space for download");
                             return null;
                         }
+
+                        ProfilingManager.getInstance().addTask("game_download", hash);
                         fileState = Downloader.downloadOrGetFile(
                                 url,
                                 InAppStoryService.getInstance().getInfiniteCache(),
@@ -291,11 +303,15 @@ public class ZipLoader {
                         return null;
                     } else {
                         if (gameCenterData != null &&
-                                !FileManager.checkShaAndSize(getFile, gameCenterData.archiveSize, gameCenterData.archiveSha1)
+                                !fileChecker.checkWithShaAndSize(
+                                        getFile,
+                                        gameCenterData.archiveSize,
+                                        gameCenterData.archiveSha1,
+                                        true
+                                )
                         ) {
-                            getFile.delete();
                             if (callback != null)
-                                callback.onError("Wrong file sha or size");
+                                callback.onError("File not exist or incorrect");
                             return null;
                         }
                     }
