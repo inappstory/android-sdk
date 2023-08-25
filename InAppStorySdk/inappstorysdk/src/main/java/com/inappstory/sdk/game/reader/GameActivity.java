@@ -11,6 +11,7 @@ import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -48,14 +49,14 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
-import com.inappstory.sdk.game.cache.GameLoadCallback;
+import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
-import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.JsonParser;
@@ -73,7 +74,6 @@ import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.callbacks.GameDownloadCallback;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -89,6 +89,7 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
+import com.inappstory.sdk.utils.ProgressCallback;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
@@ -673,39 +674,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     private void downloadGame() {
         downloadGame(
-                manager.gameCenterId,
-                new GameDownloadCallback() {
-                    @Override
-                    public void complete(GameCenterData gameCenterData) {
-                        long freeSpace = 0L;
-                        downloadSplash(gameCenterData);
-                        try {
-                            replaceGameInstanceStorageData(gameCenterData.instanceUserData);
-                        } catch (JSONException ignored) {
-
-                        }
-                        manager.resources = getIntent().getStringExtra("gameResources");
-                        manager.gameConfig = gameCenterData.initCode;
-                        manager.path = gameCenterData.url;
-                        try {
-                            GameScreenOptions options = gameCenterData.options;
-                            manager.resources = JsonParser.getJson(gameCenterData.resources);
-                            isFullscreen = options != null && options.fullScreen;
-                            if (forceFullscreen != null)
-                                isFullscreen = forceFullscreen;
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        replaceConfigs();
-                        gameLoadedCallback.complete(gameCenterData, null);
-                    }
-
-                    @Override
-                    public void error(String error) {
-
-                        gameLoadedCallback.complete(null, error);
-                    }
-                }
+                manager.gameCenterId
         );
     }
 
@@ -883,21 +852,117 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         );
     }
 
-    private void downloadGame(
-            final String gameId,
-            final GameDownloadCallback callback
-    ) {
-        gameCacheManager.getGame(gameId, new GameLoadCallback() {
-            @Override
-            public void onSuccess(GameCenterData gameCenterData) {
-                if (callback != null) callback.complete(gameCenterData);
+    private void setOrientationFromOptions(GameScreenOptions options) {
+        if (options != null) {
+            if (options.screenOrientation == "landscape") {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                return;
             }
+        }
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
 
-            @Override
-            public void onError(String error) {
-                if (callback != null) callback.error(error);
-            }
-        });
+    private void downloadGame(
+            final String gameId
+    ) {
+        gameCacheManager.getGame(
+                gameId,
+                interruption,
+                new ProgressCallback() {
+                    @Override
+                    public void onProgress(long loadedSize, long totalSize) {
+                        final int percent = (int) ((loadedSize * 100) / totalSize);
+
+                        if (customLoaderView != null)
+                            customLoaderView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    loaderView.setProgress(percent, 100);
+                                }
+                            });
+                    }
+                },
+                new UseCaseCallback<File>() {
+                    @Override
+                    public void onError(String message) {
+                        InAppStoryManager.showDLog("Game_Loading", message);
+                    }
+
+                    @Override
+                    public void onSuccess(File result) {
+                        setLoader(result);
+                    }
+                },
+                new UseCaseCallback<GameCenterData>() {
+                    @Override
+                    public void onError(String message) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(final GameCenterData gameCenterData) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setLayout();
+                                loaderView.setIndeterminate(false);
+                                manager.resources = getIntent().getStringExtra("gameResources");
+                                manager.gameConfig = gameCenterData.initCode;
+                                manager.path = gameCenterData.url;
+                                try {
+                                    GameScreenOptions options = gameCenterData.options;
+                                    manager.resources = JsonParser.getJson(gameCenterData.resources);
+                                    isFullscreen = options != null && options.fullScreen;
+                                    setOrientationFromOptions(options);
+                                    if (forceFullscreen != null)
+                                        isFullscreen = forceFullscreen;
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                                replaceConfigs();
+                            }
+                        });
+                    }
+                },
+                new UseCaseCallback<FilePathAndContent>() {
+                    @Override
+                    public void onError(String message) {
+                        webView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                closeButton.setVisibility(View.VISIBLE);
+                                showRefresh.run();
+                            }
+                        });
+                        GameStoryData dataModel = getStoryDataModel();
+                        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                            CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
+                                    dataModel,
+                                    getIntent().getStringExtra("gameId")
+                            );
+                        }
+                        InAppStoryManager.showDLog("Game_Loading", message);
+                    }
+
+                    @Override
+                    public void onSuccess(final FilePathAndContent result) {
+                        manager.gameLoaded = true;
+                        webView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                webView.loadDataWithBaseURL(
+                                        result.getFilePath(),
+                                        webView.setDir(
+                                                result.getFileContent()
+                                        ),
+                                        "text/html; charset=utf-8", "UTF-8",
+                                        null);
+                            }
+                        });
+                        refreshGame.postDelayed(showRefresh, 5000);
+                    }
+                }
+        );
 
     }
 

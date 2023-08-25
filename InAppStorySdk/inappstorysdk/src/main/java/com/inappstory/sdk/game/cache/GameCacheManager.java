@@ -11,6 +11,7 @@ import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ProgressCallback;
 
@@ -47,12 +48,28 @@ public class GameCacheManager {
             final String gameId,
             final DownloadInterruption interruption,
             final ProgressCallback progressCallback,
-            UseCaseCallback<File> splashScreenCallback,
+            final UseCaseCallback<File> splashScreenCallback,
+            final UseCaseCallback<GameCenterData> gameModelCallback,
             final UseCaseCallback<FilePathAndContent> gameLoadCallback
     ) {
+        final String[] oldSplashPath = {null};
+        GetLocalSplashUseCase getLocalSplashUseCase = new GetLocalSplashUseCase(gameId);
+        getLocalSplashUseCase.get(new UseCaseCallback<File>() {
+            @Override
+            public void onError(String message) {
+                splashScreenCallback.onError(message);
+            }
+
+            @Override
+            public void onSuccess(File result) {
+                oldSplashPath[0] = result.getAbsolutePath();
+                splashScreenCallback.onSuccess(result);
+            }
+        });
         new GetGameModelUseCase().get(gameId, new GameLoadCallback() {
             @Override
             public void onSuccess(GameCenterData data) {
+                gameModelCallback.onSuccess(data);
                 final String archiveUrl = data.url;
                 final GetZipFileUseCase getZipFileUseCase =
                         new GetZipFileUseCase(
@@ -64,8 +81,28 @@ public class GameCacheManager {
                         new DownloadResourcesUseCase(data.resources);
                 final RemoveOldGameFilesUseCase removeOldGameFilesUseCase =
                         new RemoveOldGameFilesUseCase(archiveUrl);
+                DownloadSplashUseCase downloadSplashUseCase = new DownloadSplashUseCase(
+                        data.splashScreen,
+                        oldSplashPath[0],
+                        gameId
+                );
+                downloadSplashUseCase.download(new UseCaseCallback<File>() {
+                    @Override
+                    public void onError(String message) {
+                        splashScreenCallback.onError(message);
+                    }
 
-
+                    @Override
+                    public void onSuccess(File result) {
+                        KeyValueStorage.saveString(
+                                "gameInstanceSplash_" + gameId,
+                                result.getAbsolutePath()
+                        );
+                        if (oldSplashPath[0] == null) {
+                            splashScreenCallback.onSuccess(result);
+                        }
+                    }
+                });
                 long totalFilesSize = 0;
                 if (data.archiveSize != null)
                     totalFilesSize += data.archiveSize;
