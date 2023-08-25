@@ -111,7 +111,7 @@ public final class NetworkHandler implements InvocationHandler {
         Request request = builder
                 .isFormEncoded(isFormEncoded)
                 .headers(
-                        generateHeaders(appContext, exclude, isFormEncoded, body.isEmpty())
+                        generateHeaders(appContext, exclude, isFormEncoded, !body.isEmpty())
                 )
                 .url(baseUrl != null ?
                         baseUrl + path : path)
