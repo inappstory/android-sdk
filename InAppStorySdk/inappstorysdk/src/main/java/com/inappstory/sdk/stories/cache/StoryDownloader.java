@@ -330,6 +330,7 @@ class StoryDownloader {
             ProfilingManager.getInstance().setReady(storyUID);
             loadStoryResult(key, response);
         } catch (Throwable t) {
+            t.printStackTrace();
             loadStoryError(key);
             handler.postDelayed(queueStoryReadRunnable, 200);
         }
