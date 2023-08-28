@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,8 +25,10 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -37,6 +40,7 @@ import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class StoriesList extends RecyclerView {
@@ -150,6 +154,7 @@ public class StoriesList extends RecyclerView {
             if (scrollCallback != null) {
                 scrollCallback.scrollEnd();
             }
+            Log.e("ScrolledItems", scrolledItems.toString());
         }
         return super.onTouchEvent(e);
     }
@@ -221,7 +226,11 @@ public class StoriesList extends RecyclerView {
         }
     }
 
+    HashMap<Integer, StoriesListItemData> scrolledItems = new HashMap<>();
+
     void sendIndexes() {
+
+        Log.e("storiesScrollEvent", "sendIndexes");
         checkAppearanceManager();
         int hasUgc = (hasSessionUGC() && !isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
         ArrayList<Integer> indexes = new ArrayList<>();
@@ -232,6 +241,33 @@ public class StoriesList extends RecyclerView {
                 int ind = i - hasUgc;
                 if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0)
                     indexes.add(adapter.getStoriesIds().get(ind));
+                View holder = linearLayoutManager.getChildAt(i);
+                if (holder != null) {
+                    Rect rect = new Rect();
+                    holder.getGlobalVisibleRect(rect);
+                    float currentPercentage = (float)rect.width() / holder.getWidth();
+                    StoriesListItemData cachedData = scrolledItems.get(i);
+                    if (cachedData != null) {
+                        currentPercentage = Math.max(currentPercentage, cachedData.shownPercent);
+                    }
+                    Story current = InAppStoryService.getInstance().getDownloadManager()
+                            .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
+                    if (current != null) {
+
+                        scrolledItems.put(i, new StoriesListItemData(
+                                new StoryData(
+                                        current.id,
+                                        StringsUtils.getNonNull(current.statTitle),
+                                        StringsUtils.getNonNull(current.tags),
+                                        current.getSlidesCount()
+                                ),
+                                i,
+                                currentPercentage
+                        ));
+                    }
+
+
+                }
             }
         }
         ArrayList<Integer> newIndexes =

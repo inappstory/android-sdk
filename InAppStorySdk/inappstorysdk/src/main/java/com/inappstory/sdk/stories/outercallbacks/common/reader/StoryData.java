@@ -12,4 +12,14 @@ public class StoryData {
         this.tags = tags;
         this.slidesCount = slidesCount;
     }
+
+    @Override
+    public String toString() {
+        return "StoryData{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", tags='" + tags + '\'' +
+                ", slidesCount=" + slidesCount +
+                '}';
+    }
 }
