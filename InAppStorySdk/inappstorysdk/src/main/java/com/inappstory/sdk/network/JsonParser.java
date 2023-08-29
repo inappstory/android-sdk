@@ -362,23 +362,19 @@ public class JsonParser {
             } else if (field.getType().equals(Map.class) ||
                     containsInterface(field.getType().getInterfaces(), Map.class)) {
                 JSONObject mapObject = new JSONObject((Map<String, Object>) val);
-                //Map<String, Object> valMap = (Map<String, Object>) val;
-               /* Set<String> keys = valMap.keySet();
-                for (String key : keys) {
-                    Object valObj = valMap.get(key);
-                    if (valObj instanceof List) {
+                Map<String, Object> valMap = (Map<String, Object>) val;
+                for (Map.Entry<String, Object> entry : valMap.entrySet()) {
+                    Object entryVal = entry.getValue();
+                    if (entryVal instanceof List) {
                         JSONArray arr = new JSONArray();
-                        int size = ((List) valObj).size();
-                        for (int i = 0; i < size; i++) {
-                            arr.put(getJsonObject(((List) valObj).get(i)));
+                        for (int i = 0; i < ((List) instance).size(); i++) {
+                            arr.put(getJsonObject(((List) instance).get(i)));
                         }
-                        mapObject.put(key, arr);
-                    } else if (valObj != null) {
-                        mapObject.put(key, getJsonObject(valObj));
+                        mapObject.put(entry.getKey(), arr);
                     } else {
-                        mapObject.put(key, getJsonObject(null));
+                        mapObject.put(entry.getKey(), getJsonObject(entry.getValue()));
                     }
-                }*/
+                }
                 result = mapObject;
             } else {
                 result = getJsonObject(val);
