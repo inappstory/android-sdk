@@ -13,14 +13,18 @@ import com.inappstory.sdk.network.utils.headers.Header;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class JsApiNetwork {
 
+
     public static JsApiResponse sendRequest(
             String method,
             String path,
+            String baseUrl,
             Map<String, String> headers,
             Map<String, String> getParams,
             String body,
@@ -47,28 +51,25 @@ public class JsApiNetwork {
                 false,
                 hasBody
         );
-        for (Map.Entry<String, String> header : headers.entrySet()) {
-            if (header.getValue() != null) {
-                defaultHeaders.add(new CustomHeader(header.getKey(), header.getValue()));
+        if (headers != null)
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                if (header.getValue() != null) {
+                    defaultHeaders.add(new CustomHeader(header.getKey(), header.getValue()));
+                }
             }
-        }
 
         Request request = requestBuilder
                 .isFormEncoded(false)
-                .headers(defaultHeaders)
-                .url("v2/" + path)
-                .vars(getParams)
-                .body(body)
-                .build();
-
-        requestBuilder
                 .method(method)
                 .headers(defaultHeaders)
                 .isFormEncoded(false)
-                .body(body);
+                .url(baseUrl + "v2/" + path)
+                .vars(getParams != null ? getParams : new HashMap<String, String>())
+                .body(body)
+                .build();
         Response networkResponse = networkClient.execute(request, null);
         jsResponse.status = networkResponse.code;
-        if (networkResponse.headers.size() > 0) {
+        if (networkResponse.headers != null && networkResponse.headers.size() > 0) {
             JSONObject jheaders = new JSONObject();
             try {
                 for (Map.Entry<String, String> header : networkResponse.headers.entrySet()) {

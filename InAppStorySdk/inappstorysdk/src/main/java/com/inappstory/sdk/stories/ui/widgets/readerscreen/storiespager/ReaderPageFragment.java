@@ -196,14 +196,17 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadedSuccess() {
-        Log.e("hideLoader", "storyLoadedSuccess");
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                refresh.setVisibility(View.GONE);
-                hideLoader();
-            }
-        });
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    refresh.setVisibility(View.GONE);
+                    hideLoader();
+                }
+            });
+        } catch (Exception e) {
+        }
+
     }
 
     private void setOffsets(View view) {
@@ -295,6 +298,7 @@ public class ReaderPageFragment extends Fragment {
             @Override
             public void onAnimationEnd(Animation animation) {
                 if (loader == null) return;
+                Log.e("hideLoader", "hided 2 " + storyId);
                 stopAndHideLoader();
             }
         });
@@ -319,8 +323,8 @@ public class ReaderPageFragment extends Fragment {
         });
     }
 
-    public void slideLoadError() {
-        Log.e("hideLoader", "slideLoadError");
+    public void slideLoadError(int slideIndex) {
+        Log.e("hideLoader", "slideLoadError " + slideIndex + " " + storyId);
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

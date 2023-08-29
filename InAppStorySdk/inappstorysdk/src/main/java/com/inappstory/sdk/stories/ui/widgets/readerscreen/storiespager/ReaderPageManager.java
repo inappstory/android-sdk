@@ -551,7 +551,7 @@ public class ReaderPageManager {
     public void slideLoadError(int slideIndex) {
         if (this.slideIndex == slideIndex)
             if (host != null)
-                host.slideLoadError();
+                host.slideLoadError(slideIndex);
     }
 
     public void storyLoadedInCache() {

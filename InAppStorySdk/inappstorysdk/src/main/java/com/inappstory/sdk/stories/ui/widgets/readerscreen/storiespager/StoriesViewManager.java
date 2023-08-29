@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -13,6 +14,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -96,7 +98,10 @@ public class StoriesViewManager {
     }
 
     public void sendApiRequest(String data) {
-        new JsApiClient(storiesView.getContext()).sendApiRequest(data, new JsApiResponseCallback() {
+        new JsApiClient(
+                storiesView.getContext(),
+                ApiSettings.getInstance().getHost()
+        ).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {
                 storiesView.loadJsApiResponse(result, cb);
@@ -189,7 +194,7 @@ public class StoriesViewManager {
             showRefresh = null;
         }
         showRefresh = new ShowRefresh(index);
-        showRefreshHandler.postDelayed(showRefresh, 3000);
+        showRefreshHandler.postDelayed(showRefresh, 5000);
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
     }
 
@@ -480,22 +485,14 @@ public class StoriesViewManager {
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
         storyIsLoaded = true;
-
+        Log.e("hideLoader", "storyLoaded " + storyId + " " + slideIndex);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopStory();
         } else {
             pageManager.currentSlideIsLoaded = true;
-            pageManager.host.storyLoadedSuccess();
-            if (showRefresh != null) {
-                try {
-                    showRefreshHandler.removeCallbacks(showRefresh);
-                } catch (Exception e) {
 
-                }
-                showRefresh = null;
-            }
             playStory();
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -503,6 +500,15 @@ public class StoriesViewManager {
                     resumeStory();
                 }
             }, 200);
+        }
+        pageManager.host.storyLoadedSuccess();
+        if (showRefresh != null) {
+            try {
+                showRefreshHandler.removeCallbacks(showRefresh);
+            } catch (Exception e) {
+
+            }
+            showRefresh = null;
         }
     }
 

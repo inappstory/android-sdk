@@ -20,8 +20,11 @@ public class JsApiClient {
 
     Context context;
 
-    public JsApiClient(Context context) {
+    String baseUrl;
+
+    public JsApiClient(Context context, String baseUrl) {
         this.context = context;
+        this.baseUrl = baseUrl;
     }
 
     public void sendApiRequest(String data, JsApiResponseCallback callback) {
@@ -51,7 +54,18 @@ public class JsApiClient {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
-                    sendRequest(method, path, headers, getParams, body, requestId, cb, profilingKey, callback);
+                    sendRequest(
+                            method,
+                            path,
+                            baseUrl,
+                            headers,
+                            getParams,
+                            body,
+                            requestId,
+                            cb,
+                            profilingKey,
+                            callback
+                    );
                 }
 
                 @Override
@@ -60,7 +74,18 @@ public class JsApiClient {
                 }
             });
         } else {
-            sendRequest(method, path, headers, getParams, body, requestId, cb, profilingKey, callback);
+            sendRequest(
+                    method,
+                    path,
+                    baseUrl,
+                    headers,
+                    getParams,
+                    body,
+                    requestId,
+                    cb,
+                    profilingKey,
+                    callback
+            );
         }
     }
 
@@ -75,6 +100,7 @@ public class JsApiClient {
 
     void sendRequest(final String method,
                      final String path,
+                     final String baseUrl,
                      final Map<String, String> headers,
                      final Map<String, String> getParams,
                      final String body,
@@ -88,26 +114,36 @@ public class JsApiClient {
         } else {
             sarHash = null;
         }
-        taskRunner.executeAsync(new JsApiRequestAsync(method, path,
-                headers, getParams, body, requestId,
-                context), new TaskRunner.Callback<JsApiResponse>() {
-            @Override
-            public void onComplete(JsApiResponse result) {
-                ProfilingManager.getInstance().setReady(sarHash);
-                try {
-                    JSONObject resultJson = new JSONObject();
-                    resultJson.put("requestId", result.requestId);
-                    resultJson.put("status", result.status);
-                    resultJson.put("data", oldEscape(result.data));
-                    try {
-                        resultJson.put("headers", new JSONObject(result.headers));
-                    } catch (Exception e) {
+        taskRunner.executeAsync(
+                new JsApiRequestAsync(
+                        method,
+                        path,
+                        baseUrl,
+                        headers,
+                        getParams,
+                        body,
+                        requestId,
+                        context
+                ),
+                new TaskRunner.Callback<JsApiResponse>() {
+                    @Override
+                    public void onComplete(JsApiResponse result) {
+                        ProfilingManager.getInstance().setReady(sarHash);
+                        try {
+                            JSONObject resultJson = new JSONObject();
+                            resultJson.put("requestId", result.requestId);
+                            resultJson.put("status", result.status);
+                            resultJson.put("data", oldEscape(result.data));
+                            try {
+                                resultJson.put("headers", new JSONObject(result.headers));
+                            } catch (Exception e) {
+                            }
+                            callback.onJsApiResponse(resultJson.toString(), cb);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                    callback.onJsApiResponse(resultJson.toString(), cb);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            }
-        });
+        );
     }
 }

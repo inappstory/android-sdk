@@ -10,6 +10,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 
 import com.inappstory.sdk.network.NetworkClient;
@@ -219,7 +220,10 @@ public class GameManager {
     }
 
     void sendApiRequest(String data) {
-        new JsApiClient(host).sendApiRequest(data, new JsApiResponseCallback() {
+        new JsApiClient(
+                host,
+                ApiSettings.getInstance().getHost()
+        ).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
             public void onJsApiResponse(String result, String cb) {
                 host.loadJsApiResponse(modifyJsResult(result), cb);
