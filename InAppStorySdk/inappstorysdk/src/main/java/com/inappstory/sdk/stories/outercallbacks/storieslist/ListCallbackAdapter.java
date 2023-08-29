@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.outercallbacks.storieslist;
 
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+
 public class ListCallbackAdapter implements ListCallback {
 
     @Override
@@ -18,9 +20,9 @@ public class ListCallbackAdapter implements ListCallback {
     }
 
     @Override
-    public void itemClick(int id, int listIndex, String title, String tags, int slidesCount,
-                          boolean isFavoriteList, String feed) {
-
+    public void itemClick(StoryData storyData, int listIndex, boolean isFavoriteList, String feed) {
 
     }
+
+
 }

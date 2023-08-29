@@ -134,8 +134,17 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 .getStoryById(storiesIds.get(index), Story.StoryType.UGC);
         if (current != null) {
             if (callback != null) {
-                callback.itemClick(current.id, index, current.statTitle, current.tags,
-                        current.getSlidesCount(), false, null);
+                callback.itemClick(
+                        new StoryData(
+                                current.id,
+                                StringsUtils.getNonNull(current.statTitle),
+                                StringsUtils.getNonNull(current.tags),
+                                current.getSlidesCount()
+                        ),
+                        index,
+                        false,
+                        null
+                );
             }
             String gameInstanceId = current.getGameInstanceId();
             if (gameInstanceId != null) {
@@ -206,11 +215,28 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             if (callback != null) {
                 Story lStory = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.UGC);
                 if (lStory != null) {
-                    callback.itemClick(lStory.id, index, StringsUtils.getNonNull(lStory.statTitle), "", 0,
-                            false, "");
+                    callback.itemClick(
+                            new StoryData(
+                                    lStory.id,
+                                    StringsUtils.getNonNull(lStory.statTitle),
+                                    StringsUtils.getNonNull(lStory.tags),
+                                    lStory.getSlidesCount()
+                            ),
+                            index,
+                            false,
+                            ""
+                    );
                 } else {
-                    callback.itemClick(storiesIds.get(index), index, "", "", 0,
-                            false, "");
+                    callback.itemClick(
+                            new StoryData(
+                                    storiesIds.get(index),
+                                    "",
+                                    "",
+                                    0
+                            ),
+                            index,
+                            false,
+                            "");
                 }
 
             }

@@ -178,12 +178,17 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
             if (callback != null) {
-                callback.itemClick(current.id, index,
-                        StringsUtils.getNonNull(current.statTitle),
-                        StringsUtils.getNonNull(current.tags),
-                        current.getSlidesCount(),
+                callback.itemClick(
+                        new StoryData(
+                                current.id,
+                                StringsUtils.getNonNull(current.statTitle),
+                                StringsUtils.getNonNull(current.tags),
+                                current.getSlidesCount()
+                        ),
+                        index,
                         isFavoriteList,
-                        StringsUtils.getNonNull(feed));
+                        StringsUtils.getNonNull(feed)
+                );
             }
             String gameInstanceId = current.getGameInstanceId();
             if (gameInstanceId != null) {
@@ -260,11 +265,29 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 Story lStory = InAppStoryService.getInstance().getDownloadManager()
                         .getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
                 if (lStory != null) {
-                    callback.itemClick(lStory.id, index, StringsUtils.getNonNull(lStory.statTitle), "", 0,
-                            false, "");
+                    callback.itemClick(
+                            new StoryData(
+                                    lStory.id,
+                                    StringsUtils.getNonNull(lStory.statTitle),
+                                    StringsUtils.getNonNull(lStory.tags),
+                                    lStory.getSlidesCount()
+                            ),
+                            index,
+                            isFavoriteList,
+                            StringsUtils.getNonNull(feed)
+                    );
                 } else {
-                    callback.itemClick(storiesIds.get(index), index, "", "", 0,
-                            false, "");
+                    callback.itemClick(
+                            new StoryData(
+                                    storiesIds.get(index),
+                                    "",
+                                    "",
+                                    0
+                            ),
+                            index,
+                            isFavoriteList,
+                            StringsUtils.getNonNull(feed)
+                    );
                 }
             }
         }
