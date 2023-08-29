@@ -445,13 +445,16 @@ public class StoriesViewManager {
             Story story = service.getDownloadManager().getStoryById(storyId, type);
             if (story != null) {
                 data = new GameStoryData(
-                        story.id,
-                        story.lastIndex,
-                        story.slidesCount,
-                        story.statTitle,
-                        story.tags,
-                        pageManager != null ? pageManager.getFeedId() : null,
-                        type
+                        new SlideData(
+                                new StoryData(
+                                        story.id,
+                                        StringsUtils.getNonNull(story.statTitle),
+                                        StringsUtils.getNonNull(story.tags),
+                                        story.slidesCount,
+                                        type),
+                                story.lastIndex
+                        ),
+                        pageManager != null ? pageManager.getFeedId() : null
                 );
             }
         }

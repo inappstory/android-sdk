@@ -190,13 +190,16 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 service.openGameReaderWithGC(
                         context,
                         new GameStoryData(
-                                current.id,
-                                0,
-                                current.slidesCount,
-                                current.title,
-                                current.tags,
-                                feed,
-                                Story.StoryType.COMMON
+                                new SlideData(
+                                        new StoryData(
+                                                current.id,
+                                                StringsUtils.getNonNull(current.statTitle),
+                                                StringsUtils.getNonNull(current.tags),
+                                                current.slidesCount,
+                                                Story.StoryType.COMMON),
+                                        0
+                                ),
+                                feed
                         ),
                         gameInstanceId);
 

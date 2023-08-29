@@ -142,13 +142,16 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 service.openGameReaderWithGC(
                         context,
                         new GameStoryData(
-                                current.id,
-                                0,
-                                current.slidesCount,
-                                current.title,
-                                current.tags,
-                                null,
-                                Story.StoryType.UGC
+                                new SlideData(
+                                        new StoryData(
+                                                current.id,
+                                                StringsUtils.getNonNull(current.statTitle),
+                                                StringsUtils.getNonNull(current.tags),
+                                                current.slidesCount,
+                                                Story.StoryType.COMMON),
+                                        0
+                                ),
+                                null
                         ),
                         gameInstanceId);
                 return;

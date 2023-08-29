@@ -75,6 +75,8 @@ import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
@@ -226,9 +228,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         },
                         true,
                         widgetId,
-                        dataModel.storyId,
-                        dataModel.slideIndex,
-                        dataModel.feedId
+                        dataModel.slideData.story.id,
+                        dataModel.slideData.index,
+                        dataModel.feed
                 );
             }
         });
@@ -262,7 +264,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     void updateUI() {
         GameStoryData dataModel = getStoryDataModel();
         if (dataModel != null)
-            ProfilingManager.getInstance().setReady("game_init" + dataModel.storyId + "_" + dataModel.slideIndex);
+            ProfilingManager.getInstance().setReady("game_init" + dataModel.slideData.story.id + "_" + dataModel.slideData.index);
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -523,8 +525,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             int slideIndex = 0;
             GameStoryData dataModel = getStoryDataModel();
             if (dataModel != null) {
-                storyId = dataModel.storyId;
-                slideIndex = dataModel.slideIndex;
+                storyId = dataModel.slideData.story.id;
+                slideIndex = dataModel.slideData.index;
             }
             ScreensManager.getInstance().openOverlapContainerForShare(
                     this, this, null, storyId, slideIndex, shareObject
@@ -815,8 +817,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
                 if (dataModel != null && webView != null) {
                     webView.sendWebConsoleLog(consoleMessage,
-                            Integer.toString(dataModel.storyId),
-                            dataModel.slideIndex);
+                            Integer.toString(dataModel.slideData.story.id),
+                            dataModel.slideData.index);
                 }
                 Log.d("InAppStory_SDK_Game", "Console: " + consoleMessage.messageLevel().name() + ": "
                         + consoleMessage.message() + " -- From line "
@@ -1078,11 +1080,11 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         if (dataModel != null) {
             if (CallbackManager.getInstance().getGameCallback() != null) {
                 CallbackManager.getInstance().getGameCallback().closeGame(
-                        dataModel.storyId,
-                        StringsUtils.getNonNull(dataModel.title),
-                        StringsUtils.getNonNull(dataModel.tags),
-                        dataModel.slidesCount,
-                        dataModel.slideIndex
+                        dataModel.slideData.story.id,
+                        StringsUtils.getNonNull(dataModel.slideData.story.title),
+                        StringsUtils.getNonNull(dataModel.slideData.story.tags),
+                        dataModel.slideData.story.slidesCount,
+                        dataModel.slideData.index
                 );
             }
         }
@@ -1117,13 +1119,17 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         if (storyDataModel == null) {
             if (getIntent().getStringExtra("storyId") == null) return null;
             storyDataModel = new GameStoryData(
-                    Integer.parseInt(getIntent().getStringExtra("storyId")),
-                    getIntent().getIntExtra("slideIndex", 0),
-                    getIntent().getIntExtra("slidesCount", 0),
-                    getIntent().getStringExtra("title"),
-                    getIntent().getStringExtra("tags"),
-                    getIntent().getStringExtra("feedId"),
-                    Story.storyTypeFromName(getIntent().getStringExtra("storyType"))
+                    new SlideData(
+                            new StoryData(
+                                    Integer.parseInt(getIntent().getStringExtra("storyId")),
+                                    getIntent().getStringExtra("title"),
+                                    getIntent().getStringExtra("tags"),
+                                    getIntent().getIntExtra("slidesCount", 0),
+                                    Story.storyTypeFromName(getIntent().getStringExtra("storyType"))
+                            ),
+                            getIntent().getIntExtra("slideIndex", 0)
+                    ),
+                    getIntent().getStringExtra("feedId")
             );
         }
         return storyDataModel;
@@ -1137,8 +1143,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             if (dataModel != null) {
                 Intent intent = new Intent();
                 closing = true;
-                intent.putExtra("storyId", dataModel.storyId);
-                intent.putExtra("slideIndex", dataModel.slideIndex);
+                intent.putExtra("storyId", dataModel.slideData.story.id);
+                intent.putExtra("slideIndex", dataModel.slideData.index);
                 if (gameState != null)
                     intent.putExtra("gameState", gameState);
                 if (Sizes.isTablet()) {
@@ -1150,8 +1156,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             liveData.postValue(
                                     new GameCompleteEvent(
                                             gameState,
-                                            dataModel.storyId,
-                                            dataModel.slideIndex
+                                            dataModel.slideData.story.id,
+                                            dataModel.slideData.index
                                     )
                             );
                         }

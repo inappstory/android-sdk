@@ -33,7 +33,6 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,7 +43,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -255,20 +253,20 @@ public class ScreensManager {
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
         if (data != null) {
-            intent2.putExtra("storyId", Integer.toString(data.storyId));
-            intent2.putExtra("slideIndex", data.slideIndex);
-            intent2.putExtra("slidesCount", data.slidesCount);
-            intent2.putExtra("feedId", data.feedId);
+            intent2.putExtra("storyId", Integer.toString(data.slideData.story.id));
+            intent2.putExtra("slideIndex", data.slideData.index);
+            intent2.putExtra("slidesCount", data.slideData.story.slidesCount);
+            intent2.putExtra("feedId", data.feed);
             intent2.putExtra("storyType", Story.nameFromStoryType(data.type));
-            intent2.putExtra("tags", data.tags);
-            intent2.putExtra("title", data.title);
+            intent2.putExtra("tags", data.slideData.story.tags);
+            intent2.putExtra("title", data.slideData.story.title);
             if (CallbackManager.getInstance().getGameCallback() != null) {
                 CallbackManager.getInstance().getGameCallback().startGame(
-                        data.storyId,
-                        StringsUtils.getNonNull(data.title),
-                        StringsUtils.getNonNull(data.tags),
-                        data.slidesCount,
-                        data.slideIndex
+                        data.slideData.story.id,
+                        StringsUtils.getNonNull(data.slideData.story.title),
+                        StringsUtils.getNonNull(data.slideData.story.tags),
+                        data.slideData.story.slidesCount,
+                        data.slideData.index
                 );
             }
 

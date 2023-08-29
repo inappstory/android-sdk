@@ -115,14 +115,14 @@ public class GameManager {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
         }
-        KeyValueStorage.saveString("story" + dataModel.storyId
+        KeyValueStorage.saveString("story" + dataModel.slideData.story.id
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             networkClient.enqueue(
                     networkClient.getApi().sendStoryData(
-                            Integer.toString(dataModel.storyId),
+                            Integer.toString(dataModel.slideData.story.id),
                             data,
                             Session.getInstance().id
                     ),
@@ -152,17 +152,17 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        StatisticManager.getInstance().sendGameEvent(name, data, dataModel.feedId);
+        StatisticManager.getInstance().sendGameEvent(name, data, dataModel.feed);
     }
 
     private void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
         if (CallbackManager.getInstance().getGameCallback() != null && dataModel != null) {
             CallbackManager.getInstance().getGameCallback().finishGame(
-                    dataModel.storyId,
-                    dataModel.title,
-                    dataModel.tags,
-                    dataModel.slidesCount,
-                    dataModel.slideIndex,
+                    dataModel.slideData.story.id,
+                    dataModel.slideData.story.title,
+                    dataModel.slideData.story.tags,
+                    dataModel.slideData.story.slidesCount,
+                    dataModel.slideData.index,
                     eventData
             );
         }
@@ -200,11 +200,11 @@ public class GameManager {
     private void gameCompletedWithUrl(String gameState, String link, String eventData) {
         if (CallbackManager.getInstance().getGameCallback() != null && dataModel != null) {
             CallbackManager.getInstance().getGameCallback().finishGame(
-                    dataModel.storyId,
-                    StringsUtils.getNonNull(dataModel.title),
-                    StringsUtils.getNonNull(dataModel.tags),
-                    dataModel.slidesCount,
-                    dataModel.slideIndex,
+                    dataModel.slideData.story.id,
+                    StringsUtils.getNonNull(dataModel.slideData.story.title),
+                    StringsUtils.getNonNull(dataModel.slideData.story.tags),
+                    dataModel.slideData.story.slidesCount,
+                    dataModel.slideData.index,
                     StringsUtils.getNonNull(eventData)
             );
         }
@@ -237,15 +237,7 @@ public class GameManager {
         if (InAppStoryService.isNull()) return;
         SlideData data = null;
         if (dataModel != null) {
-            data = new SlideData(
-                    new StoryData(
-                            dataModel.storyId,
-                            StringsUtils.getNonNull(dataModel.title),
-                            StringsUtils.getNonNull(dataModel.tags),
-                            dataModel.slidesCount
-                    ),
-                    dataModel.slideIndex
-            );
+            data = dataModel.slideData;
         }
 
         if (CallbackManager.getInstance().getCallToActionCallback() != null) {

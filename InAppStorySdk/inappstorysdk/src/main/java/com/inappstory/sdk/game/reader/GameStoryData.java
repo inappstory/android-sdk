@@ -2,33 +2,20 @@ package com.inappstory.sdk.game.reader;
 
 
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 
 public class GameStoryData {
 
-    public int storyId;
-    public String feedId;
-    public int slideIndex;
-    public int slidesCount;
-    public String title;
-    public String tags;
+    public String feed;
+    public SlideData slideData;
     public Story.StoryType type;
 
     public GameStoryData(
-            int storyId,
-            int slideIndex,
-            int slidesCount,
-            String title,
-            String tags,
-            String feedId,
-            Story.StoryType type
+            SlideData slideData,
+            String feed
     ) {
-        this.storyId = storyId;
-        this.slideIndex = slideIndex;
-        this.slidesCount = slidesCount;
-        this.title = title;
-        this.tags = tags;
-        this.feedId = feedId;
-        this.type = type;
+        this.slideData = slideData;
+        this.feed = feed;
     }
 
 }
