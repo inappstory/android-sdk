@@ -8,7 +8,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -50,6 +49,17 @@ public class StoriesList extends RecyclerView {
     }
 
     public static String DEFAULT_FEED = "default";
+
+    public void updateVisibleArea() {
+        getVisibleItems();
+        if (scrollCallback != null) {
+            scrollCallback.onVisibleAreaUpdated(
+                    new ArrayList<>(scrolledItems.values()),
+                    feed,
+                    isFavoriteList
+            );
+        }
+    }
 
     public String getFeed() {
         synchronized (feedLock) {
@@ -213,7 +223,7 @@ public class StoriesList extends RecyclerView {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == SCROLL_STATE_IDLE) {
                     if (scrollCallback != null) {
-                        scrollCallback.onScroll(
+                        scrollCallback.onVisibleAreaUpdated(
                                 new ArrayList<>(scrolledItems.values()),
                                 feed,
                                 isFavoriteList
@@ -585,7 +595,7 @@ public class StoriesList extends RecyclerView {
                     @Override
                     public void run() {
                         if (scrollCallback != null) {
-                            scrollCallback.onScroll(
+                            scrollCallback.onVisibleAreaUpdated(
                                     new ArrayList<>(scrolledItems.values()),
                                     feed,
                                     isFavoriteList
