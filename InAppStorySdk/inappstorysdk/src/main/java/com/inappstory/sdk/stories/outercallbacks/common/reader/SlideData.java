@@ -8,6 +8,7 @@ public class SlideData {
 
     public int index;
 
+    public SlideData() {}
     public SlideData(@NonNull StoryData story, int index) {
         this.story = story;
         this.index = index;

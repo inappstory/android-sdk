@@ -6,6 +6,7 @@ public class StoryData {
     public String tags;
     public int slidesCount;
 
+    public StoryData() {}
     public StoryData(int id, String title, String tags, int slidesCount) {
         this.id = id;
         this.title = title;
