@@ -472,8 +472,8 @@ public class StoriesList extends RecyclerView {
             adapter.hasFavItem = false;
         }
         adapter.notifyDataSetChanged();
-
-        adapter.notifyChanges();
+        if (isFavoriteList)
+            adapter.notifyChanges();
     }
 
     public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
@@ -502,7 +502,8 @@ public class StoriesList extends RecyclerView {
         } else {
             adapter.notifyItemChanged(getAdapter().getItemCount() - 1);
         }
-        adapter.notifyChanges();
+        if (isFavoriteList)
+            adapter.notifyChanges();
     }
 
 
