@@ -367,8 +367,8 @@ public class JsonParser {
                     Object entryVal = entry.getValue();
                     if (entryVal instanceof List) {
                         JSONArray arr = new JSONArray();
-                        for (int i = 0; i < ((List) instance).size(); i++) {
-                            arr.put(getJsonObject(((List) instance).get(i)));
+                        for (int i = 0; i < ((List) entryVal).size(); i++) {
+                            arr.put(getJsonObject(((List) entryVal).get(i)));
                         }
                         mapObject.put(entry.getKey(), arr);
                     } else {
