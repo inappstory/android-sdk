@@ -20,11 +20,14 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -95,7 +98,14 @@ public class StoryDownloadManager {
                                 }
                                 ProfilingManager.getInstance().setReady(storyUID);
                                 if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
-                                    CallbackManager.getInstance().getSingleLoadCallback().singleLoad(id);
+                                    CallbackManager.getInstance().getSingleLoadCallback().singleLoad(
+                                            new StoryData(
+                                                    response.id,
+                                                    StringsUtils.getNonNull(response.statTitle),
+                                                    StringsUtils.getNonNull(response.tags),
+                                                    response.getSlidesCount()
+                                            )
+                                    );
                                 }
                                 ArrayList<Story> st = new ArrayList<>();
                                 st.add(response);

@@ -21,6 +21,23 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 public class CallbackManager {
+    private GameCallback gameCallback;
+    private ErrorCallback errorCallback;
+    private GameReaderCallback gameReaderCallback;
+    private OnboardingLoadCallback onboardingLoadCallback;
+    private StoryWidgetCallback storyWidgetCallback;
+    private ClickOnShareStoryCallback clickOnShareStoryCallback;
+    private CallToActionCallback callToActionCallback;
+    private CloseStoryCallback closeStoryCallback;
+    private FavoriteStoryCallback favoriteStoryCallback;
+    private LikeDislikeStoryCallback likeDislikeStoryCallback;
+    private ShowSlideCallback showSlideCallback;
+    private ShowStoryCallback showStoryCallback;
+    private SingleLoadCallback singleLoadCallback;
+    private CustomActionCallback customActionCallback;
+    private UrlClickCallback urlClickCallback;
+    private AppClickCallback appClickCallback;
+    private ShareCallback shareCallback;
 
     public ErrorCallback getErrorCallback() {
         return errorCallback;
@@ -106,6 +123,10 @@ public class CallbackManager {
         return type;
     }
 
+    public ClickOnShareStoryCallback getClickOnShareStoryCallback() {
+        return clickOnShareStoryCallback;
+    }
+
     public CloseReader getCloseTypeFromInt(int intCloseType) {
         CloseReader closeType = CloseReader.CLICK;
         switch (intCloseType) {
@@ -122,27 +143,15 @@ public class CallbackManager {
         return closeType;
     }
 
-    private ErrorCallback errorCallback;
-    private GameCallback gameCallback;
-
-    private GameReaderCallback gameReaderCallback;
-    private OnboardingLoadCallback onboardingLoadCallback;
-    private StoryWidgetCallback storyWidgetCallback;
-
 
     public void setStoryWidgetCallback(StoryWidgetCallback storyWidgetCallback) {
         this.storyWidgetCallback = storyWidgetCallback;
-    }
-
-    public ClickOnShareStoryCallback getClickOnShareStoryCallback() {
-        return clickOnShareStoryCallback;
     }
 
     public void setClickOnShareStoryCallback(ClickOnShareStoryCallback clickOnShareStoryCallback) {
         this.clickOnShareStoryCallback = clickOnShareStoryCallback;
     }
 
-    private ClickOnShareStoryCallback clickOnShareStoryCallback;
 
     public void setErrorCallback(ErrorCallback errorCallback) {
         this.errorCallback = errorCallback;
@@ -187,14 +196,6 @@ public class CallbackManager {
         this.singleLoadCallback = singleLoadCallback;
     }
 
-    private CallToActionCallback callToActionCallback;
-    private CloseStoryCallback closeStoryCallback;
-    private FavoriteStoryCallback favoriteStoryCallback;
-    private LikeDislikeStoryCallback likeDislikeStoryCallback;
-    private ShowSlideCallback showSlideCallback;
-    private ShowStoryCallback showStoryCallback;
-    private SingleLoadCallback singleLoadCallback;
-
     public CustomActionCallback getCustomActionCallback() {
         return customActionCallback;
     }
@@ -202,13 +203,6 @@ public class CallbackManager {
     public void setCustomActionCallback(CustomActionCallback customActionCallback) {
         this.customActionCallback = customActionCallback;
     }
-
-    private CustomActionCallback customActionCallback;
-
-
-    private UrlClickCallback urlClickCallback;
-    private AppClickCallback appClickCallback;
-    private ShareCallback shareCallback;
 
     @Deprecated
     public void setUrlClickCallback(UrlClickCallback urlClickCallback) {

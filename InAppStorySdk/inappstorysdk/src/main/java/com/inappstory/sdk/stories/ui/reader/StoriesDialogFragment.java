@@ -35,6 +35,8 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -75,9 +77,16 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             if (story != null) {
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            story.id,
-                            StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, CloseReader.CLICK,
+                            new SlideData(
+                                    new StoryData(
+                                            story.id,
+                                            StringsUtils.getNonNull(story.statTitle),
+                                            StringsUtils.getNonNull(story.tags),
+                                            story.getSlidesCount()
+                                    ),
+                                    story.lastIndex
+                            ),
+                            CloseReader.CLICK,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getArguments().getInt("source", 0))
                     );

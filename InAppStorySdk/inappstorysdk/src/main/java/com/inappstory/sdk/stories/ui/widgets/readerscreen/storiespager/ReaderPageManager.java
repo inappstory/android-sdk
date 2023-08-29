@@ -129,14 +129,20 @@ public class ReaderPageManager {
         if (story == null) return;
         if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
             CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
+                    new SlideData(
+                            new StoryData(
+                                    story.id,
+                                    StringsUtils.getNonNull(story.statTitle),
+                                    StringsUtils.getNonNull(story.tags),
+                                    story.getSlidesCount()
+                            ),
+                            story.lastIndex
+                    ),
                     StringsUtils.getNonNull(widgetName),
                     JsonParser.toMap(widgetData),
-                    story.id,
-                    StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(getFeedSlug()),
-                    story.getSlidesCount(),
-                    story.lastIndex,
-                    StringsUtils.getNonNull(story.tags));
+                    StringsUtils.getNonNull(getFeedSlug())
+
+            );
         }
     }
 
@@ -401,7 +407,7 @@ public class ReaderPageManager {
             story.lastIndex = lastIndex;
             slideIndex = lastIndex;
             changeCurrentSlide(lastIndex);
-            Log.e("nextSlide" , "" + lastIndex);
+            Log.e("nextSlide", "" + lastIndex);
         } else {
             parentManager.nextStory(action);
         }

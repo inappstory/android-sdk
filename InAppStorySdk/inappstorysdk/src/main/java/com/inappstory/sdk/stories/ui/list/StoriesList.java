@@ -154,7 +154,6 @@ public class StoriesList extends RecyclerView {
             if (scrollCallback != null) {
                 scrollCallback.scrollEnd();
             }
-            Log.e("ScrolledItems", scrolledItems.toString());
         }
         return super.onTouchEvent(e);
     }
@@ -203,15 +202,31 @@ public class StoriesList extends RecyclerView {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if (!readerIsOpened)
+                if (!readerIsOpened) {
                     sendIndexes();
+                    getVisibleItems();
+                }
+            }
 
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == SCROLL_STATE_IDLE) {
+                    if (scrollCallback != null) {
+                        scrollCallback.onScroll(
+                                new ArrayList<>(scrolledItems.values()),
+                                feed,
+                                isFavoriteList
+                        );
+                    }
+                    scrolledItems.clear();
+                }
             }
         });
         itemTouchListener = new RecyclerTouchListener(
                 getContext());
         addOnItemTouchListener(itemTouchListener);
-
+        scrollToPosition(0);
         //getRecycledViewPool().setMaxRecycledViews(6, 0);
     }
 
@@ -229,44 +244,15 @@ public class StoriesList extends RecyclerView {
     HashMap<Integer, StoriesListItemData> scrolledItems = new HashMap<>();
 
     void sendIndexes() {
-
-        Log.e("storiesScrollEvent", "sendIndexes");
-        checkAppearanceManager();
-        int hasUgc = (hasSessionUGC() && !isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
+        int hasUgc = hasUgc();
         ArrayList<Integer> indexes = new ArrayList<>();
         if (layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
             for (int i = linearLayoutManager.findFirstVisibleItemPosition();
                  i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
                 int ind = i - hasUgc;
-                if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0)
+                if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0) {
                     indexes.add(adapter.getStoriesIds().get(ind));
-                View holder = linearLayoutManager.getChildAt(i);
-                if (holder != null) {
-                    Rect rect = new Rect();
-                    holder.getGlobalVisibleRect(rect);
-                    float currentPercentage = (float)rect.width() / holder.getWidth();
-                    StoriesListItemData cachedData = scrolledItems.get(i);
-                    if (cachedData != null) {
-                        currentPercentage = Math.max(currentPercentage, cachedData.shownPercent);
-                    }
-                    Story current = InAppStoryService.getInstance().getDownloadManager()
-                            .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
-                    if (current != null) {
-
-                        scrolledItems.put(i, new StoriesListItemData(
-                                new StoryData(
-                                        current.id,
-                                        StringsUtils.getNonNull(current.statTitle),
-                                        StringsUtils.getNonNull(current.tags),
-                                        current.getSlidesCount()
-                                ),
-                                i,
-                                currentPercentage
-                        ));
-                    }
-
-
                 }
             }
         }
@@ -283,6 +269,50 @@ public class StoriesList extends RecyclerView {
         OldStatisticManager.getInstance().previewStatisticEvent(indexes);
     }
 
+    int hasUgc() {
+        checkAppearanceManager();
+        return (hasSessionUGC() && !isFavoriteList && appearanceManager.csHasUGC()) ? 1 : 0;
+    }
+
+    private void getVisibleItems() {
+        checkAppearanceManager();
+        int hasUgc = hasUgc();
+        if (layoutManager instanceof LinearLayoutManager) {
+            LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
+            for (int i = linearLayoutManager.findFirstVisibleItemPosition();
+                 i <= linearLayoutManager.findLastVisibleItemPosition(); i++) {
+                int ind = i - hasUgc;
+                if (adapter != null && adapter.getStoriesIds().size() > ind && ind >= 0) {
+                    View holder = linearLayoutManager.getChildAt(
+                            i - linearLayoutManager.findFirstVisibleItemPosition()
+                    );
+                    if (holder != null) {
+                        Rect rect = new Rect();
+                        holder.getGlobalVisibleRect(rect);
+                        float currentPercentage = (float) rect.width() / holder.getWidth();
+                        StoriesListItemData cachedData = scrolledItems.get(i);
+                        if (cachedData != null) {
+                            currentPercentage = Math.max(currentPercentage, cachedData.shownPercent);
+                        }
+                        Story current = InAppStoryService.getInstance().getDownloadManager()
+                                .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
+                        if (current != null) {
+                            scrolledItems.put(i, new StoriesListItemData(
+                                    new StoryData(
+                                            current.id,
+                                            StringsUtils.getNonNull(current.statTitle),
+                                            StringsUtils.getNonNull(current.tags),
+                                            current.getSlidesCount()
+                                    ),
+                                    i,
+                                    currentPercentage
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     StoriesAdapter adapter;
 
@@ -326,6 +356,7 @@ public class StoriesList extends RecyclerView {
     public void closeReader() {
         readerIsOpened = false;
         sendIndexes();
+        getVisibleItems();
     }
 
 
@@ -548,6 +579,21 @@ public class StoriesList extends RecyclerView {
         } else
             setLayoutManager(layoutManager);
         setAdapter(adapter);
+        post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        if (scrollCallback != null) {
+                            scrollCallback.onScroll(
+                                    new ArrayList<>(scrolledItems.values()),
+                                    feed,
+                                    isFavoriteList
+                            );
+                        }
+                        scrolledItems.clear();
+                    }
+                }
+        );
     }
 
 

@@ -11,6 +11,8 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -69,17 +71,33 @@ public class ButtonsPanelManager {
             if (story.liked()) {
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, false);
+                            new SlideData(
+                                    new StoryData(
+                                            story.id,
+                                            StringsUtils.getNonNull(story.statTitle),
+                                            StringsUtils.getNonNull(story.tags),
+                                            story.getSlidesCount()
+                                    ),
+                                    story.lastIndex
+                            ),
+                            false
+                    );
                 }
                 val = 0;
             } else {
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, true);
+                            new SlideData(
+                                    new StoryData(
+                                            story.id,
+                                            StringsUtils.getNonNull(story.statTitle),
+                                            StringsUtils.getNonNull(story.tags),
+                                            story.getSlidesCount()
+                                    ),
+                                    story.lastIndex
+                            ),
+                            true
+                    );
                 }
                 StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex,
                         parentManager != null ? parentManager.getFeedId() : null);
@@ -89,17 +107,33 @@ public class ButtonsPanelManager {
             if (story.disliked()) {
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, false);
+                            new SlideData(
+                                    new StoryData(
+                                            story.id,
+                                            StringsUtils.getNonNull(story.statTitle),
+                                            StringsUtils.getNonNull(story.tags),
+                                            story.getSlidesCount()
+                                    ),
+                                    story.lastIndex
+                            ),
+                            false
+                    );
                 }
                 val = 0;
             } else {
                 if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
                     CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            story.id, StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, true);
+                            new SlideData(
+                                    new StoryData(
+                                            story.id,
+                                            StringsUtils.getNonNull(story.statTitle),
+                                            StringsUtils.getNonNull(story.tags),
+                                            story.getSlidesCount()
+                                    ),
+                                    story.lastIndex
+                            ),
+                            true
+                    );
                 }
                 StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex,
                         parentManager != null ? parentManager.getFeedId() : null);
@@ -160,9 +194,17 @@ public class ButtonsPanelManager {
                     parentManager != null ? parentManager.getFeedId() : null);
         if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
             CallbackManager.getInstance().getFavoriteStoryCallback().favoriteStory(
-                    story.id, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                    story.lastIndex, !story.favorite);
+                    new SlideData(
+                            new StoryData(
+                                    story.id,
+                                    StringsUtils.getNonNull(story.statTitle),
+                                    StringsUtils.getNonNull(story.tags),
+                                    story.getSlidesCount()
+                            ),
+                            story.lastIndex
+                    ),
+                    !story.favorite
+            );
         }
         final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
         networkClient.enqueue(
@@ -232,8 +274,17 @@ public class ButtonsPanelManager {
                 parentManager != null ? parentManager.getFeedId() : null);
 
         if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
-            CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(story.id, StringsUtils.getNonNull(story.statTitle),
-                    StringsUtils.getNonNull(story.tags), story.getSlidesCount(), slideIndex);
+            CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(
+                    new SlideData(
+                            new StoryData(
+                                    story.id,
+                                    StringsUtils.getNonNull(story.statTitle),
+                                    StringsUtils.getNonNull(story.tags),
+                                    story.getSlidesCount()
+                            ),
+                            story.lastIndex
+                    )
+            );
         }
         if (story.isScreenshotShare(slideIndex)) {
             parentManager.screenshotShare();

@@ -42,6 +42,8 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -209,9 +211,16 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             if (story != null) {
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            story.id,
-                            StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                            story.lastIndex, CloseReader.CUSTOM,
+                            new SlideData(
+                                    new StoryData(
+                                            story.id,
+                                            StringsUtils.getNonNull(story.statTitle),
+                                            StringsUtils.getNonNull(story.tags),
+                                            story.getSlidesCount()
+                                    ),
+                                    story.lastIndex
+                            ),
+                            CloseReader.CUSTOM,
                             CallbackManager.getInstance().getSourceFromInt(
                                     getIntent().getIntExtra("source", 0))
                     );
@@ -383,9 +392,16 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                        story.id,
-                        StringsUtils.getNonNull(story.statTitle), StringsUtils.getNonNull(story.tags), story.getSlidesCount(),
-                        story.lastIndex, CallbackManager.getInstance().getCloseTypeFromInt(
+                        new SlideData(
+                                new StoryData(
+                                        story.id,
+                                        StringsUtils.getNonNull(story.statTitle),
+                                        StringsUtils.getNonNull(story.tags),
+                                        story.getSlidesCount()
+                                ),
+                                story.lastIndex
+                        ),
+                        CallbackManager.getInstance().getCloseTypeFromInt(
                                 action),
                         CallbackManager.getInstance().getSourceFromInt(
                                 getIntent().getIntExtra("source", 0))
