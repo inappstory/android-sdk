@@ -8,7 +8,6 @@ public class GameStoryData {
 
     public String feed;
     public SlideData slideData;
-    public Story.StoryType type;
 
     public GameStoryData(
             SlideData slideData,

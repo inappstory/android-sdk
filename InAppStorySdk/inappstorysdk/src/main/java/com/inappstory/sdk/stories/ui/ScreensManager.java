@@ -257,7 +257,7 @@ public class ScreensManager {
             intent2.putExtra("slideIndex", data.slideData.index);
             intent2.putExtra("slidesCount", data.slideData.story.slidesCount);
             intent2.putExtra("feedId", data.feed);
-            intent2.putExtra("storyType", Story.nameFromStoryType(data.type));
+            intent2.putExtra("storyType", Story.nameFromStoryType(data.slideData.story.storyType));
             intent2.putExtra("tags", data.slideData.story.tags);
             intent2.putExtra("title", data.slideData.story.title);
             if (CallbackManager.getInstance().getGameCallback() != null) {
