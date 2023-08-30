@@ -6,7 +6,6 @@ public interface StoryWidgetCallback {
     void widgetEvent(
             SlideData slideData,
             String widgetEventName,
-            Map<String, String> widgetData,
-            String feed
+            Map<String, String> widgetData
     );
 }

@@ -65,7 +65,8 @@ public class ReaderManager {
                                 story.id,
                                 StringsUtils.getNonNull(story.statTitle),
                                 StringsUtils.getNonNull(story.tags),
-                                story.getSlidesCount()
+                                story.getSlidesCount(),
+                                feedId
                         ),
                         CallbackManager.getInstance().getSourceFromInt(source),
                         CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction));

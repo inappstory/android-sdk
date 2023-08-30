@@ -251,7 +251,7 @@ public class StoriesList extends RecyclerView {
         }
     }
 
-    HashMap<Integer, StoriesListItemData> scrolledItems = new HashMap<>();
+    HashMap<Integer, ShownStoriesListItem> scrolledItems = new HashMap<>();
 
     void sendIndexes() {
         int hasUgc = hasUgc();
@@ -299,20 +299,22 @@ public class StoriesList extends RecyclerView {
                     if (holder != null) {
                         Rect rect = new Rect();
                         holder.getGlobalVisibleRect(rect);
-                        float currentPercentage = (float) rect.width() / holder.getWidth();
-                        StoriesListItemData cachedData = scrolledItems.get(i);
+                        float currentPercentage = (float) (rect.width() * rect.height()) /
+                                (holder.getWidth() * holder.getHeight());
+                        ShownStoriesListItem cachedData = scrolledItems.get(i);
                         if (cachedData != null) {
-                            currentPercentage = Math.max(currentPercentage, cachedData.shownPercent);
+                            currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
                         }
                         Story current = InAppStoryService.getInstance().getDownloadManager()
                                 .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
                         if (current != null) {
-                            scrolledItems.put(i, new StoriesListItemData(
+                            scrolledItems.put(i, new ShownStoriesListItem(
                                     new StoryData(
                                             current.id,
                                             StringsUtils.getNonNull(current.statTitle),
                                             StringsUtils.getNonNull(current.tags),
-                                            current.getSlidesCount()
+                                            current.getSlidesCount(),
+                                            feed
                                     ),
                                     i,
                                     currentPercentage

@@ -43,13 +43,11 @@ import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CustomActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
@@ -288,11 +286,6 @@ public class InAppStoryManager {
     }
 
 
-    @Deprecated
-    public void setGameCallback(GameCallback gameCallback) {
-        CallbackManager.getInstance().setGameCallback(gameCallback);
-    }
-
     /**
      * use to set callback on game start/close/finish
      */
@@ -312,10 +305,6 @@ public class InAppStoryManager {
      */
     public void setCallToActionCallback(CallToActionCallback callToActionCallback) {
         CallbackManager.getInstance().setCallToActionCallback(callToActionCallback);
-    }
-
-    private void setCustomActionCallback(CustomActionCallback customActionCallback) {
-        CallbackManager.getInstance().setCustomActionCallback(customActionCallback);
     }
 
     /**

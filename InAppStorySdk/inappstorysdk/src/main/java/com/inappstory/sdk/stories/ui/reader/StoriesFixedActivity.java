@@ -216,7 +216,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                                             story.id,
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount()
+                                            story.getSlidesCount(),
+                                            getIntent().getStringExtra("feedId")
                                     ),
                                     story.lastIndex
                             ),
@@ -397,7 +398,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                                         story.id,
                                         StringsUtils.getNonNull(story.statTitle),
                                         StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount()
+                                        story.getSlidesCount(),
+                                        getIntent().getStringExtra("feedId")
                                 ),
                                 story.lastIndex
                         ),

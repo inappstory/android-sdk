@@ -453,13 +453,14 @@ public class StoriesViewManager {
                         new SlideData(
                                 new StoryData(
                                         story.id,
+                                        type,
                                         StringsUtils.getNonNull(story.statTitle),
                                         StringsUtils.getNonNull(story.tags),
                                         story.slidesCount,
-                                        type),
+                                        pageManager != null ? pageManager.getFeedId() : null
+                                ),
                                 story.lastIndex
-                        ),
-                        pageManager != null ? pageManager.getFeedId() : null
+                        )
                 );
             }
         }
@@ -528,7 +529,8 @@ public class StoriesViewManager {
                                         story.id,
                                         StringsUtils.getNonNull(story.statTitle),
                                         StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount()
+                                        story.getSlidesCount(),
+                                        getPageManager().getFeedId()
                                 ),
                                 index
                         ),

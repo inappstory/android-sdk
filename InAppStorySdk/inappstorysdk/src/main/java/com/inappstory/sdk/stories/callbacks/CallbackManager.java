@@ -1,14 +1,12 @@
 package com.inappstory.sdk.stories.callbacks;
 
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CustomActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
@@ -21,7 +19,6 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 
 public class CallbackManager {
-    private GameCallback gameCallback;
     private ErrorCallback errorCallback;
     private GameReaderCallback gameReaderCallback;
     private OnboardingLoadCallback onboardingLoadCallback;
@@ -34,7 +31,6 @@ public class CallbackManager {
     private ShowSlideCallback showSlideCallback;
     private ShowStoryCallback showStoryCallback;
     private SingleLoadCallback singleLoadCallback;
-    private CustomActionCallback customActionCallback;
     private UrlClickCallback urlClickCallback;
     private AppClickCallback appClickCallback;
     private ShareCallback shareCallback;
@@ -43,11 +39,6 @@ public class CallbackManager {
         return errorCallback;
     }
 
-
-    @Deprecated
-    public GameCallback getGameCallback() {
-        return gameCallback;
-    }
     public GameReaderCallback getGameReaderCallback() {
         return gameReaderCallback;
     }
@@ -156,10 +147,6 @@ public class CallbackManager {
     public void setErrorCallback(ErrorCallback errorCallback) {
         this.errorCallback = errorCallback;
     }
-
-    public void setGameCallback(GameCallback gameCallback) {
-        this.gameCallback = gameCallback;
-    }
     public void setGameReaderCallback(GameReaderCallback gameReaderCallback) {
         this.gameReaderCallback = gameReaderCallback;
     }
@@ -194,14 +181,6 @@ public class CallbackManager {
 
     public void setSingleLoadCallback(SingleLoadCallback singleLoadCallback) {
         this.singleLoadCallback = singleLoadCallback;
-    }
-
-    public CustomActionCallback getCustomActionCallback() {
-        return customActionCallback;
-    }
-
-    public void setCustomActionCallback(CustomActionCallback customActionCallback) {
-        this.customActionCallback = customActionCallback;
     }
 
     @Deprecated

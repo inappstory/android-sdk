@@ -230,7 +230,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         widgetId,
                         dataModel.slideData.story.id,
                         dataModel.slideData.index,
-                        dataModel.feed
+                        dataModel.slideData.story.feed
                 );
             }
         });
@@ -1077,17 +1077,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             return;
         }
         closing = true;
-        if (dataModel != null) {
-            if (CallbackManager.getInstance().getGameCallback() != null) {
-                CallbackManager.getInstance().getGameCallback().closeGame(
-                        dataModel.slideData.story.id,
-                        StringsUtils.getNonNull(dataModel.slideData.story.title),
-                        StringsUtils.getNonNull(dataModel.slideData.story.tags),
-                        dataModel.slideData.story.slidesCount,
-                        dataModel.slideData.index
-                );
-            }
-        }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().closeGame(
                     dataModel,
@@ -1122,14 +1111,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     new SlideData(
                             new StoryData(
                                     Integer.parseInt(getIntent().getStringExtra("storyId")),
+                                    Story.storyTypeFromName(getIntent().getStringExtra("storyType")),
                                     getIntent().getStringExtra("title"),
                                     getIntent().getStringExtra("tags"),
                                     getIntent().getIntExtra("slidesCount", 0),
-                                    Story.storyTypeFromName(getIntent().getStringExtra("storyType"))
+                                    getIntent().getStringExtra("feedId")
                             ),
                             getIntent().getIntExtra("slideIndex", 0)
-                    ),
-                    getIntent().getStringExtra("feedId")
+                    )
+
             );
         }
         return storyDataModel;

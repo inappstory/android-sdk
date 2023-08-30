@@ -251,7 +251,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                                             story.id,
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount()
+                                            story.getSlidesCount(),
+                                            getIntent().getStringExtra("feedId")
                                     ),
                                     story.lastIndex
                             ),
@@ -498,7 +499,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                                             story.id,
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount()
+                                            story.getSlidesCount(),
+                                            getIntent().getStringExtra("feedId")
                                     ),
                                     story.lastIndex
                             ),

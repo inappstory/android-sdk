@@ -103,7 +103,8 @@ public class StoryDownloadManager {
                                                     response.id,
                                                     StringsUtils.getNonNull(response.statTitle),
                                                     StringsUtils.getNonNull(response.tags),
-                                                    response.getSlidesCount()
+                                                    response.getSlidesCount(),
+                                                    null
                                             )
                                     );
                                 }

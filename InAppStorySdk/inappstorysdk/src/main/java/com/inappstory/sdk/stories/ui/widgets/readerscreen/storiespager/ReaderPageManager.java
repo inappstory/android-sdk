@@ -134,14 +134,13 @@ public class ReaderPageManager {
                                     story.id,
                                     StringsUtils.getNonNull(story.statTitle),
                                     StringsUtils.getNonNull(story.tags),
-                                    story.getSlidesCount()
+                                    story.getSlidesCount(),
+                                    getFeedId()
                             ),
                             story.lastIndex
                     ),
                     StringsUtils.getNonNull(widgetName),
-                    JsonParser.toMap(widgetData),
-                    StringsUtils.getNonNull(getFeedSlug())
-
+                    JsonParser.toMap(widgetData)
             );
         }
     }
@@ -171,7 +170,8 @@ public class ReaderPageManager {
                                                     story.id,
                                                     StringsUtils.getNonNull(story.statTitle),
                                                     StringsUtils.getNonNull(story.tags),
-                                                    story.getSlidesCount()
+                                                    story.getSlidesCount(),
+                                                    getFeedId()
                                             ),
                                             story.lastIndex
                                     ),

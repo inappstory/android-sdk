@@ -41,7 +41,6 @@ public class GameManager {
     String gameCenterId;
     String resources;
     String splashImagePath;
-
     boolean gameLoaded;
     String gameConfig;
 
@@ -153,20 +152,11 @@ public class GameManager {
     }
 
     void sendGameStat(String name, String data) {
-        StatisticManager.getInstance().sendGameEvent(name, data, dataModel.feed);
+        if (dataModel != null)
+            StatisticManager.getInstance().sendGameEvent(name, data, dataModel.slideData.story.feed);
     }
 
     private void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
-        if (CallbackManager.getInstance().getGameCallback() != null && dataModel != null) {
-            CallbackManager.getInstance().getGameCallback().finishGame(
-                    dataModel.slideData.story.id,
-                    dataModel.slideData.story.title,
-                    dataModel.slideData.story.tags,
-                    dataModel.slideData.story.slidesCount,
-                    dataModel.slideData.index,
-                    eventData
-            );
-        }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().finishGame(
                     dataModel,
@@ -199,16 +189,6 @@ public class GameManager {
     }
 
     private void gameCompletedWithUrl(String gameState, String link, String eventData) {
-        if (CallbackManager.getInstance().getGameCallback() != null && dataModel != null) {
-            CallbackManager.getInstance().getGameCallback().finishGame(
-                    dataModel.slideData.story.id,
-                    StringsUtils.getNonNull(dataModel.slideData.story.title),
-                    StringsUtils.getNonNull(dataModel.slideData.story.tags),
-                    dataModel.slideData.story.slidesCount,
-                    dataModel.slideData.index,
-                    StringsUtils.getNonNull(eventData)
-            );
-        }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().finishGame(
                     dataModel,

@@ -9,8 +9,9 @@ public interface ListCallback {
 
     void loadError(String feed);
 
-    void itemClick(StoryData storyData,
-                   int listIndex,
-                   boolean isFavoriteList,
-                   String feed);
+    void itemClick(
+            StoryData storyData,
+            int listIndex,
+            boolean isFavoriteList
+    );
 }

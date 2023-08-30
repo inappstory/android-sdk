@@ -20,7 +20,7 @@ public class ListCallbackAdapter implements ListCallback {
     }
 
     @Override
-    public void itemClick(StoryData storyData, int listIndex, boolean isFavoriteList, String feed) {
+    public void itemClick(StoryData storyData, int listIndex, boolean isFavoriteList) {
 
     }
 

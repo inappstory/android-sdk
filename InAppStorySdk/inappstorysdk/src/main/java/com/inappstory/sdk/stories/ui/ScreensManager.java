@@ -256,20 +256,10 @@ public class ScreensManager {
             intent2.putExtra("storyId", Integer.toString(data.slideData.story.id));
             intent2.putExtra("slideIndex", data.slideData.index);
             intent2.putExtra("slidesCount", data.slideData.story.slidesCount);
-            intent2.putExtra("feedId", data.feed);
+            intent2.putExtra("feedId", data.slideData.story.feed);
             intent2.putExtra("storyType", Story.nameFromStoryType(data.slideData.story.storyType));
             intent2.putExtra("tags", data.slideData.story.tags);
             intent2.putExtra("title", data.slideData.story.title);
-            if (CallbackManager.getInstance().getGameCallback() != null) {
-                CallbackManager.getInstance().getGameCallback().startGame(
-                        data.slideData.story.id,
-                        StringsUtils.getNonNull(data.slideData.story.title),
-                        StringsUtils.getNonNull(data.slideData.story.tags),
-                        data.slideData.story.slidesCount,
-                        data.slideData.index
-                );
-            }
-
         }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().startGame(

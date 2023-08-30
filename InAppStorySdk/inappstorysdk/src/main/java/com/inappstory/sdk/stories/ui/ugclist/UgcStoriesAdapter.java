@@ -139,11 +139,11 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 current.id,
                                 StringsUtils.getNonNull(current.statTitle),
                                 StringsUtils.getNonNull(current.tags),
-                                current.getSlidesCount()
+                                current.getSlidesCount(),
+                                null
                         ),
                         index,
-                        false,
-                        null
+                        false
                 );
             }
             String gameInstanceId = current.getGameInstanceId();
@@ -154,13 +154,14 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 new SlideData(
                                         new StoryData(
                                                 current.id,
+                                                Story.StoryType.COMMON,
                                                 StringsUtils.getNonNull(current.statTitle),
                                                 StringsUtils.getNonNull(current.tags),
                                                 current.slidesCount,
-                                                Story.StoryType.COMMON),
+                                                null
+                                        ),
                                         0
-                                ),
-                                null
+                                )
                         ),
                         gameInstanceId);
                 return;
@@ -175,7 +176,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                             current.id,
                                             StringsUtils.getNonNull(current.statTitle),
                                             StringsUtils.getNonNull(current.tags),
-                                            current.getSlidesCount()
+                                            current.getSlidesCount(),
+                                            null
                                     ),
                                     0
                             ),
@@ -220,11 +222,11 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     lStory.id,
                                     StringsUtils.getNonNull(lStory.statTitle),
                                     StringsUtils.getNonNull(lStory.tags),
-                                    lStory.getSlidesCount()
+                                    lStory.getSlidesCount(),
+                                    null
                             ),
                             index,
-                            false,
-                            ""
+                            false
                     );
                 } else {
                     callback.itemClick(
@@ -232,11 +234,12 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     storiesIds.get(index),
                                     "",
                                     "",
-                                    0
+                                    0,
+                                    null
                             ),
                             index,
-                            false,
-                            "");
+                            false
+                    );
                 }
 
             }

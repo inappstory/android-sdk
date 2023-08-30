@@ -183,11 +183,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                 current.id,
                                 StringsUtils.getNonNull(current.statTitle),
                                 StringsUtils.getNonNull(current.tags),
-                                current.getSlidesCount()
+                                current.getSlidesCount(),
+                                feed
                         ),
                         index,
-                        isFavoriteList,
-                        StringsUtils.getNonNull(feed)
+                        isFavoriteList
                 );
             }
             String gameInstanceId = current.getGameInstanceId();
@@ -198,13 +198,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                 new SlideData(
                                         new StoryData(
                                                 current.id,
+                                                Story.StoryType.COMMON,
                                                 StringsUtils.getNonNull(current.statTitle),
                                                 StringsUtils.getNonNull(current.tags),
                                                 current.slidesCount,
-                                                Story.StoryType.COMMON),
+                                                feed
+                                        ),
                                         0
-                                ),
-                                feed
+                                )
+
                         ),
                         gameInstanceId);
 
@@ -222,7 +224,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                             current.id,
                                             StringsUtils.getNonNull(current.statTitle),
                                             StringsUtils.getNonNull(current.tags),
-                                            current.getSlidesCount()
+                                            current.getSlidesCount(),
+                                            feed
                                     ),
                                     0
                             ),
@@ -270,11 +273,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                     lStory.id,
                                     StringsUtils.getNonNull(lStory.statTitle),
                                     StringsUtils.getNonNull(lStory.tags),
-                                    lStory.getSlidesCount()
+                                    lStory.getSlidesCount(),
+                                    feed
                             ),
                             index,
-                            isFavoriteList,
-                            StringsUtils.getNonNull(feed)
+                            isFavoriteList
                     );
                 } else {
                     callback.itemClick(
@@ -282,11 +285,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                     storiesIds.get(index),
                                     "",
                                     "",
-                                    0
+                                    0,
+                                    feed
                             ),
                             index,
-                            isFavoriteList,
-                            StringsUtils.getNonNull(feed)
+                            isFavoriteList
                     );
                 }
             }

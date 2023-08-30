@@ -82,7 +82,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                                             story.id,
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount()
+                                            story.getSlidesCount(),
+                                            getArguments().getString("feedId")
                                     ),
                                     story.lastIndex
                             ),
