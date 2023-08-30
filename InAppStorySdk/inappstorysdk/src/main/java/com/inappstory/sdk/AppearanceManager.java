@@ -231,20 +231,6 @@ public class AppearanceManager {
     private boolean csCloseOnOverscroll = true;
 
 
-    public Integer getRealWidth(Context context) {
-        if (csColumnCount != null && csColumnCount > 0) {
-            return getScaledWidth();
-        } else {
-            if (csListItemWidth != null && csListItemWidth > 0)
-                return csListItemWidth;
-            float ratio = getCurrentRatio(context);
-            if (csListItemHeight != null && csListItemHeight > 0) {
-                return (int) (csListItemHeight * ratio);
-            } else {
-                return (int) (Sizes.dpToPxExt(120, context) * ratio);
-            }
-        }
-    }
 
     private float getCurrentRatio(Context context) {
         if (csListItemHeight != null
@@ -262,6 +248,22 @@ public class AppearanceManager {
     private int getScaledWidth() {
         return (int) ((Sizes.getScreenSize().x -
                 (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
+    }
+
+
+    public Integer getRealWidth(Context context) {
+        if (csColumnCount != null && csColumnCount > 0) {
+            return getScaledWidth();
+        } else {
+            if (csListItemWidth != null && csListItemWidth > 0)
+                return csListItemWidth;
+            float ratio = getCurrentRatio(context);
+            if (csListItemHeight != null && csListItemHeight > 0) {
+                return (int) (csListItemHeight * ratio);
+            } else {
+                return (int) (Sizes.dpToPxExt(120, context) * ratio);
+            }
+        }
     }
 
     public Integer getRealHeight(Context context) {
@@ -548,18 +550,6 @@ public class AppearanceManager {
 
     public StoryTouchListener csStoryTouchListener() {
         return this.storyTouchListener;
-    }
-
-    /**
-     * use to set custom list item width in default cells
-     *
-     * @param csListItemWidth (csListItemWidth)
-     * @return {@link AppearanceManager}
-     */
-    @Deprecated
-    public AppearanceManager csListItemWidth(Integer csListItemWidth) {
-        this.csListItemWidth = csListItemWidth;
-        return AppearanceManager.this;
     }
 
     /**
