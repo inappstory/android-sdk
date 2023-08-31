@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;

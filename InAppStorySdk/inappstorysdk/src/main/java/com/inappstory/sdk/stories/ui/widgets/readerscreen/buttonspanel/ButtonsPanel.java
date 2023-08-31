@@ -134,17 +134,27 @@ public class ButtonsPanel extends LinearLayout {
         like.setClickable(false);
         manager.likeClick(new ButtonClickCallback() {
             @Override
-            public void onSuccess(int val) {
-                like.setEnabled(true);
-                like.setClickable(true);
-                like.setActivated(val == 1);
-                dislike.setActivated(val == -1);
+            public void onSuccess(final int val) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        like.setEnabled(true);
+                        like.setClickable(true);
+                        like.setActivated(val == 1);
+                        dislike.setActivated(val == -1);
+                    }
+                });
             }
 
             @Override
             public void onError() {
-                like.setEnabled(true);
-                like.setClickable(true);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        like.setEnabled(true);
+                        like.setClickable(true);
+                    }
+                });
             }
         });
     }
@@ -154,23 +164,35 @@ public class ButtonsPanel extends LinearLayout {
         dislike.setClickable(false);
         manager.dislikeClick(new ButtonClickCallback() {
             @Override
-            public void onSuccess(int val) {
-                dislike.setEnabled(true);
-                dislike.setClickable(true);
-                like.setActivated(val == 1);
-                dislike.setActivated(val == -1);
+            public void onSuccess(final int val) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dislike.setEnabled(true);
+                        dislike.setClickable(true);
+                        like.setActivated(val == 1);
+                        dislike.setActivated(val == -1);
+                    }
+                });
             }
 
             @Override
             public void onError() {
-                dislike.setEnabled(true);
-                dislike.setClickable(true);
+
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dislike.setEnabled(true);
+                        dislike.setClickable(true);
+                    }
+                });
             }
         });
     }
 
     public void forceRemoveFromFavorite() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+
+        post(new Runnable() {
             @Override
             public void run() {
                 if (favorite != null) {
@@ -187,16 +209,26 @@ public class ButtonsPanel extends LinearLayout {
         favorite.setClickable(false);
         manager.favoriteClick(new ButtonClickCallback() {
             @Override
-            public void onSuccess(int val) {
-                favorite.setEnabled(true);
-                favorite.setClickable(true);
-                favorite.setActivated(val == 1);
+            public void onSuccess(final int val) {
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        favorite.setEnabled(true);
+                        favorite.setClickable(true);
+                        favorite.setActivated(val == 1);
+                    }
+                });
             }
 
             @Override
             public void onError() {
-                favorite.setEnabled(true);
-                favorite.setClickable(true);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        favorite.setEnabled(true);
+                        favorite.setClickable(true);
+                    }
+                });
             }
         });
     }
@@ -236,8 +268,13 @@ public class ButtonsPanel extends LinearLayout {
 
             @Override
             public void onError() {
-                share.setEnabled(true);
-                share.setClickable(true);
+                post(new Runnable() {
+                    @Override
+                    public void run() {
+                        share.setEnabled(true);
+                        share.setClickable(true);
+                    }
+                });
             }
         });
     }

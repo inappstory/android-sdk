@@ -142,7 +142,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 StringsUtils.getNonNull(current.tags),
                                 current.getSlidesCount(),
                                 null,
-                                SourceType.UGC_LIST
+                                SourceType.LIST
                         ),
                         index
                 );
@@ -160,7 +160,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                 StringsUtils.getNonNull(current.tags),
                                                 current.slidesCount,
                                                 null,
-                                                SourceType.UGC_LIST
+                                                SourceType.LIST
                                         ),
                                         0
                                 )
@@ -180,7 +180,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                             StringsUtils.getNonNull(current.tags),
                                             current.getSlidesCount(),
                                             null,
-                                            SourceType.UGC_LIST
+                                            SourceType.LIST
                                     ),
                                     0
                             ),
@@ -227,7 +227,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     StringsUtils.getNonNull(lStory.tags),
                                     lStory.getSlidesCount(),
                                     null,
-                                    SourceType.UGC_LIST
+                                    SourceType.LIST
                             ),
                             index
                     );
@@ -239,7 +239,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     "",
                                     0,
                                     null,
-                                    SourceType.UGC_LIST
+                                    SourceType.LIST
                             ),
                             index
                     );
