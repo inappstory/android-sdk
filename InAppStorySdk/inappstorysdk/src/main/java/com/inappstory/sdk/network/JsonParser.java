@@ -299,7 +299,9 @@ public class JsonParser {
     private static Object getJsonObject(Object instance) throws Exception {
         if (instance == null) return null;
         Class etype = instance.getClass();
-        if (etype.isPrimitive() || etype.equals(Integer.class)
+        if (etype.isEnum()) {
+            return ((Enum) instance).name();
+        } else if (etype.isPrimitive() || etype.equals(Integer.class)
                 || etype.equals(Boolean.class) || etype.equals(Character.class)
                 || etype.equals(Short.class) || etype.equals(Long.class)
                 || etype.equals(Byte.class) || etype.equals(Float.class)
