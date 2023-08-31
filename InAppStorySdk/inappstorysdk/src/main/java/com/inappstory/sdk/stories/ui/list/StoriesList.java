@@ -148,11 +148,22 @@ public class StoriesList extends RecyclerView {
             mPrevX = e.getX();
             mPrevY = e.getY();
         } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
-            if (Math.abs(e.getX() - mPrevX) > Math.abs(e.getY() - mPrevY)) {
-                if (scrollCallback != null) {
-                    scrollCallback.scrollStart();
+            if (layoutManager != null && layoutManager instanceof LinearLayoutManager) {
+                if (((LinearLayoutManager) layoutManager).getOrientation() == LinearLayoutManager.HORIZONTAL) {
+                    if (Math.abs(e.getX() - mPrevX) > Math.abs(e.getY() - mPrevY)) {
+                        if (scrollCallback != null) {
+                            scrollCallback.scrollStart();
+                        }
+                    }
+                } else {
+                    if (Math.abs(e.getY() - mPrevY) > Math.abs(e.getX() - mPrevX)) {
+                        if (scrollCallback != null) {
+                            scrollCallback.scrollStart();
+                        }
+                    }
                 }
             }
+
         }
         return super.onInterceptTouchEvent(e);
     }
@@ -332,7 +343,17 @@ public class StoriesList extends RecyclerView {
         super.setLayoutManager(layoutManager);
     }
 
-    private LayoutManager defaultLayoutManager = new LinearLayoutManager(getContext(), HORIZONTAL, false);
+    private LayoutManager defaultLayoutManager = new LinearLayoutManager(getContext(), HORIZONTAL, false) {
+        @Override
+        public int scrollHorizontallyBy(int dx, Recycler recycler, State state) {
+            int scrollRange = super.scrollHorizontallyBy(dx, recycler, state);
+            int overScroll = dx - scrollRange;
+            if (scrollCallback != null) {
+                scrollCallback.onOverscroll(0, overScroll);
+            }
+            return scrollRange;
+        }
+    };
     LayoutManager layoutManager = defaultLayoutManager;
 
     public void setAppearanceManager(AppearanceManager appearanceManager) {
@@ -578,7 +599,17 @@ public class StoriesList extends RecyclerView {
                 hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,
                 !isFavoriteList ? ugcItemClick : null);
         if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
-            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()));
+            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
+                @Override
+                public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
+                    int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
+                    int overScroll = dy - scrollRange;
+                    if (scrollCallback != null) {
+                        scrollCallback.onOverscroll(0, overScroll);
+                    }
+                    return scrollRange;
+                }
+            });
             addItemDecoration(new ItemDecoration() {
                 @Override
                 public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {

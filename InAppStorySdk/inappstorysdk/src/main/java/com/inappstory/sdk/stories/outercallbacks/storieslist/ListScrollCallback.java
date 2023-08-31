@@ -7,6 +7,8 @@ import java.util.List;
 public interface ListScrollCallback {
     void scrollStart();
 
+    void onOverscroll(int dx, int dy);
+
     void onVisibleAreaUpdated(List<ShownStoriesListItem> shownStoriesListItemData);
 
     void scrollEnd();

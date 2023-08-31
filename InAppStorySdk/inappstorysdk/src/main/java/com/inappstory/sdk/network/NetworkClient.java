@@ -9,6 +9,7 @@ import com.inappstory.sdk.network.dummy.DummyApiInterface;
 import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.RequestSender;
+import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.network.utils.headers.Header;
 
 import java.lang.reflect.ParameterizedType;
@@ -25,6 +26,7 @@ public class NetworkClient {
     NetworkHandler networkHandler;
 
     private final String baseUrl;
+    public String userAgent;
 
     public String getBaseUrl() {
         return baseUrl;
@@ -36,6 +38,7 @@ public class NetworkClient {
         this.appContext = context.getApplicationContext();
         this.baseUrl = baseUrl;
         this.networkHandler = new NetworkHandler(baseUrl, this.appContext);
+        this.userAgent = new UserAgent().generate(context);
     }
     public void clear() {
         apiInterface = null;

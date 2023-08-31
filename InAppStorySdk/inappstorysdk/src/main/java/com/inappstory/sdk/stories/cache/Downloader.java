@@ -285,6 +285,9 @@ public class Downloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
+        if (InAppStoryManager.getNetworkClient() != null) {
+            urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
+        }
         urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
         try {
             urlConnection.connect();
