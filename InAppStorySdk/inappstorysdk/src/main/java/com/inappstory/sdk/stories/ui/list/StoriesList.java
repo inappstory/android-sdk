@@ -55,8 +55,7 @@ public class StoriesList extends RecyclerView {
         getVisibleItems();
         if (scrollCallback != null) {
             scrollCallback.onVisibleAreaUpdated(
-                    new ArrayList<>(scrolledItems.values()),
-                    isFavoriteList
+                    new ArrayList<>(scrolledItems.values())
             );
         }
     }
@@ -224,8 +223,7 @@ public class StoriesList extends RecyclerView {
                 if (newState == SCROLL_STATE_IDLE) {
                     if (scrollCallback != null) {
                         scrollCallback.onVisibleAreaUpdated(
-                                new ArrayList<>(scrolledItems.values()),
-                                isFavoriteList
+                                new ArrayList<>(scrolledItems.values())
                         );
                     }
                     scrolledItems.clear();
@@ -598,8 +596,7 @@ public class StoriesList extends RecyclerView {
                     public void run() {
                         if (scrollCallback != null) {
                             scrollCallback.onVisibleAreaUpdated(
-                                    new ArrayList<>(scrolledItems.values()),
-                                    isFavoriteList
+                                    new ArrayList<>(scrolledItems.values())
                             );
                         }
                         scrolledItems.clear();

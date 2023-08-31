@@ -7,7 +7,7 @@ import java.util.List;
 public interface ListScrollCallback {
     void scrollStart();
 
-    void onVisibleAreaUpdated(List<ShownStoriesListItem> shownStoriesListItemData, boolean isFavoriteList);
+    void onVisibleAreaUpdated(List<ShownStoriesListItem> shownStoriesListItemData);
 
     void scrollEnd();
 }
