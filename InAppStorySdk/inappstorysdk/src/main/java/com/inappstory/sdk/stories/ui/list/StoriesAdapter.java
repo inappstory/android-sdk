@@ -237,7 +237,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                     0
                             ),
                             current.deeplink,
-                            ClickAction.STORY_FEED_DEEPLINK
+                            ClickAction.DEEPLINK
                     );
                 } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);

@@ -151,7 +151,7 @@ public class ReaderPageManager {
         StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
         if (object != null) {
 
-            ClickAction action = ClickAction.STORY_READER_BUTTON;
+            ClickAction action = ClickAction.BUTTON;
             Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
                     storyId, getStoryType()
             );
@@ -159,7 +159,7 @@ public class ReaderPageManager {
                 case "url":
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         if ("swipeUpLink".equals(object.getType())) {
-                            action = ClickAction.STORY_READER_SWIPE;
+                            action = ClickAction.SWIPE;
                         }
                     }
                     if (getStoryType() == Story.StoryType.COMMON)

@@ -25,7 +25,6 @@ import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -228,7 +227,7 @@ public class GameManager {
             CallbackManager.getInstance().getCallToActionCallback().callToAction(
                     data,
                     StringsUtils.getNonNull(link),
-                    ClickAction.GAME_READER
+                    ClickAction.GAME
             );
         } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(

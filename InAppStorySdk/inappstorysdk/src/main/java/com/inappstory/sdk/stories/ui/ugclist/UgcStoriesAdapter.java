@@ -185,7 +185,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     0
                             ),
                             current.deeplink,
-                            ClickAction.UGC_STORY_FEED_DEEPLINK
+                            ClickAction.DEEPLINK
                     );
                 } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
