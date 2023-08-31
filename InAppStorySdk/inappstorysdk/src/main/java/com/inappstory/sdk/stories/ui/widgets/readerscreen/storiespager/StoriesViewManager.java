@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -457,7 +458,8 @@ public class StoriesViewManager {
                                         StringsUtils.getNonNull(story.statTitle),
                                         StringsUtils.getNonNull(story.tags),
                                         story.slidesCount,
-                                        pageManager != null ? pageManager.getFeedId() : null
+                                        pageManager != null ? pageManager.getFeedId() : null,
+                                        pageManager != null ? pageManager.getSourceType() : SourceType.LIST
                                 ),
                                 story.lastIndex
                         )
@@ -530,7 +532,8 @@ public class StoriesViewManager {
                                         StringsUtils.getNonNull(story.statTitle),
                                         StringsUtils.getNonNull(story.tags),
                                         story.getSlidesCount(),
-                                        getPageManager().getFeedId()
+                                        pageManager != null ? pageManager.getFeedId() : null,
+                                        pageManager != null ? pageManager.getSourceType() : SourceType.LIST
                                 ),
                                 index
                         ),

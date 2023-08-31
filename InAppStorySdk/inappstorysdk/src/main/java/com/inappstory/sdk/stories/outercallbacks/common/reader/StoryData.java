@@ -2,40 +2,54 @@ package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 
 public class StoryData {
     public int id;
     public String title;
     public String tags;
     public String feed;
+    public SourceType sourceType;
     public int slidesCount;
     @Ignore
     public Story.StoryType storyType;
 
-    public StoryData() {}
-    public StoryData(int id, String title, String tags, int slidesCount) {
-        this.id = id;
-        this.title = title;
-        this.tags = tags;
-        this.slidesCount = slidesCount;
-        this.storyType = Story.StoryType.COMMON;
+    public StoryData() {
     }
-    public StoryData(int id, String title, String tags, int slidesCount, String feed) {
+
+    public StoryData(
+            int id,
+            String title,
+            String tags,
+            int slidesCount,
+            String feed,
+            SourceType sourceType
+    ) {
         this.id = id;
         this.title = title;
         this.tags = tags;
         this.slidesCount = slidesCount;
         this.storyType = Story.StoryType.COMMON;
         this.feed = feed;
+        this.sourceType = sourceType;
     }
 
-    public StoryData(int id, Story.StoryType storyType, String title, String tags, int slidesCount, String feed) {
+    public StoryData(
+            int id,
+            Story.StoryType storyType,
+            String title,
+            String tags,
+            int slidesCount,
+            String feed,
+            SourceType sourceType
+    ) {
         this.id = id;
         this.title = title;
         this.tags = tags;
         this.slidesCount = slidesCount;
         this.storyType = storyType;
         this.feed = feed;
+        this.sourceType = sourceType;
     }
 
     @Override

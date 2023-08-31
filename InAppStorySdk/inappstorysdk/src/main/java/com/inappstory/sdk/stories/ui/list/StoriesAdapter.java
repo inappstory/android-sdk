@@ -20,6 +20,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -164,6 +165,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     Long clickTimestamp = -1L;
 
+    private SourceType getListSourceType() {
+        return isFavoriteList ? SourceType.FAVORITE : SourceType.LIST;
+    }
+
     @Override
     public void onItemClick(int ind) {
         if (InAppStoryService.isNull()) return;
@@ -184,10 +189,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                 StringsUtils.getNonNull(current.statTitle),
                                 StringsUtils.getNonNull(current.tags),
                                 current.getSlidesCount(),
-                                feed
+                                feed,
+                                getListSourceType()
                         ),
-                        index,
-                        isFavoriteList
+                        index
                 );
             }
             String gameInstanceId = current.getGameInstanceId();
@@ -202,7 +207,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                                 StringsUtils.getNonNull(current.statTitle),
                                                 StringsUtils.getNonNull(current.tags),
                                                 current.slidesCount,
-                                                feed
+                                                feed,
+                                                getListSourceType()
                                         ),
                                         0
                                 )
@@ -225,7 +231,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                             StringsUtils.getNonNull(current.statTitle),
                                             StringsUtils.getNonNull(current.tags),
                                             current.getSlidesCount(),
-                                            feed
+                                            feed,
+                                            getListSourceType()
                                     ),
                                     0
                             ),
@@ -274,10 +281,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                     StringsUtils.getNonNull(lStory.statTitle),
                                     StringsUtils.getNonNull(lStory.tags),
                                     lStory.getSlidesCount(),
-                                    feed
+                                    feed,
+                                    getListSourceType()
                             ),
-                            index,
-                            isFavoriteList
+                            index
                     );
                 } else {
                     callback.itemClick(
@@ -286,10 +293,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                     "",
                                     "",
                                     0,
-                                    feed
+                                    feed,
+                                    getListSourceType()
                             ),
-                            index,
-                            isFavoriteList
+                            index
                     );
                 }
             }

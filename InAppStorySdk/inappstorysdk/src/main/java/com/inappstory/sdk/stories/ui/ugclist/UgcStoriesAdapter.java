@@ -19,6 +19,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -140,10 +141,10 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                 StringsUtils.getNonNull(current.statTitle),
                                 StringsUtils.getNonNull(current.tags),
                                 current.getSlidesCount(),
-                                null
+                                null,
+                                SourceType.UGC_LIST
                         ),
-                        index,
-                        false
+                        index
                 );
             }
             String gameInstanceId = current.getGameInstanceId();
@@ -158,7 +159,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                 StringsUtils.getNonNull(current.statTitle),
                                                 StringsUtils.getNonNull(current.tags),
                                                 current.slidesCount,
-                                                null
+                                                null,
+                                                SourceType.UGC_LIST
                                         ),
                                         0
                                 )
@@ -177,7 +179,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                             StringsUtils.getNonNull(current.statTitle),
                                             StringsUtils.getNonNull(current.tags),
                                             current.getSlidesCount(),
-                                            null
+                                            null,
+                                            SourceType.UGC_LIST
                                     ),
                                     0
                             ),
@@ -223,10 +226,10 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     StringsUtils.getNonNull(lStory.statTitle),
                                     StringsUtils.getNonNull(lStory.tags),
                                     lStory.getSlidesCount(),
-                                    null
+                                    null,
+                                    SourceType.UGC_LIST
                             ),
-                            index,
-                            false
+                            index
                     );
                 } else {
                     callback.itemClick(
@@ -235,10 +238,10 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                     "",
                                     "",
                                     0,
-                                    null
+                                    null,
+                                    SourceType.UGC_LIST
                             ),
-                            index,
-                            false
+                            index
                     );
                 }
 

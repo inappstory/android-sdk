@@ -77,7 +77,9 @@ public class ButtonsPanelManager {
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
                                             story.getSlidesCount(),
-                                            getParentManager().getFeedId()
+                                            getParentManager().getFeedId(),
+                                            getParentManager().getSourceType()
+
                                     ),
                                     story.lastIndex
                             ),
@@ -94,7 +96,8 @@ public class ButtonsPanelManager {
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
                                             story.getSlidesCount(),
-                                            getParentManager().getFeedId()
+                                            getParentManager().getFeedId(),
+                                            getParentManager().getSourceType()
                                     ),
                                     story.lastIndex
                             ),
@@ -115,7 +118,8 @@ public class ButtonsPanelManager {
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
                                             story.getSlidesCount(),
-                                            getParentManager().getFeedId()
+                                            getParentManager().getFeedId(),
+                                            getParentManager().getSourceType()
                                     ),
                                     story.lastIndex
                             ),
@@ -132,7 +136,8 @@ public class ButtonsPanelManager {
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
                                             story.getSlidesCount(),
-                                            getParentManager().getFeedId()
+                                            getParentManager().getFeedId(),
+                                            getParentManager().getSourceType()
                                     ),
                                     story.lastIndex
                             ),
@@ -204,7 +209,8 @@ public class ButtonsPanelManager {
                                     StringsUtils.getNonNull(story.statTitle),
                                     StringsUtils.getNonNull(story.tags),
                                     story.getSlidesCount(),
-                                    getParentManager().getFeedId()
+                                    getParentManager().getFeedId(),
+                                    getParentManager().getSourceType()
                             ),
                             story.lastIndex
                     ),
@@ -286,7 +292,8 @@ public class ButtonsPanelManager {
                                     StringsUtils.getNonNull(story.statTitle),
                                     StringsUtils.getNonNull(story.tags),
                                     story.getSlidesCount(),
-                                    getParentManager().getFeedId()
+                                    getParentManager().getFeedId(),
+                                    getParentManager().getSourceType()
                             ),
                             story.lastIndex
                     )

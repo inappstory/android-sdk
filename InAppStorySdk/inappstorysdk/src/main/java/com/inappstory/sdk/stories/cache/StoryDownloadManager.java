@@ -68,8 +68,12 @@ public class StoryDownloadManager {
         }
     }
 
-    public void getFullStoryByStringId(final GetStoryByIdCallback storyByIdCallback,
-                                       final String id, final Story.StoryType type) {
+    public void getFullStoryByStringId(
+            final GetStoryByIdCallback storyByIdCallback,
+            final String id,
+            final Story.StoryType type,
+            final int readerSource
+    ) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null || InAppStoryService.isNull()) {
             storyByIdCallback.loadError(-1);
@@ -104,7 +108,8 @@ public class StoryDownloadManager {
                                                     StringsUtils.getNonNull(response.statTitle),
                                                     StringsUtils.getNonNull(response.tags),
                                                     response.getSlidesCount(),
-                                                    null
+                                                    null,
+                                                    CallbackManager.getInstance().getSourceFromInt(readerSource)
                                             )
                                     );
                                 }

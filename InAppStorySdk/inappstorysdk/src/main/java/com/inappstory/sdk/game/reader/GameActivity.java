@@ -1115,7 +1115,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                                     getIntent().getStringExtra("title"),
                                     getIntent().getStringExtra("tags"),
                                     getIntent().getIntExtra("slidesCount", 0),
-                                    getIntent().getStringExtra("feedId")
+                                    getIntent().getStringExtra("feedId"),
+                                    CallbackManager.getInstance().getSourceFromInt(getIntent().getIntExtra("source", 0))
                             ),
                             getIntent().getIntExtra("slideIndex", 0)
                     )

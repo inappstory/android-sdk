@@ -1365,103 +1365,108 @@ public class InAppStoryManager {
         lastSingleOpen = storyId;
 
 
-        service.getDownloadManager().getFullStoryByStringId(new GetStoryByIdCallback() {
-            @Override
-            public void getStory(Story story) {
-                if (story != null) {
-                    service.getDownloadManager().addCompletedStoryTask(story,
-                            Story.StoryType.COMMON);
-                    if (ScreensManager.created == -1) {
-                        InAppStoryManager.closeStoryReader(CloseStory.AUTO);
-                        localHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                lastSingleOpen = null;
-                                showStoryInner(
-                                        storyId,
-                                        context,
-                                        manager,
-                                        callback,
-                                        slide,
-                                        type,
-                                        readerSource,
-                                        readerAction
-                                );
-                                // StoriesActivity.destroyed = 0;
+        service.getDownloadManager().getFullStoryByStringId(
+                new GetStoryByIdCallback() {
+                    @Override
+                    public void getStory(Story story) {
+                        if (story != null) {
+                            service.getDownloadManager().addCompletedStoryTask(story,
+                                    Story.StoryType.COMMON);
+                            if (ScreensManager.created == -1) {
+                                InAppStoryManager.closeStoryReader(CloseStory.AUTO);
+                                localHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lastSingleOpen = null;
+                                        showStoryInner(
+                                                storyId,
+                                                context,
+                                                manager,
+                                                callback,
+                                                slide,
+                                                type,
+                                                readerSource,
+                                                readerAction
+                                        );
+                                        // StoriesActivity.destroyed = 0;
+                                    }
+                                }, 500);
+                                return;
+                            } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
+                                localHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showStoryInner(
+                                                storyId,
+                                                context,
+                                                manager,
+                                                callback,
+                                                slide,
+                                                type,
+                                                readerSource,
+                                                readerAction
+                                        );
+                                        ScreensManager.created = 0;
+                                    }
+                                }, 350);
+                                return;
                             }
-                        }, 500);
-                        return;
-                    } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
-                        localHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                showStoryInner(
-                                        storyId,
-                                        context,
-                                        manager,
-                                        callback,
-                                        slide,
-                                        type,
-                                        readerSource,
-                                        readerAction
-                                );
-                                ScreensManager.created = 0;
+
+
+                            try {
+                                int c = Integer.parseInt(lastSingleOpen);
+                                if (c != story.id)
+                                    return;
+                            } catch (Exception ignored) {
+
                             }
-                        }, 350);
-                        return;
-                    }
-
-
-                    try {
-                        int c = Integer.parseInt(lastSingleOpen);
-                        if (c != story.id)
-                            return;
-                    } catch (Exception ignored) {
-
-                    }
-                    if (callback != null)
-                        callback.onShow();
-                    service.getDownloadManager().putStories(
-                            InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
-                            type
-                    );
-                    ArrayList<Integer> stIds = new ArrayList<>();
-                    stIds.add(story.id);
-                    ScreensManager.getInstance().openStoriesReader(
-                            context,
-                            null,
-                            manager,
-                            stIds,
-                            0,
-                            readerSource,
-                            readerAction,
-                            slide,
-                            null,
-                            null,
-                            Story.StoryType.COMMON
-                    );
-                    localHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
+                            if (callback != null)
+                                callback.onShow();
+                            service.getDownloadManager().putStories(
+                                    InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
+                                    type
+                            );
+                            ArrayList<Integer> stIds = new ArrayList<>();
+                            stIds.add(story.id);
+                            ScreensManager.getInstance().openStoriesReader(
+                                    context,
+                                    null,
+                                    manager,
+                                    stIds,
+                                    0,
+                                    readerSource,
+                                    readerAction,
+                                    slide,
+                                    null,
+                                    null,
+                                    Story.StoryType.COMMON
+                            );
+                            localHandler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    lastSingleOpen = null;
+                                }
+                            }, 1000);
+                        } else {
+                            if (callback != null)
+                                callback.onError();
                             lastSingleOpen = null;
+                            return;
                         }
-                    }, 1000);
-                } else {
-                    if (callback != null)
-                        callback.onError();
-                    lastSingleOpen = null;
-                    return;
-                }
-            }
+                    }
 
-            @Override
-            public void loadError(int type) {
-                if (callback != null)
-                    callback.onError();
-                lastSingleOpen = null;
-            }
+                    @Override
+                    public void loadError(int type) {
+                        if (callback != null)
+                            callback.onError();
+                        lastSingleOpen = null;
+                    }
 
-        }, storyId, type);
+                },
+                storyId,
+                type,
+                readerSource
+        );
     }
 
     private void showStoryInner(final String storyId, final Context context,

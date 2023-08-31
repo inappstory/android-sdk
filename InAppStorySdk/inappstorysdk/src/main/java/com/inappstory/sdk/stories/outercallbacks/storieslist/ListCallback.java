@@ -11,7 +11,6 @@ public interface ListCallback {
 
     void itemClick(
             StoryData storyData,
-            int listIndex,
-            boolean isFavoriteList
+            int listIndex
     );
 }

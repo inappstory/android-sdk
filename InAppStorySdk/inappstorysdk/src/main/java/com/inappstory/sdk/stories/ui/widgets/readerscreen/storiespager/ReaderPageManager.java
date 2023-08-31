@@ -13,6 +13,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -135,7 +136,8 @@ public class ReaderPageManager {
                                     StringsUtils.getNonNull(story.statTitle),
                                     StringsUtils.getNonNull(story.tags),
                                     story.getSlidesCount(),
-                                    getFeedId()
+                                    getFeedId(),
+                                    getSourceType()
                             ),
                             story.lastIndex
                     ),
@@ -171,7 +173,8 @@ public class ReaderPageManager {
                                                     StringsUtils.getNonNull(story.statTitle),
                                                     StringsUtils.getNonNull(story.tags),
                                                     story.getSlidesCount(),
-                                                    getFeedId()
+                                                    getFeedId(),
+                                                    getSourceType()
                                             ),
                                             story.lastIndex
                                     ),
@@ -437,6 +440,12 @@ public class ReaderPageManager {
 
     public void setParentManager(ReaderManager parentManager) {
         this.parentManager = parentManager;
+    }
+
+    public SourceType getSourceType() {
+        if (parentManager != null)
+            return CallbackManager.getInstance().getSourceFromInt(parentManager.source);
+        return SourceType.LIST;
     }
 
     ReaderManager parentManager;

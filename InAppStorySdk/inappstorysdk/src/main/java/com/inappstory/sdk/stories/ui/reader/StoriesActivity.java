@@ -252,13 +252,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
                                             story.getSlidesCount(),
-                                            getIntent().getStringExtra("feedId")
+                                            getIntent().getStringExtra("feedId"),
+                                            CallbackManager.getInstance().getSourceFromInt(
+                                                    getIntent().getIntExtra("source", 0)
+                                            )
                                     ),
                                     story.lastIndex
                             ),
-                            CloseReader.CUSTOM,
-                            CallbackManager.getInstance().getSourceFromInt(
-                                    getIntent().getIntExtra("source", 0))
+                            CloseReader.CUSTOM
                     );
                 }
             }
@@ -500,14 +501,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                                             StringsUtils.getNonNull(story.statTitle),
                                             StringsUtils.getNonNull(story.tags),
                                             story.getSlidesCount(),
-                                            getIntent().getStringExtra("feedId")
+                                            getIntent().getStringExtra("feedId"),
+                                            CallbackManager.getInstance().getSourceFromInt(
+                                                    getIntent().getIntExtra("source", 0)
+                                            )
                                     ),
                                     story.lastIndex
                             ),
                             CallbackManager.getInstance().getCloseTypeFromInt(
-                                    action),
-                            CallbackManager.getInstance().getSourceFromInt(
-                                    getIntent().getIntExtra("source", 0))
+                                    action)
                     );
                 }
                 String cause = StatisticManager.AUTO;
