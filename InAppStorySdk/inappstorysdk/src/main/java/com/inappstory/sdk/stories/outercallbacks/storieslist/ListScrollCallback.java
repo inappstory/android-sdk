@@ -5,6 +5,8 @@ import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import java.util.List;
 
 public interface ListScrollCallback {
+    void userInteractionStart();
+
     void scrollStart();
 
     void onOverscroll(int dx, int dy);
@@ -12,4 +14,5 @@ public interface ListScrollCallback {
     void onVisibleAreaUpdated(List<ShownStoriesListItem> shownStoriesListItemData);
 
     void scrollEnd();
+    void userInteractionEnd();
 }
