@@ -348,8 +348,8 @@ public class StoriesList extends RecyclerView {
         public int scrollHorizontallyBy(int dx, Recycler recycler, State state) {
             int scrollRange = super.scrollHorizontallyBy(dx, recycler, state);
             int overScroll = dx - scrollRange;
-            if (scrollCallback != null) {
-                scrollCallback.onOverscroll(0, overScroll);
+            if (overScroll != 0 && scrollCallback != null) {
+                scrollCallback.onOverscroll(overScroll, 0);
             }
             return scrollRange;
         }
@@ -604,7 +604,7 @@ public class StoriesList extends RecyclerView {
                 public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
                     int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
                     int overScroll = dy - scrollRange;
-                    if (scrollCallback != null) {
+                    if (overScroll != 0 && scrollCallback != null) {
                         scrollCallback.onOverscroll(0, overScroll);
                     }
                     return scrollRange;
