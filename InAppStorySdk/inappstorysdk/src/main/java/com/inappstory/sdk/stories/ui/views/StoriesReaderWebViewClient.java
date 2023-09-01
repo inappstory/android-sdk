@@ -33,8 +33,7 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         String img = url;
-        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img) || manager == null ||
-                img.contains(".ttf") || img.contains(".otf"))
+        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img) || manager == null)
             return super.shouldInterceptRequest(view, url);
         InAppStoryManager.showDLog("webView_int_url", url);
         File file = manager.getCurrentFile(img);

@@ -47,7 +47,7 @@ public class Downloader {
      * @param url ссылка
      */
     public static String cropUrl(String url) {
-        return url;//url.split("\\?")[0];
+        return url.split("\\?")[0];
     }
 
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
@@ -90,12 +90,21 @@ public class Downloader {
         String key = cropUrl(url);
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
+        String extension = key.substring(key.lastIndexOf("."));
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
+
             if (fileState != null
                     && fileState.file != null
                     && fileState.file.exists()
             ) {
+
+                if (!fileState.file.getAbsolutePath().endsWith(extension)) {
+                    File newFile = new File(fileState.file.getAbsoluteFile() + "." + extension);
+                    fileState.file.renameTo(newFile);
+                    cache.put(key, newFile);
+                    fileState.file = newFile;
+                }
                 if (fileState.downloadedSize != fileState.totalSize) {
                     offset = fileState.downloadedSize;
                 } else {
@@ -114,7 +123,7 @@ public class Downloader {
             ProfilingManager.getInstance().addTask("game_download", hash);
         }
         if (img == null) {
-            img = cache.getFileFromKey(key);
+            img = cache.getFileFromKey(key, extension);
         }
         DownloadFileState fileState = downloadFile(
                 url,
@@ -152,7 +161,9 @@ public class Downloader {
             File img,
             FileLoadProgressCallback callback
     ) throws Exception {
-        String key = hashKey + "_" + cropUrl(url);
+        String croppedUrl = cropUrl(url);
+        String key = hashKey + "_" + croppedUrl;
+        String extension = key.substring(key.lastIndexOf("."));
         long offset = 0;
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
@@ -160,6 +171,12 @@ public class Downloader {
                     fileState.file != null &&
                     fileState.file.exists()
             ) {
+                if (!fileState.file.getAbsolutePath().endsWith(extension)) {
+                    File newFile = new File(fileState.file.getAbsoluteFile() + "." + extension);
+                    fileState.file.renameTo(newFile);
+                    cache.put(key, newFile);
+                    fileState.file = newFile;
+                }
                 if (fileState.totalSize == fileState.downloadedSize)
                     return false;
                 else {
@@ -168,7 +185,7 @@ public class Downloader {
             }
         }
         if (img == null) {
-            img = cache.getFileFromKey(key);
+            img = cache.getFileFromKey(key, extension);
         }
         DownloadFileState downloadFileState = downloadFile(
                 url,
@@ -187,7 +204,7 @@ public class Downloader {
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
-        String key = cropUrl(url);
+        String key = url;
         if (cache.hasKey(key)) {
             return cache.getFullFile(key);
         }
