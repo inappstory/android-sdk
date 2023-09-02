@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -99,7 +100,9 @@ class SlidesDownloader {
 
     int checkIfPageLoaded(SlideTaskData key) throws IOException { //0 - not loaded, 1 - loaded, -1 - loaded with error
         boolean remove = false;
-        if (InAppStoryService.isNull()) return 0;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return 0;
+        LruDiskCache cache = service.getCommonCache();
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
@@ -108,10 +111,10 @@ class SlidesDownloader {
                 allUrls.addAll(slideTask.videoUrls);
                 for (String url : allUrls) {
                     String croppedUrl = Downloader.cropUrl(url, true);
-                    if (!InAppStoryService.getInstance().getCommonCache().hasKey(croppedUrl)) {
+                    if (!cache.hasKey(croppedUrl)) {
                         remove = true;
                     } else {
-                        if (InAppStoryService.getInstance().getCommonCache().getFullFile(croppedUrl) == null) {
+                        if (cache.getFullFile(croppedUrl) == null) {
                             synchronized (pageTasksLock) {
                                 slideTask.loadType = 0;
                             }

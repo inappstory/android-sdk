@@ -43,6 +43,7 @@ public class IASWebViewClient extends WebViewClient {
                                 new FileInputStream(file)
                         );
                         Map<String, String> currentHeaders = response.getResponseHeaders();
+                        if (currentHeaders == null) currentHeaders = new HashMap<>();
                         HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
                         newHeaders.put("Access-Control-Allow-Origin", "*");
                         response.setResponseHeaders(newHeaders);

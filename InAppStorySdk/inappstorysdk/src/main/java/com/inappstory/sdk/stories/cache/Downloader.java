@@ -59,6 +59,11 @@ public class Downloader {
         }
     }
 
+    static String getFileExtensionFromUrl(String url) {
+        String croppedUrl = cropUrl(url, true);
+        return croppedUrl.substring(croppedUrl.lastIndexOf("."));
+    }
+
 
     @WorkerThread
     public static DownloadFileState downloadOrGetFile(
@@ -69,6 +74,22 @@ public class Downloader {
             FileLoadProgressCallback callback
     ) throws Exception {
         return downloadOrGetFile(url, cropUrl, cache, img, callback, null, null);
+    }
+
+    static void checkAndReplaceFile(
+            LruDiskCache cache,
+            String url,
+            String key,
+            DownloadFileState fileState
+    ) throws IOException {
+
+        String extension = getFileExtensionFromUrl(url);
+        if (!fileState.file.getAbsolutePath().endsWith(extension)) {
+            File newFile = new File(fileState.file.getAbsolutePath() + extension);
+            fileState.file.renameTo(newFile);
+            fileState.file = newFile;
+            cache.put(key, newFile);
+        }
     }
 
     @WorkerThread
@@ -98,6 +119,7 @@ public class Downloader {
                     && fileState.file != null
                     && fileState.file.exists()
             ) {
+                checkAndReplaceFile(cache, url, key, fileState);
                 if (fileState.downloadedSize != fileState.totalSize) {
                     offset = fileState.downloadedSize;
                 } else {
@@ -162,6 +184,7 @@ public class Downloader {
                     fileState.file != null &&
                     fileState.file.exists()
             ) {
+                checkAndReplaceFile(cache, url, key, fileState);
                 if (fileState.totalSize == fileState.downloadedSize)
                     return false;
                 else {
@@ -186,12 +209,25 @@ public class Downloader {
         return true;
     }
 
+    public static File updateFile(File file, String url, LruDiskCache cache, String key) throws IOException {
+        if (file != null) {
+            String extension = getFileExtensionFromUrl(url);
+            if (!file.getAbsolutePath().endsWith(extension)) {
+                File newFile = new File(file.getAbsolutePath() + extension);
+                file.renameTo(newFile);
+                cache.put(key, newFile);
+                return newFile;
+            }
+        }
+        return file;
+    }
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
         String key = cropUrl(url, false);
+
         if (cache.hasKey(key)) {
-            return cache.getFullFile(key);
+            return updateFile(cache.getFullFile(key), url, cache, key);
         }
         return null;
     }
@@ -261,9 +297,15 @@ public class Downloader {
         if (url == null || url.isEmpty()) return null;
         String key = cropUrl(url, true);
         File img = null;
-        if (InAppStoryService.isNull()) return null;
-        if (InAppStoryService.getInstance().getCommonCache().hasKey(key)) {
-            img = InAppStoryService.getInstance().getCommonCache().getFullFile(key);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return null;
+        LruDiskCache cache = service.getCommonCache();
+        if (cache.hasKey(key)) {
+            try {
+                img = updateFile(cache.getFullFile(key), url, cache, key);
+            } catch (IOException e) {
+                img = cache.getFullFile(key);
+            }
         }
         if (img != null && img.exists()) {
             return img.getAbsolutePath();

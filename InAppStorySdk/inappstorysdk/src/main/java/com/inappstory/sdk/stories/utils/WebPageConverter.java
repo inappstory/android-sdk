@@ -80,13 +80,14 @@ public class WebPageConverter {
         resourceUrls.addAll(story.getSrcListUrls(index, null));
         resourceUrls.addAll(story.getSrcListUrls(index, "video"));
         for (int i = 0; i < resourceKeys.size(); i++) {
-            String video = resourceUrls.get(i);
-            String videoKey = resourceKeys.get(i);
-            File file = cache.getFullFile(Downloader.cropUrl(video, true));
+            String resource = resourceUrls.get(i);
+            String resourceKey = resourceKeys.get(i);
+            String key = Downloader.cropUrl(resource, true);
+            File file = Downloader.updateFile(cache.getFullFile(key), resource, cache, key);
             if (file != null && file.exists() && file.length() > 0) {
-                video = "file://" + file.getAbsolutePath();
+                resource = "file://" + file.getAbsolutePath();
             }
-            innerWebData = innerWebData.replace(videoKey, video);
+            innerWebData = innerWebData.replace(resourceKey, resource);
         }
         return innerWebData;
     }
@@ -104,15 +105,25 @@ public class WebPageConverter {
                 if (placeholderValue != null) {
                     String path = "";
                     if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
-                        File file = cache.getFullFile(
-                                Downloader.cropUrl(placeholderValue.first.getUrl(), true)
+                        String keyFirst = Downloader.cropUrl(placeholderValue.first.getUrl(), true);
+                        File file = Downloader.updateFile(
+                                cache.getFullFile(keyFirst),
+                                placeholderValue.first.getUrl(),
+                                cache,
+                                keyFirst
                         );
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
                         } else {
                             if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
-                                file = cache.getFullFile(
-                                        Downloader.cropUrl(placeholderValue.second.getUrl(), true)
+                                String keySecond = Downloader.cropUrl(
+                                        placeholderValue.second.getUrl(), true
+                                );
+                                file = Downloader.updateFile(
+                                        cache.getFullFile(keySecond),
+                                        placeholderValue.first.getUrl(),
+                                        cache,
+                                        keySecond
                                 );
                                 if (file != null && file.exists() && file.length() > 0) {
                                     path = "file://" + file.getAbsolutePath();
