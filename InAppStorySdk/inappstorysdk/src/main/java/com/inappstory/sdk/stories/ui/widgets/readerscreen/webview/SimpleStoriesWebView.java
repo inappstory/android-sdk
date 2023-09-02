@@ -22,13 +22,12 @@ import androidx.core.view.ViewCompat;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
-import com.inappstory.sdk.stories.ui.views.StoriesReaderWebViewClient;
+import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import java.util.Map;
 
 /**
  * Created by Paperrose on 07.06.2018.
@@ -94,11 +93,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("story_slide_pause");
     }
 
-    //OnClickListener clickListener;
 
     public void slideStart() {
-      //  clickListener = null;
-     //   setOnClickListener(null);
         String funAfterCheck =
                 (InAppStoryService.getInstance() != null
                         && InAppStoryService.getInstance().isSoundOn()) ?
@@ -288,7 +284,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             addJavascriptInterface(new WebAppInterface(getContext(),
                     getManager()), "Android");
 
-            setWebViewClient(new StoriesReaderWebViewClient(getManager()));
+            setWebViewClient(new IASWebViewClient());
 
             setWebChromeClient(new WebChromeClient() {
                 @Nullable

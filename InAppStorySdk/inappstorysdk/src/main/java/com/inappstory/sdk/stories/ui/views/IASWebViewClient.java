@@ -11,6 +11,10 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.Downloader;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,8 +24,20 @@ import java.util.Map;
 
 public class IASWebViewClient extends WebViewClient {
 
-    protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
+    private File getCachedFile(String url, String key) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return null;
+        LruDiskCache cache = service.getCommonCache();
+        try {
+            return Downloader.updateFile(cache.getFullFile(key), url, cache, key);
+        } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
+            return null;
+        }
+    }
+    private File getFileByUrl(String url) {
         String filePath = null;
+        File file = null;
         if (url.startsWith("http://file-assets")) {
             filePath = Uri.parse(url
                     .replace("http://file-assets", "file://")
@@ -30,17 +46,25 @@ public class IASWebViewClient extends WebViewClient {
             filePath = Uri.parse(url).getPath();
         }
         if (filePath != null) {
-            File file = new File(filePath);
-            Log.e("putToCache", "share " + filePath);
-            if (file.exists()) {
+            file = new File(filePath);
+        } else if (!url.startsWith("data:text/html;") && URLUtil.isValidUrl(url)) {
+            file = getCachedFile(url, Downloader.cropUrl(url, true));
+        }
+        return file;
+    }
+    protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
+        File file = getFileByUrl(url);
+        WebResourceResponse response = null;
+        if (file != null && file.exists()) {
+            try {
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                        MimeTypeMap.getFileExtensionFromUrl(filePath)
+                        MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath())
                 );
-                WebResourceResponse response = new WebResourceResponse(
-                        mimeType,
-                        "utf-8",
-                        new FileInputStream(file)
-                );
+                if (mimeType == null || mimeType.isEmpty()) {
+                    mimeType = "application/octet-stream";
+                }
+                response = new WebResourceResponse(mimeType, "BINARY",
+                        new FileInputStream(file));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     Map<String, String> currentHeaders = response.getResponseHeaders();
                     if (currentHeaders == null) currentHeaders = new HashMap<>();
@@ -48,10 +72,11 @@ public class IASWebViewClient extends WebViewClient {
                     newHeaders.put("Access-Control-Allow-Origin", "*");
                     response.setResponseHeaders(newHeaders);
                 }
-                return response;
+            } catch (Exception e) {
+                InAppStoryService.createExceptionLog(e);
             }
         }
-        return null;
+        return response;
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
