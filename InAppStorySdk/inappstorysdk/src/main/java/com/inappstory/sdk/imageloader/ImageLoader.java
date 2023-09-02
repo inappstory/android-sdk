@@ -185,7 +185,7 @@ public class ImageLoader {
 
         Bitmap bitmap = null;
         try {
-            DownloadFileState fileState = Downloader.downloadOrGetFile(url, cache, null, null);
+            DownloadFileState fileState = Downloader.downloadOrGetFile(url, false, cache, null, null);
             if (fileState == null || fileState.file == null) return null;
             bitmap = decodeFile(fileState.file);
         } catch (Exception e) {
@@ -232,7 +232,7 @@ public class ImageLoader {
             return bmp;
         }
         try {
-            DownloadFileState fileState = Downloader.downloadOrGetFile(url, lruDiskCache, null, null);
+            DownloadFileState fileState = Downloader.downloadOrGetFile(url, false, lruDiskCache, null, null);
             if (fileState == null || fileState.file == null) return null;
             Bitmap bitmap = decodeFile(fileState.file);
             if (getThumbnail) {

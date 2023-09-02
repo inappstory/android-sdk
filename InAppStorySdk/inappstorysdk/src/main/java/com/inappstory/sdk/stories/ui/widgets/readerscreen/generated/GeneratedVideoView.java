@@ -168,7 +168,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
 
         try {
             if (storyId == null)
-                storyId = Utils.hash(Downloader.cropUrl(url));
+                storyId = Utils.hash(Downloader.cropUrl(url, false));
             if (file == null)
                 if (cache.hasKey(url)) {
                     file = cache.getFullFile(url);
@@ -182,7 +182,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
                 }
             } else {
                 mp.setDataSource(url);
-                Downloader.downloadFileBackground(url, cache, null);
+                Downloader.downloadFileBackground(url, false, cache, null);
             }
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {

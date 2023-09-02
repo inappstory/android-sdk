@@ -196,14 +196,17 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadedSuccess() {
-        Log.e("hideLoader", "storyLoadedSuccess");
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                refresh.setVisibility(View.GONE);
-                hideLoader();
-            }
-        });
+        try {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    refresh.setVisibility(View.GONE);
+                    hideLoader();
+                }
+            });
+        } catch (Exception e) {
+        }
+
     }
 
     private void setOffsets(View view) {

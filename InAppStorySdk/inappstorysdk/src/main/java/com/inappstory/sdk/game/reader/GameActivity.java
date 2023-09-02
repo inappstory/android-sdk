@@ -612,6 +612,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         if (needToDownload) {
             Downloader.downloadFileBackground(
                     splashScreen.url,
+                    true,
                     InAppStoryService.getInstance().getInfiniteCache(),
                     new FileLoadProgressCallback() {
                         @Override

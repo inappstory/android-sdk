@@ -107,10 +107,11 @@ class SlidesDownloader {
                 allUrls.addAll(slideTask.urls);
                 allUrls.addAll(slideTask.videoUrls);
                 for (String url : allUrls) {
-                    if (!InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
+                    String croppedUrl = Downloader.cropUrl(url, true);
+                    if (!InAppStoryService.getInstance().getCommonCache().hasKey(croppedUrl)) {
                         remove = true;
                     } else {
-                        if (InAppStoryService.getInstance().getCommonCache().getFullFile(url) == null) {
+                        if (InAppStoryService.getInstance().getCommonCache().getFullFile(croppedUrl) == null) {
                             synchronized (pageTasksLock) {
                                 slideTask.loadType = 0;
                             }

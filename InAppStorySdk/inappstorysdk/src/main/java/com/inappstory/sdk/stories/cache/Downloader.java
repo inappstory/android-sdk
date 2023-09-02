@@ -46,8 +46,8 @@ public class Downloader {
      *
      * @param url ссылка
      */
-    public static String cropUrl(String url) {
-        return url;//url.split("\\?")[0];
+    public static String cropUrl(String url, boolean crop) {
+        return crop ? url.split("\\?")[0] : url;
     }
 
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
@@ -63,16 +63,18 @@ public class Downloader {
     @WorkerThread
     public static DownloadFileState downloadOrGetFile(
             @NonNull String url,
+            boolean cropUrl,
             LruDiskCache cache,
             File img,
             FileLoadProgressCallback callback
     ) throws Exception {
-        return downloadOrGetFile(url, cache, img, callback, null, null);
+        return downloadOrGetFile(url, cropUrl, cache, img, callback, null, null);
     }
 
     @WorkerThread
     public static DownloadFileState downloadOrGetFile(
             @NonNull String url,
+            boolean cropUrl,
             LruDiskCache cache,
             File img,
             FileLoadProgressCallback callback,
@@ -87,7 +89,7 @@ public class Downloader {
         requestLog.isStatic = true;
         requestLog.id = requestId;
         responseLog.id = requestId;
-        String key = cropUrl(url);
+        String key = cropUrl(url, cropUrl);
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
         if (cache.hasKey(key)) {
@@ -152,7 +154,7 @@ public class Downloader {
             File img,
             FileLoadProgressCallback callback
     ) throws Exception {
-        String key = hashKey + "_" + cropUrl(url);
+        String key = hashKey + "_" + cropUrl(url, true);
         long offset = 0;
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
@@ -187,7 +189,7 @@ public class Downloader {
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
-        String key = cropUrl(url);
+        String key = cropUrl(url, false);
         if (cache.hasKey(key)) {
             return cache.getFullFile(key);
         }
@@ -202,22 +204,24 @@ public class Downloader {
         fontDownloader.submit(new Callable<File>() {
             @Override
             public File call() throws Exception {
-                return FileManager.getFullFile(downloadOrGetFile(url, cache, null, null));
+                return FileManager.getFullFile(downloadOrGetFile(url, true, cache, null, null));
             }
         });
     }
 
 
     public static void downloadFileBackground(
-            final String url,
-            final LruDiskCache cache,
-            final FileLoadProgressCallback callback
+            String url,
+            boolean cropUrl,
+            LruDiskCache cache,
+            FileLoadProgressCallback callback
     ) {
-        downloadFileBackground(url, cache, callback, null);
+        downloadFileBackground(url, cropUrl, cache, callback, null);
     }
 
     public static void downloadFileBackground(
             final String url,
+            final boolean cropUrl,
             final LruDiskCache cache,
             final FileLoadProgressCallback callback,
             final DownloadInterruption interruption
@@ -234,6 +238,7 @@ public class Downloader {
                     return FileManager.getFullFile(
                             downloadOrGetFile(
                                     url,
+                                    cropUrl,
                                     cache,
                                     null,
                                     callback,
@@ -254,10 +259,11 @@ public class Downloader {
 
     public static String getFontFile(String url) {
         if (url == null || url.isEmpty()) return null;
+        String key = cropUrl(url, true);
         File img = null;
         if (InAppStoryService.isNull()) return null;
-        if (InAppStoryService.getInstance().getCommonCache().hasKey(url)) {
-            img = InAppStoryService.getInstance().getCommonCache().getFullFile(url);
+        if (InAppStoryService.getInstance().getCommonCache().hasKey(key)) {
+            img = InAppStoryService.getInstance().getCommonCache().getFullFile(key);
         }
         if (img != null && img.exists()) {
             return img.getAbsolutePath();

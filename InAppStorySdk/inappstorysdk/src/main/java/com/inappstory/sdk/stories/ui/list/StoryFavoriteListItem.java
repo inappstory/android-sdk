@@ -205,7 +205,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
         if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
             @Override
             public void onProgress(long loadedSize, long totalSize) {
 

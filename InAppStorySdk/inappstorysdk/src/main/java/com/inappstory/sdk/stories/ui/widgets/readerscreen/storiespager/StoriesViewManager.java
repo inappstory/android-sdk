@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -474,22 +475,14 @@ public class StoriesViewManager {
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
         storyIsLoaded = true;
-
+        Log.e("hideLoader", "storyLoaded " + storyId + " " + slideIndex);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopStory();
         } else {
             pageManager.currentSlideIsLoaded = true;
-            pageManager.host.storyLoadedSuccess();
-            if (showRefresh != null) {
-                try {
-                    showRefreshHandler.removeCallbacks(showRefresh);
-                } catch (Exception e) {
 
-                }
-                showRefresh = null;
-            }
             playStory();
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -497,6 +490,15 @@ public class StoriesViewManager {
                     resumeStory();
                 }
             }, 200);
+        }
+        pageManager.host.storyLoadedSuccess();
+        if (showRefresh != null) {
+            try {
+                showRefreshHandler.removeCallbacks(showRefresh);
+            } catch (Exception e) {
+
+            }
+            showRefresh = null;
         }
     }
 

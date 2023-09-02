@@ -380,9 +380,9 @@ public class StoryDownloadManager {
             @Override
             public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
-                    DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), InAppStoryService.getInstance().getCommonCache(), null, null);
+                    DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                        Downloader.downloadOrGetFile(urlWithAlter.getAlter(), InAppStoryService.getInstance().getCommonCache(), null, null);
+                        Downloader.downloadOrGetFile(urlWithAlter.getAlter(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
                         if (state != null && state.getFullFile() != null) return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;
                     }
