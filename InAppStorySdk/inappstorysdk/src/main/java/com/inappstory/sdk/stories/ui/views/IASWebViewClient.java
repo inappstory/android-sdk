@@ -20,39 +20,46 @@ import java.util.Map;
 
 public class IASWebViewClient extends WebViewClient {
 
+    protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
+        String filePath = null;
+        if (url.startsWith("http://file-assets")) {
+            filePath = Uri.parse(url
+                    .replace("http://file-assets", "file://")
+            ).getPath();
+        } else if (url.startsWith("file://")) {
+            filePath = Uri.parse(url).getPath();
+        }
+        if (filePath != null) {
+            File file = new File(filePath);
+            Log.e("putToCache", "share " + filePath);
+            if (file.exists()) {
+                String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                        MimeTypeMap.getFileExtensionFromUrl(filePath)
+                );
+                WebResourceResponse response = new WebResourceResponse(
+                        mimeType,
+                        "utf-8",
+                        new FileInputStream(file)
+                );
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Map<String, String> currentHeaders = response.getResponseHeaders();
+                    if (currentHeaders == null) currentHeaders = new HashMap<>();
+                    HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+                    newHeaders.put("Access-Control-Allow-Origin", "*");
+                    response.setResponseHeaders(newHeaders);
+                }
+                return response;
+            }
+        }
+        return null;
+    }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         try {
-            if (request.getUrl().toString().startsWith("http://file-assets")) {
-                String filePath = Uri.parse(request
-                        .getUrl()
-                        .toString()
-                        .replace("http://file-assets", "file://")
-                ).getPath();
-                if (filePath != null) {
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                                MimeTypeMap.getFileExtensionFromUrl(filePath)
-                        );
-                        WebResourceResponse response = new WebResourceResponse(
-                                mimeType,
-                                "utf-8",
-                                new FileInputStream(file)
-                        );
-                        Map<String, String> currentHeaders = response.getResponseHeaders();
-                        if (currentHeaders == null) currentHeaders = new HashMap<>();
-                        HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
-                        newHeaders.put("Access-Control-Allow-Origin", "*");
-                        response.setResponseHeaders(newHeaders);
-                        return response;
-                    }
-
-
-                }
-            }
+            WebResourceResponse response = getChangedResponse(request.getUrl().toString());
+            if (response != null) return response;
         } catch (FileNotFoundException ignored) {
         }
         return super.shouldInterceptRequest(view, request);
@@ -61,24 +68,8 @@ public class IASWebViewClient extends WebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         try {
-            if (url.startsWith("http://file-assets")) {
-                String filePath = Uri.parse(
-                        url.replace("http://file-assets", "file://")
-                ).getPath();
-                if (filePath != null) {
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                                MimeTypeMap.getFileExtensionFromUrl(filePath)
-                        );
-                        return new WebResourceResponse(
-                                mimeType,
-                                "utf-8",
-                                new FileInputStream(file)
-                        );
-                    }
-                }
-            }
+            WebResourceResponse response = getChangedResponse(url);
+            if (response != null) return response;
         } catch (FileNotFoundException ignored) {
         }
         return super.shouldInterceptRequest(view, url);

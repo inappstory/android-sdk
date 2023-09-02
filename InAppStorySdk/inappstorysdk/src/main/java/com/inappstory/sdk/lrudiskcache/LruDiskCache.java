@@ -1,5 +1,7 @@
 package com.inappstory.sdk.lrudiskcache;
 
+import android.util.Log;
+
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 
 import java.io.File;
@@ -75,6 +77,7 @@ public class LruDiskCache {
 
     public File put(String key, File file) throws IOException {
         synchronized (journal) {
+            Log.e("putToCache", key + " " + file.getAbsolutePath());
             keyIsValid(key);
             String name = file.getAbsolutePath();
             long time = System.currentTimeMillis();

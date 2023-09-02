@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.views;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -16,6 +17,9 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesVi
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class StoriesReaderWebViewClient extends IASWebViewClient {
     StoriesViewManager manager;
@@ -30,60 +34,61 @@ public class StoriesReaderWebViewClient extends IASWebViewClient {
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        String img = url;
-        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img) || manager == null)
-            return super.shouldInterceptRequest(view, url);
-        InAppStoryManager.showDLog("webView_int_url", url);
-        File file = manager.getCachedFile(img, Downloader.cropUrl(img, true));
-        if (file != null && file.exists()) {
-            try {
-                Response response = new Request.Builder().head().url(url).build().execute();
-                String ctType = response.headers.get("Content-Type");
-                return new WebResourceResponse(ctType, "BINARY",
-                        new FileInputStream(file));
-            } catch (NullPointerException e) {
-                InAppStoryService.createExceptionLog(new Throwable(
-                        "StoriesReaderWebViewClient: headers is null for " + url,
-                        e.getCause()));
-                return super.shouldInterceptRequest(view, url);
-            } catch (Exception e) {
-
-                InAppStoryService.createExceptionLog(e);
-                return super.shouldInterceptRequest(view, url);
-            }
-        } else
-            return super.shouldInterceptRequest(view, url);
+        WebResourceResponse response = getWebResourceResponse(url);
+        return response != null ? response :
+                super.shouldInterceptRequest(view, url);
     }
 
+    private WebResourceResponse getWebResourceResponse(String url) {
+        String img = Downloader.cropUrl(url, true);
+        WebResourceResponse webResourceResponse = null;
+        try {
+            webResourceResponse = getChangedResponse(url);
+        } catch (FileNotFoundException e) {
+
+        }
+        if (webResourceResponse == null) {
+            if (!img.startsWith("data:text/html;") && URLUtil.isValidUrl(img) && manager != null) {
+                File file = manager.getCachedFile(url, img);
+                if (file != null && file.exists()) {
+                    try {
+                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                                MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath())
+                        );
+                        if (mimeType == null || mimeType.isEmpty()) {
+                            Response response = new Request.Builder().head().url(url).build().execute();
+                            if (response.headers != null)
+                                mimeType = response.headers.get("Content-Type");
+                        }
+                        webResourceResponse = new WebResourceResponse(mimeType != null ? mimeType : "", "BINARY",
+                                new FileInputStream(file));
+                    } catch (Exception e) {
+                        InAppStoryService.createExceptionLog(e);
+                    }
+                }
+            }
+        }
+        if (webResourceResponse == null)
+            return null;
+        InAppStoryManager.showDLog("webView_int_resource", img);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Map<String, String> currentHeaders = webResourceResponse.getResponseHeaders();
+            if (currentHeaders == null) currentHeaders = new HashMap<>();
+            HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+            newHeaders.put("Access-Control-Allow-Origin", "*");
+            webResourceResponse.setResponseHeaders(newHeaders);
+        }
+        return webResourceResponse;
+    }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest
-            request) {
-        String img = request.getUrl().toString();
-        if (img.startsWith("data:text/html;") || !URLUtil.isValidUrl(img))
-            return super.shouldInterceptRequest(view, request);
-        InAppStoryManager.showDLog("webView_int_resource", img);
-        File file = manager.getCachedFile(img, Downloader.cropUrl(img, true));
-        if (file != null && file.exists()) {
-            try {
-                Response response = new Request.Builder().head().url(request.getUrl().toString()).build().execute();
-                String ctType = response.headers.get("Content-Type");
-                return new WebResourceResponse(ctType, "BINARY",
-                        new FileInputStream(file));
-            } catch (NullPointerException e) {
-                InAppStoryService.createExceptionLog(new Throwable(
-                        "StoriesReaderWebViewClient: headers is null for " + request.getUrl().toString(),
-                        e.getCause()));
-                return super.shouldInterceptRequest(view, request);
-            } catch (Exception e) {
-
-                InAppStoryService.createExceptionLog(e);
-                return super.shouldInterceptRequest(view, request);
-            }
-        } else
-            return super.shouldInterceptRequest(view, request);
+    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        WebResourceResponse response = getWebResourceResponse(request.getUrl().toString());
+        return response != null ? response :
+                super.shouldInterceptRequest(view, request.getUrl().toString());
     }
+
 
     @Override
     public void onPageFinished(WebView view, String url) {
