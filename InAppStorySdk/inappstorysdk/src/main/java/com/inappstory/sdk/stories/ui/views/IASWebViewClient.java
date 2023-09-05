@@ -47,7 +47,8 @@ public class IASWebViewClient extends WebViewClient {
         }
         if (filePath != null) {
             file = new File(filePath);
-        } else if (!url.startsWith("data:text/html;") && URLUtil.isValidUrl(url)) {
+        } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
+            // skip any data URI scheme (data:content/type;)
             file = getCachedFile(url, Downloader.cropUrl(url, true));
         }
         return file;
