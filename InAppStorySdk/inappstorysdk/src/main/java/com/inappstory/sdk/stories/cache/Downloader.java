@@ -334,7 +334,12 @@ public class Downloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
+
+        if (downloadOffset > 0) {
+            // use the Range header only if we need to get part of the file (prevent unnecessary range request)
+            urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
+        }
+
         try {
             urlConnection.connect();
         } catch (Exception e) {
@@ -343,7 +348,7 @@ public class Downloader {
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
 
-        long sz = urlConnection.getContentLength();
+        long sz = urlConnection.getContentLengthLong();
         long freeSpace = outputFile.getFreeSpace();
         if (freeSpace > 0 && sz > freeSpace) {
             urlConnection.disconnect();
@@ -355,9 +360,9 @@ public class Downloader {
             if (headerKey == null) continue;
             if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
             headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
-            if (headerKey.equals("Content-Range")) {
+            if (headerKey.equalsIgnoreCase("Content-Range")) {
                 String rangeHeader = urlConnection.getHeaderFields().get(headerKey).get(0);
-                if (!rangeHeader.equals("none")) {
+                if (!rangeHeader.equalsIgnoreCase("none")) {
                     allowPartial = true;
                     try {
                         sz = Long.parseLong(rangeHeader.split("/")[1]);
@@ -399,9 +404,7 @@ public class Downloader {
             while ((bufferLength = inputStream.read(buffer)) > 0) {
                 if (interruption != null && interruption.active) {
                     releaseStreamAndFile(fileOutputStream, lock);
-                    if (allowPartial)
-                        return new DownloadFileState(outputFile, sz, outputFile.length());
-                    return null;
+                    return new DownloadFileState(outputFile, sz, outputFile.length());
                 } else {
                     fileOutputStream.write(buffer, 0, bufferLength);
                     cnt += bufferLength;
@@ -414,9 +417,7 @@ public class Downloader {
             return new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
         } catch (Exception e) {
             releaseStreamAndFile(fileOutputStream, lock);
-            if (allowPartial)
-                return new DownloadFileState(outputFile, sz, outputFile.length());
-            return null;
+            return new DownloadFileState(outputFile, sz, outputFile.length());
         }
     }
 
