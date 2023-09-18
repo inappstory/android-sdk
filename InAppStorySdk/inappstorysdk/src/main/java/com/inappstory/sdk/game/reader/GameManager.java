@@ -213,8 +213,7 @@ public class GameManager {
 
     private String modifyJsResult(String data) {
         if (data == null) return "";
-        data.replaceAll("'", "\\'");
-        return data;
+        return data.replaceAll("'", "\\\\'");
     }
 
     void tapOnLink(String link) {
