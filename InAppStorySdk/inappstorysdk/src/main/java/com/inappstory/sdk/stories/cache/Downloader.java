@@ -348,7 +348,7 @@ public class Downloader {
         int status = urlConnection.getResponseCode();
         HashMap<String, String> headers = new HashMap<>();
 
-        long sz = urlConnection.getContentLengthLong();
+        long sz = urlConnection.getContentLength();
         long freeSpace = outputFile.getFreeSpace();
         if (freeSpace > 0 && sz > freeSpace) {
             urlConnection.disconnect();
