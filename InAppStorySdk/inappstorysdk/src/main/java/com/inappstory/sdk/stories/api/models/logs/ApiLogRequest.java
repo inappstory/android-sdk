@@ -35,7 +35,11 @@ public class ApiLogRequest {
         this.method = request.getMethod();
         this.url = url.toString();
         this.id = requestId;
-        if (!request.getMethod().equals(HttpMethods.GET) && !request.getMethod().equals(HttpMethods.HEAD) && !request.getBody().isEmpty()) {
+        if (!request.getMethod().equals(HttpMethods.GET)
+                && !request.getMethod().equals(HttpMethods.HEAD)
+                && request.getBody() != null
+                && !request.getBody().isEmpty()
+        ) {
             body = request.getBody();
             bodyRaw = request.getBodyRaw();
             bodyUrlEncoded = request.getBodyEncoded();

@@ -149,12 +149,11 @@ public class Downloader {
     @WorkerThread
     public static boolean downloadOrGetResourceFile(
             @NonNull String url,
-            @NonNull String hashKey,
+            @NonNull String key,
             LruDiskCache cache,
             File img,
             FileLoadProgressCallback callback
     ) throws Exception {
-        String key = hashKey + "_" + cropUrl(url, true);
         long offset = 0;
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
@@ -334,7 +333,9 @@ public class Downloader {
         if (InAppStoryManager.getNetworkClient() != null) {
             urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
         }
-        urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
+        if (downloadOffset > 0) {
+            urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
+        }
         try {
             urlConnection.connect();
         } catch (Exception e) {
@@ -355,9 +356,9 @@ public class Downloader {
             if (headerKey == null) continue;
             if (urlConnection.getHeaderFields().get(headerKey).isEmpty()) continue;
             headers.put(headerKey, urlConnection.getHeaderFields().get(headerKey).get(0));
-            if (headerKey.equals("Content-Range")) {
+            if (headerKey.equalsIgnoreCase("Content-Range")) {
                 String rangeHeader = urlConnection.getHeaderFields().get(headerKey).get(0);
-                if (!rangeHeader.equals("none")) {
+                if (!rangeHeader.equalsIgnoreCase("none")) {
                     allowPartial = true;
                     try {
                         sz = Long.parseLong(rangeHeader.split("/")[1]);
@@ -431,30 +432,5 @@ public class Downloader {
         } catch (Exception e2) {
         }
         fileOutputStream.close();
-    }
-
-    public static void compressFile(File srcFile, String mimeType) throws IOException {
-        FileOutputStream out = new FileOutputStream(srcFile.getAbsolutePath());
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = false;
-        options.inSampleSize = 2;
-        try {
-            Bitmap bitmap = BitmapFactory.decodeFile(srcFile.getPath(), options);
-            switch (mimeType) {
-                case "image/jpeg":
-                case "image/jpg":
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out);
-                    break;
-                case "image/png":
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 70, out);
-                    break;
-                case "image/webp":
-                    bitmap.compress(Bitmap.CompressFormat.WEBP, 70, out);
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        out.close();
     }
 }

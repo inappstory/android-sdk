@@ -30,6 +30,7 @@ public class RequestConnection {
         connectionProperties = connection.getRequestProperties();
         if (!request.getMethod().equals(HttpMethods.GET) &&
                 !request.getMethod().equals(HttpMethods.HEAD) &&
+                request.getBody() != null &&
                 !request.getBody().isEmpty()
         ) {
             InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connectionProperties);

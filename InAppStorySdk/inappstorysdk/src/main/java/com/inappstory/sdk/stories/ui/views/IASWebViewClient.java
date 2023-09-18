@@ -11,6 +11,10 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.Downloader;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,38 +24,71 @@ import java.util.Map;
 
 public class IASWebViewClient extends WebViewClient {
 
+    private File getCachedFile(String url, String key) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return null;
+        LruDiskCache cache = service.getCommonCache();
+        try {
+            return Downloader.updateFile(cache.getFullFile(key), url, cache, key);
+        } catch (Exception e) {
+            InAppStoryService.createExceptionLog(e);
+            return null;
+        }
+    }
+    private File getFileByUrl(String url) {
+        String filePath = null;
+        File file = null;
+        if (url.startsWith("http://file-assets")) {
+            filePath = Uri.parse(url
+                    .replace("http://file-assets", "file://")
+            ).getPath();
+        } else if (url.startsWith("file://")) {
+            filePath = Uri.parse(url).getPath();
+        }
+        if (filePath != null) {
+            file = new File(filePath);
+        } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
+            // skip any data URI scheme (data:content/type;)
+            file = getCachedFile(url, Downloader.cropUrl(url, true));
+        }
+        return file;
+    }
+    protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
+        File file = getFileByUrl(url);
+        WebResourceResponse response = null;
+        if (file != null && file.exists()) {
+            try {
+                String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                        MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath())
+                );
+                if (mimeType == null || mimeType.isEmpty()) {
+                    mimeType = "application/octet-stream";
+                }
+
+                Log.e("Game_File", mimeType + " " + url);
+                response = new WebResourceResponse(mimeType, "BINARY",
+                        new FileInputStream(file));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Map<String, String> currentHeaders = response.getResponseHeaders();
+                    if (currentHeaders == null) currentHeaders = new HashMap<>();
+                    HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+                    newHeaders.put("Access-Control-Allow-Origin", "*");
+                    response.setResponseHeaders(newHeaders);
+                }
+            } catch (Exception e) {
+                InAppStoryService.createExceptionLog(e);
+            }
+        }
+        return response;
+    }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        Log.e("Game_File", String.valueOf(request.getUrl()));
         try {
-            if (request.getUrl().toString().startsWith("http://file-assets")) {
-                String filePath = Uri.parse(request
-                        .getUrl()
-                        .toString()
-                        .replace("http://file-assets", "file://")
-                ).getPath();
-                if (filePath != null) {
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                                MimeTypeMap.getFileExtensionFromUrl(filePath)
-                        );
-                        WebResourceResponse response = new WebResourceResponse(
-                                mimeType,
-                                "utf-8",
-                                new FileInputStream(file)
-                        );
-                        Map<String, String> currentHeaders = response.getResponseHeaders();
-                        HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
-                        newHeaders.put("Access-Control-Allow-Origin", "*");
-                        response.setResponseHeaders(newHeaders);
-                        return response;
-                    }
-
-
-                }
-            }
+            WebResourceResponse response = getChangedResponse(request.getUrl().toString());
+            if (response != null) return response;
         } catch (FileNotFoundException ignored) {
         }
         return super.shouldInterceptRequest(view, request);
@@ -60,24 +97,8 @@ public class IASWebViewClient extends WebViewClient {
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
         try {
-            if (url.startsWith("http://file-assets")) {
-                String filePath = Uri.parse(
-                        url.replace("http://file-assets", "file://")
-                ).getPath();
-                if (filePath != null) {
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                                MimeTypeMap.getFileExtensionFromUrl(filePath)
-                        );
-                        return new WebResourceResponse(
-                                mimeType,
-                                "utf-8",
-                                new FileInputStream(file)
-                        );
-                    }
-                }
-            }
+            WebResourceResponse response = getChangedResponse(url);
+            if (response != null) return response;
         } catch (FileNotFoundException ignored) {
         }
         return super.shouldInterceptRequest(view, url);

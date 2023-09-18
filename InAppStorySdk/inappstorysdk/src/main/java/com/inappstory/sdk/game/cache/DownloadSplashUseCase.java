@@ -64,6 +64,7 @@ public class DownloadSplashUseCase {
         }
         Downloader.downloadFileBackground(
                 splashScreen.url,
+                false,
                 inAppStoryService.getInfiniteCache(),
                 new FileLoadProgressCallback() {
                     @Override

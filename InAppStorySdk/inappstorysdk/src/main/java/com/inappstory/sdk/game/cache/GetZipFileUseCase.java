@@ -78,6 +78,7 @@ public class GetZipFileUseCase extends GameNameHolder {
                         try {
                             fileState = Downloader.downloadOrGetFile(
                                     url,
+                                    true,
                                     InAppStoryService.getInstance().getInfiniteCache(),
                                     zipFile,
                                     new FileLoadProgressCallback() {
