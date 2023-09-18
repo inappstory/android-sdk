@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
@@ -225,7 +226,7 @@ public class AppearanceManager {
     private UGCListItemSimpleAppearance csUGCListItemSimpleAppearance
             = new UGCListItemSimpleAppearance();
     private int csReaderRadius = -1;
-    private int csCoverQuality;
+    private int csCoverQuality = Image.QUALITY_MEDIUM;
 
     private boolean csCloseOnSwipe = true;
     private boolean csCloseOnOverscroll = true;
