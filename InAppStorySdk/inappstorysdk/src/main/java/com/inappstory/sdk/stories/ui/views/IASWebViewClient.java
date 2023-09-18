@@ -54,6 +54,7 @@ public class IASWebViewClient extends WebViewClient {
         return file;
     }
     protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
+        Log.e("Game_File", url);
         File file = getFileByUrl(url);
         WebResourceResponse response = null;
         if (file != null && file.exists()) {
@@ -65,7 +66,7 @@ public class IASWebViewClient extends WebViewClient {
                     mimeType = "application/octet-stream";
                 }
 
-                Log.e("Game_File", mimeType + " " + url);
+                Log.e("Game_File", url + " " + mimeType + " " + file.getAbsolutePath());
                 response = new WebResourceResponse(mimeType, "BINARY",
                         new FileInputStream(file));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -85,7 +86,6 @@ public class IASWebViewClient extends WebViewClient {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        Log.e("Game_File", String.valueOf(request.getUrl()));
         try {
             WebResourceResponse response = getChangedResponse(request.getUrl().toString());
             if (response != null) return response;

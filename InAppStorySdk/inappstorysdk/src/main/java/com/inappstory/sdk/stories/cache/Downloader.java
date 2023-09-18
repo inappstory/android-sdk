@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -172,6 +173,8 @@ public class Downloader {
         if (img == null) {
             img = cache.getFileFromKey(key);
         }
+
+        Log.e("Game_File", "download " + key + " " + url);
         DownloadFileState downloadFileState = downloadFile(
                 url,
                 img,
@@ -269,7 +272,7 @@ public class Downloader {
         });
     }
 
-    static String getFileExtensionFromUrl(String url) {
+    public static String getFileExtensionFromUrl(String url) {
         String croppedUrl = cropUrl(url, true);
         return croppedUrl.substring(croppedUrl.lastIndexOf("."));
     }
