@@ -113,7 +113,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     private void downloadCoverVideo(String url) {
         if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, InAppStoryService.getInstance().getFastCache(),
+        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(),
                 new FileLoadProgressCallback() {
                     @Override
                     public void onProgress(long loadedSize, long totalSize) {

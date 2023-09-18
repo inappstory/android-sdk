@@ -12,6 +12,7 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.Downloader;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,13 +80,14 @@ public class WebPageConverter {
         resourceUrls.addAll(story.getSrcListUrls(index, null));
         resourceUrls.addAll(story.getSrcListUrls(index, "video"));
         for (int i = 0; i < resourceKeys.size(); i++) {
-            String video = resourceUrls.get(i);
-            String videoKey = resourceKeys.get(i);
-            File file = cache.getFullFile(video);
+            String resource = resourceUrls.get(i);
+            String resourceKey = resourceKeys.get(i);
+            String key = Downloader.cropUrl(resource, true);
+            File file = Downloader.updateFile(cache.getFullFile(key), resource, cache, key);
             if (file != null && file.exists() && file.length() > 0) {
-                video = "file://" + file.getAbsolutePath();
+                resource = "file://" + file.getAbsolutePath();
             }
-            innerWebData = innerWebData.replace(videoKey, video);
+            innerWebData = innerWebData.replace(resourceKey, resource);
         }
         return innerWebData;
     }
@@ -103,12 +105,16 @@ public class WebPageConverter {
                 if (placeholderValue != null) {
                     String path = "";
                     if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
-                        File file = cache.getFullFile(placeholderValue.first.getUrl());
+                        File file = cache.getFullFile(
+                                Downloader.cropUrl(placeholderValue.first.getUrl(), true)
+                        );
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
                         } else {
                             if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
-                                file = cache.getFullFile(placeholderValue.second.getUrl());
+                                file = cache.getFullFile(
+                                        Downloader.cropUrl(placeholderValue.second.getUrl(), true)
+                                );
                                 if (file != null && file.exists() && file.length() > 0) {
                                     path = "file://" + file.getAbsolutePath();
                                 }

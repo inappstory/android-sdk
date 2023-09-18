@@ -14,6 +14,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
+import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -320,9 +321,12 @@ public class StoriesViewManager {
         return progressBar;
     }
 
-    public File getCurrentFile(String img) {
+    public File getCachedFile(String url, String key) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return null;
+        LruDiskCache cache = service.getCommonCache();
         try {
-            return InAppStoryService.getInstance().getCommonCache().getFullFile(img);
+            return Downloader.updateFile(cache.getFullFile(key), url, cache, key);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             return null;

@@ -237,7 +237,9 @@ public class ZipLoader {
                             deleteFolderRecursive(gameDirFile, true);
                         }
                     }
-                    File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(url);
+                    File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(
+                            Downloader.cropUrl(url, true)
+                    );
                     if (cachedArchive != null) {
                         if (gameCenterData != null &&
                                 !fileChecker.checkWithShaAndSize(
@@ -268,6 +270,7 @@ public class ZipLoader {
                         ProfilingManager.getInstance().addTask("game_download", hash);
                         fileState = Downloader.downloadOrGetFile(
                                 url,
+                                true,
                                 InAppStoryService.getInstance().getInfiniteCache(),
                                 getFile,
                                 new FileLoadProgressCallback() {
