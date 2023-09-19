@@ -53,7 +53,7 @@ public class StoriesList extends RecyclerView {
 
     public void updateVisibleArea() {
         getVisibleItems();
-        if (scrollCallback != null) {
+        if (scrollCallback != null && !scrolledItems.isEmpty()) {
             scrollCallback.onVisibleAreaUpdated(
                     new ArrayList<>(scrolledItems.values())
             );
@@ -235,7 +235,7 @@ public class StoriesList extends RecyclerView {
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == SCROLL_STATE_IDLE) {
-                    if (scrollCallback != null) {
+                    if (scrollCallback != null && !scrolledItems.isEmpty()) {
                         scrollCallback.onVisibleAreaUpdated(
                                 new ArrayList<>(scrolledItems.values())
                         );
@@ -629,7 +629,7 @@ public class StoriesList extends RecyclerView {
                 new Runnable() {
                     @Override
                     public void run() {
-                        if (scrollCallback != null) {
+                        if (scrollCallback != null && !scrolledItems.isEmpty()) {
                             scrollCallback.onVisibleAreaUpdated(
                                     new ArrayList<>(scrolledItems.values())
                             );
