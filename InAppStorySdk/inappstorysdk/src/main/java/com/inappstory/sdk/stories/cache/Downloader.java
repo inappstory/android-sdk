@@ -1,9 +1,6 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -18,7 +15,6 @@ import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;
@@ -30,7 +26,6 @@ import java.net.URL;
 import java.nio.channels.FileLock;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -48,8 +43,8 @@ public class Downloader {
      *
      * @param url ссылка
      */
-    public static String cropUrl(String url, boolean crop) {
-        return crop ? url.split("\\?")[0] : url;
+    public static String deleteQueryArgumentsFromUrl(String url, boolean delete) {
+        return delete ? url.split("\\?")[0] : url;
     }
 
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
@@ -76,7 +71,7 @@ public class Downloader {
     @WorkerThread
     public static DownloadFileState downloadOrGetFile(
             @NonNull String url,
-            boolean cropUrl,
+            boolean deleteArguments,
             LruDiskCache cache,
             File img,
             FileLoadProgressCallback callback,
@@ -91,7 +86,7 @@ public class Downloader {
         requestLog.isStatic = true;
         requestLog.id = requestId;
         responseLog.id = requestId;
-        String key = cropUrl(url, cropUrl);
+        String key = deleteQueryArgumentsFromUrl(url, deleteArguments);
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
         if (cache.hasKey(key)) {
@@ -204,7 +199,7 @@ public class Downloader {
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
-        String key = cropUrl(url, false);
+        String key = deleteQueryArgumentsFromUrl(url, false);
 
         if (cache.hasKey(key)) {
             return updateFile(cache.getFullFile(key), url, cache, key);
@@ -273,8 +268,13 @@ public class Downloader {
     }
 
     public static String getFileExtensionFromUrl(String url) {
-        String croppedUrl = cropUrl(url, true);
-        return croppedUrl.substring(croppedUrl.lastIndexOf("."));
+        String croppedUrl = deleteQueryArgumentsFromUrl(url, true);
+        String[] parts = croppedUrl.split("/");
+        String name = parts[parts.length - 1];
+        if (name.contains("."))
+            return name.substring(name.lastIndexOf("."));
+        else
+            return "";
     }
 
     static void checkAndReplaceFile(
@@ -292,9 +292,10 @@ public class Downloader {
             cache.put(key, newFile);
         }
     }
+
     public static String getFontFile(String url) {
         if (url == null || url.isEmpty()) return null;
-        String key = cropUrl(url, true);
+        String key = deleteQueryArgumentsFromUrl(url, true);
         File img = null;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;

@@ -4,11 +4,9 @@ import static java.util.UUID.randomUUID;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
-import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -27,9 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -238,7 +233,7 @@ public class ZipLoader {
                         }
                     }
                     File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(
-                            Downloader.cropUrl(url, true)
+                            Downloader.deleteQueryArgumentsFromUrl(url, true)
                     );
                     if (cachedArchive != null) {
                         if (gameCenterData != null &&

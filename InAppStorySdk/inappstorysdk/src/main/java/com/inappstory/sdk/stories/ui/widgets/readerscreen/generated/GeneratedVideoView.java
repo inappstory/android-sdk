@@ -168,7 +168,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
 
         try {
             if (storyId == null)
-                storyId = Utils.hash(Downloader.cropUrl(url, false));
+                storyId = Utils.hash(Downloader.deleteQueryArgumentsFromUrl(url, false));
             if (file == null)
                 if (cache.hasKey(url)) {
                     file = cache.getFullFile(url);

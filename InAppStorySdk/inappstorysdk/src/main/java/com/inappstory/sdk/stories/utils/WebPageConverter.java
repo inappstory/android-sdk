@@ -82,7 +82,7 @@ public class WebPageConverter {
         for (int i = 0; i < resourceKeys.size(); i++) {
             String resource = resourceUrls.get(i);
             String resourceKey = resourceKeys.get(i);
-            String key = Downloader.cropUrl(resource, true);
+            String key = Downloader.deleteQueryArgumentsFromUrl(resource, true);
             File file = Downloader.updateFile(cache.getFullFile(key), resource, cache, key);
             if (file != null && file.exists() && file.length() > 0) {
                 resource = "file://" + file.getAbsolutePath();
@@ -106,14 +106,14 @@ public class WebPageConverter {
                     String path = "";
                     if (placeholderValue.first.getType() == ImagePlaceholderType.URL) {
                         File file = cache.getFullFile(
-                                Downloader.cropUrl(placeholderValue.first.getUrl(), true)
+                                Downloader.deleteQueryArgumentsFromUrl(placeholderValue.first.getUrl(), true)
                         );
                         if (file != null && file.exists() && file.length() > 0) {
                             path = "file://" + file.getAbsolutePath();
                         } else {
                             if (placeholderValue.second.getType() == ImagePlaceholderType.URL) {
                                 file = cache.getFullFile(
-                                        Downloader.cropUrl(placeholderValue.second.getUrl(), true)
+                                        Downloader.deleteQueryArgumentsFromUrl(placeholderValue.second.getUrl(), true)
                                 );
                                 if (file != null && file.exists() && file.length() > 0) {
                                     path = "file://" + file.getAbsolutePath();
