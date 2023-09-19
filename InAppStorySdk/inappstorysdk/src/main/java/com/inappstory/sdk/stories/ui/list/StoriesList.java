@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -150,6 +152,7 @@ public class StoriesList extends RecyclerView {
             if (scrollCallback != null) {
                 scrollCallback.userInteractionStart();
             }
+            getVisibleItems();
         } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
             if (layoutManager != null && layoutManager instanceof LinearLayoutManager) {
                 if (((LinearLayoutManager) layoutManager).getOrientation() == LinearLayoutManager.HORIZONTAL) {
@@ -235,6 +238,7 @@ public class StoriesList extends RecyclerView {
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == SCROLL_STATE_IDLE) {
+                    Log.e("onVisibleAreaUpdated", scrolledItems.entrySet().toString());
                     if (scrollCallback != null && !scrolledItems.isEmpty()) {
                         scrollCallback.onVisibleAreaUpdated(
                                 new ArrayList<>(scrolledItems.values())
@@ -311,15 +315,24 @@ public class StoriesList extends RecyclerView {
                     if (holder != null) {
                         Rect rect = new Rect();
                         holder.getGlobalVisibleRect(rect);
-                        float currentPercentage = (float) (rect.width() * rect.height()) /
-                                (holder.getWidth() * holder.getHeight());
+                        Rect rect2 = new Rect();
+                        getGlobalVisibleRect(rect2);
+                        int rectTop = Math.max(rect.top, rect2.top);
+                        int rectBottom = Math.min(rect.bottom, rect2.bottom);
+                        int rectLeft = Math.max(rect.left, rect2.left);
+                        int rectRight = Math.min(rect.right, rect2.right);
+                        int rectHeight = Math.max(0, rectBottom - rectTop);
+                        int rectWidth = Math.max(0, rectRight - rectLeft);
+                        float currentPercentage =
+                                (float) (rectHeight * rectWidth) /
+                                        (holder.getWidth() * holder.getHeight());
                         ShownStoriesListItem cachedData = scrolledItems.get(i);
                         if (cachedData != null) {
                             currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
                         }
                         Story current = InAppStoryService.getInstance().getDownloadManager()
                                 .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
-                        if (current != null) {
+                        if (current != null && currentPercentage > 0) {
                             scrolledItems.put(i, new ShownStoriesListItem(
                                     new StoryData(
                                             current.id,
@@ -629,7 +642,10 @@ public class StoriesList extends RecyclerView {
                 new Runnable() {
                     @Override
                     public void run() {
+
+                        Log.e("onVisibleAreaUpdated", scrolledItems.entrySet().toString());
                         if (scrollCallback != null && !scrolledItems.isEmpty()) {
+
                             scrollCallback.onVisibleAreaUpdated(
                                     new ArrayList<>(scrolledItems.values())
                             );

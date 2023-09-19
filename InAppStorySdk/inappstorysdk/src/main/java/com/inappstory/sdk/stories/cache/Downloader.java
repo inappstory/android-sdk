@@ -157,7 +157,7 @@ public class Downloader {
                     fileState.file != null &&
                     fileState.file.exists()
             ) {
-                checkAndReplaceFile(cache, url, key, fileState);
+                //checkAndReplaceFile(cache, url, key, fileState);
                 if (fileState.totalSize == fileState.downloadedSize)
                     return false;
                 else {

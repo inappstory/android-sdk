@@ -20,10 +20,9 @@ public class ShownStoriesListItem {
 
     @Override
     public String toString() {
-        return "StoriesListItemData{" +
+        return "ShownItem{" +
                 "listIndex=" + listIndex +
                 ", areaPercent=" + areaPercent +
-                ", storyData=" + storyData +
                 '}';
     }
 }
