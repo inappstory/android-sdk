@@ -200,40 +200,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void onBackPressed() {
-
-        if (isAnimation) return;
-        if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
-        else animateFirst = false;
-
-        if (InAppStoryService.isNotNull()) {
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-            if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getIntent().getStringExtra("feedId"),
-                                            CallbackManager.getInstance().getSourceFromInt(
-                                                    getIntent().getIntExtra("source", 0)
-                                            )
-                                    ),
-                                    story.lastIndex
-                            ),
-                            CloseReader.CUSTOM
-                    );
-                }
-                String cause = StatisticManager.BACK;
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                        story.getSlidesCount(),
-                        getIntent().getStringExtra("feedId"));
-            }
-        }
-        finish();
+        closeStoryReader(-1);
     }
 
     @Override
@@ -412,6 +379,9 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             }
             String cause = StatisticManager.AUTO;
             switch (action) {
+                case -1:
+                    cause = StatisticManager.BACK;
+                    break;
                 case CloseStory.CLICK:
                     cause = StatisticManager.CLICK;
                     break;

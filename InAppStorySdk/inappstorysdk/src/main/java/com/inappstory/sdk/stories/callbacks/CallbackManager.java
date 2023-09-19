@@ -128,6 +128,7 @@ public class CallbackManager {
                 closeType = CloseReader.SWIPE;
                 break;
             case CloseStory.CUSTOM:
+            case -1:
                 closeType = CloseReader.CUSTOM;
                 break;
         }

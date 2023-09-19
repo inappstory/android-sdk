@@ -440,7 +440,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onBackPressed() {
-        closeStoryReader(CloseStory.CUSTOM);
+        closeStoryReader(-1);
     }
 
     @Override
@@ -471,8 +471,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                                     ),
                                     story.lastIndex
                             ),
-                            CallbackManager.getInstance().getCloseTypeFromInt(
-                                    action)
+                            CallbackManager.getInstance().getCloseTypeFromInt(action)
                     );
                 }
                 String cause = StatisticManager.AUTO;
@@ -482,6 +481,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         break;
                     case CloseStory.CUSTOM:
                         cause = StatisticManager.CUSTOM;
+                        break;
+                    case -1:
+                        cause = StatisticManager.BACK;
                         break;
                     case CloseStory.SWIPE:
                         cause = StatisticManager.SWIPE;
