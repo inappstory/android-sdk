@@ -942,6 +942,7 @@ public class InAppStoryManager {
     }
 
     public void clearCachedList(String id) {
+        if (id == null) return;
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
             inAppStoryService.listStoriesIds.remove(id);

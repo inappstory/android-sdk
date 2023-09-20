@@ -77,7 +77,9 @@ public class StoriesList extends RecyclerView {
         synchronized (feedLock) {
             if (!isFavoriteList && feed != null && !feed.isEmpty()) {
                 if (this.feed != null && !this.feed.isEmpty() && !this.feed.equals(feed)) {
-                    //TODO auto clear cache?
+                    InAppStoryManager manager = InAppStoryManager.getInstance();
+                    if (manager != null && cacheId != null)
+                        manager.clearCachedList(cacheId);
                     reloadStories = true;
                 }
                 this.feed = feed;
