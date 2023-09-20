@@ -53,12 +53,13 @@ public class StoriesList extends RecyclerView {
 
     public static String DEFAULT_FEED = "default";
 
-    public void updateVisibleArea() {
+    public void updateVisibleArea(boolean triggerScrollCallback) {
         getVisibleItems();
-        if (scrollCallback != null && !scrolledItems.isEmpty()) {
+        if (triggerScrollCallback && scrollCallback != null && !scrolledItems.isEmpty()) {
             scrollCallback.onVisibleAreaUpdated(
                     new ArrayList<>(scrolledItems.values())
             );
+            scrolledItems.clear();
         }
     }
 
@@ -72,9 +73,18 @@ public class StoriesList extends RecyclerView {
     public Object feedLock = new Object();
 
     public void setFeed(String feed) {
+        boolean reloadStories = false;
         synchronized (feedLock) {
-            if (!isFavoriteList && feed != null && !feed.isEmpty())
+            if (!isFavoriteList && feed != null && !feed.isEmpty()) {
+                if (this.feed != null && !this.feed.isEmpty() && !this.feed.equals(feed)) {
+                    //TODO auto clear cache?
+                    reloadStories = true;
+                }
                 this.feed = feed;
+            }
+        }
+        if (this.adapter != null && reloadStories) {
+            refreshList();
         }
     }
 
