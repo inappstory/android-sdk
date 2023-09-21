@@ -365,9 +365,7 @@ public class StoriesList extends RecyclerView {
         final int ind = adapter.getIndexById(storyId);
         if (ind == -1) return;
         if (layoutManager instanceof LinearLayoutManager) {
-            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
-        } else if (layoutManager instanceof GridLayoutManager) {
-            ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
+            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(Math.max(ind, 0), 0);
         }
         if (ind >= 0 && listID != null && this.uniqueID != null && this.uniqueID.equals(listID)) {
             new Handler().postDelayed(new Runnable() {

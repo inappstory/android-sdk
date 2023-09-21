@@ -22,8 +22,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
@@ -50,6 +52,8 @@ import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrame
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 import com.inappstory.sdk.utils.StringsUtils;
+
+import java.util.ArrayList;
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -116,7 +120,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         StatusBarController.hideStatusBar(this, true);
     }
 
-    public void startAnim() {
+    public void startAnim(final Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         backTintView.setVisibility(View.GONE);
@@ -126,19 +130,20 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             float x = Sizes.getScreenSize().x / 2f;
             float y = draggableFrame.getY();
             AnimationSet animationSet = new AnimationSet(true);
-            Animation anim = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, x, y);
-            animationSet.addAnimation(anim);
-            animationSet.setDuration(300);
-            animationSet.setStartOffset(200);
-            animationSet.setInterpolator(new LinearOutSlowInInterpolator());
+            animationSet.setStartOffset(100);
+            animationSet.setDuration(200);
+            animationSet.setInterpolator(new LinearInterpolator());
+            animationSet.addAnimation(new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, x, y));
+            animationSet.addAnimation(new AlphaAnimation(0f, 1f));
             Point coordinates = ScreensManager.getInstance().coordinates;
             if (coordinates != null) {
-                Animation anim2 = new TranslateAnimation(coordinates.x -
+                Animation translateAnimation = new TranslateAnimation(coordinates.x -
                         Sizes.getScreenSize(StoriesActivity.this).x / 2, 0f,
                         coordinates.y - draggableFrame.getY(), 0f);
-                animationSet.addAnimation(anim2);
+                animationSet.addAnimation(translateAnimation);
 
             }
+
             animationSet.setAnimationListener(new Animation.AnimationListener() {
 
                 @Override
@@ -158,6 +163,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                     draggableFrame.setVisibility(View.VISIBLE);
                     backTintView.setVisibility(View.VISIBLE);
                     isAnimation = false;
+                    createStoriesFragment(savedInstanceState);
+                    setStoriesFragment();
                 }
             });
             draggableFrame.startAnimation(animationSet);
@@ -172,15 +179,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
             float y = draggableFrame.getY();
             AnimationSet animationSet = new AnimationSet(true);
-            Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
-            anim.setDuration(200);
-            animationSet.addAnimation(anim);
+            animationSet.setDuration(300);
+            animationSet.setInterpolator(new LinearInterpolator());
+            animationSet.addAnimation(new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y));
+            animationSet.addAnimation(new AlphaAnimation(1f, 0f));
             Point coordinates = ScreensManager.getInstance().coordinates;
             if (coordinates != null) {
                 Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x -
                         Sizes.getScreenSize(StoriesActivity.this).x / 2,
                         0f, coordinates.y - draggableFrame.getY());
-                anim2.setDuration(200);
                 animationSet.addAnimation(anim2);
 
             }
@@ -205,6 +212,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                 }
             });
+
+            backTintView.setVisibility(View.GONE);
             draggableFrame.startAnimation(animationSet);
         } catch (Exception e) {
             finishWithoutAnimation();
@@ -382,7 +391,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             };
         }
         draggableFrame.addListener(chromeFader);
-        final Bundle savedInstanceState = savedInstanceState1;
+
         try {
             if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {
                 StatusBarController.hideStatusBar(StoriesActivity.this, true);
@@ -399,18 +408,74 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 type = Story.StoryType.UGC;
             draggableFrame.type = type;
         }
+        if (storiesFragment == null) {
+            try {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
+                Bundle bundle = new Bundle();
+                ArrayList<Integer> ids = getIntent().getIntegerArrayListExtra("stories_ids");
+                bundle.putInt("storyId", ids.get(getIntent().getIntExtra("index", 0)));
+                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
+                setAppearanceSettings(bundle);
+                storiesLoaderFragment.setArguments(bundle);
+                FragmentTransaction t = fragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out,
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out
+                        )
+                        .replace(R.id.fragments_layout, storiesLoaderFragment);
+                t.addToBackStack("TEST");
+                t.commit();
+            } catch (IllegalStateException e) {
+                InAppStoryService.createExceptionLog(e);
+                finishWithoutAnimation();
+            }
+            startAnim(savedInstanceState1);
+        } else {
+            setStoriesFragment();
+        }
+
+        //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
+    }
+
+    private void setStoriesFragment() {
+        if (storiesFragment != null) {
+            try {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction t = fragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out,
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out
+                        )
+                        .replace(R.id.fragments_layout, storiesFragment);
+                t.addToBackStack("STORIES_FRAGMENT");
+                t.commit();
+            } catch (IllegalStateException e) {
+                InAppStoryService.createExceptionLog(e);
+                finishWithoutAnimation();
+            }
+        } else {
+            finishWithoutAnimation();
+        }
+    }
+
+    private void createStoriesFragment(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
 
-                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 bundle.putInt("source", getIntent().getIntExtra("source", ShowStory.SINGLE));
                 bundle.putInt("firstAction", getIntent().getIntExtra("firstAction", ShowStory.ACTION_OPEN));
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
-                bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
+                bundle.putInt("index", getIntent().getIntExtra("index", 0));
+                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
@@ -420,28 +485,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             storiesFragment = (StoriesFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
 
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesFragment != null) {
-                    try {
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        FragmentTransaction t = fragmentManager.beginTransaction()
-                                .replace(R.id.fragments_layout, storiesFragment);
-                        t.addToBackStack("STORIES_FRAGMENT");
-                        t.commit();
-                    } catch (IllegalStateException e) {
-                        InAppStoryService.createExceptionLog(e);
-                        finishWithoutAnimation();
-                    }
-                } else {
-                    finishWithoutAnimation();
-                }
-            }
-        }, 300);
-
-        //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
     StoriesFragment storiesFragment;

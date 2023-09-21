@@ -513,6 +513,8 @@ public class StoriesViewManager {
 
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
+
+        Log.e("currentSlideIsLoaded", storyId + " 0 " + slideIndex);
         if (showRefresh != null) {
             try {
                 showRefreshHandler.removeCallbacks(showRefresh);
@@ -530,14 +532,14 @@ public class StoriesViewManager {
             showLoader = null;
         }
         storyIsLoaded = true;
-        Log.e("hideLoader", "storyLoaded " + storyId + " " + slideIndex);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        Log.e("currentSlideIsLoaded", storyId + " " + slideIndex + " " + story.lastIndex + " " + InAppStoryService.getInstance().getCurrentId());
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)
                 || InAppStoryService.getInstance().getCurrentId() != storyId) {
             stopStory();
         } else {
-            pageManager.currentSlideIsLoaded = true;
 
+            pageManager.currentSlideIsLoaded = true;
             playStory();
             new Handler().postDelayed(new Runnable() {
                 @Override
