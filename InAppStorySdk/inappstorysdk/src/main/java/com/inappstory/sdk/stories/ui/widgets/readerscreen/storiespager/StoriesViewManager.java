@@ -195,34 +195,6 @@ public class StoriesViewManager {
     ShowRefresh showRefresh;
     ShowLoader showLoader;
 
-    public class ClearSlide implements Runnable {
-        int slideIndex = -1;
-
-        public ClearSlide(int slideIndex) {
-            this.slideIndex = slideIndex;
-        }
-
-        @Override
-        public void run() {
-            if (this.slideIndex == index)
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        InAppStoryService service = InAppStoryService.getInstance();
-                        if (service != null) {
-                            Story story = service.getDownloadManager().getStoryById(
-                                    storyId,
-                                    pageManager.getStoryType()
-                            );
-                            if (story != null) {
-                                setWebViewSettingsAndLoadEmpty(story);
-                            }
-                        }
-                    }
-                });
-        }
-    }
-
     Handler showRefreshHandler = new Handler(Looper.getMainLooper());
 
     public void loadWebData(String layout, String webdata) {
@@ -293,11 +265,6 @@ public class StoriesViewManager {
             if (slideInCache == -1) {
                 pageManager.slideLoadError(index);
             } else {
-                if (notFirstLoading) {
-                    setWebViewSettingsAndLoadEmpty(story);
-                } else {
-                    notFirstLoading = true;
-                }
                 if (!InAppStoryService.isConnected()) {
                     if (CallbackManager.getInstance().getErrorCallback() != null) {
                         CallbackManager.getInstance().getErrorCallback().noConnection();

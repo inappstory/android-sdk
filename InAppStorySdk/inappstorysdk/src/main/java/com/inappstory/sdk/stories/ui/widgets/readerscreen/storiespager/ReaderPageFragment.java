@@ -305,17 +305,6 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void slideLoadError() {
-        Log.e("hideLoader", "slideLoadError");
-        if (storiesView != null) {
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service != null) {
-                Story story = service.getDownloadManager().getStoryById(storyId, manager.getStoryType());
-                if (story != null) {
-                    ((SimpleStoriesWebView) storiesView).getManager().setWebViewSettingsAndLoadEmpty(story);
-                }
-            }
-        }
-
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
