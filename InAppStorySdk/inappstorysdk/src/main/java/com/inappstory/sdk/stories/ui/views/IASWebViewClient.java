@@ -65,14 +65,6 @@ public class IASWebViewClient extends WebViewClient {
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                         MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath())
                 );
-                if (file.getAbsolutePath().contains("ff7ff81")) {
-                    file = new File("/data/user/0/com.inappstory.examples/cache/ias/commonCache/a371d3ba41c421ee735fee771d77c5d0c48d8dd0844e8c3ed9fcb22e6248ccf061cad049f19a5b17489c869921faa4fd53bcd3af434ab6005e11d4ee232fd234_u0.ttf");
-                    // File mkvFile = new File(file.getAbsolutePath().replace(".mp4", ".mkv"));
-                    //copyFile(file, mkvFile);
-                    //file = mkvFile;
-
-                }
-
                 if (mimeType == null || mimeType.isEmpty()) {
                     mimeType = "application/octet-stream";
                 }
