@@ -186,27 +186,11 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadStart() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-
-                showLoader();
-            }
-        });
+        showLoaderContainer();
     }
 
     public void storyLoadedSuccess() {
-        try {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    refresh.setVisibility(View.GONE);
-                    hideLoader();
-                }
-            });
-        } catch (Exception e) {
-        }
-
+        hideLoaderContainer();
     }
 
     private void setOffsets(View view) {
@@ -270,44 +254,42 @@ public class ReaderPageFragment extends Fragment {
             });
     }
 
-    private void showLoader() {
-        if (loader == null) return;
-        loader.setAlpha(1f);
-        loader.setVisibility(View.VISIBLE);
-    }
-
-    private void hideLoader() {
-
-        if (loader == null || loader.getVisibility() == View.GONE) return;
-        Animation anim = new AlphaAnimation(1f, 0f);
-        anim.setDuration(200);
-        anim.setAnimationListener(new Animation.AnimationListener() {
-
+    public void showLoader() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
-            public void onAnimationStart(Animation animation) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                if (loader == null) return;
-                stopAndHideLoader();
+            public void run() {
+                if (loaderContainer == null) return;
+                refresh.setVisibility(View.GONE);
+                loader.setVisibility(View.VISIBLE);
             }
         });
-        loader.startAnimation(anim);
     }
 
-    private void stopAndHideLoader() {
-        loader.clearAnimation();
-        loader.setVisibility(View.GONE);
-        loader.setAlpha(1f);
+    public void showLoaderContainer() {
+        Log.e("showLoaderContainer", "show");
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (loaderContainer == null) return;
+                refresh.setVisibility(View.GONE);
+                loader.setVisibility(View.VISIBLE);
+                loaderContainer.setVisibility(View.VISIBLE);
+               /* Animation anim = new AlphaAnimation(0f, 1f);
+                anim.setDuration(200);
+                loaderContainer.startAnimation(anim);*/
+            }
+        });
+
+    }
+
+    private void hideLoaderContainer() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                loaderContainer.setVisibility(View.GONE);
+            }
+        });
+
     }
 
     public void storyLoadError() {
@@ -315,8 +297,8 @@ public class ReaderPageFragment extends Fragment {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                loader.setVisibility(View.GONE);
                 refresh.setVisibility(View.VISIBLE);
-                hideLoader();
                 close.setVisibility(View.VISIBLE);
             }
         });
@@ -324,11 +306,22 @@ public class ReaderPageFragment extends Fragment {
 
     public void slideLoadError() {
         Log.e("hideLoader", "slideLoadError");
+        if (storiesView != null) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service != null) {
+                Story story = service.getDownloadManager().getStoryById(storyId, manager.getStoryType());
+                if (story != null) {
+                    ((SimpleStoriesWebView) storiesView).getManager().setWebViewSettingsAndLoadEmpty(story);
+                }
+            }
+        }
+
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
+                loader.setVisibility(View.GONE);
                 refresh.setVisibility(View.VISIBLE);
-                hideLoader();
+                loaderContainer.setVisibility(View.VISIBLE);
                 close.setVisibility(View.VISIBLE);
             }
         });
@@ -454,11 +447,26 @@ public class ReaderPageFragment extends Fragment {
             addGradient(context, readerContainer);
 
         createLoader();
-        readerContainer.addView(loader);
         createRefreshButton(context);
-        readerContainer.addView(refresh);
+        loaderContainer = new RelativeLayout(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            loaderContainer.setElevation(28);
+        }
+        loaderContainer.setAlpha(0.99f);
+        loaderContainer.setLayoutParams(
+                new RelativeLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                )
+        );
+        loaderContainer.setBackgroundColor(Color.BLACK);
+        loaderContainer.addView(loader);
+        loaderContainer.addView(refresh);
+        readerContainer.addView(loaderContainer);
         return readerContainer;
     }
+
+    RelativeLayout loaderContainer;
 
     private void createLoader() {
         Context context = getContext();

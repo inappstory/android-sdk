@@ -46,6 +46,11 @@ public class ReaderPageManager {
         buttonsPanelManager.removeStoryFromFavorite();
     }
 
+    public void showLoader(int index) {
+
+        host.showLoaderContainer();
+    }
+
     public void screenshotShare() {
         if (checkIfManagersIsNull()) return;
         webViewManager.screenshotShare();
@@ -412,7 +417,7 @@ public class ReaderPageManager {
         if (durations == null) return;
         List<Integer> localDurations = new ArrayList<>(durations);
         if (localDurations.size() <= slideIndex) return;
-
+        host.showLoader();
         currentSlideIsLoaded = false;
         ProfilingManager.getInstance().addTask("slide_show",
                 storyId + "_" + slideIndex);
@@ -543,9 +548,11 @@ public class ReaderPageManager {
     }
 
     public void slideLoadError(int slideIndex) {
-        if (this.slideIndex == slideIndex)
+        if (this.slideIndex == slideIndex) {
+
             if (host != null)
                 host.slideLoadError();
+        }
     }
 
     public void storyLoadedInCache() {

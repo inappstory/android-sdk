@@ -18,6 +18,8 @@ import com.inappstory.sdk.stories.cache.Downloader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class IASWebViewClient extends WebViewClient {
             return null;
         }
     }
+
     private File getFileByUrl(String url) {
         String filePath = null;
         File file = null;
@@ -53,6 +56,7 @@ public class IASWebViewClient extends WebViewClient {
         }
         return file;
     }
+
     protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
         File file = getFileByUrl(url);
         WebResourceResponse response = null;
@@ -61,6 +65,14 @@ public class IASWebViewClient extends WebViewClient {
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                         MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath())
                 );
+                if (file.getAbsolutePath().contains("ff7ff81")) {
+                    file = new File("/data/user/0/com.inappstory.examples/cache/ias/commonCache/a371d3ba41c421ee735fee771d77c5d0c48d8dd0844e8c3ed9fcb22e6248ccf061cad049f19a5b17489c869921faa4fd53bcd3af434ab6005e11d4ee232fd234_u0.ttf");
+                    // File mkvFile = new File(file.getAbsolutePath().replace(".mp4", ".mkv"));
+                    //copyFile(file, mkvFile);
+                    //file = mkvFile;
+
+                }
+
                 if (mimeType == null || mimeType.isEmpty()) {
                     mimeType = "application/octet-stream";
                 }
@@ -78,6 +90,20 @@ public class IASWebViewClient extends WebViewClient {
             }
         }
         return response;
+    }
+
+    public static void copyFile(File src, File dst) throws IOException {
+        FileInputStream var2 = new FileInputStream(src);
+        FileOutputStream var3 = new FileOutputStream(dst);
+        byte[] var4 = new byte[1024];
+
+        int var5;
+        while ((var5 = var2.read(var4)) > 0) {
+            var3.write(var4, 0, var5);
+        }
+
+        var2.close();
+        var3.close();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

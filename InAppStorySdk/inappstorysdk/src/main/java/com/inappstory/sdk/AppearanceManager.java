@@ -49,7 +49,7 @@ public class AppearanceManager {
 
     public static final String CS_READER_RADIUS = "readerRadius";
     public static final String CS_CLOSE_ON_OVERSCROLL = "closeOnOverscroll";
-    public static final String CS_READER_OPEN_ANIM = "readerOpenAnimation";
+    public static final String CS_READER_OPEN_ANIM = "readerOpenCloseAnimation";
     public static final String CS_FAVORITE_ICON = "iconFavorite";
     public static final String CS_LIKE_ICON = "iconLike";
     public static final String CS_DISLIKE_ICON = "iconDislike";

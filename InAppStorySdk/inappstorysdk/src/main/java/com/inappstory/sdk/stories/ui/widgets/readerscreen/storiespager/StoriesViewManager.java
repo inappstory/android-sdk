@@ -159,6 +159,21 @@ public class StoriesViewManager {
         }
     }
 
+    public class ShowLoader implements Runnable {
+        int slideIndex = -1;
+
+        public ShowLoader(int slideIndex) {
+            this.slideIndex = slideIndex;
+        }
+
+        @Override
+        public void run() {
+            if (this.slideIndex == index)
+                pageManager.showLoader(index);
+        }
+    }
+
+
     public class ShowRefresh implements Runnable {
         int slideIndex = -1;
 
@@ -168,16 +183,50 @@ public class StoriesViewManager {
 
         @Override
         public void run() {
+            if (showLoader != null) {
+                showRefreshHandler.removeCallbacks(showLoader);
+                showLoader = null;
+            }
             if (this.slideIndex == index)
                 pageManager.slideLoadError(index);
         }
     }
 
     ShowRefresh showRefresh;
+    ShowLoader showLoader;
+
+    public class ClearSlide implements Runnable {
+        int slideIndex = -1;
+
+        public ClearSlide(int slideIndex) {
+            this.slideIndex = slideIndex;
+        }
+
+        @Override
+        public void run() {
+            if (this.slideIndex == index)
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        InAppStoryService service = InAppStoryService.getInstance();
+                        if (service != null) {
+                            Story story = service.getDownloadManager().getStoryById(
+                                    storyId,
+                                    pageManager.getStoryType()
+                            );
+                            if (story != null) {
+                                setWebViewSettingsAndLoadEmpty(story);
+                            }
+                        }
+                    }
+                });
+        }
+    }
 
     Handler showRefreshHandler = new Handler(Looper.getMainLooper());
 
     public void loadWebData(String layout, String webdata) {
+
         if (!(storiesView instanceof SimpleStoriesWebView)) return;
         if (showRefresh != null) {
             try {
@@ -187,9 +236,28 @@ public class StoriesViewManager {
             }
             showRefresh = null;
         }
+        if (showLoader != null) {
+            try {
+                showRefreshHandler.removeCallbacks(showLoader);
+            } catch (Exception e) {
+
+            }
+            showLoader = null;
+        }
         showRefresh = new ShowRefresh(index);
+        showLoader = new ShowLoader(index);
         showRefreshHandler.postDelayed(showRefresh, 3000);
+        showRefreshHandler.postDelayed(showLoader, 500);
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
+        lastLoadIsEmpty = false;
+    }
+
+    boolean lastLoadIsEmpty = false;
+
+    public void loadEmptyData(String layout, String webdata) {
+        if (!(storiesView instanceof SimpleStoriesWebView)) return;
+        ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
+        lastLoadIsEmpty = true;
     }
 
     private void initViews(SlideStructure slideStructure) {
@@ -223,7 +291,6 @@ public class StoriesViewManager {
         } else {
 
             if (slideInCache == -1) {
-                setWebViewSettingsAndLoadEmpty(story);
                 pageManager.slideLoadError(index);
             } else {
                 if (notFirstLoading) {
@@ -249,7 +316,7 @@ public class StoriesViewManager {
             @Override
             public void onConvert(String webData, String webLayout, int lastIndex) {
                 if (index != lastIndex) return;
-                loadWebData(webLayout, webData);
+                loadEmptyData(webLayout, webData);
             }
         };
         ((SimpleStoriesWebView) storiesView).setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -478,6 +545,22 @@ public class StoriesViewManager {
 
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
+        if (showRefresh != null) {
+            try {
+                showRefreshHandler.removeCallbacks(showRefresh);
+            } catch (Exception e) {
+
+            }
+            showRefresh = null;
+        }
+        if (showLoader != null) {
+            try {
+                showRefreshHandler.removeCallbacks(showLoader);
+            } catch (Exception e) {
+
+            }
+            showLoader = null;
+        }
         storyIsLoaded = true;
         Log.e("hideLoader", "storyLoaded " + storyId + " " + slideIndex);
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
@@ -496,14 +579,8 @@ public class StoriesViewManager {
             }, 200);
         }
         pageManager.host.storyLoadedSuccess();
-        if (showRefresh != null) {
-            try {
-                showRefreshHandler.removeCallbacks(showRefresh);
-            } catch (Exception e) {
 
-            }
-            showRefresh = null;
-        }
+
     }
 
 

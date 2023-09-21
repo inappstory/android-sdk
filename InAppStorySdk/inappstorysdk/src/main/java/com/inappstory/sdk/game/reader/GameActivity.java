@@ -719,6 +719,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
         options.apiBaseUrl = NetworkClient.getInstance().getBaseUrl();
+        InAppStoryManager iasManager = InAppStoryManager.getInstance();
+
         int orientation = getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
@@ -731,7 +733,10 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
         options.appPackageId = appPackageName;
         options.sdkVersion = BuildConfig.VERSION_NAME;
-        options.apiKey = InAppStoryManager.getInstance().getApiKey();
+        if (iasManager != null) {
+            options.apiKey = iasManager.getApiKey();
+            options.userId = iasManager.getUserId();
+        }
         options.sessionId = CachedSessionData.getInstance(this).sessionId;
         String language;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

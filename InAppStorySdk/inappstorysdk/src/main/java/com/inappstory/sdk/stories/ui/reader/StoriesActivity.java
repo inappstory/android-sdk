@@ -91,12 +91,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             animateFirst = false;
             closeAnim();
         } else {
-            switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
+            switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 0)) {
                 case 0:
                     finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
-                    break;
-                case 1:
-                    super.finish();
                     break;
                 case 2:
                     finishWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
