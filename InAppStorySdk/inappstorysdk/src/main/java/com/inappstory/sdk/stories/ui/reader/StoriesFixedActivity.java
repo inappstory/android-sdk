@@ -5,7 +5,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
@@ -120,12 +120,9 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             animateFirst = false;
             loadAnim();
         } else {
-            switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
+            switch (getIntent().getIntExtra(CS_READER_PRESENTATION_STYLE, 1)) {
                 case 0:
                     finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
-                    break;
-                case 1:
-                    super.finish();
                     break;
                 case 2:
                     finishWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);

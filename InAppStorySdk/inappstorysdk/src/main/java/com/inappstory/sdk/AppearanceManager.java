@@ -49,7 +49,7 @@ public class AppearanceManager {
 
     public static final String CS_READER_RADIUS = "readerRadius";
     public static final String CS_CLOSE_ON_OVERSCROLL = "closeOnOverscroll";
-    public static final String CS_READER_OPEN_ANIM = "readerOpenCloseAnimation";
+    public static final String CS_READER_PRESENTATION_STYLE = "presentationStyle";
     public static final String CS_FAVORITE_ICON = "iconFavorite";
     public static final String CS_LIKE_ICON = "iconLike";
     public static final String CS_DISLIKE_ICON = "iconDislike";
@@ -77,6 +77,12 @@ public class AppearanceManager {
     public static final int ANIMATION_CUBE = 2;
     public static final int ANIMATION_COVER = 3;
     public static final int ANIMATION_FLAT = 4;
+
+    public static final int ZOOM = 0;
+
+    public static final int CROSS_DISSOLVE = 1;
+    public static final int MODAL = 2;
+    public static final int NONE = -1;
 
     public AppearanceManager clone() {
         return new AppearanceManager(this);
@@ -220,6 +226,17 @@ public class AppearanceManager {
     private boolean csShowStatusBar = false;
     private int csClosePosition = BOTTOM_RIGHT; //1 - topLeft, 2 - topRight, 3 - bottomLeft, 4 - bottomRight;
     private int csStoryReaderAnimation = ANIMATION_CUBE;
+
+    public int csStoryReaderPresentationStyle() {
+        return csStoryReaderPresentationStyle;
+    }
+
+    public AppearanceManager csStoryReaderPresentationStyle(int csStoryReaderPresentationStyle) {
+        this.csStoryReaderPresentationStyle = csStoryReaderPresentationStyle;
+        return this;
+    }
+
+    private int csStoryReaderPresentationStyle = ZOOM;
     private boolean csIsDraggable = true;
 
     private StoriesGradientObject csTimerGradient;

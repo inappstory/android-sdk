@@ -310,6 +310,7 @@ public class StoriesViewManager {
     }
 
     void setWebViewSettingsAndLoadEmpty(Story story) {
+        if (1 == 1) return;
         String layout = story.getLayout();
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
         WebPageConvertCallback callback = new WebPageConvertCallback() {
