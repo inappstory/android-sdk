@@ -266,7 +266,7 @@ public class ReaderPageManager {
     public void resumeSlide(boolean withBackground) {
         if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
-        if (!currentSlideIsLoaded) return;
+        //if (!currentSlideIsLoaded) return;
         isPaused = false;
         timelineManager.resume();
         if (withBackground) {

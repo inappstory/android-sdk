@@ -98,7 +98,7 @@ public class TimelineManager {
     public ReaderPageManager pageManager;
 
 
-    TimelineProgressBar getCurrentBar() {
+    public TimelineProgressBar getCurrentBar() {
         if (timeline.getProgressBars().size() <= pageManager.getSlideIndex())
             return new TimelineProgressBar(timeline.getContext());
         return timeline.getProgressBars().get(pageManager.getSlideIndex());

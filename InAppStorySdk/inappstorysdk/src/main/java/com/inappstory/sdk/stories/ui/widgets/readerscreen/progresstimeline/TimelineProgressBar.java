@@ -158,51 +158,51 @@ public class TimelineProgressBar extends View {
     boolean isActive = false;
 
     public void stop() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                clearAnimation();
-                animate().cancel();
-            }
-        });
+        isActive = false;
     }
 
     public void stopInLooper() {
-        clearAnimation();
-        animate().cancel();
     }
 
     private final int animationStep = 25;
     public void start() {
         if (!isActive) return;
         setPaused(false);
-        final Handler handler = new Handler(Looper.getMainLooper());
+
+        if (animationActive) return;
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 setCurrentProgress(0);
                 progressForegroundVisibility = true;
                 if (duration == null || duration == 0) return;
-                final long startTime = System.currentTimeMillis();
-                final Long totalDuration = getDuration();
-                final Runnable loopedRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        long curTime = System.currentTimeMillis();
-                        float val = (curTime - startTime) / (1f * totalDuration);
-                        if (isActive) {
-                            setCurrentProgress(Math.min(val, 1f));
-                            if ((curTime - startTime <= totalDuration) && !isPaused()) {
-                                handler.postDelayed(this, animationStep);
-                            }
-                        }
-                    }
-                };
-                handler.post(loopedRunnable);
+                createTimelineRunnable();
             }
         }, 100);
     }
 
+    private void createTimelineRunnable() {
+        final long startTime = System.currentTimeMillis();
+        final Long totalDuration = getDuration();
+        final Runnable loopedRunnable = new Runnable() {
+            @Override
+            public void run() {
+                long curTime = System.currentTimeMillis();
+                float val = (curTime - startTime) / (1f * totalDuration);
+                Log.e("newTimeline", "Start " + isPaused() + " " + val + " " + totalDuration);
+                if (isActive) {
+                    setCurrentProgress(Math.min(val, 1f));
+                    if ((curTime - startTime <= totalDuration) && !isPaused()) {
+                        animationActive = true;
+                        handler.postDelayed(this, animationStep);
+                        return;
+                    }
+                }
+                animationActive = false;
+            }
+        };
+        handler.post(loopedRunnable);
+    }
 
     private void setCurrentProgress(float progress) {
         currentProgress = progress;
@@ -232,36 +232,25 @@ public class TimelineProgressBar extends View {
     public void restart() {
         if (!isActive) return;
         setPaused(false);
-        final Handler handler = new Handler(Looper.getMainLooper());
+        if (animationActive) return;
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 setCurrentProgress(0);
                 if (duration == null || duration == 0) return;
-                final long startTime = System.currentTimeMillis();
-                final Long totalDuration = getDuration();
-                final Runnable loopedRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        long curTime = System.currentTimeMillis();
-                        float val = (curTime - startTime) / (1f * totalDuration);
-                        if (isActive) {
-                            setCurrentProgress(Math.min(val, 1f));
-                            if (curTime - startTime <= totalDuration && !isPaused()) {
-                                handler.postDelayed(this, animationStep);
-                            }
-                        }
-                    }
-                };
-                handler.post(loopedRunnable);
+                createTimelineRunnable();
             }
         }, 100);
     }
 
+    Handler handler = new Handler(Looper.getMainLooper());
+
+    Runnable currentRunnable;
+
     public void resume() {
         if (!isActive) return;
         setPaused(false);
-        final Handler handler = new Handler(Looper.getMainLooper());
+        if (animationActive) return;
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -275,13 +264,16 @@ public class TimelineProgressBar extends View {
                         long curTime = System.currentTimeMillis();
                         float val = 1f - ((dur -
                                 (curTime - startTime)) / (1f * totalDuration));
-                        Log.e("newTimelineResume", val + " " + (dur - (curTime - startTime)) + " " + totalDuration);
+                        Log.e("newTimeline", "Resume " + isPaused() + " " + val + " " + totalDuration);
                         if (isActive) {
                             setCurrentProgress(Math.min(Math.max(0f, val), 1f));
                             if (curTime - startTime <= dur && !isPaused()) {
+                                animationActive = true;
                                 handler.postDelayed(this, animationStep);
+                                return;
                             }
                         }
+                        animationActive = false;
                     }
                 };
                 handler.post(loopedRunnable);
@@ -289,8 +281,10 @@ public class TimelineProgressBar extends View {
         });
     }
 
-    public void createAnimation() {
+    boolean animationActive = false;
 
+    public void createAnimation() {
+        isActive = true;
     }
 
     public void setProgress(final float progress) {
