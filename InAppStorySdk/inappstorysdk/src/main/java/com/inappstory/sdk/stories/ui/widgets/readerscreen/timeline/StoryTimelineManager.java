@@ -36,8 +36,8 @@ public class StoryTimelineManager implements IStoryTimelineManager {
         public void run() {
             if (paused) return;
             if (!timelineState.timelineIsActive()) return;
-            if (timelineState.getCurrentStoryDuration() > 0
-                    &&
+            if (timelineState.getCurrentStoryDurations().size() > 0 &&
+                    timelineState.getCurrentStoryDuration() > 0 &&
                     timelineState.getCurrentSlideState() == StoryTimelineSegmentState.ANIMATED) {
                 long spentTime = System.currentTimeMillis() - resumedTime;
                 if (spentTime > restTime) {
