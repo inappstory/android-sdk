@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.TimelineManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -31,7 +32,7 @@ import java.util.List;
 public class ReaderPageManager {
 
 
-    TimelineManager timelineManager;
+    StoryTimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
     TimerManager timerManager;
@@ -94,7 +95,7 @@ public class ReaderPageManager {
         this.slideIndex = slideIndex;
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(storyId, getStoryType());
-        timelineManager.setCurrentSlide(slideIndex);
+        timelineManager.startSegment(slideIndex);
         timerManager.stopTimer();
         if (story != null) {
             if (story.durations == null || story.durations.size() <= slideIndex) return;
@@ -213,8 +214,9 @@ public class ReaderPageManager {
     public void startStoryTimers() {
         if (checkIfManagersIsNull()) return;
         isPaused = false;
-        timelineManager.setCurrentSlide(slideIndex);
-        timelineManager.start();
+      //  timelineManager.setSegment(slideIndex);
+        timelineManager.startSegment(slideIndex);
+        timelineManager.active(true);
 
         timerManager.setCurrentDuration(durations.get(slideIndex));
         timerManager.startCurrentTimer();
@@ -226,8 +228,9 @@ public class ReaderPageManager {
         if (storyId != this.storyId) {
             webViewManager.stopStory();
             timerManager.stopTimer();
-            timelineManager.stop();
+            timelineManager.active(false);
         } else {
+            timelineManager.active(true);
             webViewManager.playStory();
             webViewManager.resumeStory();
         }
@@ -242,7 +245,7 @@ public class ReaderPageManager {
         if (currentId == storyId) return;
         if (checkIfManagersIsNull()) return;
         webViewManager.stopStory();
-        timelineManager.stop();
+        timelineManager.active(false);
         timerManager.stopTimer();
         isPaused = false;
         //stop timers and timelines
@@ -280,10 +283,9 @@ public class ReaderPageManager {
     public void restartSlide() {
         if (checkIfManagersIsNull()) return;
         if (durations.size() <= slideIndex) return;
-        timelineManager.setStoryDurations(durations, false);
-        timelineManager.restart();
+        timelineManager.setDurations(durations, false);
+        timelineManager.startSegment(slideIndex);
         timerManager.restartTimer(durations.get(slideIndex));
-
     }
 
     List<Integer> durations = new ArrayList<>();
@@ -294,7 +296,7 @@ public class ReaderPageManager {
         this.durations = new ArrayList<>();
         if (story.durations != null)
             this.durations.addAll(story.durations);
-        timelineManager.setStoryDurations(this.durations, true);
+        timelineManager.setDurations(this.durations, true);
 
         webViewManager.loadStory(story.id, story.lastIndex);
 
@@ -335,7 +337,7 @@ public class ReaderPageManager {
         if (parentManager != null && parentManager.getCurrentStoryId() == storyId) {
             restartSlide();
         } else {
-            timelineManager.setStoryDurations(durations, false);
+            timelineManager.setDurations(durations, false);
         }
     }
 
@@ -348,7 +350,7 @@ public class ReaderPageManager {
         this.durations.clear();
         this.durations.addAll(story.durations);
         //  this.durations.set(slideIndex, story.durations.get(slideIndex));
-        timelineManager.setStoryDurations(durations, false);
+        timelineManager.setDurations(durations, false);
     }
 
     public void showGoods(final String skus, final String widgetId, final int storyId, final int slideIndex) {
@@ -422,7 +424,7 @@ public class ReaderPageManager {
         ProfilingManager.getInstance().addTask("slide_show",
                 storyId + "_" + slideIndex);
         isPaused = false;
-        timelineManager.setCurrentSlide(slideIndex);
+        timelineManager.setSegment(slideIndex);
         timerManager.stopTimer();
         timerManager.setCurrentDuration(localDurations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
@@ -510,12 +512,11 @@ public class ReaderPageManager {
 
 
     void storyInfoLoaded() {
-        this.timelineManager.setStoryDurations(InAppStoryService.getInstance().getDownloadManager()
+        this.timelineManager.setDurations(InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(storyId, getStoryType()).durations, false);
     }
 
-    public void setTimelineManager(TimelineManager timelineManager, int storyId) {
-        timelineManager.pageManager = this;
+    public void setTimelineManager(StoryTimelineManager timelineManager, int storyId) {
         this.timelineManager = timelineManager;
     }
 

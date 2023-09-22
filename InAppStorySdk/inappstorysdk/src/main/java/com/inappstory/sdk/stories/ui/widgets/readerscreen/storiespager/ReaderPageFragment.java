@@ -54,6 +54,7 @@ import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -61,7 +62,7 @@ import java.util.List;
 
 public class ReaderPageFragment extends Fragment {
     ReaderPageManager manager;
-    Timeline timeline;
+    StoryTimeline timeline;
     SimpleStoriesView storiesView;
     ButtonsPanel buttonsPanel;
     View aboveButtonsPanel;
@@ -80,7 +81,7 @@ public class ReaderPageFragment extends Fragment {
         else
             readerInitSuccess = false;
         if (timeline != null)
-            manager.setTimelineManager(timeline.getManager(), storyId);
+            manager.setTimelineManager(timeline.getTimelineManager(), storyId);
         else
             readerInitSuccess = false;
         if (storiesView != null)
@@ -588,7 +589,7 @@ public class ReaderPageFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             timelineContainer.setElevation(20);
         }
-        timeline = new Timeline(context);
+        timeline = new StoryTimeline(context);
         timeline.setId(R.id.ias_timeline);
         timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));
