@@ -51,12 +51,10 @@ public class StoriesLoaderFragment extends Fragment {
 
     ButtonsPanel buttonsPanel;
     View aboveButtonsPanel;
-    View timeline;
 
     View blackBottom;
     View blackTop;
     View refresh;
-    AppCompatImageView close;
 
 
     @Override
@@ -81,8 +79,6 @@ public class StoriesLoaderFragment extends Fragment {
                 )
         );
         if (story == null) return;
-        if (story.disableClose)
-            close.setVisibility(View.GONE);
         if (buttonsPanel != null) {
             buttonsPanel.setButtonsVisibility(readerSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
@@ -131,72 +127,10 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     void bindViews(View view) {
-        close = view.findViewById(R.id.ias_close_button);
         refresh = view.findViewById(R.id.ias_refresh_button);
         blackBottom = view.findViewById(R.id.ias_black_bottom);
         blackTop = view.findViewById(R.id.ias_black_top);
         buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
-        timeline = view.findViewById(R.id.ias_timeline);
-
-        try {
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) close.getLayoutParams();
-            RelativeLayout.LayoutParams storiesProgressViewLP = (RelativeLayout.LayoutParams) timeline.getLayoutParams();
-            int cp = readerSettings.closePosition;
-            int viewsMargin = Sizes.dpToPxExt(8, getContext());
-            storiesProgressViewLP.leftMargin =
-                    storiesProgressViewLP.rightMargin =
-                            layoutParams.rightMargin = viewsMargin;
-
-            switch (cp) {
-                case TOP_RIGHT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                    storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.LEFT_OF, close.getId());
-                    break;
-                case TOP_LEFT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                    storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.RIGHT_OF, close.getId());
-                    break;
-                case BOTTOM_RIGHT:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                    layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
-                    storiesProgressViewLP.topMargin = viewsMargin;
-                    layoutParams.topMargin = viewsMargin;
-                    break;
-                case BOTTOM_LEFT:
-                    storiesProgressViewLP.topMargin = viewsMargin;
-                    layoutParams.topMargin = viewsMargin;
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-                    layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
-                    break;
-                case TOP_START:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
-                    storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.END_OF, close.getId());
-                    break;
-                case TOP_END:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
-                    storiesProgressViewLP.addRule(RelativeLayout.CENTER_VERTICAL);
-                    storiesProgressViewLP.addRule(RelativeLayout.START_OF, close.getId());
-                    break;
-                case BOTTOM_START:
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START);
-                    layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
-                    storiesProgressViewLP.topMargin = viewsMargin;
-                    layoutParams.topMargin = viewsMargin;
-                    break;
-                case BOTTOM_END:
-                    storiesProgressViewLP.topMargin = viewsMargin;
-                    layoutParams.topMargin = viewsMargin;
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
-                    layoutParams.addRule(RelativeLayout.BELOW, timeline.getId());
-                    break;
-            }
-            close.setLayoutParams(layoutParams);
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-        }
     }
 
     LinearLayout linearLayout;
@@ -277,38 +211,6 @@ public class StoriesLoaderFragment extends Fragment {
         linearLayout.addView(blackTop);
         linearLayout.addView(content);
         linearLayout.addView(blackBottom);
-    }
-
-    private RelativeLayout createTimelineContainer(Context context) {
-        RelativeLayout timelineContainer = new RelativeLayout(context);
-        RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
-        int offset = Sizes.dpToPxExt(Math.max(0, readerSettings.radius - 16), getContext()) / 2;
-        tclp.setMargins(offset, offset, offset, 0);
-        timelineContainer.setLayoutParams(tclp);
-        timelineContainer.setId(R.id.ias_timeline_container);
-        timelineContainer.setMinimumHeight(Sizes.dpToPxExt(30, getContext()));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            timelineContainer.setElevation(20);
-        }
-        timeline = new View(context);
-        timeline.setBackgroundColor(Color.GREEN);
-        timeline.setId(R.id.ias_timeline);
-        timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                Sizes.dpToPxExt(3, getContext())));
-
-        close = new AppCompatImageView(context);
-        close.setId(R.id.ias_close_button);
-        close.setLayoutParams(new RelativeLayout.LayoutParams(
-                Sizes.dpToPxExt(30, getContext()),
-                Sizes.dpToPxExt(30, getContext()))
-        );
-        close.setBackground(null);
-        close.setImageDrawable(getResources().getDrawable(readerSettings.closeIcon));
-        timelineContainer.addView(timeline);
-        timelineContainer.addView(close);
-
-        return timelineContainer;
     }
 
     private void createButtonsPanel(Context context) {
