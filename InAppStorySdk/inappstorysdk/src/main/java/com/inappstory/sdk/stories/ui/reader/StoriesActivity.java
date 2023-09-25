@@ -302,7 +302,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
-
+        setTheme(R.style.StoriesSDKAppTheme_TransparentWithoutSB);
         cleaned = false;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -332,51 +332,49 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         //scrollView = findViewById(R.id.scrollContainer);
-        if (Build.VERSION.SDK_INT >= 21) {
-            chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
-                @Override
-                public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
-                    super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
-                    backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
-                }
+        chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
+            @Override
+            public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
+                super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
+                backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
+            }
 
-                @Override
-                public void onDragDismissed() {
-                    animateFirst = true;
-                    InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
-                }
+            @Override
+            public void onDragDismissed() {
+                animateFirst = true;
+                InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
+            }
 
-                @Override
-                public void onDragDropped() {
-                }
+            @Override
+            public void onDragDropped() {
+            }
 
-                @Override
-                public void touchPause() {
-                    if (storiesFragment != null && storiesFragment.readerManager != null)
-                        storiesFragment.readerManager.pauseCurrent(false);
-                }
+            @Override
+            public void touchPause() {
+                if (storiesFragment != null && storiesFragment.readerManager != null)
+                    storiesFragment.readerManager.pauseCurrent(false);
+            }
 
-                @Override
-                public void touchResume() {
-                    if (storiesFragment != null && storiesFragment.readerManager != null)
-                        storiesFragment.readerManager.resumeCurrent(false);
-                }
+            @Override
+            public void touchResume() {
+                if (storiesFragment != null && storiesFragment.readerManager != null)
+                    storiesFragment.readerManager.resumeCurrent(false);
+            }
 
-                @Override
-                public void swipeDown() {
-                    if (storiesFragment != null) {
-                        storiesFragment.swipeDownEvent();
-                    }
+            @Override
+            public void swipeDown() {
+                if (storiesFragment != null) {
+                    storiesFragment.swipeDownEvent();
                 }
+            }
 
-                @Override
-                public void swipeUp() {
-                    if (storiesFragment != null) {
-                        storiesFragment.swipeUpEvent();
-                    }
+            @Override
+            public void swipeUp() {
+                if (storiesFragment != null) {
+                    storiesFragment.swipeUpEvent();
                 }
-            };
-        }
+            }
+        };
         draggableFrame.addListener(chromeFader);
 
         try {

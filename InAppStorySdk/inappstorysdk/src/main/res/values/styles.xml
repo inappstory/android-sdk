@@ -22,6 +22,16 @@
 
     </style>
 
+
+    <style name="StoriesSDKAppTheme.TransparentWithoutSB" parent="StoriesSDKAppTheme.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
     <style name="StoriesSDKAppTheme.GameActivity" parent="StoriesSDKAppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
