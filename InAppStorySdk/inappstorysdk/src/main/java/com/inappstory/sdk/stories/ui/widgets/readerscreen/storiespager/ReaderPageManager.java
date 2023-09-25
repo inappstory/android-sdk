@@ -95,7 +95,8 @@ public class ReaderPageManager {
         this.slideIndex = slideIndex;
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(storyId, getStoryType());
-        timelineManager.startSegment(slideIndex);
+        Log.e("startSegment", "setSlideIndex " + slideIndex);
+       // timelineManager.stop();
         timerManager.stopTimer();
         if (story != null) {
             if (story.durations == null || story.durations.size() <= slideIndex) return;
@@ -215,6 +216,7 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         isPaused = false;
       //  timelineManager.setSegment(slideIndex);
+        Log.e("startSegment", "startStoryTimers " + slideIndex);
         timelineManager.startSegment(slideIndex);
         timelineManager.active(true);
 
