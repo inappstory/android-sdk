@@ -118,7 +118,8 @@ public class StoryTimelineManager implements IStoryTimelineManager {
 
     @Override
     public void prev() {
-        startSegment(timelineState.getCurrentSlideIndex() - 1);
+        if (timelineState.getCurrentSlideIndex() > 0)
+            startSegment(timelineState.getCurrentSlideIndex() - 1);
     }
 
     @Override

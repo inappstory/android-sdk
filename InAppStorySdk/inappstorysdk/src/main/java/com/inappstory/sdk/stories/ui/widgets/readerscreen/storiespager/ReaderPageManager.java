@@ -215,8 +215,6 @@ public class ReaderPageManager {
     public void startStoryTimers() {
         if (checkIfManagersIsNull()) return;
         isPaused = false;
-      //  timelineManager.setSegment(slideIndex);
-        Log.e("startSegment", "startStoryTimers " + slideIndex);
         timelineManager.startSegment(slideIndex);
         timelineManager.active(true);
 
