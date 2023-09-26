@@ -302,13 +302,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     protected void onCreate(Bundle savedInstanceState1) {
-        setTheme(R.style.StoriesSDKAppTheme_TransparentWithoutSB);
         cleaned = false;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_activity_stories_draggable);
+      //  View decorView = getWindow().getDecorView();
+     //   decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN);
         if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             finish();
             return;
