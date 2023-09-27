@@ -62,6 +62,13 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("show_slide");
     }
 
+    @Override
+    public void clearSlide(int index) {
+        if (index < 0) return;
+        evaluateJavascript("(function(){clear_slide(" + index + ");})()", null);
+        logMethod("clear_slide " + index);
+    }
+
     private String oldEscape(String raw) {
         String escaped = raw
                 .replaceAll("\"", "\\\\\"")

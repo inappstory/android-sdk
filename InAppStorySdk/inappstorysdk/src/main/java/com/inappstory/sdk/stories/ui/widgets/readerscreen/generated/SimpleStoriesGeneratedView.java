@@ -137,6 +137,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
+    public void clearSlide(int index) {
+
+    }
+
+    @Override
     public void loadJsApiResponse(String result, String cb) {
 
     }
@@ -176,10 +181,8 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     public void initViews(SlideStructure slideStructure) {
         for (int i = 0; i < getChildCount(); i++) {
             temp.add(getChildAt(i));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                if (getChildAt(i) instanceof RelativeLayout) {
-                    getChildAt(i).setElevation(getChildAt(i).getElevation() + 2);
-                }
+            if (getChildAt(i) instanceof RelativeLayout) {
+                getChildAt(i).setElevation(getChildAt(i).getElevation() + 2);
             }
         }
         temp2.clear();
@@ -190,9 +193,8 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
             rl.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
             rl.setBackgroundColor(Color.BLACK);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                rl.setElevation(4);
-            }
+
+            rl.setElevation(4);
             addView(rl);
             checkGenerator(null);
             return;
@@ -216,16 +218,12 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
                 ViewGroup.LayoutParams.MATCH_PARENT));
         rl.setPaddingRelative(-leftPadding, -topPadding, -leftPadding, -topPadding);
         rl.setVisibility(GONE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            rl.setElevation(4);
-        }
+        rl.setElevation(4);
         RelativeLayout rl2 = new RelativeLayout(getContext());
         rl2.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         rl2.setPaddingRelative(-leftPadding, -topPadding, -leftPadding, -topPadding);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            rl.setElevation(2);
-        }
+        rl.setElevation(2);
         addView(rl2);
         addView(rl);
         boolean hasVideo = false;

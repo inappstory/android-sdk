@@ -317,9 +317,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
         initWebView();
         if (Sizes.isTablet()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                getWindow().setStatusBarColor(Color.BLACK);
-            }
+            getWindow().setStatusBarColor(Color.BLACK);
         }
 
         refreshGame.setOnClickListener(new View.OnClickListener() {
@@ -358,9 +356,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             getWindow().getAttributes().flags = getWindow().getAttributes().flags |
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
                     WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                getWindow().setNavigationBarColor(navigationBarColor);
-            }
+            getWindow().setNavigationBarColor(navigationBarColor);
         }
     }
 
@@ -439,7 +435,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
         switch (requestCode) {
             case PERMISSIONS_REQUEST_RECORD_AUDIO: {
                 if (audioRequest != null && grantResults.length > 0
@@ -453,7 +448,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void askForPermission(String origin, String permission, int requestCode) {
 
         if (ContextCompat.checkSelfPermission(getApplicationContext(),
@@ -721,15 +715,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         }
         options.appPackageId = appPackageName;
         options.sdkVersion = BuildConfig.VERSION_NAME;
-        options.apiKey = InAppStoryManager.getInstance().getApiKey();
-        options.sessionId = CachedSessionData.getInstance(this).sessionId;
-        String language;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            language = Locale.getDefault().toLanguageTag();
-        } else {
-            language = Locale.getDefault().getLanguage();
+        if (inAppStoryManager != null) {
+            options.apiKey = inAppStoryManager.getApiKey();
+            options.userId = inAppStoryManager.getUserId();
         }
-        options.lang = language;
+        options.sessionId = CachedSessionData.getInstance(this).sessionId;
+        options.lang = Locale.getDefault().toLanguageTag();
         options.deviceId = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         options.placeholders = generatePlaceholders();
@@ -829,7 +820,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             }
 
 
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 // super.onPermissionRequest(request);

@@ -83,7 +83,6 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs,
                                          int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
@@ -387,7 +386,6 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         private final int navBarAlpha;
         private final boolean fadeNavBar;
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         public SystemChromeFader(Activity activity) {
             this.activity = activity;
             statusBarAlpha = Color.alpha(activity.getWindow().getStatusBarColor());
@@ -395,7 +393,6 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             fadeNavBar = ViewUtils.isNavBarOnBottom(activity);
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onDrag(float elasticOffset, float elasticOffsetPixels,
                            float rawOffset, float rawOffsetPixels) {
@@ -417,7 +414,6 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             }
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         public void onDragDismissed() {
             activity.finishAfterTransition();
         }

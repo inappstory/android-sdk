@@ -273,10 +273,8 @@ public class StoriesFragment extends Fragment
         storiesViewPager.setId(R.id.ias_stories_pager);
         invMask.setId(R.id.ias_inv_mask);
         invMask.setClickable(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            storiesViewPager.setElevation(4);
-            invMask.setElevation(10);
-        }
+        storiesViewPager.setElevation(4);
+        invMask.setElevation(10);
         resView.addView(storiesViewPager);
         resView.addView(invMask);
         return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);

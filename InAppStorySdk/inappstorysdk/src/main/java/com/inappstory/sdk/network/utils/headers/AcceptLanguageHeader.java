@@ -12,10 +12,6 @@ public class AcceptLanguageHeader implements Header {
 
     @Override
     public String getValue() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return Locale.getDefault().toLanguageTag();
-        } else {
-            return Locale.getDefault().getLanguage();
-        }
+        return Locale.getDefault().toLanguageTag();
     }
 }

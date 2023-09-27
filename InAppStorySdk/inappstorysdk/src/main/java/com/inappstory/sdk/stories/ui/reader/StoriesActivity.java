@@ -5,12 +5,14 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -24,23 +26,21 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
+import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.interpolator.view.animation.LinearOutSlowInInterpolator;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -48,10 +48,18 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
+import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 import com.inappstory.sdk.utils.StringsUtils;
+
+import java.util.ArrayList;
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -93,20 +101,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             animateFirst = false;
             closeAnim();
         } else {
-            switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
-                case 0:
-                    finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
-                    break;
-                case 1:
-                    super.finish();
-                    break;
-                case 2:
-                    finishWithCustomAnimation(R.anim.empty_animation, R.anim.popup_hide);
-                    break;
-                default:
-                    super.finish();
-                    break;
-            }
+            super.finish();
         }
 
     }
@@ -115,102 +110,99 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     boolean isAnimation = false;
 
+
     @Override
     protected void onResume() {
         super.onResume();
         StatusBarController.hideStatusBar(this, true);
     }
 
-    public void startAnim() {
+    public void startAnim(final Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        backTintView.setVisibility(View.GONE);
         try {
             isAnimation = true;
-            draggableFrame.setVisibility(View.INVISIBLE);
-            float x = Sizes.getScreenSize().x / 2f;
-            float y = draggableFrame.getY();
-            AnimationSet animationSet = new AnimationSet(true);
-            Animation anim = new ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, x, y);
-            animationSet.addAnimation(anim);
-            animationSet.setDuration(300);
-            animationSet.setStartOffset(200);
-            animationSet.setInterpolator(new LinearOutSlowInInterpolator());
-            Point coordinates = ScreensManager.getInstance().coordinates;
-            if (coordinates != null) {
-                Animation anim2 = new TranslateAnimation(coordinates.x -
-                        Sizes.getScreenSize(StoriesActivity.this).x / 2, 0f,
-                        coordinates.y - draggableFrame.getY(), 0f);
-                animationSet.addAnimation(anim2);
-
-            }
-            animationSet.setAnimationListener(new Animation.AnimationListener() {
-
-                @Override
-                public void onAnimationStart(Animation animation) {
-                    draggableFrame.setVisibility(View.VISIBLE);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                    draggableFrame.setVisibility(View.VISIBLE);
-                    backTintView.setVisibility(View.VISIBLE);
-                    isAnimation = false;
-                }
-            });
-            draggableFrame.startAnimation(animationSet);
+            setStartAnimations()
+                    .setListener(new HandlerAnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd() {
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                            isAnimation = false;
+                            createStoriesFragment(savedInstanceState);
+                            setStoriesFragment();
+                        }
+                    })
+                    .start();
         } catch (Exception e) {
             finishWithoutAnimation();
+        }
+    }
+
+    private ReaderAnimation setStartAnimations() {
+        Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
+        switch (getIntent().getIntExtra(CS_READER_PRESENTATION_STYLE, 0)) {
+            case AppearanceManager.DISABLE:
+                return new DisabledReaderAnimation().setAnimations(true);
+            case AppearanceManager.FADE:
+                return new FadeReaderAnimation(backTintView, draggableFrame).setAnimations(true);
+            case AppearanceManager.POPUP:
+                return new PopupReaderAnimation(backTintView, draggableFrame, screenSize.y, 0f).setAnimations(true);
+            default:
+                Point coordinates = ScreensManager.getInstance().coordinates;
+                float pivotX = screenSize.x / 2f;
+                float pivotY = screenSize.y / 2f;
+                if (coordinates != null) {
+                    pivotY = coordinates.y;
+                    pivotX = coordinates.x;
+                }
+                return new ZoomReaderAnimation(backTintView, draggableFrame, pivotX, pivotY).setAnimations(true);
+        }
+    }
+
+    private ReaderAnimation setFinishAnimations() {
+        Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
+        switch (getIntent().getIntExtra(CS_READER_PRESENTATION_STYLE, 0)) {
+            case AppearanceManager.DISABLE:
+                return new DisabledReaderAnimation().setAnimations(false);
+            case AppearanceManager.FADE:
+                return new FadeReaderAnimation(backTintView, draggableFrame).setAnimations(false);
+            case AppearanceManager.POPUP:
+                return new PopupReaderAnimation(
+                        backTintView, draggableFrame,
+                        draggableFrame.getY(),
+                        screenSize.y
+                ).setAnimations(false);
+            default:
+                float pivotX = (screenSize.x - draggableFrame.getX()) / 2f;
+                float pivotY = (screenSize.y - draggableFrame.getY()) / 2f;
+                Point coordinates = ScreensManager.getInstance().coordinates;
+                if (coordinates != null) {
+                    pivotX = coordinates.x - draggableFrame.getX();
+                    pivotY = coordinates.y - draggableFrame.getY();
+                }
+
+                return new ZoomReaderAnimation(backTintView,
+                        draggableFrame,
+                        pivotX,
+                        pivotY
+                ).setAnimations(false);
         }
     }
 
     public void closeAnim() {
         try {
             isAnimation = true;
-            float x = draggableFrame.getX() + draggableFrame.getRight() / 2;
-            float y = draggableFrame.getY();
-            AnimationSet animationSet = new AnimationSet(true);
-            Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
-            anim.setDuration(200);
-            animationSet.addAnimation(anim);
-            Point coordinates = ScreensManager.getInstance().coordinates;
-            if (coordinates != null) {
-                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x -
-                        Sizes.getScreenSize(StoriesActivity.this).x / 2,
-                        0f, coordinates.y - draggableFrame.getY());
-                anim2.setDuration(200);
-                animationSet.addAnimation(anim2);
-
-            }
-            animationSet.setAnimationListener(new Animation.AnimationListener() {
-
-                @Override
-                public void onAnimationStart(Animation animation) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                    // TODO Auto-generated method stub
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    draggableFrame.setVisibility(View.GONE);
-                    StoriesActivity.super.finish();
-                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                }
-            });
-            draggableFrame.startAnimation(animationSet);
+            setFinishAnimations()
+                    .setListener(new HandlerAnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd() {
+                            draggableFrame.setVisibility(View.GONE);
+                            StoriesActivity.super.finish();
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                        }
+                    })
+                    .start();
+            ScreensManager.getInstance().coordinates = null;
         } catch (Exception e) {
             finishWithoutAnimation();
         }
@@ -232,7 +224,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             }
         }
     }
-
 
 
     public void finishWithCustomAnimation(int enter, int exit) {
@@ -288,11 +279,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finish();
             return;
         }
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
-            if (navColor != 0)
-                getWindow().setNavigationBarColor(navColor);
-        }
+        int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
+        if (navColor != 0)
+            getWindow().setNavigationBarColor(navColor);
         ScreensManager.getInstance().currentScreen = this;
         View view = getCurrentFocus();
         if (view != null) {
@@ -307,54 +296,50 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         //scrollView = findViewById(R.id.scrollContainer);
-        if (Build.VERSION.SDK_INT >= 21) {
-            chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
-                @Override
-                public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
-                    super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
-                    backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
-                }
+        chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
+            @Override
+            public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
+                super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
+                backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
+            }
 
-                @Override
-                public void onDragDismissed() {
-                    if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
-                    else animateFirst = false;
-                    InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
-                }
+            @Override
+            public void onDragDismissed() {
+                animateFirst = true;
+                InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
+            }
 
-                @Override
-                public void onDragDropped() {
-                }
+            @Override
+            public void onDragDropped() {
+            }
 
-                @Override
-                public void touchPause() {
-                    if (storiesFragment != null && storiesFragment.readerManager != null)
-                        storiesFragment.readerManager.pauseCurrent(false);
-                }
+            @Override
+            public void touchPause() {
+                if (storiesFragment != null && storiesFragment.readerManager != null)
+                    storiesFragment.readerManager.pauseCurrent(false);
+            }
 
-                @Override
-                public void touchResume() {
-                    if (storiesFragment != null && storiesFragment.readerManager != null)
-                        storiesFragment.readerManager.resumeCurrent(false);
-                }
+            @Override
+            public void touchResume() {
+                if (storiesFragment != null && storiesFragment.readerManager != null)
+                    storiesFragment.readerManager.resumeCurrent(false);
+            }
 
-                @Override
-                public void swipeDown() {
-                    if (storiesFragment != null) {
-                        storiesFragment.swipeDownEvent();
-                    }
+            @Override
+            public void swipeDown() {
+                if (storiesFragment != null) {
+                    storiesFragment.swipeDownEvent();
                 }
+            }
 
-                @Override
-                public void swipeUp() {
-                    if (storiesFragment != null) {
-                        storiesFragment.swipeUpEvent();
-                    }
+            @Override
+            public void swipeUp() {
+                if (storiesFragment != null) {
+                    storiesFragment.swipeUpEvent();
                 }
-            };
-        }
+            }
+        };
         draggableFrame.addListener(chromeFader);
-        final Bundle savedInstanceState = savedInstanceState1;
         try {
             if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {
                 StatusBarController.hideStatusBar(StoriesActivity.this, true);
@@ -371,18 +356,82 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 type = Story.StoryType.UGC;
             draggableFrame.type = type;
         }
+        if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
+            if (storiesFragment == null) {
+                setLoaderFragment();
+                startAnim(savedInstanceState1);
+            } else {
+                setStoriesFragment();
+            }
+        } else {
+            createStoriesFragment(savedInstanceState1);
+            setStoriesFragment();
+        }
+    }
+
+    private void setLoaderFragment() {
+        try {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
+            Bundle bundle = new Bundle();
+            ArrayList<Integer> ids = getIntent().getIntegerArrayListExtra("stories_ids");
+            bundle.putInt("storyId", ids.get(getIntent().getIntExtra("index", 0)));
+            bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
+            setAppearanceSettings(bundle);
+            storiesLoaderFragment.setArguments(bundle);
+            FragmentTransaction t = fragmentManager.beginTransaction()
+                    /*.setCustomAnimations(
+                            android.R.anim.fade_in,
+                            android.R.anim.fade_out,
+                            android.R.anim.fade_in,
+                            android.R.anim.fade_out
+                    )*/
+                    .replace(R.id.fragments_layout, storiesLoaderFragment);
+            t.addToBackStack("TEST");
+            t.commit();
+        } catch (IllegalStateException e) {
+            InAppStoryService.createExceptionLog(e);
+            finishWithoutAnimation();
+        }
+    }
+
+
+    private void setStoriesFragment() {
+        if (storiesFragment != null) {
+            try {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction t = fragmentManager.beginTransaction()
+                        /*.setCustomAnimations(
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out,
+                                android.R.anim.fade_in,
+                                android.R.anim.fade_out
+                        )*/
+                        .replace(R.id.fragments_layout, storiesFragment);
+                t.addToBackStack("STORIES_FRAGMENT");
+                t.commit();
+            } catch (IllegalStateException e) {
+                InAppStoryService.createExceptionLog(e);
+                finishWithoutAnimation();
+            }
+        } else {
+            finishWithoutAnimation();
+        }
+    }
+
+    private void createStoriesFragment(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
 
-                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 bundle.putInt("source", getIntent().getIntExtra("source", ShowStory.SINGLE));
                 bundle.putInt("firstAction", getIntent().getIntExtra("firstAction", ShowStory.ACTION_OPEN));
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
-                bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
+                bundle.putInt("index", getIntent().getIntExtra("index", 0));
+                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
@@ -392,28 +441,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             storiesFragment = (StoriesFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
 
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesFragment != null) {
-                    try {
-                        FragmentManager fragmentManager = getSupportFragmentManager();
-                        FragmentTransaction t = fragmentManager.beginTransaction()
-                                .replace(R.id.fragments_layout, storiesFragment);
-                        t.addToBackStack("STORIES_FRAGMENT");
-                        t.commit();
-                    } catch (IllegalStateException e) {
-                        InAppStoryService.createExceptionLog(e);
-                        finishWithoutAnimation();
-                    }
-                } else {
-                    finishWithoutAnimation();
-                }
-            }
-        }, 300);
-
-        //      FragmentController.openFragment(StoriesActivity.this, storiesFragment);
     }
 
     StoriesFragment storiesFragment;
@@ -446,7 +473,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void closeStoryReader(int action) {
         if (closing) return;
-        backTintView.setVisibility(View.GONE);
         closing = true;
         InAppStoryService.getInstance().getListReaderConnector().closeReader();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -495,17 +521,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             }
         }
         cleanReader();
-
-        if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
-        else animateFirst = false;
+        animateFirst = true;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    finishAfterTransition();
-                } else {
-                    finish();
-                }
+                finishAfterTransition();
             }
         });
     }

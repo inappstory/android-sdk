@@ -45,9 +45,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
         tv = new TextureView(context);
         cover = new ImageView(context);
         tv.setLayoutParams(lp);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            cover.setElevation(8);
-        }
+        cover.setElevation(8);
         cover.setLayoutParams(lp);
         cover.setScaleType(ImageView.ScaleType.CENTER_CROP);
         addView(tv);

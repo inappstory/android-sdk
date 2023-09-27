@@ -67,6 +67,9 @@ public class Sizes {
         return size;
     }
 
+    public static int dpFloatToPxExt(float dp, Context context) {
+        return Math.round(dp * getPixelScaleFactorExt(context));
+    }
     public static int dpToPxExt(int dp) {
         return Math.round(dp * getPixelScaleFactorExt());
     }

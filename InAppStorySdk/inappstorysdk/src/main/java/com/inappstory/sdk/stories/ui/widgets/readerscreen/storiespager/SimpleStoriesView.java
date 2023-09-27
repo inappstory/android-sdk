@@ -8,6 +8,8 @@ public interface SimpleStoriesView {
     void restartVideo();
     void stopVideo();
     void swipeUp();
+
+    void clearSlide(int index);
     void loadJsApiResponse(String result, String cb);
     void resumeVideo();
     Context getContext();

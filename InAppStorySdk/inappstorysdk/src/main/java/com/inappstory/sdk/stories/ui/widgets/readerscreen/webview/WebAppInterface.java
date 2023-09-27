@@ -40,6 +40,14 @@ public class WebAppInterface {
         logMethod(payload);
     }
 
+    @JavascriptInterface
+    public void storyLoadingFailed(String data) {
+        if (data != null) {
+            StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
+            manager.slideLoadError(loadedData.index);
+        }
+        logMethod("");
+    }
 
     @JavascriptInterface
     public void storyShowSlide(int index) {

@@ -118,20 +118,13 @@ public class ContactDialog {
             dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
             dialog.getWindow().setDimAmount(0.05f);
         }
-        if (Build.VERSION.SDK_INT < 21) {
-            dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
-            dialog.getWindow().setDimAmount(0.5f);
-        }
         final FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
 
         //  contentContainer.setUseCompatPadding(true);
         final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            editBorderContainer.setElevation(0f);
-            editContainer.setElevation(0f);
-            editContainer.setElevation(0f);
-        }
+        editBorderContainer.setElevation(0f);
+        editContainer.setElevation(0f);
         final TextMultiInput editText = dialog.findViewById(R.id.editText);
         String type = dialogStructure.configV2.main.input.type;
         int inttype = TEXT;
@@ -422,14 +415,12 @@ public class ContactDialog {
 
             }
         });
-        if (Build.VERSION.SDK_INT >= 21) {
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                }
-            }, 100);
-        }
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
+        }, 100);
         dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialogInterface) {

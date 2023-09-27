@@ -5,7 +5,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
 import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_OPEN_ANIM;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
 import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
@@ -41,7 +41,6 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -122,7 +121,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             animateFirst = false;
             loadAnim();
         } else {
-            switch (getIntent().getIntExtra(CS_READER_OPEN_ANIM, 1)) {
+            switch (getIntent().getIntExtra(CS_READER_PRESENTATION_STYLE, 1)) {
                 case 0:
                     finishWithCustomAnimation(R.anim.empty_animation, R.anim.alpha_fade_out);
                     break;
@@ -267,21 +266,16 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             return;
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
-            if (navColor != 0)
-                getWindow().setNavigationBarColor(navColor);
-        }
 
+        int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
+        if (navColor != 0)
+            getWindow().setNavigationBarColor(navColor);
         ScreensManager.getInstance().currentScreen = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-        if (Build.VERSION.SDK_INT >= 21) {
-            int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
-            setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-            if (navColor != 0)
-                getWindow().setNavigationBarColor(navColor);
-        }
+        setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        if (navColor != 0)
+            getWindow().setNavigationBarColor(navColor);
 
         closeOnSwipe = getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true);
         closeOnOverscroll = getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true);
@@ -404,11 +398,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    finishAfterTransition();
-                } else {
-                    finish();
-                }
+                finishAfterTransition();
             }
         });
     }

@@ -12,6 +12,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
 import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
+import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
 import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
 import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
 import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
@@ -395,6 +396,7 @@ public class ScreensManager {
                                 Configuration.UI_MODE_NIGHT_MASK;
                 intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
                 intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
+                intent2.putExtra(CS_READER_PRESENTATION_STYLE, manager.csStoryReaderPresentationStyle());
                 intent2.putExtra(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
                 intent2.putExtra(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
                 intent2.putExtra(CS_NAVBAR_COLOR, nightModeFlags == Configuration.UI_MODE_NIGHT_YES ?

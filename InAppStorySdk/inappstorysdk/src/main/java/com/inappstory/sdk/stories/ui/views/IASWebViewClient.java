@@ -69,13 +69,11 @@ public class IASWebViewClient extends WebViewClient {
                 Log.e("Game_File", url + " " + mimeType + " " + file.getAbsolutePath());
                 response = new WebResourceResponse(mimeType, "BINARY",
                         new FileInputStream(file));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Map<String, String> currentHeaders = response.getResponseHeaders();
-                    if (currentHeaders == null) currentHeaders = new HashMap<>();
-                    HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
-                    newHeaders.put("Access-Control-Allow-Origin", "*");
-                    response.setResponseHeaders(newHeaders);
-                }
+                Map<String, String> currentHeaders = response.getResponseHeaders();
+                if (currentHeaders == null) currentHeaders = new HashMap<>();
+                HashMap<String, String> newHeaders = new HashMap<>(currentHeaders);
+                newHeaders.put("Access-Control-Allow-Origin", "*");
+                response.setResponseHeaders(newHeaders);
             } catch (Exception e) {
                 InAppStoryService.createExceptionLog(e);
             }
@@ -83,7 +81,6 @@ public class IASWebViewClient extends WebViewClient {
         return response;
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         try {
@@ -93,15 +90,4 @@ public class IASWebViewClient extends WebViewClient {
         }
         return super.shouldInterceptRequest(view, request);
     }
-
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        try {
-            WebResourceResponse response = getChangedResponse(url);
-            if (response != null) return response;
-        } catch (FileNotFoundException ignored) {
-        }
-        return super.shouldInterceptRequest(view, url);
-    }
-
 }

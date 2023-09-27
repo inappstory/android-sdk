@@ -492,9 +492,7 @@ public class StoriesList extends RecyclerView {
         final int ind = adapter.getIndexById(storyId);
         if (ind == -1) return;
         if (layoutManager instanceof LinearLayoutManager) {
-            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
-        } else if (layoutManager instanceof GridLayoutManager) {
-            ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
+            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(Math.max(ind, 0), 0);
         }
         if (ind >= 0 && listID != null && this.uniqueID != null && this.uniqueID.equals(listID)) {
             new Handler().postDelayed(new Runnable() {
@@ -506,7 +504,7 @@ public class StoriesList extends RecyclerView {
                     v.getLocationOnScreen(location);
                     int x = location[0];
                     int y = location[1];
-                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, getContext()),
+                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2,
                             y + v.getHeight() / 2);
 
                 }
