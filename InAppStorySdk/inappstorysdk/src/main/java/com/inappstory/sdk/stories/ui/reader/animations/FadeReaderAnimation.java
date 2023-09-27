@@ -25,17 +25,22 @@ public class FadeReaderAnimation extends ReaderAnimation {
     @Override
     void animatorUpdateStartAnimations(float value) {
         backgroundView.setAlpha(startedBackgroundAlpha + (1f - startedBackgroundAlpha) * value);
-        foregroundView.setAlpha(value);
+      //  foregroundView.setAlpha(value);
     }
 
     @Override
     void animatorUpdateFinishAnimations(float value) {
         backgroundView.setAlpha(startedBackgroundAlpha * value);
-        foregroundView.setAlpha(value);
+      //  foregroundView.setAlpha(value);
     }
 
     @Override
-    int getAnimationDuration() {
+    int getStartAnimationDuration() {
+        return 400;
+    }
+
+    @Override
+    int getFinishAnimationDuration() {
         return 300;
     }
 }

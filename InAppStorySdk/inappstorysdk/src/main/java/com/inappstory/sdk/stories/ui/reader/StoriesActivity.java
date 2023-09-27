@@ -144,9 +144,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(true);
             case AppearanceManager.FADE:
-                return new FadeReaderAnimation(backTintView, draggableFrame).setAnimations(true);
+                return new FadeReaderAnimation(animatedContainer, draggableFrame).setAnimations(true);
             case AppearanceManager.POPUP:
-                return new PopupReaderAnimation(backTintView, draggableFrame, screenSize.y, 0f).setAnimations(true);
+                return new PopupReaderAnimation(animatedContainer, draggableFrame, screenSize.y, 0f).setAnimations(true);
             default:
                 Point coordinates = ScreensManager.getInstance().coordinates;
                 float pivotX = screenSize.x / 2f;
@@ -155,7 +155,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                     pivotY = coordinates.y;
                     pivotX = coordinates.x;
                 }
-                return new ZoomReaderAnimation(backTintView, draggableFrame, pivotX, pivotY).setAnimations(true);
+                return new ZoomReaderAnimation(animatedContainer, draggableFrame, pivotX, pivotY).setAnimations(true);
         }
     }
 
@@ -165,10 +165,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(false);
             case AppearanceManager.FADE:
-                return new FadeReaderAnimation(backTintView, draggableFrame).setAnimations(false);
+                return new FadeReaderAnimation(animatedContainer, draggableFrame).setAnimations(false);
             case AppearanceManager.POPUP:
                 return new PopupReaderAnimation(
-                        backTintView, draggableFrame,
+                        animatedContainer, draggableFrame,
                         draggableFrame.getY(),
                         screenSize.y
                 ).setAnimations(false);
@@ -181,7 +181,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                     pivotY = coordinates.y - draggableFrame.getY();
                 }
 
-                return new ZoomReaderAnimation(backTintView,
+                return new ZoomReaderAnimation(animatedContainer,
                         draggableFrame,
                         pivotX,
                         pivotY
@@ -242,6 +242,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;
     View backTintView;
+    View animatedContainer;
 
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
@@ -295,6 +296,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         draggableFrame = findViewById(R.id.draggable_frame);
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
+        animatedContainer = findViewById(R.id.animatedContainer);
         //scrollView = findViewById(R.id.scrollContainer);
         chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
             @Override

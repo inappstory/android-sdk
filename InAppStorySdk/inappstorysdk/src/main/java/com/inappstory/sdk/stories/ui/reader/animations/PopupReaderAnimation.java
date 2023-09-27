@@ -19,18 +19,25 @@ public class PopupReaderAnimation extends ReaderAnimation {
 
     @Override
     void animatorUpdateStartAnimations(float value) {
+        backgroundView.setAlpha(value);
         backgroundView.setTranslationY((1f - value) * (yFrom - yTo));
-        foregroundView.setTranslationY((1f - value) * (yFrom - yTo));
+      //  foregroundView.setTranslationY((1f - value) * (yFrom - yTo));
     }
 
     @Override
     void animatorUpdateFinishAnimations(float value) {
+        backgroundView.setAlpha(value);
         backgroundView.setTranslationY((1f - value) * (yTo - yFrom));
-        foregroundView.setTranslationY((1f - value) * (yTo - yFrom));
+      //  foregroundView.setTranslationY((1f - value) * (yTo - yFrom));
     }
 
     @Override
-    int getAnimationDuration() {
+    int getStartAnimationDuration() {
+        return 300;
+    }
+
+    @Override
+    int getFinishAnimationDuration() {
         return 300;
     }
 }

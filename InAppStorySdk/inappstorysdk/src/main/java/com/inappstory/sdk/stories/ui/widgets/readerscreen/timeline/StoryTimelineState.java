@@ -12,6 +12,14 @@ public class StoryTimelineState {
     private float currentSlideProgress = 0;
     private int currentSlideIndex = 0;
 
+    public boolean isTimelineHidden() {
+        synchronized (lock) {
+            return hideTimeline;
+        }
+    }
+
+    private boolean hideTimeline = false;
+
     private StoryTimelineSegmentState currentSlideState = StoryTimelineSegmentState.EMPTY;
 
     public boolean timelineIsActive() {
@@ -54,6 +62,13 @@ public class StoryTimelineState {
         synchronized (lock) {
             this.currentStoryDurations = currentStoryDurations;
             this.slidesCount = currentStoryDurations.size();
+            if (currentStoryDurations.isEmpty()) {
+                this.hideTimeline = true;
+            } else if (currentStoryDurations.size() == 1) {
+                this.hideTimeline = currentStoryDurations.get(0) == 0;
+            } else {
+                this.hideTimeline = false;
+            }
         }
     }
 

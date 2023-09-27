@@ -17,10 +17,13 @@ public class DisabledReaderAnimation extends ReaderAnimation {
 
 
     @Override
-    int getAnimationDuration() {
+    int getFinishAnimationDuration() {
         return 0;
     }
 
-
+    @Override
+    int getStartAnimationDuration() {
+        return 0;
+    }
 }
 

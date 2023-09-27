@@ -15,7 +15,7 @@ public class ZoomReaderAnimation extends ReaderAnimation {
         super(backgroundView, foregroundView);
         this.pivotX = pivotX;
         this.pivotY = pivotY;
-        Log.e("pivots", pivotX + " " + pivotY);
+        Log.e("pivots", pivotX + " " + pivotY + " " + backgroundView.getAlpha());
         this.startedBackgroundAlpha = backgroundView.getAlpha();
     }
 
@@ -29,13 +29,13 @@ public class ZoomReaderAnimation extends ReaderAnimation {
         backgroundView.setPivotY(pivotY);
         backgroundView.setScaleX(value);
         backgroundView.setScaleY(value);
-        backgroundView.setAlpha(startedBackgroundAlpha + (1f - startedBackgroundAlpha) * value);
+        backgroundView.setAlpha(value);
 
-        foregroundView.setPivotX(pivotX);
+     /*   foregroundView.setPivotX(pivotX);
         foregroundView.setPivotY(pivotY);
         foregroundView.setScaleX(value);
         foregroundView.setScaleY(value);
-        foregroundView.setAlpha(value);
+        foregroundView.setAlpha(value);*/
     }
 
     @Override
@@ -46,15 +46,20 @@ public class ZoomReaderAnimation extends ReaderAnimation {
         backgroundView.setScaleY(value);
         backgroundView.setAlpha(startedBackgroundAlpha * value);
 
-        foregroundView.setPivotX(pivotX);
+       /* foregroundView.setPivotX(pivotX);
         foregroundView.setPivotY(pivotY);
         foregroundView.setScaleX(value);
         foregroundView.setScaleY(value);
-        foregroundView.setAlpha(value);
+        foregroundView.setAlpha(value);*/
     }
 
     @Override
-    int getAnimationDuration() {
+    int getStartAnimationDuration() {
+        return 300;
+    }
+
+    @Override
+    int getFinishAnimationDuration() {
         return 300;
     }
 }

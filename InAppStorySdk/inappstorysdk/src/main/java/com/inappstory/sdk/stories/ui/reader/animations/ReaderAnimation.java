@@ -64,6 +64,13 @@ public abstract class ReaderAnimation {
 
     abstract void animatorUpdateFinishAnimations(float value);
 
-    abstract int getAnimationDuration();
+    private int getAnimationDuration() {
+        if (isStart) return getStartAnimationDuration();
+        else return getFinishAnimationDuration();
+    }
+
+    abstract int getStartAnimationDuration();
+
+    abstract int getFinishAnimationDuration();
 
 }

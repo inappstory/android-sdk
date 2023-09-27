@@ -48,6 +48,8 @@ public class StoryTimeline extends View {
         return timelineManager;
     }
 
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         drawTimeline(
@@ -69,6 +71,7 @@ public class StoryTimeline extends View {
             float marginWidth,
             Canvas canvas
     ) {
+        if (state.isTimelineHidden()) return;
         for (int i = 0; i < state.getSlidesCount(); i++) {
             Pair<List<RectF>, List<Integer>> drawingComponents = drawSegment(
                     i,
