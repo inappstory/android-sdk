@@ -10,6 +10,7 @@ public interface SimpleStoriesView {
     void swipeUp();
     void loadJsApiResponse(String result, String cb);
     void resumeVideo();
+    void clearSlide(int index);
     Context getContext();
     void changeSoundStatus();
     void cancelDialog(String id);

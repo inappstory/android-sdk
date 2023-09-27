@@ -19,18 +19,19 @@ public class StoryTimelineManager implements IStoryTimelineManager {
     @Override
     public void active(boolean active) {
         if (timelineState.timelineIsActive() == active) return;
+        timelineState.setTimelineIsActive(active);
         if (active) {
-            handler.post(loopedTimer);
+
+            clearAndPost(loopedTimer);
         } else {
             handler.removeCallbacks(loopedTimer);
             stop();
         }
-        timelineState.setTimelineIsActive(active);
     }
 
     boolean paused = false;
 
-    Handler handler = new Handler(Looper.myLooper());
+    Handler handler = new Handler();
 
     Runnable loopedTimer = new Runnable() {
         @Override
@@ -49,9 +50,18 @@ public class StoryTimelineManager implements IStoryTimelineManager {
             }
             if (paused) return;
             if (!timelineState.timelineIsActive()) return;
-            handler.post(this);
+            clearAndPost(this);
         }
     };
+
+    private void clearAndPost(Runnable runnable) {
+        try {
+            handler.removeCallbacks(runnable);
+        } catch (Exception e) {
+
+        }
+        handler.post(runnable);
+    }
 
     private void updateProgress(long spentTime) {
         if (paused) return;
@@ -88,7 +98,7 @@ public class StoryTimelineManager implements IStoryTimelineManager {
                                 .getCurrentStoryDurations()
                                 .get(timelineState.getCurrentSlideIndex())
         );
-        handler.post(loopedTimer);
+        clearAndPost(loopedTimer);
     }
 
     @Override

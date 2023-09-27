@@ -61,6 +61,13 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("show_slide");
     }
 
+    @Override
+    public void clearSlide(int index) {
+        if (index < 0) return;
+        evaluateJavascript("(function(){clear_slide(" + index + ");})()", null);
+        logMethod("clear_slide " + index);
+    }
+
     private String oldEscape(String raw) {
         String escaped = raw
                 .replaceAll("\"", "\\\\\"")
@@ -144,7 +151,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
     @Override
     public void loadUrl(final String url) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        post(new Runnable() {
             @Override
             public void run() {
                 SimpleStoriesWebView.super.loadUrl(url);
@@ -177,10 +184,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
 
     public void destroyView() {
-        final Runtime runtime = Runtime.getRuntime();
-        final long usedMemInMB = (runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
-        final long maxHeapSizeInMB = runtime.maxMemory() / 1048576L;
-        final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
         removeAllViews();
         clearHistory();
         clearCache(true);
@@ -211,7 +214,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         setOnClickListener(clickListener);*/
         if (!notFirstLoading || data.isEmpty()) {
             notFirstLoading = true;
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            post(new Runnable() {
                 @Override
                 public void run() {
                     String s0 = setDir(injectUnselectableStyle(lt));
@@ -219,7 +222,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 }
             });
         } else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
+            post(new Runnable() {
                 @Override
                 public void run() {
                     replaceHtml(data);

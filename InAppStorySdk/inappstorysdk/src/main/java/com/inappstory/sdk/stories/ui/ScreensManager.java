@@ -591,7 +591,6 @@ public class ScreensManager {
             bottomLine.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
             closeButtonBackground.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
             bottomLine.getLayoutParams().height = iGoodsWidgetAppearance.getBackgroundHeight();
-            Log.e("goodsWidgetHeight", "" + iGoodsWidgetAppearance.getBackgroundHeight());
             bottomLine.requestLayout();
             final ImageView refresh = goodsDialog.findViewById(R.id.refresh_button);
             refresh.setImageDrawable(activity.getResources().getDrawable(AppearanceManager.getCommonInstance().csRefreshIcon()));

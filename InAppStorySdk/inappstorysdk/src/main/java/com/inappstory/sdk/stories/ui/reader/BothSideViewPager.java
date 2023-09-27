@@ -6,12 +6,14 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
 
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 
 public class BothSideViewPager extends ViewPager {
@@ -186,7 +188,7 @@ public class BothSideViewPager extends ViewPager {
         super.clearOnPageChangeListeners();
         mPageChangeListeners.clear();
     }
-    
+
     private class SidesPageChangeListener implements OnPageChangeListener {
 
         private final OnPageChangeListener mListener;

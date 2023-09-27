@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import android.content.Context;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -27,6 +28,7 @@ public class WebAppInterface {
     }
 
     private void logMethod(String payload) {
+
         InAppStoryManager.showDLog("JS_method_test",
                 manager.storyId + " " + getMethodName() + " " + payload);
     }
@@ -131,6 +133,7 @@ public class WebAppInterface {
     public void storyStarted() {
         manager.storyStartedEvent();
         manager.pageFinished();
+
         logMethod("");
     }
 
@@ -140,6 +143,7 @@ public class WebAppInterface {
         manager.pageFinished();
         logMethod("" + startTime);
     }
+
 
     @JavascriptInterface
     public void storyResumed(double startTime) {
@@ -174,6 +178,15 @@ public class WebAppInterface {
     ) {
         manager.sendStoryWidgetEvent(name, data, eventData);
         logMethod(name + " " + data + " " + eventData);
+    }
+
+    @JavascriptInterface
+    public void storyLoadingFailed(String data) {
+        if (data != null) {
+            StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
+            manager.slideLoadError(loadedData.index);
+        }
+        logMethod("");
     }
 
     @JavascriptInterface

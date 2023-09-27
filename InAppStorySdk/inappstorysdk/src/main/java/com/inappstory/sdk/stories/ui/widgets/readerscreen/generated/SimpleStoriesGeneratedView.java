@@ -158,6 +158,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
+    public void clearSlide(int index) {
+
+    }
+
+    @Override
     public void changeSoundStatus() {
         for (GeneratedVideoView videoView : tempVideos) {
             videoView.startPlay();

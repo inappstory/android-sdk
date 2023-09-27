@@ -259,7 +259,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         GameStoryData dataModel = getStoryDataModel();
         if (dataModel != null)
             ProfilingManager.getInstance().setReady("game_init" + dataModel.storyId + "_" + dataModel.slideIndex);
-        new Handler(getMainLooper()).post(new Runnable() {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 closeButton.setVisibility(showClose ? View.VISIBLE : View.GONE);
@@ -360,7 +360,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     private void checkInsets() {
         if (Build.VERSION.SDK_INT >= 28) {
-            new Handler(getMainLooper()).post(new Runnable() {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (getWindow() != null) {

@@ -95,7 +95,6 @@ public class ReaderPageManager {
         this.slideIndex = slideIndex;
         Story story = InAppStoryService.getInstance().getDownloadManager()
                 .getStoryById(storyId, getStoryType());
-        Log.e("startSegment", "setSlideIndex " + slideIndex);
        // timelineManager.stop();
         timerManager.stopTimer();
         if (story != null) {
@@ -408,7 +407,6 @@ public class ReaderPageManager {
             story.lastIndex = lastIndex;
             slideIndex = lastIndex;
             changeCurrentSlide(lastIndex);
-            Log.e("nextSlide" , "" + lastIndex);
         } else {
             parentManager.nextStory(action);
         }

@@ -11,6 +11,7 @@ import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.TOP_START;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -255,8 +256,13 @@ public class ReaderPageFragment extends Fragment {
             });
     }
 
+    private void runOnUIThread(Runnable runnable) {
+        Activity activity = getActivity();
+        if (activity != null) activity.runOnUiThread(runnable);
+    }
+
     public void showLoader() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 if (loaderContainer == null) return;
@@ -267,57 +273,65 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void showLoaderContainer() {
-        Log.e("showLoaderContainer", "show");
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 if (loaderContainer == null) return;
                 refresh.setVisibility(View.GONE);
                 loader.setVisibility(View.VISIBLE);
-                loaderContainer.setVisibility(View.VISIBLE);
-               /* Animation anim = new AlphaAnimation(0f, 1f);
-                anim.setDuration(200);
-                loaderContainer.startAnimation(anim);*/
+                showLoaderContainerAnimated();
             }
         });
 
     }
 
     private void hideLoaderContainer() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        runOnUIThread(new Runnable() {
             @Override
             public void run() {
-                loaderContainer.setVisibility(View.GONE);
+                hideLoaderContainerAnimated();
+                refresh.setVisibility(View.GONE);
+                loader.setVisibility(View.GONE);
             }
         });
 
     }
 
     public void storyLoadError() {
-        Log.e("hideLoader", "storyLoadError");
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 loader.setVisibility(View.GONE);
                 refresh.setVisibility(View.VISIBLE);
                 close.setVisibility(View.VISIBLE);
+                showLoaderContainerAnimated();
             }
         });
     }
 
     public void slideLoadError() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 loader.setVisibility(View.GONE);
                 refresh.setVisibility(View.VISIBLE);
-                loaderContainer.setVisibility(View.VISIBLE);
                 close.setVisibility(View.VISIBLE);
+                showLoaderContainerAnimated();
             }
         });
     }
 
+    private void showLoaderContainerAnimated() {
+        loaderContainer.setVisibility(View.VISIBLE);
+       // loaderContainer.clearAnimation();
+      //  loaderContainer.animate().alpha(1f).setStartDelay(300).setDuration(300).start();
+    }
 
+    private void hideLoaderContainerAnimated() {
+        loaderContainer.setVisibility(View.INVISIBLE);
+       // loaderContainer.clearAnimation();
+       // loaderContainer.animate().alpha(0f).setDuration(300).start();
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         readerSettings = JsonParser.fromJson(getArguments().getString(CS_READER_SETTINGS),

@@ -168,8 +168,11 @@ public class StoriesViewManager {
 
         @Override
         public void run() {
+            clearShowLoader();
             if (this.slideIndex == index)
                 pageManager.showLoader(index);
+            if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
+            setLatestVisibleIndex(-1);
         }
     }
 
@@ -183,15 +186,40 @@ public class StoriesViewManager {
 
         @Override
         public void run() {
-            if (showLoader != null) {
-                showRefreshHandler.removeCallbacks(showLoader);
-                showLoader = null;
-            }
+            clearShowLoader();
+            clearShowRefresh();
             if (this.slideIndex == index)
                 pageManager.slideLoadError(index);
+            if (storiesView != null) storiesView.clearSlide(getLatestVisibleIndex());
+            setLatestVisibleIndex(-1);
         }
     }
 
+
+
+    private void clearShowRefresh() {
+        synchronized (latestIndexLock) {
+            if (showRefresh != null) {
+                try {
+                    showRefreshHandler.removeCallbacks(showRefresh);
+                } catch (Exception e) {}
+            }
+            showRefresh = null;
+        }
+    }
+
+    private void clearShowLoader() {
+        synchronized (latestIndexLock) {
+            if (showLoader != null) {
+                try {
+                    showRefreshHandler.removeCallbacks(showLoader);
+                } catch (Exception e) {}
+            }
+            showLoader = null;
+        }
+    }
+
+    private int latestVisibleIndex = -1;
     ShowRefresh showRefresh;
     ShowLoader showLoader;
 
@@ -200,29 +228,19 @@ public class StoriesViewManager {
     public void loadWebData(String layout, String webdata) {
 
         if (!(storiesView instanceof SimpleStoriesWebView)) return;
-        if (showRefresh != null) {
-            try {
-                showRefreshHandler.removeCallbacks(showRefresh);
-            } catch (Exception e) {
-
-            }
-            showRefresh = null;
+        clearShowLoader();
+        clearShowRefresh();
+        synchronized (latestIndexLock) {
+            showRefresh = new ShowRefresh(index);
+            showLoader = new ShowLoader(index);
+            showRefreshHandler.postDelayed(showLoader, 500);
+            showRefreshHandler.postDelayed(showRefresh, 5000);
+            Log.e("showRefreshHandler", "create showLoader");
+            Log.e("showRefreshHandler", "create showRefresh");
         }
-        if (showLoader != null) {
-            try {
-                showRefreshHandler.removeCallbacks(showLoader);
-            } catch (Exception e) {
-
-            }
-            showLoader = null;
-        }
-        showRefresh = new ShowRefresh(index);
-        showLoader = new ShowLoader(index);
-        showRefreshHandler.postDelayed(showRefresh, 3000);
-        showRefreshHandler.postDelayed(showLoader, 500);
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
-        lastLoadIsEmpty = false;
     }
+
 
     boolean lastLoadIsEmpty = false;
 
@@ -446,6 +464,16 @@ public class StoriesViewManager {
         if (InAppStoryService.isNotNull())
             pageManager.startStoryTimers();
         ProfilingManager.getInstance().setReady(storyId + "_" + index);
+        logMemory();
+    }
+
+
+    private void logMemory() {
+        final Runtime runtime = Runtime.getRuntime();
+        final long usedMemInMB = (runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
+        final long maxHeapSizeInMB = runtime.maxMemory() / 1048576L;
+        final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
+        Log.e("memoryUsage", usedMemInMB + " " + availHeapSizeInMB + " " + maxHeapSizeInMB);
     }
 
     public void storyResumedEvent(double startTime) {
@@ -514,31 +542,17 @@ public class StoriesViewManager {
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
 
-        Log.e("currentSlideIsLoaded", storyId + " 0 " + slideIndex);
-        if (showRefresh != null) {
-            try {
-                showRefreshHandler.removeCallbacks(showRefresh);
-            } catch (Exception e) {
-
-            }
-            showRefresh = null;
-        }
-        if (showLoader != null) {
-            try {
-                showRefreshHandler.removeCallbacks(showLoader);
-            } catch (Exception e) {
-
-            }
-            showLoader = null;
-        }
+        clearShowLoader();
+        clearShowRefresh();
         storyIsLoaded = true;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
-        Log.e("currentSlideIsLoaded", storyId + " " + slideIndex + " " + story.lastIndex + " " + InAppStoryService.getInstance().getCurrentId());
-        if ((slideIndex >= 0 && story.lastIndex != slideIndex)
-                || InAppStoryService.getInstance().getCurrentId() != storyId) {
+        if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
             stopStory();
+        } else if (InAppStoryService.getInstance().getCurrentId() != storyId) {
+            stopStory();
+            setLatestVisibleIndex(slideIndex);
         } else {
-
+            setLatestVisibleIndex(slideIndex);
             pageManager.currentSlideIsLoaded = true;
             playStory();
             new Handler().postDelayed(new Runnable() {
@@ -657,7 +671,26 @@ public class StoriesViewManager {
         pageManager.openSlideByIndex(index);
     }
 
+    public void slideLoadError(int index) {
+        clearShowRefresh();
+        clearShowLoader();
+        setLatestVisibleIndex(-1);
+        pageManager.slideLoadError(index);
+    }
 
+    private final Object latestIndexLock = new Object();
+
+    private void setLatestVisibleIndex(int index) {
+        synchronized (latestIndexLock) {
+            latestVisibleIndex = index;
+        }
+    }
+
+    private int getLatestVisibleIndex() {
+        synchronized (latestIndexLock) {
+            return latestVisibleIndex;
+        }
+    }
     public void showSingleStory(int storyId, int slideIndex) {
         pageManager.showSingleStory(storyId, slideIndex);
     }

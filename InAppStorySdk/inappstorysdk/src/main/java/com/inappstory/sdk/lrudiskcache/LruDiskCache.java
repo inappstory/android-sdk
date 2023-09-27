@@ -77,7 +77,6 @@ public class LruDiskCache {
 
     public File put(String key, File file) throws IOException {
         synchronized (journal) {
-            Log.e("putToCache", key + " " + file.getAbsolutePath());
             keyIsValid(key);
             String name = file.getAbsolutePath();
             long time = System.currentTimeMillis();
