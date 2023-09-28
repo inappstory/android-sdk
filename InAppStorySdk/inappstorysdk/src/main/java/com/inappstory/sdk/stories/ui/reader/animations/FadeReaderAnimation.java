@@ -41,7 +41,7 @@ public class FadeReaderAnimation extends ReaderAnimation {
 
     @Override
     int getFinishAnimationDuration() {
-        return 300;
+        return 200;
     }
 }
 
