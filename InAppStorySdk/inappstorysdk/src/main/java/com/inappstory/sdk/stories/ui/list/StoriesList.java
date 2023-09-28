@@ -162,7 +162,7 @@ public class StoriesList extends RecyclerView {
             mPrevX = e.getX();
             mPrevY = e.getY();
             if (scrollCallback != null) {
-                scrollCallback.userInteractionStart();
+               // scrollCallback.userInteractionStart();
             }
             getVisibleItems();
         } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
@@ -190,7 +190,7 @@ public class StoriesList extends RecyclerView {
     public boolean onTouchEvent(MotionEvent e) {
         if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
             if (scrollCallback != null) {
-                scrollCallback.userInteractionEnd();
+       //         scrollCallback.userInteractionEnd();
             }
         }
         return super.onTouchEvent(e);
@@ -378,7 +378,7 @@ public class StoriesList extends RecyclerView {
             int scrollRange = super.scrollHorizontallyBy(dx, recycler, state);
             int overScroll = dx - scrollRange;
             if (overScroll != 0 && scrollCallback != null) {
-                scrollCallback.onOverscroll(overScroll, 0);
+              //  scrollCallback.onOverscroll(overScroll, 0);
             }
             return scrollRange;
         }
@@ -632,7 +632,7 @@ public class StoriesList extends RecyclerView {
                     int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
                     int overScroll = dy - scrollRange;
                     if (overScroll != 0 && scrollCallback != null) {
-                        scrollCallback.onOverscroll(0, overScroll);
+                      //  scrollCallback.onOverscroll(0, overScroll);
                     }
                     return scrollRange;
                 }
