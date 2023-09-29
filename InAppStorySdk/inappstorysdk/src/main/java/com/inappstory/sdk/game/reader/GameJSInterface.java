@@ -1,6 +1,5 @@
 package com.inappstory.sdk.game.reader;
 
-import android.content.Context;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -8,16 +7,12 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 
 public class GameJSInterface {
-    Context mContext;
     GameManager manager;
-
 
     /**
      * Instantiate the interface and set the context
      */
-    GameJSInterface(Context c, GameManager gameManager) {
-
-        mContext = c;
+    GameJSInterface(GameManager gameManager) {
         this.manager = gameManager;
     }
 

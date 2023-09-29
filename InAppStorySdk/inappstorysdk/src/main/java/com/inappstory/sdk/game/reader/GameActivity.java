@@ -838,7 +838,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         });
         webView.addJavascriptInterface(
                 new GameJSInterface(
-                        GameActivity.this,
                         manager
                 ),
                 "Android"
@@ -1120,7 +1119,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     void gameCompleted(String gameState, String link) {
         try {
             if (manager != null && link != null)
-                manager.tapOnLink(link);
+                manager.tapOnLink(link, this);
             GameStoryData dataModel = getStoryDataModel();
             if (dataModel != null) {
                 Intent intent = new Intent();

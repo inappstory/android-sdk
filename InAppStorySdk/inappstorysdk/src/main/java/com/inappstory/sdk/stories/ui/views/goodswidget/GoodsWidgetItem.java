@@ -24,6 +24,7 @@ public class GoodsWidgetItem extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View v) {
                 AppearanceManager.getCommonInstance().csCustomGoodsWidget().onItemClick(
+                        itemView,
                         GoodsWidgetItem.this.data,
                         callback
                 );

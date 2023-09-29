@@ -225,6 +225,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                            context,
                             new SlideData(
                                     new StoryData(
                                             current.id,

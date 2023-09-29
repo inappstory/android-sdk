@@ -173,6 +173,7 @@ public class ReaderPageManager {
                     if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                         if (story != null) {
                             CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                                    host != null ? host.getContext() : null,
                                     new SlideData(
                                             new StoryData(
                                                     story.id,

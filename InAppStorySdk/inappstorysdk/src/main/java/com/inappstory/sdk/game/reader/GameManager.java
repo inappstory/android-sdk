@@ -103,7 +103,7 @@ public class GameManager {
     void openUrl(String data) {
         UrlObject urlObject = JsonParser.fromJson(data, UrlObject.class);
         if (urlObject != null && urlObject.url != null && !urlObject.url.isEmpty())
-            tapOnLink(urlObject.url);
+            tapOnLink(urlObject.url, host);
     }
 
     void storySetData(String data, boolean sendToServer) {
@@ -215,7 +215,7 @@ public class GameManager {
         return data.replaceAll("'", "\\\\'");
     }
 
-    void tapOnLink(String link) {
+    void tapOnLink(String link, Context context) {
         if (InAppStoryService.isNull()) return;
         SlideData data = null;
         if (dataModel != null) {
@@ -224,6 +224,7 @@ public class GameManager {
 
         if (CallbackManager.getInstance().getCallToActionCallback() != null) {
             CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                    context,
                     data,
                     StringsUtils.getNonNull(link),
                     ClickAction.GAME
