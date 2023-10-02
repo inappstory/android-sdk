@@ -4,15 +4,35 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class GameSplashDownload extends FileDownload {
+    private static final ExecutorService downloader = Executors.newFixedThreadPool(1);
     public GameSplashDownload(
             @NonNull String url,
             @NonNull IFileDownloadCallback fileDownloadCallback
     ) {
         super(url, fileDownloadCallback);
+    }
+
+    @Override
+    public DownloadFileState downloadOrGetFromCache() {
+        downloader.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    GameSplashDownload.super.downloadOrGetFromCache();
+                } catch (Exception exception) {
+                    fileDownloadCallback.onError(-1, exception.getMessage());
+                }
+            }
+        });
+        return null;
     }
 
     @Override

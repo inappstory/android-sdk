@@ -20,6 +20,8 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -205,25 +207,20 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
         if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
-            @Override
-            public void onProgress(long loadedSize, long totalSize) {
 
-            }
-
+        new StoryPreviewDownload(url, new IFileDownloadCallback() {
             @Override
-            public void onSuccess(File file) {
-                final String path = file.getAbsolutePath();
+            public void onSuccess(final String fileAbsolutePath) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        callback.run(path);
+                        callback.run(fileAbsolutePath);
                     }
                 });
             }
 
             @Override
-            public void onError(String error) {
+            public void onError(int errorCode, String error) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
@@ -231,7 +228,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                     }
                 });
             }
-        });
+        }).downloadOrGetFromCache();
     }
 
     public Integer backgroundColor;

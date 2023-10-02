@@ -10,6 +10,8 @@ import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.GameSplashDownload;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;
@@ -62,34 +64,24 @@ public class DownloadSplashUseCase {
             splashScreenCallback.onError("InAppStory service is unavailable");
             return;
         }
-        Downloader.downloadFileBackground(
-                splashScreen.url,
-                false,
-                inAppStoryService.getInfiniteCache(),
-                new FileLoadProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
+        new GameSplashDownload(splashScreen.url, new IFileDownloadCallback() {
+            @Override
+            public void onSuccess(String fileAbsolutePath) {
+                File file = new File(fileAbsolutePath);
+                if (fileChecker.checkWithShaAndSize(
+                        file,
+                        splashScreen.size,
+                        splashScreen.sha1,
+                        true
+                )) {
+                    splashScreenCallback.onSuccess(file);
+                }
+            }
 
-                    }
-
-                    @Override
-                    public void onSuccess(File file) {
-                        if (fileChecker.checkWithShaAndSize(
-                                file,
-                                splashScreen.size,
-                                splashScreen.sha1,
-                                true
-                        )) {
-                            splashScreenCallback.onSuccess(file);
-                        }
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        splashScreenCallback.onError(error);
-                    }
-                },
-                null
-        );
+            @Override
+            public void onError(int errorCode, String error) {
+                splashScreenCallback.onError(error);
+            }
+        }).downloadOrGetFromCache();
     }
 }

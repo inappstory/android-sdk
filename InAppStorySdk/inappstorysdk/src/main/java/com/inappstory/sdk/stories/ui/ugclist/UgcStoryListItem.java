@@ -21,6 +21,8 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
@@ -131,30 +133,24 @@ public class UgcStoryListItem extends BaseStoryListItem {
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
         if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+        new StoryPreviewDownload(url, new IFileDownloadCallback() {
             @Override
-            public void onProgress(long loadedSize, long totalSize) {
-
-            }
-
-            @Override
-            public void onSuccess(File file) {
-                final String path = file.getAbsolutePath();
+            public void onSuccess(final String fileAbsolutePath) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
                         if (getListItem != null) {
-                            callback.run(path);
+                            callback.run(fileAbsolutePath);
                         }
                     }
                 });
             }
 
             @Override
-            public void onError(String error) {
+            public void onError(int errorCode, String error) {
 
             }
-        });
+        }).downloadOrGetFromCache();
     }
 
     public Integer backgroundColor;
