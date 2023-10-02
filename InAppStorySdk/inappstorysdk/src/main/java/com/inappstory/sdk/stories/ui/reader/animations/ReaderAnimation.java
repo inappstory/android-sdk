@@ -45,16 +45,16 @@ public abstract class ReaderAnimation {
             @Override
             public void run() {
                 long time = System.currentTimeMillis() - startTime;
-                if (time <= getAnimationDuration() + 50) {
-                    float progress = Math.min((float) time / getAnimationDuration(), 1f);
-                    if (isStart)
-                        animatorUpdateStartAnimations(progress);
-                    else
-                        animatorUpdateFinishAnimations(1f - progress);
-                    handler.post(this);
-                } else {
+                float progress = Math.min((float) time / getAnimationDuration(), 1f);
+                if (isStart)
+                    animatorUpdateStartAnimations(progress);
+                else
+                    animatorUpdateFinishAnimations(1f - progress);
+                if (progress == 1f) {
                     if (listener != null)
                         listener.onAnimationEnd();
+                } else {
+                    handler.post(this);
                 }
             }
         });
