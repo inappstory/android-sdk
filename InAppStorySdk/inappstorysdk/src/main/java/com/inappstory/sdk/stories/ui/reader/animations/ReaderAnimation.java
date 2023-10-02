@@ -9,16 +9,14 @@ public abstract class ReaderAnimation {
 
     Handler handler = new Handler();
 
-    public ReaderAnimation(View backgroundView, View foregroundView) {
+    public ReaderAnimation(View backgroundView) {
         this.backgroundView = backgroundView;
-        this.foregroundView = foregroundView;
     }
 
     public ReaderAnimation() {
     }
 
     View backgroundView = null;
-    View foregroundView = null;
 
     boolean isStart = false;
 

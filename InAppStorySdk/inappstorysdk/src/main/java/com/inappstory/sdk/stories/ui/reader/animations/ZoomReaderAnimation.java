@@ -8,11 +8,10 @@ public class ZoomReaderAnimation extends ReaderAnimation {
     float startedBackgroundAlpha;
     public ZoomReaderAnimation(
             View backgroundView,
-            View foregroundView,
             float pivotX,
             float pivotY
     ) {
-        super(backgroundView, foregroundView);
+        super(backgroundView);
         this.pivotX = pivotX;
         this.pivotY = pivotY;
         Log.e("pivots", pivotX + " " + pivotY + " " + backgroundView.getAlpha());
@@ -30,12 +29,6 @@ public class ZoomReaderAnimation extends ReaderAnimation {
         backgroundView.setScaleX(value);
         backgroundView.setScaleY(value);
         backgroundView.setAlpha(value);
-
-     /*   foregroundView.setPivotX(pivotX);
-        foregroundView.setPivotY(pivotY);
-        foregroundView.setScaleX(value);
-        foregroundView.setScaleY(value);
-        foregroundView.setAlpha(value);*/
     }
 
     @Override
@@ -45,12 +38,6 @@ public class ZoomReaderAnimation extends ReaderAnimation {
         backgroundView.setScaleX(value);
         backgroundView.setScaleY(value);
         backgroundView.setAlpha(startedBackgroundAlpha * value);
-
-       /* foregroundView.setPivotX(pivotX);
-        foregroundView.setPivotY(pivotY);
-        foregroundView.setScaleX(value);
-        foregroundView.setScaleY(value);
-        foregroundView.setAlpha(value);*/
     }
 
     @Override
