@@ -15,6 +15,9 @@ import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
+import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.FontDownload;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;
@@ -49,10 +52,7 @@ public class Downloader {
 
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
         if (cachedFonts != null) {
-            for (CacheFontObject cacheFontObject : cachedFonts) {
-                if (InAppStoryService.isNull()) return;
-                downFontFile(cacheFontObject.url, InAppStoryService.getInstance().getCommonCache());
-            }
+
         }
     }
 
@@ -211,11 +211,12 @@ public class Downloader {
     private static final ExecutorService fontDownloader = Executors.newFixedThreadPool(1);
     private static final ExecutorService tmpFileDownloader = Executors.newFixedThreadPool(1);
 
-    private static void downFontFile(final String url, final LruDiskCache cache) {
-        fontDownloader.submit(new Callable<File>() {
+    private static void downFontFile(final String url) {
+        fontDownloader.submit(new Callable<Void>() {
             @Override
-            public File call() throws Exception {
-                return FileManager.getFullFile(downloadOrGetFile(url, true, cache, null, null));
+            public Void call() {
+
+                return null;
             }
         });
     }

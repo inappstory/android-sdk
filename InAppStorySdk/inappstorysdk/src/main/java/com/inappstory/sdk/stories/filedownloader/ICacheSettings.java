@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.filedownloader;
 
 public interface ICacheSettings {
-    void getCacheKey();
+    String getCacheKey();
 
-    void getDownloadFilePath();
+    String getDownloadFilePath();
 }

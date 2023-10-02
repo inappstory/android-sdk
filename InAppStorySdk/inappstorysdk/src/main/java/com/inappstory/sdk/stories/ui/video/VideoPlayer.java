@@ -9,9 +9,13 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
 import java.io.File;
 import java.io.IOException;
@@ -111,32 +115,31 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     File file = null;
 
-    private void downloadCoverVideo(String url) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(),
-                new FileLoadProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(File file) {
-                        if (mp == null) return;
+    private void downloadCoverVideo(@NonNull String url) throws Exception {
+        new StoryPreviewDownload(url, new IFileDownloadCallback() {
+            @Override
+            public void onSuccess(String fileAbsolutePath) {
+                file = new File(fileAbsolutePath);
+                if (file.exists()) {
+                    boolean fileIsNotLocked = file.renameTo(file);
+                    if (file.length() > 10 && fileIsNotLocked) {
                         try {
                             mp.setDataSource(file.getAbsolutePath());
-                            mp.prepareAsync();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            throw new RuntimeException(e);
                         }
+                        mp.prepareAsync();
                     }
+                }
+            }
 
-                    @Override
-                    public void onError(String error) {
+            @Override
+            public void onError(int errorCode, String error) {
 
-                    }
-                });
+            }
+        }).downloadOrGetFromCache();
     }
+
 
     public void prepareVideo(SurfaceTexture t) {
         this.surface = new Surface(t);
@@ -145,16 +148,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         mp.setSurface(this.surface);
         try {
             if (file == null) {
-                if (url == null) return;
-                file = Downloader.getCoverVideo(url, InAppStoryService.getInstance().getFastCache());
-            }
-            if (file != null && file.exists()) {
-                boolean fileIsNotLocked = file.renameTo(file);
-                if (file.length() > 10 && fileIsNotLocked) {
-                    mp.setDataSource(file.getAbsolutePath());
-                    mp.prepareAsync();
-                }
-            } else {
                 if (url == null) return;
                 downloadCoverVideo(url);
             }

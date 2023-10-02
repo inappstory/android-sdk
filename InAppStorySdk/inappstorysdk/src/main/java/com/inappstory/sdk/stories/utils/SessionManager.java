@@ -11,11 +11,14 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
@@ -24,6 +27,8 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
+import com.inappstory.sdk.stories.filedownloader.usecases.FontDownload;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 
@@ -98,9 +103,19 @@ public class SessionManager {
                     callbacks.clear();
                 }
                 InAppStoryService.getInstance().runStatisticThread();
-                Downloader.downloadFonts(response.cachedFonts);
+
+                if (response.cachedFonts != null) {
+                    downloadFonts(response.cachedFonts);
+                }
             }
         });
+    }
+
+    private void downloadFonts(@NonNull List<CacheFontObject> fonts) {
+        for (CacheFontObject cacheFontObject : fonts) {
+            if (InAppStoryService.isNull()) return;
+            new FontDownload(cacheFontObject.url, new FileDownloadCallbackAdapter());
+        }
     }
 
     private static final String FEATURES =
