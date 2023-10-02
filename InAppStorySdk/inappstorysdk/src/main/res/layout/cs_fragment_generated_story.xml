@@ -90,7 +90,7 @@
                 android:minHeight="40dp"
                 android:orientation="horizontal">
 
-                <com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline
+                <com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline
                     android:id="@+id/timeline"
                     android:layout_width="match_parent"
                     android:layout_height="3dp"

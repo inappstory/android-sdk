@@ -53,7 +53,6 @@ import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
