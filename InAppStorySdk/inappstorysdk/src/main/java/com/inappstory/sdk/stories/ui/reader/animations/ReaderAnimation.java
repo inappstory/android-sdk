@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
+import androidx.annotation.MainThread;
+
 public abstract class ReaderAnimation {
 
     Handler handler = new Handler();
@@ -36,11 +38,17 @@ public abstract class ReaderAnimation {
         return this;
     }
 
+    @MainThread
     public void start() {
         final long startTime = System.currentTimeMillis();
+        if (getAnimationDuration() == 0) {
+            listener.onAnimationEnd();
+            return;
+        }
         handler.post(new Runnable() {
             @Override
             public void run() {
+
                 long time = System.currentTimeMillis() - startTime;
                 final float progress = Math.min((float) time / getAnimationDuration(), 1f);
                 if (isStart)
