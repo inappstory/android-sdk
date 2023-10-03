@@ -103,19 +103,24 @@ public class GameCacheManager {
                         }
                     }
                 });
-                long totalFilesSize = 0;
+                final long totalArchiveSize;
+                final long totalResourcesSize;
+                long tempResourcesSize = 0;
                 if (data.archiveSize != null)
-                    totalFilesSize += data.archiveSize;
+                    totalArchiveSize = data.archiveSize;
+                else
+                    totalArchiveSize = 0;
                 if (data.resources != null)
                     for (WebResource resource : data.resources) {
-                        totalFilesSize += resource.size;
+                        tempResourcesSize += resource.size;
                     }
+                totalResourcesSize = tempResourcesSize;
                 final long finalTotalFilesSize;
                 if (data.archiveUncompressedSize != null)
-                    finalTotalFilesSize = totalFilesSize + data.archiveUncompressedSize;
+                    finalTotalFilesSize = totalArchiveSize + totalArchiveSize + data.archiveUncompressedSize;
                 else
-                    finalTotalFilesSize = totalFilesSize;
-                final long finalTotalDownloadsSize = totalFilesSize;
+                    finalTotalFilesSize = totalArchiveSize + totalArchiveSize;
+                final long finalTotalDownloadsSize = totalArchiveSize + totalArchiveSize;
                 gameUseCasesThread.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -143,9 +148,14 @@ public class GameCacheManager {
                                         new ProgressCallback() {
                                             @Override
                                             public void onProgress(long loadedSize, long totalSize) {
+                                                long resultTotalSize;
+                                                if (totalArchiveSize == 0)
+                                                    resultTotalSize = (long) (1.2f * totalSize);
+                                                else
+                                                    resultTotalSize = (long) (1.2f * finalTotalDownloadsSize);
                                                 progressCallback.onProgress(
                                                         totalProgress[0] + loadedSize,
-                                                        (long) (1.2f * finalTotalDownloadsSize)
+                                                        resultTotalSize
                                                 );
                                             }
                                         },
@@ -199,9 +209,14 @@ public class GameCacheManager {
                                                     new ProgressCallback() {
                                                         @Override
                                                         public void onProgress(long loadedSize, long totalSize) {
+                                                            long resultTotalSize;
+                                                            if (totalArchiveSize == 0)
+                                                                resultTotalSize = (long) (1.2f * totalSize);
+                                                            else
+                                                                resultTotalSize = (long) (1.2f * finalTotalDownloadsSize);
                                                             progressCallback.onProgress(
                                                                     totalProgress[0] + loadedSize,
-                                                                    (long) (1.2f * finalTotalDownloadsSize)
+                                                                    resultTotalSize
                                                             );
                                                         }
                                                     }
@@ -217,9 +232,14 @@ public class GameCacheManager {
                                 new ProgressCallback() {
                                     @Override
                                     public void onProgress(long loadedSize, long totalSize) {
+                                        long resultTotalSize;
+                                        if (totalArchiveSize == 0)
+                                            resultTotalSize = (long) (1.2f * totalSize);
+                                        else
+                                            resultTotalSize = (long) (1.2f * finalTotalDownloadsSize);
                                         progressCallback.onProgress(
                                                 totalProgress[0] + loadedSize,
-                                                (long) (1.2f * finalTotalDownloadsSize)
+                                                resultTotalSize
                                         );
                                     }
                                 },

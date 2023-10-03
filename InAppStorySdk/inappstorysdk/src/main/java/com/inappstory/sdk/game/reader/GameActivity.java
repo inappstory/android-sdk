@@ -863,6 +863,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 new ProgressCallback() {
                     @Override
                     public void onProgress(long loadedSize, long totalSize) {
+                        if (totalSize == 0) return;
                         final int percent = (int) ((loadedSize * 100) / totalSize);
 
                         if (customLoaderView != null)
