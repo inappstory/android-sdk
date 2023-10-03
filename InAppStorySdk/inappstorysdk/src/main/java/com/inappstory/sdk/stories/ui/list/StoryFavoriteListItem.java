@@ -33,28 +33,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     protected View getDefaultFavoriteCell() {
-        if (getFavoriteListItem != null && getFavoriteListItem.getFavoriteItem() != null) {
-            return getFavoriteListItem.getFavoriteItem();
-        }
-        View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_favorite, null, false);
-        return v;
-    }
-
-    private void clearImage(AppCompatImageView imageView) {
-        imageView.setImageBitmap(null);
-        imageView.setBackgroundColor(Color.TRANSPARENT);
-        imageView.setVisibility(View.INVISIBLE);
-    }
-
-    private void setImage(AppCompatImageView imageView, FavoriteImage image) {
-        if (image.getImage() != null && InAppStoryService.isNotNull()) {
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
-                    InAppStoryService.getInstance().getFastCache());
-        } else {
-            imageView.setBackgroundColor(image.getBackgroundColor());
-        }
-        imageView.setVisibility(View.VISIBLE);
+        return getFavoriteListItem.getFavoriteItem();
     }
 
     private void loadFavoriteImages(final LoadFavoriteImagesCallback callback, final int count) {
@@ -113,14 +92,12 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     public void bindFavorite() {
-
-        if (getFavoriteListItem != null
-                && InAppStoryService.isNotNull()
-                && getFavoriteListItem.getFavoriteItem() != null) {
-            int count = InAppStoryService.getInstance().getFavoriteImages().size();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            int count = service.getFavoriteImages().size();
             final List<Integer> backgroundColors = new ArrayList<>();
             for (int j = 0; j < count; j++) {
-                backgroundColors.add(InAppStoryService.getInstance().getFavoriteImages().get(j).getBackgroundColor());
+                backgroundColors.add(service.getFavoriteImages().get(j).getBackgroundColor());
             }
             getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
             loadFavoriteImages(new LoadFavoriteImagesCallback() {
@@ -133,60 +110,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                     }
                 }
             }, count);
-            return;
-        }
-        boolean lpC = false;
-        View outerLayout = itemView.findViewById(R.id.outerLayout);
-        if (manager.getRealHeight(itemView.getContext()) != null) {
-            outerLayout.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
-            lpC = true;
-        }
-        if (manager.getRealWidth(itemView.getContext()) != null) {
-            outerLayout.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
-            lpC = true;
-        }
-        RoundedCornerLayout container1 = itemView.findViewById(R.id.container1);
-        RoundedCornerLayout container2 = itemView.findViewById(R.id.container2);
-        RoundedCornerLayout container3 = itemView.findViewById(R.id.container3);
-        RoundedCornerLayout container4 = itemView.findViewById(R.id.container4);
-        Context context = itemView.getContext();
-        container1.setRadius(manager.csListItemRadius(context) / 2);
-        container2.setRadius(manager.csListItemRadius(context) / 2);
-        container3.setRadius(manager.csListItemRadius(context) / 2);
-        container4.setRadius(manager.csListItemRadius(context) / 2);
-        if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-
-        if (favImages.size() > 0) {
-            AppCompatImageView image1 = itemView.findViewById(R.id.image1);
-            AppCompatImageView image2 = itemView.findViewById(R.id.image2);
-            AppCompatImageView image3 = itemView.findViewById(R.id.image3);
-            AppCompatImageView image4 = itemView.findViewById(R.id.image4);
-            clearImage(image1);
-            clearImage(image2);
-            clearImage(image3);
-            clearImage(image4);
-            switch (favImages.size()) {
-                case 1:
-                    setImage(image1, favImages.get(0));
-                    break;
-                case 2:
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    break;
-                case 3:
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    setImage(image3, favImages.get(2));
-                    break;
-                default:
-                    setImage(image1, favImages.get(0));
-                    setImage(image2, favImages.get(1));
-                    setImage(image3, favImages.get(2));
-                    setImage(image4, favImages.get(3));
-                    break;
-
-            }
         }
     }
 
@@ -203,7 +126,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
         if (InAppStoryService.isNull()) return;
-
         new StoryPreviewDownload(url, new IFileDownloadCallback() {
             @Override
             public void onSuccess(final String fileAbsolutePath) {

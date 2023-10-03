@@ -50,12 +50,6 @@ public class Downloader {
         return delete ? url.split("\\?")[0] : url;
     }
 
-    public static void downloadFonts(List<CacheFontObject> cachedFonts) {
-        if (cachedFonts != null) {
-
-        }
-    }
-
 
     @WorkerThread
     public static DownloadFileState downloadOrGetFile(
@@ -220,26 +214,6 @@ public class Downloader {
             fileState.file = newFile;
             cache.put(key, newFile);
         }
-    }
-
-    public static String getFontFile(String url) {
-        if (url == null || url.isEmpty()) return null;
-        String key = deleteQueryArgumentsFromUrl(url, true);
-        File img = null;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
-        LruDiskCache cache = service.getCommonCache();
-        if (cache.hasKey(key)) {
-            try {
-                img = updateFile(cache.getFullFile(key), url, cache, key);
-            } catch (IOException e) {
-                img = cache.getFullFile(key);
-            }
-        }
-        if (img != null && img.exists()) {
-            return img.getAbsolutePath();
-        }
-        return null;
     }
 
     private static DownloadFileState downloadFile(

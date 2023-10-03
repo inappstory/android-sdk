@@ -27,7 +27,7 @@ import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 
 public class UgcStoryListItem extends BaseStoryListItem {
 
-    protected AppCompatTextView source;
+    protected AppCompatTextView title;
     protected AppCompatImageView image;
     protected VideoPlayer video;
     protected AppCompatImageView hasAudioIcon;
@@ -70,14 +70,11 @@ public class UgcStoryListItem extends BaseStoryListItem {
             cv.setBackgroundColor(Color.TRANSPARENT);
             cv.setRadius(manager.csListItemRadius(itemView.getContext()));
             title = v.findViewById(R.id.title);
-            source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
             title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
-            source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
-            source.setTextColor(manager.csListItemSourceColor());
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
@@ -105,15 +102,12 @@ public class UgcStoryListItem extends BaseStoryListItem {
             cv.setBackgroundColor(Color.TRANSPARENT);
             cv.setRadius(manager.csListItemRadius(itemView.getContext()));
             title = v.findViewById(R.id.title);
-            source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             video = v.findViewById(R.id.video);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
             title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
-            source.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemSourceSize());
-            source.setTextColor(manager.csListItemSourceColor());
             ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius(itemView.getContext())));
             border.getBackground().setColorFilter(manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
@@ -234,12 +228,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
                 title.setTypeface(manager.csCustomFont());
             }
         }
-        if (source != null) {
-            source.setText(sourceText);
-            if (manager.csCustomFont() != null) {
-                source.setTypeface(manager.csCustomFont());
-            }
-        }
+
         if (hasAudioIcon != null)
             hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
         if (border != null) {

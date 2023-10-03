@@ -20,6 +20,8 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.StoryFileDownload;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -398,9 +400,9 @@ public class StoryDownloadManager {
             @Override
             public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
-                    DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
+                    DownloadFileState state = new StoryFileDownload(urlWithAlter.getUrl()).downloadOrGetFromCache();
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                        Downloader.downloadOrGetFile(urlWithAlter.getAlter(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
+                        state = new StoryFileDownload(urlWithAlter.getAlter()).downloadOrGetFromCache();
                         if (state != null && state.getFullFile() != null)
                             return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;

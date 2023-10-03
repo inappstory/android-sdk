@@ -22,13 +22,45 @@ public class GetBitmapFromCacheWithFilePath {
         this.filePath = filePath;
     }
 
+    public GetBitmapFromCacheWithFilePath(
+            String filePath,
+            IGetBitmapFromMemoryCache cacheSuccess
+    ) {
+        this.cacheSuccess = cacheSuccess;
+        this.cacheError = new IGetBitmapFromMemoryCacheError() {
+            @Override
+            public void onError() {
+
+            }
+        };
+        this.filePath = filePath;
+    }
+
+    public GetBitmapFromCacheWithFilePath(
+            String filePath
+    ) {
+        this.cacheSuccess = new IGetBitmapFromMemoryCache() {
+            @Override
+            public void get(Bitmap bitmap) {
+
+            }
+        };
+        this.cacheError = new IGetBitmapFromMemoryCacheError() {
+            @Override
+            public void onError() {
+
+            }
+        };
+        this.filePath = filePath;
+    }
+
     private String filePath;
     private IGetBitmapFromMemoryCache cacheSuccess;
     private IGetBitmapFromMemoryCacheError cacheError;
     private static final ExecutorService fileSystemThread = Executors.newFixedThreadPool(1);
     private static final BitmapCacheHolder bitmapCacheHolder = new BitmapCacheHolder();
 
-    void get() {
+    public void get() {
         Bitmap bitmap = bitmapCacheHolder.getBitmapFromCache(filePath);
         if (bitmap != null) {
             cacheSuccess.get(bitmap);
