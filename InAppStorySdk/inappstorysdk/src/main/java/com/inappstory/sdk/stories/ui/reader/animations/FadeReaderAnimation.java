@@ -10,8 +10,8 @@ public class FadeReaderAnimation extends ReaderAnimation {
 
     float startedBackgroundAlpha;
 
-    public FadeReaderAnimation(View backgroundView, View foregroundView) {
-        super(backgroundView, foregroundView);
+    public FadeReaderAnimation(View backgroundView) {
+        super(backgroundView);
         this.startedBackgroundAlpha = backgroundView.getAlpha();
     }
 

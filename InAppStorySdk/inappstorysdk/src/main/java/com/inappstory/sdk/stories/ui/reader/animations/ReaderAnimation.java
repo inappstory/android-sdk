@@ -1,25 +1,24 @@
 package com.inappstory.sdk.stories.ui.reader.animations;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
+import androidx.annotation.MainThread;
+
 public abstract class ReaderAnimation {
 
-    Handler handler = new Handler(Looper.getMainLooper());
+    Handler handler = new Handler();
 
-    public ReaderAnimation(View backgroundView, View foregroundView) {
+    public ReaderAnimation(View backgroundView) {
         this.backgroundView = backgroundView;
-        this.foregroundView = foregroundView;
     }
 
     public ReaderAnimation() {
     }
 
     View backgroundView = null;
-    View foregroundView = null;
 
     boolean isStart = false;
 
@@ -39,22 +38,46 @@ public abstract class ReaderAnimation {
         return this;
     }
 
+    @MainThread
     public void start() {
         final long startTime = System.currentTimeMillis();
+        if (getAnimationDuration() == 0) {
+            listener.onAnimationEnd();
+            return;
+        }
         handler.post(new Runnable() {
             @Override
             public void run() {
+
                 long time = System.currentTimeMillis() - startTime;
-                if (time <= getAnimationDuration() + 50) {
-                    float progress = Math.min((float) time / getAnimationDuration(), 1f);
-                    if (isStart)
-                        animatorUpdateStartAnimations(progress);
-                    else
-                        animatorUpdateFinishAnimations(1f - progress);
-                    handler.post(this);
+                final float progress = Math.min((float) time / getAnimationDuration(), 1f);
+                if (isStart)
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            animatorUpdateStartAnimations(progress);
+                        }
+                    });
+                else
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            animatorUpdateFinishAnimations(1f - progress);
+                        }
+                    });
+
+                if (progress == 1f) {
+                    if (listener != null) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.onAnimationEnd();
+                            }
+                        });
+
+                    }
                 } else {
-                    if (listener != null)
-                        listener.onAnimationEnd();
+                    handler.post(this);
                 }
             }
         });

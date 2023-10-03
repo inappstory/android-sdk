@@ -5,11 +5,10 @@ import android.view.View;
 public class PopupReaderAnimation extends ReaderAnimation {
     public PopupReaderAnimation(
             View backgroundView,
-            View foregroundView,
             float yFrom,
             float yTo
     ) {
-        super(backgroundView, foregroundView);
+        super(backgroundView);
         this.yFrom = yFrom;
         this.yTo = yTo;
     }
