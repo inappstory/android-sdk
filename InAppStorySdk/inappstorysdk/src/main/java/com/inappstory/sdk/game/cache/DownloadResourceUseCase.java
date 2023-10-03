@@ -5,8 +5,12 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.GameResourceDownload;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
@@ -22,10 +26,11 @@ public class DownloadResourceUseCase {
     @WorkerThread
     void download(
             final String directory,
+            final DownloadInterruption interruption,
             final ProgressCallback progressCallback,
             final UseCaseCallback<Void> useCaseCallback
     ) {
-        FileChecker fileChecker = new FileChecker();
+        final FileChecker fileChecker = new FileChecker();
         try {
             String url = resource.url;
             String fileName = resource.key;
@@ -33,7 +38,7 @@ public class DownloadResourceUseCase {
                 useCaseCallback.onError("Wrong resource key or url");
                 return;
             }
-            File resourceFile = new File(directory + File.separator + fileName);
+            final File resourceFile = new File(directory + File.separator + fileName);
             if (fileChecker.checkWithShaAndSize(
                     resourceFile,
                     resource.size,
@@ -44,37 +49,38 @@ public class DownloadResourceUseCase {
                     progressCallback.onProgress(resource.size, resource.size);
                 useCaseCallback.onSuccess(null);
             }
-            Downloader.downloadOrGetResourceFile(
+            new GameResourceDownload(
                     url,
                     fileName,
-                    InAppStoryService.getInstance().getInfiniteCache(),
-                    resourceFile,
-                    new FileLoadProgressCallback() {
+                    resourceFile.getAbsolutePath(),
+                    new IFileDownloadCallback() {
                         @Override
-                        public void onSuccess(File file) {
-
-                        }
-
-                        @Override
-                        public void onError(String error) {
-
-                        }
-
-                        @Override
-                        public void onProgress(long loadedSize, long totalSize) {
+                        public void onSuccess(String fileAbsolutePath) {
+                            fileChecker.checkWithShaAndSize(
+                                    resourceFile,
+                                    resource.size,
+                                    resource.sha1,
+                                    true
+                            );
                             if (progressCallback != null)
-                                progressCallback.onProgress(loadedSize, totalSize);
+                                progressCallback.onProgress(resource.size, resource.size);
+                            useCaseCallback.onSuccess(null);
                         }
-                    });
-            fileChecker.checkWithShaAndSize(
-                    resourceFile,
-                    resource.size,
-                    resource.sha1,
-                    true
-            );
-            if (progressCallback != null)
-                progressCallback.onProgress(resource.size, resource.size);
-            useCaseCallback.onSuccess(null);
+
+                        @Override
+                        public void onError(int errorCode, String error) {
+                            useCaseCallback.onError(error);
+                        }
+                    },
+                    new IFileDownloadProgressCallback() {
+                        @Override
+                        public void onProgress(long currentProgress, long max) {
+                            if (progressCallback != null)
+                                progressCallback.onProgress(currentProgress, max);
+                        }
+                    },
+                    interruption
+            ).downloadOrGetFromCache();
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             e.printStackTrace();

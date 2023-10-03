@@ -18,16 +18,12 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.imageloader.RoundedCornerLayout;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
-
-import java.io.File;
 
 public class UgcStoryListItem extends BaseStoryListItem {
 

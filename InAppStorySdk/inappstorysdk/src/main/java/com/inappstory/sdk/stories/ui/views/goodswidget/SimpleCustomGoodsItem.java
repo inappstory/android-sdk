@@ -18,7 +18,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.imageloader.RoundedCornerLayout;
+import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class SimpleCustomGoodsItem implements ICustomGoodsItem {

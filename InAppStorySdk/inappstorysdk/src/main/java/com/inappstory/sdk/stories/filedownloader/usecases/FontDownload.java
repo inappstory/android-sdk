@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FontDownload extends FileDownload {
-    private static final ExecutorService downloader = Executors.newFixedThreadPool(1);
+    private static final ExecutorService getFontThread = Executors.newFixedThreadPool(1);
     public FontDownload(
             @NonNull String url,
             @NonNull IFileDownloadCallback fileDownloadCallback
@@ -22,7 +22,7 @@ public class FontDownload extends FileDownload {
 
     @Override
     public DownloadFileState downloadOrGetFromCache() {
-        downloader.submit(new Runnable() {
+        getFontThread.submit(new Runnable() {
             @Override
             public void run() {
                 try {

@@ -12,6 +12,9 @@ import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.usecases.ZipArchiveDownload;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.utils.ProgressCallback;
 
@@ -76,30 +79,28 @@ public class GetZipFileUseCase extends GameNameHolder {
                         DownloadFileState fileState = null;
                         ProfilingManager.getInstance().addTask("game_download", hash);
                         try {
-                            fileState = Downloader.downloadOrGetFile(
+                            fileState = new ZipArchiveDownload(
                                     url,
-                                    true,
-                                    InAppStoryService.getInstance().getInfiniteCache(),
-                                    zipFile,
-                                    new FileLoadProgressCallback() {
+                                    zipFile.getAbsolutePath(),
+                                    new IFileDownloadCallback() {
                                         @Override
-                                        public void onProgress(long loadedSize, long totalSize) {
-                                            progressCallback.onProgress(loadedSize, totalSize);
-                                        }
-
-                                        @Override
-                                        public void onSuccess(File file) {
+                                        public void onSuccess(String fileAbsolutePath) {
 
                                         }
 
                                         @Override
-                                        public void onError(String error) {
+                                        public void onError(int errorCode, String error) {
                                             callback.onError(error);
                                         }
                                     },
-                                    interruption,
-                                    hash
-                            );
+                                    new IFileDownloadProgressCallback() {
+                                        @Override
+                                        public void onProgress(long currentProgress, long max) {
+                                            progressCallback.onProgress(currentProgress, max);
+                                        }
+                                    },
+                                    interruption
+                            ).downloadOrGetFromCache();
                         } catch (Exception e) {
                             callback.onError(e.getMessage());
                         }

@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StoryPreviewDownload extends FileDownload {
-    private static final ExecutorService downloader = Executors.newFixedThreadPool(1);
+    private static final ExecutorService getStoryPreviewThread = Executors.newFixedThreadPool(1);
     public StoryPreviewDownload(
             @NonNull String url,
             @NonNull IFileDownloadCallback fileDownloadCallback
@@ -22,7 +22,7 @@ public class StoryPreviewDownload extends FileDownload {
 
     @Override
     public DownloadFileState downloadOrGetFromCache() {
-        downloader.submit(new Runnable() {
+        getStoryPreviewThread.submit(new Runnable() {
             @Override
             public void run() {
                 try {

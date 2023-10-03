@@ -11,9 +11,10 @@ import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class GameSplashDownload extends FileDownload {
-    private static final ExecutorService getGameSplashThread = Executors.newFixedThreadPool(1);
-    public GameSplashDownload(
+public class GoodsWidgetPreviewDownload extends FileDownload {
+    private static final ExecutorService getGoodsWidgetPreviewThread = Executors.newFixedThreadPool(1);
+
+    public GoodsWidgetPreviewDownload(
             @NonNull String url,
             @NonNull IFileDownloadCallback fileDownloadCallback
     ) {
@@ -22,11 +23,11 @@ public class GameSplashDownload extends FileDownload {
 
     @Override
     public DownloadFileState downloadOrGetFromCache() {
-        getGameSplashThread.submit(new Runnable() {
+        getGoodsWidgetPreviewThread.submit(new Runnable() {
             @Override
             public void run() {
                 try {
-                    GameSplashDownload.super.downloadOrGetFromCache();
+                    GoodsWidgetPreviewDownload.super.downloadOrGetFromCache();
                 } catch (Exception exception) {
                     fileDownloadCallback.onError(-1, exception.getMessage());
                 }

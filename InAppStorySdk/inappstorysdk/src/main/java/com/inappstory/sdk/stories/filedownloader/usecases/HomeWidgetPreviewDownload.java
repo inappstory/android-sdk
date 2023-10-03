@@ -11,9 +11,9 @@ import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class GameSplashDownload extends FileDownload {
-    private static final ExecutorService getGameSplashThread = Executors.newFixedThreadPool(1);
-    public GameSplashDownload(
+public class HomeWidgetPreviewDownload extends FileDownload {
+    private static final ExecutorService getHomeWidgetPreviewThread = Executors.newFixedThreadPool(1);
+    public HomeWidgetPreviewDownload(
             @NonNull String url,
             @NonNull IFileDownloadCallback fileDownloadCallback
     ) {
@@ -22,11 +22,11 @@ public class GameSplashDownload extends FileDownload {
 
     @Override
     public DownloadFileState downloadOrGetFromCache() {
-        getGameSplashThread.submit(new Runnable() {
+        getHomeWidgetPreviewThread.submit(new Runnable() {
             @Override
             public void run() {
                 try {
-                    GameSplashDownload.super.downloadOrGetFromCache();
+                    HomeWidgetPreviewDownload.super.downloadOrGetFromCache();
                 } catch (Exception exception) {
                     fileDownloadCallback.onError(-1, exception.getMessage());
                 }
@@ -58,7 +58,7 @@ public class GameSplashDownload extends FileDownload {
     @Override
     public LruDiskCache getCache() {
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) return service.getInfiniteCache();
+        if (service != null) return service.getCommonCache();
         return null;
     }
 }

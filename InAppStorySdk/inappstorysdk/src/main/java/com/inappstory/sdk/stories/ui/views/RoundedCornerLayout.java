@@ -1,4 +1,4 @@
-package com.inappstory.sdk.imageloader;
+package com.inappstory.sdk.stories.ui.views;
 
 import android.content.Context;
 import android.graphics.Canvas;

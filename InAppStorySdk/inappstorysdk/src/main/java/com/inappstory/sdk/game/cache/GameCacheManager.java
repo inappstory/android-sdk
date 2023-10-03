@@ -140,6 +140,7 @@ public class GameCacheManager {
                                         + File.separator;
                                 downloadResourcesUseCase.download(
                                         resourcesPath,
+                                        interruption,
                                         new ProgressCallback() {
                                             @Override
                                             public void onProgress(long loadedSize, long totalSize) {

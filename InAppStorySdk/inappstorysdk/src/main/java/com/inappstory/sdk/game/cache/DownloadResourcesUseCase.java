@@ -4,6 +4,8 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.stories.cache.DownloadInterruption;
+import com.inappstory.sdk.stories.filedownloader.usecases.GameResourceDownload;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class DownloadResourcesUseCase {
     @WorkerThread
     void download(
             final String directory,
+            final DownloadInterruption interruption,
             final ProgressCallback progressCallback,
             final UseCaseCallback useCaseCallback
     ) {
@@ -37,6 +40,7 @@ public class DownloadResourcesUseCase {
             }
             new DownloadResourceUseCase(resource).download(
                     directory,
+                    interruption,
                     new ProgressCallback() {
                         @Override
                         public void onProgress(long loadedSize, long totalResourceSize) {
