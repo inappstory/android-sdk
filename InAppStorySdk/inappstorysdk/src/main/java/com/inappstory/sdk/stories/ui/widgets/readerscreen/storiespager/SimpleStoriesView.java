@@ -12,7 +12,7 @@ public interface SimpleStoriesView {
     void clearSlide(int index);
     void loadJsApiResponse(String result, String cb);
     void resumeVideo();
-    Context getContext();
+    Context getActivityContext();
     void changeSoundStatus();
     void cancelDialog(String id);
     void sendDialog(String id, String data);

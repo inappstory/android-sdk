@@ -150,6 +150,11 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     @Override
+    public Context getActivityContext() {
+        return context;
+    }
+
+    @Override
     public void loadUrl(final String url) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -177,8 +182,13 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public SimpleStoriesWebView(Context context) {
-        super(context);
+        super(context.getApplicationContext());
+        this.context = context;
+        manager = new StoriesViewManager(context);
+        manager.setStoriesView(this);
     }
+
+    private Context context;
 
     //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
 
@@ -208,14 +218,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public void loadWebData(String outerLayout, String outerData) {
         final String data = outerData;
         final String lt = outerLayout;
-
-      /*  clickListener = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                manager.storyClick(null);
-            }
-        };
-        setOnClickListener(clickListener);*/
         if (!notFirstLoading || data.isEmpty()) {
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -240,12 +242,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     StoriesViewManager manager;
-
-    protected void init() {
-        super.init();
-        manager = new StoriesViewManager(getContext());
-        manager.setStoriesView(this);
-    }
 
 
     public void shareComplete(String id, boolean success) {
@@ -288,8 +284,10 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public void checkIfClientIsSet() {
 
         if (!clientIsSet) {
-            addJavascriptInterface(new WebAppInterface(getContext(),
-                    getManager()), "Android");
+            addJavascriptInterface(
+                    new WebAppInterface(
+                            getManager()
+                    ), "Android");
             setWebViewClient(new IASWebViewClient());
             setWebChromeClient(new WebChromeClient() {
                 @Nullable

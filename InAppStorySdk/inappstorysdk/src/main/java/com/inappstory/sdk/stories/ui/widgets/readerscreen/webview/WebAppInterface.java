@@ -16,8 +16,7 @@ public class WebAppInterface {
     /**
      * Instantiate the interface and set the context
      */
-    WebAppInterface(Context c, StoriesViewManager manager) {
-        //mContext = c;
+    WebAppInterface(StoriesViewManager manager) {
         this.manager = manager;
     }
 

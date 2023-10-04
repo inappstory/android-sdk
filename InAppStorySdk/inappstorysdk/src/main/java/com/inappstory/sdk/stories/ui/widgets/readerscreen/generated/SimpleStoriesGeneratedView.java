@@ -163,6 +163,11 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
+    public Context getActivityContext() {
+        return getContext();
+    }
+
+    @Override
     public void changeSoundStatus() {
         for (GeneratedVideoView videoView : tempVideos) {
             videoView.startPlay();

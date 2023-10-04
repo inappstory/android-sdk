@@ -478,7 +478,7 @@ public class ReaderPageFragment extends Fragment {
         webViewContainer.setElevation(4);
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
         webViewContainer.setLayoutParams(webViewContainerParams);
-        storiesView = new SimpleStoriesWebView(context.getApplicationContext());
+        storiesView = new SimpleStoriesWebView(context);
         ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

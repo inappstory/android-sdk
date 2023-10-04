@@ -47,9 +47,6 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -101,7 +98,7 @@ public class StoriesViewManager {
 
     public void sendApiRequest(String data) {
         new JsApiClient(
-                storiesView.getContext(),
+                storiesView.getActivityContext(),
                 ApiSettings.getInstance().getHost()
         ).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
@@ -370,7 +367,7 @@ public class StoriesViewManager {
                         });
                     }
                 });
-        alert.showDialog((Activity) storiesView.getContext());
+        alert.showDialog((Activity) storiesView.getActivityContext());
     }
 
     public void storyClick(String payload) {
