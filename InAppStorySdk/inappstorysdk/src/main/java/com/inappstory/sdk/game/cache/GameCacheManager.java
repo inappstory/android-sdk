@@ -116,11 +116,11 @@ public class GameCacheManager {
                     }
                 totalResourcesSize = tempResourcesSize;
                 final long finalTotalFilesSize;
-                if (data.archiveUncompressedSize != null)
-                    finalTotalFilesSize = totalArchiveSize + totalResourcesSize + data.archiveUncompressedSize;
-                else
-                    finalTotalFilesSize = totalArchiveSize + totalResourcesSize;
                 final long finalTotalDownloadsSize = totalArchiveSize + totalResourcesSize;
+                if (data.archiveUncompressedSize != null)
+                    finalTotalFilesSize = finalTotalDownloadsSize + data.archiveUncompressedSize;
+                else
+                    finalTotalFilesSize = finalTotalDownloadsSize;
                 gameUseCasesThread.submit(new Runnable() {
                     @Override
                     public void run() {
