@@ -27,6 +27,10 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.list.items.IStoryListItemWithCover;
+import com.inappstory.sdk.stories.ui.list.items.base.BaseStoryListItem;
+import com.inappstory.sdk.stories.ui.list.items.favorite.StoryFavoriteListItem;
+import com.inappstory.sdk.stories.ui.list.items.story.StoryListItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -150,16 +154,20 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
                     story.getProperImage(manager.csCoverQuality()).getUrl() : null;
-
-            holder.bind(story.id,
+            holder.bind(
+                    story.id,
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                     story.getSource(),
-                    imgUrl,
                     Color.parseColor(story.getBackgroundColor()),
                     story.isOpened || isFavoriteList,
                     story.hasAudio(),
-                    story.getVideoUrl(), this);
+                    this
+            );
+            if (holder instanceof IStoryListItemWithCover) {
+                ((IStoryListItemWithCover) holder).setImage(imgUrl);
+                ((IStoryListItemWithCover) holder).setVideo(story.getVideoUrl());
+            }
         }
     }
 

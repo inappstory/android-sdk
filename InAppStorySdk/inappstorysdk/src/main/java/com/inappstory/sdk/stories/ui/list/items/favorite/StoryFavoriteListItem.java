@@ -1,22 +1,18 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.ui.list.items.favorite;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
+import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.items.base.BaseStoryListItem;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
@@ -85,12 +81,20 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     @Override
-    public void bind(Integer id, String titleText, Integer titleColor, String sourceText,
-                     String imageUrl, Integer backgroundColor,
-                     boolean isOpened, boolean hasAudio, String videoUrl, ClickCallback callback) {
+    public void bind(
+            Integer id,
+            String titleText,
+            Integer titleColor,
+            String sourceText,
+            Integer backgroundColor,
+            boolean isOpened,
+            boolean hasAudio,
+            ClickCallback callback
+    ) {
 
     }
 
+    @Override
     public void bindFavorite() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null) {

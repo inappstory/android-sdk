@@ -902,9 +902,18 @@ public class InAppStoryManager {
         return value.getBytes(StandardCharsets.UTF_8).length;
     }
 
-    private void setUserIdInner(String userId) {
+    private void setUserIdInner(final String userId, boolean firstTry) {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
+        if (inAppStoryService == null) {
+            if (firstTry)
+                localHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        setUserIdInner(userId, false);
+                    }
+                }, 1000);
+            return;
+        }
         if (userId == null || getBytesLength(userId) > 255) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
@@ -932,7 +941,7 @@ public class InAppStoryManager {
      * @param userId (userId) - can't be longer than 255 characters
      */
     public void setUserId(@NonNull String userId) {
-        setUserIdInner(userId);
+        setUserIdInner(userId, true);
     }
 
     private String userId;

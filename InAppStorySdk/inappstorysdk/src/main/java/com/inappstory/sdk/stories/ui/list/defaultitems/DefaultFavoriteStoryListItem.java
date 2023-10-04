@@ -1,9 +1,8 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.ui.list.defaultitems;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,18 +11,18 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.imagememcache.GetBitmapFromCacheWithFilePath;
-import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCacheError;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.favorite.DefaultFavoriteStoryListItemManager;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.favorite.IDefaultFavoriteStoryListItemManager;
 
-import java.util.HashMap;
 import java.util.List;
 
 public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem {
 
-    AppearanceManager manager;
+    AppearanceManager appearanceManager;
+    Context context;
 
     RoundedCornerLayout group0;
     RoundedCornerLayout group1;
@@ -37,11 +36,13 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
     View container;
 
 
-    Context context;
 
-    DefaultFavoriteStoryListItem(AppearanceManager manager, Context context) {
+    IDefaultFavoriteStoryListItemManager manager = new DefaultFavoriteStoryListItemManager();
+
+
+    public DefaultFavoriteStoryListItem(AppearanceManager appearanceManager, Context context) {
         this.context = context;
-        this.manager = manager;
+        this.appearanceManager = appearanceManager;
     }
 
     private void bindViews(View parent) {
@@ -57,10 +58,10 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
     }
 
     private void setDefaultViews() {
-        group0.setRadius(manager.csListItemRadius(context) / 2);
-        group1.setRadius(manager.csListItemRadius(context) / 2);
-        group2.setRadius(manager.csListItemRadius(context) / 2);
-        group3.setRadius(manager.csListItemRadius(context) / 2);
+        group0.setRadius(appearanceManager.csListItemRadius(context) / 2);
+        group1.setRadius(appearanceManager.csListItemRadius(context) / 2);
+        group2.setRadius(appearanceManager.csListItemRadius(context) / 2);
+        group3.setRadius(appearanceManager.csListItemRadius(context) / 2);
 
         image0.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image1.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -70,11 +71,11 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
 
     private void setContainerSize() {
         if (container == null) return;
-        if (manager.getRealHeight(context) != null) {
-            container.getLayoutParams().height = manager.getRealHeight(context);
+        if (appearanceManager.getRealHeight(context) != null) {
+            container.getLayoutParams().height = appearanceManager.getRealHeight(context);
         }
-        if (manager.getRealWidth(context) != null) {
-            container.getLayoutParams().width = manager.getRealWidth(context);
+        if (appearanceManager.getRealWidth(context) != null) {
+            container.getLayoutParams().width = appearanceManager.getRealWidth(context);
         }
         container.requestLayout();
     }
@@ -133,23 +134,36 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
     ) {
         switch (favoriteImages.size()) {
             case 1:
-                setImage(image0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
                 break;
             case 2:
-                setImage(image0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
-                setImage(image1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
                 break;
             case 3:
-                setImage(image0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
-                setImage(image1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
-                setImage(image2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
+                setImage(2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
                 break;
             default:
-                setImage(image0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
-                setImage(image1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
-                setImage(image2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
-                setImage(image3, favoriteImages.get(3), getColorOrTransparent(backgroundColors, 3));
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
+                setImage(2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
+                setImage(3, favoriteImages.get(3), getColorOrTransparent(backgroundColors, 3));
                 break;
+        }
+    }
+
+    private AppCompatImageView getImageByIndex(int index) {
+        switch (index) {
+            case 1:
+                return image1;
+            case 2:
+                return image2;
+            case 3:
+                return image3;
+            default:
+                return image0;
         }
     }
 
@@ -163,44 +177,34 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
         imageView.setVisibility(View.INVISIBLE);
     }
 
-    private HashMap<ImageView, String> localLink = new HashMap<>();
     private void setImage(
-            final AppCompatImageView imageView,
+            final int index,
             final String path,
             final int backgroundColor
     ) {
-
+        final AppCompatImageView imageView = getImageByIndex(index);
         if (path == null) {
             clearImage(imageView);
             imageView.setImageResource(0);
             imageView.setBackgroundColor(backgroundColor);
             imageView.setVisibility(View.VISIBLE);
-            localLink.put(imageView, null);
+            manager.storeImageLinkLocal(index, null);
             return;
         }
-        String currentPath = localLink.get(imageView);
-        if (currentPath == null || !currentPath.equals(path)) {
-            clearImage(imageView);
-        }
-        new GetBitmapFromCacheWithFilePath(
-                path,
-                new IGetBitmapFromMemoryCache() {
-                    @Override
-                    public void get(final Bitmap bitmap) {
-                        imageView.setImageBitmap(bitmap);
-                        imageView.setVisibility(View.VISIBLE);
-                        localLink.put(imageView, path);
-                    }
-                },
-                new IGetBitmapFromMemoryCacheError() {
-                    @Override
-                    public void onError() {
-                        imageView.setImageResource(0);
-                        imageView.setBackgroundColor(backgroundColor);
-                        imageView.setVisibility(View.VISIBLE);
-                        localLink.put(imageView, null);
-                    }
-                }
-        ).get();
+        if (manager.isSameImageLink(index, path)) clearImage(imageView);
+        manager.getBitmap(index, path, new IGetBitmap() {
+            @Override
+            public void onSuccess(Bitmap bitmap) {
+                imageView.setImageBitmap(bitmap);
+                imageView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onError() {
+                imageView.setImageResource(0);
+                imageView.setBackgroundColor(backgroundColor);
+                imageView.setVisibility(View.VISIBLE);
+            }
+        });
     }
 }

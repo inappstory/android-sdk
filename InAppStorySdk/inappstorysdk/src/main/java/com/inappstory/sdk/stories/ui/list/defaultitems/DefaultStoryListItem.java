@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.ui.list.defaultitems;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,12 +14,12 @@ import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.imagememcache.GetBitmapFromCacheWithFilePath;
-import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCacheError;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.story.DefaultStoryListItemManager;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.story.IDefaultStoryListItemManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public final class DefaultStoryListItem implements IStoriesListItem {
@@ -33,14 +33,14 @@ public final class DefaultStoryListItem implements IStoriesListItem {
     private View container;
     private RoundedCornerLayout cornerLayout;
 
-    AppearanceManager manager;
+    AppearanceManager appearanceManager;
 
-
+    IDefaultStoryListItemManager manager = new DefaultStoryListItemManager();
     Context context;
 
-    DefaultStoryListItem(AppearanceManager manager, Context context) {
+    public DefaultStoryListItem(AppearanceManager appearanceManager, Context context) {
         this.context = context;
-        this.manager = manager;
+        this.appearanceManager = appearanceManager;
     }
 
     @Override
@@ -72,11 +72,11 @@ public final class DefaultStoryListItem implements IStoriesListItem {
 
     private void setContainerSize() {
         if (container == null) return;
-        if (manager.getRealHeight(context) != null) {
-            container.getLayoutParams().height = manager.getRealHeight(context);
+        if (appearanceManager.getRealHeight(context) != null) {
+            container.getLayoutParams().height = appearanceManager.getRealHeight(context);
         }
-        if (manager.getRealWidth(context) != null) {
-            container.getLayoutParams().width = manager.getRealWidth(context);
+        if (appearanceManager.getRealWidth(context) != null) {
+            container.getLayoutParams().width = appearanceManager.getRealWidth(context);
         }
         container.requestLayout();
     }
@@ -84,16 +84,16 @@ public final class DefaultStoryListItem implements IStoriesListItem {
     private void setDefaultViews() {
         if (cornerLayout != null) {
             cornerLayout.setBackgroundColor(Color.TRANSPARENT);
-            cornerLayout.setRadius(Math.max(manager.csListItemRadius(context) - Sizes.dpToPxExt(4, context), 0));
+            cornerLayout.setRadius(Math.max(appearanceManager.csListItemRadius(context) - Sizes.dpToPxExt(4, context), 0));
         }
         if (gradient != null)
-            gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
+            gradient.setVisibility(appearanceManager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
         if (titleView != null) {
-            titleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(context));
-            titleView.setTextColor(manager.csListItemTitleColor());
+            titleView.setTextSize(TypedValue.COMPLEX_UNIT_PX, appearanceManager.csListItemTitleSize(context));
+            titleView.setTextColor(appearanceManager.csListItemTitleColor());
         }
         if (borderView != null) {
-            borderView.getBackground().setColorFilter(manager.csListItemBorderColor(),
+            borderView.getBackground().setColorFilter(appearanceManager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
     }
@@ -124,10 +124,10 @@ public final class DefaultStoryListItem implements IStoriesListItem {
         if (titleColor != null) {
             titleView.setTextColor(titleColor);
         } else {
-            titleView.setTextColor(manager.csListItemTitleColor());
+            titleView.setTextColor(appearanceManager.csListItemTitleColor());
         }
-        if (manager.csCustomFont() != null) {
-            titleView.setTypeface(manager.csCustomFont());
+        if (appearanceManager.csCustomFont() != null) {
+            titleView.setTypeface(appearanceManager.csCustomFont());
         }
     }
 
@@ -139,22 +139,18 @@ public final class DefaultStoryListItem implements IStoriesListItem {
             image.setBackgroundColor(backgroundColor);
             return;
         }
-        new GetBitmapFromCacheWithFilePath(
-                path,
-                new IGetBitmapFromMemoryCache() {
-                    @Override
-                    public void get(Bitmap bitmap) {
-                        image.setImageBitmap(bitmap);
-                    }
-                },
-                new IGetBitmapFromMemoryCacheError() {
-                    @Override
-                    public void onError() {
-                        image.setImageResource(0);
-                        image.setBackgroundColor(backgroundColor);
-                    }
-                }
-        ).get();
+        manager.getBitmap(path, new IGetBitmap() {
+            @Override
+            public void onSuccess(Bitmap bitmap) {
+                image.setImageBitmap(bitmap);
+            }
+
+            @Override
+            public void onError() {
+                image.setImageResource(0);
+                image.setBackgroundColor(backgroundColor);
+            }
+        });
     }
 
     @Override
@@ -179,16 +175,16 @@ public final class DefaultStoryListItem implements IStoriesListItem {
     public void setOpened(View itemView, boolean isOpened) {
         if (borderView != null) {
             ((GradientDrawable) borderView.getBackground())
-                    .setCornerRadius(manager.csListItemRadius(context));
+                    .setCornerRadius(appearanceManager.csListItemRadius(context));
             borderView.setVisibility(
                     isOpened ?
-                            (manager.csListOpenedItemBorderVisibility() ? View.VISIBLE : View.GONE)
-                            : (manager.csListItemBorderVisibility() ? View.VISIBLE : View.GONE)
+                            (appearanceManager.csListOpenedItemBorderVisibility() ? View.VISIBLE : View.GONE)
+                            : (appearanceManager.csListItemBorderVisibility() ? View.VISIBLE : View.GONE)
             );
             borderView.getBackground().setColorFilter(
                     isOpened ?
-                            manager.csListOpenedItemBorderColor()
-                            : manager.csListItemBorderColor(),
+                            appearanceManager.csListOpenedItemBorderColor()
+                            : appearanceManager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP
             );
         }

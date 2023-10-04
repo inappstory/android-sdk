@@ -25,7 +25,8 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
+import com.inappstory.sdk.stories.ui.list.items.IStoryListItemWithCover;
+import com.inappstory.sdk.stories.ui.list.items.base.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
@@ -107,15 +108,20 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
                     story.getProperImage(manager.csCoverQuality()).getUrl() : null;
-            holder.bind(story.id,
+            holder.bind(
+                    story.id,
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                     story.getSource(),
-                    imgUrl,
                     Color.parseColor(story.getBackgroundColor()),
                     story.isOpened,
                     story.hasAudio(),
-                    story.getVideoUrl(), this);
+                    this
+            );
+            if (holder instanceof IStoryListItemWithCover) {
+                ((IStoryListItemWithCover) holder).setImage(imgUrl);
+                ((IStoryListItemWithCover) holder).setVideo(story.getVideoUrl());
+            }
         }
     }
 

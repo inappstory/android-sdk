@@ -12,7 +12,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
-import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
+import com.inappstory.sdk.stories.ui.list.items.base.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -34,16 +34,16 @@ public class UGCListItem extends BaseStoryListItem {
         }
         View v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_ugc, null, false);
         RoundedCornerLayout cv = v.findViewById(R.id.inner_cv);
-        cv.setRadius(Math.max(manager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
+        cv.setRadius(Math.max(appearanceManager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
         cv.setBackgroundColor(Color.TRANSPARENT);
         View outerLayout = v.findViewById(R.id.outerLayout);
-        if (manager.getRealHeight(itemView.getContext()) != null) {
-            outerLayout.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
+        if (appearanceManager.getRealHeight(itemView.getContext()) != null) {
+            outerLayout.getLayoutParams().height = appearanceManager.getRealHeight(itemView.getContext());
         }
-        if (manager.getRealWidth(itemView.getContext()) != null) {
-            outerLayout.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
+        if (appearanceManager.getRealWidth(itemView.getContext()) != null) {
+            outerLayout.getLayoutParams().width = appearanceManager.getRealWidth(itemView.getContext());
         }
-        UGCListItemSimpleAppearance ugcListItemAppearance = manager.csUGCListItemSimpleAppearance();
+        UGCListItemSimpleAppearance ugcListItemAppearance = appearanceManager.csUGCListItemSimpleAppearance();
         if (ugcListItemAppearance != null) {
             AppCompatImageView image = v.findViewById(R.id.image);
             RelativeLayout.LayoutParams imageLp = (RelativeLayout.LayoutParams) image.getLayoutParams();
@@ -71,9 +71,9 @@ public class UGCListItem extends BaseStoryListItem {
 
     @Override
     public void bind(Integer id, String titleText, Integer titleColor,
-                     String sourceText, String imageUrl,
+                     String sourceText,
                      Integer backgroundColor, boolean isOpened, boolean hasAudio,
-                     String videoUrl, ClickCallback callback) {
+                     ClickCallback callback) {
 
     }
 

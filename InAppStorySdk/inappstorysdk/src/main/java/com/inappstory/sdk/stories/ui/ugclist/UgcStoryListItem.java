@@ -21,7 +21,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
-import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
+import com.inappstory.sdk.stories.ui.list.items.base.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 
@@ -57,25 +57,25 @@ public class UgcStoryListItem extends BaseStoryListItem {
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_inner_item, null, false);
             View container = v.findViewById(R.id.container);
-            if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
-                    && manager.csListItemInterface().getVideoView() == null)) {
-                if (manager.getRealHeight(itemView.getContext()) != null) {
-                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
+            if (appearanceManager.csListItemInterface() == null || (appearanceManager.csListItemInterface().getView() == null
+                    && appearanceManager.csListItemInterface().getVideoView() == null)) {
+                if (appearanceManager.getRealHeight(itemView.getContext()) != null) {
+                    container.getLayoutParams().height = appearanceManager.getRealHeight(itemView.getContext());
                 }
-                if (manager.getRealWidth(itemView.getContext()) != null) {
-                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
+                if (appearanceManager.getRealWidth(itemView.getContext()) != null) {
+                    container.getLayoutParams().width = appearanceManager.getRealWidth(itemView.getContext());
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius(itemView.getContext()));
+            cv.setRadius(appearanceManager.csListItemRadius(itemView.getContext()));
             title = v.findViewById(R.id.title);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
-            title.setTextColor(manager.csListItemTitleColor());
-            border.getBackground().setColorFilter(manager.csListItemBorderColor(),
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, appearanceManager.csListItemTitleSize(itemView.getContext()));
+            title.setTextColor(appearanceManager.csListItemTitleColor());
+            border.getBackground().setColorFilter(appearanceManager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
         return v;
@@ -87,29 +87,29 @@ public class UgcStoryListItem extends BaseStoryListItem {
             v = (getListItem.getVideoView() != null ? getListItem.getVideoView() : getListItem.getView());
         } else {
             v = LayoutInflater.from(itemView.getContext()).inflate(R.layout.cs_story_list_video_inner_item, null, false);
-            if (manager.csListItemInterface() == null || (manager.csListItemInterface().getView() == null
-                    && manager.csListItemInterface().getVideoView() == null)) {
+            if (appearanceManager.csListItemInterface() == null || (appearanceManager.csListItemInterface().getView() == null
+                    && appearanceManager.csListItemInterface().getVideoView() == null)) {
 
                 View container = v.findViewById(R.id.container);
-                if (manager.getRealHeight(itemView.getContext()) != null) {
-                    container.getLayoutParams().height = manager.getRealHeight(itemView.getContext());
+                if (appearanceManager.getRealHeight(itemView.getContext()) != null) {
+                    container.getLayoutParams().height = appearanceManager.getRealHeight(itemView.getContext());
                 }
-                if (manager.getRealWidth(itemView.getContext()) != null) {
-                    container.getLayoutParams().width = manager.getRealWidth(itemView.getContext());
+                if (appearanceManager.getRealWidth(itemView.getContext()) != null) {
+                    container.getLayoutParams().width = appearanceManager.getRealWidth(itemView.getContext());
                 }
             }
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
-            cv.setRadius(manager.csListItemRadius(itemView.getContext()));
+            cv.setRadius(appearanceManager.csListItemRadius(itemView.getContext()));
             title = v.findViewById(R.id.title);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             video = v.findViewById(R.id.video);
             image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
-            title.setTextColor(manager.csListItemTitleColor());
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius(itemView.getContext())));
-            border.getBackground().setColorFilter(manager.csListItemBorderColor(),
+            title.setTextSize(TypedValue.COMPLEX_UNIT_PX, appearanceManager.csListItemTitleSize(itemView.getContext()));
+            title.setTextColor(appearanceManager.csListItemTitleColor());
+            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * appearanceManager.csListItemRadius(itemView.getContext())));
+            border.getBackground().setColorFilter(appearanceManager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
         return v;
@@ -150,11 +150,9 @@ public class UgcStoryListItem extends BaseStoryListItem {
                      String titleText,
                      Integer titleColor,
                      String sourceText,
-                     final String imageUrl,
                      Integer backgroundColor,
                      boolean isOpened,
                      boolean hasAudio,
-                     String videoUrl,
                      ClickCallback callback) {
         this.callback = callback;
         itemView.setOnClickListener(new View.OnClickListener() {
@@ -169,106 +167,7 @@ public class UgcStoryListItem extends BaseStoryListItem {
             getListItem.setId(itemView, id);
             getListItem.setTitle(itemView, titleText, titleColor);
             getListItem.setHasAudio(itemView, hasAudio);
-            String fileLink = ImageLoader.getInstance().getFileLink(imageUrl);
-            if (fileLink != null) {
-                getListItem.setImage(itemView, fileLink,
-                        UgcStoryListItem.this.backgroundColor);
-            } else {
-                if (imageUrl != null) {
-                    downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
-                        @Override
-                        public void run(String path) {
-                            ImageLoader.getInstance().addLink(imageUrl, path);
-                            getListItem.setImage(itemView, path,
-                                    UgcStoryListItem.this.backgroundColor);
-                        }
-
-                        @Override
-                        public void error() {
-                            getListItem.setImage(itemView, null,
-                                    UgcStoryListItem.this.backgroundColor);
-                        }
-                    });
-                } else {
-                    getListItem.setImage(itemView, null,
-                            UgcStoryListItem.this.backgroundColor);
-                }
-            }
-
             getListItem.setOpened(itemView, isOpened);
-            if (videoUrl != null) {
-                downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
-                    @Override
-                    public void run(String path) {
-                        getListItem.setVideo(itemView, path);
-                    }
-
-                    @Override
-                    public void error() {
-                        getListItem.setVideo(itemView, null);
-                    }
-                });
-            }
-            return;
-        }
-
-        RoundedCornerLayout cv = itemView.findViewById(R.id.item_cv);
-        cv.setBackgroundColor(Color.TRANSPARENT);
-        cv.setRadius(manager.csListItemRadius(itemView.getContext()));
-        if (border != null)
-            ((GradientDrawable) border.getBackground()).setCornerRadius((int) (1.25 * manager.csListItemRadius(itemView.getContext())));
-        if (title != null) {
-            title.setText(titleText);
-            if (titleColor != null) {
-                title.setTextColor(titleColor);
-            } else {
-                title.setTextColor(manager.csListItemTitleColor());
-            }
-            if (manager.csCustomFont() != null) {
-                title.setTypeface(manager.csCustomFont());
-            }
-        }
-
-        if (hasAudioIcon != null)
-            hasAudioIcon.setVisibility(hasAudio ? View.VISIBLE : View.GONE);
-        if (border != null) {
-            border.setVisibility(isOpened ?
-                    (manager.csListOpenedItemBorderVisibility() ? View.VISIBLE : View.GONE)
-                    : (manager.csListItemBorderVisibility() ? View.VISIBLE : View.GONE));
-            border.getBackground().setColorFilter(isOpened ? manager.csListOpenedItemBorderColor() :
-                            manager.csListItemBorderColor(),
-                    PorterDuff.Mode.SRC_ATOP);
-        }
-        if (InAppStoryService.isNull()) return;
-        if (videoUrl != null) {
-            if (image != null) {
-                if (imageUrl != null) {
-                    //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
-                } else if (backgroundColor != null) {
-                    image.setImageResource(0);
-                    image.setBackgroundColor(backgroundColor);
-                }
-            }
-            if (video != null) {
-                video.release();
-                video.loadVideoByUrl(videoUrl);
-            }
-        } else {
-            if (video != null) {
-                video.release();
-            }
-            if (image != null) {
-                if (imageUrl != null) {
-                    //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
-                } else if (backgroundColor != null) {
-                    image.setImageResource(0);
-                    image.setBackgroundColor(backgroundColor);
-                }
-            }
         }
     }
 
