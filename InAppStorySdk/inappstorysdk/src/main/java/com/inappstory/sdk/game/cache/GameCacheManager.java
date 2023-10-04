@@ -2,6 +2,8 @@ package com.inappstory.sdk.game.cache;
 
 import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
 
+import android.util.Log;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.NetworkClient;
@@ -218,6 +220,11 @@ public class GameCacheManager {
                                                                     totalProgress[0] + loadedSize,
                                                                     resultTotalSize
                                                             );
+                                                            Log.e("unzipProgress",
+                                                                    (totalProgress[0] + loadedSize) + " " +
+                                                                            resultTotalSize
+                                                            );
+
                                                         }
                                                     }
                                             );

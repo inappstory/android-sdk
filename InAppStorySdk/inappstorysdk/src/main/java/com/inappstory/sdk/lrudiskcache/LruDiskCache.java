@@ -126,6 +126,7 @@ public class LruDiskCache {
             }
             journal.writeJournal();
         }
+        FileManager.deleteFolderRecursive(getCacheDir(), false);
     }
 
     public Set<String> keySet() {
