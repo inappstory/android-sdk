@@ -96,7 +96,7 @@ public class UgcStoriesList extends RecyclerView {
         if (InAppStoryService.getInstance() != null) {
             InAppStoryService.getInstance().removeListSubscriber(manager);
         } else
-            manager.clear();
+            manager.unsubscribe();
     }
 
     private float mPrevX = 0f;

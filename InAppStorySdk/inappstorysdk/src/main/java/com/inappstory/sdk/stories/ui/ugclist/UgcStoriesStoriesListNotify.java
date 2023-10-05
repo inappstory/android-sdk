@@ -6,14 +6,25 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
 
 class UgcStoriesStoriesListNotify implements IStoriesListNotify {
 
     UgcStoriesList list;
 
-    public void clear() {
+    public void unsubscribe() {
         list = null;
+    }
+
+    @Override
+    public void subscribe() {
+
+    }
+
+    @Override
+    public void bindList(StoriesList list) {
+
     }
 
     public UgcStoriesStoriesListNotify() {

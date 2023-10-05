@@ -4,8 +4,10 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 
 public class ShownStoriesListItem {
 
-    public ShownStoriesListItem() {
-
+    public ShownStoriesListItem(ShownStoriesListItem copyItem, float areaPercent) {
+        this.storyData = copyItem.storyData;
+        this.listIndex = copyItem.listIndex;
+        this.areaPercent = areaPercent;
     }
 
     public ShownStoriesListItem(StoryData storyData, int listIndex, float areaPercent) {

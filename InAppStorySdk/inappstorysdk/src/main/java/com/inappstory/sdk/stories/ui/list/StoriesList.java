@@ -36,6 +36,8 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.uidomain.list.IStoriesListPresenter;
+import com.inappstory.sdk.stories.uidomain.list.StoriesListPresenter;
 import com.inappstory.sdk.stories.uidomain.list.readerconnector.StoriesListNotify;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -49,6 +51,8 @@ public class StoriesList extends RecyclerView {
         super(context);
         init(null);
     }
+
+    IStoriesListPresenter presenter = new StoriesListPresenter();
 
     public static String DEFAULT_FEED = "default";
 
@@ -203,19 +207,14 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().removeListSubscriber(manager);
-        } else
-            manager.clear();
+        manager.unsubscribe();
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        manager.list = this;
-        InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
-                + InAppStoryService.isNotNull());
-        InAppStoryService.checkAndAddListSubscriber(manager);
+        manager.bindList(this);
+        manager.subscribe();
     }
 
     private void init(AttributeSet attributeSet) {
@@ -339,24 +338,24 @@ public class StoriesList extends RecyclerView {
                                         (holder.getWidth() * holder.getHeight());
                         ShownStoriesListItem cachedData = scrolledItems.get(i);
                         if (cachedData != null) {
-                            currentPercentage = Math.max(currentPercentage, cachedData.areaPercent);
-                        }
-                        Story current = InAppStoryService.getInstance().getDownloadManager()
-                                .getStoryById(adapter.getStoriesIds().get(ind), Story.StoryType.COMMON);
-                        if (current != null && currentPercentage > 0) {
-                            scrolledItems.put(i, new ShownStoriesListItem(
-                                    new StoryData(
-                                            current.id,
-                                            StringsUtils.getNonNull(current.statTitle),
-                                            StringsUtils.getNonNull(current.tags),
-                                            current.getSlidesCount(),
-                                            feed,
-                                            isFavoriteList ? SourceType.FAVORITE : SourceType.LIST
-                                    ),
+                            cachedData.areaPercent = Math.max(
+                                    currentPercentage,
+                                    cachedData.areaPercent
+                            );
+                        } else {
+                            ShownStoriesListItem current = presenter.getShownStoriesListItemByStoryId(
+                                    adapter.getStoriesIds().get(ind),
                                     i,
-                                    currentPercentage
-                            ));
+                                    currentPercentage,
+                                    feed,
+                                    isFavoriteList ? SourceType.FAVORITE : SourceType.LIST
+                            );
+                            if (current != null) {
+                                scrolledItems.put(i, current);
+                            }
+
                         }
+
                     }
                 }
             }
@@ -479,7 +478,7 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    public void changeStoryEvent(int storyId, String listID) {
+    public void changeStoryEvent(int storyId) {
         if (adapter == null || adapter.getStoriesIds() == null) return;
         for (int i = 0; i < adapter.getStoriesIds().size(); i++) {
             if (adapter.getStoriesIds().get(i) == storyId) {
@@ -489,26 +488,24 @@ public class StoriesList extends RecyclerView {
         }
         if (layoutManager == null) return;
         final int ind = adapter.getIndexById(storyId);
-        if (ind == -1) return;
+        if (ind < 0) return;
         if (layoutManager instanceof LinearLayoutManager) {
-            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(Math.max(ind, 0), 0);
+            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind, 0);
         }
-        if (ind >= 0 && listID != null && this.uniqueID != null && this.uniqueID.equals(listID)) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    int[] location = new int[2];
-                    View v = layoutManager.findViewByPosition(ind);
-                    if (v == null) return;
-                    v.getLocationOnScreen(location);
-                    int x = location[0];
-                    int y = location[1];
-                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2,
-                            y + v.getHeight() / 2);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int[] location = new int[2];
+                View v = layoutManager.findViewByPosition(ind);
+                if (v == null) return;
+                v.getLocationOnScreen(location);
+                int x = location[0];
+                int y = location[1];
+                ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2,
+                        y + v.getHeight() / 2);
 
-                }
-            }, 950);
-        }
+            }
+        }, 950);
     }
 
     @Override
@@ -520,7 +517,6 @@ public class StoriesList extends RecyclerView {
     }
 
     public void clearAllFavorites() {
-        if (InAppStoryService.isNull()) return;
         if (adapter == null) return;
         if (isFavoriteList) {
             adapter.hasFavItem = false;
@@ -534,7 +530,6 @@ public class StoriesList extends RecyclerView {
     }
 
     public void favStory(int id, boolean favStatus, List<FavoriteImage> favImages, boolean isEmpty) {
-        if (InAppStoryService.isNull()) return;
         if (adapter == null) return;
 
         checkAppearanceManager();
@@ -578,14 +573,12 @@ public class StoriesList extends RecyclerView {
     }
 
     private void loadStoriesLocal() {
-        if (InAppStoryService.isNull()
-                || cacheId == null
+        if (cacheId == null
                 || cacheId.isEmpty()) {
             loadStoriesInner();
             return;
         }
-        List<Integer> storiesIds = InAppStoryService.getInstance()
-                .listStoriesIds.get(cacheId);
+        List<Integer> storiesIds = presenter.getCachedStoriesPreviews(cacheId);
         if (storiesIds == null) {
             loadStoriesInner();
             return;

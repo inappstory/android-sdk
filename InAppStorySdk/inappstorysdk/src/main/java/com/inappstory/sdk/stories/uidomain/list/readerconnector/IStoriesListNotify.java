@@ -1,7 +1,12 @@
 package com.inappstory.sdk.stories.uidomain.list.readerconnector;
 
+import com.inappstory.sdk.stories.ui.list.StoriesList;
+
 public interface IStoriesListNotify {
-    void clear();
+    void unsubscribe();
+    void subscribe();
+
+    void bindList(StoriesList list);
 
     void changeStory(final int storyId, final String listID);
 

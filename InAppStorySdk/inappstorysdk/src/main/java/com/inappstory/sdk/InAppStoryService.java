@@ -515,8 +515,9 @@ public class InAppStoryService {
     }
 
     public static void checkAndAddListSubscriber(IStoriesListNotify storiesListNotify) {
-        if (isNotNull()) {
-            getInstance().addListSubscriber(storiesListNotify);
+        InAppStoryService service = getInstance();
+        if (service != null) {
+            service.addListSubscriber(storiesListNotify);
         } else {
             if (tempListSubscribers == null) tempListSubscribers = new HashSet<>();
             tempListSubscribers.add(storiesListNotify);
@@ -531,7 +532,7 @@ public class InAppStoryService {
 
     public void clearSubscribers() {
         for (IStoriesListNotify storiesListNotify : listSubscribers) {
-            storiesListNotify.clear();
+            storiesListNotify.unsubscribe();
         }
         tempListSubscribers.clear();
         listSubscribers.clear();
@@ -540,7 +541,6 @@ public class InAppStoryService {
 
     public void removeListSubscriber(IStoriesListNotify storiesListNotify) {
         if (listSubscribers == null) return;
-        storiesListNotify.clear();
         if (tempListSubscribers != null)
             tempListSubscribers.remove(storiesListNotify);
         listSubscribers.remove(storiesListNotify);
