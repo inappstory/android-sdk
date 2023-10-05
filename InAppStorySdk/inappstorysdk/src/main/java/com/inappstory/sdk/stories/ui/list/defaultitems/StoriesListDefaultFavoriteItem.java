@@ -11,15 +11,15 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
-import com.inappstory.sdk.stories.uidomain.list.defaultitems.favorite.DefaultFavoriteStoryListItemManager;
-import com.inappstory.sdk.stories.uidomain.list.defaultitems.favorite.IDefaultFavoriteStoryListItemManager;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.favorite.StoriesListDefaultFavoriteItemPresenter;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.favorite.IStoriesListDefaultFavoriteItemPresenter;
 
 import java.util.List;
 
-public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem {
+public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListItem {
 
     AppearanceManager appearanceManager;
     Context context;
@@ -36,13 +36,66 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
     View container;
 
 
+    IStoriesListDefaultFavoriteItemPresenter manager = new StoriesListDefaultFavoriteItemPresenter();
 
-    IDefaultFavoriteStoryListItemManager manager = new DefaultFavoriteStoryListItemManager();
 
-
-    public DefaultFavoriteStoryListItem(AppearanceManager appearanceManager, Context context) {
+    public StoriesListDefaultFavoriteItem(AppearanceManager appearanceManager, Context context) {
         this.context = context;
         this.appearanceManager = appearanceManager;
+    }
+
+
+    @Override
+    public View getFavoriteItem() {
+        return LayoutInflater.from(context)
+                .inflate(R.layout.cs_story_list_inner_favorite, null, false);
+    }
+
+    @Override
+    public void bindFavoriteItem(View favCell,
+                                 List<Integer> backgroundColors,
+                                 int count
+    ) {
+        bindViews(favCell);
+        setContainerSize();
+        setDefaultViews();
+        setBackgroundColors(backgroundColors);
+    }
+
+
+
+    @Override
+    public void setImages(
+            View favCell,
+            List<String> favoriteImages,
+            List<Integer> backgroundColors,
+            int count
+    ) {
+        switch (count) {
+            case 1:
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                break;
+            case 2:
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
+                break;
+            case 3:
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
+                setImage(2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
+                break;
+            default:
+                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
+                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
+                setImage(2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
+                setImage(3, favoriteImages.get(3), getColorOrTransparent(backgroundColors, 3));
+                break;
+        }
+    }
+
+    @Override
+    public int count() {
+        return 3;
     }
 
     private void bindViews(View parent) {
@@ -80,24 +133,10 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
         container.requestLayout();
     }
 
-    @Override
-    public View getFavoriteItem() {
-        return LayoutInflater.from(context)
-                .inflate(R.layout.cs_story_list_inner_favorite, null, false);
-    }
-
-    @Override
-    public void bindFavoriteItem(View favCell,
-                                 List<Integer> backgroundColors,
-                                 int count
+    private void setBackground(
+            ImageView imageView,
+            int backgroundColor
     ) {
-        bindViews(favCell);
-        setContainerSize();
-        setDefaultViews();
-        setBackgroundColors(backgroundColors);
-    }
-
-    private void setBackground(ImageView imageView, int backgroundColor) {
         imageView.setBackgroundColor(backgroundColor);
     }
 
@@ -122,35 +161,6 @@ public final class DefaultFavoriteStoryListItem implements IGetFavoriteListItem 
                 setBackground(image3, backgroundColors.get(3));
                 break;
 
-        }
-    }
-
-    @Override
-    public void setImages(
-            View favCell,
-            List<String> favoriteImages,
-            List<Integer> backgroundColors,
-            int count
-    ) {
-        switch (favoriteImages.size()) {
-            case 1:
-                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
-                break;
-            case 2:
-                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
-                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
-                break;
-            case 3:
-                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
-                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
-                setImage(2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
-                break;
-            default:
-                setImage(0, favoriteImages.get(0), getColorOrTransparent(backgroundColors, 0));
-                setImage(1, favoriteImages.get(1), getColorOrTransparent(backgroundColors, 1));
-                setImage(2, favoriteImages.get(2), getColorOrTransparent(backgroundColors, 2));
-                setImage(3, favoriteImages.get(3), getColorOrTransparent(backgroundColors, 3));
-                break;
         }
     }
 

@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.uidomain.list.defaultitems.favorite;
 
 import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 
-public interface IDefaultFavoriteStoryListItemManager {
+public interface IStoriesListDefaultFavoriteItemPresenter {
     boolean isSameImageLink(int index, String link);
 
     void storeImageLinkLocal(int index, String link);

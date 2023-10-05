@@ -1,6 +1,6 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.uidomain.list.readerconnector;
 
-public interface ListManager {
+public interface IStoriesListNotify {
     void clear();
 
     void changeStory(final int storyId, final String listID);

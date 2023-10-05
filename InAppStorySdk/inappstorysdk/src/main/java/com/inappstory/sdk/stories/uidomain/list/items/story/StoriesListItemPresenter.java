@@ -8,7 +8,7 @@ import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
 import java.util.HashMap;
 
-public class StoryListItemManager implements IStoryListItemManager{
+public final class StoriesListItemPresenter implements IStoriesListItemPresenter {
     @Override
     public void getFilePathFromLink(final String url, final IFileDownloadCallback callback) {
         String fileLink = getFileLink(url);
@@ -35,13 +35,13 @@ public class StoryListItemManager implements IStoryListItemManager{
         }
     }
 
-    public HashMap<String, String> fileLinks = new HashMap<>();
+    private final HashMap<String, String> fileLinks = new HashMap<>();
 
-    public String getFileLink(String link) {
+    private String getFileLink(String link) {
         return fileLinks.get(link);
     }
 
-    public void addLink(String link, String fileLink) {
+    private void addLink(String link, String fileLink) {
         fileLinks.put(link, fileLink);
     }
 }

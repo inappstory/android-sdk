@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.uidomain.list.readerconnector;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -6,17 +6,19 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.StoriesList;
 
 import java.util.List;
 
-public class StoriesListManager implements ListManager {
-    StoriesList list;
+public class StoriesListNotify implements IStoriesListNotify {
+    public StoriesList list;
 
     public void clear() {
         list = null;
     }
 
-    public StoriesListManager() {
+    public StoriesListNotify() {
       //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
     }

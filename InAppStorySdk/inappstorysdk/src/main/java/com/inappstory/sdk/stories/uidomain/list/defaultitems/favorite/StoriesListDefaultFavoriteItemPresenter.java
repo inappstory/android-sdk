@@ -9,7 +9,7 @@ import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 
 import java.util.HashMap;
 
-public class DefaultFavoriteStoryListItemManager implements IDefaultFavoriteStoryListItemManager {
+public class StoriesListDefaultFavoriteItemPresenter implements IStoriesListDefaultFavoriteItemPresenter {
 
     private HashMap<Integer, String> localLink = new HashMap<>();
 

@@ -16,6 +16,8 @@ import android.util.Log;
 import android.util.Pair;
 import android.webkit.URLUtil;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
@@ -36,7 +38,7 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.ui.list.ListManager;
+import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
 import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.io.File;
@@ -228,6 +230,7 @@ public class InAppStoryService {
     }
 
 
+    @NonNull
     public List<FavoriteImage> getFavoriteImages() {
         if (downloadManager == null) return new ArrayList<>();
         if (downloadManager.favoriteImages == null)
@@ -459,28 +462,28 @@ public class InAppStoryService {
     public class ListReaderConnector {
         public void changeStory(int storyId, String listID) {
             if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.changeStory(storyId, listID);
             }
         }
 
         public void closeReader() {
             if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.closeReader();
             }
         }
 
         public void openReader() {
             if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.openReader();
             }
         }
 
         public void changeUserId() {
             if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.changeUserId();
             }
         }
@@ -490,57 +493,57 @@ public class InAppStoryService {
 
             List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
             boolean isEmpty = favImages.isEmpty();
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.storyFavorite(id, favStatus, isEmpty);
             }
         }
 
         public void clearAllFavorites() {
             if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
+            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
                 sub.clearAllFavorites();
             }
         }
     }
 
-    Set<ListManager> listSubscribers;
-    public static Set<ListManager> tempListSubscribers;
+    Set<IStoriesListNotify> listSubscribers;
+    public static Set<IStoriesListNotify> tempListSubscribers;
 
-    public Set<ListManager> getListSubscribers() {
+    public Set<IStoriesListNotify> getListSubscribers() {
         if (listSubscribers == null) listSubscribers = new HashSet<>();
         return listSubscribers;
     }
 
-    public static void checkAndAddListSubscriber(ListManager listManager) {
+    public static void checkAndAddListSubscriber(IStoriesListNotify storiesListNotify) {
         if (isNotNull()) {
-            getInstance().addListSubscriber(listManager);
+            getInstance().addListSubscriber(storiesListNotify);
         } else {
             if (tempListSubscribers == null) tempListSubscribers = new HashSet<>();
-            tempListSubscribers.add(listManager);
+            tempListSubscribers.add(storiesListNotify);
         }
     }
 
-    public void addListSubscriber(ListManager listManager) {
+    public void addListSubscriber(IStoriesListNotify storiesListNotify) {
         if (listSubscribers == null) listSubscribers = new HashSet<>();
-        listSubscribers.add(listManager);
+        listSubscribers.add(storiesListNotify);
     }
 
 
     public void clearSubscribers() {
-        for (ListManager listManager : listSubscribers) {
-            listManager.clear();
+        for (IStoriesListNotify storiesListNotify : listSubscribers) {
+            storiesListNotify.clear();
         }
         tempListSubscribers.clear();
         listSubscribers.clear();
     }
 
 
-    public void removeListSubscriber(ListManager listManager) {
+    public void removeListSubscriber(IStoriesListNotify storiesListNotify) {
         if (listSubscribers == null) return;
-        listManager.clear();
+        storiesListNotify.clear();
         if (tempListSubscribers != null)
-            tempListSubscribers.remove(listManager);
-        listSubscribers.remove(listManager);
+            tempListSubscribers.remove(storiesListNotify);
+        listSubscribers.remove(storiesListNotify);
     }
 
     public static void createExceptionLog(Throwable throwable) {

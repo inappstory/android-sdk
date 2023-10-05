@@ -1,50 +1,37 @@
-package com.inappstory.sdk.stories.ui.list.items.story;
+package com.inappstory.sdk.stories.ui.list.items.ugc;
 
 import android.graphics.Point;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.ui.list.ClickCallback;
-import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
-import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.list.items.IStoryListItemWithCover;
-import com.inappstory.sdk.stories.ui.list.items.base.BaseStoryListItem;
-import com.inappstory.sdk.stories.ui.video.VideoPlayer;
-import com.inappstory.sdk.stories.uidomain.list.items.story.IStoryListItemManager;
-import com.inappstory.sdk.stories.uidomain.list.items.story.StoryListItemManager;
+import com.inappstory.sdk.stories.ui.list.items.IStoriesListCommonItem;
+import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
+import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
+import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemPresenter;
+import com.inappstory.sdk.stories.uidomain.list.items.story.StoriesListItemPresenter;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoryListItem extends BaseStoryListItem implements IStoryListItemWithCover {
+public class UgcStoriesListItem extends BaseStoriesListItem implements IStoriesListItemWithCover,
+        IStoriesListCommonItem {
 
-    protected AppCompatTextView title;
-    protected AppCompatImageView image;
-    protected VideoPlayer video;
-    protected AppCompatImageView hasAudioIcon;
-    protected View border;
-    protected View gradient;
     public boolean isOpened;
     public boolean hasVideo;
 
-    private IStoryListItemManager manager = new StoryListItemManager();
+    private IStoriesListItemPresenter manager = new StoriesListItemPresenter();
 
-    public StoryListItem(
+    public UgcStoriesListItem(
             @NonNull View itemView,
             AppearanceManager appearanceManager,
-            boolean isOpened,
             boolean hasVideo
     ) {
-        super(itemView, appearanceManager, false, false);
-        this.isOpened = isOpened;
+        super(itemView, appearanceManager);
         this.hasVideo = hasVideo;
         ViewGroup vg = itemView.findViewById(R.id.baseLayout);
         vg.removeAllViews();
@@ -62,6 +49,9 @@ public class StoryListItem extends BaseStoryListItem implements IStoryListItemWi
     protected View getDefaultVideoCell() {
         return getListItem.getVideoView() != null ? getListItem.getVideoView() : getListItem.getView();
     }
+
+
+
 
     public Integer backgroundColor;
     public ClickCallback callback;
@@ -117,11 +107,11 @@ public class StoryListItem extends BaseStoryListItem implements IStoryListItemWi
         }
     }
 
-    public void bind(
+    @Override
+    public void bindCommon(
             Integer id,
             String titleText,
             Integer titleColor,
-            String sourceText,
             Integer backgroundColor,
             boolean isOpened,
             boolean hasAudio,
@@ -137,8 +127,8 @@ public class StoryListItem extends BaseStoryListItem implements IStoryListItemWi
                 int y = location[1];
                 ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
                         y + v.getHeight() / 2);
-                if (StoryListItem.this.callback != null)
-                    StoryListItem.this.callback.onItemClick(getAbsoluteAdapterPosition());
+                if (UgcStoriesListItem.this.callback != null)
+                    UgcStoriesListItem.this.callback.onItemClick(getAbsoluteAdapterPosition());
             }
         });
         this.backgroundColor = backgroundColor;
@@ -146,15 +136,5 @@ public class StoryListItem extends BaseStoryListItem implements IStoryListItemWi
         getListItem.setTitle(itemView, titleText, titleColor);
         getListItem.setHasAudio(itemView, hasAudio);
         getListItem.setOpened(itemView, isOpened);
-    }
-
-    @Override
-    public void bindFavorite() {
-
-    }
-
-    @Override
-    public void bindUGC() {
-
     }
 }

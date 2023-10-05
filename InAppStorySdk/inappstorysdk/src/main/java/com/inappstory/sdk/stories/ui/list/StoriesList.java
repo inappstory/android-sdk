@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -37,7 +36,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.stories.uidomain.list.readerconnector.StoriesListNotify;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -118,7 +117,7 @@ public class StoriesList extends RecyclerView {
         this.scrollCallback = scrollCallback;
     }
 
-    StoriesListManager manager;
+    StoriesListNotify manager;
     boolean isFavoriteList = false;
 
     public StoriesList(@NonNull Context context, boolean isFavoriteList) {
@@ -222,7 +221,7 @@ public class StoriesList extends RecyclerView {
     private void init(AttributeSet attributeSet) {
         uniqueID = randomUUID().toString();
         mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-        manager = new StoriesListManager();
+        manager = new StoriesListNotify();
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
@@ -420,7 +419,7 @@ public class StoriesList extends RecyclerView {
     }
 
 
-    void refreshList() {
+    public void refreshList() {
         adapter = null;
         loadStoriesInner();
     }
@@ -620,7 +619,6 @@ public class StoriesList extends RecyclerView {
                 isFavoriteList,
                 callback,
                 getFeed(),
-                getFeedId(),
                 appearanceManager.csHasFavorite() && !isFavoriteList,
                 !isFavoriteList ? favoriteItemClick : null,
                 hasSessionUGC() && appearanceManager.csHasUGC() && !isFavoriteList,

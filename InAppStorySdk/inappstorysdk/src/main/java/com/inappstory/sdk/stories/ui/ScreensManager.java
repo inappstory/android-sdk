@@ -299,7 +299,7 @@ public class ScreensManager {
 
     public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
                                   ArrayList<Integer> storiesIds, int index, int source, int firstAction, Integer slideIndex,
-                                  String feed, String feedId, Story.StoryType type) {
+                                  String feed, Story.StoryType type) {
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && outerContext instanceof Activity) {
             if (((Activity) outerContext).isInMultiWindowMode()) {
@@ -321,7 +321,7 @@ public class ScreensManager {
             bundle.putInt("source", source);
             bundle.putInt("firstAction", firstAction);
             bundle.putString("storiesType", type.name());
-            bundle.putString("feedId", feedId);
+            bundle.putString("feedId", feed);
             bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
             bundle.putIntegerArrayList("stories_ids", storiesIds);
             if (manager == null) {
@@ -386,8 +386,8 @@ public class ScreensManager {
             intent2.putExtra("storiesType", type.name());
             if (listID != null)
                 intent2.putExtra("listID", listID);
-            if (feedId != null)
-                intent2.putExtra("feedId", feedId);
+            if (feed != null)
+                intent2.putExtra("feedId", feed);
             intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
             intent2.putExtra("slideIndex", slideIndex);
             if (manager != null) {
@@ -445,7 +445,6 @@ public class ScreensManager {
                                   int index,
                                   int source,
                                   String feed,
-                                  String feedId,
                                   Story.StoryType type) {
         openStoriesReader(
                 outerContext,
@@ -457,7 +456,6 @@ public class ScreensManager {
                 ShowStory.ACTION_OPEN,
                 0,
                 feed,
-                feedId,
                 type);
     }
 

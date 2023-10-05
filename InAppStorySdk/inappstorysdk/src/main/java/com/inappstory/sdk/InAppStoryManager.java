@@ -1097,11 +1097,14 @@ public class InAppStoryManager {
     private Object handlerToken = new Object();
 
     private void showLoadedOnboardings(final List<Story> response, final Context outerContext,
-                                       final AppearanceManager manager, final String feed, final String feedId) {
+                                       final AppearanceManager manager, final String feed) {
         Story.StoryType storyType = Story.StoryType.COMMON;
         if (response == null || response.size() == 0) {
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, StringsUtils.getNonNull(feed));
+                CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
+                        0,
+                        StringsUtils.getNonNull(feed)
+                );
             }
             return;
         }
@@ -1112,7 +1115,7 @@ public class InAppStoryManager {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
+                    showLoadedOnboardings(response, outerContext, manager, feed);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -1121,16 +1124,15 @@ public class InAppStoryManager {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
+                    showLoadedOnboardings(response, outerContext, manager, feed);
                     ScreensManager.created = 0;
                 }
             }, 350);
             return;
         }
 
-        ArrayList<Story> stories = new ArrayList<Story>();
+        ArrayList<Story> stories = new ArrayList<Story>(response);
         ArrayList<Integer> storiesIds = new ArrayList<>();
-        stories.addAll(response);
         for (Story story : response) {
             storiesIds.add(story.id);
         }
@@ -1145,10 +1147,13 @@ public class InAppStoryManager {
                 0,
                 ShowStory.ONBOARDING,
                 feed,
-                feedId,
-                Story.StoryType.COMMON);
+                Story.StoryType.COMMON
+        );
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
+                    response.size(),
+                    StringsUtils.getNonNull(feed)
+            );
         }
     }
 
@@ -1196,18 +1201,17 @@ public class InAppStoryManager {
                                 List<Story> notOpened = new ArrayList<>();
                                 Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
                                 if (opens == null) opens = new HashSet<>();
-                                if (response.stories != null) {
-                                    for (Story story : response.stories) {
-                                        boolean add = true;
-                                        for (String opened : opens) {
-                                            if (Integer.toString(story.id).equals(opened)) {
-                                                add = false;
-                                            }
+                                List<Story> localStories = response.getStories();
+                                for (Story story : localStories) {
+                                    boolean add = true;
+                                    for (String opened : opens) {
+                                        if (Integer.toString(story.id).equals(opened)) {
+                                            add = false;
                                         }
-                                        if (add) notOpened.add(story);
                                     }
+                                    if (add) notOpened.add(story);
                                 }
-                                showLoadedOnboardings(notOpened, outerContext, manager, localFeed, response.getFeedId());
+                                showLoadedOnboardings(notOpened, outerContext, manager, localFeed);
                             }
 
                             @Override
@@ -1447,7 +1451,6 @@ public class InAppStoryManager {
                                     readerSource,
                                     readerAction,
                                     slide,
-                                    null,
                                     null,
                                     Story.StoryType.COMMON
                             );

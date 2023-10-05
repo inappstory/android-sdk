@@ -6,9 +6,9 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.ui.list.ListManager;
+import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
 
-class UgcStoriesListManager implements ListManager {
+class UgcStoriesStoriesListNotify implements IStoriesListNotify {
 
     UgcStoriesList list;
 
@@ -16,7 +16,7 @@ class UgcStoriesListManager implements ListManager {
         list = null;
     }
 
-    public UgcStoriesListManager() {
+    public UgcStoriesStoriesListNotify() {
       //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
     }

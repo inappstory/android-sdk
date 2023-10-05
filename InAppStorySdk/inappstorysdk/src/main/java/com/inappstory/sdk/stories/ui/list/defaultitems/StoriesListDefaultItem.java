@@ -18,11 +18,11 @@ import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
-import com.inappstory.sdk.stories.uidomain.list.defaultitems.story.DefaultStoryListItemManager;
-import com.inappstory.sdk.stories.uidomain.list.defaultitems.story.IDefaultStoryListItemManager;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.story.StoriesListDefaultItemPresenter;
+import com.inappstory.sdk.stories.uidomain.list.defaultitems.story.IStoriesListDefaultItemPresenter;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public final class DefaultStoryListItem implements IStoriesListItem {
+public final class StoriesListDefaultItem implements IStoriesListItem {
     private AppCompatImageView image;
     private VideoPlayer video;
     private AppCompatTextView titleView;
@@ -35,10 +35,10 @@ public final class DefaultStoryListItem implements IStoriesListItem {
 
     AppearanceManager appearanceManager;
 
-    IDefaultStoryListItemManager manager = new DefaultStoryListItemManager();
+    IStoriesListDefaultItemPresenter manager = new StoriesListDefaultItemPresenter();
     Context context;
 
-    public DefaultStoryListItem(AppearanceManager appearanceManager, Context context) {
+    public StoriesListDefaultItem(AppearanceManager appearanceManager, Context context) {
         this.context = context;
         this.appearanceManager = appearanceManager;
     }

@@ -53,7 +53,7 @@ public class UgcStoriesList extends RecyclerView {
 
     ListCallback callback;
 
-    UgcStoriesListManager manager;
+    UgcStoriesStoriesListNotify manager;
 
     public UgcStoriesList(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -138,7 +138,7 @@ public class UgcStoriesList extends RecyclerView {
 
     private void init(AttributeSet attributeSet) {
         uniqueID = randomUUID().toString();
-        manager = new UgcStoriesListManager();
+        manager = new UgcStoriesStoriesListNotify();
         addOnScrollListener(new OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {

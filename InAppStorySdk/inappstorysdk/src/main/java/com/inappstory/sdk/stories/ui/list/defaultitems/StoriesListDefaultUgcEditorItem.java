@@ -16,13 +16,13 @@ import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
-public class DefaultUgcListItem implements IStoriesListUGCItem {
+public class StoriesListDefaultUgcEditorItem implements IStoriesListUGCItem {
     AppearanceManager appearanceManager;
     Context context;
     View container;
     private RoundedCornerLayout cornerLayout;
 
-    public DefaultUgcListItem(AppearanceManager appearanceManager, Context context) {
+    public StoriesListDefaultUgcEditorItem(AppearanceManager appearanceManager, Context context) {
         this.context = context;
         this.appearanceManager = appearanceManager;
     }

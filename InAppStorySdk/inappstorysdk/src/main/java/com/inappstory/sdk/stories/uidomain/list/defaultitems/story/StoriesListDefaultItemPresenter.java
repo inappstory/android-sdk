@@ -7,7 +7,7 @@ import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCache;
 import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 
-public class DefaultStoryListItemManager implements IDefaultStoryListItemManager {
+public class StoriesListDefaultItemPresenter implements IStoriesListDefaultItemPresenter {
     @Override
     public void getBitmap(String link, final IGetBitmap getBitmapCallback) {
         new GetBitmapFromCacheWithFilePath(

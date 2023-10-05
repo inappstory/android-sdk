@@ -28,5 +28,12 @@ public interface IGetFavoriteListItem {
      * @param favoriteImages (favoriteImages) contains list of covers for favorite stories in {@link FavoriteImage} type.
      * @param count          (count) contains a size of favorite images list
      */
-    void setImages(View favCell, List<String> favoriteImages, List<Integer> backgroundColors, int count);
+    void setImages(
+            View favCell,
+            List<String> favoriteImages,
+            List<Integer> backgroundColors,
+            int count
+    );
+
+    int count();
 }

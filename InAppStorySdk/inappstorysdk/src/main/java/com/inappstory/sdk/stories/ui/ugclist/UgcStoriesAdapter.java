@@ -25,17 +25,20 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.list.items.IStoryListItemWithCover;
-import com.inappstory.sdk.stories.ui.list.items.base.BaseStoryListItem;
+import com.inappstory.sdk.stories.ui.list.items.IStoriesListCommonItem;
+import com.inappstory.sdk.stories.ui.list.items.IStoriesListUGCEditorItem;
+import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
+import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.ui.list.items.ugc.UgcStoriesListItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
-import com.inappstory.sdk.ugc.list.UGCListItem;
+import com.inappstory.sdk.stories.ui.list.items.ugceditor.StoriesListUgcEditorItem;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> implements ClickCallback {
+public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoriesListItem> implements ClickCallback {
     public List<Integer> getStoriesIds() {
         return storiesIds;
     }
@@ -79,20 +82,21 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
 
     @NonNull
     @Override
-    public BaseStoryListItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public BaseStoriesListItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         int vType = viewType % 10;
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.cs_story_list_custom_item, parent, false);
         if (vType == -2) {
-            return new UGCListItem(v, manager);
+            return new StoriesListUgcEditorItem(v, manager);
         } else
-            return new UgcStoryListItem(v, manager, (vType % 5) == 2, vType > 5);
+            return new UgcStoriesListItem(v, manager, (vType % 5) == 2);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BaseStoryListItem holder, int position) {
-        if (holder == null || InAppStoryService.isNull()) return;
-        if (holder.isUGC) {
-            holder.bindUGC();
+    public void onBindViewHolder(@NonNull BaseStoriesListItem holder, int position) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        if (holder instanceof IStoriesListUGCEditorItem) {
+            ((IStoriesListUGCEditorItem) holder).bindUGC();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -101,26 +105,25 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                     }
                 }
             });
-        } else {
+        } else if (holder instanceof IStoriesListCommonItem) {
             int hasUGC = useUGC ? 1 : 0;
-            final Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.UGC);
+            final Story story = service.getDownloadManager()
+                    .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.COMMON);
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
                     story.getProperImage(manager.csCoverQuality()).getUrl() : null;
-            holder.bind(
+            ((IStoriesListCommonItem) holder).bindCommon(
                     story.id,
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
-                    story.getSource(),
                     Color.parseColor(story.getBackgroundColor()),
                     story.isOpened,
                     story.hasAudio(),
                     this
             );
-            if (holder instanceof IStoryListItemWithCover) {
-                ((IStoryListItemWithCover) holder).setImage(imgUrl);
-                ((IStoryListItemWithCover) holder).setVideo(story.getVideoUrl());
+            if (holder instanceof IStoriesListItemWithCover) {
+                ((IStoriesListItemWithCover) holder).setImage(imgUrl);
+                ((IStoriesListItemWithCover) holder).setVideo(story.getVideoUrl());
             }
         }
     }
@@ -255,15 +258,23 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                    storyId,
+                    Story.StoryType.UGC
+            );
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
         ScreensManager.getInstance().openStoriesReader(
-                context, listID,
-                manager, tempStories,
-                tempStories.indexOf(storiesIds.get(index)), ShowStory.UGC_LIST,
-                null, null, Story.StoryType.UGC);
+                context,
+                listID,
+                manager,
+                tempStories,
+                tempStories.indexOf(storiesIds.get(index)),
+                ShowStory.UGC_LIST,
+                null,
+                Story.StoryType.UGC
+        );
     }
 
     @Override
