@@ -16,7 +16,6 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ProgressCallback;
-import com.inappstory.sdk.utils.ProgressCallbackWithLog;
 
 import java.io.File;
 import java.lang.reflect.Type;
