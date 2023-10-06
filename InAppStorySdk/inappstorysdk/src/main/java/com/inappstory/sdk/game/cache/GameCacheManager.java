@@ -16,6 +16,7 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.ProgressCallback;
+import com.inappstory.sdk.utils.ProgressCallbackWithLog;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -213,18 +214,13 @@ public class GameCacheManager {
                                                         public void onProgress(long loadedSize, long totalSize) {
                                                             long resultTotalSize;
                                                             if (totalArchiveSize == 0)
-                                                                resultTotalSize = (long) (1.2f * totalSize);
+                                                                resultTotalSize = (long) (1.2f * (totalSize + totalResourcesSize));
                                                             else
                                                                 resultTotalSize = (long) (1.2f * finalTotalDownloadsSize);
                                                             progressCallback.onProgress(
-                                                                    totalProgress[0] + loadedSize,
+                                                                    (long)(totalProgress[0] + (0.2f * loadedSize)),
                                                                     resultTotalSize
                                                             );
-                                                            Log.e("unzipProgress",
-                                                                    (totalProgress[0] + loadedSize) + " " +
-                                                                            resultTotalSize
-                                                            );
-
                                                         }
                                                     }
                                             );
