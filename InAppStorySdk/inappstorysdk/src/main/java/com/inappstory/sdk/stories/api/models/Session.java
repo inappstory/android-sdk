@@ -35,6 +35,7 @@ public class Session {
     public static void setInstance(Session instance) {
         INSTANCE = instance;
     }
+
     private static Session INSTANCE;
 
     private static final Object lock = new Object();
@@ -50,18 +51,26 @@ public class Session {
 
     public static boolean needToUpdate() {
         synchronized (lock) {
-            Session session = INSTANCE;
-            if (session == null) return true;
-            if (session.id == null || session.id.isEmpty()) return true;
+            if (INSTANCE == null) return true;
+            if (INSTANCE.id == null || INSTANCE.id.isEmpty()) return true;
         }
         return false;
     }
 
+    public static boolean hasUgcEditor() {
+        synchronized (lock) {
+            return (INSTANCE != null
+                    && !(INSTANCE.id == null || INSTANCE.id.isEmpty())
+                    && INSTANCE.editor != null
+                    && INSTANCE.editor.url != null
+                    && !INSTANCE.editor.url.isEmpty());
+        }
+    }
+
     public static void updateStatistic() {
         synchronized (lock) {
-            Session session = INSTANCE;
-            if (session == null) return;
-            session.updatedAt = System.currentTimeMillis();
+            if (INSTANCE == null) return;
+            INSTANCE.updatedAt = System.currentTimeMillis();
         }
     }
 

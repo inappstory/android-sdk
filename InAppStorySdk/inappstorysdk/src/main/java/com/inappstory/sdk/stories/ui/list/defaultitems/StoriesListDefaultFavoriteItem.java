@@ -95,7 +95,7 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
 
     @Override
     public int count() {
-        return 3;
+        return 4;
     }
 
     private void bindViews(View parent) {

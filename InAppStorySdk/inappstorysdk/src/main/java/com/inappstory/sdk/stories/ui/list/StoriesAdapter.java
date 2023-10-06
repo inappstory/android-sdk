@@ -34,6 +34,7 @@ import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.items.favorite.StoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.story.StoriesListItem;
+import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.stories.ui.list.items.ugceditor.StoriesListUgcEditorItem;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -44,11 +45,11 @@ import java.util.List;
 public class StoriesAdapter
         extends RecyclerView.Adapter<BaseStoriesListItem>
         implements ClickCallback {
-    public List<Integer> getStoriesIds() {
-        return storiesIds;
+    public List<StoriesAdapterStoryData> getStoriesIds() {
+        return storiesData;
     }
 
-    private List<Integer> storiesIds = new ArrayList<>();
+    private List<StoriesAdapterStoryData> storiesData = new ArrayList<>();
     private boolean isFavoriteList;
     OnFavoriteItemClick favoriteItemClick;
     OnUGCItemClick ugcItemClick;
@@ -69,12 +70,12 @@ public class StoriesAdapter
 
     void notifyChanges() {
         if (callback != null)
-            callback.storiesUpdated(storiesIds.size(), feed);
+            callback.storiesUpdated(storiesData.size(), feed);
     }
 
     public StoriesAdapter(Context context,
                           String listID,
-                          List<Integer> storiesIds,
+                          List<StoriesAdapterStoryData> storiesData,
                           AppearanceManager manager,
                           boolean isFavoriteList,
                           ListCallback callback,
@@ -86,7 +87,7 @@ public class StoriesAdapter
         this.context = context;
         this.listID = listID;
         this.feed = feed;
-        this.storiesIds = storiesIds;
+        this.storiesData = storiesData;
         this.manager = manager;
         this.favoriteItemClick = favoriteItemClick;
         this.ugcItemClick = ugcItemClick;
@@ -102,8 +103,11 @@ public class StoriesAdapter
     }
 
     public int getIndexById(int id) {
-        if (storiesIds == null) return -1;
-        return storiesIds.indexOf(id) + (useUGC ? 1 : 0);
+        if (storiesData == null) return -1;
+        for (int i = 0; i < storiesData.size(); i++) {
+            if (storiesData.get(i).getId() == id) return i + (useUGC ? 1 : 0) ;
+        }
+        return -1;
     }
 
 
@@ -154,17 +158,15 @@ public class StoriesAdapter
             });
         } else if (holder instanceof IStoriesListCommonItem) {
             int hasUGC = useUGC ? 1 : 0;
-            final Story story = service.getDownloadManager()
-                    .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.COMMON);
+            final StoriesAdapterStoryData story = storiesData.get(position - hasUGC);
             if (story == null) return;
-            String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
-                    story.getProperImage(manager.csCoverQuality()).getUrl() : null;
+            String imgUrl = story.getImageUrl();
             ((IStoriesListCommonItem) holder).bindCommon(
-                    story.id,
+                    story.getId(),
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                     Color.parseColor(story.getBackgroundColor()),
-                    story.isOpened || isFavoriteList,
+                    story.isOpened() || isFavoriteList,
                     story.hasAudio(),
                     this
             );
@@ -192,14 +194,15 @@ public class StoriesAdapter
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
         InAppStoryService service = InAppStoryService.getInstance();
-        Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+
+        final StoriesAdapterStoryData current = storiesData.get(index);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
                         new StoryData(
-                                current.id,
-                                StringsUtils.getNonNull(current.statTitle),
-                                StringsUtils.getNonNull(current.tags),
+                                current.getId(),
+                                StringsUtils.getNonNull(current.getStatTitle()),
+                                StringsUtils.getNonNull(current.getTags()),
                                 current.getSlidesCount(),
                                 feed,
                                 getListSourceType()
@@ -214,11 +217,11 @@ public class StoriesAdapter
                         new GameStoryData(
                                 new SlideData(
                                         new StoryData(
-                                                current.id,
+                                                current.getId(),
                                                 Story.StoryType.COMMON,
-                                                StringsUtils.getNonNull(current.statTitle),
-                                                StringsUtils.getNonNull(current.tags),
-                                                current.slidesCount,
+                                                StringsUtils.getNonNull(current.getStatTitle()),
+                                                StringsUtils.getNonNull(current.getTags()),
+                                                current.getSlidesCount(),
                                                 feed,
                                                 getListSourceType()
                                         ),
@@ -232,7 +235,7 @@ public class StoriesAdapter
                 current.saveStoryOpened(Story.StoryType.COMMON);
                 notifyItemChanged(ind);
                 return;
-            } else if (current.deeplink != null) {
+            } else if (current.getDeeplink() != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feed);
                 OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
@@ -325,23 +328,28 @@ public class StoriesAdapter
                 isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);
     }
 
+    public static final int FAVORITE_ITEM_TYPE = -1;
+    public static final int UGC_ITEM_TYPE = -2;
+    public static final int IMAGE_ITEM_TYPE = 1;
+    public static final int VIDEO_ITEM_TYPE = 1;
+    public static final int WRONG_ITEM_TYPE = 0;
 
     @Override
     public int getItemViewType(int position) {
-        int hasUGC = useUGC ? 1 : 0;
+        int ugcItemShift = useUGC ? 1 : 0;
         if (useUGC && position == 0)
-            return -2;
-        if (useFavorite && position == storiesIds.size() + hasUGC)
-            return -1;
+            return UGC_ITEM_TYPE;
+        if (position == storiesIds.size() + ugcItemShift)
+            if (useFavorite) return FAVORITE_ITEM_TYPE;
+            else return WRONG_ITEM_TYPE;
         try {
-            int pos = position - hasUGC;
-            int pref = pos * 10;
+            int pos = position - ugcItemShift;
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(storiesIds.get(pos), Story.StoryType.COMMON);
-            if (story.getVideoUrl() != null) pref += 5;
-            return story.isOpened ? (pref + 2) : (pref + 1);
+            if (story.getVideoUrl() != null) return VIDEO_ITEM_TYPE;
+            return IMAGE_ITEM_TYPE;
         } catch (Exception e) {
-            return 0;
+            return WRONG_ITEM_TYPE;
         }
 
     }

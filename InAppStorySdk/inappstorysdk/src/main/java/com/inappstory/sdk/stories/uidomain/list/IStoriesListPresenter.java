@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.uidomain.list;
 
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
+import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
 
 import java.util.List;
 
@@ -14,5 +15,17 @@ public interface IStoriesListPresenter {
             SourceType sourceType
     );
 
-    List<Integer> getCachedStoriesPreviews(String cacheId);
+    void setCacheId(String cacheId);
+
+    void clearCachedList();
+
+    void onWindowFocusChanged();
+
+    boolean hasUgcEditor();
+
+    void loadFeed(String feed, boolean loadFavoriteCovers, GetStoriesListIds getStoriesListIds);
+
+    void loadFavoriteList(GetStoriesListIds getStoriesListIds);
+
+    void sendPreviewsToStatistic(List<Integer> indexes, String feed, boolean isFavoriteList);
 }

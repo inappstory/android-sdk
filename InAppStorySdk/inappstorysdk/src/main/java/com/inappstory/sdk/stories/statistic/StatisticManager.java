@@ -14,6 +14,7 @@ import com.inappstory.sdk.stories.api.models.Session;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -254,7 +255,7 @@ public class StatisticManager {
                 InAppStoryManager.getInstance().isSendStatistic());
     }
 
-    public void sendViewStory(ArrayList<Integer> ids, final String w,
+    public void sendViewStory(List<Integer> ids, final String w,
                               final String feedId) {
         ArrayList<String> localIds = new ArrayList<>();
         for (int i : ids) {
