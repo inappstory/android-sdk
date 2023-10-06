@@ -28,7 +28,9 @@ import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.uidomain.list.IStoriesListPresenter;
+import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.StoriesListPresenter;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemClick;
 import com.inappstory.sdk.stories.uidomain.list.readerconnector.StoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
@@ -102,7 +104,7 @@ public class StoriesList extends RecyclerView {
         this.scrollCallback = scrollCallback;
     }
 
-    StoriesListNotify manager;
+    StoriesListNotify listNotify;
     boolean isFavoriteList = false;
 
     public StoriesList(@NonNull Context context, boolean isFavoriteList) {
@@ -186,19 +188,19 @@ public class StoriesList extends RecyclerView {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        manager.unsubscribe();
+        listNotify.unsubscribe();
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        manager.bindList(this);
-        manager.subscribe();
+        listNotify.bindList(this);
+        listNotify.subscribe();
     }
 
     private void init(AttributeSet attributeSet) {
         uniqueID = randomUUID().toString();
-        manager = new StoriesListNotify();
+        listNotify = new StoriesListNotify();
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
@@ -361,6 +363,13 @@ public class StoriesList extends RecyclerView {
     AppearanceManager appearanceManager;
     OnFavoriteItemClick favoriteItemClick;
     OnUGCItemClick ugcItemClick;
+
+    IStoriesListItemClick commonItemClick = new IStoriesListItemClick() {
+        @Override
+        public void onClick(StoriesAdapterStoryData data) {
+
+        }
+    };
 
     public void setOnUGCItemClick(OnUGCItemClick ugcItemClick) {
         this.ugcItemClick = ugcItemClick;
@@ -571,20 +580,24 @@ public class StoriesList extends RecyclerView {
 
     }
 
-    private void setOrRefreshAdapter(List<Integer> storiesIds) {
+    private void setOrRefreshAdapter(List<StoriesAdapterStoryData> storiesData) {
         setOverScrollMode(getAppearanceManager().csListOverscroll() ?
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
-        adapter = new StoriesAdapter(getContext(),
+        adapter = new StoriesAdapter(
+                getContext(),
                 uniqueID,
-                storiesIds,
+                listNotify,
+                storiesData,
                 appearanceManager,
                 isFavoriteList,
                 callback,
                 getFeed(),
                 appearanceManager.csHasFavorite() && !isFavoriteList,
-                !isFavoriteList ? favoriteItemClick : null,
                 hasUgc(),
-                !isFavoriteList ? ugcItemClick : null);
+                commonItemClick,
+                !isFavoriteList ? favoriteItemClick : null,
+                !isFavoriteList ? ugcItemClick : null
+        );
         if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
             setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
                 @Override

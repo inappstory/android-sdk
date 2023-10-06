@@ -461,46 +461,61 @@ public class InAppStoryService {
 
     public class ListReaderConnector {
         public void changeStory(int storyId, String listID) {
-            if (InAppStoryService.isNull()) return;
-            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
+            for (IStoriesListNotify sub : service.getListSubscribers()) {
                 sub.changeStory(storyId, listID);
             }
         }
 
+        public void openStory(int storyId, String listID) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
+            for (IStoriesListNotify sub : service.getListSubscribers()) {
+                sub.openStory(storyId, listID);
+            }
+        }
+
         public void closeReader() {
-            if (InAppStoryService.isNull()) return;
-            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
+            for (IStoriesListNotify sub : service.getListSubscribers()) {
                 sub.closeReader();
             }
         }
 
         public void openReader() {
-            if (InAppStoryService.isNull()) return;
-            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
+            for (IStoriesListNotify sub : service.getListSubscribers()) {
                 sub.openReader();
             }
         }
 
         public void changeUserId() {
-            if (InAppStoryService.isNull()) return;
-            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
+            for (IStoriesListNotify sub : service.getListSubscribers()) {
                 sub.changeUserId();
             }
         }
 
         public void storyFavorite(int id, boolean favStatus) {
-            if (InAppStoryService.isNull()) return;
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
 
             List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
             boolean isEmpty = favImages.isEmpty();
-            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
+
+            for (IStoriesListNotify sub : service.getListSubscribers()) {
                 sub.storyFavorite(id, favStatus, isEmpty);
             }
         }
 
         public void clearAllFavorites() {
-            if (InAppStoryService.isNull()) return;
-            for (IStoriesListNotify sub : InAppStoryService.getInstance().getListSubscribers()) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
+            for (IStoriesListNotify sub : service.getListSubscribers()) {
                 sub.clearAllFavorites();
             }
         }

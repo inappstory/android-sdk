@@ -1,18 +1,30 @@
 package com.inappstory.sdk.stories.uidomain.list;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
+import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
+import com.inappstory.sdk.stories.uidomain.list.readerconnector.StoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceSuccess;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceWithRetry;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
@@ -22,6 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StoriesListPresenter implements IStoriesListPresenter {
+
+    IStoriesListNotify storiesListNotify;
+    public StoriesListPresenter(IStoriesListNotify notify) {
+        this.storiesListNotify = notify;
+    }
+
     @Override
     public ShownStoriesListItem getShownStoriesListItemByStoryId(
             int storyId,
@@ -71,6 +89,95 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     @Override
     public boolean hasUgcEditor() {
         return Session.hasUgcEditor();
+    }
+
+    @Override
+    public void itemClick(StoriesAdapterStoryData data, Context context) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+
+        String gameInstanceId = data.getGameInstanceId();
+        if (gameInstanceId != null) {
+            storiesListNotify.openStory(data.getId(), listID);
+            service.openGameReaderWithGC(
+                    context,
+                    new GameStoryData(
+                            new SlideData(
+                                    new StoryData(
+                                            data.getId(),
+                                            Story.StoryType.COMMON,
+                                            StringsUtils.getNonNull(data.getStatTitle()),
+                                            StringsUtils.getNonNull(data.getTags()),
+                                            data.getSlidesCount(),
+                                            feed,
+                                            getListSourceType()
+                                    ),
+                                    0
+                            )
+
+                    ),
+                    gameInstanceId);
+            return;
+        } else if (data.getDeeplink() != null) {
+            StatisticManager.getInstance().sendDeeplinkStory(data.getId(), data.getDeeplink(), feed);
+            OldStatisticManager.getInstance().addDeeplinkClickStatistic(data.getId());
+            if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                        context,
+                        new SlideData(
+                                new StoryData(
+                                        data.getId(),
+                                        StringsUtils.getNonNull(data.getStatTitle()),
+                                        StringsUtils.getNonNull(data.getTags()),
+                                        data.getSlidesCount(),
+                                        feed,
+                                        getListSourceType()
+                                ),
+                                0
+                        ),
+                        data.deeplink,
+                        ClickAction.DEEPLINK
+                );
+            } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(data.deeplink);
+            } else {
+                if (!InAppStoryService.isConnected()) {
+                    if (CallbackManager.getInstance().getErrorCallback() != null) {
+                        CallbackManager.getInstance().getErrorCallback().noConnection();
+                    }
+                    return;
+                }
+                try {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(data.deeplink));
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+                } catch (Exception ignored) {
+                    InAppStoryService.createExceptionLog(ignored);
+                }
+            }
+
+            data.isOpened = true;
+            data.saveStoryOpened(Story.StoryType.COMMON);
+            notifyItemChanged(ind);
+            return;
+        }
+        if (data.isHideInReader()) {
+
+            if (CallbackManager.getInstance().getErrorCallback() != null) {
+                CallbackManager.getInstance().getErrorCallback().emptyLinkError();
+            }
+            return;
+        }
+        ArrayList<Integer> tempStories = new ArrayList();
+        for (Integer storyId : storiesIds) {
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+            if (story == null || !story.isHideInReader())
+                tempStories.add(storyId);
+        }
+        ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
+                tempStories.indexOf(storiesIds.get(index)),
+                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);
     }
 
     private List<Integer> getCachedStoriesPreviewIds(String cacheId) {

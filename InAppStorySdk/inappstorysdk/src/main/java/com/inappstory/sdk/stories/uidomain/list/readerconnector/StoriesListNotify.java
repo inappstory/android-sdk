@@ -46,12 +46,6 @@ public class StoriesListNotify implements IStoriesListNotify {
 
 
     public void changeStory(final int storyId, final String listID) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        Story st = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
-        if (st == null) return;
-        st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.COMMON);
         checkHandler();
         post(new Runnable() {
             @Override
@@ -64,7 +58,17 @@ public class StoriesListNotify implements IStoriesListNotify {
         });
     }
 
-    //CloseReaderEvent
+    @Override
+    public void openStory(int storyId, String listID) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Story st = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        if (st == null) return;
+        st.isOpened = true;
+        st.saveStoryOpened(Story.StoryType.COMMON);
+    }
+
+    @Override
     public void closeReader() {
         post(new Runnable() {
             @Override
@@ -75,6 +79,7 @@ public class StoriesListNotify implements IStoriesListNotify {
         });
     }
 
+    @Override
     public void openReader() {
         post(new Runnable() {
             @Override
@@ -85,6 +90,7 @@ public class StoriesListNotify implements IStoriesListNotify {
         });
     }
 
+    @Override
     public void changeUserId() {
         post(new Runnable() {
             @Override
@@ -95,6 +101,7 @@ public class StoriesListNotify implements IStoriesListNotify {
         });
     }
 
+    @Override
     public void clearAllFavorites() {
 
         post(new Runnable() {
@@ -107,6 +114,7 @@ public class StoriesListNotify implements IStoriesListNotify {
         });
     }
 
+    @Override
     public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;

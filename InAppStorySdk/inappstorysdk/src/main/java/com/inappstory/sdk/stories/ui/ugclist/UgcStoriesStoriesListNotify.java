@@ -28,7 +28,7 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     public UgcStoriesStoriesListNotify() {
-      //  this.list = list;
+        //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
     }
 
@@ -44,14 +44,8 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
         handler.post(runnable);
     }
 
+    @Override
     public void changeStory(final int storyId, final String listID) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
-        if (st == null) return;
-        st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.UGC);
         checkHandler();
         post(new Runnable() {
             @Override
@@ -63,7 +57,17 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
         });
     }
 
-    //CloseReaderEvent
+    @Override
+    public void openStory(int storyId, String listID) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Story st = service.getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+        if (st == null) return;
+        st.isOpened = true;
+        st.saveStoryOpened(Story.StoryType.COMMON);
+    }
+
+    @Override
     public void closeReader() {
         post(new Runnable() {
             @Override
@@ -74,6 +78,7 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
         });
     }
 
+    @Override
     public void openReader() {
         post(new Runnable() {
             @Override
@@ -84,6 +89,7 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
         });
     }
 
+    @Override
     public void changeUserId() {
         post(new Runnable() {
             @Override
@@ -94,11 +100,12 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
         });
     }
 
+    @Override
     public void clearAllFavorites() {
 
     }
 
-    //StoryFavoriteEvent
+    @Override
     public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
 
     }

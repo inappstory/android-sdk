@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.uidomain.list;
 
+import android.content.Context;
+
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
@@ -22,6 +24,8 @@ public interface IStoriesListPresenter {
     void onWindowFocusChanged();
 
     boolean hasUgcEditor();
+
+    void itemClick(StoriesAdapterStoryData data, Context context);
 
     void loadFeed(String feed, boolean loadFavoriteCovers, GetStoriesListIds getStoriesListIds);
 

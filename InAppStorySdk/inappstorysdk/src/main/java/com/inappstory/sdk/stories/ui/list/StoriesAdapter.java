@@ -35,6 +35,8 @@ import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.items.favorite.StoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.story.StoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemClick;
+import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.stories.ui.list.items.ugceditor.StoriesListUgcEditorItem;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -51,8 +53,11 @@ public class StoriesAdapter
 
     private List<StoriesAdapterStoryData> storiesData = new ArrayList<>();
     private boolean isFavoriteList;
-    OnFavoriteItemClick favoriteItemClick;
-    OnUGCItemClick ugcItemClick;
+
+
+    private final IStoriesListItemClick storiesListItemClick;
+    private final OnFavoriteItemClick favoriteItemClick;
+    private final OnUGCItemClick ugcItemClick;
     ListCallback callback;
 
     boolean hasFavItem = false;
@@ -63,6 +68,8 @@ public class StoriesAdapter
     public Context context;
     private String listID;
     private String feed;
+
+    private IStoriesListNotify storiesListNotify;
 
     public void setFeed(String feed) {
         this.feed = feed;
@@ -75,26 +82,32 @@ public class StoriesAdapter
 
     public StoriesAdapter(Context context,
                           String listID,
+                          IStoriesListNotify storiesListNotify,
                           List<StoriesAdapterStoryData> storiesData,
                           AppearanceManager manager,
                           boolean isFavoriteList,
                           ListCallback callback,
                           String feed,
                           boolean useFavorite,
-                          OnFavoriteItemClick favoriteItemClick,
                           boolean useUGC,
+                          IStoriesListItemClick storiesListItemClick,
+                          OnFavoriteItemClick favoriteItemClick,
                           OnUGCItemClick ugcItemClick) {
+        this.storiesListNotify = storiesListNotify;
         this.context = context;
         this.listID = listID;
         this.feed = feed;
         this.storiesData = storiesData;
         this.manager = manager;
-        this.favoriteItemClick = favoriteItemClick;
-        this.ugcItemClick = ugcItemClick;
         this.callback = callback;
         this.isFavoriteList = isFavoriteList;
         this.useFavorite = useFavorite;
         this.useUGC = useUGC;
+
+        this.storiesListItemClick = storiesListItemClick;
+        this.favoriteItemClick = favoriteItemClick;
+        this.ugcItemClick = ugcItemClick;
+
         InAppStoryService service = InAppStoryService.getInstance();
         hasFavItem = !isFavoriteList && service != null
                 && manager != null && manager.csHasFavorite()
@@ -105,7 +118,7 @@ public class StoriesAdapter
     public int getIndexById(int id) {
         if (storiesData == null) return -1;
         for (int i = 0; i < storiesData.size(); i++) {
-            if (storiesData.get(i).getId() == id) return i + (useUGC ? 1 : 0) ;
+            if (storiesData.get(i).getId() == id) return i + (useUGC ? 1 : 0);
         }
         return -1;
     }
@@ -141,9 +154,15 @@ public class StoriesAdapter
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (favoriteItemClick != null) {
-                        favoriteItemClick.onClick();
-                    }
+                    clickWithDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (favoriteItemClick != null) {
+                                favoriteItemClick.onClick();
+                            }
+                        }
+                    });
+
                 }
             });
         } else if (holder instanceof IStoriesListUGCEditorItem) {
@@ -151,9 +170,15 @@ public class StoriesAdapter
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (ugcItemClick != null) {
-                        ugcItemClick.onClick();
-                    }
+                    clickWithDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (ugcItemClick != null) {
+                                ugcItemClick.onClick();
+                            }
+                        }
+                    });
+
                 }
             });
         } else if (holder instanceof IStoriesListCommonItem) {
@@ -174,6 +199,19 @@ public class StoriesAdapter
                 ((IStoriesListItemWithCover) holder).setImage(imgUrl);
                 ((IStoriesListItemWithCover) holder).setVideo(story.getVideoUrl());
             }
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    clickWithDelay(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (storiesListItemClick != null) {
+                                storiesListItemClick.onClick(story);
+                            }
+                        }
+                    });
+                }
+            });
         }
     }
 
@@ -183,139 +221,110 @@ public class StoriesAdapter
         return isFavoriteList ? SourceType.FAVORITE : SourceType.LIST;
     }
 
+    private void clickWithDelay(Runnable runnable) {
+        if (System.currentTimeMillis() - clickTimestamp < 1500) {
+            return;
+        }
+        clickTimestamp = System.currentTimeMillis();
+        runnable.run();
+    }
+
     @Override
     public void onItemClick(int ind) {
         if (InAppStoryService.isNull()) return;
 
-        if (System.currentTimeMillis() - clickTimestamp < 1500) {
-            return;
-        }
+
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
-        clickTimestamp = System.currentTimeMillis();
         InAppStoryService service = InAppStoryService.getInstance();
 
         final StoriesAdapterStoryData current = storiesData.get(index);
-        if (current != null) {
-            if (callback != null) {
-                callback.itemClick(
-                        new StoryData(
-                                current.getId(),
-                                StringsUtils.getNonNull(current.getStatTitle()),
-                                StringsUtils.getNonNull(current.getTags()),
-                                current.getSlidesCount(),
-                                feed,
-                                getListSourceType()
-                        ),
-                        index
-                );
-            }
-            String gameInstanceId = current.getGameInstanceId();
-            if (gameInstanceId != null) {
-                service.openGameReaderWithGC(
-                        context,
-                        new GameStoryData(
-                                new SlideData(
-                                        new StoryData(
-                                                current.getId(),
-                                                Story.StoryType.COMMON,
-                                                StringsUtils.getNonNull(current.getStatTitle()),
-                                                StringsUtils.getNonNull(current.getTags()),
-                                                current.getSlidesCount(),
-                                                feed,
-                                                getListSourceType()
-                                        ),
-                                        0
-                                )
-
-                        ),
-                        gameInstanceId);
-
-                current.isOpened = true;
-                current.saveStoryOpened(Story.StoryType.COMMON);
-                notifyItemChanged(ind);
-                return;
-            } else if (current.getDeeplink() != null) {
-                StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feed);
-                OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
-                if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                    CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                            context,
+        if (callback != null) {
+            callback.itemClick(
+                    new StoryData(
+                            current.getId(),
+                            StringsUtils.getNonNull(current.getStatTitle()),
+                            StringsUtils.getNonNull(current.getTags()),
+                            current.getSlidesCount(),
+                            feed,
+                            getListSourceType()
+                    ),
+                    index
+            );
+        }
+        String gameInstanceId = current.getGameInstanceId();
+        if (gameInstanceId != null) {
+            service.openGameReaderWithGC(
+                    context,
+                    new GameStoryData(
                             new SlideData(
                                     new StoryData(
-                                            current.id,
-                                            StringsUtils.getNonNull(current.statTitle),
-                                            StringsUtils.getNonNull(current.tags),
+                                            current.getId(),
+                                            Story.StoryType.COMMON,
+                                            StringsUtils.getNonNull(current.getStatTitle()),
+                                            StringsUtils.getNonNull(current.getTags()),
                                             current.getSlidesCount(),
                                             feed,
                                             getListSourceType()
                                     ),
                                     0
-                            ),
-                            current.deeplink,
-                            ClickAction.DEEPLINK
-                    );
-                } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                    CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
-                } else {
-                    if (!InAppStoryService.isConnected()) {
-                        if (CallbackManager.getInstance().getErrorCallback() != null) {
-                            CallbackManager.getInstance().getErrorCallback().noConnection();
-                        }
-                        return;
-                    }
-                    try {
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(Uri.parse(current.deeplink));
-                        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(i);
-                    } catch (Exception ignored) {
-                        InAppStoryService.createExceptionLog(ignored);
-                    }
-                }
+                            )
 
-                current.isOpened = true;
-                current.saveStoryOpened(Story.StoryType.COMMON);
-                notifyItemChanged(ind);
-                return;
+                    ),
+                    gameInstanceId);
+            storiesListNotify.openStory(current.getId(), listID);
+            notifyItemChanged(ind);
+            return;
+        } else if (current.getDeeplink() != null) {
+            StatisticManager.getInstance().sendDeeplinkStory(current.getId(), current.getDeeplink(), feed);
+            OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.getId());
+            if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                        context,
+                        new SlideData(
+                                new StoryData(
+                                        current.getId(),
+                                        StringsUtils.getNonNull(current.getStatTitle()),
+                                        StringsUtils.getNonNull(current.getTags()),
+                                        current.getSlidesCount(),
+                                        feed,
+                                        getListSourceType()
+                                ),
+                                0
+                        ),
+                        current.deeplink,
+                        ClickAction.DEEPLINK
+                );
+            } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
+            } else {
+                if (!InAppStoryService.isConnected()) {
+                    if (CallbackManager.getInstance().getErrorCallback() != null) {
+                        CallbackManager.getInstance().getErrorCallback().noConnection();
+                    }
+                    return;
+                }
+                try {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(current.deeplink));
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+                } catch (Exception ignored) {
+                    InAppStoryService.createExceptionLog(ignored);
+                }
             }
-            if (current.isHideInReader()) {
 
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().emptyLinkError();
-                }
-                return;
+            current.isOpened = true;
+            current.saveStoryOpened(Story.StoryType.COMMON);
+            notifyItemChanged(ind);
+            return;
+        }
+        if (current.isHideInReader()) {
+
+            if (CallbackManager.getInstance().getErrorCallback() != null) {
+                CallbackManager.getInstance().getErrorCallback().emptyLinkError();
             }
-        } else {
-            if (callback != null) {
-                Story lStory = InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
-                if (lStory != null) {
-                    callback.itemClick(
-                            new StoryData(
-                                    lStory.id,
-                                    StringsUtils.getNonNull(lStory.statTitle),
-                                    StringsUtils.getNonNull(lStory.tags),
-                                    lStory.getSlidesCount(),
-                                    feed,
-                                    getListSourceType()
-                            ),
-                            index
-                    );
-                } else {
-                    callback.itemClick(
-                            new StoryData(
-                                    storiesIds.get(index),
-                                    "",
-                                    "",
-                                    0,
-                                    feed,
-                                    getListSourceType()
-                            ),
-                            index
-                    );
-                }
-            }
+            return;
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
@@ -339,19 +348,14 @@ public class StoriesAdapter
         int ugcItemShift = useUGC ? 1 : 0;
         if (useUGC && position == 0)
             return UGC_ITEM_TYPE;
-        if (position == storiesIds.size() + ugcItemShift)
+        if (position == storiesData.size() + ugcItemShift)
             if (useFavorite) return FAVORITE_ITEM_TYPE;
             else return WRONG_ITEM_TYPE;
-        try {
-            int pos = position - ugcItemShift;
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(storiesIds.get(pos), Story.StoryType.COMMON);
-            if (story.getVideoUrl() != null) return VIDEO_ITEM_TYPE;
+        int pos = position - ugcItemShift;
+        if (storiesData.get(pos).getVideoUrl() != null)
+            return VIDEO_ITEM_TYPE;
+        else
             return IMAGE_ITEM_TYPE;
-        } catch (Exception e) {
-            return WRONG_ITEM_TYPE;
-        }
-
     }
 
     @Override

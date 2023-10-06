@@ -10,6 +10,8 @@ public interface IStoriesListNotify {
 
     void changeStory(final int storyId, final String listID);
 
+    void openStory(final int storyId, final String listID);
+
     void closeReader();
 
     void openReader();
