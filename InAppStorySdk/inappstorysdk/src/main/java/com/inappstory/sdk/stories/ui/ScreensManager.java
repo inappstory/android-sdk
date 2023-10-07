@@ -481,10 +481,11 @@ public class ScreensManager {
         }
         if (goodsDialog != null) return;
 
+
+        showGoodsCallback.onPause();
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView;
         final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
-        showGoodsCallback.onPause();
 
         final String localTaskId;
         if (widgetId != null) localTaskId = widgetId;
@@ -628,8 +629,8 @@ public class ScreensManager {
             goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialogInterface) {
-                    goodsDialog = null;
                     showGoodsCallback.onResume(widgetId);
+                    goodsDialog = null;
                 }
             });
             ProfilingManager.getInstance().addTask("goods_resources", localTaskId);
@@ -657,7 +658,6 @@ public class ScreensManager {
                 }
             });
         }
-
 
     }
 }

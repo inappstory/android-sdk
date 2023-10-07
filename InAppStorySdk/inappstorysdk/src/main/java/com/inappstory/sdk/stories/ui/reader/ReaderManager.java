@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -75,7 +76,23 @@ public class ReaderManager {
     }
 
     public void close() {
-        parentFragment.getActivity().finish();
+        Activity activity = parentFragment.getActivity();
+        if (activity != null) {
+            activity.finish();
+        }
+    }
+
+    public void unsubscribeClicks() {
+        Activity activity = parentFragment.getActivity();
+        if (activity instanceof StoriesActivity) {
+            ((StoriesActivity) activity).unsubscribeClicks();
+        }
+    }
+    public void subscribeClicks() {
+        Activity activity = parentFragment.getActivity();
+        if (activity instanceof StoriesActivity) {
+            ((StoriesActivity) activity).subscribeClicks();
+        }
     }
 
 

@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -69,6 +70,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void onPause() {
         super.onPause();
+        unsubscribeClicks();
         if (isFinishing()) {
             ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
@@ -88,6 +90,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     protected void onStop() {
         super.onStop();
 
+    }
+
+    public void unsubscribeClicks() {
+        draggableFrame.removeListener(chromeFader);
+    }
+    public void subscribeClicks() {
+        draggableFrame.addListener(chromeFader);
     }
 
 
@@ -114,6 +123,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     protected void onResume() {
         super.onResume();
+        subscribeClicks();
+        Log.e("activityLifecycle", "onResume");
         StatusBarController.hideStatusBar(this, true);
     }
 
@@ -340,7 +351,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 }
             }
         };
-        draggableFrame.addListener(chromeFader);
         try {
             if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {
                 StatusBarController.hideStatusBar(StoriesActivity.this, true);
