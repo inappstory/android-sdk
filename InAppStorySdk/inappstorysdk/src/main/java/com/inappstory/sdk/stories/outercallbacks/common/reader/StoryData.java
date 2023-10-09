@@ -2,9 +2,10 @@ package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 
-public class StoryData {
+import java.io.Serializable;
+
+public class StoryData implements Serializable {
     public int id;
     public String title;
     public String tags;
@@ -13,9 +14,6 @@ public class StoryData {
     public int slidesCount;
     @Ignore
     public Story.StoryType storyType;
-
-    public StoryData() {
-    }
 
     public StoryData(
             int id,

@@ -88,7 +88,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                                                     getArguments().getInt("source", 0)
                                             )
                                     ),
-                                    story.lastIndex
+                                    story.lastIndex,
+                                    story.getSlideEventPayload(story.lastIndex)
                             ),
                             CloseReader.CLICK
                     );

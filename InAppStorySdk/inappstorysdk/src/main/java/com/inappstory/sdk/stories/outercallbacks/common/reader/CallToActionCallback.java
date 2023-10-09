@@ -5,7 +5,7 @@ import android.content.Context;
 public interface CallToActionCallback {
     void callToAction(
             Context context,
-            SlideData slide,
+            SlideData slideData,
             String link,
             ClickAction action
     );

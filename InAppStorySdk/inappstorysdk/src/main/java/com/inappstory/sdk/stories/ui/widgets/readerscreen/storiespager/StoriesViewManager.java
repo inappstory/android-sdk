@@ -186,7 +186,8 @@ public class StoriesViewManager {
             if (showRefresh != null) {
                 try {
                     showRefreshHandler.removeCallbacks(showRefresh);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
             showRefresh = null;
         }
@@ -197,7 +198,8 @@ public class StoriesViewManager {
             if (showLoader != null) {
                 try {
                     showRefreshHandler.removeCallbacks(showLoader);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
             showLoader = null;
         }
@@ -467,7 +469,8 @@ public class StoriesViewManager {
                                         pageManager != null ? pageManager.getFeedId() : null,
                                         pageManager != null ? pageManager.getSourceType() : SourceType.LIST
                                 ),
-                                story.lastIndex
+                                story.lastIndex,
+                                story.getSlideEventPayload(story.lastIndex)
                         )
                 );
             }
@@ -534,17 +537,17 @@ public class StoriesViewManager {
             ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
             if (showSlideCallback != null) {
                 showSlideCallback.showSlide(new SlideData(
-                                new StoryData(
-                                        story.id,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount(),
-                                        pageManager != null ? pageManager.getFeedId() : null,
-                                        pageManager != null ? pageManager.getSourceType() : SourceType.LIST
-                                ),
-                                index
+                        new StoryData(
+                                story.id,
+                                StringsUtils.getNonNull(story.statTitle),
+                                StringsUtils.getNonNull(story.tags),
+                                story.getSlidesCount(),
+                                pageManager != null ? pageManager.getFeedId() : null,
+                                pageManager != null ? pageManager.getSourceType() : SourceType.LIST
                         ),
-                        story.getSlideEventPayload(index));
+                        index,
+                        story.getSlideEventPayload(story.lastIndex)
+                ));
             }
         }
     }

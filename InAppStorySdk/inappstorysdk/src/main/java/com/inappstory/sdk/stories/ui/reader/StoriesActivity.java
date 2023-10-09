@@ -506,7 +506,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                                                     getIntent().getIntExtra("source", 0)
                                             )
                                     ),
-                                    story.lastIndex
+                                    story.lastIndex,
+                                    story.getSlideEventPayload(story.lastIndex)
                             ),
                             CallbackManager.getInstance().getCloseTypeFromInt(action)
                     );

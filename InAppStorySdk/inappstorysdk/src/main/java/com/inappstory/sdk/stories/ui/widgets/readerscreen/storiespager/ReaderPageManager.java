@@ -145,7 +145,8 @@ public class ReaderPageManager {
                                     getFeedId(),
                                     getSourceType()
                             ),
-                            story.lastIndex
+                            story.lastIndex,
+                            story.getSlideEventPayload(story.lastIndex)
                     ),
                     StringsUtils.getNonNull(widgetName),
                     JsonParser.toMap(widgetData)
@@ -183,7 +184,8 @@ public class ReaderPageManager {
                                                     getFeedId(),
                                                     getSourceType()
                                             ),
-                                            story.lastIndex
+                                            story.lastIndex,
+                                            story.getSlideEventPayload(story.lastIndex)
                                     ),
                                     object.getLink().getTarget(),
                                     action

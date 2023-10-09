@@ -366,7 +366,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                                                 getIntent().getIntExtra("source", 0)
                                         )
                                 ),
-                                story.lastIndex
+                                story.lastIndex,
+                                story.getSlideEventPayload(story.lastIndex)
                         ),
                         CallbackManager.getInstance().getCloseTypeFromInt(action)
                 );

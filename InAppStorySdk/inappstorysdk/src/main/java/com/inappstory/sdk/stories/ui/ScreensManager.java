@@ -60,6 +60,8 @@ import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -254,13 +256,7 @@ public class ScreensManager {
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
         if (data != null) {
-            intent2.putExtra("storyId", Integer.toString(data.slideData.story.id));
-            intent2.putExtra("slideIndex", data.slideData.index);
-            intent2.putExtra("slidesCount", data.slideData.story.slidesCount);
-            intent2.putExtra("feedId", data.slideData.story.feed);
-            intent2.putExtra("storyType", Story.nameFromStoryType(data.slideData.story.storyType));
-            intent2.putExtra("tags", data.slideData.story.tags);
-            intent2.putExtra("title", data.slideData.story.title);
+            intent2.putExtra("slideData", data.slideData);
         }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().startGame(

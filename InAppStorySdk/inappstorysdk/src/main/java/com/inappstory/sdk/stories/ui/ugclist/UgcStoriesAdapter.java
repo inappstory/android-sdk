@@ -162,7 +162,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                                 null,
                                                 SourceType.LIST
                                         ),
-                                        0
+                                        0,
+                                        null
                                 )
                         ),
                         gameInstanceId);
@@ -182,7 +183,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                                             null,
                                             SourceType.LIST
                                     ),
-                                    0
+                                    0,
+                                    null
                             ),
                             current.deeplink,
                             ClickAction.DEEPLINK

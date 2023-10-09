@@ -83,7 +83,8 @@ public class ButtonsPanelManager {
                                             getParentManager().getSourceType()
 
                                     ),
-                                    story.lastIndex
+                                    story.lastIndex,
+                                    story.getSlideEventPayload(story.lastIndex)
                             ),
                             false
                     );
@@ -101,7 +102,8 @@ public class ButtonsPanelManager {
                                             getParentManager().getFeedId(),
                                             getParentManager().getSourceType()
                                     ),
-                                    story.lastIndex
+                                    story.lastIndex,
+                                    story.getSlideEventPayload(story.lastIndex)
                             ),
                             true
                     );
@@ -123,7 +125,8 @@ public class ButtonsPanelManager {
                                             getParentManager().getFeedId(),
                                             getParentManager().getSourceType()
                                     ),
-                                    story.lastIndex
+                                    story.lastIndex,
+                                    story.getSlideEventPayload(story.lastIndex)
                             ),
                             false
                     );
@@ -141,7 +144,8 @@ public class ButtonsPanelManager {
                                             getParentManager().getFeedId(),
                                             getParentManager().getSourceType()
                                     ),
-                                    story.lastIndex
+                                    story.lastIndex,
+                                    story.getSlideEventPayload(story.lastIndex)
                             ),
                             true
                     );
@@ -214,7 +218,8 @@ public class ButtonsPanelManager {
                                     getParentManager().getFeedId(),
                                     getParentManager().getSourceType()
                             ),
-                            story.lastIndex
+                            story.lastIndex,
+                            story.getSlideEventPayload(story.lastIndex)
                     ),
                     !story.favorite
             );
@@ -297,7 +302,8 @@ public class ButtonsPanelManager {
                                     getParentManager().getFeedId(),
                                     getParentManager().getSourceType()
                             ),
-                            story.lastIndex
+                            story.lastIndex,
+                            story.getSlideEventPayload(story.lastIndex)
                     )
             );
         }

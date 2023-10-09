@@ -210,7 +210,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                                 feed,
                                                 getListSourceType()
                                         ),
-                                        0
+                                        0,
+                                        null
                                 )
 
                         ),
@@ -235,7 +236,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                                             feed,
                                             getListSourceType()
                                     ),
-                                    0
+                                    0,
+                                    null
                             ),
                             current.deeplink,
                             ClickAction.DEEPLINK

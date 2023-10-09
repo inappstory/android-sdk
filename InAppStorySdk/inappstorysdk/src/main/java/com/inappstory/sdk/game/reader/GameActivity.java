@@ -100,6 +100,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1097,22 +1098,9 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     private GameStoryData getStoryDataModel() {
         if (storyDataModel == null) {
-            if (getIntent().getStringExtra("storyId") == null) return null;
-            storyDataModel = new GameStoryData(
-                    new SlideData(
-                            new StoryData(
-                                    Integer.parseInt(getIntent().getStringExtra("storyId")),
-                                    Story.storyTypeFromName(getIntent().getStringExtra("storyType")),
-                                    getIntent().getStringExtra("title"),
-                                    getIntent().getStringExtra("tags"),
-                                    getIntent().getIntExtra("slidesCount", 0),
-                                    getIntent().getStringExtra("feedId"),
-                                    CallbackManager.getInstance().getSourceFromInt(getIntent().getIntExtra("source", 0))
-                            ),
-                            getIntent().getIntExtra("slideIndex", 0)
-                    )
-
-            );
+            Serializable slideData = getIntent().getSerializableExtra("slideData");
+            if (slideData == null) return null;
+            storyDataModel = new GameStoryData((SlideData) slideData);
         }
         return storyDataModel;
     }
