@@ -170,8 +170,11 @@ public class LruDiskCache {
         return Utils.hash(key);
     }
 
-    public File getFileFromKey(String key) {
-        return new File(getCacheDir().getAbsolutePath() + File.separator + getNameFromKey(key));
+    public File getFileFromKey(String key, String extension) {
+        return new File(getCacheDir().getAbsolutePath() +
+                File.separator +
+                getNameFromKey(key) +
+                "." + extension);
     }
 
     public boolean hasKey(String key) {
@@ -185,6 +188,7 @@ public class LruDiskCache {
     public File getFullFile(String key) {
         return FileManager.getFullFile(get(key));
     }
+
     public DownloadFileState get(String key) {
         synchronized (journal) {
             try {
