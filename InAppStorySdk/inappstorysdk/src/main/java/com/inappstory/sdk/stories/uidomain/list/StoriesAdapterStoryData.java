@@ -1,6 +1,10 @@
 package com.inappstory.sdk.stories.uidomain.list;
 
+import androidx.annotation.Nullable;
+
 import com.inappstory.sdk.stories.api.models.Story;
+
+import java.util.Objects;
 
 public class StoriesAdapterStoryData {
     public int getId() {
@@ -76,6 +80,7 @@ public class StoriesAdapterStoryData {
     int slidesCount;
 
     public StoriesAdapterStoryData(Story story, int coverQuality) {
+        this.id = story.id;
         this.slidesCount = story.getSlidesCount();
         this.backgroundColor = story.getBackgroundColor();
         this.titleColor = story.getTitleColor();
@@ -91,4 +96,19 @@ public class StoriesAdapterStoryData {
                 story.getProperImage(coverQuality).getUrl() : null;
     }
 
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        if (o == this)
+            return true;
+        if (!(o instanceof StoriesAdapterStoryData))
+            return false;
+        StoriesAdapterStoryData other = (StoriesAdapterStoryData)o;
+        return (this.getId() == other.getId() && this.isOpened() == other.isOpened());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, isOpened);
+    }
 }

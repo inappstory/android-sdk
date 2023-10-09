@@ -46,8 +46,8 @@ import java.util.List;
 
 public class StoriesAdapter
         extends RecyclerView.Adapter<BaseStoriesListItem>
-        implements ClickCallback {
-    public List<StoriesAdapterStoryData> getStoriesIds() {
+        implements IStoriesListAdapter, ClickCallback {
+    public List<StoriesAdapterStoryData> getStoriesData() {
         return storiesData;
     }
 
@@ -70,6 +70,14 @@ public class StoriesAdapter
     private String feed;
 
     private IStoriesListNotify storiesListNotify;
+
+    private void addStoryData() {
+
+    }
+
+    private void removeStoryDataById() {
+
+    }
 
     public void setFeed(String feed) {
         this.feed = feed;
@@ -254,6 +262,7 @@ public class StoriesAdapter
         }
         String gameInstanceId = current.getGameInstanceId();
         if (gameInstanceId != null) {
+            storiesListNotify.openStory(current.getId(), Story.StoryType.COMMON, listID);
             service.openGameReaderWithGC(
                     context,
                     new GameStoryData(
@@ -272,10 +281,9 @@ public class StoriesAdapter
 
                     ),
                     gameInstanceId);
-            storiesListNotify.openStory(current.getId(), listID);
-            notifyItemChanged(ind);
             return;
         } else if (current.getDeeplink() != null) {
+            storiesListNotify.openStory(current.getId(), Story.StoryType.COMMON, listID);
             StatisticManager.getInstance().sendDeeplinkStory(current.getId(), current.getDeeplink(), feed);
             OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.getId());
             if (CallbackManager.getInstance().getCallToActionCallback() != null) {
@@ -292,11 +300,11 @@ public class StoriesAdapter
                                 ),
                                 0
                         ),
-                        current.deeplink,
+                        current.getDeeplink(),
                         ClickAction.DEEPLINK
                 );
             } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
+                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.getDeeplink());
             } else {
                 if (!InAppStoryService.isConnected()) {
                     if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -306,17 +314,13 @@ public class StoriesAdapter
                 }
                 try {
                     Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(current.deeplink));
+                    i.setData(Uri.parse(current.getDeeplink()));
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(i);
                 } catch (Exception ignored) {
                     InAppStoryService.createExceptionLog(ignored);
                 }
             }
-
-            current.isOpened = true;
-            current.saveStoryOpened(Story.StoryType.COMMON);
-            notifyItemChanged(ind);
             return;
         }
         if (current.isHideInReader()) {
@@ -365,7 +369,62 @@ public class StoriesAdapter
 
     @Override
     public int getItemCount() {
-        return storiesIds.size() + ((!storiesIds.isEmpty() && hasFavItem) ? 1 : 0) +
-                ((!storiesIds.isEmpty() && useUGC) ? 1 : 0);
+        return storiesData.size() + ((!storiesData.isEmpty() && hasFavItem) ? 1 : 0) +
+                ((!storiesData.isEmpty() && useUGC) ? 1 : 0);
+    }
+
+    @Override
+    public void setCurrentStories(List<StoriesAdapterStoryData> stories) {
+
+    }
+
+    @Override
+    public void notify(StoriesAdapterStoryData data) {
+        if (data == null) notifyDataSetChanged();
+        int ugcShift = useUGC ? 1 : 0;
+        int index = storiesData.indexOf(data);
+        if (index >= 0) {
+            notifyItemChanged(index + ugcShift);
+        }
+    }
+
+    @Override
+    public List<StoriesAdapterStoryData> getCurrentStories() {
+        return storiesData;
+    }
+
+    @Override
+    public void favStory(
+            StoriesAdapterStoryData data,
+            boolean favStatus,
+            List<FavoriteImage> favImages,
+            boolean isEmpty
+    ) {
+
+    }
+
+    @Override
+    public void changeStoryEvent(int storyId) {
+
+    }
+
+    @Override
+    public void closeReader() {
+
+    }
+
+    @Override
+    public void openReader() {
+
+    }
+
+    @Override
+    public void refreshList() {
+
+    }
+
+    @Override
+    public void clearAllFavorites() {
+
     }
 }

@@ -7,19 +7,38 @@ import android.view.View;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.StoriesAdapter;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
+import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 
 import java.util.List;
 import java.util.UUID;
 
 public class StoriesListNotify implements IStoriesListNotify {
-    public StoriesList list;
+    private IStoriesListAdapter storiesListAdapter;
+    private int coverQuality;
+
+    private Story.StoryType storyType;
+
+    private String listUniqueId;
+
+    public StoriesListNotify(
+            String listUniqueId,
+            Story.StoryType storyType,
+            int coverQuality
+    ) {
+        this.coverQuality = coverQuality;
+        this.listUniqueId = listUniqueId;
+        this.storyType = storyType;
+    }
+
 
     public void unsubscribe() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         service.removeListSubscriber(this);
-        list = null;
+        storiesListAdapter = null;
     }
 
     @Override
@@ -28,8 +47,9 @@ public class StoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void bindList(StoriesList list) {
-        this.list = list;
+    public void bindListAdapter(IStoriesListAdapter storiesListAdapter, int coverQuality) {
+        this.storiesListAdapter = storiesListAdapter;
+        this.coverQuality = coverQuality;
     }
 
     private void checkHandler() {
@@ -45,27 +65,32 @@ public class StoriesListNotify implements IStoriesListNotify {
     }
 
 
-    public void changeStory(final int storyId, final String listID) {
+    public void changeStory(
+            final int storyId,
+            final Story.StoryType storyType,
+            final String listID) {
         checkHandler();
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                if (!list.getUniqueID().equals(listID)) return;
-                if (list.getVisibility() != View.VISIBLE) return;
-                list.changeStoryEvent(storyId);
+                if (storiesListAdapter == null) return;
+                if (!listUniqueId.equals(listID)) return;
+                if (StoriesListNotify.this.storyType != storyType) return;
+                storiesListAdapter.changeStoryEvent(storyId);
             }
         });
     }
 
     @Override
-    public void openStory(int storyId, String listID) {
+    public void openStory(int storyId, Story.StoryType storyType, String listID) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        Story st = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+        if (StoriesListNotify.this.storyType != storyType) return;
+        Story st = service.getDownloadManager().getStoryById(storyId, storyType);
         if (st == null) return;
         st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.COMMON);
+        st.saveStoryOpened(storyType);
+
     }
 
     @Override
@@ -73,8 +98,8 @@ public class StoriesListNotify implements IStoriesListNotify {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                list.closeReader();
+                if (storiesListAdapter == null) return;
+                storiesListAdapter.closeReader();
             }
         });
     }
@@ -84,8 +109,8 @@ public class StoriesListNotify implements IStoriesListNotify {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                list.openReader();
+                if (storiesListAdapter == null) return;
+                storiesListAdapter.openReader();
             }
         });
     }
@@ -95,8 +120,8 @@ public class StoriesListNotify implements IStoriesListNotify {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                list.refreshList();
+                if (storiesListAdapter == null) return;
+                storiesListAdapter.refreshList();
             }
         });
     }
@@ -107,19 +132,19 @@ public class StoriesListNotify implements IStoriesListNotify {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                if (list.getVisibility() != View.VISIBLE) return;
-                list.clearAllFavorites();
+                if (storiesListAdapter == null) return;
+                storiesListAdapter.clearAllFavorites();
             }
         });
     }
 
     @Override
-    public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
+    public void storyFavorite(final int id, Story.StoryType storyType, final boolean favStatus, final boolean isEmpty) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        if (list == null) return;
-        Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+        if (storiesListAdapter == null) return;
+        if (StoriesListNotify.this.storyType != storyType) return;
+        final Story story = service.getDownloadManager().getStoryById(id, storyType);
         if (story == null) return;
         final List<FavoriteImage> favImages = service.getFavoriteImages();
         if (favStatus) {
@@ -141,9 +166,13 @@ public class StoriesListNotify implements IStoriesListNotify {
         post(new Runnable() {
             @Override
             public void run() {
-                if (list == null) return;
-                if (list.getVisibility() != View.VISIBLE) return;
-                list.favStory(id, favStatus, favImages, isEmpty);
+                if (storiesListAdapter == null) return;
+                storiesListAdapter.favStory(
+                        new StoriesAdapterStoryData(story, coverQuality),
+                        favStatus,
+                        favImages,
+                        isEmpty
+                );
             }
         });
     }

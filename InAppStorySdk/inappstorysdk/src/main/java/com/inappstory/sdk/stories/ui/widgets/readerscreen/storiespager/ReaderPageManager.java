@@ -537,7 +537,7 @@ public class ReaderPageManager {
     public void setButtonsPanelManager(ButtonsPanelManager buttonsPanelManager, int storyId) {
         buttonsPanelManager.setParentManager(this);
         this.buttonsPanelManager = buttonsPanelManager;
-        this.buttonsPanelManager.setStoryId(storyId);
+        this.buttonsPanelManager.setStoryIdAndType(storyId, getStoryType());
     }
 
     public void setWebViewManager(StoriesViewManager webViewManager, int storyId) {

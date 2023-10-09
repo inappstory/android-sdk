@@ -706,7 +706,7 @@ public class InAppStoryManager {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                favoriteOrRemoveStory(storyId, false);
+                favoriteOrRemoveStory(storyId, Story.StoryType.COMMON, false);
             }
 
             @Override
@@ -777,7 +777,7 @@ public class InAppStoryManager {
     }
 
 
-    private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
+    private void favoriteOrRemoveStory(final int storyId, final Story.StoryType storyType, final boolean favorite) {
         if (InAppStoryService.isNull()) return;
         if (networkClient == null) return;
         final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
@@ -792,7 +792,11 @@ public class InAppStoryManager {
                                     .getStoryById(storyId, Story.StoryType.COMMON);
                             if (story != null)
                                 story.favorite = favorite;
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
+                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(
+                                    storyId,
+                                    storyType,
+                                    favorite
+                            );
                         }
                         if (ScreensManager.getInstance().currentScreen != null) {
                             ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);

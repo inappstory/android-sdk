@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -24,11 +22,14 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.lang.reflect.Type;
 
 public class ButtonsPanelManager {
-    public void setStoryId(int storyId) {
+    public void setStoryIdAndType(int storyId, Story.StoryType type) {
         this.storyId = storyId;
+        this.type = type;
     }
 
     int storyId;
+
+    Story.StoryType type;
 
     public ReaderPageManager getParentManager() {
         return parentManager;
@@ -162,7 +163,10 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(likeUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                                storyId,
+                                parentManager.getStoryType()
+                        );
                         if (story != null)
                             story.like = val;
                         if (callback != null)
@@ -229,14 +233,21 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(favUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                                storyId,
+                                parentManager.getStoryType()
+                        );
                         boolean res = !val;
                         if (story != null)
                             story.favorite = res;
                         if (callback != null)
                             callback.onSuccess(res ? 1 : 0);
                         if (InAppStoryService.isNotNull())
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, res);
+                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(
+                                    storyId,
+                                    parentManager.getStoryType(),
+                                    res
+                            );
                     }
 
 

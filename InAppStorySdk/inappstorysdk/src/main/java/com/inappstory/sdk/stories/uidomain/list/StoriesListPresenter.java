@@ -22,9 +22,9 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.list.IStoriesAdapterStoryDataStorage;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
-import com.inappstory.sdk.stories.uidomain.list.readerconnector.StoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceSuccess;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceWithRetry;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
@@ -35,9 +35,28 @@ import java.util.List;
 
 public class StoriesListPresenter implements IStoriesListPresenter {
 
-    IStoriesListNotify storiesListNotify;
-    public StoriesListPresenter(IStoriesListNotify notify) {
+    private final IStoriesListNotify storiesListNotify;
+
+    private final String uniqueListId;
+    private final String feed;
+
+
+    private final SourceType sourceType;
+    private final Story.StoryType storyType;
+
+    public StoriesListPresenter(
+            IStoriesListNotify notify,
+            IStoriesAdapterStoryDataStorage,
+            String feed,
+            SourceType sourceType,
+            Story.StoryType storyType,
+            String uniqueListId
+    ) {
         this.storiesListNotify = notify;
+        this.feed = feed;
+        this.uniqueListId = uniqueListId;
+        this.sourceType = sourceType;
+        this.storyType = storyType;
     }
 
     @Override
@@ -51,7 +70,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;
         Story currentStory = service.getDownloadManager()
-                .getStoryById(storyId, Story.StoryType.COMMON);
+                .getStoryById(storyId, storyType);
         if (currentStory != null && currentPercentage > 0) {
             return new ShownStoriesListItem(
                     new StoryData(
@@ -98,7 +117,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
         String gameInstanceId = data.getGameInstanceId();
         if (gameInstanceId != null) {
-            storiesListNotify.openStory(data.getId(), listID);
+            storiesListNotify.openStory(data.getId(), storyType, uniqueListId);
             service.openGameReaderWithGC(
                     context,
                     new GameStoryData(
@@ -110,7 +129,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
                                             StringsUtils.getNonNull(data.getTags()),
                                             data.getSlidesCount(),
                                             feed,
-                                            getListSourceType()
+                                            sourceType
                                     ),
                                     0
                             )
@@ -119,6 +138,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
                     gameInstanceId);
             return;
         } else if (data.getDeeplink() != null) {
+            storiesListNotify.openStory(data.getId(), storyType, uniqueListId);
             StatisticManager.getInstance().sendDeeplinkStory(data.getId(), data.getDeeplink(), feed);
             OldStatisticManager.getInstance().addDeeplinkClickStatistic(data.getId());
             if (CallbackManager.getInstance().getCallToActionCallback() != null) {
@@ -131,15 +151,15 @@ public class StoriesListPresenter implements IStoriesListPresenter {
                                         StringsUtils.getNonNull(data.getTags()),
                                         data.getSlidesCount(),
                                         feed,
-                                        getListSourceType()
+                                        sourceType
                                 ),
                                 0
                         ),
-                        data.deeplink,
+                        data.getDeeplink(),
                         ClickAction.DEEPLINK
                 );
             } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(data.deeplink);
+                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(data.getDeeplink());
             } else {
                 if (!InAppStoryService.isConnected()) {
                     if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -149,17 +169,13 @@ public class StoriesListPresenter implements IStoriesListPresenter {
                 }
                 try {
                     Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(data.deeplink));
+                    i.setData(Uri.parse(data.getDeeplink()));
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(i);
                 } catch (Exception ignored) {
                     InAppStoryService.createExceptionLog(ignored);
                 }
             }
-
-            data.isOpened = true;
-            data.saveStoryOpened(Story.StoryType.COMMON);
-            notifyItemChanged(ind);
             return;
         }
         if (data.isHideInReader()) {
@@ -175,7 +191,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
+        ScreensManager.getInstance().openStoriesReader(context, uniqueListId, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
                 isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);
     }

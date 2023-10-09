@@ -6,6 +6,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
 
@@ -23,7 +24,7 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void bindList(StoriesList list) {
+    public void bindListAdapter(IStoriesListAdapter storiesListAdapter, int coverQuality) {
 
     }
 
@@ -45,8 +46,9 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void changeStory(final int storyId, final String listID) {
+    public void changeStory(final int storyId, final Story.StoryType storyType, final String listID) {
         checkHandler();
+        if (storyType != Story.StoryType.UGC) return;
         post(new Runnable() {
             @Override
             public void run() {
@@ -58,13 +60,13 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void openStory(int storyId, String listID) {
+    public void openStory(int storyId, Story.StoryType storyType, String listID) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         Story st = service.getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
         if (st == null) return;
         st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.COMMON);
+        st.saveStoryOpened(Story.StoryType.UGC);
     }
 
     @Override
@@ -106,7 +108,7 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void storyFavorite(final int id, final boolean favStatus, final boolean isEmpty) {
+    public void storyFavorite(int id, Story.StoryType storyType, boolean favStatus, boolean isEmpty) {
 
     }
 }

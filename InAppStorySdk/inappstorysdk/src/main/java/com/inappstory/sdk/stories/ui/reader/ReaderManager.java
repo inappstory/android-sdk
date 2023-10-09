@@ -255,8 +255,8 @@ public class ReaderManager {
         }
         final int pos = position;
 
-        InAppStoryService.getInstance().getListReaderConnector().openStory(currentStoryId, listID);
-        InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId, listID);
+        InAppStoryService.getInstance().getListReaderConnector().openStory(currentStoryId, storyType, listID);
+        InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId, storyType, listID);
         if (Sizes.isTablet()) {
             if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {
                 ((StoriesDialogFragment) parentFragment.getParentFragment()).changeStory(position);

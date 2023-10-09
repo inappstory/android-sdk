@@ -460,19 +460,19 @@ public class InAppStoryService {
     }
 
     public class ListReaderConnector {
-        public void changeStory(int storyId, String listID) {
+        public void changeStory(int storyId, Story.StoryType type, String listID) {
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return;
             for (IStoriesListNotify sub : service.getListSubscribers()) {
-                sub.changeStory(storyId, listID);
+                sub.changeStory(storyId, type, listID);
             }
         }
 
-        public void openStory(int storyId, String listID) {
+        public void openStory(int storyId, Story.StoryType type, String listID) {
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return;
             for (IStoriesListNotify sub : service.getListSubscribers()) {
-                sub.openStory(storyId, listID);
+                sub.openStory(storyId, type, listID);
             }
         }
 
@@ -500,7 +500,7 @@ public class InAppStoryService {
             }
         }
 
-        public void storyFavorite(int id, boolean favStatus) {
+        public void storyFavorite(int id, Story.StoryType type, boolean favStatus) {
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return;
 
@@ -508,7 +508,7 @@ public class InAppStoryService {
             boolean isEmpty = favImages.isEmpty();
 
             for (IStoriesListNotify sub : service.getListSubscribers()) {
-                sub.storyFavorite(id, favStatus, isEmpty);
+                sub.storyFavorite(id, type, favStatus, isEmpty);
             }
         }
 
