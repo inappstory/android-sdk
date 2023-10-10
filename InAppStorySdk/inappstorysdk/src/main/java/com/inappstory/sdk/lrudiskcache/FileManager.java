@@ -93,6 +93,22 @@ public class FileManager {
         return res;
     }
 
+    public static void deleteFolderRecursive(File fileOrDirectory, boolean deleteRoot) {
+
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) {
+                deleteFolderRecursive(child, true);
+            }
+        }
+        if (deleteRoot) {
+            try {
+                fileOrDirectory.delete();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
     public File get(String name) {
         return new File(cacheDir, name);
     }

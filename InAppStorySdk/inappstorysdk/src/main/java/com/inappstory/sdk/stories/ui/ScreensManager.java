@@ -22,6 +22,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -481,6 +482,7 @@ public class ScreensManager {
         }
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     public void showGoods(String skusString, Activity activity, final ShowGoodsCallback showGoodsCallback,
                           boolean fullScreen, final String widgetId,
                           final int storyId, final int slideIndex, final String feedId) {
@@ -491,10 +493,10 @@ public class ScreensManager {
         }
         if (goodsDialog != null) return;
 
+        showGoodsCallback.onPause();
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView;
         final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
-        showGoodsCallback.onPause();
 
         final String localTaskId;
         if (widgetId != null) localTaskId = widgetId;

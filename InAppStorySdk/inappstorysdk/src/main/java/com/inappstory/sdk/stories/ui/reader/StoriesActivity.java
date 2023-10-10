@@ -59,10 +59,18 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     public boolean pauseDestroyed = false;
 
+    public void unsubscribeClicks() {
+        draggableFrame.removeListener(chromeFader);
+    }
+    public void subscribeClicks() {
+        draggableFrame.addListener(chromeFader);
+    }
 
     @Override
     public void onPause() {
         super.onPause();
+
+        unsubscribeClicks();
         if (isFinishing()) {
             ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
@@ -107,6 +115,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     protected void onResume() {
         super.onResume();
+        subscribeClicks();
         StatusBarController.hideStatusBar(this, true);
     }
 
@@ -376,7 +385,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 }
             }
         };
-        draggableFrame.addListener(chromeFader);
 
         try {
             if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {

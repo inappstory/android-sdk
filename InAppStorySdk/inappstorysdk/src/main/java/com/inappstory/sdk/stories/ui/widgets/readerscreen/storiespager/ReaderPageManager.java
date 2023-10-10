@@ -361,12 +361,14 @@ public class ReaderPageManager {
                     public void onPause() {
                         if (checkIfManagersIsNull()) return;
                         parentManager.pause();
+                        parentManager.unsubscribeClicks();
                     }
 
                     @Override
                     public void onResume(String widgetId) {
                         if (checkIfManagersIsNull()) return;
                         parentManager.resume();
+                        parentManager.subscribeClicks();
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
 
