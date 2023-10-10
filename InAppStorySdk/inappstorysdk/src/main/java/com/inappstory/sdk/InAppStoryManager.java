@@ -38,6 +38,7 @@ import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
+import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
@@ -702,11 +703,13 @@ public class InAppStoryManager {
     private ExceptionCache exceptionCache;
 
     public void removeFromFavorite(final int storyId) {
-        if (InAppStoryService.isNull()) return;
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                favoriteOrRemoveStory(storyId, Story.StoryType.COMMON, false);
+                service.removeStoryFromFavorite(storyId);
+
             }
 
             @Override
@@ -717,11 +720,12 @@ public class InAppStoryManager {
     }
 
     public void removeAllFavorites() {
-        if (InAppStoryService.isNull()) return;
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                favoriteRemoveAll();
+                service.removeAllStoriesFromFavorite();
             }
 
             @Override
@@ -732,95 +736,6 @@ public class InAppStoryManager {
     }
 
     NetworkClient networkClient;
-
-    private void favoriteRemoveAll() {
-        if (InAppStoryService.isNull()) return;
-        if (networkClient == null) return;
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
-        networkClient.enqueue(
-                networkClient.getApi().removeAllFavorites(),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (InAppStoryService.isNotNull()) {
-                            InAppStoryService.getInstance().getDownloadManager()
-                                    .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                            InAppStoryService.getInstance().getDownloadManager()
-                                    .clearAllFavoriteStatus(Story.StoryType.UGC);
-                            InAppStoryService.getInstance().getFavoriteImages().clear();
-                            InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
-                        }
-
-                        if (ScreensManager.getInstance().currentScreen != null) {
-                            ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
-                        }
-                    }
-
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        super.onError(code, message);
-                    }
-
-                    @Override
-                    public void timeoutError() {
-                        super.timeoutError();
-                        ProfilingManager.getInstance().setReady(favUID);
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
-    }
-
-
-    private void favoriteOrRemoveStory(final int storyId, final Story.StoryType storyType, final boolean favorite) {
-        if (InAppStoryService.isNull()) return;
-        if (networkClient == null) return;
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
-        networkClient.enqueue(
-                networkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (InAppStoryService.isNotNull()) {
-                            Story story = InAppStoryService.getInstance().getDownloadManager()
-                                    .getStoryById(storyId, Story.StoryType.COMMON);
-                            if (story != null)
-                                story.favorite = favorite;
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(
-                                    storyId,
-                                    storyType,
-                                    favorite
-                            );
-                        }
-                        if (ScreensManager.getInstance().currentScreen != null) {
-                            ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
-                        }
-                    }
-
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        super.onError(code, message);
-                    }
-
-                    @Override
-                    public void timeoutError() {
-                        super.timeoutError();
-                        ProfilingManager.getInstance().setReady(favUID);
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
-    }
 
     private boolean isSandbox = false;
 
@@ -982,14 +897,16 @@ public class InAppStoryManager {
 
     private boolean sendStatistic = true;
 
-    private void initManager(Context context,
-                             String cmsUrl,
-                             String apiKey,
-                             String testKey,
-                             String userId,
-                             ArrayList<String> tags,
-                             Map<String, String> placeholders,
-                             Map<String, ImagePlaceholderValue> imagePlaceholders) {
+    private void initManager(
+            Context context,
+            String cmsUrl,
+            String apiKey,
+            String testKey,
+            String userId,
+            ArrayList<String> tags,
+            Map<String, String> placeholders,
+            Map<String, ImagePlaceholderValue> imagePlaceholders
+    ) {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
 
@@ -1037,7 +954,7 @@ public class InAppStoryManager {
             InAppStoryService inAppStoryService = InAppStoryService.getInstance();
             if (inAppStoryService != null) {
                 inAppStoryService.listStoriesIds.clear();
-                inAppStoryService.getListSubscribers().clear();
+                inAppStoryService.clearSubscribers();
                 inAppStoryService.getDownloadManager().cleanTasks();
                 inAppStoryService.logout();
             }

@@ -32,19 +32,16 @@ import com.inappstory.sdk.stories.ui.list.items.IStoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListUGCEditorItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
-import com.inappstory.sdk.stories.ui.list.items.favorite.StoriesListFavoriteItem;
-import com.inappstory.sdk.stories.ui.list.items.story.StoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemClick;
-import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
+import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
-import com.inappstory.sdk.stories.ui.list.items.ugceditor.StoriesListUgcEditorItem;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoriesAdapter
+abstract class BaseStoriesListAdapter
         extends RecyclerView.Adapter<BaseStoriesListItem>
         implements IStoriesListAdapter, ClickCallback {
     public List<StoriesAdapterStoryData> getStoriesData() {
@@ -53,7 +50,6 @@ public class StoriesAdapter
 
     private List<StoriesAdapterStoryData> storiesData = new ArrayList<>();
     private boolean isFavoriteList;
-
 
     private final IStoriesListItemClick storiesListItemClick;
     private final OnFavoriteItemClick favoriteItemClick;
@@ -88,19 +84,19 @@ public class StoriesAdapter
             callback.storiesUpdated(storiesData.size(), feed);
     }
 
-    public StoriesAdapter(Context context,
-                          String listID,
-                          IStoriesListNotify storiesListNotify,
-                          List<StoriesAdapterStoryData> storiesData,
-                          AppearanceManager manager,
-                          boolean isFavoriteList,
-                          ListCallback callback,
-                          String feed,
-                          boolean useFavorite,
-                          boolean useUGC,
-                          IStoriesListItemClick storiesListItemClick,
-                          OnFavoriteItemClick favoriteItemClick,
-                          OnUGCItemClick ugcItemClick) {
+    public BaseStoriesListAdapter(Context context,
+                                  String listID,
+                                  IStoriesListNotify storiesListNotify,
+                                  List<StoriesAdapterStoryData> storiesData,
+                                  AppearanceManager manager,
+                                  boolean isFavoriteList,
+                                  ListCallback callback,
+                                  String feed,
+                                  boolean useFavorite,
+                                  boolean useUGC,
+                                  IStoriesListItemClick storiesListItemClick,
+                                  OnFavoriteItemClick favoriteItemClick,
+                                  OnUGCItemClick ugcItemClick) {
         this.storiesListNotify = storiesListNotify;
         this.context = context;
         this.listID = listID;
@@ -132,25 +128,28 @@ public class StoriesAdapter
     }
 
 
-    AppearanceManager manager;
+    protected AppearanceManager manager;
 
     @NonNull
     @Override
     public BaseStoriesListItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int vType = viewType % 10;
-        View v = LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.cs_story_list_custom_item,
-                parent,
-                false
+        return getViewHolderItem(
+                LayoutInflater.from(parent.getContext()).inflate(
+                        R.layout.cs_story_list_custom_item,
+                        parent,
+                        false
+                ),
+                viewType
         );
-        if (vType == -1) {
+      /*  if (vType == -1) {
             return new StoriesListFavoriteItem(v, manager);
         } else if (vType == -2) {
             return new StoriesListUgcEditorItem(v, manager);
         } else {
             return new StoriesListItem(v, manager, (vType % 5) == 2);
-        }
+        }*/
     }
+
 
     @Override
     public void onBindViewHolder(@NonNull BaseStoriesListItem holder, int position) {
@@ -344,7 +343,7 @@ public class StoriesAdapter
     public static final int FAVORITE_ITEM_TYPE = -1;
     public static final int UGC_ITEM_TYPE = -2;
     public static final int IMAGE_ITEM_TYPE = 1;
-    public static final int VIDEO_ITEM_TYPE = 1;
+    public static final int VIDEO_ITEM_TYPE = 2;
     public static final int WRONG_ITEM_TYPE = 0;
 
     @Override
@@ -373,10 +372,6 @@ public class StoriesAdapter
                 ((!storiesData.isEmpty() && useUGC) ? 1 : 0);
     }
 
-    @Override
-    public void setCurrentStories(List<StoriesAdapterStoryData> stories) {
-
-    }
 
     @Override
     public void notify(StoriesAdapterStoryData data) {
@@ -393,15 +388,6 @@ public class StoriesAdapter
         return storiesData;
     }
 
-    @Override
-    public void favStory(
-            StoriesAdapterStoryData data,
-            boolean favStatus,
-            List<FavoriteImage> favImages,
-            boolean isEmpty
-    ) {
-
-    }
 
     @Override
     public void changeStoryEvent(int storyId) {

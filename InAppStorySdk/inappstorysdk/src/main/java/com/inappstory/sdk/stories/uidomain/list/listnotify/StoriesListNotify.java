@@ -1,34 +1,26 @@
-package com.inappstory.sdk.stories.uidomain.list.readerconnector;
+package com.inappstory.sdk.stories.uidomain.list.listnotify;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
-import com.inappstory.sdk.stories.ui.list.StoriesAdapter;
-import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 
 import java.util.List;
-import java.util.UUID;
 
 public class StoriesListNotify implements IStoriesListNotify {
     private IStoriesListAdapter storiesListAdapter;
-    private int coverQuality;
-
     private Story.StoryType storyType;
 
     private String listUniqueId;
 
     public StoriesListNotify(
             String listUniqueId,
-            Story.StoryType storyType,
-            int coverQuality
+            Story.StoryType storyType
     ) {
-        this.coverQuality = coverQuality;
         this.listUniqueId = listUniqueId;
         this.storyType = storyType;
     }
@@ -37,19 +29,18 @@ public class StoriesListNotify implements IStoriesListNotify {
     public void unsubscribe() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        service.removeListSubscriber(this);
+        service.removeStoriesListNotify(this);
         storiesListAdapter = null;
     }
 
     @Override
     public void subscribe() {
-        InAppStoryService.checkAndAddListSubscriber(this);
+        InAppStoryService.checkAndAddStoriesListNotify(this);
     }
 
     @Override
-    public void bindListAdapter(IStoriesListAdapter storiesListAdapter, int coverQuality) {
+    public void bindListAdapter(IStoriesListAdapter storiesListAdapter) {
         this.storiesListAdapter = storiesListAdapter;
-        this.coverQuality = coverQuality;
     }
 
     private void checkHandler() {
@@ -111,68 +102,6 @@ public class StoriesListNotify implements IStoriesListNotify {
             public void run() {
                 if (storiesListAdapter == null) return;
                 storiesListAdapter.openReader();
-            }
-        });
-    }
-
-    @Override
-    public void changeUserId() {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesListAdapter == null) return;
-                storiesListAdapter.refreshList();
-            }
-        });
-    }
-
-    @Override
-    public void clearAllFavorites() {
-
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesListAdapter == null) return;
-                storiesListAdapter.clearAllFavorites();
-            }
-        });
-    }
-
-    @Override
-    public void storyFavorite(final int id, Story.StoryType storyType, final boolean favStatus, final boolean isEmpty) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (storiesListAdapter == null) return;
-        if (StoriesListNotify.this.storyType != storyType) return;
-        final Story story = service.getDownloadManager().getStoryById(id, storyType);
-        if (story == null) return;
-        final List<FavoriteImage> favImages = service.getFavoriteImages();
-        if (favStatus) {
-            FavoriteImage favoriteImage = new FavoriteImage(
-                    id,
-                    story.getImage(),
-                    story.getBackgroundColor()
-            );
-            if (!favImages.contains(favoriteImage))
-                favImages.add(0, favoriteImage);
-        } else {
-            for (FavoriteImage favoriteImage : favImages) {
-                if (favoriteImage.getId() == id) {
-                    favImages.remove(favoriteImage);
-                    break;
-                }
-            }
-        }
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesListAdapter == null) return;
-                storiesListAdapter.favStory(
-                        new StoriesAdapterStoryData(story, coverQuality),
-                        favStatus,
-                        favImages,
-                        isEmpty
-                );
             }
         });
     }

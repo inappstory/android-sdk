@@ -11,8 +11,6 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -24,9 +22,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.Nullable;
@@ -350,7 +345,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finish();
             return;
         }
-        InAppStoryService.getInstance().getListReaderConnector().openReader();
+        InAppStoryService.getInstance().getListNotifier().openReader();
         String stStoriesType = getIntent().getStringExtra("storiesType");
         if (stStoriesType != null) {
             if (stStoriesType.equals(Story.StoryType.UGC.name()))
@@ -475,7 +470,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void closeStoryReader(int action) {
         if (closing) return;
         closing = true;
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
+        InAppStoryService.getInstance().getListNotifier().closeReader();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);

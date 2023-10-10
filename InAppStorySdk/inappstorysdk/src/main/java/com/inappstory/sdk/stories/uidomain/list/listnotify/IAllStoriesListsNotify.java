@@ -1,32 +1,21 @@
-package com.inappstory.sdk.stories.uidomain.list.readerconnector;
+package com.inappstory.sdk.stories.uidomain.list.listnotify;
 
 import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
 
-public interface IStoriesListNotify {
+public interface IAllStoriesListsNotify {
     void unsubscribe();
 
     void subscribe();
 
     void bindListAdapter(IStoriesListAdapter storiesListAdapter, int coverQuality);
 
-    void changeStory(
-            final int storyId,
-            StoryType storyType,
-            final String listID
-    );
-
     void openStory(
             final int storyId,
-            StoryType storyType,
-            final String listID
+            StoryType storyType
     );
 
-    void closeReader();
-
-    void openReader();
-
-    void changeUserId();
+    void refreshList();
 
     void clearAllFavorites();
 

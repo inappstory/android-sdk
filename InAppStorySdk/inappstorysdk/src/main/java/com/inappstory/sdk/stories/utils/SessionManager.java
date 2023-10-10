@@ -25,7 +25,6 @@ import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
 import com.inappstory.sdk.stories.filedownloader.usecases.FontDownload;
@@ -259,7 +258,7 @@ public class SessionManager {
             if (networkClient == null) {
                 InAppStoryService inAppStoryService = InAppStoryService.getInstance();
                 if (changeUserId && inAppStoryService != null)
-                    inAppStoryService.getListReaderConnector().changeUserId();
+                    inAppStoryService.getListNotifier().changeUserId();
             }
             networkClient.enqueue(
                     networkClient.getApi().sessionClose(
@@ -274,7 +273,7 @@ public class SessionManager {
                             ProfilingManager.getInstance().setReady(sessionCloseUID, true);
                             InAppStoryService inAppStoryService = InAppStoryService.getInstance();
                             if (changeUserId && inAppStoryService != null)
-                                inAppStoryService.getListReaderConnector().changeUserId();
+                                inAppStoryService.getListNotifier().changeUserId();
                         }
 
                         @Override
@@ -287,7 +286,7 @@ public class SessionManager {
                             ProfilingManager.getInstance().setReady(sessionCloseUID);
                             InAppStoryService inAppStoryService = InAppStoryService.getInstance();
                             if (changeUserId && inAppStoryService != null)
-                                inAppStoryService.getListReaderConnector().changeUserId();
+                                inAppStoryService.getListNotifier().changeUserId();
                         }
                     });
         }

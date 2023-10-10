@@ -24,7 +24,7 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.IStoriesAdapterStoryDataStorage;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
-import com.inappstory.sdk.stories.uidomain.list.readerconnector.IStoriesListNotify;
+import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceSuccess;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceWithRetry;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;

@@ -11,6 +11,7 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -197,74 +198,31 @@ public class ButtonsPanelManager {
     public void favoriteClick(final ButtonClickCallback callback) {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) return;
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
         Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
         if (story == null) return;
-        final boolean val = story.favorite;
-        if (!story.favorite)
-            StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex,
-                    parentManager != null ? parentManager.getFeedId() : null);
-        if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
-            CallbackManager.getInstance().getFavoriteStoryCallback().favoriteStory(
-                    new SlideData(
-                            new StoryData(
-                                    story.id,
-                                    StringsUtils.getNonNull(story.statTitle),
-                                    StringsUtils.getNonNull(story.tags),
-                                    story.getSlidesCount(),
-                                    getParentManager().getFeedId(),
-                                    getParentManager().getSourceType()
-                            ),
-                            story.lastIndex
-                    ),
-                    !story.favorite
-            );
-        }
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
-        networkClient.enqueue(
-                networkClient.getApi().storyFavorite(
-                        Integer.toString(storyId),
-                        val ? 0 : 1
+        SlideData slideData = new SlideData(
+                new StoryData(
+                        story.id,
+                        StringsUtils.getNonNull(story.statTitle),
+                        StringsUtils.getNonNull(story.tags),
+                        story.getSlidesCount(),
+                        getParentManager().getFeedId(),
+                        getParentManager().getSourceType()
                 ),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                                storyId,
-                                parentManager.getStoryType()
-                        );
-                        boolean res = !val;
-                        if (story != null)
-                            story.favorite = res;
-                        if (callback != null)
-                            callback.onSuccess(res ? 1 : 0);
-                        if (InAppStoryService.isNotNull())
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(
-                                    storyId,
-                                    parentManager.getStoryType(),
-                                    res
-                            );
-                    }
-
-
-                    @Override
-                    public void errorDefault(String message) {
-
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (callback != null)
-                            callback.onError();
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                }
+                story.lastIndex
         );
+        inAppStoryService.favoriteStory(storyId, parentManager.getStoryType(), slideData, new FavoriteCallback() {
+            @Override
+            public void onSuccess(boolean favStatus) {
+                if (callback != null)
+                    callback.onSuccess(favStatus ? 1 : 0);
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
     }
 
     ButtonsPanel panel;

@@ -136,7 +136,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void closeStoryReader(int action) {
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
+        InAppStoryService.getInstance().getListNotifier().closeReader();
         dismissAllowingStateLoss();
     }
 

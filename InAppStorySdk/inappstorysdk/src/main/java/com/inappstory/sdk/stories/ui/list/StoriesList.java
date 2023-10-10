@@ -32,7 +32,7 @@ import com.inappstory.sdk.stories.uidomain.list.IStoriesListPresenter;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.StoriesListPresenter;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemClick;
-import com.inappstory.sdk.stories.uidomain.list.readerconnector.StoriesListNotify;
+import com.inappstory.sdk.stories.uidomain.list.listnotify.StoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -362,7 +362,7 @@ public class StoriesList extends RecyclerView {
                 (holder.getWidth() * holder.getHeight());
     }
 
-    StoriesAdapter adapter;
+    BaseStoriesListAdapter adapter;
 
     @Override
     public void setLayoutManager(LayoutManager layoutManager) {
@@ -626,7 +626,7 @@ public class StoriesList extends RecyclerView {
     private void setOrRefreshAdapter(List<StoriesAdapterStoryData> storiesData) {
         setOverScrollMode(getAppearanceManager().csListOverscroll() ?
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
-        adapter = new StoriesAdapter(
+        adapter = new BaseStoriesListAdapter(
                 getContext(),
                 uniqueID,
                 listNotify,

@@ -94,7 +94,7 @@ public class UgcStoriesList extends RecyclerView {
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (InAppStoryService.getInstance() != null) {
-            InAppStoryService.getInstance().removeListSubscriber(manager);
+            InAppStoryService.getInstance().removeStoriesListNotify(manager);
         } else
             manager.unsubscribe();
     }
@@ -133,7 +133,7 @@ public class UgcStoriesList extends RecyclerView {
         manager.list = this;
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
-        InAppStoryService.checkAndAddListSubscriber(manager);
+        InAppStoryService.checkAndAddStoriesListNotify(manager);
     }
 
     private void init(AttributeSet attributeSet) {

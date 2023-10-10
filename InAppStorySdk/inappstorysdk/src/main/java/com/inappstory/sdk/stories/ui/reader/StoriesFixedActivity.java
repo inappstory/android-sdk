@@ -297,7 +297,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             finish();
             return;
         }
-        InAppStoryService.getInstance().getListReaderConnector().openReader();
+        InAppStoryService.getInstance().getListNotifier().openReader();
         String stStoriesType = getIntent().getStringExtra("storiesType");
         if (stStoriesType != null) {
             if (stStoriesType.equals(Story.StoryType.UGC.name()))
@@ -350,7 +350,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     public void closeStoryReader(int action) {
         if (InAppStoryService.isNotNull()) {
 
-            InAppStoryService.getInstance().getListReaderConnector().closeReader();
+            InAppStoryService.getInstance().getListNotifier().closeReader();
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
