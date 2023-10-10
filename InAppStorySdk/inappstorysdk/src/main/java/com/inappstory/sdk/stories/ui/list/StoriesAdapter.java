@@ -312,7 +312,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         }
         ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
-                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, feedID, Story.StoryType.COMMON);
+                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);
     }
 
 

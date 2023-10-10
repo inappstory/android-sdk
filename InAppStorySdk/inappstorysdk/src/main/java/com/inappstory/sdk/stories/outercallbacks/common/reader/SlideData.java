@@ -20,4 +20,13 @@ public class SlideData implements Serializable {
         this.index = index;
         this.payload = payload;
     }
+
+    @Override
+    public String toString() {
+        return "SlideData {" +
+                "storyData=" + story +
+                ", index='" + index + '\'' +
+                ", payload='" + payload + '\'' +
+                '}';
+    }
 }

@@ -29,6 +29,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ReaderPageManager {
 
@@ -134,6 +135,9 @@ public class ReaderPageManager {
         Story story = InAppStoryService.getInstance()
                 .getDownloadManager().getStoryById(storyId, getStoryType());
         if (story == null) return;
+        Map<String, String> widgetEventMap = JsonParser.toMap(widgetData);
+        if (widgetEventMap != null)
+            widgetEventMap.put("feed_id", getFeedId());
         if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
             CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
                     new SlideData(
@@ -149,7 +153,7 @@ public class ReaderPageManager {
                             story.getSlideEventPayload(story.lastIndex)
                     ),
                     StringsUtils.getNonNull(widgetName),
-                    JsonParser.toMap(widgetData)
+                    widgetEventMap
             );
         }
     }
@@ -203,7 +207,20 @@ public class ReaderPageManager {
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         if ("swipeUpItems".equals(object.getType())) {
                             if (story != null)
-                                showGoods(object.getLink().getTarget(), object.getElementId(), story.id, story.lastIndex);
+                                showGoods(object.getLink().getTarget(), object.getElementId(),
+                                        new SlideData(
+                                                new StoryData(
+                                                        story.id,
+                                                        StringsUtils.getNonNull(story.statTitle),
+                                                        StringsUtils.getNonNull(story.tags),
+                                                        story.getSlidesCount(),
+                                                        getFeedId(),
+                                                        getSourceType()
+                                                ),
+                                                story.lastIndex,
+                                                story.getSlideEventPayload(story.lastIndex)
+                                        )
+                                );
                         }
                     }
                     break;
@@ -364,7 +381,7 @@ public class ReaderPageManager {
         timelineManager.setDurations(durations, false);
     }
 
-    public void showGoods(final String skus, final String widgetId, final int storyId, final int slideIndex) {
+    public void showGoods(final String skus, final String widgetId, final SlideData slideData) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -389,7 +406,7 @@ public class ReaderPageManager {
                         if (checkIfManagersIsNull()) return;
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
-                }, storyId, slideIndex);
+                }, slideData);
             }
         });
     }

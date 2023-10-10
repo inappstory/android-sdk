@@ -229,9 +229,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         },
                         true,
                         widgetId,
-                        dataModel.slideData.story.id,
-                        dataModel.slideData.index,
-                        dataModel.slideData.story.feed
+                        dataModel.slideData
                 );
             }
         });

@@ -10,6 +10,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -88,6 +89,7 @@ public class ReaderManager {
             ((StoriesActivity) activity).unsubscribeClicks();
         }
     }
+
     public void subscribeClicks() {
         Activity activity = parentFragment.getActivity();
         if (activity instanceof StoriesActivity) {
@@ -107,10 +109,20 @@ public class ReaderManager {
         ScreensManager.getInstance().hideGoods();
     }
 
-    public void showGoods(String skusString, String widgetId, ShowGoodsCallback showGoodsCallback, int storyId, int slideIndex) {
-        ScreensManager.getInstance().showGoods(skusString,
-                parentFragment.getActivity(), showGoodsCallback, false,
-                widgetId, storyId, slideIndex, feedId);
+    public void showGoods(
+            String skusString,
+            String widgetId,
+            ShowGoodsCallback showGoodsCallback,
+            SlideData slideData
+    ) {
+        ScreensManager.getInstance().showGoods(
+                skusString,
+                parentFragment.getActivity(),
+                showGoodsCallback,
+                false,
+                widgetId,
+                slideData
+        );
     }
 
     public void pause() {

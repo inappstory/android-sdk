@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
@@ -27,15 +28,11 @@ public class GoodsWidget extends RecyclerView {
 
     public static class GoodsWidgetConfig {
         public String widgetId;
-        public int storyId;
-        public String feedId;
-        public int slideIndex;
+        public SlideData slideData;
 
-        public GoodsWidgetConfig(String widgetId, int storyId, int slideIndex, String feedId) {
+        public GoodsWidgetConfig(String widgetId, SlideData slideData) {
             this.widgetId = widgetId;
-            this.storyId = storyId;
-            this.feedId = feedId;
-            this.slideIndex = slideIndex;
+            this.slideData = slideData;
         }
     }
 

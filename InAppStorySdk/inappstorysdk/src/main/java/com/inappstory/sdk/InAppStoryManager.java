@@ -1136,7 +1136,6 @@ public class InAppStoryManager {
                 0,
                 ShowStory.ONBOARDING,
                 feed,
-                feedId,
                 Story.StoryType.COMMON);
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
@@ -1438,7 +1437,6 @@ public class InAppStoryManager {
                                     readerSource,
                                     readerAction,
                                     slide,
-                                    null,
                                     null,
                                     Story.StoryType.COMMON
                             );

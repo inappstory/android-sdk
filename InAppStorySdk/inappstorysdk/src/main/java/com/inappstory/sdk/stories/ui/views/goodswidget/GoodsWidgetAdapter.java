@@ -1,24 +1,18 @@
 package com.inappstory.sdk.stories.ui.views.goodswidget;
 
-import android.content.Context;
-import android.graphics.Paint;
-import android.graphics.Typeface;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     ArrayList<GoodsItemData> items = new ArrayList<>();
@@ -45,10 +39,25 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
 
     public void onItemClick(GoodsItemData data) {
         if (data != null) {
-            if (config != null) {
+            if (config != null && config.slideData != null) {
+                StoryWidgetCallback callback = CallbackManager.getInstance().getStoryWidgetCallback();
+                if (callback != null) {
+                    Map<String, String> widgetData = new HashMap<>();
+                    widgetData.put("story_id", "" + config.slideData.story.id);
+                    widgetData.put("feed_id", config.slideData.story.feed);
+                    widgetData.put("slide_index", "" + config.slideData.index);
+                    widgetData.put("widget_id", config.widgetId);
+                    widgetData.put("widget_value", data.sku);
+                    callback.widgetEvent(config.slideData, "w-goods-click", widgetData);
+                }
                 if (StatisticManager.getInstance() != null) {
-                    StatisticManager.getInstance().sendGoodsClick(config.storyId,
-                            config.slideIndex, config.widgetId, data.sku, config.feedId);
+                    StatisticManager.getInstance().sendGoodsClick(
+                            config.slideData.story.id,
+                            config.slideData.index,
+                            config.widgetId,
+                            data.sku,
+                            config.slideData.story.feed
+                    );
                 }
             }
         }

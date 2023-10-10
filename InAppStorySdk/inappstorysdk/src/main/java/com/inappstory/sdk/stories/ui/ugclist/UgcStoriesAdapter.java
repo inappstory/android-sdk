@@ -259,7 +259,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 context, listID,
                 manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)), ShowStory.UGC_LIST,
-                null, null, Story.StoryType.UGC);
+                null, Story.StoryType.UGC);
     }
 
     @Override
