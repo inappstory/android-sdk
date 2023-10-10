@@ -227,6 +227,10 @@ public class InAppStoryService {
         OldStatisticManager.getInstance().clear();
     }
 
+    public void clearLocalData() {
+        listStoriesIds.clear();
+        downloadManager.clearLocalData();
+    }
 
     public List<FavoriteImage> getFavoriteImages() {
         if (downloadManager == null) return new ArrayList<>();

@@ -42,6 +42,12 @@ public class StoryDownloadManager {
 
     private Context context;
 
+    public void clearLocalData() {
+        favoriteImages.clear();
+        favStories.clear();
+        stories.clear();
+    }
+
     @WorkerThread
     public void uploadingAdditional(List<Story> newStories, Story.StoryType type) {
         addStories(newStories, type);
