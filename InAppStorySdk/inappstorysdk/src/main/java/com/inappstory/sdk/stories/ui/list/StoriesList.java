@@ -549,6 +549,7 @@ public class StoriesList extends RecyclerView {
                     adapter.getStoriesIds().remove(new Integer(id));
             }
             adapter.notifyDataSetChanged();
+            updateVisibleArea(true);
         } else if (isEmpty && !favImages.isEmpty()) {
             adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
             // adapter.refresh();
