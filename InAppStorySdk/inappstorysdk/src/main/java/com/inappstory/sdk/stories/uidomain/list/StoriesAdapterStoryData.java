@@ -2,8 +2,10 @@ package com.inappstory.sdk.stories.uidomain.list;
 
 import androidx.annotation.Nullable;
 
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 
+import java.util.List;
 import java.util.Objects;
 
 public class StoriesAdapterStoryData {
@@ -33,10 +35,6 @@ public class StoriesAdapterStoryData {
 
     public boolean isHideInReader() {
         return hideInReader;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
     }
 
     public String getVideoUrl() {
@@ -71,7 +69,7 @@ public class StoriesAdapterStoryData {
     private String deeplink;
     private String gameInstanceId;
     private boolean hideInReader;
-    private String imageUrl;
+    private List<Image> images;
     private String videoUrl;
     private String backgroundColor;
     private String titleColor;
@@ -79,7 +77,7 @@ public class StoriesAdapterStoryData {
     private boolean isOpened;
     int slidesCount;
 
-    public StoriesAdapterStoryData(Story story, int coverQuality) {
+    public StoriesAdapterStoryData(Story story) {
         this.id = story.id;
         this.slidesCount = story.getSlidesCount();
         this.backgroundColor = story.getBackgroundColor();
@@ -92,8 +90,13 @@ public class StoriesAdapterStoryData {
         this.isOpened = story.isOpened();
         this.hideInReader = story.isHideInReader();
         this.videoUrl = story.getVideoUrl();
-        this.imageUrl = (story.getImage() != null && story.getImage().size() > 0) ?
-                story.getProperImage(coverQuality).getUrl() : null;
+        this.images = story.getImage();
+    }
+
+    public String getImageUrl(int coverQuality) {
+        Image proper = Image.getProperImage(images, coverQuality);
+        if (proper != null) return proper.getUrl();
+        return null;
     }
 
 

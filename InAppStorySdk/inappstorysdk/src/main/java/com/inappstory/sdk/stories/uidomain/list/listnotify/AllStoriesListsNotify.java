@@ -21,10 +21,8 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
 
 
     public AllStoriesListsNotify(
-            Story.StoryType storyType,
-            int coverQuality
+            Story.StoryType storyType
     ) {
-        this.coverQuality = coverQuality;
         this.storyType = storyType;
     }
 
@@ -69,7 +67,6 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
         if (st == null) return;
         st.isOpened = true;
         st.saveStoryOpened(storyType);
-
     }
 
     @Override
@@ -96,52 +93,40 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     }
 
     @Override
-    public void storyFavorite(
+    public void storyFavoriteCellNotify(
             final List<FavoriteImage> favoriteImages,
             Story.StoryType storyType,
             final boolean favStatus,
             final boolean isEmpty
     ) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (AllStoriesListsNotify.this.storyType != storyType) return;
-        final Story story = service.getDownloadManager().getStoryById(id, storyType);
-        if (story == null) return;
-        final List<FavoriteImage> favImages = service.getFavoriteImages();
-        if (favStatus) {
-            FavoriteImage favoriteImage = new FavoriteImage(
-                    id,
-                    story.getImage(),
-                    story.getBackgroundColor()
-            );
-            if (!favImages.contains(favoriteImage))
-                favImages.add(0, favoriteImage);
-        } else {
-            for (FavoriteImage favoriteImage : favImages) {
-                if (favoriteImage.getId() == id) {
-                    favImages.remove(favoriteImage);
-                    break;
-                }
-            }
-        }
         post(new Runnable() {
             @Override
             public void run() {
                 if (storiesListAdapter == null) return;
                 if (storiesListAdapter instanceof IFavoriteCellUpdate) {
                     ((IFavoriteCellUpdate) storiesListAdapter).update(
-                            favImages,
+                            favoriteImages,
                             isEmpty
                     );
-                } else if (storiesListAdapter instanceof IFavoriteListUpdate) {
-                    StoriesAdapterStoryData storyData = new StoriesAdapterStoryData(
-                            story,
-                            coverQuality
-                    );
+                }
+            }
+        });
+    }
+
+    @Override
+    public void storyFavoriteItemNotify(
+            final StoriesAdapterStoryData data,
+            final boolean favStatus
+    ) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (storiesListAdapter == null) return;
+                if (storiesListAdapter instanceof IFavoriteListUpdate) {
                     if (favStatus)
-                        ((IFavoriteListUpdate) storiesListAdapter).favorite(storyData);
+                        ((IFavoriteListUpdate) storiesListAdapter).favorite(data);
                     else
-                        ((IFavoriteListUpdate) storiesListAdapter).removeFromFavorite(storyData);
+                        ((IFavoriteListUpdate) storiesListAdapter).removeFromFavorite(data);
                 }
             }
         });

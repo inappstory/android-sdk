@@ -345,7 +345,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finish();
             return;
         }
-        InAppStoryService.getInstance().getListNotifier().openReader();
+        InAppStoryService.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
         String stStoriesType = getIntent().getStringExtra("storiesType");
         if (stStoriesType != null) {
             if (stStoriesType.equals(Story.StoryType.UGC.name()))

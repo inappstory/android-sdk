@@ -144,5 +144,18 @@ public class Image implements Parcelable {
         return TEMP_IMAGE;
     }
 
+    public static Image getProperImage(List<Image> images, int quality) {
+        if (images == null || images.isEmpty())
+            return null;
+        String q = Image.TYPE_MEDIUM;
+        switch (quality) {
+            case Image.QUALITY_HIGH:
+                q = Image.TYPE_HIGH;
+        }
+        for (Image img : images) {
+            if (img.getType().equals(q)) return img;
+        }
+        return images.get(0);
+    }
 
 }

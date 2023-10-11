@@ -63,17 +63,7 @@ public class Story implements Parcelable {
     }
 
     public Image getProperImage(int quality) {
-        if (image == null || image.isEmpty())
-            return null;
-        String q = Image.TYPE_MEDIUM;
-        switch (quality) {
-            case Image.QUALITY_HIGH:
-                q = Image.TYPE_HIGH;
-        }
-        for (Image img : image) {
-            if (img.getType().equals(q)) return img;
-        }
-        return image.get(0);
+        return Image.getProperImage(image, quality);
     }
 
     public boolean isOpened() {

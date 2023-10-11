@@ -31,7 +31,10 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.uidomain.list.IStoriesListPresenter;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.StoriesListPresenter;
-import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemClick;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonItemClick;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
+import com.inappstory.sdk.stories.uidomain.list.listnotify.AllStoriesListsNotify;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.StoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
@@ -126,6 +129,7 @@ public class StoriesList extends RecyclerView {
     }
 
     StoriesListNotify listNotify;
+    AllStoriesListsNotify allListsNotify;
     boolean isFavoriteList = false;
 
     public StoriesList(@NonNull Context context, boolean isFavoriteList) {
@@ -220,25 +224,30 @@ public class StoriesList extends RecyclerView {
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         listNotify.unsubscribe();
+        allListsNotify.unsubscribe();
     }
 
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+        checkAppearanceManager();
         listNotify.bindListAdapter(
-                (IStoriesListAdapter) this.getAdapter(),
-                appearanceManager.csCoverQuality()
+                (IStoriesListAdapter) this.getAdapter()
+        );
+        allListsNotify.bindListAdapter(
+                (IStoriesListAdapter) this.getAdapter(), appearanceManager.csCoverQuality()
         );
         listNotify.subscribe();
+        allListsNotify.subscribe();
     }
 
     private void init(AttributeSet attributeSet) {
         uniqueID = randomUUID().toString();
         listNotify = new StoriesListNotify(
                 uniqueID,
-                Story.StoryType.COMMON,
-                appearanceManager.csCoverQuality()
+                Story.StoryType.COMMON
         );
+        allListsNotify = new AllStoriesListsNotify(Story.StoryType.COMMON);
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
@@ -402,9 +411,28 @@ public class StoriesList extends RecyclerView {
     OnFavoriteItemClick favoriteItemClick;
     OnUGCItemClick ugcItemClick;
 
-    IStoriesListItemClick commonItemClick = new IStoriesListItemClick() {
+    IStoriesListCommonItemClick commonItemClick = new IStoriesListCommonItemClick() {
+
         @Override
-        public void onClick(StoriesAdapterStoryData data) {
+        public void onClick(List<StoriesAdapterStoryData> storiesData, int index) {
+
+        }
+    };
+
+    IStoriesListGameItemClick gameItemClick = new IStoriesListGameItemClick() {
+
+
+        @Override
+        public void onClick(StoriesAdapterStoryData storiesData) {
+
+        }
+    };
+
+    IStoriesListDeeplinkItemClick deeplinkItemClick = new IStoriesListDeeplinkItemClick() {
+
+
+        @Override
+        public void onClick(StoriesAdapterStoryData storiesData) {
 
         }
     };
@@ -533,12 +561,11 @@ public class StoriesList extends RecyclerView {
         } else {
             adapter.hasFavItem = false;
         }
-        adapter.notifyDataSetChanged();
         if (isFavoriteList)
-            adapter.notifyChanges();
+            adapter.notify(null);
     }
 
-    public void favStory(
+   /* public void favStory(
             StoriesAdapterStoryData data,
             boolean favStatus,
             List<FavoriteImage> favImages,
@@ -570,7 +597,7 @@ public class StoriesList extends RecyclerView {
         }
         if (isFavoriteList)
             adapter.notifyChanges();
-    }
+    }*/
 
 
     LoadStoriesCallback lcallback;

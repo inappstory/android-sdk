@@ -33,7 +33,10 @@ import com.inappstory.sdk.stories.ui.list.items.IStoriesListUGCEditorItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
-import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemClick;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonItemClick;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
+import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
+import com.inappstory.sdk.stories.uidomain.list.listnotify.IAllStoriesListsNotify;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -51,11 +54,11 @@ abstract class BaseStoriesListAdapter
     private List<StoriesAdapterStoryData> storiesData = new ArrayList<>();
     private boolean isFavoriteList;
 
-    private final IStoriesListItemClick storiesListItemClick;
+    private final IStoriesListCommonItemClick storiesListCommonItemClick;
+    private final IStoriesListDeeplinkItemClick storiesListDeeplinkItemClick;
+    private final IStoriesListGameItemClick storiesListGameItemClick;
     private final OnFavoriteItemClick favoriteItemClick;
     private final OnUGCItemClick ugcItemClick;
-    ListCallback callback;
-
     boolean hasFavItem = false;
 
     boolean useFavorite;
@@ -63,52 +66,42 @@ abstract class BaseStoriesListAdapter
 
     public Context context;
     private String listID;
-    private String feed;
 
-    private IStoriesListNotify storiesListNotify;
-
-    private void addStoryData() {
-
-    }
-
-    private void removeStoryDataById() {
-
-    }
 
     public void setFeed(String feed) {
         this.feed = feed;
     }
 
     void notifyChanges() {
-        if (callback != null)
-            callback.storiesUpdated(storiesData.size(), feed);
+        /*if (callback != null)
+            callback.storiesUpdated(storiesData.size(), feed);*/
     }
 
-    public BaseStoriesListAdapter(Context context,
-                                  String listID,
-                                  IStoriesListNotify storiesListNotify,
-                                  List<StoriesAdapterStoryData> storiesData,
-                                  AppearanceManager manager,
-                                  boolean isFavoriteList,
-                                  ListCallback callback,
-                                  String feed,
-                                  boolean useFavorite,
-                                  boolean useUGC,
-                                  IStoriesListItemClick storiesListItemClick,
-                                  OnFavoriteItemClick favoriteItemClick,
-                                  OnUGCItemClick ugcItemClick) {
-        this.storiesListNotify = storiesListNotify;
+    public BaseStoriesListAdapter(
+            Context context,
+            String listID,
+            List<StoriesAdapterStoryData> storiesData,
+            AppearanceManager manager,
+            boolean isFavoriteList,
+            boolean useFavorite,
+            boolean useUGC,
+            IStoriesListCommonItemClick storiesListCommonItemClick,
+            IStoriesListDeeplinkItemClick storiesListDeeplinkItemClick,
+            IStoriesListGameItemClick storiesListGameItemClick,
+            OnFavoriteItemClick favoriteItemClick,
+            OnUGCItemClick ugcItemClick
+    ) {
         this.context = context;
         this.listID = listID;
-        this.feed = feed;
         this.storiesData = storiesData;
         this.manager = manager;
-        this.callback = callback;
         this.isFavoriteList = isFavoriteList;
         this.useFavorite = useFavorite;
         this.useUGC = useUGC;
 
-        this.storiesListItemClick = storiesListItemClick;
+        this.storiesListCommonItemClick = storiesListCommonItemClick;
+        this.storiesListDeeplinkItemClick = storiesListDeeplinkItemClick;
+        this.storiesListGameItemClick = storiesListGameItemClick;
         this.favoriteItemClick = favoriteItemClick;
         this.ugcItemClick = ugcItemClick;
 
@@ -152,7 +145,7 @@ abstract class BaseStoriesListAdapter
 
 
     @Override
-    public void onBindViewHolder(@NonNull BaseStoriesListItem holder, int position) {
+    public void onBindViewHolder(@NonNull final BaseStoriesListItem holder, int position) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (holder instanceof IStoriesListFavoriteItem) {
@@ -192,7 +185,7 @@ abstract class BaseStoriesListAdapter
             int hasUGC = useUGC ? 1 : 0;
             final StoriesAdapterStoryData story = storiesData.get(position - hasUGC);
             if (story == null) return;
-            String imgUrl = story.getImageUrl();
+            String imgUrl = story.getImageUrl(manager.csCoverQuality());
             ((IStoriesListCommonItem) holder).bindCommon(
                     story.getId(),
                     story.getTitle(),
@@ -212,9 +205,7 @@ abstract class BaseStoriesListAdapter
                     clickWithDelay(new Runnable() {
                         @Override
                         public void run() {
-                            if (storiesListItemClick != null) {
-                                storiesListItemClick.onClick(story);
-                            }
+                            onItemClick(holder.getBindingAdapterPosition());
                         }
                     });
                 }
@@ -243,10 +234,9 @@ abstract class BaseStoriesListAdapter
 
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
-        InAppStoryService service = InAppStoryService.getInstance();
 
         final StoriesAdapterStoryData current = storiesData.get(index);
-        if (callback != null) {
+       /* if (callback != null) {
             callback.itemClick(
                     new StoryData(
                             current.getId(),
@@ -258,10 +248,12 @@ abstract class BaseStoriesListAdapter
                     ),
                     index
             );
-        }
+        }*/
         String gameInstanceId = current.getGameInstanceId();
         if (gameInstanceId != null) {
-            storiesListNotify.openStory(current.getId(), Story.StoryType.COMMON, listID);
+            if (storiesListGameItemClick != null) storiesListGameItemClick.onClick(current);
+            /*
+            allStoriesListsNotify.openStory(current.getId(), Story.StoryType.COMMON);
             service.openGameReaderWithGC(
                     context,
                     new GameStoryData(
@@ -279,10 +271,11 @@ abstract class BaseStoriesListAdapter
                             )
 
                     ),
-                    gameInstanceId);
+                    gameInstanceId);*/
             return;
         } else if (current.getDeeplink() != null) {
-            storiesListNotify.openStory(current.getId(), Story.StoryType.COMMON, listID);
+            if (storiesListDeeplinkItemClick != null) storiesListDeeplinkItemClick.onClick(current);
+            /*allStoriesListsNotify.openStory(current.getId(), Story.StoryType.COMMON);
             StatisticManager.getInstance().sendDeeplinkStory(current.getId(), current.getDeeplink(), feed);
             OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.getId());
             if (CallbackManager.getInstance().getCallToActionCallback() != null) {
@@ -320,24 +313,28 @@ abstract class BaseStoriesListAdapter
                     InAppStoryService.createExceptionLog(ignored);
                 }
             }
-            return;
+            return;*/
         }
-        if (current.isHideInReader()) {
+        if (storiesListCommonItemClick != null) {
+            ArrayList<StoriesAdapterStoryData> tempStoriesData = new ArrayList();
+            for (StoriesAdapterStoryData storyData : storiesData) {
+                if (!storyData.isHideInReader())
+                    tempStoriesData.add(storyData);
+            }
+            storiesListCommonItemClick.onClick(tempStoriesData, tempStoriesData.indexOf(current));
+        }
+
+       /* if (current.isHideInReader()) {
 
             if (CallbackManager.getInstance().getErrorCallback() != null) {
                 CallbackManager.getInstance().getErrorCallback().emptyLinkError();
             }
             return;
         }
-        ArrayList<Integer> tempStories = new ArrayList();
-        for (Integer storyId : storiesIds) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
-            if (story == null || !story.isHideInReader())
-                tempStories.add(storyId);
-        }
+
         ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
-                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);
+                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);*/
     }
 
     public static final int FAVORITE_ITEM_TYPE = -1;

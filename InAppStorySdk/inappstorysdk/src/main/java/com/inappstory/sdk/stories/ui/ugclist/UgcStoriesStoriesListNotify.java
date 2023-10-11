@@ -18,12 +18,17 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
+    public String getListUID() {
+        return null;
+    }
+
+    @Override
     public void subscribe() {
 
     }
 
     @Override
-    public void bindListAdapter(IStoriesListAdapter storiesListAdapter, int coverQuality) {
+    public void bindListAdapter(IStoriesListAdapter storiesListAdapter) {
 
     }
 
@@ -45,7 +50,7 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void changeStory(final int storyId, final Story.StoryType storyType, final String listID) {
+    public void changeStory(final int storyId, final Story.StoryType storyType) {
         checkHandler();
         if (storyType != Story.StoryType.UGC) return;
         post(new Runnable() {
@@ -53,19 +58,9 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
             public void run() {
                 if (list == null) return;
                 if (list.getVisibility() != View.VISIBLE) return;
-                list.changeStoryEvent(storyId, listID);
+               // list.changeStoryEvent(storyId);
             }
         });
-    }
-
-    @Override
-    public void openStory(int storyId, Story.StoryType storyType, String listID) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        Story st = service.getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
-        if (st == null) return;
-        st.isOpened = true;
-        st.saveStoryOpened(Story.StoryType.UGC);
     }
 
     @Override
@@ -88,26 +83,5 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
                 list.openReader();
             }
         });
-    }
-
-    @Override
-    public void changeUserId() {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (list == null) return;
-                list.refreshList();
-            }
-        });
-    }
-
-    @Override
-    public void clearAllFavorites() {
-
-    }
-
-    @Override
-    public void storyFavorite(int id, Story.StoryType storyType, boolean favStatus, boolean isEmpty) {
-
     }
 }

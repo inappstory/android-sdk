@@ -19,7 +19,7 @@ public interface IStoriesListAdapter {
 
     void clearAllFavorites();
 
-    void openStory();
+    void notify(StoriesAdapterStoryData data);
 
     BaseStoriesListItem getViewHolderItem(View view, int viewType);
 

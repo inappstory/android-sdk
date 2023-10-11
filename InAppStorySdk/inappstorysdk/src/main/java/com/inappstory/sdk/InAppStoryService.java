@@ -45,6 +45,7 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IAllStoriesListsNotify;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -475,7 +476,7 @@ public class InAppStoryService {
         st.saveStoryOpened(storyType);
     }
 
-    private class ListNotifier {
+    public class ListNotifier {
         public void changeStory(int storyId, Story.StoryType type, String listID) {
             for (IStoriesListNotify sub : getStoriesListNotifySet()) {
                 if (listID.equals(sub.getListUID()))
@@ -729,7 +730,8 @@ public class InAppStoryService {
                 if (callback != null)
                     callback.onSuccess(favStatus);
                 for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                    sub.storyFavorite(storyId, storyType, favStatus, isEmpty);
+                    sub.storyFavoriteCellNotify(favImages, storyType, favStatus, isEmpty);
+                    sub.storyFavoriteItemNotify(new StoriesAdapterStoryData(story), favStatus);
                 }
             }
 
