@@ -37,6 +37,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -346,12 +347,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             return;
         }
         InAppStoryService.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
-        String stStoriesType = getIntent().getStringExtra("storiesType");
-        if (stStoriesType != null) {
-            if (stStoriesType.equals(Story.StoryType.UGC.name()))
-                type = Story.StoryType.UGC;
-            draggableFrame.type = type;
-        }
+        type = (Story.StoryType) getIntent().getSerializableExtra("storiesType");
+        if (type == null) type = Story.StoryType.COMMON;
+        draggableFrame.type = type;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             if (storiesFragment == null) {
                 setLoaderFragment();
@@ -372,7 +370,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             Bundle bundle = new Bundle();
             ArrayList<Integer> ids = getIntent().getIntegerArrayListExtra("stories_ids");
             bundle.putInt("storyId", ids.get(getIntent().getIntExtra("index", 0)));
-            bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
+            bundle.putSerializable("storiesType", type);
             setAppearanceSettings(bundle);
             storiesLoaderFragment.setArguments(bundle);
             FragmentTransaction t = fragmentManager.beginTransaction()
@@ -421,13 +419,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
 
-                bundle.putInt("source", getIntent().getIntExtra("source", ShowStory.SINGLE));
+                bundle.putSerializable("source", getIntent().getSerializableExtra("source"));
+                bundle.putSerializable("storiesType", type);
                 bundle.putInt("firstAction", getIntent().getIntExtra("firstAction", ShowStory.ACTION_OPEN));
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
-                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
                 storiesFragment.setArguments(bundle);
@@ -470,7 +468,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void closeStoryReader(int action) {
         if (closing) return;
         closing = true;
-        InAppStoryService.getInstance().getListNotifier().closeReader();
+        InAppStoryService.getInstance().getListNotifier().closeReader(
+                getIntent().getStringExtra("listID")
+        );
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
@@ -487,9 +487,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                                             StringsUtils.getNonNull(story.tags),
                                             story.getSlidesCount(),
                                             getIntent().getStringExtra("feedId"),
-                                            CallbackManager.getInstance().getSourceFromInt(
-                                                    getIntent().getIntExtra("source", 0)
-                                            )
+                                            (SourceType) getIntent().getSerializableExtra("source")
                                     ),
                                     story.lastIndex
                             ),

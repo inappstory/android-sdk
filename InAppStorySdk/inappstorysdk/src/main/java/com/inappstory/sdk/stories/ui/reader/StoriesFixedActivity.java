@@ -42,6 +42,7 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -298,21 +299,17 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             return;
         }
         InAppStoryService.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
-        String stStoriesType = getIntent().getStringExtra("storiesType");
-        if (stStoriesType != null) {
-            if (stStoriesType.equals(Story.StoryType.UGC.name()))
-                type = Story.StoryType.UGC;
-            draggableFrame.type = type;
-        }
-
+        type = (Story.StoryType) getIntent().getSerializableExtra("storiesType");
+        if (type == null) type = Story.StoryType.COMMON;
+        draggableFrame.type = type;
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
                 bundle.putString("feedId", getIntent().getStringExtra("feedId"));
-                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
-                bundle.putInt("source", getIntent().getIntExtra("source", ShowStory.SINGLE));
+                bundle.putSerializable("storiesType", type);
+                bundle.putSerializable("source", getIntent().getSerializableExtra("source"));
                 bundle.putInt("firstAction", getIntent().getIntExtra("firstAction", ShowStory.ACTION_OPEN));
                 bundle.putInt("index", getIntent().getIntExtra("index", 0));
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
@@ -350,7 +347,9 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     public void closeStoryReader(int action) {
         if (InAppStoryService.isNotNull()) {
 
-            InAppStoryService.getInstance().getListNotifier().closeReader();
+            InAppStoryService.getInstance().getListNotifier().closeReader(
+                    getIntent().getStringExtra("listID")
+            );
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
@@ -362,9 +361,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                                         StringsUtils.getNonNull(story.tags),
                                         story.getSlidesCount(),
                                         getIntent().getStringExtra("feedId"),
-                                        CallbackManager.getInstance().getSourceFromInt(
-                                                getIntent().getIntExtra("source", 0)
-                                        )
+                                        (SourceType) getIntent().getSerializableExtra("source")
                                 ),
                                 story.lastIndex
                         ),

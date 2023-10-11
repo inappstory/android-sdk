@@ -58,11 +58,13 @@ public class StoriesList extends RecyclerView {
                 if (listNotify == null) throw new RuntimeException("initialization error");
                 presenter = new StoriesListPresenter(
                         listNotify,
+                        allListsNotify,
                         feed,
                         isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
                         Story.StoryType.COMMON,
                         uniqueID
                 );
+                presenter.updateAppearanceManager(appearanceManager);
             }
             return presenter;
         }

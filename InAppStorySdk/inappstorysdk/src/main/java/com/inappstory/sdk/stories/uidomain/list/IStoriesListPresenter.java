@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.uidomain.list;
 
 import android.content.Context;
 
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
@@ -23,9 +24,15 @@ public interface IStoriesListPresenter {
 
     void onWindowFocusChanged();
 
+    void updateAppearanceManager(AppearanceManager appearanceManager);
+
     boolean hasUgcEditor();
 
-    void itemClick(StoriesAdapterStoryData data, Context context);
+    void gameItemClick(StoriesAdapterStoryData data, Context context);
+
+    void deeplinkItemClick(StoriesAdapterStoryData data, Context context);
+
+    void commonItemClick(List<StoriesAdapterStoryData> data, int index, Context context);
 
     void loadFeed(String feed, boolean loadFavoriteCovers, GetStoriesListIds getStoriesListIds);
 

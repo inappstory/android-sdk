@@ -60,6 +60,7 @@ import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -81,6 +82,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ScreensManager {
 
@@ -297,9 +299,18 @@ public class ScreensManager {
 
     private Long lastOpenTry = -1L;
 
-    public void openStoriesReader(Context outerContext, String listID, AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds, int index, int source, int firstAction, Integer slideIndex,
-                                  String feed, Story.StoryType type) {
+    public void openStoriesReader(
+            Context outerContext,
+            String listID,
+            AppearanceManager manager,
+            List<Integer> storiesIds,
+            int index,
+            SourceType sourceType,
+            int firstAction,
+            Integer slideIndex,
+            String feed,
+            Story.StoryType type
+    ) {
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && outerContext instanceof Activity) {
             if (((Activity) outerContext).isInMultiWindowMode()) {
@@ -318,12 +329,12 @@ public class ScreensManager {
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);
-            bundle.putInt("source", source);
+            bundle.putSerializable("source", sourceType);
             bundle.putInt("firstAction", firstAction);
-            bundle.putString("storiesType", type.name());
+            bundle.putSerializable("storiesType", type);
             bundle.putString("feedId", feed);
             bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
-            bundle.putIntegerArrayList("stories_ids", storiesIds);
+            bundle.putIntegerArrayList("stories_ids", (ArrayList<Integer>) storiesIds);
             if (manager == null) {
                 manager = AppearanceManager.getCommonInstance();
             }
@@ -381,14 +392,14 @@ public class ScreensManager {
                             : AppearanceManager.getCommonInstance().csIsDraggable()) ?
                             StoriesActivity.class : StoriesFixedActivity.class);
             intent2.putExtra("index", index);
-            intent2.putExtra("source", source);
+            intent2.putExtra("source", sourceType);
             intent2.putExtra("firstAction", firstAction);
-            intent2.putExtra("storiesType", type.name());
+            intent2.putExtra("storiesType", type);
             if (listID != null)
                 intent2.putExtra("listID", listID);
             if (feed != null)
                 intent2.putExtra("feedId", feed);
-            intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
+            intent2.putIntegerArrayListExtra("stories_ids", (ArrayList<Integer>) storiesIds);
             intent2.putExtra("slideIndex", slideIndex);
             if (manager != null) {
                 int nightModeFlags =
@@ -441,9 +452,9 @@ public class ScreensManager {
     public void openStoriesReader(Context outerContext,
                                   String listID,
                                   AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds,
+                                  List<Integer> storiesIds,
                                   int index,
-                                  int source,
+                                  SourceType sourceType,
                                   String feed,
                                   Story.StoryType type) {
         openStoriesReader(
@@ -452,7 +463,7 @@ public class ScreensManager {
                 manager,
                 storiesIds,
                 index,
-                source,
+                sourceType,
                 ShowStory.ACTION_OPEN,
                 0,
                 feed,
