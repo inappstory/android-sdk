@@ -121,6 +121,7 @@ public class StoriesList extends RecyclerView {
 
     public void setCallback(ListCallback callback) {
         this.callback = callback;
+        presenter.setListCallback(callback);
     }
 
     ListCallback callback;
@@ -417,7 +418,7 @@ public class StoriesList extends RecyclerView {
 
         @Override
         public void onClick(List<StoriesAdapterStoryData> storiesData, int index) {
-
+            presenter.commonItemClick(storiesData, index, getContext());
         }
     };
 
@@ -425,17 +426,15 @@ public class StoriesList extends RecyclerView {
 
 
         @Override
-        public void onClick(StoriesAdapterStoryData storiesData) {
-
+        public void onClick(StoriesAdapterStoryData storiesData, int index) {
+            presenter.gameItemClick(storiesData, index, getContext());
         }
     };
 
     IStoriesListDeeplinkItemClick deeplinkItemClick = new IStoriesListDeeplinkItemClick() {
-
-
         @Override
-        public void onClick(StoriesAdapterStoryData storiesData) {
-
+        public void onClick(StoriesAdapterStoryData storiesData, int index) {
+            presenter.deeplinkItemClick(storiesData, index, getContext());
         }
     };
 
@@ -658,18 +657,19 @@ public class StoriesList extends RecyclerView {
         adapter = new BaseStoriesListAdapter(
                 getContext(),
                 uniqueID,
-                listNotify,
                 storiesData,
                 appearanceManager,
                 isFavoriteList,
-                callback,
-                getFeed(),
                 appearanceManager.csHasFavorite() && !isFavoriteList,
                 hasUgc(),
                 commonItemClick,
+                deeplinkItemClick,
+                gameItemClick,
                 !isFavoriteList ? favoriteItemClick : null,
                 !isFavoriteList ? ugcItemClick : null
         );
+        if (callback != null)
+            callback.storiesUpdated(storiesData.size(), feed);
         if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
             setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
                 @Override

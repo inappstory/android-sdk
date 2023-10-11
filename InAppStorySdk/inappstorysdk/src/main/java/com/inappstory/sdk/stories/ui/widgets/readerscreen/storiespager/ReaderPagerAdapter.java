@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 
 import java.io.Serializable;
@@ -33,10 +34,10 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
     String readerSettings;
 
     ReaderManager manager;
-    int source = 0;
+    SourceType source = SourceType.SINGLE;
 
     public ReaderPagerAdapter(@NonNull FragmentManager fm,
-                              int source,
+                              SourceType source,
                               String readerSettings,
                               Serializable timerGradient,
                               List<Integer> ids,
@@ -82,7 +83,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         ReaderPageFragment frag = new ReaderPageFragment();
         Bundle a = new Bundle();
         a.putInt("story_id", storiesIds.get(position));
-        a.putInt("source", source);
+        a.putSerializable("source", source);
         a.putString(CS_READER_SETTINGS, readerSettings);
         a.putSerializable(CS_TIMER_GRADIENT, timerGradient);
         frag.setArguments(a);

@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
 
@@ -20,6 +21,8 @@ public interface IStoriesListPresenter {
 
     void setCacheId(String cacheId);
 
+    void setListCallback(ListCallback listCallback);
+
     void clearCachedList();
 
     void onWindowFocusChanged();
@@ -28,9 +31,9 @@ public interface IStoriesListPresenter {
 
     boolean hasUgcEditor();
 
-    void gameItemClick(StoriesAdapterStoryData data, Context context);
+    void gameItemClick(StoriesAdapterStoryData data, int index, Context context);
 
-    void deeplinkItemClick(StoriesAdapterStoryData data, Context context);
+    void deeplinkItemClick(StoriesAdapterStoryData data, int index, Context context);
 
     void commonItemClick(List<StoriesAdapterStoryData> data, int index, Context context);
 

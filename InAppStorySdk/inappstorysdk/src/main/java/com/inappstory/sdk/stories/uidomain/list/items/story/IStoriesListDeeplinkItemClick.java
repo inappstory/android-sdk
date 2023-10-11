@@ -5,5 +5,8 @@ import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import java.util.List;
 
 public interface IStoriesListDeeplinkItemClick {
-    void onClick(StoriesAdapterStoryData storiesData);
+    void onClick(
+            StoriesAdapterStoryData storiesData,
+            int index
+    );
 }

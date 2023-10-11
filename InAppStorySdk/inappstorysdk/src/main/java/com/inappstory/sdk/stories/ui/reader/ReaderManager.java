@@ -9,6 +9,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -29,7 +30,7 @@ public class ReaderManager {
     private String listID;
     public Story.StoryType storyType;
 
-    public int source = 0;
+    public SourceType source = SourceType.SINGLE;
 
     public ReaderManager() {
     }
@@ -38,7 +39,7 @@ public class ReaderManager {
                          String feedId,
                          String feedSlug,
                          Story.StoryType storyType,
-                         int source,
+                         SourceType source,
                          int latestShowStoryAction) {
         this.listID = listID;
         this.feedId = feedId;
@@ -67,7 +68,7 @@ public class ReaderManager {
                                 StringsUtils.getNonNull(story.tags),
                                 story.getSlidesCount(),
                                 feedId,
-                                CallbackManager.getInstance().getSourceFromInt(source)
+                                source
                         ),
                         CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction));
             }
@@ -171,7 +172,7 @@ public class ReaderManager {
         }
     }
 
-    void sendStat(int position, int source) {
+    void sendStat(int position, SourceType source) {
         if (lastPos < position && lastPos > -1) {
             sendStatBlock(true, StatisticManager.NEXT, storiesIds.get(position));
         } else if (lastPos > position && lastPos > -1) {
@@ -179,13 +180,13 @@ public class ReaderManager {
         } else if (lastPos == -1) {
             String whence = StatisticManager.DIRECT;
             switch (source) {
-                case 1:
+                case ONBOARDING:
                     whence = StatisticManager.ONBOARDING;
                     break;
-                case 2:
+                case LIST:
                     whence = StatisticManager.LIST;
                     break;
-                case 3:
+                case FAVORITE:
                     whence = StatisticManager.FAVORITE;
                     break;
                 default:
@@ -234,7 +235,7 @@ public class ReaderManager {
         }
     }
 
-    void onPageSelected(int source, int position) {
+    void onPageSelected(SourceType source, int position) {
         if (InAppStoryService.isNull()) return;
         sendStat(position, source);
 

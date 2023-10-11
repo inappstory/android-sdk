@@ -35,6 +35,7 @@ import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -241,13 +242,14 @@ public class StoriesFragment extends Fragment
         ind = arguments.getInt("index", 0);
         readerAnimation = arguments.getInt(CS_STORY_READER_ANIMATION,
                 AppearanceManager.ANIMATION_CUBE);
-        Story.StoryType type =
-                Story.StoryType.valueOf(getArguments().getString("storiesType", Story.StoryType.COMMON.name()));
-        readerManager = new ReaderManager(arguments.getString("listID", null),
+        readerManager = new ReaderManager(
+                arguments.getString("listID", null),
                 arguments.getString("feedId", null),
-                arguments.getString("feedSlug", null), type,
-                arguments.getInt("source", ShowStory.SINGLE),
-                arguments.getInt("firstAction", ShowStory.ACTION_OPEN));
+                arguments.getString("feedSlug", null),
+                (Story.StoryType) arguments.getSerializable("storiesType"),
+                (SourceType) arguments.getSerializable("source"),
+                arguments.getInt("firstAction", ShowStory.ACTION_OPEN)
+        );
 
         if (currentIds != null && !currentIds.isEmpty()) {
             readerManager.setStoriesIds(currentIds);
@@ -280,7 +282,7 @@ public class StoriesFragment extends Fragment
         return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);
     }
 
-    int source = 0;
+    SourceType source = SourceType.SINGLE;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -293,14 +295,18 @@ public class StoriesFragment extends Fragment
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         storiesViewPager.setParameters(readerAnimation);
-        source = (getArguments() != null) ? getArguments().getInt("source", 0) : 0;
+        source = (getArguments() != null) ?
+                (SourceType) getArguments().getSerializable("source")
+                : SourceType.SINGLE;
         outerViewPagerAdapter =
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
                         source,
                         readerSettings,
                         timerGradient,
-                        currentIds, readerManager);
+                        currentIds,
+                        readerManager
+                );
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
         if (ind > 0) {

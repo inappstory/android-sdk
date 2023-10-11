@@ -67,16 +67,6 @@ abstract class BaseStoriesListAdapter
     public Context context;
     private String listID;
 
-
-    public void setFeed(String feed) {
-        this.feed = feed;
-    }
-
-    void notifyChanges() {
-        /*if (callback != null)
-            callback.storiesUpdated(storiesData.size(), feed);*/
-    }
-
     public BaseStoriesListAdapter(
             Context context,
             String listID,
@@ -109,7 +99,6 @@ abstract class BaseStoriesListAdapter
         hasFavItem = !isFavoriteList && service != null
                 && manager != null && manager.csHasFavorite()
                 && service.getFavoriteImages().size() > 0;
-        notifyChanges();
     }
 
     public int getIndexById(int id) {
@@ -215,10 +204,6 @@ abstract class BaseStoriesListAdapter
 
     Long clickTimestamp = -1L;
 
-    private SourceType getListSourceType() {
-        return isFavoriteList ? SourceType.FAVORITE : SourceType.LIST;
-    }
-
     private void clickWithDelay(Runnable runnable) {
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
@@ -236,84 +221,20 @@ abstract class BaseStoriesListAdapter
         int index = ind - hasUGC;
 
         final StoriesAdapterStoryData current = storiesData.get(index);
-       /* if (callback != null) {
-            callback.itemClick(
-                    new StoryData(
-                            current.getId(),
-                            StringsUtils.getNonNull(current.getStatTitle()),
-                            StringsUtils.getNonNull(current.getTags()),
-                            current.getSlidesCount(),
-                            feed,
-                            getListSourceType()
-                    ),
-                    index
-            );
-        }*/
         String gameInstanceId = current.getGameInstanceId();
         if (gameInstanceId != null) {
-            if (storiesListGameItemClick != null) storiesListGameItemClick.onClick(current);
-            /*
-            allStoriesListsNotify.openStory(current.getId(), Story.StoryType.COMMON);
-            service.openGameReaderWithGC(
-                    context,
-                    new GameStoryData(
-                            new SlideData(
-                                    new StoryData(
-                                            current.getId(),
-                                            Story.StoryType.COMMON,
-                                            StringsUtils.getNonNull(current.getStatTitle()),
-                                            StringsUtils.getNonNull(current.getTags()),
-                                            current.getSlidesCount(),
-                                            feed,
-                                            getListSourceType()
-                                    ),
-                                    0
-                            )
-
-                    ),
-                    gameInstanceId);*/
+            if (storiesListGameItemClick != null)
+                storiesListGameItemClick.onClick(
+                        current,
+                        index
+                );
             return;
         } else if (current.getDeeplink() != null) {
-            if (storiesListDeeplinkItemClick != null) storiesListDeeplinkItemClick.onClick(current);
-            /*allStoriesListsNotify.openStory(current.getId(), Story.StoryType.COMMON);
-            StatisticManager.getInstance().sendDeeplinkStory(current.getId(), current.getDeeplink(), feed);
-            OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.getId());
-            if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                        context,
-                        new SlideData(
-                                new StoryData(
-                                        current.getId(),
-                                        StringsUtils.getNonNull(current.getStatTitle()),
-                                        StringsUtils.getNonNull(current.getTags()),
-                                        current.getSlidesCount(),
-                                        feed,
-                                        getListSourceType()
-                                ),
-                                0
-                        ),
-                        current.getDeeplink(),
-                        ClickAction.DEEPLINK
+            if (storiesListDeeplinkItemClick != null)
+                storiesListDeeplinkItemClick.onClick(
+                        current,
+                        index
                 );
-            } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.getDeeplink());
-            } else {
-                if (!InAppStoryService.isConnected()) {
-                    if (CallbackManager.getInstance().getErrorCallback() != null) {
-                        CallbackManager.getInstance().getErrorCallback().noConnection();
-                    }
-                    return;
-                }
-                try {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(current.getDeeplink()));
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(i);
-                } catch (Exception ignored) {
-                    InAppStoryService.createExceptionLog(ignored);
-                }
-            }
-            return;*/
         }
         if (storiesListCommonItemClick != null) {
             ArrayList<StoriesAdapterStoryData> tempStoriesData = new ArrayList();
@@ -323,18 +244,6 @@ abstract class BaseStoriesListAdapter
             }
             storiesListCommonItemClick.onClick(tempStoriesData, tempStoriesData.indexOf(current));
         }
-
-       /* if (current.isHideInReader()) {
-
-            if (CallbackManager.getInstance().getErrorCallback() != null) {
-                CallbackManager.getInstance().getErrorCallback().emptyLinkError();
-            }
-            return;
-        }
-
-        ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
-                tempStories.indexOf(storiesIds.get(index)),
-                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);*/
     }
 
     public static final int FAVORITE_ITEM_TYPE = -1;
