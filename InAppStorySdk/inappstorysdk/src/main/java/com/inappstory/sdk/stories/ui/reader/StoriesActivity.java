@@ -70,7 +70,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void onPause() {
         super.onPause();
-        unsubscribeClicks();
         if (isFinishing()) {
             ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
@@ -123,7 +122,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     protected void onResume() {
         super.onResume();
-        subscribeClicks();
         Log.e("activityLifecycle", "onResume");
         StatusBarController.hideStatusBar(this, true);
     }
@@ -290,6 +288,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finish();
             return;
         }
+
         int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
@@ -378,6 +377,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             createStoriesFragment(savedInstanceState1);
             setStoriesFragment();
         }
+        subscribeClicks();
     }
 
     private void setLoaderFragment() {
@@ -569,6 +569,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onDestroy() {
+        unsubscribeClicks();
         if (ScreensManager.getInstance().currentScreen == this)
             ScreensManager.getInstance().currentScreen = null;
         if (!pauseDestroyed) {
