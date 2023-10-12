@@ -455,11 +455,6 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         getVisibleItems();
     }
 
-    @Override
-    public void changeStory(int storyId) {
-
-    }
-
     public void refreshList() {
         adapter = null;
         loadStories();
@@ -520,7 +515,8 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
     }
 
 
-    public void changeStoryEvent(int storyId) {
+    @Override
+    public void changeStory(int storyId) {
         if (adapter == null || adapter.getStoriesData() == null) return;
         for (int i = 0; i < adapter.getStoriesData().size(); i++) {
             if (adapter.getStoriesData().get(i).getId() == storyId) {
