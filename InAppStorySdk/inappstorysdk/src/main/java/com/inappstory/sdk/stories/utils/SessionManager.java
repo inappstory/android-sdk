@@ -226,7 +226,11 @@ public class SessionManager {
         }
     }
 
-    public void closeSession(boolean sendStatistic, final boolean changeUserId) {
+    public void closeSession(
+            boolean sendStatistic,
+            final boolean changeUserId,
+            final String oldUserId
+    ) {
         clearCaches();
         if (Session.getInstance().id != null) {
             List<List<Object>> stat = new ArrayList<>(
@@ -251,7 +255,8 @@ public class SessionManager {
                             new StatisticSendObject(
                                     Session.getInstance().id,
                                     stat
-                            )
+                            ),
+                            oldUserId
                     ),
                     new NetworkCallback<SessionResponse>() {
                         @Override

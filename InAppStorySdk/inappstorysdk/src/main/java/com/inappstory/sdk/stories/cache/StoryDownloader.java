@@ -411,7 +411,11 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    SessionManager.getInstance().closeSession(true, false);
+                                    String oldUserId = "";
+                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                                    if (inAppStoryManager != null)
+                                        oldUserId = inAppStoryManager.getUserId();
+                                    SessionManager.getInstance().closeSession(true, false, oldUserId);
                                     loadUgcStoryList(callback, payload);
                                 }
                             });
@@ -474,7 +478,15 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    SessionManager.getInstance().closeSession(true, false);
+                                    String oldUserId = "";
+                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                                    if (inAppStoryManager != null)
+                                        oldUserId = inAppStoryManager.getUserId();
+                                    SessionManager.getInstance().closeSession(
+                                            true,
+                                            false,
+                                            oldUserId
+                                    );
                                     loadStoryListByFeed(feed, callback);
                                 }
                             });
@@ -539,7 +551,16 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    SessionManager.getInstance().closeSession(true, false);
+
+                                    String oldUserId = "";
+                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                                    if (inAppStoryManager != null)
+                                        oldUserId = inAppStoryManager.getUserId();
+                                    SessionManager.getInstance().closeSession(
+                                            true,
+                                            false,
+                                            oldUserId
+                                    );
                                     loadStoryList(callback, isFavorite);
                                 }
                             });

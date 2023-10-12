@@ -205,7 +205,8 @@ public class StoriesFragment extends Fragment
 
     @Override
     public void onPause() {
-        pause();
+        if (!timerIsLocked)
+            pause();
         super.onPause();
     }
 
@@ -349,10 +350,20 @@ public class StoriesFragment extends Fragment
         }
     }
 
+    void timerIsLocked() {
+        timerIsLocked = true;
+    }
+
+    void timerIsUnlocked() {
+        timerIsLocked = false;
+    }
+
+    boolean timerIsLocked = false;
 
     @Override
     public void onResume() {
-        resume();
+        if (!timerIsLocked)
+            resume();
         super.onResume();
     }
 

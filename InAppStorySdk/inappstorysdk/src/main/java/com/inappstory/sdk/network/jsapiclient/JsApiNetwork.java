@@ -1,6 +1,7 @@
 package com.inappstory.sdk.network.jsapiclient;
 
 import android.content.Context;
+import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -14,6 +15,7 @@ import com.inappstory.sdk.network.utils.headers.Header;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,7 @@ public class JsApiNetwork {
         List<Header> defaultHeaders = networkClient.generateHeaders(
                 context,
                 new String[]{},
+                new ArrayList<Pair<String, String>>(),
                 false,
                 hasBody
         );

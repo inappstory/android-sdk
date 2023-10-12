@@ -180,6 +180,17 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     @Override
+    public void timerIsLocked() {
+        if (storiesFragment != null) storiesFragment.timerIsLocked();
+    }
+
+    @Override
+    public void timerIsUnlocked() {
+        if (storiesFragment != null) storiesFragment.timerIsUnlocked();
+    }
+
+
+    @Override
     public void onStart() {
         super.onStart();
 

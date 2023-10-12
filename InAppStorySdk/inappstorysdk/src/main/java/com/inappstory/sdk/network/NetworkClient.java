@@ -1,6 +1,7 @@
 package com.inappstory.sdk.network;
 
 import android.content.Context;
+import android.util.Pair;
 
 import androidx.annotation.WorkerThread;
 
@@ -20,6 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 
 public class NetworkClient {
     private ApiInterface apiInterface;
@@ -118,10 +120,11 @@ public class NetworkClient {
     public List<Header> generateHeaders(
             Context context,
             String[] exclude,
+            List<Pair<String, String>> replace,
             boolean isFormEncoded,
             boolean hasBody
     ) {
-        return networkHandler.generateHeaders(context, exclude, isFormEncoded, hasBody);
+        return networkHandler.generateHeaders(context, exclude, replace, isFormEncoded, hasBody);
     }
     public ApiInterface getApi() {
         if (getBaseUrl() == null) {

@@ -473,6 +473,8 @@ public class ScreensManager {
             goodsDialog.dismiss();
             goodsDialog = null;
         }
+        BaseReaderScreen screen = ScreensManager.getInstance().currentScreen;
+        if (screen != null) screen.timerIsUnlocked();
     }
 
     public void showGoods(
@@ -489,7 +491,8 @@ public class ScreensManager {
             return;
         }
         if (goodsDialog != null) return;
-
+        BaseReaderScreen screen = ScreensManager.getInstance().currentScreen;
+        if (screen != null) screen.timerIsLocked();
 
         showGoodsCallback.onPause();
         LayoutInflater inflater = activity.getLayoutInflater();

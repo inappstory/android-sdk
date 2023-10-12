@@ -285,10 +285,9 @@ public class ReaderPageManager {
         if (!withBackground && isPaused) return;
         isPaused = true;
         timelineManager.pause();
+        timerManager.pauseLocalTimer();
         if (withBackground) {
             timerManager.pauseTimer();
-        } else {
-            timerManager.pauseLocalTimer();
         }
         webViewManager.pauseStory();
     }
@@ -300,10 +299,9 @@ public class ReaderPageManager {
         if (!isPaused) return;
         isPaused = false;
         timelineManager.resume();
+        timerManager.resumeLocalTimer();
         if (withBackground) {
             timerManager.resumeTimer();
-        } else {
-            timerManager.resumeLocalTimer();
         }
         webViewManager.resumeStory();
     }
@@ -389,14 +387,14 @@ public class ReaderPageManager {
                     @Override
                     public void onPause() {
                         if (checkIfManagersIsNull()) return;
-                        parentManager.pause();
+                        parentManager.pauseCurrent(true);
                         parentManager.unsubscribeClicks();
                     }
 
                     @Override
                     public void onResume(String widgetId) {
                         if (checkIfManagersIsNull()) return;
-                        parentManager.resume();
+                        parentManager.resumeCurrent(true);
                         parentManager.subscribeClicks();
                         webViewManager.goodsWidgetComplete(widgetId);
                     }

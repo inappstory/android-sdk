@@ -125,7 +125,7 @@ public class ReaderManager {
         );
     }
 
-    public void pause() {
+    /*public void pause() {
         if (parentFragment != null)
             parentFragment.pause();
     }
@@ -133,7 +133,7 @@ public class ReaderManager {
     public void resume() {
         if (parentFragment != null)
             parentFragment.resume();
-    }
+    }*/
 
     public void gameComplete(String data, int storyId, int slideIndex) {
         ReaderPageManager pageManager = getSubscriberByStoryId(storyId);

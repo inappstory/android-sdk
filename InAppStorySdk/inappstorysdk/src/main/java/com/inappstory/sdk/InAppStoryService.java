@@ -223,7 +223,7 @@ public class InAppStoryService {
 
     void logout() {
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        SessionManager.getInstance().closeSession(true, false);
+        SessionManager.getInstance().closeSession(true, false, userId);
         OldStatisticManager.getInstance().clear();
     }
 

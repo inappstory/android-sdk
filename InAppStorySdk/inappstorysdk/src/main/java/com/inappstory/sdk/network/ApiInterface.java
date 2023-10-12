@@ -12,7 +12,9 @@ import com.inappstory.sdk.network.annotations.api.PUT;
 import com.inappstory.sdk.network.annotations.api.Path;
 import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
+import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.models.Request;
+import com.inappstory.sdk.network.utils.headers.HeadersKeys;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 /**
@@ -38,7 +40,6 @@ public interface ApiInterface {
     Request getGameByInstanceId(
             @Path("id") String id
     );
-
 
 
     @FormUrlEncoded
@@ -100,11 +101,11 @@ public interface ApiInterface {
     @FormUrlEncoded
     @POST("exception")
     @ExcludeHeaders({
-            "Accept",
-            "Accept-Language",
-            "X-Device-Id",
-            "X-APP-PACKAGE-ID",
-            "Authorization"
+            HeadersKeys.ACCEPT,
+            HeadersKeys.ACCEPT_LANGUAGE,
+            HeadersKeys.DEVICE_ID,
+            HeadersKeys.APP_PACKAGE_ID,
+            HeadersKeys.AUTHORIZATION
     })
     Request sendException(
             @Query("s") String session,
@@ -117,11 +118,11 @@ public interface ApiInterface {
 
     @GET("stat/{event_name}")
     @ExcludeHeaders({
-            "Accept",
-            "Accept-Language",
-            "X-Device-Id",
-            "X-APP-PACKAGE-ID",
-            "Authorization"
+            HeadersKeys.ACCEPT,
+            HeadersKeys.ACCEPT_LANGUAGE,
+            HeadersKeys.DEVICE_ID,
+            HeadersKeys.APP_PACKAGE_ID,
+            HeadersKeys.AUTHORIZATION
     })
     Request sendStat(
             @Path("event_name") String eventName,
@@ -175,7 +176,7 @@ public interface ApiInterface {
     @FormUrlEncoded
     @POST("v2/session/open")
     @ExcludeHeaders({
-            "auth-session-id"
+            HeadersKeys.AUTH_SESSION_ID
     })
     Request sessionOpen(
             @Query("expand") String expand,
@@ -201,6 +202,8 @@ public interface ApiInterface {
 
     @POST("v2/session/close")
     Request sessionClose(
-            @Body StatisticSendObject request);
+            @Body StatisticSendObject request,
+            @ReplaceHeader(HeadersKeys.USER_ID) String xUserId
+    );
 
 }

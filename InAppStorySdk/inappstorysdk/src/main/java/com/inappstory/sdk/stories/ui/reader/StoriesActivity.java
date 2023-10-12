@@ -70,6 +70,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void onPause() {
         super.onPause();
+
+        unsubscribeClicks();
         if (isFinishing()) {
             ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
@@ -94,6 +96,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void unsubscribeClicks() {
         draggableFrame.removeListener(chromeFader);
     }
+
     public void subscribeClicks() {
         draggableFrame.addListener(chromeFader);
     }
@@ -122,6 +125,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     protected void onResume() {
         super.onResume();
+        subscribeClicks();
         Log.e("activityLifecycle", "onResume");
         StatusBarController.hideStatusBar(this, true);
     }
@@ -276,6 +280,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
+    public void timerIsLocked() {
+        if (storiesFragment != null) storiesFragment.timerIsLocked();
+    }
+
+    @Override
+    public void timerIsUnlocked() {
+        if (storiesFragment != null) storiesFragment.timerIsUnlocked();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
@@ -377,7 +391,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             createStoriesFragment(savedInstanceState1);
             setStoriesFragment();
         }
-        subscribeClicks();
     }
 
     private void setLoaderFragment() {
@@ -569,7 +582,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onDestroy() {
-        unsubscribeClicks();
         if (ScreensManager.getInstance().currentScreen == this)
             ScreensManager.getInstance().currentScreen = null;
         if (!pauseDestroyed) {

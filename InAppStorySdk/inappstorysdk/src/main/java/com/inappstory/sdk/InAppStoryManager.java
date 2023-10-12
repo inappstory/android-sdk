@@ -911,13 +911,14 @@ public class InAppStoryManager {
         }
         if (this.userId.equals(userId)) return;
         localOpensKey = null;
+        String oldUserId = this.userId;
         this.userId = userId;
         if (inAppStoryService.getFavoriteImages() != null)
             inAppStoryService.getFavoriteImages().clear();
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
         closeStoryReader(CloseStory.AUTO);
-        SessionManager.getInstance().closeSession(sendStatistic, true);
+        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId);
         OldStatisticManager.getInstance().eventCount = 0;
         inAppStoryService.getDownloadManager().cleanTasks(false);
         inAppStoryService.setUserId(userId);

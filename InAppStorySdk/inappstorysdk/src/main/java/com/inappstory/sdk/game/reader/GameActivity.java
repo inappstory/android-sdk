@@ -213,11 +213,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         new ShowGoodsCallback() {
                             @Override
                             public void onPause() {
+                                goodsViewIsShown = true;
                                 pauseGame();
                             }
 
                             @Override
                             public void onResume(String widgetId) {
+                                goodsViewIsShown = false;
                                 goodsWidgetComplete(widgetId);
                                 resumeGame();
                             }
@@ -424,7 +426,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     @Override
     public void onResume() {
         super.onResume();
-        if (!shareViewIsShown) {
+        if (!shareViewIsShown && !goodsViewIsShown) {
             manager.onResume();
             resumeGame();
         }
@@ -473,7 +475,8 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     @Override
     protected void onPause() {
         super.onPause();
-        pauseGame();
+        if (!goodsViewIsShown)
+            pauseGame();
     }
 
     private void resumeGame() {
@@ -1175,6 +1178,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
 
     boolean shareViewIsShown = false;
+    boolean goodsViewIsShown = false;
 
     @Override
     public void viewIsOpened() {

@@ -347,6 +347,17 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     }
 
     @Override
+    public void timerIsLocked() {
+        if (storiesFragment != null) storiesFragment.timerIsLocked();
+    }
+
+    @Override
+    public void timerIsUnlocked() {
+        if (storiesFragment != null) storiesFragment.timerIsUnlocked();
+    }
+
+
+    @Override
     public void closeStoryReader(int action) {
         if (InAppStoryService.isNotNull()) {
 

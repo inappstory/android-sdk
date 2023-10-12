@@ -119,7 +119,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sessionClose(StatisticSendObject request) {
+    public Request sessionClose(StatisticSendObject request, String xUserId) {
         return new DummyRequest();
     }
 }

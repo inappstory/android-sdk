@@ -41,26 +41,14 @@ public class TimerManager {
         }
     };
 
-    public void resumeLocalTimer() {
-        startTimer(timerDuration - pauseShift, false);
-    }
+
 
     public long startPauseTime;
 
 
     public long pauseTime = 0;
 
-    public void resumeTimer() {
-        StatisticManager.getInstance().cleanFakeEvents();
-        resumeLocalTimer();
-        if (OldStatisticManager.getInstance().currentEvent == null) return;
-        OldStatisticManager.getInstance().currentEvent.eventType = 1;
-        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
-        pauseTime += System.currentTimeMillis() - startPauseTime;
-        if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
-            StatisticManager.getInstance().currentState.storyPause = pauseTime;
-        startPauseTime = 0;
-    }
+
 
     public void stopTimer() {
         try {
@@ -124,6 +112,10 @@ public class TimerManager {
             startTimer(currentDuration, false);
     }
 
+    public void resumeLocalTimer() {
+        startTimer(timerDuration - pauseShift, false);
+    }
+
     public void pauseLocalTimer() {
         try {
             timerHandler.removeCallbacks(timerTask);
@@ -132,6 +124,18 @@ public class TimerManager {
         }
         pauseShift = (System.currentTimeMillis() - timerStart);
     }
+    public void resumeTimer() {
+        StatisticManager.getInstance().cleanFakeEvents();
+        // resumeLocalTimer();
+        if (OldStatisticManager.getInstance().currentEvent == null) return;
+        OldStatisticManager.getInstance().currentEvent.eventType = 1;
+        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
+        pauseTime += System.currentTimeMillis() - startPauseTime;
+        if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
+            StatisticManager.getInstance().currentState.storyPause = pauseTime;
+        startPauseTime = 0;
+    }
+
 
     public void pauseTimer() {
         if (InAppStoryService.isNull()) {
@@ -144,7 +148,7 @@ public class TimerManager {
             StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
                     pageManager != null ? pageManager.getFeedId() : null);
         }
-        pauseLocalTimer();
+       // pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         OldStatisticManager.getInstance().sendStatistic();

@@ -15,6 +15,7 @@ import com.inappstory.sdk.network.annotations.api.PUT;
 import com.inappstory.sdk.network.annotations.api.Path;
 import com.inappstory.sdk.network.annotations.api.Query;
 import com.inappstory.sdk.network.annotations.api.QueryObject;
+import com.inappstory.sdk.network.annotations.api.ReplaceHeader;
 import com.inappstory.sdk.network.utils.ObjectToQuery;
 import com.inappstory.sdk.network.utils.UrlEncoder;
 import com.inappstory.sdk.network.utils.headers.AcceptEncodingHeader;
@@ -25,13 +26,13 @@ import com.inappstory.sdk.network.utils.headers.AuthorizationHeader;
 import com.inappstory.sdk.network.utils.headers.ContentTypeHeader;
 import com.inappstory.sdk.network.utils.headers.Header;
 import com.inappstory.sdk.network.utils.headers.HeadersKeys;
+import com.inappstory.sdk.network.utils.headers.MutableHeader;
 import com.inappstory.sdk.network.utils.headers.UserAgentHeader;
 import com.inappstory.sdk.network.utils.headers.XAppPackageIdHeader;
 import com.inappstory.sdk.network.utils.headers.XDeviceIdHeader;
 import com.inappstory.sdk.network.utils.headers.XRequestIdHeader;
 import com.inappstory.sdk.network.utils.headers.XUserIdHeader;
 import com.inappstory.sdk.network.models.Request;
-import com.inappstory.sdk.network.models.Response;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -59,6 +60,7 @@ public final class NetworkHandler implements InvocationHandler {
     private Request generateRequest(
             String path,
             Annotation[][] parameterAnnotations,
+            String[] exclude,
             Object[] args,
             Request.Builder builder,
             boolean isFormEncoded
@@ -69,15 +71,13 @@ public final class NetworkHandler implements InvocationHandler {
         String bodyEncoded = "";
         String body = "";
         UrlEncoder encoder = new UrlEncoder();
-        String[] exclude = {};
+        List<Pair<String, String>> replacedHeaders = new ArrayList<>();
         for (int i = 0; i < parameterAnnotations.length; i++) {
             if (args[i] == null) continue;
             Annotation[] annotationM = parameterAnnotations[i];
             if (annotationM != null && annotationM.length > 0) {
                 Annotation annotation = annotationM[0];
-                if (annotation instanceof ExcludeHeaders) {
-                    exclude = ((ExcludeHeaders) annotation).value();
-                } else if (annotation instanceof Path) {
+                if (annotation instanceof Path) {
                     path = path.replaceFirst("\\{" + ((Path) annotation).value() + "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
                     vars.put(((Query) annotation).value(), encoder.encode(args[i].toString()));
@@ -97,6 +97,8 @@ public final class NetworkHandler implements InvocationHandler {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                } else if (annotation instanceof ReplaceHeader) {
+                    replacedHeaders.add(new Pair<>(((ReplaceHeader) annotation).value(), args[i].toString()));
                 }
             }
         }
@@ -111,7 +113,13 @@ public final class NetworkHandler implements InvocationHandler {
         Request request = builder
                 .isFormEncoded(isFormEncoded)
                 .headers(
-                        generateHeaders(appContext, exclude, isFormEncoded, !body.isEmpty())
+                        generateHeaders(
+                                appContext,
+                                exclude,
+                                replacedHeaders,
+                                isFormEncoded,
+                                !body.isEmpty()
+                        )
                 )
                 .url(baseUrl != null ?
                         baseUrl + path : path)
@@ -126,6 +134,7 @@ public final class NetworkHandler implements InvocationHandler {
     List<Header> generateHeaders(
             Context context,
             String[] exclude,
+            List<Pair<String, String>> replaceHeaders,
             boolean isFormEncoded,
             boolean hasBody
     ) {
@@ -153,6 +162,15 @@ public final class NetworkHandler implements InvocationHandler {
             resHeaders.add(new UserAgentHeader(context));
         if (!excludeList.contains(HeadersKeys.USER_ID))
             resHeaders.add(new XUserIdHeader());
+        for (Header header : resHeaders) {
+            if (header instanceof MutableHeader) {
+                for (Pair<String, String> replaceHeader : replaceHeaders) {
+                    if (header.getKey().equals(replaceHeader.first)) {
+                        ((MutableHeader) header).setValue(replaceHeader.second);
+                    }
+                }
+            }
+        }
         return resHeaders;
     }
 
@@ -162,16 +180,49 @@ public final class NetworkHandler implements InvocationHandler {
         POST post = method.getAnnotation(POST.class);
         DELETE delete = method.getAnnotation(DELETE.class);
         PUT put = method.getAnnotation(PUT.class);
+        ExcludeHeaders excludeHeaders = method.getAnnotation(ExcludeHeaders.class);
+        String[] exclude = {};
+        if (excludeHeaders != null) {
+            exclude = excludeHeaders.value();
+        }
         if (delete != null) {
-            return generateRequest(delete.value(), method.getParameterAnnotations(), args, (new Request.Builder()).delete(), false);
+            return generateRequest(
+                    delete.value(),
+                    method.getParameterAnnotations(),
+                    exclude,
+                    args,
+                    (new Request.Builder()).delete(),
+                    false
+            );
         } else if (get != null) {
-            return generateRequest(get.value(), method.getParameterAnnotations(), args, (new Request.Builder()).get(), false);
+            return generateRequest(
+                    get.value(),
+                    method.getParameterAnnotations(),
+                    exclude,
+                    args,
+                    (new Request.Builder()).get(),
+                    false
+            );
         } else {
             boolean encoded = (method.getAnnotation(FormUrlEncoded.class) != null);
             if (post != null) {
-                return generateRequest(post.value(), method.getParameterAnnotations(), args, (new Request.Builder()).post(), encoded);
+                return generateRequest(
+                        post.value(),
+                        method.getParameterAnnotations(),
+                        exclude,
+                        args,
+                        (new Request.Builder()).post(),
+                        encoded
+                );
             } else if (put != null) {
-                return generateRequest(put.value(), method.getParameterAnnotations(), args, (new Request.Builder()).put(), encoded);
+                return generateRequest(
+                        put.value(),
+                        method.getParameterAnnotations(),
+                        exclude,
+                        args,
+                        (new Request.Builder()).put(),
+                        encoded
+                );
             } else {
                 throw new IllegalStateException("Don't know what to do.");
             }
@@ -183,7 +234,7 @@ public final class NetworkHandler implements InvocationHandler {
     public <T> T implement(Class int3rface) {
         return (T) Proxy.newProxyInstance(
                 int3rface.getClassLoader(),
-                new Class[] {
+                new Class[]{
                         int3rface
                 },
                 this
