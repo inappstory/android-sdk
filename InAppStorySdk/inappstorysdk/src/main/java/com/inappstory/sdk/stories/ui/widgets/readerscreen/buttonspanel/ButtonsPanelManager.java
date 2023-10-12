@@ -211,18 +211,29 @@ public class ButtonsPanelManager {
                 ),
                 story.lastIndex
         );
-        inAppStoryService.favoriteStory(storyId, parentManager.getStoryType(), slideData, new FavoriteCallback() {
-            @Override
-            public void onSuccess(boolean favStatus) {
-                if (callback != null)
-                    callback.onSuccess(favStatus ? 1 : 0);
-            }
+        inAppStoryService.favoriteStory(
+                storyId,
+                parentManager.getStoryType(),
+                slideData,
+                new FavoriteCallback() {
+                    @Override
+                    public void addedToFavorite(Story story) {
+                        if (callback != null)
+                            callback.onSuccess(1);
+                    }
 
-            @Override
-            public void onError() {
+                    @Override
+                    public void removedFromFavorite() {
+                        if (callback != null)
+                            callback.onSuccess(0);
+                    }
 
-            }
-        });
+                    @Override
+                    public void onError() {
+
+                    }
+                }
+        );
     }
 
     ButtonsPanel panel;

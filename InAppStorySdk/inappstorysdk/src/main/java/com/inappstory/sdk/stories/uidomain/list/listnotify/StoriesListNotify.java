@@ -5,14 +5,11 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
-import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
-
-import java.util.List;
+import com.inappstory.sdk.stories.ui.list.IStoriesListNotifyHandler;
+import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
 
 public class StoriesListNotify implements IStoriesListNotify {
-    private IStoriesListAdapter storiesListAdapter;
+    private IStoriesListNotifyHandler storiesListNotifyHandler;
     private Story.StoryType storyType;
 
     private String listUniqueId;
@@ -30,7 +27,12 @@ public class StoriesListNotify implements IStoriesListNotify {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         service.removeStoriesListNotify(this);
-        storiesListAdapter = null;
+        storiesListNotifyHandler = null;
+    }
+
+    @Override
+    public String getListUID() {
+        return listUniqueId;
     }
 
     @Override
@@ -39,9 +41,10 @@ public class StoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void bindListAdapter(IStoriesListAdapter storiesListAdapter) {
-        this.storiesListAdapter = storiesListAdapter;
+    public void bindList(IStoriesListNotifyHandler storiesListAdapter) {
+        this.storiesListNotifyHandler = storiesListAdapter;
     }
+
 
     private void checkHandler() {
         if (handler == null)
@@ -56,32 +59,19 @@ public class StoriesListNotify implements IStoriesListNotify {
     }
 
 
+    @Override
     public void changeStory(
             final int storyId,
-            final Story.StoryType storyType,
-            final String listID) {
+            final Story.StoryType storyType) {
         checkHandler();
         post(new Runnable() {
             @Override
             public void run() {
-                if (storiesListAdapter == null) return;
-                if (!listUniqueId.equals(listID)) return;
+                if (storiesListNotifyHandler == null) return;
                 if (StoriesListNotify.this.storyType != storyType) return;
-                storiesListAdapter.changeStoryEvent(storyId);
+                storiesListNotifyHandler.changeStory(storyId);
             }
         });
-    }
-
-    @Override
-    public void openStory(int storyId, Story.StoryType storyType, String listID) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (StoriesListNotify.this.storyType != storyType) return;
-        Story st = service.getDownloadManager().getStoryById(storyId, storyType);
-        if (st == null) return;
-        st.isOpened = true;
-        st.saveStoryOpened(storyType);
-
     }
 
     @Override
@@ -89,8 +79,8 @@ public class StoriesListNotify implements IStoriesListNotify {
         post(new Runnable() {
             @Override
             public void run() {
-                if (storiesListAdapter == null) return;
-                storiesListAdapter.closeReader();
+                if (storiesListNotifyHandler == null) return;
+                storiesListNotifyHandler.closeReader();
             }
         });
     }
@@ -100,8 +90,8 @@ public class StoriesListNotify implements IStoriesListNotify {
         post(new Runnable() {
             @Override
             public void run() {
-                if (storiesListAdapter == null) return;
-                storiesListAdapter.openReader();
+                if (storiesListNotifyHandler == null) return;
+                storiesListNotifyHandler.openReader();
             }
         });
     }

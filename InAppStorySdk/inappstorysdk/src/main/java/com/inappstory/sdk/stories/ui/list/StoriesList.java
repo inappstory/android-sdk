@@ -28,6 +28,10 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.list.adapters.BaseStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.adapters.CommonStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.adapters.FavoriteStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
 import com.inappstory.sdk.stories.uidomain.list.IStoriesListPresenter;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.StoriesListPresenter;
@@ -44,7 +48,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class StoriesList extends RecyclerView {
+public class StoriesList extends RecyclerView implements IStoriesListNotifyHandler {
     public StoriesList(@NonNull Context context) {
         super(context);
         init(null);
@@ -112,11 +116,6 @@ public class StoriesList extends RecyclerView {
     }
 
     private String feed = DEFAULT_FEED;
-
-    public String getUniqueID() {
-        return uniqueID;
-    }
-
     private String uniqueID;
 
     public void setCallback(ListCallback callback) {
@@ -234,9 +233,7 @@ public class StoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         checkAppearanceManager();
-        listNotify.bindListAdapter(
-                (IStoriesListAdapter) this.getAdapter()
-        );
+        listNotify.bindList(this);
         allListsNotify.bindListAdapter(
                 (IStoriesListAdapter) this.getAdapter(), appearanceManager.csCoverQuality()
         );
@@ -445,16 +442,23 @@ public class StoriesList extends RecyclerView {
 
     boolean readerIsOpened = false;
 
+    @Override
     public void openReader() {
         readerIsOpened = true;
     }
 
+
+    @Override
     public void closeReader() {
         readerIsOpened = false;
         sendPreviewIdsToStatistic();
         getVisibleItems();
     }
 
+    @Override
+    public void changeStory(int storyId) {
+
+    }
 
     public void refreshList() {
         adapter = null;
@@ -554,64 +558,18 @@ public class StoriesList extends RecyclerView {
         }
     }
 
-    public void clearAllFavorites() {
-        if (adapter == null) return;
-        if (isFavoriteList) {
-            adapter.hasFavItem = false;
-            adapter.getStoriesData().clear();
-        } else {
-            adapter.hasFavItem = false;
-        }
-        if (isFavoriteList)
-            adapter.notify(null);
-    }
-
-   /* public void favStory(
-            StoriesAdapterStoryData data,
-            boolean favStatus,
-            List<FavoriteImage> favImages,
-            boolean isEmpty
-    ) {
-        if (adapter == null) return;
-
-        checkAppearanceManager();
-        if (isFavoriteList) {
-            adapter.hasFavItem = false;
-            if (favStatus) {
-                if (!adapter.getStoriesData().contains(id))
-                    adapter.getStoriesData().add(0, id);
-            } else {
-                if (adapter.getStoriesData().contains(id))
-                    adapter.getStoriesData().remove(new Integer(id));
-            }
-            adapter.notifyDataSetChanged();
-        } else if (isEmpty && !favImages.isEmpty()) {
-            adapter.hasFavItem = (appearanceManager != null && appearanceManager.csHasFavorite());
-            // adapter.refresh();
-            adapter.notifyDataSetChanged();
-        } else if ((!isEmpty && favImages.isEmpty()) || (adapter.hasFavItem && favImages.isEmpty())) {
-            adapter.hasFavItem = false;
-            adapter.notifyDataSetChanged();
-            // adapter.refresh();
-        } else {
-            adapter.notifyItemChanged(getAdapter().getItemCount() - 1);
-        }
-        if (isFavoriteList)
-            adapter.notifyChanges();
-    }*/
-
-
-    LoadStoriesCallback lcallback;
-
     private final GetStoriesListIds getStoriesListIds = new GetStoriesListIds() {
         @Override
-        public void onSuccess(final List<Integer> storiesIds) {
+        public void onSuccess(final List<StoriesAdapterStoryData> stories) {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    setOrRefreshAdapter(storiesIds);
+                    setOrRefreshAdapter(stories);
                     if (callback != null)
-                        callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+                        callback.storiesLoaded(
+                                stories.size(),
+                                StringsUtils.getNonNull(getFeed())
+                        );
                 }
             });
         }
@@ -619,7 +577,9 @@ public class StoriesList extends RecyclerView {
         @Override
         public void onError() {
             if (callback != null)
-                callback.loadError(StringsUtils.getNonNull(getFeed()));
+                callback.loadError(
+                        StringsUtils.getNonNull(getFeed())
+                );
         }
     };
 
@@ -654,20 +614,31 @@ public class StoriesList extends RecyclerView {
     private void setOrRefreshAdapter(List<StoriesAdapterStoryData> storiesData) {
         setOverScrollMode(getAppearanceManager().csListOverscroll() ?
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
-        adapter = new BaseStoriesListAdapter(
-                getContext(),
-                uniqueID,
-                storiesData,
-                appearanceManager,
-                isFavoriteList,
-                appearanceManager.csHasFavorite() && !isFavoriteList,
-                hasUgc(),
-                commonItemClick,
-                deeplinkItemClick,
-                gameItemClick,
-                !isFavoriteList ? favoriteItemClick : null,
-                !isFavoriteList ? ugcItemClick : null
-        );
+        if (isFavoriteList) {
+            adapter = new FavoriteStoriesListAdapter(
+                    getContext(),
+                    uniqueID,
+                    storiesData,
+                    appearanceManager,
+                    commonItemClick,
+                    deeplinkItemClick,
+                    gameItemClick
+            );
+        } else {
+            adapter = new CommonStoriesListAdapter(
+                    getContext(),
+                    uniqueID,
+                    storiesData,
+                    appearanceManager,
+                    appearanceManager.csHasFavorite(),
+                    hasUgc(),
+                    commonItemClick,
+                    deeplinkItemClick,
+                    gameItemClick,
+                    favoriteItemClick,
+                    ugcItemClick
+            );
+        }
         if (callback != null)
             callback.storiesUpdated(storiesData.size(), feed);
         if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
@@ -694,21 +665,19 @@ public class StoriesList extends RecyclerView {
             setLayoutManager(layoutManager);
         }
         setAdapter(adapter);
-        post(
-                new Runnable() {
-                    @Override
-                    public void run() {
+        post(new Runnable() {
+                 @Override
+                 public void run() {
+                     Log.e("onVisibleAreaUpdated", scrolledItems.entrySet().toString());
+                     if (scrollCallback != null && !scrolledItems.isEmpty()) {
 
-                        Log.e("onVisibleAreaUpdated", scrolledItems.entrySet().toString());
-                        if (scrollCallback != null && !scrolledItems.isEmpty()) {
-
-                            scrollCallback.onVisibleAreaUpdated(
-                                    new ArrayList<>(scrolledItems.values())
-                            );
-                        }
-                        scrolledItems.clear();
-                    }
-                }
+                         scrollCallback.onVisibleAreaUpdated(
+                                 new ArrayList<>(scrolledItems.values())
+                         );
+                     }
+                     scrolledItems.clear();
+                 }
+             }
         );
     }
 }

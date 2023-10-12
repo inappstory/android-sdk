@@ -4,9 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 
 class UgcStoriesStoriesListNotify implements IStoriesListNotify {
@@ -28,7 +27,7 @@ class UgcStoriesStoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
-    public void bindListAdapter(IStoriesListAdapter storiesListAdapter) {
+    public void bindList(IStoriesListAdapter storiesListAdapter) {
 
     }
 

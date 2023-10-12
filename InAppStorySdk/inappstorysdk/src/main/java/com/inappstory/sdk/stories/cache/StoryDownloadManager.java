@@ -20,9 +20,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.usecases.StoryFileDownload;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -198,7 +196,7 @@ public class StoryDownloadManager {
         try {
             InAppStoryService inAppStoryService = InAppStoryService.getInstance();
             if (inAppStoryService != null) {
-                inAppStoryService.listStoriesIds.clear();
+                inAppStoryService.cachedListStories.clear();
                 inAppStoryService.getCommonCache().clearCache();
                 inAppStoryService.getFastCache().clearCache();
                 inAppStoryService.getInfiniteCache().clearCache();
@@ -551,11 +549,7 @@ public class StoryDownloadManager {
                 List<Story> stories = getStoriesListByType(Story.StoryType.UGC);
                 setLocalsOpened(stories, Story.StoryType.UGC);
                 if (callback != null) {
-                    List<Integer> ids = new ArrayList<>();
-                    for (Story story : response) {
-                        ids.add(story.id);
-                    }
-                    callback.storiesLoaded(ids);
+                    callback.storiesLoaded(response);
                 }
             }
 
@@ -659,23 +653,10 @@ public class StoryDownloadManager {
                                 for (Story story : response2) {
                                     favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
                                 }
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : response) {
-                                        ids.add(story.id);
-                                    }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
-                                }
-                            } else {
-                                if (callback != null) {
-                                    List<Integer> ids = new ArrayList<>();
-                                    for (Story story : response) {
-                                        ids.add(story.id);
-                                    }
-                                    callback.setFeedId(sFeedId);
-                                    callback.storiesLoaded(ids);
-                                }
+                            }
+                            if (callback != null) {
+                                callback.setFeedId(sFeedId);
+                                callback.storiesLoaded(response);
                             }
                         }
 
@@ -688,23 +669,15 @@ public class StoryDownloadManager {
                         public void errorDefault(String message) {
                             ProfilingManager.getInstance().setReady(loadFavUID);
                             if (callback != null) {
-                                List<Integer> ids = new ArrayList<>();
-                                for (Story story : response) {
-                                    ids.add(story.id);
-                                }
                                 callback.setFeedId(sFeedId);
-                                callback.storiesLoaded(ids);
+                                callback.storiesLoaded(response);
                             }
                         }
                     });
                 } else {
                     if (callback != null) {
-                        List<Integer> ids = new ArrayList<>();
-                        for (Story story : response) {
-                            ids.add(story.id);
-                        }
                         callback.setFeedId(sFeedId);
-                        callback.storiesLoaded(ids);
+                        callback.storiesLoaded(response);
                     }
                 }
             }
@@ -739,11 +712,7 @@ public class StoryDownloadManager {
                     }
                 }
                 if (callback != null) {
-                    List<Integer> ids = new ArrayList<>();
-                    for (Story story : response) {
-                        ids.add(story.id);
-                    }
-                    callback.storiesLoaded(ids);
+                    callback.storiesLoaded(response);
                 }
             }
 

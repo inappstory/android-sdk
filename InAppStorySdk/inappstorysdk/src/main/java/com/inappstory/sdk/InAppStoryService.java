@@ -97,7 +97,7 @@ public class InAppStoryService {
     }
 
 
-    public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
+    public HashMap<String, List<StoriesAdapterStoryData>> cachedListStories = new HashMap<>();
 
     public String getUserId() {
         if (userId == null && !InAppStoryManager.isNull())
@@ -610,7 +610,12 @@ public class InAppStoryService {
                         Story story = getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
                         if (story != null)
                             story.favorite = !initStatus;
-                        callback.onSuccess(!initStatus);
+                        if (!initStatus) {
+                            if (story != null)
+                                callback.addedToFavorite(story);
+                        } else {
+                            callback.removedFromFavorite();
+                        }
                     }
 
 
@@ -631,15 +636,28 @@ public class InAppStoryService {
 
     void removeStoryFromFavorite(final int storyId) {
         favoriteStoryWithInitStatus(storyId, true, new FavoriteCallback() {
+
             @Override
-            public void onSuccess(boolean favStatus) {
+            public void addedToFavorite(Story story) {
+                final List<FavoriteImage> favImages = getFavoriteImages();
+                boolean isEmpty = favImages.isEmpty();
+                for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
+                    sub.storyAddToFavoriteItemNotify(new StoriesAdapterStoryData(story));
+                    sub.storyFavoriteCellNotify(favImages, Story.StoryType.COMMON, true, isEmpty);
+                }
+
+            }
+
+            @Override
+            public void removedFromFavorite() {
                 if (ScreensManager.getInstance().currentScreen != null) {
                     ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
                 }
                 final List<FavoriteImage> favImages = getFavoriteImages();
                 boolean isEmpty = favImages.isEmpty();
                 for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                    sub.storyFavorite(storyId, Story.StoryType.COMMON, favStatus, isEmpty);
+                    sub.storyRemoveFromFavoriteItemNotify(storyId);
+                    sub.storyFavoriteCellNotify(favImages, Story.StoryType.COMMON, true, isEmpty);
                 }
             }
 
@@ -685,7 +703,8 @@ public class InAppStoryService {
                     public Type getType() {
                         return null;
                     }
-                });
+                }
+        );
     }
 
     public void favoriteStory(
@@ -706,42 +725,53 @@ public class InAppStoryService {
                     !story.favorite
             );
         }
-        favoriteStoryWithInitStatus(storyId, initStatus, new FavoriteCallback() {
-            @Override
-            public void onSuccess(boolean favStatus) {
-                final List<FavoriteImage> favImages = getFavoriteImages();
-                boolean isEmpty = favImages.isEmpty();
-                if (favStatus) {
-                    FavoriteImage favoriteImage = new FavoriteImage(
-                            storyId,
-                            story.getImage(),
-                            story.getBackgroundColor()
-                    );
-                    if (!favImages.contains(favoriteImage))
-                        favImages.add(0, favoriteImage);
-                } else {
-                    for (FavoriteImage favoriteImage : favImages) {
-                        if (favoriteImage.getId() == storyId) {
-                            favImages.remove(favoriteImage);
-                            break;
+        favoriteStoryWithInitStatus(
+                storyId,
+                initStatus,
+                new FavoriteCallback() {
+                    @Override
+                    public void addedToFavorite(Story story) {
+                        final List<FavoriteImage> favImages = getFavoriteImages();
+                        boolean isEmpty = favImages.isEmpty();
+                        FavoriteImage favoriteImage = new FavoriteImage(
+                                storyId,
+                                story.getImage(),
+                                story.getBackgroundColor()
+                        );
+                        if (!favImages.contains(favoriteImage))
+                            favImages.add(0, favoriteImage);
+                        if (callback != null)
+                            callback.addedToFavorite(story);
+                        for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
+                            sub.storyFavoriteCellNotify(favImages, storyType, true, isEmpty);
+                            sub.storyAddToFavoriteItemNotify(new StoriesAdapterStoryData(story));
                         }
                     }
+
+                    @Override
+                    public void removedFromFavorite() {
+                        final List<FavoriteImage> favImages = getFavoriteImages();
+                        boolean isEmpty = favImages.isEmpty();
+                        for (FavoriteImage favoriteImage : favImages) {
+                            if (favoriteImage.getId() == storyId) {
+                                favImages.remove(favoriteImage);
+                                break;
+                            }
+                        }
+                        if (callback != null)
+                            callback.removedFromFavorite();
+                        for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
+                            sub.storyFavoriteCellNotify(favImages, storyType, true, isEmpty);
+                            sub.storyRemoveFromFavoriteItemNotify(storyId);
+                        }
+                    }
+
+                    @Override
+                    public void onError() {
+                        callback.onError();
+                    }
                 }
-                if (callback != null)
-                    callback.onSuccess(favStatus);
-                for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                    sub.storyFavoriteCellNotify(favImages, storyType, favStatus, isEmpty);
-                    sub.storyFavoriteItemNotify(new StoriesAdapterStoryData(story), favStatus);
-                }
-            }
-
-            @Override
-            public void onError() {
-                callback.onError();
-            }
-        });
-
-
+        );
     }
 
     public void removeAllStoriesListsNotify(IAllStoriesListsNotify storiesListNotify) {

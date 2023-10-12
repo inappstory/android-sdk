@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.ui.list.adapters;
 
 import android.view.View;
 
@@ -8,12 +8,6 @@ import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import java.util.List;
 
 public interface IStoriesListAdapter {
-
-    void changeStoryEvent(int storyId);
-
-    void closeReader();
-
-    void openReader();
 
     void refreshList();
 

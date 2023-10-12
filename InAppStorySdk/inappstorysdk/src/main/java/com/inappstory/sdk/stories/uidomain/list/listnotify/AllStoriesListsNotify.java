@@ -8,7 +8,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.IFavoriteCellUpdate;
 import com.inappstory.sdk.stories.ui.list.IFavoriteListUpdate;
-import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 
 import java.util.List;
@@ -114,7 +114,7 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     }
 
     @Override
-    public void storyFavoriteItemNotify(
+    public void storyAddToFavoriteItemNotify(
             final StoriesAdapterStoryData data,
             final boolean favStatus
     ) {

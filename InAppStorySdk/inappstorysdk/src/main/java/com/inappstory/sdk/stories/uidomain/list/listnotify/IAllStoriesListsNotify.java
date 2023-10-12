@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.uidomain.list.listnotify;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 
 import java.util.List;
@@ -31,5 +31,7 @@ public interface IAllStoriesListsNotify {
             final boolean isEmpty
     );
 
-    void storyFavoriteItemNotify(final StoriesAdapterStoryData data, final boolean favStatus);
+    void storyAddToFavoriteItemNotify(final StoriesAdapterStoryData data);
+
+    void storyRemoveFromFavoriteItemNotify(final int storyId);
 }

@@ -1,9 +1,7 @@
-package com.inappstory.sdk.stories.ui.list;
+package com.inappstory.sdk.stories.ui.list.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,19 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListCommonItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListUGCEditorItem;
@@ -36,17 +23,15 @@ import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
-import com.inappstory.sdk.stories.uidomain.list.listnotify.IAllStoriesListsNotify;
-import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class BaseStoriesListAdapter
+public abstract class BaseStoriesListAdapter
         extends RecyclerView.Adapter<BaseStoriesListItem>
-        implements IStoriesListAdapter, ClickCallback {
+        implements IStoriesListAdapter,
+        ClickCallback {
     public List<StoriesAdapterStoryData> getStoriesData() {
         return storiesData;
     }
@@ -123,13 +108,6 @@ abstract class BaseStoriesListAdapter
                 ),
                 viewType
         );
-      /*  if (vType == -1) {
-            return new StoriesListFavoriteItem(v, manager);
-        } else if (vType == -2) {
-            return new StoriesListUgcEditorItem(v, manager);
-        } else {
-            return new StoriesListItem(v, manager, (vType % 5) == 2);
-        }*/
     }
 
 
@@ -294,29 +272,8 @@ abstract class BaseStoriesListAdapter
         return storiesData;
     }
 
-
-    @Override
-    public void changeStoryEvent(int storyId) {
-
-    }
-
-    @Override
-    public void closeReader() {
-
-    }
-
-    @Override
-    public void openReader() {
-
-    }
-
     @Override
     public void refreshList() {
-
-    }
-
-    @Override
-    public void clearAllFavorites() {
-
+        notifyDataSetChanged();
     }
 }

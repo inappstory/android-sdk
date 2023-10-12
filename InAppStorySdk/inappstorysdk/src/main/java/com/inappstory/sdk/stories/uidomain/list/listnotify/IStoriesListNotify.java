@@ -1,7 +1,8 @@
 package com.inappstory.sdk.stories.uidomain.list.listnotify;
 
 import com.inappstory.sdk.stories.api.models.Story.StoryType;
-import com.inappstory.sdk.stories.ui.list.IStoriesListAdapter;
+import com.inappstory.sdk.stories.ui.list.IStoriesListNotifyHandler;
+import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
 
 public interface IStoriesListNotify {
     void unsubscribe();
@@ -10,7 +11,7 @@ public interface IStoriesListNotify {
 
     void subscribe();
 
-    void bindListAdapter(IStoriesListAdapter storiesListAdapter);
+    void bindList(IStoriesListNotifyHandler storiesListNotifyHandler);
 
     void changeStory(
             final int storyId,

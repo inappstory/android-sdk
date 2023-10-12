@@ -19,8 +19,6 @@ import androidx.annotation.StringRes;
 import com.inappstory.sdk.lrudiskcache.CacheSize;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
@@ -38,7 +36,6 @@ import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
-import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
@@ -66,7 +63,6 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -873,7 +869,7 @@ public class InAppStoryManager {
         if (id == null) return;
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.remove(id);
+            inAppStoryService.cachedListStories.remove(id);
         }
     }
 
@@ -881,7 +877,7 @@ public class InAppStoryManager {
     public void clearCachedLists() {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
+            inAppStoryService.cachedListStories.clear();
         }
     }
 
@@ -953,7 +949,7 @@ public class InAppStoryManager {
         if (!isNull()) {
             InAppStoryService inAppStoryService = InAppStoryService.getInstance();
             if (inAppStoryService != null) {
-                inAppStoryService.listStoriesIds.clear();
+                inAppStoryService.cachedListStories.clear();
                 inAppStoryService.clearSubscribers();
                 inAppStoryService.getDownloadManager().cleanTasks();
                 inAppStoryService.logout();

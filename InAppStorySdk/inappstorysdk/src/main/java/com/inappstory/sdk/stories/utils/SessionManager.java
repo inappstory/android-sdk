@@ -235,7 +235,7 @@ public class SessionManager {
     private void clearCaches() {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
+            inAppStoryService.cachedListStories.clear();
             inAppStoryService.clearGames();
         }
     }

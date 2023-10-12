@@ -72,7 +72,6 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
 
-
     @Override
     public ShownStoriesListItem getShownStoriesListItemByStoryId(
             int storyId,
@@ -239,21 +238,22 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
     private List<Integer> getIdsFromStoriesAdapterDataList(List<StoriesAdapterStoryData> storyData) {
         List<Integer> ids = new ArrayList<>();
-        for (StoriesAdapterStoryData data: storyData) {
+        for (StoriesAdapterStoryData data : storyData) {
             ids.add(data.getId());
         }
         return ids;
     }
-    private List<Integer> getCachedStoriesPreviewIds(String cacheId) {
+
+    private List<StoriesAdapterStoryData> getCachedStoriesPreviews(String cacheId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;
-        return service.listStoriesIds.get(cacheId);
+        return service.cachedListStories.get(cacheId);
     }
 
-    public void cacheStoriesPreviewIds(String cacheId, List<Integer> ids) {
+    public void cacheStoriesPreviewIds(String cacheId, List<StoriesAdapterStoryData> storyDataList) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        service.listStoriesIds.put(cacheId, ids);
+        service.cachedListStories.put(cacheId, storyDataList);
     }
 
     @Override
@@ -314,12 +314,16 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     ) {
         return new LoadStoriesCallback() {
             @Override
-            public void storiesLoaded(List<Integer> storiesIds) {
+            public void storiesLoaded(List<Story> stories) {
+                List<StoriesAdapterStoryData> adapterStoryData = new ArrayList<>();
+                for (Story story: stories) {
+                    adapterStoryData.add(new StoriesAdapterStoryData(story));
+                }
                 if (cacheId != null && !cacheId.isEmpty()) {
-                    cacheStoriesPreviewIds(cacheId, storiesIds);
+                    cacheStoriesPreviewIds(cacheId, adapterStoryData);
                 }
                 ProfilingManager.getInstance().setReady(listUid);
-                getStoriesListIds.onSuccess(storiesIds);
+                getStoriesListIds.onSuccess(adapterStoryData);
             }
 
             @Override
@@ -336,11 +340,11 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
     private boolean tryToLoadCached(GetStoriesListIds getStoriesListIds) {
         if (cacheId == null || cacheId.isEmpty()) return false;
-        List<Integer> storiesIds = getCachedStoriesPreviewIds(cacheId);
-        if (storiesIds == null) {
+        List<StoriesAdapterStoryData> stories = getCachedStoriesPreviews(cacheId);
+        if (stories == null) {
             return false;
         } else {
-            getStoriesListIds.onSuccess(storiesIds);
+            getStoriesListIds.onSuccess(stories);
         }
         return true;
     }

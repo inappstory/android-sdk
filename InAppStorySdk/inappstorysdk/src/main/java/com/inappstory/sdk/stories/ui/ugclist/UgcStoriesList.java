@@ -21,6 +21,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
@@ -350,7 +351,7 @@ public class UgcStoriesList extends RecyclerView {
             return;
         }
         List<Integer> storiesIds = InAppStoryService.getInstance()
-                .listStoriesIds.get(cacheId);
+                .cachedListStories.get(cacheId);
         if (storiesIds == null) {
             loadStoriesInner(payload);
             return;
@@ -406,11 +407,11 @@ public class UgcStoriesList extends RecyclerView {
         if (InAppStoryService.isNotNull()) {
             lcallback = new LoadStoriesCallback() {
                 @Override
-                public void storiesLoaded(final List<Integer> storiesIds) {
+                public void storiesLoaded(final List<Story> stories) {
                     if (cacheId != null && !cacheId.isEmpty()) {
                         if (InAppStoryService.isNotNull()) {
                             InAppStoryService.getInstance()
-                                    .listStoriesIds.put(cacheId, storiesIds);
+                                    .cachedListStories.put(cacheId, storiesIds);
                         }
                     }
                     post(new Runnable() {
@@ -442,7 +443,7 @@ public class UgcStoriesList extends RecyclerView {
                     if (InAppStoryService.isNotNull()) {
                         lcallback = new LoadStoriesCallback() {
                             @Override
-                            public void storiesLoaded(final List<Integer> storiesIds) {
+                            public void storiesLoaded(final List<Story> storiesIds) {
                                 post(new Runnable() {
                                     @Override
                                     public void run() {
