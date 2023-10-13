@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.filedownloader.usecases.StoryFileDownload;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -72,7 +73,7 @@ public class StoryDownloadManager {
             final GetStoryByIdCallback storyByIdCallback,
             final String id,
             final Story.StoryType type,
-            final int readerSource
+            final SourceType readerSource
     ) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null || InAppStoryService.isNull()) {
@@ -109,7 +110,7 @@ public class StoryDownloadManager {
                                                     StringsUtils.getNonNull(response.tags),
                                                     response.getSlidesCount(),
                                                     null,
-                                                    CallbackManager.getInstance().getSourceFromInt(readerSource)
+                                                    readerSource
                                             )
                                     );
                                 }

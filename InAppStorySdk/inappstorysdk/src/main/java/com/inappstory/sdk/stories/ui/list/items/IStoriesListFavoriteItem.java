@@ -1,7 +1,11 @@
 package com.inappstory.sdk.stories.ui.list.items;
 
-public interface IStoriesListFavoriteItem {
-    void bindFavorite();
+import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 
-    void setImages();
+import java.util.List;
+
+public interface IStoriesListFavoriteItem {
+    void bindFavorite(List<FavoriteImage> favoriteImages);
+
+    void setImages(List<FavoriteImage> favoriteImages);
 }

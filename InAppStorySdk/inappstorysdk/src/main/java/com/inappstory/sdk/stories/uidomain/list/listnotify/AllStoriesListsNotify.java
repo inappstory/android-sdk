@@ -60,13 +60,17 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
 
     @Override
     public void openStory(int storyId, Story.StoryType storyType) {
+        if (AllStoriesListsNotify.this.storyType != storyType) return;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        if (AllStoriesListsNotify.this.storyType != storyType) return;
-        Story st = service.getDownloadManager().getStoryById(storyId, storyType);
-        if (st == null) return;
-        st.isOpened = true;
-        st.saveStoryOpened(storyType);
+        final Story st = service.openStory(storyId, storyType);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (storiesListAdapter == null) return;
+                storiesListAdapter.notify(new StoriesAdapterStoryData(st));
+            }
+        });
     }
 
     @Override
@@ -96,7 +100,6 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     public void storyFavoriteCellNotify(
             final List<FavoriteImage> favoriteImages,
             Story.StoryType storyType,
-            final boolean favStatus,
             final boolean isEmpty
     ) {
         post(new Runnable() {
@@ -114,19 +117,27 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     }
 
     @Override
-    public void storyAddToFavoriteItemNotify(
-            final StoriesAdapterStoryData data,
-            final boolean favStatus
-    ) {
+    public void storyAddToFavoriteItemNotify(final StoriesAdapterStoryData data) {
         post(new Runnable() {
             @Override
             public void run() {
                 if (storiesListAdapter == null) return;
                 if (storiesListAdapter instanceof IFavoriteListUpdate) {
-                    if (favStatus)
-                        ((IFavoriteListUpdate) storiesListAdapter).favorite(data);
-                    else
-                        ((IFavoriteListUpdate) storiesListAdapter).removeFromFavorite(data);
+                    ((IFavoriteListUpdate) storiesListAdapter).favorite(data);
+
+                }
+            }
+        });
+    }
+
+    @Override
+    public void storyRemoveFromFavoriteItemNotify(final int storyId) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (storiesListAdapter == null) return;
+                if (storiesListAdapter instanceof IFavoriteListUpdate) {
+                    ((IFavoriteListUpdate) storiesListAdapter).removeFromFavorite(storyId);
                 }
             }
         });

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.utils.FilePathsFromLinks;
@@ -37,30 +38,25 @@ public class StoriesListFavoriteItem
 
 
     @Override
-    public void bindFavorite() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            int count = Math.min(service.getFavoriteImages().size(), getFavoriteListItem.count());
-            final List<Integer> backgroundColors = new ArrayList<>();
-            for (int j = 0; j < count; j++) {
-                backgroundColors.add(service.getFavoriteImages().get(j).getBackgroundColor());
-            }
-            getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
+    public void bindFavorite(List<FavoriteImage> favoriteImages) {
+        int count = Math.min(favoriteImages.size(), getFavoriteListItem.count());
+        final List<Integer> backgroundColors = new ArrayList<>();
+        for (int j = 0; j < count; j++) {
+            backgroundColors.add(favoriteImages.get(j).getBackgroundColor());
         }
+        getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
     }
 
     @Override
-    public void setImages() {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
+    public void setImages(List<FavoriteImage> favoriteImages) {
         int maxCount = getFavoriteListItem.count();
         if (maxCount <= 0) maxCount = 4;
-        maxCount = Math.min(maxCount, service.getFavoriteImages().size());
+        maxCount = Math.min(maxCount, favoriteImages.size());
         List<String> limitedLinks = new ArrayList<>();
         final List<Integer> backgroundColors = new ArrayList<>();
         for (int i = 0; i < maxCount; i++) {
-            limitedLinks.add(service.getFavoriteImages().get(i).getUrl());
-            backgroundColors.add(service.getFavoriteImages().get(i).getBackgroundColor());
+            limitedLinks.add(favoriteImages.get(i).getUrl());
+            backgroundColors.add(favoriteImages.get(i).getBackgroundColor());
         }
         manager.getFilePathsFromLinks(limitedLinks, new FilePathsFromLinks() {
             @Override

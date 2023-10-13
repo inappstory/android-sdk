@@ -27,7 +27,7 @@ import java.util.List;
 
 public class ReaderManager {
 
-    private String listID;
+    public String listID;
     public Story.StoryType storyType;
 
     public SourceType source = SourceType.SINGLE;
@@ -166,7 +166,7 @@ public class ReaderManager {
                     slideIndex,
                     parentFragment.readerSettings,
                     storyType,
-                    ShowStory.SINGLE,
+                    SourceType.SINGLE,
                     ShowStory.ACTION_CUSTOM
             );
         }

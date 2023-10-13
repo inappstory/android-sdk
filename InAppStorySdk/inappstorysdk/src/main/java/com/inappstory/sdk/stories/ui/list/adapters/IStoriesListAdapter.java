@@ -13,6 +13,8 @@ public interface IStoriesListAdapter {
 
     void clearAllFavorites();
 
+    void updateStoriesData(List<StoriesAdapterStoryData> data);
+
     void notify(StoriesAdapterStoryData data);
 
     BaseStoriesListItem getViewHolderItem(View view, int viewType);

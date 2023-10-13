@@ -256,9 +256,7 @@ public class SessionManager {
 
             NetworkClient networkClient = InAppStoryManager.getNetworkClient();
             if (networkClient == null) {
-                InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-                if (changeUserId && inAppStoryService != null)
-                    inAppStoryService.getListNotifier().changeUserId();
+                return;
             }
             networkClient.enqueue(
                     networkClient.getApi().sessionClose(

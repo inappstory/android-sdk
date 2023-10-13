@@ -27,7 +27,6 @@ public interface IAllStoriesListsNotify {
     void storyFavoriteCellNotify(
             final List<FavoriteImage> favoriteImages,
             Story.StoryType storyType,
-            final boolean favStatus,
             final boolean isEmpty
     );
 

@@ -142,6 +142,8 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
 
     private void setBackgroundColors(List<Integer> backgroundColors) {
         switch (backgroundColors.size()) {
+            case 0:
+                break;
             case 1:
                 setBackground(image0, backgroundColors.get(0));
                 break;
@@ -160,7 +162,6 @@ public final class StoriesListDefaultFavoriteItem implements IGetFavoriteListIte
                 setBackground(image2, backgroundColors.get(2));
                 setBackground(image3, backgroundColors.get(3));
                 break;
-
         }
     }
 

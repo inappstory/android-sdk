@@ -598,7 +598,7 @@ public class StoriesViewManager {
         }
     }
 
-    public int source = 0;
+    public SourceType source = SourceType.SINGLE;
 
     public void storySendData(String data) {
         if (!InAppStoryService.getInstance().getSendStatistic()) return;

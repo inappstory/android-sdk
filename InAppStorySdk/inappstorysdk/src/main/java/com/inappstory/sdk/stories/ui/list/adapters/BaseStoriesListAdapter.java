@@ -14,6 +14,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.ui.list.IFavoriteCellUpdate;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListCommonItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListUGCEditorItem;
@@ -36,8 +37,15 @@ public abstract class BaseStoriesListAdapter
         return storiesData;
     }
 
-    private List<StoriesAdapterStoryData> storiesData = new ArrayList<>();
+    protected List<StoriesAdapterStoryData> storiesData = new ArrayList<>();
     private boolean isFavoriteList;
+
+    @Override
+    public void updateStoriesData(List<StoriesAdapterStoryData> data) {
+        this.storiesData.clear();
+        this.storiesData.addAll(data);
+        notifyDataSetChanged();
+    }
 
     private final IStoriesListCommonItemClick storiesListCommonItemClick;
     private final IStoriesListDeeplinkItemClick storiesListDeeplinkItemClick;
@@ -55,7 +63,6 @@ public abstract class BaseStoriesListAdapter
     public BaseStoriesListAdapter(
             Context context,
             String listID,
-            List<StoriesAdapterStoryData> storiesData,
             AppearanceManager manager,
             boolean isFavoriteList,
             boolean useFavorite,
@@ -68,7 +75,6 @@ public abstract class BaseStoriesListAdapter
     ) {
         this.context = context;
         this.listID = listID;
-        this.storiesData = storiesData;
         this.manager = manager;
         this.isFavoriteList = isFavoriteList;
         this.useFavorite = useFavorite;
@@ -79,11 +85,6 @@ public abstract class BaseStoriesListAdapter
         this.storiesListGameItemClick = storiesListGameItemClick;
         this.favoriteItemClick = favoriteItemClick;
         this.ugcItemClick = ugcItemClick;
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        hasFavItem = !isFavoriteList && service != null
-                && manager != null && manager.csHasFavorite()
-                && service.getFavoriteImages().size() > 0;
     }
 
     public int getIndexById(int id) {
@@ -115,9 +116,9 @@ public abstract class BaseStoriesListAdapter
     public void onBindViewHolder(@NonNull final BaseStoriesListItem holder, int position) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        if (holder instanceof IStoriesListFavoriteItem) {
-            ((IStoriesListFavoriteItem) holder).bindFavorite();
-            ((IStoriesListFavoriteItem) holder).setImages();
+        if (holder instanceof IStoriesListFavoriteItem && this instanceof IFavoriteCellUpdate) {
+            ((IStoriesListFavoriteItem) holder).bindFavorite(((IFavoriteCellUpdate) this).getFavoriteImages());
+            ((IStoriesListFavoriteItem) holder).setImages(((IFavoriteCellUpdate) this).getFavoriteImages());
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -252,6 +253,10 @@ public abstract class BaseStoriesListAdapter
 
     @Override
     public int getItemCount() {
+        boolean hasFavItem = false;
+        if (this instanceof IFavoriteCellUpdate) {
+            hasFavItem = ((IFavoriteCellUpdate) this).getFavoriteImages().size() > 0;
+        }
         return storiesData.size() + ((!storiesData.isEmpty() && hasFavItem) ? 1 : 0) +
                 ((!storiesData.isEmpty() && useUGC) ? 1 : 0);
     }
@@ -259,9 +264,21 @@ public abstract class BaseStoriesListAdapter
 
     @Override
     public void notify(StoriesAdapterStoryData data) {
-        if (data == null) notifyDataSetChanged();
+        if (data == null) {
+            notifyDataSetChanged();
+            return;
+        }
         int ugcShift = useUGC ? 1 : 0;
-        int index = storiesData.indexOf(data);
+        int index = -1;
+        for (int i = 0; i < storiesData.size(); i++) {
+            if (storiesData.get(i).getId() == data.getId()) {
+                index = i;
+                break;
+            }
+        }
+        if (index >= 0) {
+            storiesData.set(index, data);
+        }
         if (index >= 0) {
             notifyItemChanged(index + ugcShift);
         }

@@ -5,6 +5,7 @@ import android.view.View;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
+import com.inappstory.sdk.stories.ui.list.IFavoriteListUpdate;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.items.favorite.StoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.story.StoriesListItem;
@@ -16,12 +17,12 @@ import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItem
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
 import java.util.List;
+import java.util.ListIterator;
 
-public class FavoriteStoriesListAdapter extends BaseStoriesListAdapter {
+public final class FavoriteStoriesListAdapter extends BaseStoriesListAdapter implements IFavoriteListUpdate {
     public FavoriteStoriesListAdapter(
             Context context,
             String listID,
-            List<StoriesAdapterStoryData> storiesData,
             AppearanceManager manager,
             IStoriesListCommonItemClick storiesListCommonItemClick,
             IStoriesListDeeplinkItemClick storiesListDeeplinkItemClick,
@@ -30,7 +31,6 @@ public class FavoriteStoriesListAdapter extends BaseStoriesListAdapter {
         super(
                 context,
                 listID,
-                storiesData,
                 manager,
                 false,
                 false,
@@ -51,5 +51,21 @@ public class FavoriteStoriesListAdapter extends BaseStoriesListAdapter {
     @Override
     public BaseStoriesListItem getViewHolderItem(View view, int viewType) {
         return new StoriesListItem(view, manager, (viewType % 5) == 2);
+    }
+
+    @Override
+    public void favorite(StoriesAdapterStoryData data) {
+        if (storiesData.contains(data)) return;
+        storiesData.add(0, data);
+    }
+
+    @Override
+    public void removeFromFavorite(int storyId) {
+        ListIterator<StoriesAdapterStoryData> iterator = storiesData.listIterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getId() == storyId) {
+                iterator.remove();
+            }
+        }
     }
 }

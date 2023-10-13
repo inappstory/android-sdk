@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
@@ -31,7 +30,6 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.adapters.BaseStoriesListAdapter;
 import com.inappstory.sdk.stories.ui.list.adapters.CommonStoriesListAdapter;
 import com.inappstory.sdk.stories.ui.list.adapters.FavoriteStoriesListAdapter;
-import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
 import com.inappstory.sdk.stories.uidomain.list.IStoriesListPresenter;
 import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
 import com.inappstory.sdk.stories.uidomain.list.StoriesListPresenter;
@@ -40,7 +38,7 @@ import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplink
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.AllStoriesListsNotify;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.StoriesListNotify;
-import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
+import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesList;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -72,10 +70,6 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
             }
             return presenter;
         }
-    }
-
-    public void notifyByStoryId(int storyId) {
-
     }
 
     public static String DEFAULT_FEED = "default";
@@ -233,12 +227,66 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         checkAppearanceManager();
-        listNotify.bindList(this);
-        allListsNotify.bindListAdapter(
-                (IStoriesListAdapter) this.getAdapter(), appearanceManager.csCoverQuality()
-        );
         listNotify.subscribe();
         allListsNotify.subscribe();
+    }
+
+    private void createAdapter() {
+        if (isFavoriteList) {
+            adapter = new FavoriteStoriesListAdapter(
+                    getContext(),
+                    uniqueID,
+                    appearanceManager,
+                    commonItemClick,
+                    deeplinkItemClick,
+                    gameItemClick
+            );
+        } else {
+            adapter = new CommonStoriesListAdapter(
+                    getContext(),
+                    uniqueID,
+                    appearanceManager,
+                    appearanceManager.csHasFavorite(),
+                    hasUgc(),
+                    commonItemClick,
+                    deeplinkItemClick,
+                    gameItemClick,
+                    favoriteItemClick,
+                    ugcItemClick
+            );
+        }
+        setLayout();
+        setAdapter(adapter);
+        listNotify.bindList(this);
+        allListsNotify.bindListAdapter(adapter, appearanceManager.csCoverQuality());
+    }
+
+    private void setLayout() {
+        setOverScrollMode(getAppearanceManager().csListOverscroll() ?
+                OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
+        if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
+            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
+                @Override
+                public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
+                    int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
+                    int overScroll = dy - scrollRange;
+                    if (overScroll != 0 && scrollCallback != null) {
+                        //  scrollCallback.onOverscroll(0, overScroll);
+                    }
+                    return scrollRange;
+                }
+            });
+            addItemDecoration(new ItemDecoration() {
+                @Override
+                public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
+                    super.getItemOffsets(outRect, view, parent, state);
+                    outRect.bottom = appearanceManager.csListItemMargin(getContext());
+                    outRect.top = appearanceManager.csListItemMargin(getContext());
+                }
+            });
+        } else {
+            setLayoutManager(layoutManager);
+        }
     }
 
     private void init(AttributeSet attributeSet) {
@@ -450,6 +498,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
 
     @Override
     public void closeReader() {
+        lastOpenedStoryIndex = -1;
         readerIsOpened = false;
         sendPreviewIdsToStatistic();
         getVisibleItems();
@@ -514,7 +563,6 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         }
     }
 
-
     @Override
     public void changeStory(int storyId) {
         if (adapter == null || adapter.getStoriesData() == null) return;
@@ -527,23 +575,36 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         if (layoutManager == null) return;
         final int ind = adapter.getIndexById(storyId);
         if (ind < 0) return;
-        if (layoutManager instanceof LinearLayoutManager) {
-            ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind, 0);
-        }
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                int[] location = new int[2];
-                View v = layoutManager.findViewByPosition(ind);
-                if (v == null) return;
-                v.getLocationOnScreen(location);
-                int x = location[0];
-                int y = location[1];
-                ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2,
-                        y + v.getHeight() / 2);
+        lastOpenedStoryIndex = ind;
+        scrollToLastOpenedStory();
+    }
 
+    int lastOpenedStoryIndex = -1;
+
+    @Override
+    public void scrollToLastOpenedStory() {
+        if (lastOpenedStoryIndex != -1) {
+            if (layoutManager instanceof LinearLayoutManager) {
+                ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(
+                        lastOpenedStoryIndex,
+                        0
+                );
             }
-        }, 950);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    int[] location = new int[2];
+                    View v = layoutManager.findViewByPosition(lastOpenedStoryIndex);
+                    if (v == null) return;
+                    v.getLocationOnScreen(location);
+                    int x = location[0];
+                    int y = location[1];
+                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2,
+                            y + v.getHeight() / 2);
+
+                }
+            }, 950);
+        }
     }
 
     @Override
@@ -554,13 +615,13 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         }
     }
 
-    private final GetStoriesListIds getStoriesListIds = new GetStoriesListIds() {
+    private final GetStoriesList getStoriesList = new GetStoriesList() {
         @Override
         public void onSuccess(final List<StoriesAdapterStoryData> stories) {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    setOrRefreshAdapter(stories);
+                    updateStories(stories);
                     if (callback != null)
                         callback.storiesLoaded(
                                 stories.size(),
@@ -584,9 +645,9 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         checkAppearanceManager();
 
         if (isFavoriteList) {
-            getLazyPresenter().loadFavoriteList(getStoriesListIds);
+            getLazyPresenter().loadFavoriteList(getStoriesList);
         } else {
-            getLazyPresenter().loadFeed(getFeed(), appearanceManager.csHasFavorite(), getStoriesListIds);
+            getLazyPresenter().loadFeed(getFeed(), appearanceManager.csHasFavorite(), getStoriesList);
         }
     }
 
@@ -607,60 +668,16 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
 
     }
 
-    private void setOrRefreshAdapter(List<StoriesAdapterStoryData> storiesData) {
-        setOverScrollMode(getAppearanceManager().csListOverscroll() ?
-                OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
-        if (isFavoriteList) {
-            adapter = new FavoriteStoriesListAdapter(
-                    getContext(),
-                    uniqueID,
-                    storiesData,
-                    appearanceManager,
-                    commonItemClick,
-                    deeplinkItemClick,
-                    gameItemClick
-            );
-        } else {
-            adapter = new CommonStoriesListAdapter(
-                    getContext(),
-                    uniqueID,
-                    storiesData,
-                    appearanceManager,
-                    appearanceManager.csHasFavorite(),
-                    hasUgc(),
-                    commonItemClick,
-                    deeplinkItemClick,
-                    gameItemClick,
-                    favoriteItemClick,
-                    ugcItemClick
-            );
+    private void updateStories(List<StoriesAdapterStoryData> storiesData) {
+        if (adapter == null) {
+            setLayout();
+            createAdapter();
         }
         if (callback != null)
             callback.storiesUpdated(storiesData.size(), feed);
-        if (layoutManager == defaultLayoutManager && appearanceManager.csColumnCount() != null) {
-            setLayoutManager(new GridLayoutManager(getContext(), appearanceManager.csColumnCount()) {
-                @Override
-                public int scrollVerticallyBy(int dy, Recycler recycler, State state) {
-                    int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
-                    int overScroll = dy - scrollRange;
-                    if (overScroll != 0 && scrollCallback != null) {
-                        //  scrollCallback.onOverscroll(0, overScroll);
-                    }
-                    return scrollRange;
-                }
-            });
-            addItemDecoration(new ItemDecoration() {
-                @Override
-                public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull State state) {
-                    super.getItemOffsets(outRect, view, parent, state);
-                    outRect.bottom = appearanceManager.csListItemMargin(getContext());
-                    outRect.top = appearanceManager.csListItemMargin(getContext());
-                }
-            });
-        } else {
-            setLayoutManager(layoutManager);
+        if (getAdapter() != null) {
+            ((BaseStoriesListAdapter) getAdapter()).updateStoriesData(storiesData);
         }
-        setAdapter(adapter);
         post(new Runnable() {
                  @Override
                  public void run() {

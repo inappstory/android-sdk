@@ -28,7 +28,7 @@ import com.inappstory.sdk.stories.uidomain.list.listnotify.IAllStoriesListsNotif
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceSuccess;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceWithRetry;
-import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesListIds;
+import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesList;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -257,32 +257,49 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     @Override
-    public void loadFeed(String feed, boolean loadFavoriteCovers, GetStoriesListIds
-            getStoriesListIds) {
-        loadList(feed, false, loadFavoriteCovers, getStoriesListIds);
+    public void loadFeed(String feed, final boolean loadFavoriteCovers, final GetStoriesList
+            getStoriesList) {
+        loadList(feed, false, loadFavoriteCovers, new GetStoriesList() {
+            @Override
+            public void onSuccess(List<StoriesAdapterStoryData> stories) {
+                getStoriesList.onSuccess(stories);
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (loadFavoriteCovers && service != null)
+                    allStoriesListsNotify.storyFavoriteCellNotify(
+                            service.getFavoriteImages(),
+                            Story.StoryType.COMMON,
+                            true
+                    );
+            }
+
+            @Override
+            public void onError() {
+                getStoriesList.onError();
+            }
+        });
     }
 
     @Override
-    public void loadFavoriteList(final GetStoriesListIds getStoriesListIds) {
-        loadList(null, true, false, getStoriesListIds);
+    public void loadFavoriteList(final GetStoriesList getStoriesList) {
+        loadList(null, true, false, getStoriesList);
     }
 
     private void loadList(
             final String feed,
             final boolean isFavorite,
             final boolean hasFavorite,
-            final GetStoriesListIds getStoriesListIds
+            final GetStoriesList getStoriesList
     ) {
         InAppStoryManager.debugSDKCalls("StoriesList_loadStories", "");
         if (iasManagerAndUserIdExists()) {
-            if (!tryToLoadCached(getStoriesListIds)) {
+            if (!tryToLoadCached(getStoriesList)) {
                 final String listUid = ProfilingManager.getInstance().addTask("widget_init");
                 new CheckIASServiceWithRetry().check(new CheckIASServiceSuccess() {
                     @Override
                     public void onSuccess(@NonNull InAppStoryService service) {
                         service.getDownloadManager().loadStories(
                                 feed,
-                                generateLoadStoriesCallback(getStoriesListIds, listUid),
+                                generateLoadStoriesCallback(getStoriesList, listUid),
                                 isFavorite,
                                 hasFavorite
                         );
@@ -309,21 +326,21 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     private LoadStoriesCallback generateLoadStoriesCallback(
-            final GetStoriesListIds getStoriesListIds,
+            final GetStoriesList getStoriesList,
             final String listUid
     ) {
         return new LoadStoriesCallback() {
             @Override
             public void storiesLoaded(List<Story> stories) {
                 List<StoriesAdapterStoryData> adapterStoryData = new ArrayList<>();
-                for (Story story: stories) {
+                for (Story story : stories) {
                     adapterStoryData.add(new StoriesAdapterStoryData(story));
                 }
                 if (cacheId != null && !cacheId.isEmpty()) {
                     cacheStoriesPreviewIds(cacheId, adapterStoryData);
                 }
                 ProfilingManager.getInstance().setReady(listUid);
-                getStoriesListIds.onSuccess(adapterStoryData);
+                getStoriesList.onSuccess(adapterStoryData);
             }
 
             @Override
@@ -333,18 +350,18 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
             @Override
             public void onError() {
-                getStoriesListIds.onError();
+                getStoriesList.onError();
             }
         };
     }
 
-    private boolean tryToLoadCached(GetStoriesListIds getStoriesListIds) {
+    private boolean tryToLoadCached(GetStoriesList getStoriesList) {
         if (cacheId == null || cacheId.isEmpty()) return false;
         List<StoriesAdapterStoryData> stories = getCachedStoriesPreviews(cacheId);
         if (stories == null) {
             return false;
         } else {
-            getStoriesListIds.onSuccess(stories);
+            getStoriesList.onSuccess(stories);
         }
         return true;
     }

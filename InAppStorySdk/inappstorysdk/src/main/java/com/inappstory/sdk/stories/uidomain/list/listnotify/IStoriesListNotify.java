@@ -18,6 +18,8 @@ public interface IStoriesListNotify {
             StoryType storyType
     );
 
+    void scrollToLastOpenedStory();
+
     void closeReader();
 
     void openReader();

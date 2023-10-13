@@ -450,11 +450,11 @@ public class ReaderPageManager {
 
     public SourceType getSourceType() {
         if (parentManager != null)
-            return CallbackManager.getInstance().getSourceFromInt(parentManager.source);
-        return SourceType.LIST;
+            return parentManager.source;
+        return SourceType.SINGLE;
     }
 
-    ReaderManager parentManager;
+    public ReaderManager parentManager;
 
     public void showShareView(InnerShareData shareData) {
         if (parentManager != null) {

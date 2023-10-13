@@ -214,6 +214,7 @@ public class ButtonsPanelManager {
         inAppStoryService.favoriteStory(
                 storyId,
                 parentManager.getStoryType(),
+                parentManager.parentManager.listID,
                 slideData,
                 new FavoriteCallback() {
                     @Override

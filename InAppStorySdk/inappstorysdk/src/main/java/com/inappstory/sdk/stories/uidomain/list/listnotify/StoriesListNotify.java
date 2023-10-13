@@ -75,6 +75,18 @@ public class StoriesListNotify implements IStoriesListNotify {
     }
 
     @Override
+    public void scrollToLastOpenedStory() {
+        checkHandler();
+        post(new Runnable() {
+            @Override
+            public void run() {
+                if (storiesListNotifyHandler == null) return;
+                storiesListNotifyHandler.scrollToLastOpenedStory();
+            }
+        });
+    }
+
+    @Override
     public void closeReader() {
         post(new Runnable() {
             @Override
