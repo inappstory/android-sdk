@@ -28,9 +28,9 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -42,14 +42,13 @@ import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShowSlide;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -189,7 +188,8 @@ public class StoriesViewManager {
             if (showRefresh != null) {
                 try {
                     showRefreshHandler.removeCallbacks(showRefresh);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
             showRefresh = null;
         }
@@ -200,7 +200,8 @@ public class StoriesViewManager {
             if (showLoader != null) {
                 try {
                     showRefreshHandler.removeCallbacks(showLoader);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
             showLoader = null;
         }
@@ -495,18 +496,15 @@ public class StoriesViewManager {
     private boolean storyIsLoaded = false;
 
     public void storyLoaded(int slideIndex) {
-        if (InAppStoryService.isNull()) return;
-
-        Log.e("currentSlideIsLoaded", storyId + " 0 " + slideIndex);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         clearShowLoader();
         clearShowRefresh();
         storyIsLoaded = true;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
-        Log.e("currentSlideIsLoaded", storyId + " " + slideIndex + " " + story.lastIndex + " " + InAppStoryService.getInstance().getCurrentId());
-
+        Story story = service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
             stopStory();
-        } else if (InAppStoryService.getInstance().getCurrentId() != storyId) {
+        } else if (service.getCurrentId() != storyId) {
             stopStory();
             setLatestVisibleIndex(slideIndex);
         } else {
@@ -532,23 +530,25 @@ public class StoriesViewManager {
     }
 
     public void sendShowSlideEvents() {
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Story story = service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
-            ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
-            if (showSlideCallback != null) {
-                showSlideCallback.showSlide(new SlideData(
-                                new StoryData(
-                                        story.id,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount(),
-                                        pageManager != null ? pageManager.getFeedId() : null,
-                                        pageManager != null ? pageManager.getSourceType() : SourceType.LIST
-                                ),
-                                index
-                        ),
-                        story.getSlideEventPayload(index));
-            }
+            IUseCaseCallback useCaseShowSlideCallback = new UseCaseCallbackShowSlide(
+                    new SlideData(
+                            new StoryData(
+                                    story.id,
+                                    StringsUtils.getNonNull(story.statTitle),
+                                    StringsUtils.getNonNull(story.tags),
+                                    story.getSlidesCount(),
+                                    pageManager != null ? pageManager.getFeedId() : null,
+                                    pageManager != null ? pageManager.getSourceType() : SourceType.LIST
+                            ),
+                            index,
+                            story.getSlideEventPayload(index)
+                    )
+            );
+            useCaseShowSlideCallback.invoke();
         }
     }
 

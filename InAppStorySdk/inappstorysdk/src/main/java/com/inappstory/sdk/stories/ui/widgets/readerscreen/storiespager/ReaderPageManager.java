@@ -11,10 +11,10 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -24,6 +24,8 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPa
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallbackWithContext;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCallToAction;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -169,32 +171,22 @@ public class ReaderPageManager {
                     }
                     if (getStoryType() == Story.StoryType.COMMON)
                         OldStatisticManager.getInstance().addLinkOpenStatistic();
-                    if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-                        if (story != null) {
-                            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                                    host != null ? host.getContext() : null,
-                                    new SlideData(
-                                            new StoryData(
-                                                    story.id,
-                                                    StringsUtils.getNonNull(story.statTitle),
-                                                    StringsUtils.getNonNull(story.tags),
-                                                    story.getSlidesCount(),
-                                                    getFeedId(),
-                                                    getSourceType()
-                                            ),
-                                            story.lastIndex
+                    IUseCaseCallbackWithContext callbackWithContext = new UseCaseCallbackCallToAction(
+                            object.getLink().getTarget(),
+                            new SlideData(
+                                    new StoryData(
+                                            story.id,
+                                            StringsUtils.getNonNull(story.statTitle),
+                                            StringsUtils.getNonNull(story.tags),
+                                            story.getSlidesCount(),
+                                            getFeedId(),
+                                            getSourceType()
                                     ),
-                                    object.getLink().getTarget(),
-                                    action
-                            );
-                        }
-                    } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-                        CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
-                                object.getLink().getTarget()
-                        );
-                    } else {
-                        parentManager.defaultTapOnLink(object.getLink().getTarget());
-                    }
+                                    story.lastIndex
+                            ),
+                            action
+                    );
+                    callbackWithContext.invoke(host != null ? host.getContext() : null);
                     break;
                 case "json":
                     if (object.getType() != null && !object.getType().isEmpty()) {

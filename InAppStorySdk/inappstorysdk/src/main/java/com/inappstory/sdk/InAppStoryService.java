@@ -38,7 +38,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -507,7 +507,7 @@ public class InAppStoryService {
 
         public void changeUserId() {
             for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                sub.refreshList();
+                sub.changeUserId();
             }
         }
     }

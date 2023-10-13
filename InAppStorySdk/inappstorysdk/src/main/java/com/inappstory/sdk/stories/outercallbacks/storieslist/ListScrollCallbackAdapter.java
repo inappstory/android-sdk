@@ -4,7 +4,7 @@ import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 
 import java.util.List;
 
-public abstract class ListScrollCallbackAdapter implements ListScrollCallback {
+public class ListScrollCallbackAdapter implements ListScrollCallback {
 
     /*   @Override
        public void userInteractionStart() {

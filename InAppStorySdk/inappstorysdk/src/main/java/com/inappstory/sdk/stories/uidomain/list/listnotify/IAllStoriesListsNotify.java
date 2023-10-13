@@ -13,14 +13,14 @@ public interface IAllStoriesListsNotify {
 
     void subscribe();
 
-    void bindListAdapter(IStoriesListAdapter storiesListAdapter, int coverQuality);
+    void bindListAdapter(IStoriesListAdapter storiesListAdapter);
 
     void openStory(
             final int storyId,
             StoryType storyType
     );
 
-    void refreshList();
+    void changeUserId();
 
     void clearAllFavorites();
 

@@ -10,7 +10,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -35,10 +34,12 @@ import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -351,7 +352,7 @@ public class StoriesFragment extends Fragment
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(currentIds.get(position), readerManager.storyType);
             if (story == null || story.disableClose) return;
-            InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
+            InAppStoryManager.closeStoryReader(CloseReader.SWIPE, StatisticManager.SWIPE);
         }
     }
 
@@ -437,7 +438,7 @@ public class StoriesFragment extends Fragment
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
-                    InAppStoryManager.closeStoryReader(CloseStory.AUTO);
+                    InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
                 }
             }
         });

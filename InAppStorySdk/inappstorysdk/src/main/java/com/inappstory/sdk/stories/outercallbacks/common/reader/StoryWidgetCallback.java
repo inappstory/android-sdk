@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.outercallbacks.common.reader;
 
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+
 import java.util.Map;
 
 public interface StoryWidgetCallback {

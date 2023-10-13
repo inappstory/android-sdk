@@ -5,14 +5,14 @@ import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCal
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryAction;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.ShowStoryAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;

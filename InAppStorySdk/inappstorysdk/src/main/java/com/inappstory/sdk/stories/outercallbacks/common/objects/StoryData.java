@@ -1,8 +1,7 @@
-package com.inappstory.sdk.stories.outercallbacks.common.reader;
+package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 
 public class StoryData {
     public int id;

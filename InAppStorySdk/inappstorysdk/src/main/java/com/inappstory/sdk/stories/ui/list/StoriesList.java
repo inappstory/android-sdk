@@ -23,7 +23,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -37,6 +37,7 @@ import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonIt
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.AllStoriesListsNotify;
+import com.inappstory.sdk.stories.uidomain.list.listnotify.ChangeUserIdListNotify;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.StoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesList;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
@@ -258,7 +259,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         setLayout();
         setAdapter(adapter);
         listNotify.bindList(this);
-        allListsNotify.bindListAdapter(adapter, appearanceManager.csCoverQuality());
+        allListsNotify.bindListAdapter(adapter);
     }
 
     private void setLayout() {
@@ -295,7 +296,15 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
                 uniqueID,
                 Story.StoryType.COMMON
         );
-        allListsNotify = new AllStoriesListsNotify(Story.StoryType.COMMON);
+        allListsNotify = new AllStoriesListsNotify(
+                Story.StoryType.COMMON,
+                new ChangeUserIdListNotify() {
+                    @Override
+                    public void onChange() {
+                        loadStories();
+                    }
+                }
+        );
         if (attributeSet != null) {
             TypedArray typedArray = getContext().obtainStyledAttributes(attributeSet, R.styleable.StoriesList);
             isFavoriteList = typedArray.getBoolean(R.styleable.StoriesList_cs_listIsFavorite, false);
@@ -505,7 +514,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
     }
 
     public void refreshList() {
-        adapter = null;
+        //adapter = null;
         loadStories();
     }
 
@@ -661,11 +670,9 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         if (this.appearanceManager == null) {
             this.appearanceManager = AppearanceManager.getCommonInstance();
         }
-
         if (this.appearanceManager == null) {
             this.appearanceManager = new AppearanceManager();
         }
-
     }
 
     private void updateStories(List<StoriesAdapterStoryData> storiesData) {

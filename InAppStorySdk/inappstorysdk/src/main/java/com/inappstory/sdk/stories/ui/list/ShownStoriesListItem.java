@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.ui.list;
 
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 
 public class ShownStoriesListItem {
 

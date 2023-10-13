@@ -41,9 +41,10 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -200,7 +201,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void onBackPressed() {
-        closeStoryReader(-1);
+        closeStoryReader(CloseReader.CUSTOM, StatisticManager.BACK);
     }
 
     @Override
@@ -344,7 +345,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     }
 
     @Override
-    public void closeStoryReader(int action) {
+    public void closeStoryReader(CloseReader action, String cause) {
         if (InAppStoryService.isNotNull()) {
 
             InAppStoryService.getInstance().getListNotifier().closeReader(
@@ -365,23 +366,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                                 ),
                                 story.lastIndex
                         ),
-                        CallbackManager.getInstance().getCloseTypeFromInt(action)
+                        action
                 );
-            }
-            String cause = StatisticManager.AUTO;
-            switch (action) {
-                case -1:
-                    cause = StatisticManager.BACK;
-                    break;
-                case CloseStory.CLICK:
-                    cause = StatisticManager.CLICK;
-                    break;
-                case CloseStory.CUSTOM:
-                    cause = StatisticManager.CUSTOM;
-                    break;
-                case CloseStory.SWIPE:
-                    cause = StatisticManager.SWIPE;
-                    break;
             }
             StatisticManager.getInstance().sendCloseStory(story.id, cause,
                     story.lastIndex,

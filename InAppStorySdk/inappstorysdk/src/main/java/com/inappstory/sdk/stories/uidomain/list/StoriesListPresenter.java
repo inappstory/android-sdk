@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.uidomain.list;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
@@ -14,10 +12,10 @@ import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -29,6 +27,8 @@ import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceSuccess;
 import com.inappstory.sdk.stories.uidomain.list.utils.CheckIASServiceWithRetry;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesList;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallbackWithContext;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCallToAction;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -146,10 +146,10 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
     @Override
     public void gameItemClick(StoriesAdapterStoryData data, int index, Context context) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         notifyListCallback(data, index);
         allStoriesListsNotify.openStory(data.getId(), storyType);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         service.openGameReaderWithGC(
                 context,
                 new GameStoryData(
@@ -178,41 +178,22 @@ public class StoriesListPresenter implements IStoriesListPresenter {
         allStoriesListsNotify.openStory(data.getId(), storyType);
         StatisticManager.getInstance().sendDeeplinkStory(data.getId(), data.getDeeplink(), feed);
         OldStatisticManager.getInstance().addDeeplinkClickStatistic(data.getId());
-        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                    context,
-                    new SlideData(
-                            new StoryData(
-                                    data.getId(),
-                                    StringsUtils.getNonNull(data.getStatTitle()),
-                                    StringsUtils.getNonNull(data.getTags()),
-                                    data.getSlidesCount(),
-                                    feed,
-                                    sourceType
-                            ),
-                            0
-                    ),
-                    data.getDeeplink(),
-                    ClickAction.DEEPLINK
-            );
-        } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-            CallbackManager.getInstance().getUrlClickCallback().onUrlClick(data.getDeeplink());
-        } else {
-            if (!InAppStoryService.isConnected()) {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().noConnection();
-                }
-                return;
-            }
-            try {
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(data.getDeeplink()));
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(i);
-            } catch (Exception ignored) {
-                InAppStoryService.createExceptionLog(ignored);
-            }
-        }
+        IUseCaseCallbackWithContext callbackWithContext = new UseCaseCallbackCallToAction(
+                data.getDeeplink(),
+                new SlideData(
+                        new StoryData(
+                                data.getId(),
+                                StringsUtils.getNonNull(data.getStatTitle()),
+                                StringsUtils.getNonNull(data.getTags()),
+                                data.getSlidesCount(),
+                                feed,
+                                sourceType
+                        ),
+                        0
+                ),
+                ClickAction.DEEPLINK
+        );
+        callbackWithContext.invoke(context);
     }
 
     @Override

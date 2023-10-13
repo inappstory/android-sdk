@@ -42,6 +42,7 @@ import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -50,7 +51,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCall
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -58,6 +59,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -231,7 +233,7 @@ public class InAppStoryManager {
      * use to force close story reader
      */
     public static void closeStoryReader() {
-        closeStoryReader(CloseStory.CUSTOM);
+        closeStoryReader(CloseReader.CUSTOM, StatisticManager.CUSTOM);
     }
 
     @Deprecated
@@ -256,12 +258,12 @@ public class InAppStoryManager {
     /**
      * use to force close story reader
      */
-    public static void closeStoryReader(final int action) {
+    public static void closeStoryReader(final CloseReader action, final String cause) {
 
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                ScreensManager.getInstance().closeStoryReader(action);
+                ScreensManager.getInstance().closeStoryReader(action, cause);
                 ScreensManager.getInstance().hideGoods();
                 ScreensManager.getInstance().closeGameReader();
                 ScreensManager.getInstance().closeUGCEditor();
@@ -841,7 +843,7 @@ public class InAppStoryManager {
             inAppStoryService.getFavoriteImages().clear();
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
-        closeStoryReader(CloseStory.AUTO);
+        closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
         SessionManager.getInstance().closeSession(sendStatistic, true);
         OldStatisticManager.getInstance().eventCount = 0;
         inAppStoryService.getDownloadManager().cleanTasks(false);
@@ -1029,7 +1031,7 @@ public class InAppStoryManager {
 
         if (InAppStoryService.isNull()) return;
         if (ScreensManager.created == -1) {
-            InAppStoryManager.closeStoryReader(CloseStory.AUTO);
+            InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -1305,7 +1307,7 @@ public class InAppStoryManager {
                             service.getDownloadManager().addCompletedStoryTask(story,
                                     Story.StoryType.COMMON);
                             if (ScreensManager.created == -1) {
-                                InAppStoryManager.closeStoryReader(CloseStory.AUTO);
+                                InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
                                 localHandler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {

@@ -15,15 +15,18 @@ import java.util.List;
 
 public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     private IStoriesListAdapter storiesListAdapter;
-    private int coverQuality;
 
     private Story.StoryType storyType;
 
+    private ChangeUserIdListNotify changeUserIdListNotify;
+
 
     public AllStoriesListsNotify(
-            Story.StoryType storyType
+            Story.StoryType storyType,
+            ChangeUserIdListNotify changeUserIdListNotify
     ) {
         this.storyType = storyType;
+        this.changeUserIdListNotify = changeUserIdListNotify;
     }
 
 
@@ -40,9 +43,8 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     }
 
     @Override
-    public void bindListAdapter(IStoriesListAdapter storiesListAdapter, int coverQuality) {
+    public void bindListAdapter(IStoriesListAdapter storiesListAdapter) {
         this.storiesListAdapter = storiesListAdapter;
-        this.coverQuality = coverQuality;
     }
 
     private void checkHandler() {
@@ -74,12 +76,12 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     }
 
     @Override
-    public void refreshList() {
+    public void changeUserId() {
         post(new Runnable() {
             @Override
             public void run() {
-                if (storiesListAdapter == null) return;
-                storiesListAdapter.refreshList();
+                if (changeUserIdListNotify == null) return;
+                changeUserIdListNotify.onChange();
             }
         });
     }

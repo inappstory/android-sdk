@@ -1,8 +1,7 @@
 package com.inappstory.sdk.game.reader;
 
 
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 
 public class GameStoryData {
     public SlideData slideData;

@@ -60,7 +60,8 @@ import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -78,7 +79,6 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdap
 import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -157,9 +157,9 @@ public class ScreensManager {
     public BaseReaderScreen currentScreen;
     public OverlapFragmentObserver overlapFragmentObserver;
 
-    public void closeStoryReader(int action) {
+    public void closeStoryReader(CloseReader action, String cause) {
         if (currentScreen != null)
-            currentScreen.closeStoryReader(action);
+            currentScreen.closeStoryReader(action, cause);
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
@@ -325,7 +325,7 @@ public class ScreensManager {
         closeGameReader();
         closeUGCEditor();
         if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
-            closeStoryReader(CloseStory.CUSTOM);
+            closeStoryReader(CloseReader.CUSTOM, StatisticManager.CUSTOM);
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
             bundle.putInt("index", index);

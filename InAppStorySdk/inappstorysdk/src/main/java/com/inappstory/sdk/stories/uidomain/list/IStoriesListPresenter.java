@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.uidomain.list;
 import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.utils.GetStoriesList;

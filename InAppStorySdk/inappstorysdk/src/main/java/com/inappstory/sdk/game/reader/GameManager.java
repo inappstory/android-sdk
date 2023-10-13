@@ -23,11 +23,13 @@ import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallbackWithContext;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCallToAction;
 import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
@@ -222,20 +224,12 @@ public class GameManager {
             data = dataModel.slideData;
         }
 
-        if (CallbackManager.getInstance().getCallToActionCallback() != null) {
-            CallbackManager.getInstance().getCallToActionCallback().callToAction(
-                    context,
-                    data,
-                    StringsUtils.getNonNull(link),
-                    ClickAction.GAME
-            );
-        } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
-            CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
-                    StringsUtils.getNonNull(link)
-            );
-        } else {
-            host.tapOnLinkDefault(StringsUtils.getNonNull(link));
-        }
+        IUseCaseCallbackWithContext callbackWithContext = new UseCaseCallbackCallToAction(
+                StringsUtils.getNonNull(link),
+                data,
+                ClickAction.GAME
+        );
+        callbackWithContext.invoke(context);
     }
 
     int pausePlaybackOtherApp() {

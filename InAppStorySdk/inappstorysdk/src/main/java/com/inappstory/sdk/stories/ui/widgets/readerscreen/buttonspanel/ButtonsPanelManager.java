@@ -12,12 +12,15 @@ import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackLikeDislikeStory;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShareClick;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
@@ -71,83 +74,36 @@ public class ButtonsPanelManager {
         Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
         if (story == null) return;
         final int val;
+        SlideData slideData = new SlideData(
+                new StoryData(
+                        story.id,
+                        StringsUtils.getNonNull(story.statTitle),
+                        StringsUtils.getNonNull(story.tags),
+                        story.getSlidesCount(),
+                        getParentManager().getFeedId(),
+                        getParentManager().getSourceType()
+
+                ),
+                story.lastIndex
+        );
+        IUseCaseCallback likeDislikeUseCaseCallback = new UseCaseCallbackLikeDislikeStory(
+                slideData,
+                like,
+                like ? story.liked() : story.disliked()
+        );
+        likeDislikeUseCaseCallback.invoke();
         if (like) {
             if (story.liked()) {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getParentManager().getFeedId(),
-                                            getParentManager().getSourceType()
-
-                                    ),
-                                    story.lastIndex
-                            ),
-                            false
-                    );
-                }
                 val = 0;
             } else {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().likeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getParentManager().getFeedId(),
-                                            getParentManager().getSourceType()
-                                    ),
-                                    story.lastIndex
-                            ),
-                            true
-                    );
-                }
                 StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex,
                         parentManager != null ? parentManager.getFeedId() : null);
                 val = 1;
             }
         } else {
             if (story.disliked()) {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getParentManager().getFeedId(),
-                                            getParentManager().getSourceType()
-                                    ),
-                                    story.lastIndex
-                            ),
-                            false
-                    );
-                }
                 val = 0;
             } else {
-                if (CallbackManager.getInstance().getLikeDislikeStoryCallback() != null) {
-                    CallbackManager.getInstance().getLikeDislikeStoryCallback().dislikeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getParentManager().getFeedId(),
-                                            getParentManager().getSourceType()
-                                    ),
-                                    story.lastIndex
-                            ),
-                            true
-                    );
-                }
                 StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex,
                         parentManager != null ? parentManager.getFeedId() : null);
                 val = -1;
@@ -266,22 +222,20 @@ public class ButtonsPanelManager {
         StatisticManager.getInstance().sendShareStory(story.id, slideIndex,
                 story.shareType(slideIndex),
                 parentManager != null ? parentManager.getFeedId() : null);
-
-        if (CallbackManager.getInstance().getClickOnShareStoryCallback() != null) {
-            CallbackManager.getInstance().getClickOnShareStoryCallback().shareClick(
-                    new SlideData(
-                            new StoryData(
-                                    story.id,
-                                    StringsUtils.getNonNull(story.statTitle),
-                                    StringsUtils.getNonNull(story.tags),
-                                    story.getSlidesCount(),
-                                    getParentManager().getFeedId(),
-                                    getParentManager().getSourceType()
-                            ),
-                            story.lastIndex
-                    )
-            );
-        }
+        IUseCaseCallback shareClick = new UseCaseCallbackShareClick(
+                new SlideData(
+                        new StoryData(
+                                story.id,
+                                StringsUtils.getNonNull(story.statTitle),
+                                StringsUtils.getNonNull(story.tags),
+                                story.getSlidesCount(),
+                                getParentManager().getFeedId(),
+                                getParentManager().getSourceType()
+                        ),
+                        story.lastIndex
+                )
+        );
+        shareClick.invoke();
         if (story.isScreenshotShare(slideIndex)) {
             parentManager.screenshotShare();
             return;

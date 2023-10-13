@@ -34,9 +34,9 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -135,7 +135,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     HashSet<String> observerIDs = new HashSet<>();
 
     @Override
-    public void closeStoryReader(int action) {
+    public void closeStoryReader(CloseReader action, String cause) {
         InAppStoryService.getInstance().getListNotifier().closeReader(getArguments().getString("listID"));
         dismissAllowingStateLoss();
     }

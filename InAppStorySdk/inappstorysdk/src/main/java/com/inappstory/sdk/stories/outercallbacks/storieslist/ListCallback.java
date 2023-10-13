@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.storieslist;
 
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 
 public interface ListCallback {
     void storiesLoaded(int size, String feed);
