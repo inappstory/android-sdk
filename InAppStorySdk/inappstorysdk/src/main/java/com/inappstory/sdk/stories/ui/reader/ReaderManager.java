@@ -19,6 +19,8 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShowStory;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -60,18 +62,18 @@ public class ReaderManager {
         lastSentId = storyId;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, storyType);
         if (story != null) {
-            if (CallbackManager.getInstance().getShowStoryCallback() != null) {
-                CallbackManager.getInstance().getShowStoryCallback().showStory(
-                        new StoryData(
-                                story.id,
-                                StringsUtils.getNonNull(story.statTitle),
-                                StringsUtils.getNonNull(story.tags),
-                                story.getSlidesCount(),
-                                feedId,
-                                source
-                        ),
-                        CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction));
-            }
+            IUseCaseCallback useCaseCallbackShowStory = new UseCaseCallbackShowStory(
+                    new StoryData(
+                            story.id,
+                            StringsUtils.getNonNull(story.statTitle),
+                            StringsUtils.getNonNull(story.tags),
+                            story.getSlidesCount(),
+                            feedId,
+                            source
+                    ),
+                    CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction)
+            );
+            useCaseCallbackShowStory.invoke();
         }
     }
 

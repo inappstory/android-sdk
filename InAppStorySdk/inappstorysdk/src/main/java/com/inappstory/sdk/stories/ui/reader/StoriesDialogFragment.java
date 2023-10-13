@@ -36,6 +36,7 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -43,6 +44,8 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCloseStory;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashSet;
@@ -69,30 +72,31 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void onDismiss(DialogInterface dialogInterface) {
         ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
-        if (InAppStoryService.isNotNull()) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
             OldStatisticManager.getInstance().sendStatistic();
-            Story story = InAppStoryService.getInstance().getDownloadManager()
+            Story story = service.getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
 
             if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getArguments().getString("feedId"),
-                                            CallbackManager.getInstance().getSourceFromInt(
-                                                    getArguments().getInt("source", 0)
-                                            )
-                                    ),
-                                    story.lastIndex
-                            ),
-                            CloseReader.CLICK
-                    );
-                }
+                IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
+                        new SlideData(
+                                new StoryData(
+                                        story.id,
+                                        StringsUtils.getNonNull(story.statTitle),
+                                        StringsUtils.getNonNull(story.tags),
+                                        story.getSlidesCount(),
+                                        getArguments().getString("feedId"),
+                                        CallbackManager.getInstance().getSourceFromInt(
+                                                getArguments().getInt("source", 0)
+                                        )
+                                ),
+                                story.lastIndex
+                        ),
+                        CloseReader.CLICK
+                );
+                useCaseCallbackCloseStory.invoke();
+
                 String cause = StatisticManager.CLICK;
                 StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
                         story.getSlidesCount(),
@@ -265,9 +269,9 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             args.putBoolean("isDialogFragment", true);
             args.putInt("index", getArguments().getInt("index", 0));
 
-            args.putInt("source", getArguments().getInt("source", ShowStory.SINGLE));
+            args.putSerializable("source", getArguments().getSerializable("source"));
             args.putInt("firstAction", getArguments().getInt("firstAction", ShowStory.ACTION_OPEN));
-            args.putString("storiesType", getArguments().getString("storiesType"));
+            args.putSerializable("storiesType", getArguments().getSerializable("storiesType"));
             args.putInt("slideIndex", getArguments().getInt("slideIndex", 0));
             setAppearanceSettings(args);
             args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));

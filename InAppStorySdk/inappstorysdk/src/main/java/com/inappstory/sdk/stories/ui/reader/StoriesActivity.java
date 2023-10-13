@@ -54,6 +54,8 @@ import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCloseStory;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -479,22 +481,22 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getIntent().getStringExtra("feedId"),
-                                            (SourceType) getIntent().getSerializableExtra("source")
-                                    ),
-                                    story.lastIndex
-                            ),
-                            action
-                    );
-                }
+                IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
+                        new SlideData(
+                                new StoryData(
+                                        story.id,
+                                        StringsUtils.getNonNull(story.statTitle),
+                                        StringsUtils.getNonNull(story.tags),
+                                        story.getSlidesCount(),
+                                        getIntent().getStringExtra("feedId"),
+                                        (SourceType) getIntent().getSerializableExtra("source")
+                                ),
+                                story.lastIndex
+                        ),
+                        action
+                );
+                useCaseCallbackCloseStory.invoke();
+
                 StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
                         story.getSlidesCount(),
                         getIntent().getStringExtra("feedId"));

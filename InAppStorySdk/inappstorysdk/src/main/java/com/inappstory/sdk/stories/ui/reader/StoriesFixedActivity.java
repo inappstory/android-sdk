@@ -53,6 +53,8 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCloseStory;
 import com.inappstory.sdk.utils.StringsUtils;
 
 public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen {
@@ -346,15 +348,16 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void closeStoryReader(CloseReader action, String cause) {
-        if (InAppStoryService.isNotNull()) {
-
-            InAppStoryService.getInstance().getListNotifier().closeReader(
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            service.getListNotifier().closeReader(
                     getIntent().getStringExtra("listID")
             );
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-            if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+
+            Story story = service.getDownloadManager()
+                    .getStoryById(service.getCurrentId(), type);
+            if (story != null) {
+                IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
                         new SlideData(
                                 new StoryData(
                                         story.id,
@@ -368,6 +371,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                         ),
                         action
                 );
+                useCaseCallbackCloseStory.invoke();
             }
             StatisticManager.getInstance().sendCloseStory(story.id, cause,
                     story.lastIndex,
