@@ -53,7 +53,7 @@ public class InAppStoryService {
     public static InAppStoryService getInstance() {
         synchronized (lock) {
             if (InAppStoryManager.getInstance() == null) return null;
-            return INSTANCE;
+            return InAppStoryManager.getInstance().service;
         }
     }
 
@@ -65,8 +65,8 @@ public class InAppStoryService {
         return getInstance() == null;
     }
 
-    public InAppStoryService() {
-
+    public InAppStoryService(Context context) {
+        this.context = context;
     }
 
     private boolean sharingProcess = false;
@@ -588,8 +588,7 @@ public class InAppStoryService {
                 }
                 if (InAppStoryManager.getInstance() != null) {
                     InAppStoryManager.getInstance().createServiceThread(
-                            InAppStoryManager.getInstance().context,
-                            InAppStoryManager.getInstance().getUserId());
+                            InAppStoryManager.getInstance().context);
                     if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
                         InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
                     }

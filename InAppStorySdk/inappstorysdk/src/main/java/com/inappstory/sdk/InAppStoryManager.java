@@ -6,6 +6,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
+import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -73,6 +74,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
 /**
@@ -666,34 +672,77 @@ public class InAppStoryManager {
 
     String TEST_KEY = null;
 
-    public InAppStoryManager() {
-
+    public static void init(@NonNull Context context) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        boolean calledFromApplication = false;
+        for (StackTraceElement stackTraceElement : stackTraceElements) {
+            try {
+                if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                    calledFromApplication = true;
+                }
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (!(context instanceof Application)) calledFromApplication = false;
+        if (!calledFromApplication)
+            throw new RuntimeException("Method must be called from Application class and context must be an applicationContext");
+        synchronized (lock) {
+            if (INSTANCE == null) INSTANCE = new InAppStoryManager(context);
+        }
     }
 
     InAppStoryService service;
 
     Thread serviceThread;
 
-    void createServiceThread(final Context context, final String userId) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().onDestroy();
-        }
-        if (serviceThread != null) {
-            serviceThread.interrupt();
-            serviceThread = null;
-        }
-        serviceThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                service = new InAppStoryService(userId);
-                service.onCreate(context, exceptionCache);
-                Looper.loop();
+    void createServiceThread(final Context context) {
+        List<Callable> localCallable = new ArrayList<>();
+        synchronized (serviceThreadCreatedCallbacksLock) {
+            if (serviceIsCreated) return;
+            try {
+                final Future<InAppStoryService> ff = serviceExecutor.submit(
+                        new Callable<InAppStoryService>() {
+                            @Override
+                            public InAppStoryService call() {
+                                Looper.prepare();
+                                InAppStoryService inAppStoryService = new InAppStoryService(context);
+                                inAppStoryService.onCreate(context, exceptionCache);
+                                return inAppStoryService;
+                            }
+                        }
+                );
+                service = ff.get();
+                serviceIsCreated = true;
+                localCallable.addAll(serviceThreadCreatedCallbacks);
+                serviceThreadCreatedCallbacks.clear();
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
             }
-        });
-        //serviceThread.setUncaughtExceptionHandler(new InAppStoryService.DefaultExceptionHandler());
-        serviceThread.start();
+        }
+        for (Callable callable : localCallable) {
+            serviceExecutor.submit(callable);
+        }
     }
+
+
+    private final ExecutorService serviceExecutor = Executors.newFixedThreadPool(1);
+
+    private List<Callable> serviceThreadCreatedCallbacks = new ArrayList<>();
+
+    private final Object serviceThreadCreatedCallbacksLock = new Object();
+
+    private void checkServiceThreadOrAddToQueue(Callable callable) {
+        synchronized (serviceThreadCreatedCallbacksLock) {
+            if (service == null || !serviceIsCreated) {
+                serviceThreadCreatedCallbacks.add(callable);
+            } else {
+                serviceExecutor.submit(callable);
+            }
+        }
+    }
+
+    private boolean serviceIsCreated = false;
 
     void setExceptionCache(ExceptionCache exceptionCache) {
         this.exceptionCache = exceptionCache;
@@ -828,11 +877,19 @@ public class InAppStoryManager {
         return "";
     }
 
-    private InAppStoryManager(final Builder builder) {
-        if (builder.context == null) {
+    private InAppStoryManager(Context context) {
+        this.context = context;
+        KeyValueStorage.setContext(context);
+        SharedPreferencesAPI.setContext(context);
+        createServiceThread(context);
+        this.soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
+    }
+
+    private void create(final Builder builder) {
+       /* if (builder.context == null) {
             showELog(IAS_ERROR_TAG, "InAppStoryManager.Builder data is not valid. 'context' can't be null");
             return;
-        }
+        }*/
         if (builder.apiKey == null &&
                 builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_api_key_error));
@@ -846,15 +903,12 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_tags_length_error));
             return;
         }
-        long freeSpace = builder.context.getCacheDir().getFreeSpace();
+        long freeSpace = context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_min_free_space_error));
             return;
         }
-
-        KeyValueStorage.setContext(builder.context);
-        SharedPreferencesAPI.setContext(builder.context);
-        createServiceThread(builder.context, builder.userId);
+        this.userId = builder.userId;
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
             long commonCacheSize = MB_100;
@@ -877,7 +931,6 @@ public class InAppStoryManager {
 
         this.isSandbox = builder.sandbox;
         initManager(
-                builder.context,
                 domain,
                 builder.apiKey != null ? builder.apiKey : builder.context
                         .getResources().getString(R.string.csApiKey),
@@ -970,17 +1023,15 @@ public class InAppStoryManager {
 
     private boolean sendStatistic = true;
 
-    private void initManager(Context context,
-                             String cmsUrl,
-                             String apiKey,
-                             String testKey,
-                             String userId,
-                             ArrayList<String> tags,
-                             Map<String, String> placeholders,
-                             Map<String, ImagePlaceholderValue> imagePlaceholders) {
-        this.context = context;
-        soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
-
+    private void initManager(
+            String cmsUrl,
+            String apiKey,
+            String testKey,
+            String userId,
+            ArrayList<String> tags,
+            Map<String, String> placeholders,
+            Map<String, ImagePlaceholderValue> imagePlaceholders
+    ) {
         synchronized (tagsLock) {
             this.tags = tags;
         }
@@ -997,7 +1048,6 @@ public class InAppStoryManager {
         }
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
-        setInstance(this);
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             if (networkClient != null) {
                 networkClient.clear();
@@ -1022,12 +1072,11 @@ public class InAppStoryManager {
 
     public static void logout() {
         if (!isNull()) {
-            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-            if (inAppStoryService != null) {
-                inAppStoryService.listStoriesIds.clear();
-                inAppStoryService.getListSubscribers().clear();
-                inAppStoryService.getDownloadManager().cleanTasks();
-                inAppStoryService.logout();
+            if (INSTANCE.service != null) {
+                INSTANCE.service.listStoriesIds.clear();
+                INSTANCE.service.getListSubscribers().clear();
+                INSTANCE.service.getDownloadManager().cleanTasks();
+                INSTANCE.service.logout();
             }
         }
     }
@@ -1144,16 +1193,16 @@ public class InAppStoryManager {
     }
 
     private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        if (InAppStoryService.isNull()) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
-                }
-            }, 1000);
-            return;
-        }
+        checkServiceThreadOrAddToQueue(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                showOnboardingStoriesInnerCallable(limit, feed, tags, outerContext, manager);
+                return null;
+            }
+        });
+    }
 
+    private void showOnboardingStoriesInnerCallable(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
@@ -1330,33 +1379,14 @@ public class InAppStoryManager {
 
     private String lastSingleOpen = null;
 
-    private void showStoryInner(final String storyId,
-                                final Context context,
-                                final AppearanceManager manager,
-                                final IShowStoryCallback callback,
-                                final Integer slide,
-                                final Story.StoryType type,
-                                final int readerSource,
-                                final int readerAction) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStoryInner(
-                            storyId,
-                            context,
-                            manager,
-                            callback,
-                            slide,
-                            type,
-                            readerSource,
-                            readerAction
-                    );
-                }
-            }, 1000);
-            return;
-        }
+    private void showStoryInnerCallable(final String storyId,
+                                        final Context context,
+                                        final AppearanceManager manager,
+                                        final IShowStoryCallback callback,
+                                        final Integer slide,
+                                        final Story.StoryType type,
+                                        final int readerSource,
+                                        final int readerAction) {
         if (this.userId == null || getBytesLength(this.userId) > 255) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
@@ -1467,6 +1497,32 @@ public class InAppStoryManager {
                 type,
                 readerSource
         );
+    }
+
+    private void showStoryInner(final String storyId,
+                                final Context context,
+                                final AppearanceManager manager,
+                                final IShowStoryCallback callback,
+                                final Integer slide,
+                                final Story.StoryType type,
+                                final int readerSource,
+                                final int readerAction) {
+        checkServiceThreadOrAddToQueue(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                showStoryInnerCallable(
+                        storyId,
+                        context,
+                        manager,
+                        callback,
+                        slide,
+                        type,
+                        readerSource,
+                        readerAction
+                );
+                return null;
+            }
+        });
     }
 
     private void showStoryInner(final String storyId, final Context context,
@@ -1700,7 +1756,12 @@ public class InAppStoryManager {
          * @return {@link InAppStoryManager}
          */
         public InAppStoryManager create() {
-            return new InAppStoryManager(Builder.this);
+            synchronized (lock) {
+                if (INSTANCE == null)
+                    throw new RuntimeException("Method InAppStoryManager.init must be called from Application class");
+            }
+            INSTANCE.create(Builder.this);
+            return INSTANCE;
         }
     }
 }
