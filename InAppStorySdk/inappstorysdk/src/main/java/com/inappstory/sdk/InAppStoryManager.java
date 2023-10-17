@@ -970,6 +970,12 @@ public class InAppStoryManager {
 
     private boolean sendStatistic = true;
 
+    public boolean isGameDemoMode() {
+        return gameDemoMode;
+    }
+
+    private boolean gameDemoMode = true;
+
     private void initManager(Context context,
                              String cmsUrl,
                              String apiKey,

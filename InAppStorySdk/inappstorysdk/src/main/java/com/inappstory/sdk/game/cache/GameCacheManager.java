@@ -9,6 +9,7 @@ import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
+import com.inappstory.sdk.stories.api.models.GameLaunchConfigObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
@@ -217,7 +218,7 @@ public class GameCacheManager {
                                                             else
                                                                 resultTotalSize = (long) (1.2f * finalTotalDownloadsSize);
                                                             progressCallback.onProgress(
-                                                                    (long)(totalProgress[0] + (0.2f * loadedSize)),
+                                                                    (long) (totalProgress[0] + (0.2f * loadedSize)),
                                                                     resultTotalSize
                                                             );
                                                         }
@@ -264,11 +265,20 @@ public class GameCacheManager {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
         }
+
+        final boolean demoMode;
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null)
+            demoMode = inAppStoryManager.isGameDemoMode();
+        else
+            demoMode = false;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
                 networkClient.enqueue(
-                        networkClient.getApi().getGameByInstanceId(gameId),
+                        networkClient.getApi().getGameByInstanceId(
+                                gameId, new GameLaunchConfigObject(demoMode)
+                        ),
                         new NetworkCallback<GameCenterData>() {
                             @Override
                             public void onSuccess(final GameCenterData response) {
