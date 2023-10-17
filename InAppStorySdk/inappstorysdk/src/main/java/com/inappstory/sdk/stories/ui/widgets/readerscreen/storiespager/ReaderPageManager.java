@@ -314,8 +314,7 @@ public class ReaderPageManager {
         timerManager.restartTimer(durations.get(slideIndex));
     }
 
-    public void moveTimerToPosition(Double position) {
-        if (position == null) return;
+    public void moveTimerToPosition(double position) {
         timerManager.moveTimerToPosition(position);
         timelineManager.setCurrentPosition(position);
     }

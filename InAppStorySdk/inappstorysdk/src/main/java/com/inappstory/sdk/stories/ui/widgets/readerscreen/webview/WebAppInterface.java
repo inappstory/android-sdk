@@ -149,10 +149,15 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void storyResumed(Double startTime) {
-        manager.storyResumedEvent(startTime);
+    public void storyResumed(String startTime) {
+        logMethod(startTime);
+        if (startTime != null) {
+            try {
+                manager.storyResumedEvent(Double.parseDouble(startTime));
+            } catch (NumberFormatException e) {
 
-        logMethod("" + startTime);
+            }
+        }
     }
 
     @JavascriptInterface

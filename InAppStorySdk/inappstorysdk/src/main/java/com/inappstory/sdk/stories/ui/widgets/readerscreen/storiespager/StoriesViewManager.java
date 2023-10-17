@@ -425,7 +425,7 @@ public class StoriesViewManager {
         ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 
-    public void storyResumedEvent(Double startTime) {
+    public void storyResumedEvent(double startTime) {
         if (pageManager != null)
             pageManager.moveTimerToPosition(startTime);
     }
