@@ -306,6 +306,12 @@ public class ReaderPageManager {
         webViewManager.resumeStory();
     }
 
+    public void moveTimerToPosition(double position) {
+        if (1 == 1) return;
+        timerManager.moveTimerToPosition(position);
+        timelineManager.setCurrentPosition(position);
+    }
+
     public void restartSlide() {
         if (checkIfManagersIsNull()) return;
         if (durations.size() <= slideIndex) return;

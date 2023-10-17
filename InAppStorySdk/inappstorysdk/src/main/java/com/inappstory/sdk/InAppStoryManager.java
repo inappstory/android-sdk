@@ -672,7 +672,7 @@ public class InAppStoryManager {
 
     String TEST_KEY = null;
 
-    public static void init(@NonNull Context context) {
+    public static void initSDK(@NonNull Context context) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         boolean calledFromApplication = false;
         for (StackTraceElement stackTraceElement : stackTraceElements) {
@@ -681,15 +681,18 @@ public class InAppStoryManager {
                     calledFromApplication = true;
                 }
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+
             }
         }
         if (!(context instanceof Application)) calledFromApplication = false;
         if (!calledFromApplication)
-            throw new RuntimeException("Method must be called from Application class and context must be an applicationContext");
+            showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
         synchronized (lock) {
-            if (INSTANCE == null) INSTANCE = new InAppStoryManager(context);
+            if (INSTANCE == null) {
+                INSTANCE = new InAppStoryManager(context);
+            }
         }
+        INSTANCE.createServiceThread(context);
     }
 
     InAppStoryService service;
@@ -717,7 +720,7 @@ public class InAppStoryManager {
                 localCallable.addAll(serviceThreadCreatedCallbacks);
                 serviceThreadCreatedCallbacks.clear();
             } catch (ExecutionException | InterruptedException e) {
-                throw new RuntimeException(e);
+
             }
         }
         for (Callable callable : localCallable) {
@@ -881,7 +884,6 @@ public class InAppStoryManager {
         this.context = context;
         KeyValueStorage.setContext(context);
         SharedPreferencesAPI.setContext(context);
-        createServiceThread(context);
         this.soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
     }
 
@@ -892,25 +894,48 @@ public class InAppStoryManager {
         }*/
         if (builder.apiKey == null &&
                 builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_api_key_error));
+            showELog(
+                    IAS_ERROR_TAG,
+                    getErrorStringFromContext(
+                            builder.context,
+                            R.string.ias_api_key_error
+                    )
+            );
             return;
         }
         if (getBytesLength(builder.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_user_length_error));
+            showELog(
+                    IAS_ERROR_TAG,
+                    getErrorStringFromContext(
+                            builder.context,
+                            R.string.ias_builder_user_length_error
+                    )
+            );
             return;
         }
         if (builder.tags != null && getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_tags_length_error));
+            showELog(
+                    IAS_ERROR_TAG,
+                    getErrorStringFromContext(
+                            builder.context,
+                            R.string.ias_builder_tags_length_error
+                    )
+            );
             return;
         }
         long freeSpace = context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_min_free_space_error));
+            showELog(
+                    IAS_ERROR_TAG,
+                    getErrorStringFromContext(
+                            builder.context,
+                            R.string.ias_min_free_space_error
+                    )
+            );
             return;
         }
         this.userId = builder.userId;
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
+        if (service != null) {
             long commonCacheSize = MB_100;
             long fastCacheSize = MB_10;
             switch (builder.cacheSize) {
@@ -922,8 +947,8 @@ public class InAppStoryManager {
                     commonCacheSize = MB_200;
                     break;
             }
-            inAppStoryService.getFastCache().setCacheSize(fastCacheSize);
-            inAppStoryService.getCommonCache().setCacheSize(commonCacheSize);
+            service.getFastCache().setCacheSize(fastCacheSize);
+            service.getCommonCache().setCacheSize(commonCacheSize);
         }
         String domain = new HostFromSecretKey(
                 builder.apiKey
@@ -959,7 +984,8 @@ public class InAppStoryManager {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) return;
         if (userId == null || getBytesLength(userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            showELog(
+                    IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
         if (this.userId.equals(userId)) return;
@@ -1042,11 +1068,6 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
-        if (!isNull()) {
-            localHandler.removeCallbacksAndMessages(null);
-            localDestroy();
-        }
-
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             if (networkClient != null) {
@@ -1062,9 +1083,8 @@ public class InAppStoryManager {
                 .host(cmsUrl);
 
         networkClient = new NetworkClient(context, cmsUrl);
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.getDownloadManager().initDownloaders();
+        if (service != null) {
+            service.getDownloadManager().initDownloaders();
         }
     }
 
@@ -1576,6 +1596,23 @@ public class InAppStoryManager {
     public void showStory(String storyId, Context context, AppearanceManager manager) {
         showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_OPEN);
     }
+    /**
+     * use to show single story in reader by id
+     *
+     * @param storyId (storyId)
+     * @param context (context) any type of context (preferably - same as for {@link InAppStoryManager}
+     */
+    public void showStory(String storyId, Context context) {
+        showStoryInner(
+                storyId,
+                context,
+                new AppearanceManager(),
+                null,
+                Story.StoryType.COMMON,
+                ShowStory.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
+    }
 
     public void showStoryCustom(String storyId, Context context, AppearanceManager manager) {
         showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_CUSTOM);
@@ -1758,7 +1795,7 @@ public class InAppStoryManager {
         public InAppStoryManager create() {
             synchronized (lock) {
                 if (INSTANCE == null)
-                    throw new RuntimeException("Method InAppStoryManager.init must be called from Application class");
+                    showELog(IAS_ERROR_TAG, "Method InAppStoryManager.init must be called from Application class");
             }
             INSTANCE.create(Builder.this);
             return INSTANCE;

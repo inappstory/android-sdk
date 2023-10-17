@@ -426,7 +426,8 @@ public class StoriesViewManager {
     }
 
     public void storyResumedEvent(double startTime) {
-        if (InAppStoryService.isNull()) return;
+        if (pageManager != null)
+            pageManager.moveTimerToPosition(startTime);
     }
 
     public void setAudioManagerMode(String mode) {

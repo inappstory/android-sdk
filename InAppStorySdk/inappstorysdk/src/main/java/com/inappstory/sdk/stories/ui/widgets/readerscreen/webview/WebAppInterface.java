@@ -151,7 +151,6 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyResumed(double startTime) {
         manager.storyResumedEvent(startTime);
-
         logMethod("" + startTime);
     }
 

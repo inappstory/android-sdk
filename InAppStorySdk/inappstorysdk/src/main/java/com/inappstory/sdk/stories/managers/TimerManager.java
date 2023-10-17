@@ -42,12 +42,10 @@ public class TimerManager {
     };
 
 
-
     public long startPauseTime;
 
 
     public long pauseTime = 0;
-
 
 
     public void stopTimer() {
@@ -124,6 +122,7 @@ public class TimerManager {
         }
         pauseShift = (System.currentTimeMillis() - timerStart);
     }
+
     public void resumeTimer() {
         StatisticManager.getInstance().cleanFakeEvents();
         // resumeLocalTimer();
@@ -134,6 +133,13 @@ public class TimerManager {
         if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
             StatisticManager.getInstance().currentState.storyPause = pauseTime;
         startPauseTime = 0;
+    }
+
+    public void moveTimerToPosition(double position) {
+        if (currentDuration == 0 || totalTimerDuration == 0) return;
+        if (currentDuration - position > 0 || position >= 0) {
+            timerDuration = (long) (currentDuration - position);
+        }
     }
 
 
@@ -148,7 +154,7 @@ public class TimerManager {
             StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
                     pageManager != null ? pageManager.getFeedId() : null);
         }
-       // pauseLocalTimer();
+        // pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         OldStatisticManager.getInstance().sendStatistic();
