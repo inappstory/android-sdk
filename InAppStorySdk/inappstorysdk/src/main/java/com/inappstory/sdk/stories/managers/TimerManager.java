@@ -76,7 +76,7 @@ public class TimerManager {
                 timerHandler.removeCallbacks(timerTask);
                 this.timerDuration = timerDuration;
                 if (clearDuration)
-                    this.totalTimerDuration = timerDuration;
+                    this.currentDuration = 0;
             } catch (Exception e) {
 
             }
@@ -85,6 +85,8 @@ public class TimerManager {
         if (timerDuration < 0) {
             return;
         }
+        if (clearDuration)
+            this.currentDuration = timerDuration;
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;
@@ -105,7 +107,7 @@ public class TimerManager {
             this.currentDuration = currentDuration;
     }
 
-    int currentDuration;
+    long currentDuration;
 
     public void startCurrentTimer() {
         if (currentDuration != 0)
