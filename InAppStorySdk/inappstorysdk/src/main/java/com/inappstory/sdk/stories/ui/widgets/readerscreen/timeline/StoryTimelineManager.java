@@ -141,6 +141,20 @@ public class StoryTimelineManager implements IStoryTimelineManager {
     }
 
     @Override
+    public void setCurrentPosition(double position) {
+        if (timelineState
+                .getCurrentStoryDurations().isEmpty()) return;
+        long getCurrentDuration = timelineState
+                .getCurrentStoryDurations()
+                .get(timelineState.getCurrentSlideIndex());
+        if (getCurrentDuration == 0 || getCurrentDuration < position) return;
+        restTime = (long) (
+                getCurrentDuration - position
+        );
+        resumedTime = System.currentTimeMillis();
+    }
+
+    @Override
     public void resetDurations() {
         timelineState.setCurrentStoryDurations(new ArrayList<>(startedDurations));
     }

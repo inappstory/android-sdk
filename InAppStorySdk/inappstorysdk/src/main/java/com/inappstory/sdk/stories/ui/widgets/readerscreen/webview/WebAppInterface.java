@@ -149,7 +149,7 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void storyResumed(double startTime) {
+    public void storyResumed(Double startTime) {
         manager.storyResumedEvent(startTime);
 
         logMethod("" + startTime);

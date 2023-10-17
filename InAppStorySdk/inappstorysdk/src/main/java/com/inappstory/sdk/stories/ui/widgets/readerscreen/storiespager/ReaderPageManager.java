@@ -314,6 +314,12 @@ public class ReaderPageManager {
         timerManager.restartTimer(durations.get(slideIndex));
     }
 
+    public void moveTimerToPosition(Double position) {
+        if (position == null) return;
+        timerManager.moveTimerToPosition(position);
+        timelineManager.setCurrentPosition(position);
+    }
+
     List<Integer> durations = new ArrayList<>();
 
     public void setStoryInfo(Story story) {

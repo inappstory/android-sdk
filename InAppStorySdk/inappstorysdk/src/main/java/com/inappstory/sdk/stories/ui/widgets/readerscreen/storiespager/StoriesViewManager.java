@@ -425,8 +425,9 @@ public class StoriesViewManager {
         ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 
-    public void storyResumedEvent(double startTime) {
-        if (InAppStoryService.isNull()) return;
+    public void storyResumedEvent(Double startTime) {
+        if (pageManager != null)
+            pageManager.moveTimerToPosition(startTime);
     }
 
     public void setAudioManagerMode(String mode) {

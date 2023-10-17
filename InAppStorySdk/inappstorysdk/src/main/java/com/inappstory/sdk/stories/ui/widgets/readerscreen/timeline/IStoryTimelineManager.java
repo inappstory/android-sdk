@@ -18,5 +18,8 @@ public interface IStoryTimelineManager {
     void setDurations(List<Integer> durations, boolean started);
 
     void setSlidesCount(int slidesCount);
+
+
+    void setCurrentPosition(double position);
     void resetDurations();
 }

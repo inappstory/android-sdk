@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.managers;
 
 import android.os.Handler;
+import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -31,6 +32,7 @@ public class TimerManager {
         @Override
         public void run() {
             if (timerDuration > 0 && System.currentTimeMillis() - timerStart >= timerDuration) {
+                Log.e("timerTaskEnded", timerStart + " " + timerDuration);
                 timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
                 if (pageManager != null)
@@ -42,12 +44,10 @@ public class TimerManager {
     };
 
 
-
     public long startPauseTime;
 
 
     public long pauseTime = 0;
-
 
 
     public void stopTimer() {
@@ -124,6 +124,7 @@ public class TimerManager {
         }
         pauseShift = (System.currentTimeMillis() - timerStart);
     }
+
     public void resumeTimer() {
         StatisticManager.getInstance().cleanFakeEvents();
         // resumeLocalTimer();
@@ -136,6 +137,13 @@ public class TimerManager {
         startPauseTime = 0;
     }
 
+    public void moveTimerToPosition(double position) {
+        if (currentDuration >= 0 && currentDuration - position > 0 && position >= 0) {
+            timerDuration = (long) (currentDuration - position);
+            timerStart = System.currentTimeMillis();
+        }
+        Log.e("moveTimerToPosition", position + " " + timerStart + " " + timerDuration + " " + currentDuration);
+    }
 
     public void pauseTimer() {
         if (InAppStoryService.isNull()) {
@@ -148,7 +156,7 @@ public class TimerManager {
             StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
                     pageManager != null ? pageManager.getFeedId() : null);
         }
-       // pauseLocalTimer();
+        // pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         OldStatisticManager.getInstance().sendStatistic();
