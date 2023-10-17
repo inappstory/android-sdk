@@ -974,7 +974,7 @@ public class InAppStoryManager {
         return gameDemoMode;
     }
 
-    private boolean gameDemoMode = true;
+    private boolean gameDemoMode = false;
 
     private void initManager(Context context,
                              String cmsUrl,
