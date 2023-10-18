@@ -3,9 +3,9 @@ package com.inappstory.sdk.stories.filedownloader;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
-import com.inappstory.sdk.network.utils.ResponseStringFromStream;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.network.utils.ConnectionHeadersMap;
+import com.inappstory.sdk.core.network.utils.ResponseStringFromStream;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
@@ -28,13 +28,17 @@ public abstract class FileDownload implements IFileDownload {
     private final ApiLogRequest requestLog;
     private final ApiLogResponse responseLog;
 
+    protected final LruDiskCache cache;
+
     private final String requestId;
 
     public FileDownload(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            @NonNull IFileDownloadCallback fileDownloadCallback,
+            @NonNull LruDiskCache cache
     ) {
         this.url = url;
+        this.cache = cache;
         this.fileDownloadCallback = fileDownloadCallback;
         this.requestId = UUID.randomUUID().toString();
         this.requestLog = new ApiLogRequest();
@@ -160,8 +164,8 @@ public abstract class FileDownload implements IFileDownload {
     public DownloadFileState downloadOrGetFromCache() throws Exception {
         generateRequestLog();
         generateResponseLog();
-        LruDiskCache cache = getCache();
         String key = getCacheKey();
+        if (key == null) return null;
         long offset = 0;
         HashMap<String, String> headers = new HashMap<>();
         if (cache.hasKey(key)) {

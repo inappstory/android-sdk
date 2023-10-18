@@ -1,7 +1,7 @@
 package com.inappstory.sdk.imageloader;
 
 import static com.inappstory.sdk.InAppStoryService.IAS_PREFIX;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_10;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -23,8 +23,8 @@ import android.widget.RemoteViews;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.lrudiskcache.CacheType;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.CacheType;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;

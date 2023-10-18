@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
-import com.inappstory.sdk.network.annotations.models.Ignore;
+import com.inappstory.sdk.core.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.Story;
 
 public class StoryData {

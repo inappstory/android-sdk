@@ -6,18 +6,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
-import com.inappstory.sdk.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.stories.api.models.CacheFontObject;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.network.utils.ConnectionHeadersMap;
+import com.inappstory.sdk.core.network.utils.ResponseStringFromStream;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
-import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
-import com.inappstory.sdk.stories.filedownloader.usecases.FontDownload;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;
@@ -28,11 +22,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileLock;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**

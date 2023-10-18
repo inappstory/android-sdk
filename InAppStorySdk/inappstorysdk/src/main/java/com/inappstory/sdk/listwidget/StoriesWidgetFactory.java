@@ -12,7 +12,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.WidgetAppearance;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 

@@ -1,9 +1,9 @@
 package com.inappstory.sdk;
 
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_50;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_50;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -21,12 +21,12 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.lrudiskcache.CacheType;
-import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.core.lrudiskcache.CacheType;
+import com.inappstory.sdk.core.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Session;

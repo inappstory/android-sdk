@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.ui.views;
 
-import android.annotation.TargetApi;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
@@ -12,7 +10,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.Downloader;
 
 import java.io.File;

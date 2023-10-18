@@ -1,8 +1,8 @@
 package com.inappstory.sdk.stories.api.models;
 
 import com.inappstory.sdk.game.reader.GameScreenOptions;
-import com.inappstory.sdk.network.annotations.models.Required;
-import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.core.network.annotations.models.Required;
+import com.inappstory.sdk.core.network.annotations.models.SerializedName;
 
 import java.util.List;
 import java.util.Map;

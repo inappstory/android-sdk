@@ -1,7 +1,9 @@
 package com.inappstory.sdk.stories.filedownloader;
 
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import androidx.annotation.NonNull;
+
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 
 public interface ILruCacheHolder {
-    LruDiskCache getCache();
+    @NonNull LruDiskCache getCache();
 }

@@ -1,13 +1,16 @@
 package com.inappstory.sdk.stories.filedownloader.usecases;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 
 public class StoryFileDownload extends FileDownload {
     public StoryFileDownload(
-            String url
+            String url,
+            @NonNull LruDiskCache cache
     ) {
         super(url, new IFileDownloadCallback() {
             @Override
@@ -19,7 +22,7 @@ public class StoryFileDownload extends FileDownload {
             public void onError(int errorCode, String error) {
 
             }
-        });
+        }, cache);
     }
 
     @Override
@@ -29,7 +32,7 @@ public class StoryFileDownload extends FileDownload {
 
     @Override
     public String getDownloadFilePath() {
-        return getCache().getFileFromKey(getCacheKey()).getAbsolutePath();
+        return cache.getFileFromKey(getCacheKey()).getAbsolutePath();
     }
 
     @Override

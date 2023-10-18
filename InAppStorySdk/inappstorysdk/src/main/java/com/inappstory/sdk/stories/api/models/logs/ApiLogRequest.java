@@ -1,8 +1,8 @@
 package com.inappstory.sdk.stories.api.models.logs;
 
-import com.inappstory.sdk.network.constants.HttpMethods;
-import com.inappstory.sdk.network.models.Request;
-import com.inappstory.sdk.network.utils.GetUrl;
+import com.inappstory.sdk.core.network.constants.HttpMethods;
+import com.inappstory.sdk.core.network.models.Request;
+import com.inappstory.sdk.core.network.utils.GetUrl;
 
 import java.net.MalformedURLException;
 import java.net.URL;

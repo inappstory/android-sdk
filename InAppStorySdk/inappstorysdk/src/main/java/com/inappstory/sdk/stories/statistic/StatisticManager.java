@@ -6,9 +6,9 @@ import android.text.TextUtils;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CurrentState;
 import com.inappstory.sdk.stories.api.models.Session;
 

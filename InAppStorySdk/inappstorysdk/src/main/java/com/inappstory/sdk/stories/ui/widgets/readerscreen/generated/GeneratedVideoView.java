@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.Surface;
@@ -19,8 +18,8 @@ import android.widget.RelativeLayout;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.lrudiskcache.Utils;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.Utils;
 import com.inappstory.sdk.stories.cache.Downloader;
 
 import java.io.File;

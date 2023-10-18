@@ -6,12 +6,12 @@ import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.callbacks.SimpleApiCallback;
-import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.core.network.ApiSettings;
+import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.network.callbacks.SimpleApiCallback;
+import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;

@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.network.annotations.models.SerializedName;
+import com.inappstory.sdk.core.network.annotations.models.SerializedName;
 
 import java.util.ArrayList;
 import java.util.List;

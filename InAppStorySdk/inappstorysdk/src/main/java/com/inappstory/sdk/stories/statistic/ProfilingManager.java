@@ -11,9 +11,9 @@ import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.network.models.Request;
-import com.inappstory.sdk.network.utils.GetUrl;
-import com.inappstory.sdk.network.utils.UserAgent;
+import com.inappstory.sdk.core.network.models.Request;
+import com.inappstory.sdk.core.network.utils.GetUrl;
+import com.inappstory.sdk.core.network.utils.UserAgent;
 import com.inappstory.sdk.stories.api.models.Session;
 
 import java.net.HttpURLConnection;

@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.api.models.callbacks;
 
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Feed;
 
 import java.lang.reflect.Type;

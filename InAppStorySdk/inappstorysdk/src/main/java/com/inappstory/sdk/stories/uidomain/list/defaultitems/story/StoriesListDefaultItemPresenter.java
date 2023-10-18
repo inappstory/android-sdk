@@ -2,9 +2,9 @@ package com.inappstory.sdk.stories.uidomain.list.defaultitems.story;
 
 import android.graphics.Bitmap;
 
-import com.inappstory.sdk.imagememcache.GetBitmapFromCacheWithFilePath;
-import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.imagememcache.IGetBitmapFromMemoryCacheError;
+import com.inappstory.sdk.core.imagememcache.GetBitmapFromCacheWithFilePath;
+import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCache;
+import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.stories.uidomain.list.defaultitems.IGetBitmap;
 
 public class StoriesListDefaultItemPresenter implements IStoriesListDefaultItemPresenter {

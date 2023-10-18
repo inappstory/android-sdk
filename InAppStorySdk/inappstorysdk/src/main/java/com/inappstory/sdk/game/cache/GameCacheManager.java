@@ -1,11 +1,11 @@
 package com.inappstory.sdk.game.cache;
 
-import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
+import static com.inappstory.sdk.core.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;

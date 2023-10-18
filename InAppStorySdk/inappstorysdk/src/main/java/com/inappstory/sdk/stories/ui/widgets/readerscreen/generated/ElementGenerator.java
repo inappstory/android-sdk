@@ -17,7 +17,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StoryLink;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.api.models.slidestructure.Element;

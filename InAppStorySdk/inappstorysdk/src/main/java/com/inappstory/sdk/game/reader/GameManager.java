@@ -1,6 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
-import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
+import static com.inappstory.sdk.core.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -10,14 +10,14 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.core.network.ApiSettings;
+import com.inappstory.sdk.core.network.JsonParser;
 
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.network.jsapiclient.JsApiClient;
-import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.core.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.UrlObject;

@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.filedownloader.usecases;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
@@ -17,11 +17,12 @@ public class ZipArchiveDownload extends FileDownload {
     public ZipArchiveDownload(
             @NonNull String url,
             @NonNull String downloadPath,
+            @NonNull LruDiskCache cache,
             @NonNull IFileDownloadCallback fileDownloadCallback,
             @NonNull IFileDownloadProgressCallback progressCallback,
             @NonNull DownloadInterruption interruption
     ) {
-        super(url, fileDownloadCallback);
+        super(url, fileDownloadCallback, cache);
         this.progressCallback = progressCallback;
         this.downloadPath = downloadPath;
         this.interruption = interruption;

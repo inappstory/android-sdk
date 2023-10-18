@@ -6,12 +6,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.FileChecker;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
 import com.inappstory.sdk.stories.filedownloader.usecases.ZipArchiveDownload;

@@ -1,9 +1,9 @@
 package com.inappstory.sdk;
 
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
-import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_200;
+import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -16,11 +16,11 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
-import com.inappstory.sdk.lrudiskcache.CacheSize;
-import com.inappstory.sdk.network.ApiSettings;
-import com.inappstory.sdk.network.NetworkClient;
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.utils.HostFromSecretKey;
+import com.inappstory.sdk.core.lrudiskcache.CacheSize;
+import com.inappstory.sdk.core.network.ApiSettings;
+import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -54,7 +54,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
-import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -1566,9 +1565,9 @@ public class InAppStoryManager {
          * use to set available space for file caching (slide images, videos, games, etc.)
          *
          * @param cacheSize (cacheSize) - size of available space for cache. Can be set with {@link CacheSize} constants
-         *                  {@link com.inappstory.sdk.lrudiskcache.CacheSize#SMALL} - 10mb for stories, 5mb fo story covers
-         *                  {@link com.inappstory.sdk.lrudiskcache.CacheSize#MEDIUM} - (by default) 100mb for stories, 10mb fo story covers
-         *                  {@link com.inappstory.sdk.lrudiskcache.CacheSize#LARGE} -  200mb for stories, 10mb fo story covers
+         *                  {@link CacheSize#SMALL} - 10mb for stories, 5mb fo story covers
+         *                  {@link CacheSize#MEDIUM} - (by default) 100mb for stories, 10mb fo story covers
+         *                  {@link CacheSize#LARGE} -  200mb for stories, 10mb fo story covers
          * @return {@link Builder}
          */
         public Builder cacheSize(int cacheSize) {

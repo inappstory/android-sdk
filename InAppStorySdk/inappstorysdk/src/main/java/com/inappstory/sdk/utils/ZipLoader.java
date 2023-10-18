@@ -6,8 +6,8 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.FileChecker;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadFileState;

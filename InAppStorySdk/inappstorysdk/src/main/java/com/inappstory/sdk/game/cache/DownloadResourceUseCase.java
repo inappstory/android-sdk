@@ -3,18 +3,15 @@ package com.inappstory.sdk.game.cache;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
 import com.inappstory.sdk.stories.filedownloader.usecases.GameResourceDownload;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
-import java.util.List;
 
 public class DownloadResourceUseCase {
     private WebResource resource;

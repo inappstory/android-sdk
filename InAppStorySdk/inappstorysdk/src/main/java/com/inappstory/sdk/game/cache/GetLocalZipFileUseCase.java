@@ -1,16 +1,12 @@
 package com.inappstory.sdk.game.cache;
 
-import static java.util.UUID.randomUUID;
-
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.FileChecker;
-import com.inappstory.sdk.lrudiskcache.FileManager;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 
 import java.io.File;
-import java.io.IOException;
 
 public class GetLocalZipFileUseCase {
     String url;

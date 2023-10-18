@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.api.models;
 
 import android.content.Context;
 
-import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 import java.util.List;

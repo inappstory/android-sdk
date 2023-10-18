@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.filedownloader.usecases;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
@@ -18,12 +18,13 @@ public class GameResourceDownload extends FileDownload {
     public GameResourceDownload(
             @NonNull String url,
             @NonNull String cacheKey,
+            @NonNull LruDiskCache cache,
             @NonNull String downloadPath,
             @NonNull IFileDownloadCallback fileDownloadCallback,
             @NonNull IFileDownloadProgressCallback progressCallback,
             @NonNull DownloadInterruption interruption
     ) {
-        super(url, fileDownloadCallback);
+        super(url, fileDownloadCallback, cache);
         this.cacheKey = cacheKey;
         this.progressCallback = progressCallback;
         this.downloadPath = downloadPath;

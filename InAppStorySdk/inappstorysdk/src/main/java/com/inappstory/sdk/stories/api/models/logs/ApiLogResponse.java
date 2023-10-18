@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.api.models.logs;
 
-import com.inappstory.sdk.network.models.Response;
-import com.inappstory.sdk.network.models.ResponseWithRawData;
+import com.inappstory.sdk.core.network.models.Response;
+import com.inappstory.sdk.core.network.models.ResponseWithRawData;
 
 import java.util.ArrayList;
 import java.util.HashMap;

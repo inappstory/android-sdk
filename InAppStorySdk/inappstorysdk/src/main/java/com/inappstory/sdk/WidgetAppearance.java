@@ -3,8 +3,8 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 
-import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.network.annotations.models.Ignore;
+import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 
 public class WidgetAppearance {
