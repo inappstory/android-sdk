@@ -15,11 +15,12 @@ public class StatisticPermissions {
 
 
     public StatisticPermissions(
-            boolean allowProfiling,
+            Boolean allowProfiling,
             Boolean allowStatV1,
             Boolean allowStatV2,
             Boolean allowCrash) {
-        this.allowProfiling = allowProfiling;
+        if (allowProfiling != null)
+            this.allowProfiling = allowProfiling;
         if (allowStatV1 != null)
             this.allowStatV1 = allowStatV1;
         if (allowStatV2 != null)

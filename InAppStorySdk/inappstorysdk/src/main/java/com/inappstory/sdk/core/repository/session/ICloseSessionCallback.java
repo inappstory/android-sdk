@@ -1,7 +1,7 @@
 package com.inappstory.sdk.core.repository.session;
 
-public interface IGetSessionCallback<T> {
-    void onSuccess(T session);
+public interface ICloseSessionCallback {
+    void onSuccess();
 
     void onError();
 }

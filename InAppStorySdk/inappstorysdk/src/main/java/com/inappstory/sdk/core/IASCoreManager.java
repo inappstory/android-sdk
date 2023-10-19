@@ -7,6 +7,8 @@ import com.inappstory.sdk.core.repository.files.IFilesRepository;
 import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.ISessionRepository;
 import com.inappstory.sdk.core.repository.session.SessionRepository;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
 
 public class IASCoreManager {
     private static IASCoreManager INSTANCE;
@@ -24,12 +26,36 @@ public class IASCoreManager {
 
     public ISessionRepository sessionRepository;
 
-    public void getSession(IGetSessionCallback callback) {
-        sessionRepository.getSession(callback);
+    String userId;
+
+    public void getSession(
+            IGetSessionCallback<SessionDTO> callback
+    ) {
+        if (userId == null) {
+            callback.onError();
+            return;
+        }
+        sessionRepository.getSession(userId, callback);
+    }
+
+    public void getUgcEditor(
+            final IGetSessionCallback<UgcEditorDTO> callback
+    ) {
+        sessionRepository.getSession(userId, new IGetSessionCallback<SessionDTO>() {
+            @Override
+            public void onSuccess(SessionDTO session) {
+                callback.onSuccess(sessionRepository.getUgcEditor());
+            }
+
+            @Override
+            public void onError() {
+                callback.onError();
+            }
+        });
     }
 
     public void init(Context context) {
         filesRepository = new FilesRepository(context.getCacheDir());
-        sessionRepository = new SessionRepository();
+        sessionRepository = new SessionRepository(context);
     }
 }

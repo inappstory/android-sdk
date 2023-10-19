@@ -843,7 +843,7 @@ public class InAppStoryManager {
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
         closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
-        SessionManager.getInstance().closeSession(sendStatistic, true);
+        SessionManager.getInstance().closeSession(true);
         OldStatisticManager.getInstance().eventCount = 0;
         inAppStoryService.getDownloadManager().cleanTasks(false);
         inAppStoryService.setUserId(userId);

@@ -411,7 +411,7 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    SessionManager.getInstance().closeSession(true, false);
+                                    SessionManager.getInstance().closeSession(false);
                                     loadUgcStoryList(callback, payload);
                                 }
                             });
@@ -478,7 +478,7 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    SessionManager.getInstance().closeSession(true, false);
+                                    SessionManager.getInstance().closeSession(false);
                                     loadStoryListByFeed(feed, callback);
                                 }
                             });
@@ -543,7 +543,7 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    SessionManager.getInstance().closeSession(true, false);
+                                    SessionManager.getInstance().closeSession(false);
                                     loadStoryList(callback, isFavorite);
                                 }
                             });

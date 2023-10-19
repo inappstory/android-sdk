@@ -22,7 +22,7 @@ public class SessionResponse {
     public List<CacheFontObject> cachedFonts;
 
     @SerializedName("is_allow_profiling")
-    public boolean isAllowProfiling;
+    public Boolean isAllowProfiling;
     @SerializedName("is_allow_statistic_v1")
     public Boolean isAllowStatV1;
     @SerializedName("is_allow_statistic_v2")

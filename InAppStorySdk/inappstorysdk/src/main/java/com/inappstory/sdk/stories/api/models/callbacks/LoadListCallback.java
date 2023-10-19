@@ -30,7 +30,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError("");
         }
-        SessionManager.getInstance().closeSession(true, false);
+        SessionManager.getInstance().closeSession(false);
     }
 
 }
