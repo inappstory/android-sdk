@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -18,6 +19,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
@@ -86,7 +88,8 @@ public class SessionManager {
                         response.isAllowStatV2,
                         response.isAllowCrash
                 );
-                response.session.editor = response.editor;
+                //response.session.editor = response.editor;
+                response.session.isAllowUgc = response.isAllowUgc;
                 response.session.save();
                 InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
                 InAppStoryService.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
@@ -103,8 +106,20 @@ public class SessionManager {
         });
     }
 
-    private static final String FEATURES =
+    private final String FEATURES =
             "animation,data,deeplink,placeholder,webp,resetTimers,gameReader,swipeUpItems,sendApi,imgPlaceholder";
+
+    private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
+            SessionRequestFields.session,
+            SessionRequestFields.previewAspectRatio,
+            SessionRequestFields.isAllowProfiling,
+            SessionRequestFields.isAllowStatV1,
+            SessionRequestFields.isAllowStatV2,
+            SessionRequestFields.isAllowCrash
+    });
+    private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
+            SessionRequestFields.cachedFonts
+    });
 
 
     @SuppressLint("HardwareIds")
@@ -155,7 +170,9 @@ public class SessionManager {
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
         networkClient.enqueue(networkClient.getApi().sessionOpen(
-                        "cache", FEATURES,
+                        SESSION_FIELDS,
+                        SESSION_EXPAND,
+                        FEATURES,
                         platform,
                         deviceId,
                         model,

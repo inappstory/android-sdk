@@ -432,6 +432,8 @@ public class InAppStoryService {
         }
     }
 
+
+
     public void openGameReaderWithGC(
             Context context,
             GameStoryData data,

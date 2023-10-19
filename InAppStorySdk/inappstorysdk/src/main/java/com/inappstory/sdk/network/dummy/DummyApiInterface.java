@@ -105,7 +105,12 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request sessionOpen(String expand, String features, String platform,
+    public Request getUgcEditor() {
+        return new DummyRequest();
+    }
+
+    @Override
+    public Request sessionOpen(String fields, String expand, String features, String platform,
                                String deviceId, String model, String manufacturer,
                                String brand, String screenWidth, String screenHeight,
                                String screenDpi, String osVersion, String osSdkVersion,

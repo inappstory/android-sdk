@@ -175,12 +175,17 @@ public interface ApiInterface {
             @Query("expand") String expand
     );
 
+    @GET("v2/ugc/editor-config")
+    Request getUgcEditor();
+
+
     @FormUrlEncoded
     @POST("v2/session/open")
     @ExcludeHeaders({
             HeadersKeys.AUTH_SESSION_ID
     })
     Request sessionOpen(
+            @Query("fields") String fields,
             @Query("expand") String expand,
             @Field("features") String features,
             @Field("platform") String platform,
@@ -196,7 +201,8 @@ public interface ApiInterface {
             @Field("app_package_id") String appPackageId,
             @Field("app_version") String appVersion,
             @Field("app_build") String appBuild,
-            @Field("user_id") String userId);
+            @Field("user_id") String userId
+    );
 
     @POST("v2/session/update")
     Request sessionUpdate(

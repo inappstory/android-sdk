@@ -20,6 +20,8 @@ public class Session {
     public StatisticPermissions statisticPermissions;
 
     public SessionEditor editor;
+
+    public boolean isAllowUgc;
     public long updatedAt;
 
     public boolean isAllowProfiling() {

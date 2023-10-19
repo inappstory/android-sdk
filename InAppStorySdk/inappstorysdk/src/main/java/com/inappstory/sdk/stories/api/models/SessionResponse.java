@@ -11,23 +11,27 @@ import java.util.List;
 
 public class SessionResponse {
 
+    @SerializedName(SessionRequestFields.session)
     public Session session;
-    @SerializedName("server_timestamp")
+
+    @SerializedName(SessionRequestFields.isAllowUgc)
+    public boolean isAllowUgc;
+    @SerializedName(SessionRequestFields.serverTimestamp)
     public Long serverTimestamp;
 
-    @SerializedName("preview_aspect_ratio")
+    @SerializedName(SessionRequestFields.previewAspectRatio)
     public float previewAspectRatio;
     public SessionEditor editor;
-    @SerializedName("cache")
+    @SerializedName(SessionRequestFields.cachedFonts)
     public List<CacheFontObject> cachedFonts;
 
-    @SerializedName("is_allow_profiling")
+    @SerializedName(SessionRequestFields.isAllowProfiling)
     public boolean isAllowProfiling;
-    @SerializedName("is_allow_statistic_v1")
+    @SerializedName(SessionRequestFields.isAllowStatV1)
     public Boolean isAllowStatV1;
-    @SerializedName("is_allow_statistic_v2")
+    @SerializedName(SessionRequestFields.isAllowStatV2)
     public Boolean isAllowStatV2;
-    @SerializedName("is_allow_crash")
+    @SerializedName(SessionRequestFields.isAllowCrash)
     public Boolean isAllowCrash;
 
     public float getPreviewAspectRatio() {
