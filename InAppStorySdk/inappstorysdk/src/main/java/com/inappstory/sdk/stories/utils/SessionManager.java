@@ -115,7 +115,8 @@ public class SessionManager {
             SessionRequestFields.isAllowProfiling,
             SessionRequestFields.isAllowStatV1,
             SessionRequestFields.isAllowStatV2,
-            SessionRequestFields.isAllowCrash
+            SessionRequestFields.isAllowCrash,
+            SessionRequestFields.isAllowUgc
     });
     private final String SESSION_EXPAND = TextUtils.join(",", new String[]{
             SessionRequestFields.cachedFonts
