@@ -162,7 +162,7 @@ public class StoriesList extends RecyclerView {
             mPrevX = e.getX();
             mPrevY = e.getY();
             if (scrollCallback != null) {
-               // scrollCallback.userInteractionStart();
+                // scrollCallback.userInteractionStart();
             }
             getVisibleItems();
         } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
@@ -190,7 +190,7 @@ public class StoriesList extends RecyclerView {
     public boolean onTouchEvent(MotionEvent e) {
         if (e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL) {
             if (scrollCallback != null) {
-       //         scrollCallback.userInteractionEnd();
+                //         scrollCallback.userInteractionEnd();
             }
         }
         return super.onTouchEvent(e);
@@ -347,10 +347,7 @@ public class StoriesList extends RecyclerView {
                         if (current != null && currentPercentage > 0) {
                             scrolledItems.put(i, new ShownStoriesListItem(
                                     new StoryData(
-                                            current.id,
-                                            StringsUtils.getNonNull(current.statTitle),
-                                            StringsUtils.getNonNull(current.tags),
-                                            current.getSlidesCount(),
+                                            current,
                                             feed,
                                             isFavoriteList ? SourceType.FAVORITE : SourceType.LIST
                                     ),
@@ -378,7 +375,7 @@ public class StoriesList extends RecyclerView {
             int scrollRange = super.scrollHorizontallyBy(dx, recycler, state);
             int overScroll = dx - scrollRange;
             if (overScroll != 0 && scrollCallback != null) {
-              //  scrollCallback.onOverscroll(overScroll, 0);
+                //  scrollCallback.onOverscroll(overScroll, 0);
             }
             return scrollRange;
         }
@@ -580,22 +577,40 @@ public class StoriesList extends RecyclerView {
     }
 
     private void loadStoriesLocal() {
-        if (InAppStoryService.isNull()
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null
                 || cacheId == null
                 || cacheId.isEmpty()) {
             loadStoriesInner();
             return;
         }
-        List<Integer> storiesIds = InAppStoryService.getInstance()
-                .listStoriesIds.get(cacheId);
+        List<Integer> storiesIds = service.listStoriesIds.get(cacheId);
         if (storiesIds == null) {
             loadStoriesInner();
             return;
         }
         checkAppearanceManager();
         setOrRefreshAdapter(storiesIds);
-        if (callback != null)
-            callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+        if (callback != null) {
+            callback.storiesLoaded(
+                    storiesIds.size(),
+                    StringsUtils.getNonNull(getFeed()),
+                    getStoriesData(storiesIds)
+            );
+        }
+    }
+
+    private List<StoryData> getStoriesData(List<Integer> storiesIds) {
+        List<StoryData> data = new ArrayList<>();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            for (int id : storiesIds) {
+                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                if (story != null) {
+                    data.add(new StoryData(story, feed, SourceType.LIST));
+                }
+            }
+        return data;
     }
 
     private void checkAppearanceManager() {
@@ -633,7 +648,7 @@ public class StoriesList extends RecyclerView {
                     int scrollRange = super.scrollVerticallyBy(dy, recycler, state);
                     int overScroll = dy - scrollRange;
                     if (overScroll != 0 && scrollCallback != null) {
-                      //  scrollCallback.onOverscroll(0, overScroll);
+                        //  scrollCallback.onOverscroll(0, overScroll);
                     }
                     return scrollRange;
                 }
@@ -698,7 +713,11 @@ public class StoriesList extends RecyclerView {
                         public void run() {
                             setOrRefreshAdapter(storiesIds);
                             if (callback != null)
-                                callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+                                callback.storiesLoaded(
+                                        storiesIds.size(),
+                                        StringsUtils.getNonNull(getFeed()),
+                                        getStoriesData(storiesIds)
+                                );
                         }
                     });
                     ProfilingManager.getInstance().setReady(listUid);
@@ -730,8 +749,11 @@ public class StoriesList extends RecyclerView {
                                     @Override
                                     public void run() {
                                         setOrRefreshAdapter(storiesIds);
-                                        if (callback != null)
-                                            callback.storiesLoaded(storiesIds.size(), StringsUtils.getNonNull(getFeed()));
+                                        callback.storiesLoaded(
+                                                storiesIds.size(),
+                                                StringsUtils.getNonNull(getFeed()),
+                                                getStoriesData(storiesIds)
+                                        );
                                     }
                                 });
                                 ProfilingManager.getInstance().setReady(listUid);

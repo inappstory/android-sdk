@@ -78,15 +78,13 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                             new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
+                                    StoryData.getStoryData(
+                                            story,
                                             getArguments().getString("feedId"),
                                             CallbackManager.getInstance().getSourceFromInt(
                                                     getArguments().getInt("source", 0)
-                                            )
+                                            ),
+                                            type
                                     ),
                                     story.lastIndex,
                                     story.getSlideEventPayload(story.lastIndex)

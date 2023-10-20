@@ -21,6 +21,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -136,12 +137,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
-                        new StoryData(
-                                current.id,
-                                StringsUtils.getNonNull(current.statTitle),
-                                StringsUtils.getNonNull(current.tags),
-                                current.getSlidesCount(),
-                                null,
+                        new UgcStoryData(
+                                current,
                                 SourceType.LIST
                         ),
                         index
@@ -153,13 +150,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                         context,
                         new GameStoryData(
                                 new SlideData(
-                                        new StoryData(
-                                                current.id,
-                                                Story.StoryType.COMMON,
-                                                StringsUtils.getNonNull(current.statTitle),
-                                                StringsUtils.getNonNull(current.tags),
-                                                current.slidesCount,
-                                                null,
+                                        new UgcStoryData(
+                                                current,
                                                 SourceType.LIST
                                         ),
                                         0,
@@ -175,12 +167,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
                             context,
                             new SlideData(
-                                    new StoryData(
-                                            current.id,
-                                            StringsUtils.getNonNull(current.statTitle),
-                                            StringsUtils.getNonNull(current.tags),
-                                            current.getSlidesCount(),
-                                            null,
+                                    new UgcStoryData(
+                                            current,
                                             SourceType.LIST
                                     ),
                                     0,
@@ -218,40 +206,10 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 }
                 return;
             }
-        } else {
-            if (callback != null) {
-                Story lStory = InAppStoryService.getInstance().getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.UGC);
-                if (lStory != null) {
-                    callback.itemClick(
-                            new StoryData(
-                                    lStory.id,
-                                    StringsUtils.getNonNull(lStory.statTitle),
-                                    StringsUtils.getNonNull(lStory.tags),
-                                    lStory.getSlidesCount(),
-                                    null,
-                                    SourceType.LIST
-                            ),
-                            index
-                    );
-                } else {
-                    callback.itemClick(
-                            new StoryData(
-                                    storiesIds.get(index),
-                                    "",
-                                    "",
-                                    0,
-                                    null,
-                                    SourceType.LIST
-                            ),
-                            index
-                    );
-                }
-
-            }
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
+            Story story = service.getDownloadManager().getStoryById(storyId, Story.StoryType.UGC);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }

@@ -63,13 +63,11 @@ public class ReaderManager {
         if (story != null) {
             if (CallbackManager.getInstance().getShowStoryCallback() != null) {
                 CallbackManager.getInstance().getShowStoryCallback().showStory(
-                        new StoryData(
-                                story.id,
-                                StringsUtils.getNonNull(story.statTitle),
-                                StringsUtils.getNonNull(story.tags),
-                                story.getSlidesCount(),
+                        StoryData.getStoryData(
+                                story,
                                 feedId,
-                                CallbackManager.getInstance().getSourceFromInt(source)
+                                CallbackManager.getInstance().getSourceFromInt(source),
+                                storyType
                         ),
                         CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction));
             }

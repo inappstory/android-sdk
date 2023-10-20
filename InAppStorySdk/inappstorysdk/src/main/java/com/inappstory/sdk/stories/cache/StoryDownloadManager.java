@@ -21,7 +21,9 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
@@ -74,6 +76,8 @@ public class StoryDownloadManager {
         }
     }
 
+
+
     public void getFullStoryByStringId(
             final GetStoryByIdCallback storyByIdCallback,
             final String id,
@@ -109,13 +113,11 @@ public class StoryDownloadManager {
                                 ProfilingManager.getInstance().setReady(storyUID);
                                 if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
                                     CallbackManager.getInstance().getSingleLoadCallback().singleLoad(
-                                            new StoryData(
-                                                    response.id,
-                                                    StringsUtils.getNonNull(response.statTitle),
-                                                    StringsUtils.getNonNull(response.tags),
-                                                    response.getSlidesCount(),
+                                            StoryData.getStoryData(
+                                                    response,
                                                     null,
-                                                    CallbackManager.getInstance().getSourceFromInt(readerSource)
+                                                    CallbackManager.getInstance().getSourceFromInt(readerSource),
+                                                    type
                                             )
                                     );
                                 }

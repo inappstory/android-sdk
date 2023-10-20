@@ -21,8 +21,12 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -32,6 +36,7 @@ import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -357,7 +362,20 @@ public class UgcStoriesList extends RecyclerView {
         }
         checkAppearanceManager();
         setOrRefreshAdapter(storiesIds);
-        if (callback != null) callback.storiesLoaded(storiesIds.size(), "");
+        if (callback != null) callback.storiesLoaded(storiesIds.size(), "", getStoriesData(storiesIds));
+    }
+
+    private List<StoryData> getStoriesData(List<Integer> storiesIds) {
+        List<StoryData> data = new ArrayList<>();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            for (int id : storiesIds) {
+                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.UGC);
+                if (story != null) {
+                    data.add(new UgcStoryData(story, SourceType.LIST));
+                }
+            }
+        return data;
     }
 
     private void checkAppearanceManager() {
@@ -417,7 +435,12 @@ public class UgcStoriesList extends RecyclerView {
                         @Override
                         public void run() {
                             setOrRefreshAdapter(storiesIds);
-                            if (callback != null) callback.storiesLoaded(storiesIds.size(), "");
+                            if (callback != null)
+                                callback.storiesLoaded(
+                                        storiesIds.size(),
+                                        "",
+                                        getStoriesData(storiesIds)
+                                );
                         }
                     });
                     ProfilingManager.getInstance().setReady(listUid);
@@ -448,7 +471,11 @@ public class UgcStoriesList extends RecyclerView {
                                     public void run() {
                                         setOrRefreshAdapter(storiesIds);
                                         if (callback != null)
-                                            callback.storiesLoaded(storiesIds.size(), "");
+                                            callback.storiesLoaded(
+                                                    storiesIds.size(),
+                                                    "",
+                                                    getStoriesData(storiesIds)
+                                            );
                                     }
                                 });
                                 ProfilingManager.getInstance().setReady(listUid);

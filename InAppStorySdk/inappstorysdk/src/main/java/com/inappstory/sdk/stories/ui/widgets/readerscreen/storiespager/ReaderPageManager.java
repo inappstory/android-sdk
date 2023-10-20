@@ -15,13 +15,13 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.TimelineManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -82,6 +82,19 @@ public class ReaderPageManager {
         return parentManager != null ? parentManager.storyType : Story.StoryType.COMMON;
     }
 
+
+    public StoryData getStoryData(Story story) {
+        return StoryData.getStoryData(story, getFeedId(), getSourceType(), getStoryType());
+    }
+
+    public SlideData getSlideData(Story story) {
+        return new SlideData(
+                getStoryData(story),
+                story.lastIndex,
+                story.getSlideEventPayload(story.lastIndex)
+        );
+    }
+
     private int storyId;
 
     public int getSlideIndex() {
@@ -140,18 +153,7 @@ public class ReaderPageManager {
             widgetEventMap.put("feed_id", getFeedId());
         if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
             CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
-                    new SlideData(
-                            new StoryData(
-                                    story.id,
-                                    StringsUtils.getNonNull(story.statTitle),
-                                    StringsUtils.getNonNull(story.tags),
-                                    story.getSlidesCount(),
-                                    getFeedId(),
-                                    getSourceType()
-                            ),
-                            story.lastIndex,
-                            story.getSlideEventPayload(story.lastIndex)
-                    ),
+                    getSlideData(story),
                     StringsUtils.getNonNull(widgetName),
                     widgetEventMap
             );
@@ -179,18 +181,7 @@ public class ReaderPageManager {
                         if (story != null) {
                             CallbackManager.getInstance().getCallToActionCallback().callToAction(
                                     host != null ? host.getContext() : null,
-                                    new SlideData(
-                                            new StoryData(
-                                                    story.id,
-                                                    StringsUtils.getNonNull(story.statTitle),
-                                                    StringsUtils.getNonNull(story.tags),
-                                                    story.getSlidesCount(),
-                                                    getFeedId(),
-                                                    getSourceType()
-                                            ),
-                                            story.lastIndex,
-                                            story.getSlideEventPayload(story.lastIndex)
-                                    ),
+                                    getSlideData(story),
                                     object.getLink().getTarget(),
                                     action
                             );
@@ -208,18 +199,7 @@ public class ReaderPageManager {
                         if ("swipeUpItems".equals(object.getType())) {
                             if (story != null)
                                 showGoods(object.getLink().getTarget(), object.getElementId(),
-                                        new SlideData(
-                                                new StoryData(
-                                                        story.id,
-                                                        StringsUtils.getNonNull(story.statTitle),
-                                                        StringsUtils.getNonNull(story.tags),
-                                                        story.getSlidesCount(),
-                                                        getFeedId(),
-                                                        getSourceType()
-                                                ),
-                                                story.lastIndex,
-                                                story.getSlideEventPayload(story.lastIndex)
-                                        )
+                                        getSlideData(story)
                                 );
                         }
                     }
@@ -560,7 +540,7 @@ public class ReaderPageManager {
     }
 
     public void setButtonsPanelManager(ButtonsPanelManager buttonsPanelManager, int storyId) {
-        buttonsPanelManager.setParentManager(this);
+        buttonsPanelManager.setPageManager(this);
         this.buttonsPanelManager = buttonsPanelManager;
         this.buttonsPanelManager.setStoryId(storyId);
     }

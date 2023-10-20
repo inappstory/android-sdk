@@ -367,15 +367,13 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
                         new SlideData(
-                                new StoryData(
-                                        story.id,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount(),
+                                StoryData.getStoryData(
+                                        story,
                                         getIntent().getStringExtra("feedId"),
                                         CallbackManager.getInstance().getSourceFromInt(
                                                 getIntent().getIntExtra("source", 0)
-                                        )
+                                        ),
+                                        type
                                 ),
                                 story.lastIndex,
                                 story.getSlideEventPayload(story.lastIndex)

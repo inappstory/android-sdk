@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -258,7 +256,7 @@ public class ButtonsPanel extends LinearLayout {
         manager.shareClick(new ButtonsPanelManager.ShareButtonClickCallback() {
             @Override
             void onClick() {
-                manager.getParentManager().pauseSlide(false);
+                manager.getPageManager().pauseSlide(false);
             }
 
             @Override

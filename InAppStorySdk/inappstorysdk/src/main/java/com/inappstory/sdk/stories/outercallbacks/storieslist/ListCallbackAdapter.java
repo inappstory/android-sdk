@@ -2,10 +2,12 @@ package com.inappstory.sdk.stories.outercallbacks.storieslist;
 
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 
+import java.util.List;
+
 public class ListCallbackAdapter implements ListCallback {
 
     @Override
-    public void storiesLoaded(int size, String feed) {
+    public void storiesLoaded(int size, String feed, List<StoryData> storyData) {
 
     }
 

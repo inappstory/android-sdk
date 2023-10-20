@@ -171,7 +171,9 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     @Override
     public void onItemClick(int ind) {
-        if (InAppStoryService.isNull()) return;
+
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
 
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
@@ -179,16 +181,12 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        InAppStoryService service = InAppStoryService.getInstance();
         Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
                         new StoryData(
-                                current.id,
-                                StringsUtils.getNonNull(current.statTitle),
-                                StringsUtils.getNonNull(current.tags),
-                                current.getSlidesCount(),
+                                current,
                                 feed,
                                 getListSourceType()
                         ),
@@ -202,11 +200,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                         new GameStoryData(
                                 new SlideData(
                                         new StoryData(
-                                                current.id,
-                                                Story.StoryType.COMMON,
-                                                StringsUtils.getNonNull(current.statTitle),
-                                                StringsUtils.getNonNull(current.tags),
-                                                current.slidesCount,
+                                                current,
                                                 feed,
                                                 getListSourceType()
                                         ),
@@ -229,10 +223,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                             context,
                             new SlideData(
                                     new StoryData(
-                                            current.id,
-                                            StringsUtils.getNonNull(current.statTitle),
-                                            StringsUtils.getNonNull(current.tags),
-                                            current.getSlidesCount(),
+                                            current,
                                             feed,
                                             getListSourceType()
                                     ),
@@ -273,40 +264,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 }
                 return;
             }
-        } else {
-            if (callback != null) {
-                Story lStory = InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
-                if (lStory != null) {
-                    callback.itemClick(
-                            new StoryData(
-                                    lStory.id,
-                                    StringsUtils.getNonNull(lStory.statTitle),
-                                    StringsUtils.getNonNull(lStory.tags),
-                                    lStory.getSlidesCount(),
-                                    feed,
-                                    getListSourceType()
-                            ),
-                            index
-                    );
-                } else {
-                    callback.itemClick(
-                            new StoryData(
-                                    storiesIds.get(index),
-                                    "",
-                                    "",
-                                    0,
-                                    feed,
-                                    getListSourceType()
-                            ),
-                            index
-                    );
-                }
-            }
         }
         ArrayList<Integer> tempStories = new ArrayList();
         for (Integer storyId : storiesIds) {
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
+            Story story = service.getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }

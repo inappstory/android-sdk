@@ -1,0 +1,49 @@
+package com.inappstory.sdk.stories.outercallbacks.common.reader;
+
+import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.utils.StringsUtils;
+
+import java.util.HashMap;
+
+public class UgcStoryData extends StoryData {
+    public HashMap<String, Object> payload;
+
+    public UgcStoryData(
+            int id,
+            String title,
+            String tags,
+            int slidesCount,
+            HashMap<String, Object> payload,
+            SourceType sourceType
+    ) {
+        super(id, Story.StoryType.UGC, title, tags, slidesCount, null, sourceType);
+        this.payload = payload;
+    }
+
+    public UgcStoryData(
+            Story story,
+            SourceType sourceType
+    ) {
+        this(
+                story.id,
+                StringsUtils.getNonNull(story.statTitle),
+                StringsUtils.getNonNull(story.tags),
+                story.slidesCount,
+                story.ugcPayload,
+                sourceType
+        );
+    }
+
+    @Override
+    public String toString() {
+        return "UgcStoryData{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", tags='" + tags + '\'' +
+                ", feed='" + feed + '\'' +
+                ", sourceType='" + sourceType.name() + '\'' +
+                ", slidesCount=" + slidesCount +
+                ", payload=" + payload +
+                '}';
+    }
+}

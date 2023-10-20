@@ -31,6 +31,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -452,6 +453,8 @@ public class StoriesViewManager {
         }
     }
 
+
+
     private GameStoryData getGameStoryData() {
         GameStoryData data = null;
         InAppStoryService service = InAppStoryService.getInstance();
@@ -460,19 +463,7 @@ public class StoriesViewManager {
             Story story = service.getDownloadManager().getStoryById(storyId, type);
             if (story != null) {
                 data = new GameStoryData(
-                        new SlideData(
-                                new StoryData(
-                                        story.id,
-                                        type,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.slidesCount,
-                                        pageManager != null ? pageManager.getFeedId() : null,
-                                        pageManager != null ? pageManager.getSourceType() : SourceType.LIST
-                                ),
-                                story.lastIndex,
-                                story.getSlideEventPayload(story.lastIndex)
-                        )
+                        pageManager.getSlideData(story)
                 );
             }
         }
@@ -537,18 +528,7 @@ public class StoriesViewManager {
         if (story != null) {
             ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
             if (showSlideCallback != null) {
-                showSlideCallback.showSlide(new SlideData(
-                        new StoryData(
-                                story.id,
-                                StringsUtils.getNonNull(story.statTitle),
-                                StringsUtils.getNonNull(story.tags),
-                                story.getSlidesCount(),
-                                pageManager != null ? pageManager.getFeedId() : null,
-                                pageManager != null ? pageManager.getSourceType() : SourceType.LIST
-                        ),
-                        index,
-                        story.getSlideEventPayload(story.lastIndex)
-                ));
+                showSlideCallback.showSlide(pageManager.getSlideData(story));
             }
         }
     }
