@@ -12,7 +12,7 @@ public class ListCallbackAdapter implements ListCallback {
     }
 
     @Override
-    public void storiesUpdated(int size, String feed) {
+    public void storiesUpdated(int size, String feed, List<StoryData> storyData) {
 
     }
 

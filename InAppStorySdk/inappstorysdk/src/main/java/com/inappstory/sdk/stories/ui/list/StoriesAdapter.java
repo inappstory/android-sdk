@@ -61,7 +61,20 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     void notifyChanges() {
         if (callback != null)
-            callback.storiesUpdated(storiesIds.size(), feed);
+            callback.storiesUpdated(storiesIds.size(), feed, getStoriesData(storiesIds));
+    }
+
+    private List<StoryData> getStoriesData(List<Integer> storiesIds) {
+        List<StoryData> data = new ArrayList<>();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            for (int id : storiesIds) {
+                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.COMMON);
+                if (story != null) {
+                    data.add(new StoryData(story, feed, SourceType.LIST));
+                }
+            }
+        return data;
     }
 
     public StoriesAdapter(Context context,

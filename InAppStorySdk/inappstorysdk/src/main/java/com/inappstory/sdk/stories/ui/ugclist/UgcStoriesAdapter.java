@@ -63,6 +63,21 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         this.ugcItemClick = ugcItemClick;
         this.callback = callback;
         this.useUGC = useUGC;
+        if (callback != null)
+            callback.storiesUpdated(storiesIds.size(), null, getStoriesData(storiesIds));
+    }
+
+    private List<StoryData> getStoriesData(List<Integer> storiesIds) {
+        List<StoryData> data = new ArrayList<>();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            for (int id : storiesIds) {
+                Story story = service.getDownloadManager().getStoryById(id, Story.StoryType.UGC);
+                if (story != null) {
+                    data.add(new UgcStoryData(story, SourceType.LIST));
+                }
+            }
+        return data;
     }
 
     public void refresh(List<Integer> storiesIds) {
