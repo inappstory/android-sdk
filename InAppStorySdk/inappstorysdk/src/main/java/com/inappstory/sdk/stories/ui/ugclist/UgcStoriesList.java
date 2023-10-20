@@ -165,9 +165,7 @@ public class UgcStoriesList extends RecyclerView {
     private boolean hasSessionUGC() {
         synchronized (Session.class) {
             return (!Session.needToUpdate()
-                    && Session.getInstance().editor != null
-                    && Session.getInstance().editor.url != null
-                    && !Session.getInstance().editor.url.isEmpty());
+                    && Session.getInstance().isAllowUgc);
         }
     }
 
