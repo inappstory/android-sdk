@@ -1,5 +1,5 @@
 package com.inappstory.sdk.ugc.extinterfaces;
 
-public interface IGetUgcEditorUseCase {
+public interface IGetUgcEditor {
     void get(IGetUgcEditorCallback callback);
 }

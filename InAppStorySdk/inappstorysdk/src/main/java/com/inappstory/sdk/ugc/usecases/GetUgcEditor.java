@@ -9,11 +9,11 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.ugc.dto.SessionEditorDTO;
 import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditorCallback;
-import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditorUseCase;
+import com.inappstory.sdk.ugc.extinterfaces.IGetUgcEditor;
 
 import java.lang.reflect.Type;
 
-public class GetUgcEditorUseCase implements IGetUgcEditorUseCase {
+public class GetUgcEditor implements IGetUgcEditor {
 
     @Override
     public void get(final IGetUgcEditorCallback callback) {

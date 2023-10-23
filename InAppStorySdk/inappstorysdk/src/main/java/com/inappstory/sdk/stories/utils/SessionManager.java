@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class SessionManager {
         }
     }
 
-    public void addStaticOpenSessionCallback(OpenSessionCallback callback) {
+    public void addStaticOpenSessionCallback(IOpenSessionCallback callback) {
         synchronized (openProcessLock) {
             staticCallbacks.add(callback);
         }
@@ -82,7 +83,7 @@ public class SessionManager {
 
     public final Object openProcessLock = new Object();
     public ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
-    public ArrayList<OpenSessionCallback> staticCallbacks = new ArrayList<>();
+    public ArrayList<IOpenSessionCallback> staticCallbacks = new ArrayList<>();
 
     public void openStatisticSuccess(final SessionResponse response) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -106,7 +107,7 @@ public class SessionManager {
                         if (localCallback != null)
                             localCallback.onSuccess();
                     callbacks.clear();
-                    for (OpenSessionCallback localCallback : staticCallbacks)
+                    for (IOpenSessionCallback localCallback : staticCallbacks)
                         if (localCallback != null)
                             localCallback.onSuccess();
                 }
@@ -238,7 +239,7 @@ public class SessionManager {
                                         if (localCallback != null)
                                             localCallback.onError();
                                     callbacks.clear();
-                                    for (OpenSessionCallback localCallback : staticCallbacks)
+                                    for (IOpenSessionCallback localCallback : staticCallbacks)
                                         if (localCallback != null)
                                             localCallback.onError();
                                 }
