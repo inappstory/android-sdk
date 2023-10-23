@@ -52,6 +52,12 @@ public class SessionManager {
         }
     }
 
+    public void addStaticOpenSessionCallback(OpenSessionCallback callback) {
+        synchronized (openProcessLock) {
+            staticCallbacks.add(callback);
+        }
+    }
+
     public boolean checkOpenStatistic(final OpenSessionCallback callback) {
         boolean checkOpen = false;
         synchronized (openProcessLock) {
@@ -74,8 +80,9 @@ public class SessionManager {
 
     public static boolean openProcess = false;
 
-    public static final Object openProcessLock = new Object();
-    public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
+    public final Object openProcessLock = new Object();
+    public ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
+    public ArrayList<OpenSessionCallback> staticCallbacks = new ArrayList<>();
 
     public void openStatisticSuccess(final SessionResponse response) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -99,6 +106,9 @@ public class SessionManager {
                         if (localCallback != null)
                             localCallback.onSuccess();
                     callbacks.clear();
+                    for (OpenSessionCallback localCallback : staticCallbacks)
+                        if (localCallback != null)
+                            localCallback.onSuccess();
                 }
                 InAppStoryService.getInstance().runStatisticThread();
                 Downloader.downloadFonts(response.cachedFonts);
@@ -228,6 +238,9 @@ public class SessionManager {
                                         if (localCallback != null)
                                             localCallback.onError();
                                     callbacks.clear();
+                                    for (OpenSessionCallback localCallback : staticCallbacks)
+                                        if (localCallback != null)
+                                            localCallback.onError();
                                 }
                             });
                         }
