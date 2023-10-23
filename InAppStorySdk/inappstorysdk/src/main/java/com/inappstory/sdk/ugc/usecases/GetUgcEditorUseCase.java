@@ -28,12 +28,12 @@ public class GetUgcEditorUseCase implements IGetUgcEditorUseCase {
             public void onSuccess() {
                 networkClient.enqueue(
                         networkClient.getApi().getUgcEditor(),
-                        new NetworkCallback<UgcEditorResponse>() {
+                        new NetworkCallback<SessionEditor>() {
                             @Override
-                            public void onSuccess(UgcEditorResponse response) {
+                            public void onSuccess(SessionEditor response) {
                                 callback.get(
                                         new SessionEditorDTO(
-                                                response.editor,
+                                                response,
                                                 Session.getInstance().id
                                         )
                                 );
@@ -41,7 +41,7 @@ public class GetUgcEditorUseCase implements IGetUgcEditorUseCase {
 
                             @Override
                             public Type getType() {
-                                return UgcEditorResponse.class;
+                                return SessionEditor.class;
                             }
 
                             @Override
