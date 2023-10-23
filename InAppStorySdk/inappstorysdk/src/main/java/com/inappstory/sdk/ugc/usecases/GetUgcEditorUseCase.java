@@ -5,7 +5,6 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionEditor;
-import com.inappstory.sdk.stories.api.models.UgcEditorResponse;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.ugc.dto.SessionEditorDTO;

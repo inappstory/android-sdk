@@ -112,7 +112,6 @@ public class SessionManager {
     private final String SESSION_FIELDS = TextUtils.join(",", new String[]{
             SessionRequestFields.session,
             SessionRequestFields.previewAspectRatio,
-            "editor",
             SessionRequestFields.isAllowProfiling,
             SessionRequestFields.isAllowStatV1,
             SessionRequestFields.isAllowStatV2,

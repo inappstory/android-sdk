@@ -33,8 +33,10 @@ public class SessionEditorDTO implements IUgcEditor {
             }
         }
         this.versionsMap = dtoMap;
-        this.config = new HashMap<>(config);
-        this.messages = new HashMap<>(messages);
+        if (editor.config != null)
+            this.config = new HashMap<>(editor.config);
+        if (editor.messages != null)
+            this.messages = new HashMap<>(editor.messages);
     }
 
     @Override

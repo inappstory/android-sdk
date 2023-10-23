@@ -16,6 +16,10 @@ public class SessionEditor {
     public String versionTemplate;
     @SerializedName("versionsMap")
     public List<UGCVersionToSDKBuild> versionsMap;
+
+    @SerializedName("config")
     public HashMap<String, Object> config;
+
+    @SerializedName("messages")
     public HashMap<String, String> messages;
 }
