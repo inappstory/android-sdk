@@ -6,13 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface IUgcEditor {
-    @SerializedName("url")
+    String session();
     String url();
-    @SerializedName("urlTemplate")
     String urlTemplate();
-    @SerializedName("versionTemplate")
     String versionTemplate();
-    @SerializedName("versionsMap")
     List<IUgcVersionToSDKBuild> versionsMap();
     HashMap<String, Object> config();
     HashMap<String, String> messages();

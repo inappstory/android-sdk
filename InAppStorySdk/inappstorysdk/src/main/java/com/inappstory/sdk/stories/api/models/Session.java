@@ -19,8 +19,6 @@ public class Session {
     @SerializedName("is_allow_profiling")
     public StatisticPermissions statisticPermissions;
 
-    public SessionEditor editor;
-
     public boolean isAllowUgc;
     public long updatedAt;
 

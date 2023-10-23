@@ -21,7 +21,6 @@ public class SessionResponse {
 
     @SerializedName(SessionRequestFields.previewAspectRatio)
     public float previewAspectRatio;
-    public SessionEditor editor;
     @SerializedName(SessionRequestFields.cachedFonts)
     public List<CacheFontObject> cachedFonts;
 

@@ -14,13 +14,15 @@ public class SessionEditorDTO implements IUgcEditor {
     public String url;
     public String urlTemplate;
     public String versionTemplate;
+    private String sessionId;
     public List<IUgcVersionToSDKBuild> versionsMap;
 
     public HashMap<String, Object> config;
     public HashMap<String, String> messages;
 
-    public SessionEditorDTO(SessionEditor editor) {
+    public SessionEditorDTO(SessionEditor editor, String sessionId) {
         this.url = editor.url;
+        this.sessionId = sessionId;
         this.urlTemplate = editor.urlTemplate;
         this.versionTemplate = editor.versionTemplate;
         List<IUgcVersionToSDKBuild> dtoMap = null;
@@ -33,6 +35,11 @@ public class SessionEditorDTO implements IUgcEditor {
         this.versionsMap = dtoMap;
         this.config = new HashMap<>(config);
         this.messages = new HashMap<>(messages);
+    }
+
+    @Override
+    public String session() {
+        return null;
     }
 
     @Override
