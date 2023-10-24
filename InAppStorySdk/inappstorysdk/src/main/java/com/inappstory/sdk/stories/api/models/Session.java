@@ -57,16 +57,6 @@ public class Session {
         return false;
     }
 
-    public static boolean hasUgcEditor() {
-        synchronized (lock) {
-            return (INSTANCE != null
-                    && !(INSTANCE.id == null || INSTANCE.id.isEmpty())
-                    && INSTANCE.editor != null
-                    && INSTANCE.editor.url != null
-                    && !INSTANCE.editor.url.isEmpty());
-        }
-    }
-
     public static void updateStatistic() {
         synchronized (lock) {
             if (INSTANCE == null) return;

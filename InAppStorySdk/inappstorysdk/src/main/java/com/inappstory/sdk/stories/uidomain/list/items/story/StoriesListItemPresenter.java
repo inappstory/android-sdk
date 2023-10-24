@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.uidomain.list.items.story;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
@@ -15,7 +16,7 @@ public final class StoriesListItemPresenter implements IStoriesListItemPresenter
         if (fileLink != null) {
             callback.onSuccess(fileLink);
         } else {
-            new StoryPreviewDownload(url, new IFileDownloadCallback() {
+            IASCoreManager.getInstance().filesRepository.getStoryPreview(url, new IFileDownloadCallback() {
                 @Override
                 public void onSuccess(final String fileAbsolutePath) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -31,7 +32,7 @@ public final class StoriesListItemPresenter implements IStoriesListItemPresenter
                 public void onError(int errorCode, String error) {
                     callback.onError(errorCode, error);
                 }
-            }).downloadOrGetFromCache();
+            });
         }
     }
 

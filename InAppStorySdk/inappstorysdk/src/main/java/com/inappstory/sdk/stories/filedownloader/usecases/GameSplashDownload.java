@@ -12,14 +12,13 @@ import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class GameSplashDownload extends AsyncFileDownload {
+public final class GameSplashDownload extends AsyncFileDownload {
     public GameSplashDownload(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
             @NonNull LruDiskCache cache,
             @NonNull ExecutorService service
     ) {
-        super(url, fileDownloadCallback, cache, service);
+        super(url, cache, service);
     }
 
     @Override
@@ -42,10 +41,4 @@ public class GameSplashDownload extends AsyncFileDownload {
         return false;
     }
 
-    @Override
-    public LruDiskCache getCache() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) return service.getInfiniteCache();
-        return null;
-    }
 }

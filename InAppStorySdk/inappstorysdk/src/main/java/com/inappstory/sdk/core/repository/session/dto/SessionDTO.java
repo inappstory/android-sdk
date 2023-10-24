@@ -27,6 +27,11 @@ public class SessionDTO {
     }
 
     private long expireIn;
+
+    public String getUserId() {
+        return userId;
+    }
+
     private String userId;
     private float previewAspectRatio;
     private String id;

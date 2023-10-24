@@ -1,4 +1,5 @@
 package com.inappstory.sdk.core.repository.session.dto;
+
 import com.inappstory.sdk.stories.api.models.SessionEditor;
 import com.inappstory.sdk.stories.api.models.UGCVersionToSDKBuild;
 
@@ -18,8 +19,20 @@ public class UgcEditorDTO {
         this.url = sessionEditor.url;
         this.urlTemplate = sessionEditor.urlTemplate;
         this.versionTemplate = sessionEditor.versionTemplate;
-        this.versionsMap = new ArrayList<>(versionsMap);
-        this.config = new HashMap<>(config);
-        this.messages = new HashMap<>(messages);
+        if (versionsMap != null) {
+            this.versionsMap = new ArrayList<>(versionsMap);
+        } else {
+            this.versionsMap = new ArrayList<>();
+        }
+        if (config != null) {
+            this.config = new HashMap<>(config);
+        } else {
+            this.config = new HashMap<>();
+        }
+        if (messages != null) {
+            this.messages = new HashMap<>(messages);
+        } else {
+            this.messages = new HashMap<>();
+        }
     }
 }

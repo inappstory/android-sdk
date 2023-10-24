@@ -12,6 +12,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
@@ -116,28 +117,30 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     File file = null;
 
     private void downloadCoverVideo(@NonNull String url) throws Exception {
-        new StoryPreviewDownload(url, new IFileDownloadCallback() {
-            @Override
-            public void onSuccess(String fileAbsolutePath) {
-                file = new File(fileAbsolutePath);
-                if (file.exists()) {
-                    boolean fileIsNotLocked = file.renameTo(file);
-                    if (file.length() > 10 && fileIsNotLocked) {
-                        try {
-                            mp.setDataSource(file.getAbsolutePath());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+        IASCoreManager.getInstance().filesRepository.getStoryPreview(
+                url, new IFileDownloadCallback() {
+                    @Override
+                    public void onSuccess(String fileAbsolutePath) {
+                        file = new File(fileAbsolutePath);
+                        if (file.exists()) {
+                            boolean fileIsNotLocked = file.renameTo(file);
+                            if (file.length() > 10 && fileIsNotLocked) {
+                                try {
+                                    mp.setDataSource(file.getAbsolutePath());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                mp.prepareAsync();
+                            }
                         }
-                        mp.prepareAsync();
+                    }
+
+                    @Override
+                    public void onError(int errorCode, String error) {
+
                     }
                 }
-            }
-
-            @Override
-            public void onError(int errorCode, String error) {
-
-            }
-        }).downloadOrGetFromCache();
+        );
     }
 
 

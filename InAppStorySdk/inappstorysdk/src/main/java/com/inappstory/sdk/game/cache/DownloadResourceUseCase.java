@@ -3,6 +3,7 @@ package com.inappstory.sdk.game.cache;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
@@ -31,22 +32,8 @@ public class DownloadResourceUseCase {
         try {
             String url = resource.url;
             String fileName = resource.key;
-            if (url == null || url.isEmpty() || fileName == null || fileName.isEmpty()) {
-                useCaseCallback.onError("Wrong resource key or url");
-                return;
-            }
             final File resourceFile = new File(directory + File.separator + fileName);
-            if (fileChecker.checkWithShaAndSize(
-                    resourceFile,
-                    resource.size,
-                    resource.sha1,
-                    true
-            )) {
-                if (progressCallback != null)
-                    progressCallback.onProgress(resource.size, resource.size);
-                useCaseCallback.onSuccess(null);
-            }
-            new GameResourceDownload(
+            IASCoreManager.getInstance().filesRepository.getGameResource(
                     url,
                     fileName,
                     resourceFile.getAbsolutePath(),
@@ -77,7 +64,7 @@ public class DownloadResourceUseCase {
                         }
                     },
                     interruption
-            ).downloadOrGetFromCache();
+            );
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             e.printStackTrace();

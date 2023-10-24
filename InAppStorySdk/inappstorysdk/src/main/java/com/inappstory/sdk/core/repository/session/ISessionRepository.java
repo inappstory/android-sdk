@@ -11,6 +11,8 @@ public interface ISessionRepository extends
             IGetSessionCallback<SessionDTO> getSessionCallback
     );
 
+    SessionDTO getSessionData();
+
     void closeSession();
 
     void changeSession(

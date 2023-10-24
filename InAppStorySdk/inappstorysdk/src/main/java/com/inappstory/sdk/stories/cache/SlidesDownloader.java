@@ -65,7 +65,7 @@ class SlidesDownloader {
     private final Object pageTasksLock = new Object();
     private final ExecutorService loader = Executors.newFixedThreadPool(1);
 
-    SlidesDownloader(DownloadPageCallback callback, StoryDownloadManager manager) {
+    SlidesDownloader(IDownloadPageFile callback, StoryDownloadManager manager) {
         this.callback = callback;
         this.handler = new Handler();
         this.errorHandler = new Handler();
@@ -257,7 +257,7 @@ class SlidesDownloader {
     }
 
 
-    DownloadPageCallback callback;
+    IDownloadPageFile callback;
 
     private void loadPageError(SlideTaskData key) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
@@ -296,49 +296,74 @@ class SlidesDownloader {
         }
     };
 
-    Object loadSlide(SlideTaskData slideTaskData) {
-        try {
-            ArrayList<String> allUrls = new ArrayList<>();
-            SlideTask slideTask = pageTasks.get(slideTaskData);
-            if (slideTask == null) return null;
-            synchronized (pageTasksLock) {
-                allUrls.addAll(slideTask.videoUrls);
-                allUrls.addAll(slideTask.urls);
-            }
-            DownloadPageFileStatus status = DownloadPageFileStatus.SUCCESS;
-            for (String url : allUrls) {
-                if (callback != null) {
-                    status = callback.downloadFile(new UrlWithAlter(url), slideTaskData);
-                    if (status != DownloadPageFileStatus.SUCCESS)
-                        break;
-                }
-            }
-            if (status != DownloadPageFileStatus.SUCCESS) {
-                loadPageError(slideTaskData);
-                return null;
-            }
-            for (UrlWithAlter urlWithAlter : slideTask.urlsWithAlter) {
-                if (callback != null) {
-                    callback.downloadFile(urlWithAlter, slideTaskData);
-                }
-            }
-
-            /*for (String url : videoUrls) {
-                if (callback != null) {
-                    success &= callback.downloadFile(url, storyId, key.index);
-                    synchronized (pageTasksLock) {
-                        if (!success) //pageTasks.get(key).videoUrls.remove(url);
-                            break;
+    private void downloadUrls(
+            final SlideTaskData slideTaskData,
+            List<UrlWithAlter> urlWithAlters,
+            final ISlideTaskFilesLoad loadCallback
+    ) {
+        final Iterator<UrlWithAlter> urlIterator = urlWithAlters.iterator();
+        if (!urlIterator.hasNext()) {
+            loadCallback.onLoaded();
+            return;
+        }
+        IDownloadPageFileCallback fileCallback = new IDownloadPageFileCallback() {
+            @Override
+            public void download(UrlWithAlter source, DownloadPageFileStatus status) {
+                if (!source.isSkippable() && status != DownloadPageFileStatus.SUCCESS) {
+                    loadPageError(slideTaskData);
+                } else {
+                    if (urlIterator.hasNext()) {
+                        callback.downloadFile(
+                                urlIterator.next(),
+                                this
+                        );
+                    } else {
+                        loadCallback.onLoaded();
                     }
                 }
-            }*/
-            synchronized (pageTasksLock) {
-                pageTasks.get(slideTaskData).loadType = 2;
             }
-            manager.slideLoaded(slideTaskData);
-            handler.postDelayed(queuePageReadRunnable, 200);
-            return null;
+        };
+        if (callback != null) {
+            callback.downloadFile(
+                    urlIterator.next(),
+                    fileCallback
+            );
+        }
+    }
 
+    Object loadSlide(final SlideTaskData slideTaskData) {
+        try {
+            ArrayList<UrlWithAlter> allUrls = new ArrayList<>();
+            final SlideTask slideTask;
+            synchronized (pageTasksLock) {
+                slideTask = pageTasks.get(slideTaskData);
+            }
+            if (slideTask == null) {
+                handler.postDelayed(queuePageReadRunnable, 100);
+                return null;
+            }
+            for (String url : slideTask.videoUrls) {
+                allUrls.add(new UrlWithAlter(url));
+            }
+            for (String url : slideTask.urls) {
+                allUrls.add(new UrlWithAlter(url));
+            }
+            allUrls.addAll(slideTask.urlsWithAlter);
+            downloadUrls(
+                    slideTaskData,
+                    allUrls,
+                    new ISlideTaskFilesLoad() {
+                        @Override
+                        public void onLoaded() {
+                            synchronized (pageTasksLock) {
+                                slideTask.loadType = 2;
+                            }
+                            manager.slideLoaded(slideTaskData);
+                            handler.postDelayed(queuePageReadRunnable, 100);
+                        }
+                    }
+            );
+            return null;
         } catch (Throwable t) {
             loadPageError(slideTaskData);
             return null;

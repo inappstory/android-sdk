@@ -57,6 +57,7 @@ public final class NetworkHandler implements InvocationHandler {
 
     private Request generateRequest(
             String path,
+            String[] exclude,
             Annotation[][] parameterAnnotations,
             Object[] args,
             Request.Builder builder,
@@ -68,15 +69,13 @@ public final class NetworkHandler implements InvocationHandler {
         String bodyEncoded = "";
         String body = "";
         UrlEncoder encoder = new UrlEncoder();
-        String[] exclude = {};
+
         for (int i = 0; i < parameterAnnotations.length; i++) {
             if (args[i] == null) continue;
             Annotation[] annotationM = parameterAnnotations[i];
             if (annotationM != null && annotationM.length > 0) {
                 Annotation annotation = annotationM[0];
-                if (annotation instanceof ExcludeHeaders) {
-                    exclude = ((ExcludeHeaders) annotation).value();
-                } else if (annotation instanceof Path) {
+                if (annotation instanceof Path) {
                     path = path.replaceFirst("\\{" + ((Path) annotation).value() + "\\}", args[i].toString());
                 } else if (annotation instanceof Query) {
                     vars.put(((Query) annotation).value(), encoder.encode(args[i].toString()));
@@ -161,16 +160,50 @@ public final class NetworkHandler implements InvocationHandler {
         POST post = method.getAnnotation(POST.class);
         DELETE delete = method.getAnnotation(DELETE.class);
         PUT put = method.getAnnotation(PUT.class);
+
+        ExcludeHeaders excludeHeaders = method.getAnnotation(ExcludeHeaders.class);
+        String[] exclude = {};
+        if (excludeHeaders != null) {
+            exclude = excludeHeaders.value();
+        }
         if (delete != null) {
-            return generateRequest(delete.value(), method.getParameterAnnotations(), args, (new Request.Builder()).delete(), false);
+            return generateRequest(
+                    delete.value(),
+                    exclude,
+                    method.getParameterAnnotations(),
+                    args,
+                    (new Request.Builder()).delete(),
+                    false
+            );
         } else if (get != null) {
-            return generateRequest(get.value(), method.getParameterAnnotations(), args, (new Request.Builder()).get(), false);
+            return generateRequest(
+                    get.value(),
+                    exclude,
+                    method.getParameterAnnotations(),
+                    args,
+                    (new Request.Builder()).get(),
+                    false
+            );
         } else {
             boolean encoded = (method.getAnnotation(FormUrlEncoded.class) != null);
             if (post != null) {
-                return generateRequest(post.value(), method.getParameterAnnotations(), args, (new Request.Builder()).post(), encoded);
+                return generateRequest(
+                        post.value(),
+                        exclude,
+                        method.getParameterAnnotations(),
+                        args,
+                        (new Request.Builder()).post(),
+                        encoded
+                );
             } else if (put != null) {
-                return generateRequest(put.value(), method.getParameterAnnotations(), args, (new Request.Builder()).put(), encoded);
+                return generateRequest(
+                        put.value(),
+                        exclude,
+                        method.getParameterAnnotations(),
+                        args,
+                        (new Request.Builder()).put(),
+                        encoded
+                );
             } else {
                 throw new IllegalStateException("Don't know what to do.");
             }
@@ -182,7 +215,7 @@ public final class NetworkHandler implements InvocationHandler {
     public <T> T implement(Class int3rface) {
         return (T) Proxy.newProxyInstance(
                 int3rface.getClassLoader(),
-                new Class[] {
+                new Class[]{
                         int3rface
                 },
                 this

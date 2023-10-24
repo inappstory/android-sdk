@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -125,7 +126,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
     @Override
     public boolean hasUgcEditor() {
-        return Session.hasUgcEditor();
+        return IASCoreManager.getInstance().sessionRepository.getUgcEditor() != null;
     }
 
     private void notifyListCallback(StoriesAdapterStoryData current, int index) {

@@ -2,11 +2,11 @@ package com.inappstory.sdk.core.repository.files;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.ProgressFileDownload;
 import com.inappstory.sdk.stories.filedownloader.usecases.FontDownload;
 import com.inappstory.sdk.stories.filedownloader.usecases.GameResourceDownload;
 import com.inappstory.sdk.stories.filedownloader.usecases.GameSplashDownload;
@@ -17,161 +17,240 @@ import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 import com.inappstory.sdk.stories.filedownloader.usecases.ZipArchiveDownload;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class FilesRepository implements IFilesRepository {
-
-
     private FilesRepositoryCacheStorage cacheStorage;
+
+    private HashMap<String, FileDownload> currentUseCases = new HashMap<>();
     private FilesRepositoryThreadsStorage threadsStorage = new FilesRepositoryThreadsStorage();
 
     public FilesRepository(File cacheDir) {
         cacheStorage = new FilesRepositoryCacheStorage(cacheDir);
     }
 
-    private DownloadFileState getFile(
-            FileDownload downloadUseCase
-    ) {
-        try {
-            return downloadUseCase.downloadOrGetFromCache();
-        } catch (Exception ignored) {
-            return null;
-        }
-    }
-
     @Override
     public void getStoryPreview(
-            @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            @NonNull final String url,
+            final IFileDownloadCallback fileDownloadCallback
     ) {
         if (cacheStorage == null) return;
         getFile(
-                new StoryPreviewDownload(
-                        url,
-                        fileDownloadCallback,
-                        cacheStorage.getFastCache(),
-                        threadsStorage.getStoryPreviewDownloadThread()
-                )
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new StoryPreviewDownload(
+                                url,
+                                cacheStorage.getFastCache(),
+                                threadsStorage.getStoryPreviewDownloadThread()
+                        );
+                    }
+                },
+                fileDownloadCallback
         );
     }
 
     @Override
     public void getFont(
-            @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            @NonNull final String url,
+            IFileDownloadCallback fileDownloadCallback
     ) {
         if (cacheStorage == null) return;
         getFile(
-                new FontDownload(
-                        url,
-                        fileDownloadCallback,
-                        cacheStorage.getCommonCache(),
-                        threadsStorage.getFontDownloadThread()
-                )
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new FontDownload(
+                                url,
+                                cacheStorage.getFastCache(),
+                                threadsStorage.getStoryPreviewDownloadThread()
+                        );
+                    }
+                },
+                fileDownloadCallback
         );
     }
 
     @Override
-    public DownloadFileState getGameResource(
-            @NonNull String url,
-            @NonNull String cacheKey,
-            @NonNull String downloadPath,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
-            @NonNull IFileDownloadProgressCallback progressCallback,
-            @NonNull DownloadInterruption interruption
+    public void getGameResource(
+            @NonNull final String url,
+            @NonNull final String cacheKey,
+            @NonNull final String downloadPath,
+            final IFileDownloadCallback fileDownloadCallback,
+            @NonNull final IFileDownloadProgressCallback progressCallback,
+            @NonNull final DownloadInterruption interruption
     ) {
-        if (cacheStorage == null) return null;
-        return getFile(
-                new GameResourceDownload(
-                        url,
-                        cacheKey,
-                        cacheStorage.getInfiniteCache(),
-                        downloadPath,
-                        fileDownloadCallback,
-                        progressCallback,
-                        interruption
-                )
+        if (cacheStorage == null) return;
+        getFileWithProgress(
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new GameResourceDownload(
+                                url,
+                                cacheKey,
+                                cacheStorage.getInfiniteCache(),
+                                downloadPath,
+                                interruption
+                        );
+                    }
+                },
+                fileDownloadCallback,
+                progressCallback
         );
     }
 
     @Override
     public void getGameSplash(
-            @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            @NonNull final String url,
+            final IFileDownloadCallback fileDownloadCallback
     ) {
         if (cacheStorage == null) return;
         getFile(
-                new GameSplashDownload(
-                        url,
-                        fileDownloadCallback,
-                        cacheStorage.getInfiniteCache(),
-                        threadsStorage.getGameSplashDownloadThread()
-                )
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new GameSplashDownload(
+                                url,
+                                cacheStorage.getInfiniteCache(),
+                                threadsStorage.getGameSplashDownloadThread()
+                        );
+                    }
+                },
+                fileDownloadCallback
         );
     }
 
     @Override
     public void getGoodsWidgetPreview(
-            @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            @NonNull final String url,
+            final IFileDownloadCallback fileDownloadCallback
     ) {
         if (cacheStorage == null) return;
         getFile(
-                new GoodsWidgetPreviewDownload(
-                        url,
-                        fileDownloadCallback,
-                        cacheStorage.getInfiniteCache(),
-                        threadsStorage.getGoodsWidgetPreviewDownloadThread()
-                )
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new GoodsWidgetPreviewDownload(
+                                url,
+                                cacheStorage.getInfiniteCache(),
+                                threadsStorage.getGoodsWidgetPreviewDownloadThread()
+                        );
+                    }
+                },
+                fileDownloadCallback
         );
     }
 
     @Override
     public void getHomeWidgetPreview(
-            @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            @NonNull final String url,
+            final IFileDownloadCallback fileDownloadCallback
     ) {
         if (cacheStorage == null) return;
         getFile(
-                new HomeWidgetPreviewDownload(
-                        url,
-                        fileDownloadCallback,
-                        cacheStorage.getCommonCache(),
-                        threadsStorage.getHomeScreenWidgetPreviewDownloadThread()
-                )
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new HomeWidgetPreviewDownload(
+                                url,
+                                cacheStorage.getCommonCache(),
+                                threadsStorage.getHomeScreenWidgetPreviewDownloadThread()
+                        );
+                    }
+                },
+                fileDownloadCallback
         );
     }
 
     @Override
-    public DownloadFileState getStoryFile(@NonNull String url) {
-        if (cacheStorage == null) return null;
-        return getFile(
-                new StoryFileDownload(
-                        url,
-                        cacheStorage.getCommonCache()
-                )
-        );
-    }
-
-    @Override
-    public DownloadFileState getZipArchive(
-            @NonNull String url,
-            @NonNull String downloadPath,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
-            @NonNull IFileDownloadProgressCallback progressCallback,
-            @NonNull DownloadInterruption interruption
+    public void getStoryFile(
+            @NonNull final String url,
+            IFileDownloadCallback callback
     ) {
-        if (cacheStorage == null) return null;
-        return getFile(
-                new ZipArchiveDownload(
-                        url,
-                        downloadPath,
-                        cacheStorage.getInfiniteCache(),
-                        fileDownloadCallback,
-                        progressCallback,
-                        interruption
-                )
+        if (cacheStorage == null) return;
+        getFile(
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new StoryFileDownload(
+                                url,
+                                cacheStorage.getCommonCache()
+                        );
+                    }
+                },
+                callback
         );
     }
+
+    @Override
+    public void getZipArchive(
+            @NonNull final String url,
+            @NonNull final String downloadPath,
+            @NonNull final IFileDownloadCallback fileDownloadCallback,
+            @NonNull final IFileDownloadProgressCallback progressCallback,
+            @NonNull final DownloadInterruption interruption
+    ) {
+        if (cacheStorage == null) return;
+        getFileWithProgress(
+                url,
+                new IFileDownloadCreate() {
+                    @Override
+                    public FileDownload create() {
+                        return new ZipArchiveDownload(
+                                url,
+                                downloadPath,
+                                cacheStorage.getInfiniteCache(),
+                                interruption
+                        );
+                    }
+                },
+                null,
+                progressCallback
+        );
+    }
+
+    private void getFileWithProgress(
+            String url,
+            IFileDownloadCreate creator,
+            IFileDownloadCallback callback,
+            IFileDownloadProgressCallback progressCallback
+    ) {
+        FileDownload downloadUseCase = currentUseCases.get(url);
+        if (downloadUseCase == null) downloadUseCase = creator.create();
+        try {
+            ((downloadUseCase instanceof ProgressFileDownload) ?
+                    ((ProgressFileDownload) downloadUseCase)
+                            .addProgressCallback(progressCallback) :
+                    downloadUseCase
+            )
+                    .addDownloadCallback(callback)
+                    .downloadOrGetFromCache();
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void getFile(
+            String url,
+            IFileDownloadCreate creator,
+            IFileDownloadCallback callback
+    ) {
+        FileDownload downloadUseCase = currentUseCases.get(url);
+        if (downloadUseCase == null) downloadUseCase = creator.create();
+        try {
+            downloadUseCase
+                    .addDownloadCallback(callback)
+                    .downloadOrGetFromCache();
+        } catch (Exception ignored) {
+        }
+    }
+
 
     @Override
     public void clearCaches() {

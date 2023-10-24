@@ -1,6 +1,8 @@
 package com.inappstory.sdk.core.network.utils.headers;
 
-import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 
 public class AuthSessionIdHeader implements Header {
     @Override
@@ -10,8 +12,10 @@ public class AuthSessionIdHeader implements Header {
 
     @Override
     public String getValue() {
-        if (Session.needToUpdate())
+        SessionDTO sessionDTO = IASCoreManager.getInstance().sessionRepository.getSessionData();
+        if (sessionDTO != null)
+            return sessionDTO.getId();
+        else
             return null;
-        return Session.getInstance().id;
     }
 }

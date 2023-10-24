@@ -3,6 +3,12 @@ package com.inappstory.sdk.stories.cache;
 import androidx.annotation.NonNull;
 
 public class UrlWithAlter {
+
+    public boolean isSkippable() {
+        return skippable;
+    }
+
+    private boolean skippable = false;
     public UrlWithAlter(@NonNull String url) {
         this.url = url;
     }
@@ -12,6 +18,7 @@ public class UrlWithAlter {
     public UrlWithAlter(@NonNull String url, String alter) {
         this.url = url;
         this.alter = alter;
+        skippable = true;
     }
 
     private String alter;

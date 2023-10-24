@@ -1,9 +1,12 @@
 package com.inappstory.sdk.stories.exceptions;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -30,11 +33,10 @@ public class ExceptionManager {
         if (networkClient == null) {
             return;
         }
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
-            public void onSuccess() {
-                if (Session.getInstance().statisticPermissions != null
-                        && Session.getInstance().statisticPermissions.allowCrash)
+            public void onSuccess(SessionDTO session) {
+                if (IASCoreManager.getInstance().sessionRepository.isAllowCrash()) {
                     networkClient.enqueue(
                             networkClient.getApi().sendException(
                                     copiedLog.session,
@@ -55,8 +57,9 @@ public class ExceptionManager {
                                     return null;
                                 }
                             });
-                else
+                } else {
                     SharedPreferencesAPI.removeString(SAVED_EX);
+                }
             }
 
             @Override
@@ -64,7 +67,6 @@ public class ExceptionManager {
                 SharedPreferencesAPI.removeString(SAVED_EX);
             }
         });
-
     }
 
     public void sendSavedException() {
@@ -79,7 +81,10 @@ public class ExceptionManager {
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
-        log.session = Session.getInstance().id;
+        SessionDTO sessionDTO = IASCoreManager.getInstance().sessionRepository.getSessionData();
+        if (sessionDTO != null) {
+            log.session = sessionDTO.getId();
+        }
         StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         if (stackTraceElements.length > 0) {
             String stackTrace = "";

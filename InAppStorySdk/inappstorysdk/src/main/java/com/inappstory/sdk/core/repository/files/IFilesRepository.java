@@ -10,46 +10,47 @@ import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
 public interface IFilesRepository {
     void getStoryPreview(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            IFileDownloadCallback fileDownloadCallback
     );
 
     void getFont(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            IFileDownloadCallback fileDownloadCallback
     );
 
-    DownloadFileState getGameResource(
+    void getGameResource(
             @NonNull String url,
             @NonNull String cacheKey,
             @NonNull String downloadPath,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
+            IFileDownloadCallback fileDownloadCallback,
             @NonNull IFileDownloadProgressCallback progressCallback,
             @NonNull DownloadInterruption interruption
     );
 
     void getGameSplash(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            IFileDownloadCallback fileDownloadCallback
     );
 
     void getGoodsWidgetPreview(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            IFileDownloadCallback fileDownloadCallback
     );
 
     void getHomeWidgetPreview(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback
+            IFileDownloadCallback fileDownloadCallback
     );
 
-    DownloadFileState getStoryFile(
-            @NonNull String url
+    void getStoryFile(
+            @NonNull String url,
+            IFileDownloadCallback fileDownloadCallback
     );
 
-    DownloadFileState getZipArchive(
+    void getZipArchive(
             @NonNull String url,
             @NonNull String downloadPath,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
+            IFileDownloadCallback fileDownloadCallback,
             @NonNull IFileDownloadProgressCallback progressCallback,
             @NonNull DownloadInterruption interruption
     );

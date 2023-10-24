@@ -3,8 +3,11 @@ package com.inappstory.sdk.game.cache;
 import static com.inappstory.sdk.core.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -18,9 +21,9 @@ public class GetGameModelUseCase {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
         }
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(SessionDTO session) {
                 networkClient.enqueue(
                         networkClient.getApi().getGameByInstanceId(gameId),
                         new NetworkCallback<GameCenterData>() {

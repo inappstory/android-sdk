@@ -26,7 +26,15 @@ public class IASCoreManager {
 
     public ISessionRepository sessionRepository;
 
-    String userId;
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    private String userId;
 
     public void getSession(
             IGetSessionCallback<SessionDTO> callback
@@ -36,6 +44,10 @@ public class IASCoreManager {
             return;
         }
         sessionRepository.getSession(userId, callback);
+    }
+
+    public void closeSession() {
+        sessionRepository.closeSession();
     }
 
     public void getUgcEditor(
@@ -55,7 +67,9 @@ public class IASCoreManager {
     }
 
     public void init(Context context) {
-        filesRepository = new FilesRepository(context.getCacheDir());
-        sessionRepository = new SessionRepository(context);
+        if (filesRepository == null) {
+            filesRepository = new FilesRepository(context.getCacheDir());
+            sessionRepository = new SessionRepository(context);
+        }
     }
 }

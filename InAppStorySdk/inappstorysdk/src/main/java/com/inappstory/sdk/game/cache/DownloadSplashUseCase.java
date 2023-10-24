@@ -5,6 +5,7 @@ import android.webkit.URLUtil;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.GameSplashScreen;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
@@ -61,24 +62,26 @@ public class DownloadSplashUseCase {
             splashScreenCallback.onError("InAppStory service is unavailable");
             return;
         }
-        new GameSplashDownload(splashScreen.url, new IFileDownloadCallback() {
-            @Override
-            public void onSuccess(String fileAbsolutePath) {
-                File file = new File(fileAbsolutePath);
-                if (fileChecker.checkWithShaAndSize(
-                        file,
-                        splashScreen.size,
-                        splashScreen.sha1,
-                        true
-                )) {
-                    splashScreenCallback.onSuccess(file);
-                }
-            }
+        IASCoreManager.getInstance().filesRepository.getGameSplash(
+                splashScreen.url, new IFileDownloadCallback() {
+                    @Override
+                    public void onSuccess(String fileAbsolutePath) {
+                        File file = new File(fileAbsolutePath);
+                        if (fileChecker.checkWithShaAndSize(
+                                file,
+                                splashScreen.size,
+                                splashScreen.sha1,
+                                true
+                        )) {
+                            splashScreenCallback.onSuccess(file);
+                        }
+                    }
 
-            @Override
-            public void onError(int errorCode, String error) {
-                splashScreenCallback.onError(error);
-            }
-        }).downloadOrGetFromCache();
+                    @Override
+                    public void onError(int errorCode, String error) {
+                        splashScreenCallback.onError(error);
+                    }
+                }
+        );
     }
 }

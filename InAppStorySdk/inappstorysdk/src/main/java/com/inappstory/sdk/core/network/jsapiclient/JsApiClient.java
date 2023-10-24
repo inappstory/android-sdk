@@ -4,7 +4,10 @@ import static com.inappstory.sdk.core.network.JsonParser.toMap;
 
 import android.content.Context;
 
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -50,43 +53,39 @@ public class JsApiClient {
                                     final String cb,
                                     final String profilingKey,
                                     final JsApiResponseCallback callback) {
-        if (Session.needToUpdate()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess() {
-                    sendRequest(
-                            method,
-                            path,
-                            baseUrl,
-                            headers,
-                            getParams,
-                            body,
-                            requestId,
-                            cb,
-                            profilingKey,
-                            callback
-                    );
-                }
+        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+            @Override
+            public void onSuccess(SessionDTO session) {
 
-                @Override
-                public void onError() {
+            }
 
-                }
-            });
-        } else {
-            sendRequest(
-                    method,
-                    path,
-                    baseUrl,
-                    headers,
-                    getParams,
-                    body,
-                    requestId,
-                    cb,
-                    profilingKey,
-                    callback
-            );
-        }
+            @Override
+            public void onError() {
+
+            }
+        });
+        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+            @Override
+            public void onSuccess(SessionDTO session) {
+                sendRequest(
+                        method,
+                        path,
+                        baseUrl,
+                        headers,
+                        getParams,
+                        body,
+                        requestId,
+                        cb,
+                        profilingKey,
+                        callback
+                );
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
     }
 
     String oldEscape(String raw) {

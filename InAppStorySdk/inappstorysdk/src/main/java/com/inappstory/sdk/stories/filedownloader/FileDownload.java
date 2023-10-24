@@ -19,27 +19,30 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileLock;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public abstract class FileDownload implements IFileDownload {
     protected String url;
-    protected IFileDownloadCallback fileDownloadCallback;
+    protected List<IFileDownloadCallback> fileDownloadCallbacks = new ArrayList<>();
+    private boolean loading = false;
     private final ApiLogRequest requestLog;
     private final ApiLogResponse responseLog;
 
     protected final LruDiskCache cache;
 
+    private final Object downloadLock = new Object();
+
     private final String requestId;
 
     public FileDownload(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
             @NonNull LruDiskCache cache
     ) {
         this.url = url;
         this.cache = cache;
-        this.fileDownloadCallback = fileDownloadCallback;
         this.requestId = UUID.randomUUID().toString();
         this.requestLog = new ApiLogRequest();
         this.responseLog = new ApiLogResponse();
@@ -114,7 +117,7 @@ public abstract class FileDownload implements IFileDownload {
                     urlConnection.getErrorStream(),
                     decompression
             );
-            fileDownloadCallback.onError(status, res);
+            fileDownloadError(status, res);
             return null;
         }
 
@@ -139,7 +142,7 @@ public abstract class FileDownload implements IFileDownload {
                     if (allowPartial) {
                         return new DownloadFileState(outputFile, sz, outputFile.length());
                     } else {
-                        fileDownloadCallback.onError(-1, "Download interrupted");
+                        fileDownloadError(-1, "Download interrupted");
                         return null;
                     }
                 } else {
@@ -155,17 +158,31 @@ public abstract class FileDownload implements IFileDownload {
             if (allowPartial) {
                 return new DownloadFileState(outputFile, sz, outputFile.length());
             } else {
-                fileDownloadCallback.onError(-1, e.getMessage());
+                fileDownloadError(-1, e.getMessage());
                 return null;
             }
         }
     }
 
-    public DownloadFileState downloadOrGetFromCache() throws Exception {
+    public FileDownload addDownloadCallback(IFileDownloadCallback callback) {
+        synchronized (downloadLock) {
+            if (callback != null)
+                fileDownloadCallbacks.add(callback);
+        }
+        return this;
+    }
+    public void downloadOrGetFromCache() throws Exception {
+        synchronized (downloadLock) {
+            if (loading) return;
+            loading = true;
+        }
+        String key = getCacheKey();
+        if (url == null || url.isEmpty() || key == null || key.isEmpty()) {
+            fileDownloadError(-1, "Wrong resource key or url");
+            return;
+        }
         generateRequestLog();
         generateResponseLog();
-        String key = getCacheKey();
-        if (key == null) return null;
         long offset = 0;
         HashMap<String, String> headers = new HashMap<>();
         if (cache.hasKey(key)) {
@@ -178,11 +195,11 @@ public abstract class FileDownload implements IFileDownload {
                 if (fileState.downloadedSize != fileState.totalSize) {
                     offset = fileState.downloadedSize;
                 } else {
-                    fileDownloadCallback.onSuccess(fileState.file.getAbsolutePath());
+                    fileDownloadSuccess(fileState.file.getAbsolutePath());
                     headers.put("From Cache", "true");
                     responseLog.generateFile(200, fileState.file.getAbsolutePath(), headers);
                     InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
-                    return fileState;
+                    return;
                 }
             }
         }
@@ -195,17 +212,40 @@ public abstract class FileDownload implements IFileDownload {
             if (fileState.file != null) {
                 cache.put(key, fileState.file, fileState.totalSize, fileState.downloadedSize);
                 if (fileState.totalSize == fileState.downloadedSize) {
-                    fileDownloadCallback.onSuccess(fileState.file.getAbsolutePath());
+                    fileDownloadSuccess(fileState.file.getAbsolutePath());
                     responseLog.responseHeaders.add(new ApiLogRequestHeader("From Cache", "false"));
                     InAppStoryManager.sendApiResponseLog(responseLog);
                 } else {
-                    fileDownloadCallback.onError(-1, "Partial content");
+                    fileDownloadError(-1, "Partial content");
                 }
             } else {
-                fileDownloadCallback.onError(-1, "File haven't downloaded");
+                fileDownloadError(-1, "File haven't downloaded");
             }
         }
-        return fileState;
+    }
+
+    private void fileDownloadSuccess(String path) {
+        synchronized (downloadLock) {
+            for (IFileDownloadCallback fileDownloadCallback : fileDownloadCallbacks) {
+                fileDownloadCallback.onSuccess(path);
+            }
+            clearCallbacks();
+            loading = false;
+        }
+    }
+
+    protected void clearCallbacks() {
+        fileDownloadCallbacks.clear();
+    }
+
+    private void fileDownloadError(int errorCode, String error) {
+        synchronized (downloadLock) {
+            for (IFileDownloadCallback fileDownloadCallback : fileDownloadCallbacks) {
+                fileDownloadCallback.onError(errorCode, error);
+            }
+            clearCallbacks();
+            loading = false;
+        }
     }
 
     private void releaseStreamAndFile(FileOutputStream fileOutputStream, FileLock lock) throws IOException {

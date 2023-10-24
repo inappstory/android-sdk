@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
@@ -54,7 +55,7 @@ public class GetZipFileUseCase extends GameNameHolder {
                 get(cache, new UseCaseCallback<File>() {
                     @Override
                     public void onError(String message) {
-                        String hash = randomUUID().toString();
+                        final String hash = randomUUID().toString();
                         String gameName = getGameName(url);
                         File gameDir = new File(
                                 cache.getCacheDir() +
@@ -74,50 +75,40 @@ public class GetZipFileUseCase extends GameNameHolder {
                             return;
                         }
                         File zipFile = new File(gameDir, url.hashCode() + ".zip");
-                        DownloadFileState fileState = null;
                         ProfilingManager.getInstance().addTask("game_download", hash);
-                        try {
-                            fileState = new ZipArchiveDownload(
-                                    url,
-                                    zipFile.getAbsolutePath(),
-                                    new IFileDownloadCallback() {
-                                        @Override
-                                        public void onSuccess(String fileAbsolutePath) {
+                        IASCoreManager.getInstance().filesRepository.getZipArchive(
+                                url,
+                                zipFile.getAbsolutePath(),
+                                new IFileDownloadCallback() {
+                                    @Override
+                                    public void onSuccess(String fileAbsolutePath) {
+                                        File file = new File(fileAbsolutePath);
+                                        if (!fileChecker.checkWithShaAndSize(
+                                                file,
+                                                size,
+                                                sha1,
+                                                true
+                                        )) {
+                                            callback.onError("File sha or size is incorrect");
+                                        } else {
+                                            callback.onSuccess(file);
+                                        }
+                                        ProfilingManager.getInstance().setReady(hash);
+                                    }
 
-                                        }
-
-                                        @Override
-                                        public void onError(int errorCode, String error) {
-                                            callback.onError(error);
-                                        }
-                                    },
-                                    new IFileDownloadProgressCallback() {
-                                        @Override
-                                        public void onProgress(long currentProgress, long max) {
-                                            progressCallback.onProgress(currentProgress, max);
-                                        }
-                                    },
-                                    interruption
-                            ).downloadOrGetFromCache();
-                        } catch (Exception e) {
-                            callback.onError(e.getMessage());
-                        }
-                        if (fileState != null && fileState.file != null &&
-                                (fileState.downloadedSize == fileState.totalSize)) {
-                            if (!fileChecker.checkWithShaAndSize(
-                                    fileState.file,
-                                    size,
-                                    sha1,
-                                    true
-                            )) {
-                                callback.onError("File sha or size is incorrect");
-                            } else {
-                                callback.onSuccess(fileState.file);
-                            }
-                            ProfilingManager.getInstance().setReady(hash);
-                        } else {
-                            callback.onError("File downloading was interrupted");
-                        }
+                                    @Override
+                                    public void onError(int errorCode, String error) {
+                                        callback.onError(error);
+                                    }
+                                },
+                                new IFileDownloadProgressCallback() {
+                                    @Override
+                                    public void onProgress(long currentProgress, long max) {
+                                        progressCallback.onProgress(currentProgress, max);
+                                    }
+                                },
+                                interruption
+                        );
                     }
 
                     @Override

@@ -9,6 +9,9 @@ import android.os.Build;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.JsonParser;
@@ -72,7 +75,7 @@ public class GameManager {
         );
     }
 
-    void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
+    void gameInstanceSetData(final String gameInstanceId, final String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
@@ -83,22 +86,32 @@ public class GameManager {
         }
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
                 + "__" + InAppStoryService.getInstance().getUserId(), data);
-
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
+            IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+                @Override
+                public void onSuccess(SessionDTO session) {
+                    networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
+                            new NetworkCallback<Response>() {
+                                @Override
+                                public void onSuccess(Response response) {
 
-                        }
+                                }
 
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
-            );
+                                @Override
+                                public Type getType() {
+                                    return null;
+                                }
+                            }
+                    );
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
+
         }
     }
 
@@ -108,7 +121,7 @@ public class GameManager {
             tapOnLink(urlObject.url, host);
     }
 
-    void storySetData(String data, boolean sendToServer) {
+    void storySetData(final String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         if (dataModel == null) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
@@ -117,27 +130,38 @@ public class GameManager {
             return;
         }
         KeyValueStorage.saveString("story" + dataModel.slideData.story.id
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
+                + "__" + InAppStoryManager.getInstance().getUserId(), data);
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            networkClient.enqueue(
-                    networkClient.getApi().sendStoryData(
-                            Integer.toString(dataModel.slideData.story.id),
-                            data,
-                            Session.getInstance().id
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
+            IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+                @Override
+                public void onSuccess(SessionDTO session) {
+                    networkClient.enqueue(
+                            networkClient.getApi().sendStoryData(
+                                    Integer.toString(dataModel.slideData.story.id),
+                                    data,
+                                    session.getId()
+                            ),
+                            new NetworkCallback<Response>() {
+                                @Override
+                                public void onSuccess(Response response) {
 
-                        }
+                                }
 
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    });
+                                @Override
+                                public Type getType() {
+                                    return null;
+                                }
+                            });
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
+
         }
     }
 

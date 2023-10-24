@@ -111,6 +111,11 @@ public class SessionRepository implements ISessionRepository {
         );
     }
 
+    @Override
+    public SessionDTO getSessionData() {
+        return sessionDTO;
+    }
+
     private void downloadFonts(@NonNull SessionResponse response) {
         if (response.cachedFonts != null) {
             for (CacheFontObject cacheFontObject : response.cachedFonts) {
@@ -145,6 +150,7 @@ public class SessionRepository implements ISessionRepository {
         closeSession();
         getSession(newUserId, getSessionCallback);
     }
+
 
     private SessionDTO checkSession() {
         synchronized (openProcessLock) {

@@ -8,9 +8,9 @@ import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
+import com.inappstory.sdk.stories.filedownloader.ProgressFileDownload;
 
-public class GameResourceDownload extends FileDownload {
-    IFileDownloadProgressCallback progressCallback;
+public final class GameResourceDownload extends ProgressFileDownload {
     String downloadPath;
     String cacheKey;
     DownloadInterruption interruption;
@@ -20,13 +20,10 @@ public class GameResourceDownload extends FileDownload {
             @NonNull String cacheKey,
             @NonNull LruDiskCache cache,
             @NonNull String downloadPath,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
-            @NonNull IFileDownloadProgressCallback progressCallback,
             @NonNull DownloadInterruption interruption
     ) {
-        super(url, fileDownloadCallback, cache);
+        super(url, cache);
         this.cacheKey = cacheKey;
-        this.progressCallback = progressCallback;
         this.downloadPath = downloadPath;
         this.interruption = interruption;
     }
@@ -41,20 +38,9 @@ public class GameResourceDownload extends FileDownload {
         return downloadPath;
     }
 
-    @Override
-    public void onProgress(long currentProgress, long max) {
-        this.progressCallback.onProgress(currentProgress, max);
-    }
 
     @Override
     public boolean isInterrupted() {
         return interruption.active;
-    }
-
-    @Override
-    public LruDiskCache getCache() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) return service.getInfiniteCache();
-        return null;
     }
 }

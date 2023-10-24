@@ -4,21 +4,17 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.filedownloader.AsyncFileDownload;
-import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class FontDownload extends AsyncFileDownload {
+public final class FontDownload extends AsyncFileDownload {
     public FontDownload(
             @NonNull String url,
-            @NonNull IFileDownloadCallback fileDownloadCallback,
             @NonNull LruDiskCache cache,
             @NonNull ExecutorService service
     ) {
-        super(url, fileDownloadCallback, cache, service);
+        super(url, cache, service);
     }
 
     @Override
@@ -39,12 +35,5 @@ public class FontDownload extends AsyncFileDownload {
     @Override
     public boolean isInterrupted() {
         return false;
-    }
-
-    @Override
-    public LruDiskCache getCache() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) return service.getCommonCache();
-        return null;
     }
 }

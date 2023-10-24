@@ -13,6 +13,7 @@ import com.inappstory.sdk.core.network.annotations.api.Path;
 import com.inappstory.sdk.core.network.annotations.api.Query;
 import com.inappstory.sdk.core.network.annotations.api.QueryObject;
 import com.inappstory.sdk.core.network.models.Request;
+import com.inappstory.sdk.core.network.utils.headers.HeadersKeys;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 
 /**
@@ -100,11 +101,11 @@ public interface ApiInterface {
     @FormUrlEncoded
     @POST("exception")
     @ExcludeHeaders({
-            "Accept",
-            "Accept-Language",
-            "X-Device-Id",
-            "X-APP-PACKAGE-ID",
-            "Authorization"
+            HeadersKeys.ACCEPT,
+            HeadersKeys.ACCEPT_LANGUAGE,
+            HeadersKeys.DEVICE_ID,
+            HeadersKeys.APP_PACKAGE_ID,
+            HeadersKeys.AUTHORIZATION
     })
     Request sendException(
             @Query("s") String session,
@@ -117,11 +118,11 @@ public interface ApiInterface {
 
     @GET("stat/{event_name}")
     @ExcludeHeaders({
-            "Accept",
-            "Accept-Language",
-            "X-Device-Id",
-            "X-APP-PACKAGE-ID",
-            "Authorization"
+            HeadersKeys.ACCEPT,
+            HeadersKeys.ACCEPT_LANGUAGE,
+            HeadersKeys.DEVICE_ID,
+            HeadersKeys.APP_PACKAGE_ID,
+            HeadersKeys.AUTHORIZATION
     })
     Request sendStat(
             @Path("event_name") String eventName,
@@ -175,7 +176,7 @@ public interface ApiInterface {
     @FormUrlEncoded
     @POST("v2/session/open")
     @ExcludeHeaders({
-            "auth-session-id"
+            HeadersKeys.AUTH_SESSION_ID
     })
     Request sessionOpen(
             @Query("expand") String expand,

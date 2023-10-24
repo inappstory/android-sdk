@@ -4,8 +4,11 @@ import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
@@ -149,44 +152,53 @@ public class OldStatisticManager {
         }
         try {
 
+            final List<List<Object>> sendingStatistic = new ArrayList<>();
             synchronized (openProcessLock) {
-                final List<List<Object>> sendingStatistic = new ArrayList<>();
                 sendingStatistic.addAll(statistic);
                 statistic.clear();
 
-                final String updateUUID = ProfilingManager.getInstance().addTask(
-                        "api_session_update"
-                );
-                networkClient.enqueue(
-                        networkClient.getApi().sessionUpdate(
-                                new StatisticSendObject(
-                                        Session.getInstance().id,
-                                        sendingStatistic
-                                )
-                        ),
-                        new NetworkCallback<SessionResponse>() {
-                            @Override
-                            public void onSuccess(SessionResponse response) {
-                                ProfilingManager.getInstance().setReady(updateUUID);
-                                cleanStatistic();
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-                                ProfilingManager.getInstance().setReady(updateUUID);
-                                cleanStatistic();
-                                synchronized (openProcessLock) {
-                                    statistic.addAll(sendingStatistic);
-                                }
-                            }
-
-                            @Override
-                            public Type getType() {
-                                return SessionResponse.class;
-                            }
-                        });
-
             }
+            final String updateUUID = ProfilingManager.getInstance().addTask(
+                    "api_session_update"
+            );
+            IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+                @Override
+                public void onSuccess(SessionDTO session) {
+                    networkClient.enqueue(
+                            networkClient.getApi().sessionUpdate(
+                                    new StatisticSendObject(
+                                            session.getId(),
+                                            sendingStatistic
+                                    )
+                            ),
+                            new NetworkCallback<SessionResponse>() {
+                                @Override
+                                public void onSuccess(SessionResponse response) {
+                                    ProfilingManager.getInstance().setReady(updateUUID);
+                                    cleanStatistic();
+                                }
+
+                                @Override
+                                public void errorDefault(String message) {
+                                    ProfilingManager.getInstance().setReady(updateUUID);
+                                    cleanStatistic();
+                                    synchronized (openProcessLock) {
+                                        statistic.addAll(sendingStatistic);
+                                    }
+                                }
+
+                                @Override
+                                public Type getType() {
+                                    return SessionResponse.class;
+                                }
+                            });
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
         }

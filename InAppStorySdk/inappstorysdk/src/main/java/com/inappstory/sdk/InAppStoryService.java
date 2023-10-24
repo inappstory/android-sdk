@@ -18,6 +18,7 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
@@ -175,11 +176,11 @@ public class InAppStoryService {
     }
 
     public boolean isSoundOn() {
-        if (InAppStoryManager.getInstance() != null) {
-            return InAppStoryManager.getInstance().soundOn();
-        } else {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null)
             return true;
-        }
+        else
+            return inAppStoryManager.soundOn();
     }
 
     public void changeSoundStatus() {
@@ -190,23 +191,17 @@ public class InAppStoryService {
 
 
     public boolean getSendNewStatistic() {
-        if (InAppStoryManager.getInstance() == null) return false;
-        if (!Session.needToUpdate()) {
-            if (Session.getInstance().statisticPermissions == null) return false;
-            return InAppStoryManager.getInstance().isSendStatistic()
-                    && Session.getInstance().statisticPermissions.allowStatV2;
-        }
-        return false;
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return false;
+        return inAppStoryManager.isSendStatistic()
+                && IASCoreManager.getInstance().sessionRepository.isAllowStatV2();
     }
 
     public boolean getSendStatistic() {
-        if (InAppStoryManager.getInstance() == null) return false;
-        if (!Session.needToUpdate()) {
-            if (Session.getInstance().statisticPermissions == null) return false;
-            return InAppStoryManager.getInstance().isSendStatistic()
-                    && Session.getInstance().statisticPermissions.allowStatV1;
-        }
-        return false;
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return false;
+        return inAppStoryManager.isSendStatistic()
+                && IASCoreManager.getInstance().sessionRepository.isAllowStatV1();
     }
 
     public InAppStoryService(String userId) {
@@ -235,9 +230,7 @@ public class InAppStoryService {
 
     void logout() {
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        SessionManager.getInstance().closeSession(
-                false
-        );
+        IASCoreManager.getInstance().closeSession();
         OldStatisticManager.getInstance().clear();
     }
 
