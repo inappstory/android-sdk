@@ -71,11 +71,17 @@ public class ImageLoader {
     }
 
     public HashMap<String, String> fileLinks = new HashMap<>();
-    public Object fileLinksLock = new Object();
+    private final Object fileLinksLock = new Object();
 
     public String getFileLink(String link) {
         synchronized (fileLinksLock) {
-            return fileLinks.get(link);
+            String checkedLink = fileLinks.get(link);
+            if (checkedLink != null)
+                if (new File(checkedLink).exists())
+                    return checkedLink;
+                else
+                    fileLinks.remove(link);
+            return null;
         }
     }
 
