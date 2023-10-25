@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 import com.inappstory.sdk.core.network.annotations.models.Ignore;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.utils.StringsUtils;
 
 public class StoryData {
     public int id;
@@ -14,6 +15,17 @@ public class StoryData {
     public Story.StoryType storyType;
 
     public StoryData() {
+    }
+    public StoryData(Story story, String feed, SourceType sourceType) {
+        this(
+                story.id,
+                Story.StoryType.COMMON,
+                StringsUtils.getNonNull(story.statTitle),
+                StringsUtils.getNonNull(story.tags),
+                story.slidesCount,
+                feed,
+                sourceType
+        );
     }
 
     public StoryData(

@@ -25,6 +25,7 @@ public final class CommonStoriesListAdapter extends BaseStoriesListAdapter imple
     public CommonStoriesListAdapter(
             Context context,
             String listID,
+            String feed,
             AppearanceManager manager,
             boolean useFavorite,
             boolean useUGC,
@@ -37,6 +38,7 @@ public final class CommonStoriesListAdapter extends BaseStoriesListAdapter imple
         super(
                 context,
                 listID,
+                feed,
                 manager,
                 false,
                 useFavorite,

@@ -31,6 +31,7 @@ public final class FavoriteStoriesListAdapter extends BaseStoriesListAdapter imp
         super(
                 context,
                 listID,
+                null,
                 manager,
                 false,
                 false,

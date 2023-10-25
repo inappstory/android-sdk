@@ -13,6 +13,8 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.list.IFavoriteCellUpdate;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListCommonItem;
@@ -59,10 +61,12 @@ public abstract class BaseStoriesListAdapter
 
     public Context context;
     private String listID;
+    private String feed;
 
     public BaseStoriesListAdapter(
             Context context,
             String listID,
+            String feed,
             AppearanceManager manager,
             boolean isFavoriteList,
             boolean useFavorite,
@@ -74,6 +78,7 @@ public abstract class BaseStoriesListAdapter
             OnUGCItemClick ugcItemClick
     ) {
         this.context = context;
+        this.feed = feed;
         this.listID = listID;
         this.manager = manager;
         this.isFavoriteList = isFavoriteList;
@@ -156,6 +161,14 @@ public abstract class BaseStoriesListAdapter
             String imgUrl = story.getImageUrl(manager.csCoverQuality());
             ((IStoriesListCommonItem) holder).bindCommon(
                     story.getId(),
+                    new StoryData(
+                            story.getId(),
+                            story.getStatTitle(),
+                            story.getTags(),
+                            story.getSlidesCount(),
+                            feed,
+                            isFavoriteList ? SourceType.FAVORITE : SourceType.LIST
+                    ),
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
                     Color.parseColor(story.getBackgroundColor()),

@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -61,6 +62,10 @@ public class StoriesAdapterStoryData {
         return slidesCount;
     }
 
+    public HashMap<String, Object> getPayload() {
+        return payload;
+    }
+
     private int id;
     private String title;
 
@@ -75,6 +80,8 @@ public class StoriesAdapterStoryData {
     private String titleColor;
     private boolean hasAudio;
     private boolean isOpened;
+
+    private HashMap<String, Object> payload;
     int slidesCount;
 
     public StoriesAdapterStoryData(Story story) {
@@ -90,6 +97,7 @@ public class StoriesAdapterStoryData {
         this.isOpened = story.isOpened();
         this.hideInReader = story.isHideInReader();
         this.videoUrl = story.getVideoUrl();
+        this.payload = story.payload;
         this.images = story.getImage();
     }
 

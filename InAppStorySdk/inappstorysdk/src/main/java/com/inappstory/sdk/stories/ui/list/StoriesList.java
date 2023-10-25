@@ -246,6 +246,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
             adapter = new CommonStoriesListAdapter(
                     getContext(),
                     uniqueID,
+                    feed,
                     appearanceManager,
                     appearanceManager.csHasFavorite(),
                     hasUgc(),

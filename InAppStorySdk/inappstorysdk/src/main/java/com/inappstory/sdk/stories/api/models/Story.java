@@ -100,6 +100,10 @@ public class Story implements Parcelable {
     public List<PayloadObject> slidesPayload;
 
 
+    @SerializedName("payload")
+    public HashMap<String, Object> payload;
+
+
     public String getVideoUrl() {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
     }

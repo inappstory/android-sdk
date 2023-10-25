@@ -8,12 +8,14 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListCommonItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.ui.views.IStoriesListItemWithStoryData;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListItemPresenter;
 import com.inappstory.sdk.stories.uidomain.list.items.story.StoriesListItemPresenter;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -110,6 +112,7 @@ public class UgcStoriesListItem extends BaseStoriesListItem implements IStoriesL
     @Override
     public void bindCommon(
             Integer id,
+            StoryData storyData,
             String titleText,
             Integer titleColor,
             Integer backgroundColor,
@@ -136,5 +139,8 @@ public class UgcStoriesListItem extends BaseStoriesListItem implements IStoriesL
         getListItem.setTitle(itemView, titleText, titleColor);
         getListItem.setHasAudio(itemView, hasAudio);
         getListItem.setOpened(itemView, isOpened);
+        if (getListItem instanceof IStoriesListItemWithStoryData) {
+            ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
+        }
     }
 }
