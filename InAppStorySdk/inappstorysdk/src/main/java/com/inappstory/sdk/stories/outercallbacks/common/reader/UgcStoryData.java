@@ -40,7 +40,6 @@ public class UgcStoryData extends StoryData {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", tags='" + tags + '\'' +
-                ", feed='" + feed + '\'' +
                 ", sourceType='" + sourceType.name() + '\'' +
                 ", slidesCount=" + slidesCount +
                 ", ugcPayload=" + ugcPayload +
