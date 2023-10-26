@@ -41,7 +41,7 @@ public class SessionEditorDTO implements IUgcEditor {
 
     @Override
     public String session() {
-        return null;
+        return sessionId;
     }
 
     @Override
