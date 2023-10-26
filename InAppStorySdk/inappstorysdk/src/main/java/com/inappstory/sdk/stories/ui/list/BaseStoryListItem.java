@@ -8,6 +8,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.views.IGetFavoriteListItem;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItem;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -63,6 +64,7 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
                               boolean isOpened,
                               boolean hasAudio,
                               String videoUrl,
+                              StoryData storyData,
                               ClickCallback callback);
 
    /* public void measure(int widthMeasureSpec, int heightMeasureSpec, float aspectRatio) {

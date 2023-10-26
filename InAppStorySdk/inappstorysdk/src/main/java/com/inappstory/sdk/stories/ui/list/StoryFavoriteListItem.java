@@ -20,6 +20,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -108,9 +109,19 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     @Override
-    public void bind(Integer id, String titleText, Integer titleColor, String sourceText,
-                     String imageUrl, Integer backgroundColor,
-                     boolean isOpened, boolean hasAudio, String videoUrl, ClickCallback callback) {
+    public void bind(
+            Integer id,
+            String titleText,
+            Integer titleColor,
+            String sourceText,
+            String imageUrl,
+            Integer backgroundColor,
+            boolean isOpened,
+            boolean hasAudio,
+            String videoUrl,
+            StoryData storyData,
+            ClickCallback callback
+    ) {
 
     }
 

@@ -131,7 +131,10 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                     Color.parseColor(story.getBackgroundColor()),
                     story.isOpened,
                     story.hasAudio(),
-                    story.getVideoUrl(), this);
+                    story.getVideoUrl(),
+                    StoryData.getStoryData(story, null, SourceType.LIST, Story.StoryType.UGC),
+                    this
+            );
         }
     }
 

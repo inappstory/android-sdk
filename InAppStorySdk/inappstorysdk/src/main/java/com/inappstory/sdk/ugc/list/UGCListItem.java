@@ -12,6 +12,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
@@ -73,7 +74,7 @@ public class UGCListItem extends BaseStoryListItem {
     public void bind(Integer id, String titleText, Integer titleColor,
                      String sourceText, String imageUrl,
                      Integer backgroundColor, boolean isOpened, boolean hasAudio,
-                     String videoUrl, ClickCallback callback) {
+                     String videoUrl, StoryData storyData, ClickCallback callback) {
 
     }
 

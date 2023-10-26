@@ -172,7 +172,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                     Color.parseColor(story.getBackgroundColor()),
                     story.isOpened || isFavoriteList,
                     story.hasAudio(),
-                    story.getVideoUrl(), this);
+                    story.getVideoUrl(),
+                    StoryData.getStoryData(story, feed, getListSourceType(), Story.StoryType.COMMON),
+                    this
+            );
         }
     }
 

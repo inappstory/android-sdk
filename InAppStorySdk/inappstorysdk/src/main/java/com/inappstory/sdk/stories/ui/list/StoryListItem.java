@@ -23,8 +23,10 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
+import com.inappstory.sdk.stories.ui.views.IStoriesListItemWithStoryData;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
@@ -176,6 +178,7 @@ public class StoryListItem extends BaseStoryListItem {
                      boolean isOpened,
                      boolean hasAudio,
                      String videoUrl,
+                     StoryData storyData,
                      ClickCallback callback) {
         this.callback = callback;
         itemView.setOnClickListener(new View.OnClickListener() {
@@ -235,6 +238,9 @@ public class StoryListItem extends BaseStoryListItem {
                         getListItem.setVideo(itemView, null);
                     }
                 });
+            }
+            if (getListItem instanceof IStoriesListItemWithStoryData) {
+                ((IStoriesListItemWithStoryData) getListItem).setCustomData(itemView, storyData);
             }
             return;
         }
