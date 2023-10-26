@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+Version *1.17.3 (803)*
+----------------------------
+
+* Fixed: bug with favorites previews - check images if it was lost (removed/renamed)
+
+
+Version *1.16.6 (756)*
+----------------------------
+
+* Fixed: bug with favorites previews - check images if it was lost (removed/renamed)
+
+
 Version *1.17.2 (802)*
 ----------------------------
 
