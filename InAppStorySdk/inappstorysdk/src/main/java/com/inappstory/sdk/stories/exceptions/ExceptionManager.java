@@ -5,13 +5,10 @@ import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.lang.reflect.Type;
 import java.util.UUID;

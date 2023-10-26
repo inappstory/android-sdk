@@ -1,6 +1,10 @@
 package com.inappstory.sdk.core.repository.session;
 
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IPlaceholdersDtoHolder;
+import com.inappstory.sdk.core.repository.session.interfaces.IStatisticPermission;
+import com.inappstory.sdk.core.repository.session.interfaces.IUgcEditorDtoHolder;
 
 public interface ISessionRepository extends
         IStatisticPermission,

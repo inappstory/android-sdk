@@ -10,17 +10,12 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.core.repository.session.dto.StatisticPermissionDTO;
-import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;

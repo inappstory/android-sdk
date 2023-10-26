@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.core.repository.files.FilesRepository;
 import com.inappstory.sdk.core.repository.files.IFilesRepository;
-import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.ISessionRepository;
 import com.inappstory.sdk.core.repository.session.SessionRepository;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;

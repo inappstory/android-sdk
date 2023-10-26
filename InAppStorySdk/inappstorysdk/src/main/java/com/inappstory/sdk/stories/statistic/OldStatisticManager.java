@@ -7,7 +7,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionResponse;

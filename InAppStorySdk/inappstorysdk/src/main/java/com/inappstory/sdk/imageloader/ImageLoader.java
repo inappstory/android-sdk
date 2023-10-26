@@ -70,27 +70,6 @@ public class ImageLoader {
         displayImage(path, loader, imageView, null);
     }
 
-    public HashMap<String, String> fileLinks = new HashMap<>();
-    public Object fileLinksLock = new Object();
-
-    public String getFileLink(String link) {
-        synchronized (fileLinksLock) {
-            return fileLinks.get(link);
-        }
-    }
-
-    public void addLink(String link, String fileLink) {
-        synchronized (fileLinksLock) {
-            fileLinks.put(link, fileLink);
-        }
-    }
-
-    public void clearFileLinks() {
-        synchronized (fileLinksLock) {
-            fileLinks.clear();
-        }
-    }
-
     public void displayImage(String path, int loader, ImageView imageView, LruDiskCache cache) {
         try {
             stub_id = loader;

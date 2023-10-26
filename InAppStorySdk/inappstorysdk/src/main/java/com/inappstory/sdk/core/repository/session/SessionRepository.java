@@ -9,6 +9,8 @@ import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.dto.StatisticPermissionDTO;
 import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IPlaceholdersDtoHolder;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
@@ -28,8 +30,8 @@ public class SessionRepository implements ISessionRepository {
     private SessionDTO sessionDTO;
     private StatisticPermissionDTO statisticPermissionDTO;
     private UgcEditorDTO ugcEditorDTO;
-    private List<StoryPlaceholder> imagePlaceholders;
-    private List<StoryPlaceholder> textPlaceholders;
+
+    private IPlaceholdersDtoHolder placeholdersDtoHolder;
 
     private SessionManager sessionManager = new SessionManager();
 
@@ -74,17 +76,10 @@ public class SessionRepository implements ISessionRepository {
 
                             if (session.editor != null)
                                 ugcEditorDTO = new UgcEditorDTO(session.editor);
-
-                            if (session.placeholders != null)
-                                textPlaceholders = new ArrayList<>(session.placeholders);
-                            else
-                                textPlaceholders = new ArrayList<>();
-
-                            if (session.imagePlaceholders != null)
-                                imagePlaceholders = new ArrayList<>(session.imagePlaceholders);
-                            else
-                                imagePlaceholders = new ArrayList<>();
-
+                            placeholdersDtoHolder = new PlaceholdersDtoHolder(
+                                    session.placeholders,
+                                    session.imagePlaceholders
+                            );
                             localDTO = sessionDTO;
                             openProcess = false;
                             localCallbacks = new ArrayList<>(getSessionCallbacks);
@@ -136,8 +131,7 @@ public class SessionRepository implements ISessionRepository {
         );
         sessionDTO = null;
         ugcEditorDTO = null;
-        textPlaceholders = null;
-        imagePlaceholders = null;
+        placeholdersDtoHolder = null;
         statisticPermissionDTO = null;
     }
 
@@ -188,14 +182,16 @@ public class SessionRepository implements ISessionRepository {
 
     @Override
     public List<StoryPlaceholder> getImagePlaceholders() {
-        if (imagePlaceholders == null) imagePlaceholders = new ArrayList<>();
-        return imagePlaceholders;
+        if (placeholdersDtoHolder != null)
+            return placeholdersDtoHolder.getImagePlaceholders();
+        return new ArrayList<>();
     }
 
     @Override
     public List<StoryPlaceholder> getTextPlaceholders() {
-        if (textPlaceholders == null) textPlaceholders = new ArrayList<>();
-        return textPlaceholders;
+        if (placeholdersDtoHolder != null)
+            return placeholdersDtoHolder.getTextPlaceholders();
+        return new ArrayList<>();
     }
 
     @Override

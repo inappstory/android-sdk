@@ -6,12 +6,9 @@ import android.content.Context;
 
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.core.repository.session.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.stories.utils.TaskRunner;
 
 import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.core.repository.session;
+package com.inappstory.sdk.core.repository.session.interfaces;
 
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 
