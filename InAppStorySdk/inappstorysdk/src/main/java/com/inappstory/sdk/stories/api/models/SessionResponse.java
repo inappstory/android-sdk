@@ -38,9 +38,9 @@ public class SessionResponse {
         return 1f;
     }
 
-    @SerializedName("placeholders")
+    @SerializedName(SessionRequestFields.placeholders)
     public List<StoryPlaceholder> placeholders;
 
-    @SerializedName("image_placeholders")
+    @SerializedName(SessionRequestFields.imagePlaceholders)
     public List<StoryPlaceholder> imagePlaceholders;
 }

@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
-import android.content.Context;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
