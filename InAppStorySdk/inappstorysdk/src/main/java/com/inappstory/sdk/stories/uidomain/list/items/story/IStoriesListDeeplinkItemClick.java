@@ -1,12 +1,10 @@
 package com.inappstory.sdk.stories.uidomain.list.items.story;
 
-import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
-
-import java.util.List;
+import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 
 public interface IStoriesListDeeplinkItemClick {
     void onClick(
-            StoriesAdapterStoryData storiesData,
+            PreviewStoryDTO storiesData,
             int index
     );
 }

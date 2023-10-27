@@ -5,7 +5,6 @@ import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.lang.reflect.Type;
 import java.util.List;

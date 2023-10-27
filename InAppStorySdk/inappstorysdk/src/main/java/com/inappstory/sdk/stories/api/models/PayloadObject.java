@@ -6,10 +6,14 @@ public class PayloadObject {
     @SerializedName("event_type")
     public String eventType;
 
+    public int getSlideIndex() {
+        return slideIndex;
+    }
+
     @SerializedName("slide_index")
     public int slideIndex;
 
-    String getEventType() {
+    public String getEventType() {
         if (eventType != null) return eventType;
         return "";
     }

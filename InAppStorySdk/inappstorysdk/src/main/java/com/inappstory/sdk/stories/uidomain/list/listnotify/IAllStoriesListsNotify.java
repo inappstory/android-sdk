@@ -4,7 +4,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
-import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
+import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public interface IAllStoriesListsNotify {
             final boolean isEmpty
     );
 
-    void storyAddToFavoriteItemNotify(final StoriesAdapterStoryData data);
+    void storyAddToFavoriteItemNotify(final PreviewStoryDTO data);
 
     void storyRemoveFromFavoriteItemNotify(final int storyId);
 }

@@ -22,7 +22,7 @@ import com.inappstory.sdk.stories.ui.list.items.IStoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListUGCEditorItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
-import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
+import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
@@ -35,15 +35,15 @@ public abstract class BaseStoriesListAdapter
         extends RecyclerView.Adapter<BaseStoriesListItem>
         implements IStoriesListAdapter,
         ClickCallback {
-    public List<StoriesAdapterStoryData> getStoriesData() {
+    public List<PreviewStoryDTO> getStoriesData() {
         return storiesData;
     }
 
-    protected List<StoriesAdapterStoryData> storiesData = new ArrayList<>();
+    protected List<PreviewStoryDTO> storiesData = new ArrayList<>();
     private boolean isFavoriteList;
 
     @Override
-    public void updateStoriesData(List<StoriesAdapterStoryData> data) {
+    public void updateStoriesData(List<PreviewStoryDTO> data) {
         this.storiesData.clear();
         this.storiesData.addAll(data);
         notifyDataSetChanged();
@@ -156,7 +156,7 @@ public abstract class BaseStoriesListAdapter
             });
         } else if (holder instanceof IStoriesListCommonItem) {
             int hasUGC = useUGC ? 1 : 0;
-            final StoriesAdapterStoryData story = storiesData.get(position - hasUGC);
+            final PreviewStoryDTO story = storiesData.get(position - hasUGC);
             if (story == null) return;
             String imgUrl = story.getImageUrl(manager.csCoverQuality());
             ((IStoriesListCommonItem) holder).bindCommon(
@@ -212,7 +212,7 @@ public abstract class BaseStoriesListAdapter
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
 
-        final StoriesAdapterStoryData current = storiesData.get(index);
+        final PreviewStoryDTO current = storiesData.get(index);
         String gameInstanceId = current.getGameInstanceId();
         if (gameInstanceId != null) {
             if (storiesListGameItemClick != null)
@@ -229,8 +229,8 @@ public abstract class BaseStoriesListAdapter
                 );
         }
         if (storiesListCommonItemClick != null) {
-            ArrayList<StoriesAdapterStoryData> tempStoriesData = new ArrayList();
-            for (StoriesAdapterStoryData storyData : storiesData) {
+            ArrayList<PreviewStoryDTO> tempStoriesData = new ArrayList();
+            for (PreviewStoryDTO storyData : storiesData) {
                 if (!storyData.isHideInReader())
                     tempStoriesData.add(storyData);
             }
@@ -276,7 +276,7 @@ public abstract class BaseStoriesListAdapter
 
 
     @Override
-    public void notify(StoriesAdapterStoryData data) {
+    public void notify(PreviewStoryDTO data) {
         if (data == null) {
             notifyDataSetChanged();
             return;
@@ -298,7 +298,7 @@ public abstract class BaseStoriesListAdapter
     }
 
     @Override
-    public List<StoriesAdapterStoryData> getCurrentStories() {
+    public List<PreviewStoryDTO> getCurrentStories() {
         return storiesData;
     }
 

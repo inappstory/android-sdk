@@ -9,6 +9,7 @@ import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.session.interfaces.IUpdateSessionCallback;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
@@ -51,8 +52,8 @@ public class OldStatisticManager {
         }
     }
 
-    public static Object openProcessLock = new Object();
-    public static Object previewLock = new Object();
+    public static final Object openProcessLock = new Object();
+    public static final Object previewLock = new Object();
     public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
 
     public OldStatisticManager() {
@@ -158,45 +159,19 @@ public class OldStatisticManager {
                 statistic.clear();
 
             }
-            final String updateUUID = ProfilingManager.getInstance().addTask(
-                    "api_session_update"
-            );
-            IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+
+            IASCoreManager.getInstance().sessionRepository.updateSession(sendingStatistic, new IUpdateSessionCallback() {
                 @Override
-                public void onSuccess(SessionDTO session) {
-                    networkClient.enqueue(
-                            networkClient.getApi().sessionUpdate(
-                                    new StatisticSendObject(
-                                            session.getId(),
-                                            sendingStatistic
-                                    )
-                            ),
-                            new NetworkCallback<SessionResponse>() {
-                                @Override
-                                public void onSuccess(SessionResponse response) {
-                                    ProfilingManager.getInstance().setReady(updateUUID);
-                                    cleanStatistic();
-                                }
-
-                                @Override
-                                public void errorDefault(String message) {
-                                    ProfilingManager.getInstance().setReady(updateUUID);
-                                    cleanStatistic();
-                                    synchronized (openProcessLock) {
-                                        statistic.addAll(sendingStatistic);
-                                    }
-                                }
-
-                                @Override
-                                public Type getType() {
-                                    return SessionResponse.class;
-                                }
-                            });
+                public void onSuccess(Void response) {
+                    OldStatisticManager.getInstance().cleanStatistic();
                 }
 
                 @Override
                 public void onError() {
-
+                    OldStatisticManager.getInstance().cleanStatistic();
+                    synchronized (openProcessLock) {
+                        statistic.addAll(sendingStatistic);
+                    }
                 }
             });
         } catch (Exception e) {
@@ -247,13 +222,6 @@ public class OldStatisticManager {
         }
     }
 
-    public void addArticleStatisticEvent(int eventType, int articleId) {
-        synchronized (eventLock) {
-            currentEvent = new StatisticEvent(eventType, articleEventCount, articleId, articleTimer);
-        }
-    }
-
-
     public int eventCount = 0;
 
 
@@ -272,7 +240,7 @@ public class OldStatisticManager {
             count = eventCount;
         }
 
-        ArrayList statObject = new ArrayList<Object>();
+        ArrayList<Object> statObject = new ArrayList<>();
         statObject.add(event.eventType);
         statObject.add(count);
         statObject.add(event.storyId);
@@ -298,21 +266,6 @@ public class OldStatisticManager {
         if (closeStat)
             closeStatisticEvent();
         addStatisticEvent(1, storyId, index);
-    }
-
-    public int articleEventCount = 0;
-    public long articleTimer = 0;
-
-    public void addArticleOpenStatistic(int eventType, int articleId) {
-        articleEventCount = eventCount;
-
-        synchronized (eventLock) {
-            if (currentEvent != null)
-                currentEvent.eventType = 2;
-        }
-        closeStatisticEvent();
-        articleTimer = System.currentTimeMillis();
-        addArticleStatisticEvent(eventType, articleId);
     }
 
     public void addLinkOpenStatistic() {

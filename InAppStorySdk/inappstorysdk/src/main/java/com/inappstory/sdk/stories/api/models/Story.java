@@ -93,8 +93,20 @@ public class Story implements Parcelable {
     @SerializedName("stat_title")
     public String statTitle;
 
+    @SerializedName("updated_at")
+    public Long updatedAt;
+
     @SerializedName("video_cover")
     public List<Image> videoUrl;
+
+    public Long getUpdatedAt() {
+        return updatedAt != null ? updatedAt : 0L;
+    }
+
+    public List<PayloadObject> getSlidesPayload() {
+        if (slidesPayload == null) return new ArrayList<>();
+        return slidesPayload;
+    }
 
     @SerializedName("slides_payload")
     public List<PayloadObject> slidesPayload;

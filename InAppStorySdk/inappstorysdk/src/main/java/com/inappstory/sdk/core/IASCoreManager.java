@@ -2,6 +2,8 @@ package com.inappstory.sdk.core;
 
 import android.content.Context;
 
+import com.inappstory.sdk.core.network.ApiInterface;
+import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.files.FilesRepository;
 import com.inappstory.sdk.core.repository.files.IFilesRepository;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
@@ -45,6 +47,18 @@ public class IASCoreManager {
         }
         sessionRepository.getSession(userId, callback);
     }
+
+    public NetworkClient getNetworkClient() {
+        return networkClient;
+    }
+
+    public void setNetworkClient(NetworkClient networkClient) {
+        this.networkClient = networkClient;
+    }
+
+    private NetworkClient networkClient;
+
+
 
     public void closeSession() {
         sessionRepository.closeSession();

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.uidomain.list;
+package com.inappstory.sdk.core.repository.stories.dto;
 
 import androidx.annotation.Nullable;
 
@@ -9,7 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class StoriesAdapterStoryData {
+public class PreviewStoryDTO implements IPreviewStoryDTO {
+    public PreviewStoryDTO(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
@@ -58,6 +62,16 @@ public class StoriesAdapterStoryData {
         return isOpened;
     }
 
+    @Override
+    public void open() {
+        isOpened = true;
+    }
+    public String getImageUrl(int coverQuality) {
+        Image proper = Image.getProperImage(images, coverQuality);
+        if (proper != null) return proper.getUrl();
+        return null;
+    }
+
     public int getSlidesCount() {
         return slidesCount;
     }
@@ -65,6 +79,11 @@ public class StoriesAdapterStoryData {
     public HashMap<String, Object> getPayload() {
         return payload;
     }
+
+    public boolean isHasAudio() {
+        return hasAudio;
+    }
+
 
     private int id;
     private String title;
@@ -84,9 +103,10 @@ public class StoriesAdapterStoryData {
     private HashMap<String, Object> payload;
     int slidesCount;
 
-    public StoriesAdapterStoryData(Story story) {
+    public PreviewStoryDTO(Story story) {
         this.id = story.id;
         this.slidesCount = story.getSlidesCount();
+        this.tags = story.tags;
         this.backgroundColor = story.getBackgroundColor();
         this.titleColor = story.getTitleColor();
         this.statTitle = story.statTitle;
@@ -101,21 +121,15 @@ public class StoriesAdapterStoryData {
         this.images = story.getImage();
     }
 
-    public String getImageUrl(int coverQuality) {
-        Image proper = Image.getProperImage(images, coverQuality);
-        if (proper != null) return proper.getUrl();
-        return null;
-    }
-
 
     @Override
     public boolean equals(@Nullable Object o) {
         if (o == this)
             return true;
-        if (!(o instanceof StoriesAdapterStoryData))
+        if (!(o instanceof PreviewStoryDTO))
             return false;
-        StoriesAdapterStoryData other = (StoriesAdapterStoryData)o;
-        return (this.getId() == other.getId() && this.isOpened() == other.isOpened());
+        PreviewStoryDTO other = (PreviewStoryDTO)o;
+        return (this.getId() == other.getId());
     }
 
     @Override

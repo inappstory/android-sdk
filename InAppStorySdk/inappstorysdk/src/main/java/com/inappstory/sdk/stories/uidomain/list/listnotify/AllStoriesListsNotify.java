@@ -9,7 +9,7 @@ import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.IFavoriteCellUpdate;
 import com.inappstory.sdk.stories.ui.list.IFavoriteListUpdate;
 import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
-import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
+import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 
 import java.util.List;
 
@@ -70,7 +70,7 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
             @Override
             public void run() {
                 if (storiesListAdapter == null) return;
-                storiesListAdapter.notify(new StoriesAdapterStoryData(st));
+                storiesListAdapter.notify(new PreviewStoryDTO(st));
             }
         });
     }
@@ -119,7 +119,7 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     }
 
     @Override
-    public void storyAddToFavoriteItemNotify(final StoriesAdapterStoryData data) {
+    public void storyAddToFavoriteItemNotify(final PreviewStoryDTO data) {
         post(new Runnable() {
             @Override
             public void run() {

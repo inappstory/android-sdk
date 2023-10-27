@@ -30,7 +30,6 @@ import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -46,10 +45,9 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.uidomain.list.StoriesAdapterStoryData;
+import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IAllStoriesListsNotify;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
-import com.inappstory.sdk.stories.utils.SessionManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,7 +96,7 @@ public class InAppStoryService {
     }
 
 
-    public HashMap<String, List<StoriesAdapterStoryData>> cachedListStories = new HashMap<>();
+    public HashMap<String, List<PreviewStoryDTO>> cachedListStories = new HashMap<>();
 
     public String getUserId() {
         if (userId == null && !InAppStoryManager.isNull())
@@ -631,7 +629,7 @@ public class InAppStoryService {
                 final List<FavoriteImage> favImages = getFavoriteImages();
                 boolean isEmpty = favImages.isEmpty();
                 for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                    sub.storyAddToFavoriteItemNotify(new StoriesAdapterStoryData(story));
+                    sub.storyAddToFavoriteItemNotify(new PreviewStoryDTO(story));
                     sub.storyFavoriteCellNotify(favImages, Story.StoryType.COMMON, isEmpty);
                 }
 
@@ -736,7 +734,7 @@ public class InAppStoryService {
                             callback.addedToFavorite(story);
                         for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
                             sub.storyFavoriteCellNotify(favImages, storyType, isEmpty);
-                            sub.storyAddToFavoriteItemNotify(new StoriesAdapterStoryData(story));
+                            sub.storyAddToFavoriteItemNotify(new PreviewStoryDTO(story));
                         }
                         for (IStoriesListNotify sub : getStoriesListNotifySet()) {
                             if (listID.equals(sub.getListUID()))

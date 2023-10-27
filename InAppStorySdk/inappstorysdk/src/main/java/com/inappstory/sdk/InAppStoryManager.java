@@ -929,20 +929,15 @@ public class InAppStoryManager {
 
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
         setInstance(this);
-        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
-            if (networkClient != null) {
-                networkClient.clear();
-                networkClient = null;
-            }
-        }
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
                 .apiKey(this.API_KEY)
                 .testKey(this.TEST_KEY)
                 .host(cmsUrl);
-
-        networkClient = new NetworkClient(context, cmsUrl);
+        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
+            IASCoreManager.getInstance().setNetworkClient(new NetworkClient(context, cmsUrl));
+        }
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
             inAppStoryService.getDownloadManager().initDownloaders();

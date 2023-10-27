@@ -8,8 +8,8 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -129,7 +129,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
         return IASCoreManager.getInstance().sessionRepository.getUgcEditor() != null;
     }
 
-    private void notifyListCallback(StoriesAdapterStoryData current, int index) {
+    private void notifyListCallback(PreviewStoryDTO current, int index) {
         if (listCallback != null) {
             listCallback.itemClick(
                     new StoryData(
@@ -146,7 +146,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     @Override
-    public void gameItemClick(StoriesAdapterStoryData data, int index, Context context) {
+    public void gameItemClick(PreviewStoryDTO data, int index, Context context) {
         notifyListCallback(data, index);
         allStoriesListsNotify.openStory(data.getId(), storyType);
         InAppStoryService service = InAppStoryService.getInstance();
@@ -172,7 +172,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     @Override
-    public void deeplinkItemClick(StoriesAdapterStoryData data, int index, Context context) {
+    public void deeplinkItemClick(PreviewStoryDTO data, int index, Context context) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         notifyListCallback(data, index);
@@ -198,7 +198,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     @Override
-    public void commonItemClick(List<StoriesAdapterStoryData> data, int index, Context context) {
+    public void commonItemClick(List<PreviewStoryDTO> data, int index, Context context) {
         if (index == -1) {
             if (CallbackManager.getInstance().getErrorCallback() != null) {
                 CallbackManager.getInstance().getErrorCallback().emptyLinkError();
@@ -218,21 +218,21 @@ public class StoriesListPresenter implements IStoriesListPresenter {
         );
     }
 
-    private List<Integer> getIdsFromStoriesAdapterDataList(List<StoriesAdapterStoryData> storyData) {
+    private List<Integer> getIdsFromStoriesAdapterDataList(List<PreviewStoryDTO> storyData) {
         List<Integer> ids = new ArrayList<>();
-        for (StoriesAdapterStoryData data : storyData) {
+        for (PreviewStoryDTO data : storyData) {
             ids.add(data.getId());
         }
         return ids;
     }
 
-    private List<StoriesAdapterStoryData> getCachedStoriesPreviews(String cacheId) {
+    private List<PreviewStoryDTO> getCachedStoriesPreviews(String cacheId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;
         return service.cachedListStories.get(cacheId);
     }
 
-    public void cacheStoriesPreviewIds(String cacheId, List<StoriesAdapterStoryData> storyDataList) {
+    public void cacheStoriesPreviewIds(String cacheId, List<PreviewStoryDTO> storyDataList) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         service.cachedListStories.put(cacheId, storyDataList);
@@ -243,7 +243,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
             getStoriesList) {
         loadList(feed, false, loadFavoriteCovers, new GetStoriesList() {
             @Override
-            public void onSuccess(List<StoriesAdapterStoryData> stories) {
+            public void onSuccess(List<PreviewStoryDTO> stories) {
                 getStoriesList.onSuccess(stories);
                 InAppStoryService service = InAppStoryService.getInstance();
                 if (loadFavoriteCovers && service != null)
@@ -314,9 +314,9 @@ public class StoriesListPresenter implements IStoriesListPresenter {
         return new LoadStoriesCallback() {
             @Override
             public void storiesLoaded(List<Story> stories) {
-                List<StoriesAdapterStoryData> adapterStoryData = new ArrayList<>();
+                List<PreviewStoryDTO> adapterStoryData = new ArrayList<>();
                 for (Story story : stories) {
-                    adapterStoryData.add(new StoriesAdapterStoryData(story));
+                    adapterStoryData.add(new PreviewStoryDTO(story));
                 }
                 if (cacheId != null && !cacheId.isEmpty()) {
                     cacheStoriesPreviewIds(cacheId, adapterStoryData);
@@ -339,7 +339,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
     private boolean tryToLoadCached(GetStoriesList getStoriesList) {
         if (cacheId == null || cacheId.isEmpty()) return false;
-        List<StoriesAdapterStoryData> stories = getCachedStoriesPreviews(cacheId);
+        List<PreviewStoryDTO> stories = getCachedStoriesPreviews(cacheId);
         if (stories == null) {
             return false;
         } else {

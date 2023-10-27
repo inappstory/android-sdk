@@ -1,7 +1,6 @@
 package com.inappstory.sdk.core.repository.session.interfaces;
 
-public interface ICloseSessionCallback {
-    void onSuccess();
+import com.inappstory.sdk.core.repository.utils.IGetNetworkResponseCallback;
 
-    void onError();
+public interface ICloseSessionCallback extends IGetNetworkResponseCallback<Void> {
 }

@@ -11,11 +11,16 @@ import com.inappstory.sdk.core.repository.session.dto.StatisticPermissionDTO;
 import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IPlaceholdersDtoHolder;
+import com.inappstory.sdk.core.repository.session.interfaces.IUpdateSessionCallback;
+import com.inappstory.sdk.core.repository.session.usecase.CloseSession;
+import com.inappstory.sdk.core.repository.session.usecase.OpenSession;
+import com.inappstory.sdk.core.repository.session.usecase.UpdateSession;
 import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
-import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +37,6 @@ public class SessionRepository implements ISessionRepository {
     private UgcEditorDTO ugcEditorDTO;
 
     private IPlaceholdersDtoHolder placeholdersDtoHolder;
-
-    private SessionManager sessionManager = new SessionManager();
 
     private final Object openProcessLock = new Object();
     private List<IGetSessionCallback<SessionDTO>> getSessionCallbacks = new ArrayList<>();
@@ -56,12 +59,14 @@ public class SessionRepository implements ISessionRepository {
             openProcess = true;
         }
 
-        sessionManager.openSession(
+        new OpenSession().open(
                 context,
                 userId,
                 new IGetSessionCallback<SessionResponse>() {
                     @Override
                     public void onSuccess(SessionResponse session) {
+                        OldStatisticManager.getInstance().refreshCallbacks();
+                        OldStatisticManager.getInstance().eventCount = 0;
                         downloadFonts(session);
                         List<IGetSessionCallback<SessionDTO>> localCallbacks;
                         SessionDTO localDTO;
@@ -92,6 +97,9 @@ public class SessionRepository implements ISessionRepository {
 
                     @Override
                     public void onError() {
+                        if (CallbackManager.getInstance().getErrorCallback() != null) {
+                            CallbackManager.getInstance().getErrorCallback().sessionError();
+                        }
                         List<IGetSessionCallback<SessionDTO>> localCallbacks;
                         synchronized (openProcessLock) {
                             openProcess = false;
@@ -125,14 +133,26 @@ public class SessionRepository implements ISessionRepository {
 
     @Override
     public void closeSession() {
-        sessionManager.closeSession(
+        OldStatisticManager statisticManager = OldStatisticManager.getInstance();
+        List<List<Object>> stat = new ArrayList<>(
+                isAllowStatV1() ?
+                        statisticManager.statistic :
+                        new ArrayList<List<Object>>()
+        );
+        statisticManager.clear();
+        new CloseSession().close(
                 sessionDTO,
-                isAllowStatV1()
+                stat
         );
         sessionDTO = null;
         ugcEditorDTO = null;
         placeholdersDtoHolder = null;
         statisticPermissionDTO = null;
+    }
+
+    @Override
+    public void updateSession(final List<List<Object>> sendingStatistic, final IUpdateSessionCallback callback) {
+        new UpdateSession().update(sessionDTO, sendingStatistic, callback);
     }
 
     @Override
@@ -155,7 +175,7 @@ public class SessionRepository implements ISessionRepository {
     @Override
     public boolean isAllowStatV1() {
         if (statisticPermissionDTO != null)
-            return InAppStoryManager.getInstance().isSendStatistic() && statisticPermissionDTO.isAllowStatV1() ;
+            return InAppStoryManager.getInstance().isSendStatistic() && statisticPermissionDTO.isAllowStatV1();
         return InAppStoryManager.getInstance().isSendStatistic();
     }
 
