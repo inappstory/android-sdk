@@ -4,12 +4,15 @@ import android.os.Build;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
@@ -25,14 +28,14 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.lang.reflect.Type;
 
 public class ButtonsPanelManager {
-    public void setStoryIdAndType(int storyId, Story.StoryType type) {
+    public void setStoryIdAndType(int storyId, StoryType type) {
         this.storyId = storyId;
         this.type = type;
     }
 
     int storyId;
 
-    Story.StoryType type;
+    StoryType type;
 
     public ReaderPageManager getParentManager() {
         return parentManager;
@@ -64,46 +67,46 @@ public class ButtonsPanelManager {
     }
 
     private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+        IStoriesRepository storiesRepository =
+                IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
+        final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
         final int val;
+        final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
+        boolean liked = story.getLike() == 1;
+        boolean disliked = story.getLike() == -1;
         SlideData slideData = new SlideData(
                 new StoryData(
-                        story.id,
-                        StringsUtils.getNonNull(story.statTitle),
-                        StringsUtils.getNonNull(story.tags),
-                        story.getSlidesCount(),
+                        story,
                         getParentManager().getFeedId(),
                         getParentManager().getSourceType()
 
                 ),
-                story.lastIndex
+                slideIndex
         );
         IUseCaseCallback likeDislikeUseCaseCallback = new UseCaseCallbackLikeDislikeStory(
                 slideData,
                 like,
-                like ? story.liked() : story.disliked()
+                like ? liked : disliked
         );
         likeDislikeUseCaseCallback.invoke();
         if (like) {
-            if (story.liked()) {
+            if (liked) {
                 val = 0;
             } else {
-                StatisticManager.getInstance().sendLikeStory(story.id, story.lastIndex,
+                StatisticManager.getInstance().sendLikeStory(story.getLike(), slideIndex,
                         parentManager != null ? parentManager.getFeedId() : null);
                 val = 1;
             }
         } else {
-            if (story.disliked()) {
+            if (disliked) {
                 val = 0;
             } else {
-                StatisticManager.getInstance().sendDislikeStory(story.id, story.lastIndex,
+                StatisticManager.getInstance().sendDislikeStory(story.getId(), slideIndex,
                         parentManager != null ? parentManager.getFeedId() : null);
                 val = -1;
             }
@@ -119,12 +122,7 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(likeUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                                storyId,
-                                parentManager.getStoryType()
-                        );
-                        if (story != null)
-                            story.like = val;
+                        story.setLike(val);
                         if (callback != null)
                             callback.onSuccess(val);
                     }
@@ -151,20 +149,18 @@ public class ButtonsPanelManager {
     }
 
     public void favoriteClick(final ButtonClickCallback callback) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
-        Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+        IStoriesRepository storiesRepository =
+                IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
+        final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
+        final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
         SlideData slideData = new SlideData(
                 new StoryData(
-                        story.id,
-                        StringsUtils.getNonNull(story.statTitle),
-                        StringsUtils.getNonNull(story.tags),
-                        story.getSlidesCount(),
+                       story,
                         getParentManager().getFeedId(),
                         getParentManager().getSourceType()
                 ),
-                story.lastIndex
+                slideIndex
         );
         inAppStoryService.favoriteStory(
                 storyId,
@@ -208,30 +204,30 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final ShareButtonClickCallback callback) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        if (inAppStoryService == null || inAppStoryService.isShareProcess())
-            return;
-        final Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+        if (IASCoreManager.getInstance().isShareProcess()) return;
+        IStoriesRepository storiesRepository =
+                IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
+        final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
-        final int slideIndex = story.lastIndex;
-        StatisticManager.getInstance().sendShareStory(story.id, slideIndex,
+        final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
+        StatisticManager.getInstance().sendShareStory(
+                story.getId(),
+                slideIndex,
                 story.shareType(slideIndex),
-                parentManager != null ? parentManager.getFeedId() : null);
+                parentManager != null ? parentManager.getFeedId() : null
+        );
         IUseCaseCallback shareClick = new UseCaseCallbackShareClick(
                 new SlideData(
                         new StoryData(
-                                story.id,
-                                StringsUtils.getNonNull(story.statTitle),
-                                StringsUtils.getNonNull(story.tags),
-                                story.getSlidesCount(),
+                                story,
                                 getParentManager().getFeedId(),
                                 getParentManager().getSourceType()
                         ),
-                        story.lastIndex
+                        slideIndex
                 )
         );
         shareClick.invoke();
@@ -239,7 +235,7 @@ public class ButtonsPanelManager {
             parentManager.screenshotShare();
             return;
         }
-        inAppStoryService.isShareProcess(true);
+        IASCoreManager.getInstance().isShareProcess(true);
         if (callback != null)
             callback.onClick();
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");

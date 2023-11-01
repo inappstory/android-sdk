@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.ui.views;
 
 import android.view.View;
 
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public interface IGetFavoriteListItem {
     /**
      * @param favCell        (favCell) is a RelativeLayout, which contains the View returned by getFavoriteItem method.
      *                       If you need to access the internal View directly - you must firstly set an id for it or access it as favCell.getChildAt(0)
-     * @param favoriteImages (favoriteImages) contains list of covers for favorite stories in {@link FavoriteImage} type.
+     * @param favoriteImages (favoriteImages) contains list of covers for favorite stories in {@link IFavoritePreviewStoryDTO} type.
      * @param count          (count) contains a size of favorite images list
      */
     void setImages(

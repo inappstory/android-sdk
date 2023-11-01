@@ -46,6 +46,11 @@ public class UgcPreviewStoryDTO implements IPreviewStoryDTO {
         return backgroundColor;
     }
 
+    @Override
+    public List<Image> getImages() {
+        return null;
+    }
+
     public String getTitleColor() {
         return titleColor;
     }

@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.uidomain.list;
 import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
@@ -32,11 +33,11 @@ public interface IStoriesListPresenter {
 
     boolean hasUgcEditor();
 
-    void gameItemClick(PreviewStoryDTO data, int index, Context context);
+    void gameItemClick(IPreviewStoryDTO data, int index, Context context);
 
-    void deeplinkItemClick(PreviewStoryDTO data, int index, Context context);
+    void deeplinkItemClick(IPreviewStoryDTO data, int index, Context context);
 
-    void commonItemClick(List<PreviewStoryDTO> data, int index, Context context);
+    void commonItemClick(List<IPreviewStoryDTO> data, int index, Context context);
 
     void loadFeed(String feed, boolean loadFavoriteCovers, GetStoriesList getStoriesList);
 

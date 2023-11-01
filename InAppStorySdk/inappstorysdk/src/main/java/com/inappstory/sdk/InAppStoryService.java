@@ -19,6 +19,9 @@ import android.webkit.URLUtil;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.StoryDTO;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
@@ -44,8 +47,6 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IAllStoriesListsNotify;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 
@@ -96,7 +97,7 @@ public class InAppStoryService {
     }
 
 
-    public HashMap<String, List<PreviewStoryDTO>> cachedListStories = new HashMap<>();
+    public HashMap<String, List<IPreviewStoryDTO>> cachedListStories = new HashMap<>();
 
     public String getUserId() {
         if (userId == null && !InAppStoryManager.isNull())
@@ -234,7 +235,7 @@ public class InAppStoryService {
 
 
     @NonNull
-    public List<FavoriteImage> getFavoriteImages() {
+    public List<IFavoritePreviewStoryDTO> getFavoriteImages() {
         if (downloadManager == null) return new ArrayList<>();
         if (downloadManager.favoriteImages == null)
             downloadManager.favoriteImages = new ArrayList<>();
@@ -462,14 +463,6 @@ public class InAppStoryService {
         return listNotifier;
     }
 
-    public Story openStory(int storyId, Story.StoryType storyType) {
-        Story st = getDownloadManager().getStoryById(storyId, storyType);
-        if (st == null) return null;
-        st.isOpened = true;
-        st.saveStoryOpened(storyType);
-        return st;
-    }
-
     public class ListNotifier {
         public void changeStory(int storyId, Story.StoryType type, String listID) {
             for (IStoriesListNotify sub : getStoriesListNotifySet()) {
@@ -479,9 +472,7 @@ public class InAppStoryService {
         }
 
         public void openStory(int storyId, Story.StoryType type) {
-            for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                sub.openStory(storyId, type);
-            }
+            IASCoreManager.getInstance().getStoriesRepository(type).openStory(storyId);
         }
 
         public void closeReader(String listID) {
@@ -626,13 +617,8 @@ public class InAppStoryService {
 
             @Override
             public void addedToFavorite(Story story) {
-                final List<FavoriteImage> favImages = getFavoriteImages();
-                boolean isEmpty = favImages.isEmpty();
-                for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                    sub.storyAddToFavoriteItemNotify(new PreviewStoryDTO(story));
-                    sub.storyFavoriteCellNotify(favImages, Story.StoryType.COMMON, isEmpty);
-                }
-
+                IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+                        .addToFavorite(storyId);
             }
 
             @Override
@@ -640,12 +626,8 @@ public class InAppStoryService {
                 if (ScreensManager.getInstance().currentScreen != null) {
                     ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
                 }
-                final List<FavoriteImage> favImages = getFavoriteImages();
-                boolean isEmpty = favImages.isEmpty();
-                for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                    sub.storyRemoveFromFavoriteItemNotify(storyId);
-                    sub.storyFavoriteCellNotify(favImages, Story.StoryType.COMMON, isEmpty);
-                }
+                IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+                        .removeFromFavorite(storyId);
             }
 
             @Override
@@ -671,9 +653,7 @@ public class InAppStoryService {
                         ProfilingManager.getInstance().setReady(favUID);
                         getDownloadManager()
                                 .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                        getDownloadManager()
-                                .clearAllFavoriteStatus(Story.StoryType.UGC);
-                        getFavoriteImages().clear();
+                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).removeAllFavorites();
                         for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
                             sub.clearAllFavorites();
                         }
@@ -721,21 +701,10 @@ public class InAppStoryService {
                 new FavoriteCallback() {
                     @Override
                     public void addedToFavorite(Story story) {
-                        final List<FavoriteImage> favImages = getFavoriteImages();
-                        boolean isEmpty = favImages.isEmpty();
-                        FavoriteImage favoriteImage = new FavoriteImage(
-                                storyId,
-                                story.getImage(),
-                                story.getBackgroundColor()
-                        );
-                        if (!favImages.contains(favoriteImage))
-                            favImages.add(0, favoriteImage);
                         if (callback != null)
                             callback.addedToFavorite(story);
-                        for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                            sub.storyFavoriteCellNotify(favImages, storyType, isEmpty);
-                            sub.storyAddToFavoriteItemNotify(new PreviewStoryDTO(story));
-                        }
+                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+                                .addToFavorite(storyId);
                         for (IStoriesListNotify sub : getStoriesListNotifySet()) {
                             if (listID.equals(sub.getListUID()))
                                 sub.scrollToLastOpenedStory();
@@ -744,20 +713,10 @@ public class InAppStoryService {
 
                     @Override
                     public void removedFromFavorite() {
-                        final List<FavoriteImage> favImages = getFavoriteImages();
-                        boolean isEmpty = favImages.isEmpty();
-                        for (FavoriteImage favoriteImage : favImages) {
-                            if (favoriteImage.getId() == storyId) {
-                                favImages.remove(favoriteImage);
-                                break;
-                            }
-                        }
+                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+                                .removeFromFavorite(storyId);
                         if (callback != null)
                             callback.removedFromFavorite();
-                        for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                            sub.storyFavoriteCellNotify(favImages, storyType, isEmpty);
-                            sub.storyRemoveFromFavoriteItemNotify(storyId);
-                        }
                     }
 
                     @Override

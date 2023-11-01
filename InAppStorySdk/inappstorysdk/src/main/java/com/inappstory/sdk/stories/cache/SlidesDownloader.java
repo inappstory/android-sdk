@@ -4,10 +4,15 @@ import android.os.Handler;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.ImagePlaceholderMappingObjectDTO;
+import com.inappstory.sdk.core.repository.stories.dto.ResourceMappingObjectDTO;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 
 import java.io.IOException;
@@ -23,18 +28,6 @@ import java.util.concurrent.Executors;
 
 
 class SlidesDownloader {
-
-    boolean uploadAdditional(boolean sync) {
-        synchronized (pageTasksLock) {
-            if (!pageTasks.isEmpty() && sync) {
-                for (SlideTaskData pair : pageTasks.keySet()) {
-                    if (Objects.requireNonNull(pageTasks.get(pair)).loadType <= 1) return false;
-                }
-            }
-        }
-        return sync;
-    }
-
     StoryDownloadManager manager;
 
     void init() {
@@ -73,16 +66,6 @@ class SlidesDownloader {
         handler.postDelayed(queuePageReadRunnable, 100);
     }
 
-    void setCurrentSlide(int storyId, int slideIndex) {
-        synchronized (pageTasksLock) {
-
-        }
-    }
-
-    public void deleteTask(String remove) {
-
-    }
-
     public void removeSlideTasks(StoryTaskData storyTaskData) {
         synchronized (pageTasksLock) {
             Iterator<Map.Entry<SlideTaskData, SlideTask>> i = pageTasks.entrySet().iterator();
@@ -99,34 +82,24 @@ class SlidesDownloader {
     }
 
     int checkIfPageLoaded(SlideTaskData key) throws IOException { //0 - not loaded, 1 - loaded, -1 - loaded with error
-        boolean remove = false;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return 0;
-        LruDiskCache cache = service.getCommonCache();
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
-                ArrayList<String> allUrls = new ArrayList<>();
-                allUrls.addAll(slideTask.urls);
-                allUrls.addAll(slideTask.videoUrls);
-                for (String url : allUrls) {
-                    String croppedUrl = Downloader.deleteQueryArgumentsFromUrl(url, true);
-                    if (!cache.hasKey(croppedUrl)) {
-                        remove = true;
-                    } else {
-                        if (cache.getFullFile(croppedUrl) == null) {
-                            synchronized (pageTasksLock) {
-                                slideTask.loadType = 0;
-                            }
-                            return 0;
+                ArrayList<ResourceMappingObjectDTO> resources = new ArrayList<>();
+                resources.addAll(slideTask.resources);
+                for (ResourceMappingObjectDTO resource : resources) {
+                    String croppedUrl = Downloader.deleteQueryArgumentsFromUrl(
+                            resource.getUrl(),
+                            true
+                    );
+                    if (IASCoreManager.getInstance().filesRepository.getLocalStoryFile(croppedUrl) == null) {
+                        synchronized (pageTasksLock) {
+                            slideTask.loadType = 0;
                         }
+                        return 0;
                     }
                 }
-                if (remove) {
-                    pageTasks.remove(key);
-                } else {
-                    return 1;
-                }
+                return 1;
             } else if (slideTask.loadType == -1) {
                 return -1;
             }
@@ -141,7 +114,10 @@ class SlidesDownloader {
     List<SlideTaskData> secondPriority = new ArrayList<>();
 
     //adjacent - for next and prev story
-    void changePriority(Integer storyId, List<Integer> adjacents, Story.StoryType type) {
+    void changePriority(Integer storyId, List<Integer> adjacents, StoryType type) {
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IStoryDTO currentStory = storiesRepository.getStoryById(storyId);
+        int lastIndex = storiesRepository.getStoryLastIndex(storyId);
         synchronized (pageTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
                 if (!secondPriority.contains(firstPriority.get(i))) {
@@ -149,43 +125,46 @@ class SlidesDownloader {
                 }
             }
             firstPriority.clear();
-            Story currentStory = manager.getStoryById(storyId, type);
             if (currentStory == null) return;
+
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
                 SlideTaskData kv = new SlideTaskData(storyId, i, type);
                 secondPriority.remove(kv);
                 //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
                 //           continue;
-                if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
+                if (i == storiesRepository.getStoryLastIndex(storyId) || i == lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
             }
-            if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new SlideTaskData(storyId, currentStory.lastIndex, type));
-                if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new SlideTaskData(storyId, currentStory.lastIndex + 1, type));
+            if (sc > lastIndex) {
+                firstPriority.add(0, new SlideTaskData(storyId, lastIndex, type));
+                if (sc > lastIndex + 1) {
+                    firstPriority.add(1, new SlideTaskData(storyId, lastIndex + 1, type));
                 }
             }
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
-                Story adjacentStory = manager.getStoryById(adjacent, type);
-                if (adjacentStory.lastIndex < adjacentStory.getSlidesCount() - 1) {
-                    SlideTaskData nk = new SlideTaskData(adjacent, adjacentStory.lastIndex + 1, type);
+                IStoryDTO adjacentStory = storiesRepository.getStoryById(adjacent);
+                int adjacentLastIndex = storiesRepository.getStoryLastIndex(storyId);
+                if (adjacentLastIndex < adjacentStory.getSlidesCount() - 1) {
+                    SlideTaskData nk = new SlideTaskData(adjacent, adjacentLastIndex + 1, type);
                     secondPriority.remove(nk);
                     firstPriority.add(ind, nk);
                 }
 
-                SlideTaskData ck = new SlideTaskData(adjacent, adjacentStory.lastIndex, type);
+                SlideTaskData ck = new SlideTaskData(adjacent, adjacentLastIndex, type);
                 secondPriority.remove(ck);
                 firstPriority.add(ind, ck);
             }
         }
     }
 
-    void changePriorityForSingle(Integer storyId, Story.StoryType type) {
+    void changePriorityForSingle(Integer storyId, StoryType type) {
         synchronized (pageTasksLock) {
-            Story currentStory = manager.getStoryById(storyId, type);
+            IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(type);
+            IStoryDTO currentStory = repository.getStoryById(storyId);
+            int lastIndex = repository.getStoryLastIndex(storyId);
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
                 SlideTaskData kv = new SlideTaskData(storyId, i, type);
@@ -194,29 +173,29 @@ class SlidesDownloader {
 
             for (int i = 0; i < sc; i++) {
                 SlideTaskData kv = new SlideTaskData(storyId, i, type);
-                if (i == currentStory.lastIndex || i == currentStory.lastIndex + 1)
+                if (i == lastIndex || i == lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
             }
-            if (sc > currentStory.lastIndex) {
-                firstPriority.add(0, new SlideTaskData(storyId, currentStory.lastIndex, type));
-                if (sc > currentStory.lastIndex + 1) {
-                    firstPriority.add(1, new SlideTaskData(storyId, currentStory.lastIndex + 1, type));
+            if (sc > lastIndex) {
+                firstPriority.add(0, new SlideTaskData(storyId, lastIndex, type));
+                if (sc > lastIndex + 1) {
+                    firstPriority.add(1, new SlideTaskData(storyId, lastIndex + 1, type));
                 }
             }
         }
     }
 
-    void addStoryPages(Story story, int loadType, Story.StoryType type) throws Exception {
+    void addStoryPages(IStoryDTO story, int loadType, StoryType type) throws Exception {
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>();
         if (InAppStoryService.isNotNull()) {
             imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults());
         }
         synchronized (pageTasksLock) {
-            int key = story.id;
+            int key = story.getId();
             int sz;
             if (loadType == 3) {
-                sz = story.pages.size();
+                sz = story.getPages().size();
             } else {
                 sz = 2;
             }
@@ -224,25 +203,25 @@ class SlidesDownloader {
                 if (pageTasks.get(new SlideTaskData(key, i, type)) == null) {
                     SlideTask spt = new SlideTask();
                     spt.loadType = 0;
-                    spt.urls = story.getSrcListUrls(i, null);
-                    spt.videoUrls = story.getSrcListUrls(i, VIDEO);
-                    List<String> plNames = story.getPlaceholdersListNames(i);
-                    for (String plName : plNames) {
+                    spt.resources = story.getSrcList(i);
+                    List<ImagePlaceholderMappingObjectDTO> placeholdersList =
+                            story.getImagePlaceholdersList(i);
+                    for (ImagePlaceholderMappingObjectDTO placeholder : placeholdersList) {
                         Pair<ImagePlaceholderValue, ImagePlaceholderValue> value =
-                                imgPlaceholders.get(plName);
+                                imgPlaceholders.get(placeholder.getKey());
                         if (value != null
                                 && value.first != null
                                 && value.first.getType() == ImagePlaceholderType.URL) {
                             if (value.second != null
                                     && value.second.getType() == ImagePlaceholderType.URL) {
-                                spt.urlsWithAlter.add(
+                                spt.placeholders.add(
                                         new UrlWithAlter(
                                                 value.first.getUrl(),
                                                 value.second.getUrl()
                                         )
                                 );
                             } else {
-                                spt.urlsWithAlter.add(
+                                spt.placeholders.add(
                                         new UrlWithAlter(
                                                 value.first.getUrl()
                                         )
@@ -342,13 +321,10 @@ class SlidesDownloader {
                 handler.postDelayed(queuePageReadRunnable, 100);
                 return null;
             }
-            for (String url : slideTask.videoUrls) {
-                allUrls.add(new UrlWithAlter(url));
+            for (ResourceMappingObjectDTO resource : slideTask.resources) {
+                allUrls.add(new UrlWithAlter(resource.getUrl()));
             }
-            for (String url : slideTask.urls) {
-                allUrls.add(new UrlWithAlter(url));
-            }
-            allUrls.addAll(slideTask.urlsWithAlter);
+            allUrls.addAll(slideTask.placeholders);
             downloadUrls(
                     slideTaskData,
                     allUrls,
@@ -370,7 +346,7 @@ class SlidesDownloader {
         }
     }
 
-    void reloadPage(int storyId, int index, Story.StoryType type) {
+    void reloadPage(int storyId, int index, StoryType type) {
         SlideTaskData key = new SlideTaskData(storyId, index, type);
         synchronized (pageTasksLock) {
             if (pageTasks == null) pageTasks = new HashMap<>();

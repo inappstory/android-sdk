@@ -18,7 +18,7 @@ public class UrlWithAlter {
     public UrlWithAlter(@NonNull String url, String alter) {
         this.url = url;
         this.alter = alter;
-        skippable = true;
+        skippable = false;
     }
 
     private String alter;

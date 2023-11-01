@@ -1,8 +1,5 @@
 package com.inappstory.sdk.core.repository.stories.dto;
 
-import com.inappstory.sdk.core.repository.stories.dto.ImagePlaceholderMappingObjectDTO;
-import com.inappstory.sdk.core.repository.stories.dto.PayloadObjectDTO;
-import com.inappstory.sdk.core.repository.stories.dto.ResourceMappingObjectDTO;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +14,8 @@ public interface IStoryDTO {
     boolean isOpened();
 
     int getSlidesCount();
+
+    String getSlideEventPayload(int slideIndex);
 
     HashMap<String, Object> getPayload();
 
@@ -38,11 +37,28 @@ public interface IStoryDTO {
 
     int getLike();
 
+    boolean getFavorite();
+
+    void setLike(int like);
+
+    void setFavorite(boolean favorite);
+
+    void setOpened(boolean isOpened);
+
     int[] getSlidesShare();
 
     List<ImagePlaceholderMappingObjectDTO> getImagePlaceholdersList();
 
     List<ResourceMappingObjectDTO> getSrcList();
 
+    List<ImagePlaceholderMappingObjectDTO> getImagePlaceholdersList(int slideIndex);
+
+    List<ResourceMappingObjectDTO> getSrcList(int slideIndex);
+
     List<PayloadObjectDTO> getSlidesPayload();
+
+    public boolean isScreenshotShare(int index);
+
+
+    public int shareType(int index);
 }

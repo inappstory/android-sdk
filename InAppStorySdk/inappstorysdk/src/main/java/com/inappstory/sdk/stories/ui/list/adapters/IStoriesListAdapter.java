@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.list.adapters;
 
 import android.view.View;
 
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 
@@ -13,11 +14,11 @@ public interface IStoriesListAdapter {
 
     void clearAllFavorites();
 
-    void updateStoriesData(List<PreviewStoryDTO> data);
+    void updateStoriesData(List<IPreviewStoryDTO> data);
 
-    void notify(PreviewStoryDTO data);
+    void notify(IPreviewStoryDTO data);
 
     BaseStoriesListItem getViewHolderItem(View view, int viewType);
 
-    List<PreviewStoryDTO> getCurrentStories();
+    List<IPreviewStoryDTO> getCurrentStories();
 }

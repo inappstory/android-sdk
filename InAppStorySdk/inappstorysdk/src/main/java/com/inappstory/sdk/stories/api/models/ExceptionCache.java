@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,20 +14,20 @@ public class ExceptionCache {
         return favStories;
     }
 
-    public List<FavoriteImage> getFavoriteImages() {
+    public List<IFavoritePreviewStoryDTO> getFavoriteImages() {
         return favoriteImages;
     }
 
     private List<Story> stories;
     private List<Story> favStories;
-    private List<FavoriteImage> favoriteImages;
+    private List<IFavoritePreviewStoryDTO> favoriteImages;
 
-    public ExceptionCache(List<Story> stories, List<Story> favStories, List<FavoriteImage> favoriteImages) {
+    public ExceptionCache(List<Story> stories, List<Story> favStories, List<IFavoritePreviewStoryDTO> favoriteImages) {
         this.stories = stories != null ? new ArrayList<>(stories)
                 : new ArrayList<Story>();
         this.favStories = favStories != null ? new ArrayList<>(favStories)
                 : new ArrayList<Story>();
         this.favoriteImages = favoriteImages != null ? new ArrayList<>(favoriteImages)
-                : new ArrayList<FavoriteImage>();
+                : new ArrayList<IFavoritePreviewStoryDTO>();
     }
 }

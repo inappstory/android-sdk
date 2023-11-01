@@ -171,6 +171,27 @@ public abstract class FileDownload implements IFileDownload {
         }
         return this;
     }
+
+    public String getFromCache() throws Exception {
+        String key = getCacheKey();
+        if (url == null || url.isEmpty() || key == null || key.isEmpty()) {
+            fileDownloadError(-1, "Wrong resource key or url");
+            return null;
+        } else  if (cache.hasKey(key)) {
+            DownloadFileState fileState = cache.get(key);
+            if (fileState != null
+                    && fileState.file != null
+                    && fileState.file.exists()
+            ) {
+                addExtensionToOldFile(cache, url, key, fileState);
+                if (fileState.downloadedSize == fileState.totalSize) {
+                    return fileState.file.getAbsolutePath();
+                }
+            }
+        }
+        return null;
+    }
+
     public void downloadOrGetFromCache() throws Exception {
         synchronized (downloadLock) {
             if (loading) return;

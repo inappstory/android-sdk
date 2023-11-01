@@ -6,30 +6,23 @@ import android.os.Handler;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
-import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
-import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -52,103 +45,6 @@ public class StoryDownloadManager {
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
     Object storiesLock = new Object();
-
-    public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback,
-                                 final int id,
-                                 Story.StoryType type) {
-        List<Story> lStories = new ArrayList<>();
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            if (stories != null)
-                lStories.addAll(stories);
-        }
-        for (Story story : lStories) {
-            if (story.id == id) {
-                storyByIdCallback.getStory(story);
-                return;
-            }
-        }
-    }
-
-    public void getFullStoryByStringId(
-            final GetStoryByIdCallback storyByIdCallback,
-            final String id,
-            final Story.StoryType type,
-            final SourceType readerSource
-    ) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null || InAppStoryService.isNull()) {
-            storyByIdCallback.loadError(-1);
-            return;
-        }
-        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
-            @Override
-            public void onSuccess(SessionDTO session) {
-                InAppStoryService service = InAppStoryService.getInstance();
-                if (service == null) {
-                    storyByIdCallback.loadError(-1);
-                    return;
-                }
-                final String storyUID = ProfilingManager.getInstance().addTask("api_story");
-                networkClient.enqueue(
-                        networkClient.getApi().getStoryById(
-                                id,
-                                1,
-                                EXPAND_STRING
-                        ),
-                        new NetworkCallback<Story>() {
-                            @Override
-                            public void onSuccess(final Story response) {
-                                ProfilingManager.getInstance().setReady(storyUID);
-                                if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
-                                    CallbackManager.getInstance().getSingleLoadCallback().singleLoad(
-                                            new StoryData(
-                                                    response.id,
-                                                    StringsUtils.getNonNull(response.statTitle),
-                                                    StringsUtils.getNonNull(response.tags),
-                                                    response.getSlidesCount(),
-                                                    null,
-                                                    readerSource
-                                            )
-                                    );
-                                }
-                                ArrayList<Story> st = new ArrayList<>();
-                                st.add(response);
-                                uploadingAdditional(st, type);
-                                setStory(response, response.id, type);
-                                if (storyByIdCallback != null)
-                                    storyByIdCallback.getStory(response);
-                            }
-
-                            @Override
-                            public Type getType() {
-                                return Story.class;
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-
-                                ProfilingManager.getInstance().setReady(storyUID);
-                                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                                    CallbackManager.getInstance().getErrorCallback().loadSingleError();
-                                }
-                                if (storyByIdCallback != null)
-                                    storyByIdCallback.loadError(-1);
-                            }
-                        }
-                );
-            }
-
-            @Override
-            public void onError() {
-                if (CallbackManager.getInstance().getErrorCallback() != null) {
-                    CallbackManager.getInstance().getErrorCallback().loadSingleError();
-                }
-                if (storyByIdCallback != null)
-                    storyByIdCallback.loadError(-1);
-            }
-        });
-    }
 
     public void changePriority(int storyId, List<Integer> adjacent, Story.StoryType type) {
         if (slidesDownloader != null)
@@ -408,12 +304,8 @@ public class StoryDownloadManager {
         }
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
-            public void onDownload(Story story, int loadType, Story.StoryType type) {
-                Story local = getStoryById(story.id, type);
-                story.isOpened = local.isOpened;
-                story.lastIndex = local.lastIndex;
-                setStory(story, story.id, type);
-                storyLoaded(story.id, type);
+            public void onDownload(IStoryDTO story, int loadType, Story.StoryType type) {
+                storyLoaded(story.getId(), type);
                 try {
                     slidesDownloader.addStoryPages(story, loadType, type);
                 } catch (Exception e) {
@@ -475,10 +367,6 @@ public class StoryDownloadManager {
         storyDownloader.reload(storyId, new ArrayList<Integer>(), type);
     }
 
-    public void setCurrentSlide(int storyId, int slideIndex) {
-        slidesDownloader.setCurrentSlide(storyId, slideIndex);
-    }
-
 
     public void clearAllFavoriteStatus(Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
@@ -497,269 +385,8 @@ public class StoryDownloadManager {
         return null;
     }
 
-    public void setStory(final Story story, int id, Story.StoryType type) {
-        List<Story> stories = getStoriesListByType(type);
-        Story cur = getStoryById(id, type);
-        if (cur == null) {
-            stories.add(story);
-            return;
-        }
-        cur.loadedPages = new ArrayList<>();
-        cur.pages = new ArrayList<>(story.pages);
-        for (int i = 0; i < cur.pages.size(); i++) {
-            cur.loadedPages.add(false);
-        }
-        cur.id = id;
-        cur.layout = story.layout;
-        cur.hasAudio = story.hasAudio;
-        cur.tags = story.tags;
-        cur.hasSwipeUp = story.hasSwipeUp();
-        cur.title = story.title;
-        cur.statTitle = story.statTitle;
-        cur.srcList = new ArrayList<>(story.getSrcList());
-        cur.imagePlaceholdersList = new ArrayList<>(story.getImagePlaceholdersList());
-        cur.durations = new ArrayList<>(story.durations);
-        cur.slidesShare = story.slidesShare;
-        cur.slidesPayload = story.slidesPayload;
-        if (!cur.durations.isEmpty()) {
-            cur.setSlidesCount(story.durations.size());
-        } else {
-            cur.setSlidesCount(story.getSlidesCount());
-        }
-    }
-
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
-
-    public void cleanStoriesIndex(Story.StoryType type) {
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            for (Story story : stories) {
-                if (story != null)
-                    story.lastIndex = 0;
-            }
-        }
-    }
-
-    public void addCompletedStoryTask(Story story, Story.StoryType type) {
-        boolean noStory = true;
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            for (Story localStory : stories) {
-                if (localStory.id == story.id) {
-                    noStory = false;
-                    break;
-                }
-            }
-            if (noStory) stories.add(story);
-        }
-        if (storyDownloader != null) {
-            storyDownloader.addCompletedStoryTask(story.id, type);
-            Story local = getStoryById(story.id, type);
-            story.isOpened = local.isOpened;
-            story.lastIndex = local.lastIndex;
-            stories.set(stories.indexOf(local), story);
-            setStory(story, story.id, type);
-            storyLoaded(story.id, type);
-            try {
-                slidesDownloader.addStoryPages(story, 3, type);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    public void loadUgcStories(final LoadStoriesCallback callback, final String payload) {
-        SimpleListCallback loadCallback = new SimpleListCallback() {
-
-            @Override
-            public void onSuccess(final List<Story> response, Object... args) {
-                uploadingAdditional(response, Story.StoryType.UGC);
-                List<Story> stories = getStoriesListByType(Story.StoryType.UGC);
-                setLocalsOpened(stories, Story.StoryType.UGC);
-                if (callback != null) {
-                    callback.storiesLoaded(response);
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-                if (callback != null) {
-                    callback.onError();
-                }
-            }
-        };
-        storyDownloader.loadUgcStoryList(loadCallback, payload);
-    }
-
-    public void loadStories(String feed, final LoadStoriesCallback callback,
-                            boolean isFavorite, boolean hasFavorite) {
-        final boolean loadFavorite = hasFavorite;
-        SimpleListCallback loadCallback = new SimpleListCallback() {
-            @Override
-            public void onSuccess(final List<Story> response, Object... args) {
-
-                String feedId = null;
-                final ArrayList<Story> resStories = new ArrayList<>();
-                for (int i = 0; i < Math.min(response.size(), 4); i++) {
-                    resStories.add(response.get(i));
-                }
-
-                if (StoriesWidgetService.getInstance() != null) {
-                    try {
-                        SharedPreferencesAPI.saveString("widgetStories", JsonParser.getJson(resStories));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    StoriesWidgetService.getInstance().refreshFactory();
-                }
-                if (response == null || response.size() == 0) {
-                    if (AppearanceManager.csWidgetAppearance() != null
-                            && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
-                        StoriesWidgetService.loadEmpty(context,
-                                AppearanceManager.csWidgetAppearance().getWidgetClass());
-                    }
-                } else {
-                    if (AppearanceManager.csWidgetAppearance() != null
-                            && AppearanceManager.csWidgetAppearance().getWidgetClass() != null) {
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                StoriesWidgetService.loadSuccess(context,
-                                        AppearanceManager.csWidgetAppearance().getWidgetClass());
-                            }
-                        }, 500);
-                    }
-                }
-                setLocalsOpened(response, Story.StoryType.COMMON);
-                uploadingAdditional(response, Story.StoryType.COMMON);
-                List<Story> newStories = new ArrayList<>();
-                List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
-                synchronized (storiesLock) {
-                    for (Story story : response) {
-                        if (!stories.contains(story)) {
-                            newStories.add(story);
-                        }
-                    }
-                }
-                if (newStories.size() > 0) {
-                    try {
-                        uploadingAdditional(newStories, Story.StoryType.COMMON);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                boolean loadFav = loadFavorite;
-                if (args != null && args.length > 0) {
-                    loadFav &= (boolean) args[0];
-                    if (args.length > 1) {
-                        feedId = (String) args[1];
-                    }
-                }
-                final String sFeedId = feedId;
-                if (loadFav) {
-                    final String loadFavUID = ProfilingManager.getInstance().addTask("api_favorite_item");
-
-                    storyDownloader.loadStoryFavoriteList(new NetworkCallback<List<Story>>() {
-                        @Override
-                        public void onSuccess(List<Story> response2) {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
-                            favStories.clear();
-                            favStories.addAll(response2);
-                            favoriteImages.clear();
-                            List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
-                            synchronized (storiesLock) {
-                                for (Story st : stories) {
-                                    for (Story st2 : response2) {
-                                        if (st2.id == st.id) {
-                                            st.isOpened = true;
-                                        }
-                                    }
-                                }
-                            }
-                            if (response2 != null && response2.size() > 0) {
-                                setLocalsOpened(response2, Story.StoryType.COMMON);
-                                for (Story story : response2) {
-                                    favoriteImages.add(new FavoriteImage(story.id, story.image, story.backgroundColor));
-                                }
-                            }
-                            if (callback != null) {
-                                callback.setFeedId(sFeedId);
-                                callback.storiesLoaded(response);
-                            }
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return new StoryListType();
-                        }
-
-                        @Override
-                        public void errorDefault(String message) {
-                            ProfilingManager.getInstance().setReady(loadFavUID);
-                            if (callback != null) {
-                                callback.setFeedId(sFeedId);
-                                callback.storiesLoaded(response);
-                            }
-                        }
-                    });
-                } else {
-                    if (callback != null) {
-                        callback.setFeedId(sFeedId);
-                        callback.storiesLoaded(response);
-                    }
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-                if (callback != null) {
-                    callback.onError();
-                }
-            }
-        };
-        SimpleListCallback loadCallbackWithoutFav = new SimpleListCallback() {
-
-            @Override
-            public void onSuccess(final List<Story> response, Object... args) {
-                uploadingAdditional(response, Story.StoryType.COMMON);
-                List<Story> newStories = new ArrayList<>();
-                List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
-                synchronized (storiesLock) {
-                    for (Story story : response) {
-                        if (!stories.contains(story)) {
-                            newStories.add(story);
-                        }
-                    }
-                }
-                if (newStories.size() > 0) {
-                    try {
-                        setLocalsOpened(newStories, Story.StoryType.COMMON);
-                        uploadingAdditional(newStories, Story.StoryType.COMMON);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (callback != null) {
-                    callback.storiesLoaded(response);
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-                if (callback != null) {
-                    callback.onError();
-                }
-            }
-        };
-        if (feed != null && !isFavorite) {
-            storyDownloader.loadStoryListByFeed(feed, loadCallback);
-        } else {
-            storyDownloader.loadStoryList(isFavorite ? loadCallbackWithoutFav : loadCallback, isFavorite);
-        }
-    }
-
 
     public void refreshLocals(Story.StoryType type) {
         List<Story> lStories = new ArrayList<>();
@@ -784,5 +411,5 @@ public class StoryDownloadManager {
     private List<Story> stories = new ArrayList<>();
     private List<Story> ugcStories = new ArrayList<>();
     public List<Story> favStories = new ArrayList<>();
-    public List<FavoriteImage> favoriteImages = new ArrayList<>();
+    public List<IFavoritePreviewStoryDTO> favoriteImages = new ArrayList<>();
 }

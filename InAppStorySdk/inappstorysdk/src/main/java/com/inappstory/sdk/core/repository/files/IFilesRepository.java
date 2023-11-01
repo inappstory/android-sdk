@@ -55,5 +55,7 @@ public interface IFilesRepository {
             @NonNull DownloadInterruption interruption
     );
 
+    String getLocalStoryFile(@NonNull String url);
+
     void clearCaches();
 }

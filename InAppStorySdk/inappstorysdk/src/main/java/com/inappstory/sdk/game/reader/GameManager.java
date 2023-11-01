@@ -285,9 +285,8 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.isShareProcess())
-            return;
+        IASCoreManager service = IASCoreManager.getInstance();
+        if (service.isShareProcess()) return;
         service.isShareProcess(true);
         InnerShareData shareObj = JsonParser.fromJson(data, InnerShareData.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {

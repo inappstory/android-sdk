@@ -1,6 +1,10 @@
 package com.inappstory.sdk.core.repository.stories.dto;
 
+import com.inappstory.sdk.stories.api.models.Image;
+
 import java.util.HashMap;
+import java.util.List;
+
 public interface IPreviewStoryDTO {
     int getId();
 
@@ -19,6 +23,8 @@ public interface IPreviewStoryDTO {
     String getVideoUrl();
 
     String getBackgroundColor();
+
+    List<Image> getImages();
 
     String getTitleColor();
 

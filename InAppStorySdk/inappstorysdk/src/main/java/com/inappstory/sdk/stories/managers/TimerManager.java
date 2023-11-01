@@ -3,6 +3,9 @@ package com.inappstory.sdk.stories.managers;
 import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -138,12 +141,11 @@ public class TimerManager {
             return;
         }
         Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
-        Story story = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-        if (story != null) {
-            StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
-                    pageManager != null ? pageManager.getFeedId() : null);
-        }
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IStoryDTO story = storiesRepository.getCurrentStory();
+        int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
+        StatisticManager.getInstance().addFakeEvents(story.getId(), lastIndex, story.getSlidesCount(),
+                pageManager != null ? pageManager.getFeedId() : null);
         pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);

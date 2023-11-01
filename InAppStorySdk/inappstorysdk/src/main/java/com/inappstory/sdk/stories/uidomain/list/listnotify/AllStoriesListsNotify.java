@@ -5,13 +5,7 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
-import com.inappstory.sdk.stories.ui.list.IFavoriteCellUpdate;
-import com.inappstory.sdk.stories.ui.list.IFavoriteListUpdate;
 import com.inappstory.sdk.stories.ui.list.adapters.IStoriesListAdapter;
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
-
-import java.util.List;
 
 public class AllStoriesListsNotify implements IAllStoriesListsNotify {
     private IStoriesListAdapter storiesListAdapter;
@@ -61,21 +55,6 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
 
 
     @Override
-    public void openStory(int storyId, Story.StoryType storyType) {
-        if (AllStoriesListsNotify.this.storyType != storyType) return;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        final Story st = service.openStory(storyId, storyType);
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesListAdapter == null) return;
-                storiesListAdapter.notify(new PreviewStoryDTO(st));
-            }
-        });
-    }
-
-    @Override
     public void changeUserId() {
         post(new Runnable() {
             @Override
@@ -94,53 +73,6 @@ public class AllStoriesListsNotify implements IAllStoriesListsNotify {
             public void run() {
                 if (storiesListAdapter == null) return;
                 storiesListAdapter.clearAllFavorites();
-            }
-        });
-    }
-
-    @Override
-    public void storyFavoriteCellNotify(
-            final List<FavoriteImage> favoriteImages,
-            Story.StoryType storyType,
-            final boolean isEmpty
-    ) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesListAdapter == null) return;
-                if (storiesListAdapter instanceof IFavoriteCellUpdate) {
-                    ((IFavoriteCellUpdate) storiesListAdapter).update(
-                            favoriteImages,
-                            isEmpty
-                    );
-                }
-            }
-        });
-    }
-
-    @Override
-    public void storyAddToFavoriteItemNotify(final PreviewStoryDTO data) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesListAdapter == null) return;
-                if (storiesListAdapter instanceof IFavoriteListUpdate) {
-                    ((IFavoriteListUpdate) storiesListAdapter).favorite(data);
-
-                }
-            }
-        });
-    }
-
-    @Override
-    public void storyRemoveFromFavoriteItemNotify(final int storyId) {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                if (storiesListAdapter == null) return;
-                if (storiesListAdapter instanceof IFavoriteListUpdate) {
-                    ((IFavoriteListUpdate) storiesListAdapter).removeFromFavorite(storyId);
-                }
             }
         });
     }

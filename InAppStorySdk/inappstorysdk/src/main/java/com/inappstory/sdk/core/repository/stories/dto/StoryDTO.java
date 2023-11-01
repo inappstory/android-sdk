@@ -74,6 +74,11 @@ public class StoryDTO implements IStoryDTO {
         return like;
     }
 
+    @Override
+    public boolean getFavorite() {
+        return favorite;
+    }
+
     public int[] getSlidesShare() {
         return slidesShare;
     }
@@ -86,9 +91,53 @@ public class StoryDTO implements IStoryDTO {
         return srcList;
     }
 
+    @Override
+    public List<ImagePlaceholderMappingObjectDTO> getImagePlaceholdersList(int slideIndex) {
+        if (imagePlaceholdersList == null) return new ArrayList<>();
+        List<ImagePlaceholderMappingObjectDTO> result = new ArrayList<>();
+        for (ImagePlaceholderMappingObjectDTO objectDTO : imagePlaceholdersList) {
+            if (objectDTO.getIndex() == slideIndex) result.add(objectDTO);
+        }
+        return result;
+    }
+
+    @Override
+    public List<ResourceMappingObjectDTO> getSrcList(int slideIndex) {
+        if (srcList == null) return new ArrayList<>();
+        List<ResourceMappingObjectDTO> result = new ArrayList<>();
+        for (ResourceMappingObjectDTO objectDTO : srcList) {
+            if (objectDTO.getIndex() == slideIndex) result.add(objectDTO);
+        }
+        return result;
+    }
+
     public List<PayloadObjectDTO> getSlidesPayload() {
         return slidesPayload;
     }
+
+    @Override
+    public boolean isScreenshotShare(int index) {
+        return shareType(index) == 1;
+    }
+
+    @Override
+    public String getSlideEventPayload(int slideIndex) {
+        if (slidesPayload == null) return null;
+        for (PayloadObjectDTO payloadObject : slidesPayload) {
+            if (slideIndex == payloadObject.getSlideIndex()) {
+                return payloadObject.getPayload();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public int shareType(int index) {
+        if (slidesShare == null) return 0;
+        if (slidesShare.length <= index) return 0;
+        return slidesShare[index];
+    }
+
     private int id;
     private String statTitle;
     private String tags;
@@ -103,7 +152,22 @@ public class StoryDTO implements IStoryDTO {
     private boolean hasAudio;
     private boolean hasFavorite;
     private boolean hasShare;
+
+    public void setOpened(boolean opened) {
+        isOpened = opened;
+    }
+
+    public void setLike(int like) {
+        this.like = like;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
     private int like;
+
+    private boolean favorite;
     private int[] slidesShare;
     private List<ImagePlaceholderMappingObjectDTO> imagePlaceholdersList;
     private List<ResourceMappingObjectDTO> srcList;
@@ -128,7 +192,7 @@ public class StoryDTO implements IStoryDTO {
         this.like = story.getLike();
         this.pages = story.getPages();
         this.imagePlaceholdersList = new ArrayList<>();
-        this.srcList  = new ArrayList<>();
+        this.srcList = new ArrayList<>();
         this.slidesPayload = new ArrayList<>();
         for (ImagePlaceholderMappingObject object : story.getImagePlaceholdersList()) {
             this.imagePlaceholdersList.add(new ImagePlaceholderMappingObjectDTO(object));

@@ -1,10 +1,10 @@
 package com.inappstory.sdk.stories.uidomain.list.items.story;
 
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 
 public interface IStoriesListGameItemClick {
     void onClick(
-            PreviewStoryDTO storiesData,
+            IPreviewStoryDTO storiesData,
             int index
     );
 }

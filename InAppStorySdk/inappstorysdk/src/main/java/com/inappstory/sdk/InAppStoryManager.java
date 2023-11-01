@@ -24,12 +24,12 @@ import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
-import com.inappstory.sdk.stories.api.models.callbacks.GetStoryByIdCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
@@ -238,17 +238,11 @@ public class InAppStoryManager {
 
     @Deprecated
     public void openGame(String gameId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && context != null) {
-            service.openGameReaderWithGC(context, null, gameId);
-        }
+        IASCoreManager.getInstance().gameRepository.openGameReaderWithGC(context, null, gameId);
     }
 
     public void openGame(String gameId, @NonNull Context context) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            service.openGameReaderWithGC(context, null, gameId);
-        }
+        IASCoreManager.getInstance().gameRepository.openGameReaderWithGC(context, null, gameId);
     }
 
     public void closeGame() {
@@ -708,6 +702,8 @@ public class InAppStoryManager {
                 new IGetSessionCallback<SessionDTO>() {
                     @Override
                     public void onSuccess(SessionDTO session) {
+                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+                                .removeFromFavorite(storyId);
                         service.removeStoryFromFavorite(storyId);
                     }
 
@@ -841,6 +837,8 @@ public class InAppStoryManager {
         if (this.userId.equals(userId)) return;
         localOpensKey = null;
         this.userId = userId;
+        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
         if (inAppStoryService.getFavoriteImages() != null)
             inAppStoryService.getFavoriteImages().clear();
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
@@ -935,7 +933,8 @@ public class InAppStoryManager {
                 .apiKey(this.API_KEY)
                 .testKey(this.TEST_KEY)
                 .host(cmsUrl);
-        if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
+        if (IASCoreManager.getInstance().getNetworkClient() == null ||
+                ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             IASCoreManager.getInstance().setNetworkClient(new NetworkClient(context, cmsUrl));
         }
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
@@ -1264,41 +1263,26 @@ public class InAppStoryManager {
                                 final Story.StoryType type,
                                 final SourceType readerSource,
                                 final int readerAction) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStoryInner(
-                            storyId,
-                            context,
-                            manager,
-                            callback,
-                            slide,
-                            type,
-                            readerSource,
-                            readerAction
-                    );
-                }
-            }, 1000);
-            return;
-        }
         if (this.userId == null || getBytesLength(this.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            showELog(
+                    IAS_ERROR_TAG,
+                    getErrorStringFromContext(
+                            context,
+                            R.string.ias_setter_user_length_error
+                    )
+            );
             return;
         }
         if (lastSingleOpen != null &&
                 lastSingleOpen.equals(storyId)) return;
         lastSingleOpen = storyId;
-
-
-        service.getDownloadManager().getFullStoryByStringId(
-                new GetStoryByIdCallback() {
+        IASCoreManager.getInstance().getStoriesRepository(type).getStoryByStringId(storyId,
+                new IGetStoryCallback<com.inappstory.sdk.core.repository.stories.dto.IStoryDTO>() {
                     @Override
-                    public void getStory(Story story) {
+                    public void onSuccess(com.inappstory.sdk.core.repository.stories.dto.IStoryDTO story) {
                         if (story != null) {
-                            service.getDownloadManager().addCompletedStoryTask(story,
-                                    Story.StoryType.COMMON);
+                            //     service.getDownloadManager().addCompletedStoryTask(story,
+                            //            Story.StoryType.COMMON);
                             if (ScreensManager.created == -1) {
                                 InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
                                 localHandler.postDelayed(new Runnable() {
@@ -1342,19 +1326,15 @@ public class InAppStoryManager {
 
                             try {
                                 int c = Integer.parseInt(lastSingleOpen);
-                                if (c != story.id)
+                                if (c != story.getId())
                                     return;
                             } catch (Exception ignored) {
 
                             }
                             if (callback != null)
                                 callback.onShow();
-                            service.getDownloadManager().putStories(
-                                    InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
-                                    type
-                            );
                             ArrayList<Integer> stIds = new ArrayList<>();
-                            stIds.add(story.id);
+                            stIds.add(story.getId());
                             ScreensManager.getInstance().openStoriesReader(
                                     context,
                                     null,
@@ -1382,17 +1362,12 @@ public class InAppStoryManager {
                     }
 
                     @Override
-                    public void loadError(int type) {
+                    public void onError() {
                         if (callback != null)
                             callback.onError();
                         lastSingleOpen = null;
                     }
-
-                },
-                storyId,
-                type,
-                readerSource
-        );
+                });
     }
 
     private void showStoryInner(final String storyId, final Context context,

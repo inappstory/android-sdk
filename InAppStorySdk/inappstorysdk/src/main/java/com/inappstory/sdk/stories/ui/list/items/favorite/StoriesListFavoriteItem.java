@@ -1,14 +1,14 @@
 package com.inappstory.sdk.stories.ui.list.items.favorite;
 
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.utils.FilePathsFromLinks;
@@ -36,27 +36,26 @@ public class StoriesListFavoriteItem
     }
 
 
-
     @Override
-    public void bindFavorite(List<FavoriteImage> favoriteImages) {
+    public void bindFavorite(List<IFavoritePreviewStoryDTO> favoriteImages) {
         int count = Math.min(favoriteImages.size(), getFavoriteListItem.count());
         final List<Integer> backgroundColors = new ArrayList<>();
         for (int j = 0; j < count; j++) {
-            backgroundColors.add(favoriteImages.get(j).getBackgroundColor());
+            backgroundColors.add(Color.parseColor(favoriteImages.get(j).getBackgroundColor()));
         }
         getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
     }
 
     @Override
-    public void setImages(List<FavoriteImage> favoriteImages) {
+    public void setImages(List<IFavoritePreviewStoryDTO> favoriteImages) {
         int maxCount = getFavoriteListItem.count();
         if (maxCount <= 0) maxCount = 4;
         maxCount = Math.min(maxCount, favoriteImages.size());
         List<String> limitedLinks = new ArrayList<>();
         final List<Integer> backgroundColors = new ArrayList<>();
         for (int i = 0; i < maxCount; i++) {
-            limitedLinks.add(favoriteImages.get(i).getUrl());
-            backgroundColors.add(favoriteImages.get(i).getBackgroundColor());
+            limitedLinks.add(favoriteImages.get(i).getImageUrl(appearanceManager.csCoverQuality()));
+            backgroundColors.add(Color.parseColor(favoriteImages.get(i).getBackgroundColor()));
         }
         manager.getFilePathsFromLinks(limitedLinks, new FilePathsFromLinks() {
             @Override

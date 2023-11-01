@@ -216,6 +216,19 @@ public class FilesRepository implements IFilesRepository {
         );
     }
 
+    @Override
+    public String getLocalStoryFile(@NonNull String url) {
+        FileDownload downloadUseCase = new StoryFileDownload(
+                url,
+                cacheStorage.getCommonCache()
+        );
+        try {
+            return downloadUseCase.getFromCache();
+        } catch (Exception e) {
+            throw null;
+        }
+    }
+
     private void getFileWithProgress(
             String url,
             IFileDownloadCreate creator,

@@ -50,6 +50,11 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
         return backgroundColor;
     }
 
+    @Override
+    public List<Image> getImages() {
+        return images;
+    }
+
     public String getTitleColor() {
         return titleColor;
     }
@@ -134,6 +139,6 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, isOpened);
+        return Objects.hash(id);
     }
 }

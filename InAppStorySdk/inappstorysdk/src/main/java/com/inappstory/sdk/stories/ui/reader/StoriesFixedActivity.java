@@ -38,6 +38,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
@@ -406,9 +407,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        if (InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex(type);
-        }
+        IASCoreManager.getInstance().getStoriesRepository(type).clearStoriesIndexes();
         cleaned = true;
     }
 

@@ -2,15 +2,19 @@ package com.inappstory.sdk.core;
 
 import android.content.Context;
 
-import com.inappstory.sdk.core.network.ApiInterface;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.files.FilesRepository;
 import com.inappstory.sdk.core.repository.files.IFilesRepository;
+import com.inappstory.sdk.core.repository.game.GameRepository;
+import com.inappstory.sdk.core.repository.game.IGameRepository;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.ISessionRepository;
 import com.inappstory.sdk.core.repository.session.SessionRepository;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.StoriesRepository;
+import com.inappstory.sdk.stories.api.models.Story;
 
 public class IASCoreManager {
     private static IASCoreManager INSTANCE;
@@ -28,6 +32,12 @@ public class IASCoreManager {
 
     public ISessionRepository sessionRepository;
 
+    private IStoriesRepository storiesRepository;
+
+    private IStoriesRepository ugcStoriesRepository;
+
+    public IGameRepository gameRepository;
+
     public String getUserId() {
         return userId;
     }
@@ -37,6 +47,11 @@ public class IASCoreManager {
     }
 
     private String userId;
+
+    public IStoriesRepository getStoriesRepository(Story.StoryType type) {
+        if (type == Story.StoryType.UGC) return ugcStoriesRepository;
+        return storiesRepository;
+    }
 
     public void getSession(
             IGetSessionCallback<SessionDTO> callback
@@ -84,6 +99,25 @@ public class IASCoreManager {
         if (filesRepository == null) {
             filesRepository = new FilesRepository(context.getCacheDir());
             sessionRepository = new SessionRepository(context);
+            storiesRepository = new StoriesRepository();
+            ugcStoriesRepository = new StoriesRepository();
+            gameRepository = new GameRepository();
         }
     }
+
+    private boolean sharingProcess = false;
+    private static final Object shareLock = new Object();
+
+    public boolean isShareProcess() {
+        synchronized (shareLock) {
+            return sharingProcess;
+        }
+    }
+
+    public void isShareProcess(boolean sharingProcess) {
+        synchronized (shareLock) {
+            this.sharingProcess = sharingProcess;
+        }
+    }
+
 }

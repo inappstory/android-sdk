@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -445,10 +446,11 @@ public class StoriesViewManager {
     }
 
     public void openGameReaderFromGameCenter(String gameId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && context != null) {
-            service.openGameReaderWithGC(context, getGameStoryData(), gameId);
-        }
+        IASCoreManager.getInstance().gameRepository.openGameReaderWithGC(
+                context,
+                getGameStoryData(),
+                gameId
+        );
     }
 
     private GameStoryData getGameStoryData() {

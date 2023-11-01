@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
@@ -31,7 +32,6 @@ import com.inappstory.sdk.stories.ui.list.adapters.BaseStoriesListAdapter;
 import com.inappstory.sdk.stories.ui.list.adapters.CommonStoriesListAdapter;
 import com.inappstory.sdk.stories.ui.list.adapters.FavoriteStoriesListAdapter;
 import com.inappstory.sdk.stories.uidomain.list.IStoriesListPresenter;
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.stories.uidomain.list.StoriesListPresenter;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
@@ -223,6 +223,8 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         listNotify.unsubscribe();
         allListsNotify.unsubscribe();
     }
+
+
 
     @Override
     public void onAttachedToWindow() {
@@ -472,7 +474,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
     IStoriesListCommonItemClick commonItemClick = new IStoriesListCommonItemClick() {
 
         @Override
-        public void onClick(List<PreviewStoryDTO> storiesData, int index) {
+        public void onClick(List<IPreviewStoryDTO> storiesData, int index) {
             presenter.commonItemClick(storiesData, index, getContext());
         }
     };
@@ -481,14 +483,14 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
 
 
         @Override
-        public void onClick(PreviewStoryDTO storiesData, int index) {
+        public void onClick(IPreviewStoryDTO storiesData, int index) {
             presenter.gameItemClick(storiesData, index, getContext());
         }
     };
 
     IStoriesListDeeplinkItemClick deeplinkItemClick = new IStoriesListDeeplinkItemClick() {
         @Override
-        public void onClick(PreviewStoryDTO storiesData, int index) {
+        public void onClick(IPreviewStoryDTO storiesData, int index) {
             presenter.deeplinkItemClick(storiesData, index, getContext());
         }
     };
@@ -627,7 +629,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
 
     private final GetStoriesList getStoriesList = new GetStoriesList() {
         @Override
-        public void onSuccess(final List<PreviewStoryDTO> stories) {
+        public void onSuccess(final List<IPreviewStoryDTO> stories) {
             post(new Runnable() {
                 @Override
                 public void run() {
@@ -676,7 +678,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         }
     }
 
-    private void updateStories(List<PreviewStoryDTO> storiesData) {
+    private void updateStories(List<IPreviewStoryDTO> storiesData) {
         if (adapter == null) {
             setLayout();
             createAdapter();

@@ -7,5 +7,7 @@ public interface IFileDownload extends
         IFileDownloadProgressCallback {
     void downloadOrGetFromCache() throws Exception;
 
+    String getFromCache() throws Exception;
+
     FileDownload addDownloadCallback(IFileDownloadCallback callback);
 }

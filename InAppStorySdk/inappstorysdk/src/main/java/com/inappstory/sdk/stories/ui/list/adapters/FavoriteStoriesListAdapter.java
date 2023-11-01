@@ -4,10 +4,11 @@ import android.content.Context;
 import android.view.View;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteListUpdatedCallback;
 import com.inappstory.sdk.stories.ui.list.IFavoriteListUpdate;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.items.story.StoriesListItem;
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
@@ -37,7 +38,17 @@ public final class FavoriteStoriesListAdapter extends BaseStoriesListAdapter imp
                 null,
                 null
         );
+        storiesRepository.addFavoriteListUpdatedCallback(favoriteListUpdatedCallback);
     }
+
+    private final IFavoriteListUpdatedCallback favoriteListUpdatedCallback =
+            new IFavoriteListUpdatedCallback() {
+                @Override
+                public void onUpdate() {
+                    updateStoriesData(storiesRepository.getCachedFavorites());
+                    refreshList();
+                }
+            };
 
     @Override
     public void clearAllFavorites() {
@@ -50,14 +61,14 @@ public final class FavoriteStoriesListAdapter extends BaseStoriesListAdapter imp
     }
 
     @Override
-    public void favorite(PreviewStoryDTO data) {
+    public void favorite(IPreviewStoryDTO data) {
         if (storiesData.contains(data)) return;
         storiesData.add(0, data);
     }
 
     @Override
     public void removeFromFavorite(int storyId) {
-        ListIterator<PreviewStoryDTO> iterator = storiesData.listIterator();
+        ListIterator<IPreviewStoryDTO> iterator = storiesData.listIterator();
         while (iterator.hasNext()) {
             if (iterator.next().getId() == storyId) {
                 iterator.remove();

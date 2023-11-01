@@ -6,8 +6,11 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
@@ -21,7 +24,6 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShowStory;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,7 +32,7 @@ import java.util.List;
 public class ReaderManager {
 
     public String listID;
-    public Story.StoryType storyType;
+    public StoryType storyType;
 
     public SourceType source = SourceType.SINGLE;
 
@@ -40,7 +42,7 @@ public class ReaderManager {
     public ReaderManager(String listID,
                          String feedId,
                          String feedSlug,
-                         Story.StoryType storyType,
+                         StoryType storyType,
                          SourceType source,
                          int latestShowStoryAction) {
         this.listID = listID;
@@ -56,18 +58,14 @@ public class ReaderManager {
     int latestShowStoryAction = ShowStory.ACTION_OPEN;
 
     public void sendShowStoryEvents(int storyId) {
-        if (InAppStoryService.getInstance() == null || InAppStoryService.getInstance().getDownloadManager() == null)
-            return;
         if (lastSentId == storyId) return;
         lastSentId = storyId;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, storyType);
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+        IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story != null) {
             IUseCaseCallback useCaseCallbackShowStory = new UseCaseCallbackShowStory(
                     new StoryData(
-                            story.id,
-                            StringsUtils.getNonNull(story.statTitle),
-                            StringsUtils.getNonNull(story.tags),
-                            story.getSlidesCount(),
+                            story,
                             feedId,
                             source
                     ),
@@ -128,9 +126,7 @@ public class ReaderManager {
         if (parentFragment != null) {
             parentFragment.showShareView(shareData, storyId, slideIndex);
         } else {
-            InAppStoryService service = InAppStoryService.getInstance();
-            if (service != null)
-                service.isShareProcess(false);
+            IASCoreManager.getInstance().isShareProcess(false);
         }
     }
 
@@ -140,21 +136,19 @@ public class ReaderManager {
     }
 
     public void showSingleStory(final int storyId, final int slideIndex) {
-        if (InAppStoryService.isNull()) return;
-        if (storyType == Story.StoryType.COMMON)
+        if (storyType == StoryType.COMMON)
             OldStatisticManager.getInstance().addLinkOpenStatistic();
         if (storiesIds.contains(storyId)) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    Story.StoryType type = Story.StoryType.COMMON;
-                    Story st = InAppStoryService.getInstance().getDownloadManager()
-                            .getStoryById(storyId, type);
-                    if (st != null) {
-                        if (st.getSlidesCount() <= slideIndex) {
-                            st.lastIndex = 0;
+                    IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+                    IStoryDTO story = storiesRepository.getStoryById(storyId);
+                    if (story != null) {
+                        if (story.getSlidesCount() <= slideIndex) {
+                            storiesRepository.setStoryLastIndex(storyId, 0);
                         } else {
-                            st.lastIndex = slideIndex;
+                            storiesRepository.setStoryLastIndex(storyId, slideIndex);
                         }
                     }
                     latestShowStoryAction = ShowStory.ACTION_CUSTOM;
@@ -238,24 +232,26 @@ public class ReaderManager {
     }
 
     void onPageSelected(SourceType source, int position) {
-        if (InAppStoryService.isNull()) return;
         sendStat(position, source);
 
         lastPos = position;
         lastSentId = 0;
         currentStoryId = storiesIds.get(position);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId, storyType);
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+        IStoryDTO story = storiesRepository.getStoryById(currentStoryId);
+        int lastIndex = 0;
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
                 if (story.getSlidesCount() > startedSlideInd)
-                    story.lastIndex = startedSlideInd;
+                    storiesRepository.setStoryLastIndex(currentStoryId, startedSlideInd);
                 cleanFirst();
             }
-
+            lastIndex = storiesRepository.getStoryLastIndex(currentStoryId);
             ProfilingManager.getInstance().addTask("slide_show",
-                    currentStoryId + "_" +
-                            story.lastIndex);
+                    currentStoryId + "_" + lastIndex);
+
         }
+
         final int pos = position;
 
         InAppStoryService.getInstance().getListNotifier().openStory(currentStoryId, storyType);
@@ -265,10 +261,8 @@ public class ReaderManager {
                 ((StoriesDialogFragment) parentFragment.getParentFragment()).changeStory(position);
             }
         }
-        InAppStoryService.getInstance().setCurrentId(currentStoryId);
-        if (story != null) {
-            currentSlideIndex = story.lastIndex;
-        }
+        storiesRepository.setCurrentStory(currentStoryId);
+        currentSlideIndex = lastIndex;
         parentFragment.showGuardMask(600);
         new Thread(new Runnable() {
             @Override
@@ -294,13 +288,13 @@ public class ReaderManager {
     }
 
     void changeStory() {
-        if (storyType == Story.StoryType.COMMON)
+        if (storyType == StoryType.COMMON)
             OldStatisticManager.getInstance().addStatisticBlock(currentStoryId,
                     currentSlideIndex);
 
         ArrayList<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
-        if (storyType == Story.StoryType.COMMON)
+        if (storyType == StoryType.COMMON)
             OldStatisticManager.getInstance().previewStatisticEvent(lst);
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
@@ -337,18 +331,26 @@ public class ReaderManager {
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
         if (InAppStoryService.isNull()) return;
-        Story story2 = InAppStoryService.getInstance()
-                .getDownloadManager().getStoryById(id, storyType);
-        if (story2 == null) return;
+
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+        IStoryDTO story = storiesRepository.getStoryById(id);
+        IStoryDTO lastStory = storiesRepository.getStoryById(storiesIds.get(lastPos));
+        int lastIndex = storiesRepository.getStoryLastIndex(id);
+        int lastStoryLastIndex = storiesRepository.getStoryLastIndex(storiesIds.get(lastPos));
+        if (story == null) return;
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
-            Story story = InAppStoryService.getInstance()
-                    .getDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
-            StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
+            StatisticManager.getInstance().sendCloseStory(
+                    lastStory.getId(),
+                    whence,
+                    lastStoryLastIndex,
+                    story.getSlidesCount(),
+                    feedId
+            );
         }
         StatisticManager.getInstance().sendViewStory(id, whence, feedId);
         StatisticManager.getInstance().sendOpenStory(id, whence, feedId);
-        StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
+        StatisticManager.getInstance().createCurrentState(story.getId(), lastIndex, feedId);
     }
 
     public void shareComplete(boolean shared) {

@@ -1,9 +1,9 @@
 package com.inappstory.sdk.core.repository.stories.usecase;
 
+
 import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCoreManager;
-import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
@@ -18,14 +18,16 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetStoryListByFeed {
+public class GetOnboardingStoryListByFeed {
 
-    public GetStoryListByFeed(String feed, String tags) {
+    public GetOnboardingStoryListByFeed(String feed, Integer limit, String tags) {
         this.feed = feed;
         this.tags = tags;
+        this.limit = limit;
     }
 
     final String feed;
+    final Integer limit;
     final String tags;
 
     public void get(final IGetFeedCallback callback) {
@@ -38,14 +40,13 @@ public class GetStoryListByFeed {
                 new IGetSessionCallback<SessionDTO>() {
                     @Override
                     public void onSuccess(SessionDTO session) {
-                        final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
+                        final String loadStoriesUID =
+                                ProfilingManager.getInstance().addTask("api_onboarding");
                         networkClient.enqueue(
-                                networkClient.getApi().getFeed(
+                                networkClient.getApi().getOnboardingFeed(
                                         feed,
-                                        ApiSettings.getInstance().getTestKey(),
-                                        0,
-                                        tags,
-                                        null
+                                        limit,
+                                        tags
                                 ),
                                 new LoadFeedCallback() {
                                     @Override
@@ -61,7 +62,7 @@ public class GetStoryListByFeed {
                                             callback.onSuccess(
                                                     new Pair<>(
                                                             previews,
-                                                            response.hasFavorite()
+                                                            false
                                                     )
                                             );
                                         }

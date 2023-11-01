@@ -34,6 +34,11 @@ public class UgcStoryDTO implements IStoryDTO {
         return slidesCount;
     }
 
+    @Override
+    public String getSlideEventPayload(int slideIndex) {
+        return null;
+    }
+
     public HashMap<String, Object> getPayload() {
         return payload;
     }
@@ -74,6 +79,26 @@ public class UgcStoryDTO implements IStoryDTO {
         return like;
     }
 
+    @Override
+    public boolean getFavorite() {
+        return false;
+    }
+
+    @Override
+    public void setLike(int like) {
+
+    }
+
+    @Override
+    public void setFavorite(boolean favorite) {
+
+    }
+
+    @Override
+    public void setOpened(boolean isOpened) {
+
+    }
+
     public int[] getSlidesShare() {
         return slidesShare;
     }
@@ -86,9 +111,30 @@ public class UgcStoryDTO implements IStoryDTO {
         return srcList;
     }
 
+    @Override
+    public List<ImagePlaceholderMappingObjectDTO> getImagePlaceholdersList(int slideIndex) {
+        return null;
+    }
+
+    @Override
+    public List<ResourceMappingObjectDTO> getSrcList(int slideIndex) {
+        return null;
+    }
+
     public List<PayloadObjectDTO> getSlidesPayload() {
         return slidesPayload;
     }
+
+    @Override
+    public boolean isScreenshotShare(int index) {
+        return false;
+    }
+
+    @Override
+    public int shareType(int index) {
+        return 0;
+    }
+
     private int id;
     private String statTitle;
     private String tags;

@@ -4,8 +4,9 @@ import android.content.Context;
 import android.view.View;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteCellUpdatedCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
-import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.IFavoriteCellUpdate;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
 import com.inappstory.sdk.stories.ui.list.items.favorite.StoriesListFavoriteItem;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class CommonStoriesListAdapter extends BaseStoriesListAdapter implements IFavoriteCellUpdate {
+
+
     public CommonStoriesListAdapter(
             Context context,
             String listID,
@@ -47,7 +50,16 @@ public final class CommonStoriesListAdapter extends BaseStoriesListAdapter imple
                 favoriteItemClick,
                 ugcItemClick
         );
+        storiesRepository.addFavoriteCellUpdatedCallback(favoriteCellUpdatedCallback);
     }
+
+    private final IFavoriteCellUpdatedCallback favoriteCellUpdatedCallback =
+            new IFavoriteCellUpdatedCallback() {
+                @Override
+                public void onUpdate() {
+                    update(storiesRepository.getCachedFavoriteCell(), favoriteImages.isEmpty());
+                }
+            };
 
     @Override
     public void clearAllFavorites() {
@@ -80,17 +92,17 @@ public final class CommonStoriesListAdapter extends BaseStoriesListAdapter imple
         }
     }
 
-    private List<FavoriteImage> favoriteImages = new ArrayList<>();
+    private List<IFavoritePreviewStoryDTO> favoriteImages = new ArrayList<>();
 
     @Override
-    public void update(List<FavoriteImage> images, boolean isEmpty) {
+    public void update(List<IFavoritePreviewStoryDTO> images, boolean isEmpty) {
         this.favoriteImages.clear();
         this.favoriteImages.addAll(images);
         notifyFavoriteItem(images.isEmpty(), isEmpty);
     }
 
     @Override
-    public List<FavoriteImage> getFavoriteImages() {
+    public List<IFavoritePreviewStoryDTO> getFavoriteImages() {
         return favoriteImages;
     }
 }

@@ -33,7 +33,10 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
@@ -476,28 +479,29 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
         if (InAppStoryService.isNotNull()) {
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
+            IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+            IStoryDTO story = storiesRepository.getCurrentStory();
             if (story != null) {
+                int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
                 IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
                         new SlideData(
                                 new StoryData(
-                                        story.id,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount(),
+                                        story,
                                         getIntent().getStringExtra("feedId"),
                                         (SourceType) getIntent().getSerializableExtra("source")
                                 ),
-                                story.lastIndex
+                                lastIndex
                         ),
                         action
                 );
                 useCaseCallbackCloseStory.invoke();
-
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                StatisticManager.getInstance().sendCloseStory(
+                        story.getId(),
+                        cause,
+                        lastIndex,
                         story.getSlidesCount(),
-                        getIntent().getStringExtra("feedId"));
+                        getIntent().getStringExtra("feedId")
+                );
             }
         }
         cleanReader();
@@ -528,9 +532,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         //  OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
-        if (InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex(type);
-        }
         cleaned = true;
     }
 

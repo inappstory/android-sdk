@@ -10,23 +10,18 @@ import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFeedCallback;
-import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetStoryListByFeed {
+public class GetFavoriteStoryList {
 
-    public GetStoryListByFeed(String feed, String tags) {
-        this.feed = feed;
-        this.tags = tags;
+    public GetFavoriteStoryList() {
     }
 
-    final String feed;
-    final String tags;
 
     public void get(final IGetFeedCallback callback) {
         final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
@@ -38,30 +33,30 @@ public class GetStoryListByFeed {
                 new IGetSessionCallback<SessionDTO>() {
                     @Override
                     public void onSuccess(SessionDTO session) {
-                        final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
+                        final String loadStoriesUID =
+                                ProfilingManager.getInstance().addTask("api_favorite_list");
                         networkClient.enqueue(
-                                networkClient.getApi().getFeed(
-                                        feed,
+                                networkClient.getApi().getStories(
                                         ApiSettings.getInstance().getTestKey(),
-                                        0,
-                                        tags,
+                                        1,
+                                        null,
                                         null
                                 ),
-                                new LoadFeedCallback() {
+                                new LoadListCallback() {
                                     @Override
-                                    public void onSuccess(Feed response) {
+                                    public void onSuccess(List<Story> response) {
                                         if (response == null) {
                                             callback.onError();
                                         } else {
                                             ProfilingManager.getInstance().setReady(loadStoriesUID);
                                             List<IPreviewStoryDTO> previews = new ArrayList<>();
-                                            for (Story story : response.getStories()) {
+                                            for (Story story : response) {
                                                 previews.add(new PreviewStoryDTO(story));
                                             }
                                             callback.onSuccess(
                                                     new Pair<>(
                                                             previews,
-                                                            response.hasFavorite()
+                                                            false
                                                     )
                                             );
                                         }

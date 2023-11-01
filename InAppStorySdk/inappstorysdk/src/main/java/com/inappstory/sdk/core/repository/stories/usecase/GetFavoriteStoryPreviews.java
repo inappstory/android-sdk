@@ -1,34 +1,28 @@
 package com.inappstory.sdk.core.repository.stories.usecase;
 
-import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
-import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.interfaces.IGetFeedCallback;
-import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IGetFavoritePreviewsCallback;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
+import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetStoryListByFeed {
+public class GetFavoriteStoryPreviews {
 
-    public GetStoryListByFeed(String feed, String tags) {
-        this.feed = feed;
-        this.tags = tags;
+    public GetFavoriteStoryPreviews() {
     }
 
-    final String feed;
-    final String tags;
 
-    public void get(final IGetFeedCallback callback) {
+    public void get(final IGetFavoritePreviewsCallback callback) {
         final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError();
@@ -38,32 +32,27 @@ public class GetStoryListByFeed {
                 new IGetSessionCallback<SessionDTO>() {
                     @Override
                     public void onSuccess(SessionDTO session) {
-                        final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
+                        final String loadStoriesUID =
+                                ProfilingManager.getInstance().addTask("api_favorite_cell");
                         networkClient.enqueue(
-                                networkClient.getApi().getFeed(
-                                        feed,
+                                networkClient.getApi().getStories(
                                         ApiSettings.getInstance().getTestKey(),
-                                        0,
-                                        tags,
-                                        null
+                                        1,
+                                        null,
+                                        "id, background_color, image"
                                 ),
-                                new LoadFeedCallback() {
+                                new LoadListCallback() {
                                     @Override
-                                    public void onSuccess(Feed response) {
+                                    public void onSuccess(List<Story> response) {
                                         if (response == null) {
                                             callback.onError();
                                         } else {
                                             ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                            List<IPreviewStoryDTO> previews = new ArrayList<>();
-                                            for (Story story : response.getStories()) {
-                                                previews.add(new PreviewStoryDTO(story));
+                                            List<IFavoritePreviewStoryDTO> previews = new ArrayList<>();
+                                            for (Story story : response) {
+                                                previews.add(new FavoritePreviewStoryDTO(story));
                                             }
-                                            callback.onSuccess(
-                                                    new Pair<>(
-                                                            previews,
-                                                            response.hasFavorite()
-                                                    )
-                                            );
+                                            callback.onSuccess(previews);
                                         }
                                     }
 

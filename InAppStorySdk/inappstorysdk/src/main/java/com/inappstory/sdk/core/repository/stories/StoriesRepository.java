@@ -2,147 +2,447 @@ package com.inappstory.sdk.core.repository.stories;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
+import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.StoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteCellUpdatedCallback;
+import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteListUpdatedCallback;
+import com.inappstory.sdk.core.repository.stories.interfaces.IGetFavoritePreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFeedCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IStoryUpdatedCallback;
+import com.inappstory.sdk.core.repository.stories.usecase.GetFavoriteStoryList;
+import com.inappstory.sdk.core.repository.stories.usecase.GetFavoriteStoryPreviews;
+import com.inappstory.sdk.core.repository.stories.usecase.GetOnboardingStoryListByFeed;
 import com.inappstory.sdk.core.repository.stories.usecase.GetStoryById;
 import com.inappstory.sdk.core.repository.stories.usecase.GetStoryListByFeed;
+import com.inappstory.sdk.core.repository.stories.utils.FavoriteCallbackKey;
+import com.inappstory.sdk.core.repository.stories.utils.FeedCallbackKey;
+import com.inappstory.sdk.core.repository.stories.utils.IFeedCallbackKey;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StoriesRepository implements IStoriesRepository {
     private final Object storyPreviewsLock = new Object();
-    HashMap<Integer, IPreviewStoryDTO> storyPreviews = new HashMap<>();
+    Map<Integer, IPreviewStoryDTO> storyPreviews = new HashMap<>();
 
     private final Object cachedStoriesLock = new Object();
-    HashMap<Integer, IStoryDTO> cachedStories = new HashMap<>();
+    private final Map<Integer, IStoryDTO> cachedStories = new HashMap<>();
 
     private final Object cachedListIdsLock = new Object();
-    HashMap<String, List<Integer>> cachedListIds = new HashMap<>();
+    private final Map<String, List<Integer>> cachedListIds = new HashMap<>();
+
+    private final Object storyLastIndexesLock = new Object();
+    private final Map<Integer, Integer> storyLastIndexes = new HashMap<>();
 
     private final Object storyUpdatedCallbacksLock = new Object();
-    List<IStoryUpdatedCallback> storyUpdatedCallbacks = new ArrayList<>();
+    private final List<IStoryUpdatedCallback> storyUpdatedCallbacks = new ArrayList<>();
+
+    private final Object favoriteCellUpdatedCallbacksLock = new Object();
+    private final List<IFavoriteCellUpdatedCallback> favoriteCellUpdatedCallbacks = new ArrayList<>();
+
+    private final Object favoriteListUpdatedCallbacksLock = new Object();
+    List<IFavoriteListUpdatedCallback> favoriteListUpdatedCallbacks = new ArrayList<>();
 
     @Override
-    public void getStoryById(final int storyId, final IGetStoryCallback<IStoryDTO> callback) {
+    public void addFavoriteCellUpdatedCallback(IFavoriteCellUpdatedCallback callback) {
+        synchronized (favoriteCellUpdatedCallbacksLock) {
+            favoriteCellUpdatedCallbacks.add(callback);
+        }
+    }
+
+    @Override
+    public void removeFavoriteCellUpdatedCallback(IFavoriteCellUpdatedCallback callback) {
+        synchronized (favoriteCellUpdatedCallbacksLock) {
+            favoriteCellUpdatedCallbacks.remove(callback);
+        }
+    }
+
+    @Override
+    public void addFavoriteListUpdatedCallback(IFavoriteListUpdatedCallback callback) {
+        synchronized (favoriteListUpdatedCallbacksLock) {
+            favoriteListUpdatedCallbacks.add(callback);
+        }
+    }
+
+    @Override
+    public void removeFavoriteListUpdatedCallback(IFavoriteListUpdatedCallback callback) {
+        synchronized (favoriteListUpdatedCallbacksLock) {
+            favoriteListUpdatedCallbacks.remove(callback);
+        }
+    }
+
+    private final Object storyFavoritesLock = new Object();
+    private final List<IFavoritePreviewStoryDTO> storyFavorites = new ArrayList<>();
+
+    private final Object feedCallbacksLock = new Object();
+    private final Object storyIdCallbacksLock = new Object();
+    private final Map<Integer, List<IGetStoriesPreviewsCallback>> feedCallbacks = new HashMap<>();
+    private final Map<String, List<IGetStoryCallback<IStoryDTO>>> storyByIdCallbacks = new HashMap<>();
+
+    private List<IGetStoriesPreviewsCallback> getFeedCallbacksListCopy(
+            IFeedCallbackKey feedKey
+    ) {
+        List<IGetStoriesPreviewsCallback> localList;
+        synchronized (feedCallbacksLock) {
+            localList = feedCallbacks.get(feedKey.getKey());
+            feedCallbacks.remove(feedKey.getKey());
+        }
+        return localList != null ? localList : new ArrayList<IGetStoriesPreviewsCallback>();
+    }
+
+    private boolean addToFeedCallbacksList(
+            IFeedCallbackKey feedKey,
+            IGetStoriesPreviewsCallback callback
+    ) {
+        boolean loading = true;
+        synchronized (feedCallbacksLock) {
+            if (feedCallbacks.get(feedKey.getKey()) == null) {
+                feedCallbacks.put(feedKey.getKey(), new ArrayList<IGetStoriesPreviewsCallback>());
+                loading = false;
+            }
+            feedCallbacks.get(feedKey.getKey()).add(callback);
+        }
+        return loading;
+    }
+
+    private void feedCallbacksListSuccess(
+            IFeedCallbackKey feedKey,
+            List<IPreviewStoryDTO> previews
+    ) {
+        List<IGetStoriesPreviewsCallback> localList = getFeedCallbacksListCopy(feedKey);
+        for (IGetStoriesPreviewsCallback feedCallback : localList) {
+            feedCallback.onSuccess(previews);
+        }
+        for (IPreviewStoryDTO previewStoryDTO : previews) {
+            updateItem(previewStoryDTO);
+        }
+    }
+
+    private void feedCallbacksListError(IFeedCallbackKey feedKey) {
+        List<IGetStoriesPreviewsCallback> localList = getFeedCallbacksListCopy(feedKey);
+        for (IGetStoriesPreviewsCallback feedCallback : localList) {
+            feedCallback.onError();
+        }
+    }
+
+    private List<IGetStoryCallback<IStoryDTO>> getStoryByIdCallbacksCopy(
+            String storyId
+    ) {
+        List<IGetStoryCallback<IStoryDTO>> localList;
+        synchronized (storyIdCallbacksLock) {
+            localList = storyByIdCallbacks.get(storyId);
+            storyByIdCallbacks.remove(storyId);
+        }
+        return localList != null ? localList : new ArrayList<IGetStoryCallback<IStoryDTO>>();
+    }
+
+    private boolean addToStoryByIdCallbacks(
+            String storyId,
+            IGetStoryCallback<IStoryDTO> callback
+    ) {
+        boolean loading = true;
+        synchronized (storyIdCallbacksLock) {
+            if (storyByIdCallbacks.get(storyId) == null) {
+                storyByIdCallbacks.put(storyId, new ArrayList<IGetStoryCallback<IStoryDTO>>());
+                loading = false;
+            }
+            storyByIdCallbacks.get(storyId).add(callback);
+        }
+        return loading;
+    }
+
+    private void storyByIdCallbacksSuccess(String storyId, IStoryDTO storyDTO) {
+        List<IGetStoryCallback<IStoryDTO>> localList = getStoryByIdCallbacksCopy(storyId);
+        for (IGetStoryCallback<IStoryDTO> feedCallback : localList) {
+            feedCallback.onSuccess(storyDTO);
+        }
+
+    }
+
+    private void storyByIdCallbacksError(String storyId) {
+        List<IGetStoryCallback<IStoryDTO>> localList = getStoryByIdCallbacksCopy(storyId);
+        for (IGetStoryCallback<IStoryDTO> feedCallback : localList) {
+            feedCallback.onError();
+        }
+    }
+
+    @Override
+    public void getStoryByIdAsync(final int storyId, final IGetStoryCallback<IStoryDTO> callback) {
+        getStoryByStringId(Integer.toString(storyId), callback);
+    }
+
+    @Override
+    public IStoryDTO getStoryById(int storyId) {
+        synchronized (cachedStoriesLock) {
+            return cachedStories.get(storyId);
+        }
+    }
+
+    @Override
+    public IStoryDTO getCurrentStory() {
+        synchronized (cachedStoriesLock) {
+            return currentStory;
+        }
+    }
+
+    private IStoryDTO currentStory = null;
+
+    @Override
+    public void setCurrentStory(Integer storyId) {
+        synchronized (cachedStoriesLock) {
+            if (storyId == null) currentStory = null;
+            else currentStory = cachedStories.get(storyId);
+        }
+    }
+
+    @Override
+    public void getStoryByStringId(final String storyId, final IGetStoryCallback<IStoryDTO> callback) {
+        if (addToStoryByIdCallbacks(storyId, callback)) return;
         synchronized (cachedStoriesLock) {
             IStoryDTO storyDTO = cachedStories.get(storyId);
             if (storyDTO != null) {
-                callback.onSuccess(storyDTO);
+                storyByIdCallbacksSuccess(storyId, storyDTO);
                 return;
             }
         }
-        new GetStoryById(storyId).get(new IGetStoryCallback<StoryDTO>() {
+        new GetStoryById(storyId).get(new IGetStoryCallback<Pair<IStoryDTO, IPreviewStoryDTO>>() {
             @Override
-            public void onSuccess(StoryDTO response) {
+            public void onSuccess(Pair<IStoryDTO, IPreviewStoryDTO> response) {
                 synchronized (cachedStoriesLock) {
-                    cachedStories.put(response.getId(), response);
+                    cachedStories.put(response.first.getId(), response.first);
                 }
-                callback.onSuccess(response);
+                synchronized (storyPreviewsLock) {
+                    storyPreviews.put(response.second.getId(), response.second);
+                }
+                storyByIdCallbacksSuccess(storyId, response.first);
             }
 
             @Override
             public void onError() {
-                callback.onError();
+                storyByIdCallbacksError(storyId);
             }
         });
     }
 
     @Override
-    public void getStoryPreviewById(int storyId, IGetStoryCallback<IPreviewStoryDTO> callback) {
+    public IPreviewStoryDTO getStoryPreviewById(int storyId) {
         synchronized (storyPreviewsLock) {
-            IPreviewStoryDTO storyDTO = storyPreviews.get(storyId);
-            if (storyDTO != null) {
-                callback.onSuccess(storyDTO);
-                return;
-            }
+            return storyPreviews.get(storyId);
         }
-        callback.onError();
     }
 
+    private void setLocalPreviews(String listID, List<IPreviewStoryDTO> previews) {
+        if (listID == null) return;
+        List<Integer> cached = new ArrayList<>();
+        synchronized (storyPreviewsLock) {
+            for (IPreviewStoryDTO previewStory : previews) {
+                cached.add(previewStory.getId());
+                storyPreviews.put(previewStory.getId(), previewStory);
+            }
+        }
+        synchronized (cachedListIdsLock) {
+            cachedListIds.put(listID, cached);
+        }
+    }
+
+    private List<IPreviewStoryDTO> getLocalPreviews(String listID) {
+        if (listID == null) return null;
+        List<IPreviewStoryDTO> previews = null;
+        List<Integer> cached = null;
+        synchronized (cachedListIdsLock) {
+            cached = cachedListIds.get(listID);
+        }
+        if (cached != null) {
+            previews = new ArrayList<>();
+            synchronized (storyPreviewsLock) {
+                for (int id : cached) {
+                    previews.add(storyPreviews.get(id));
+                }
+
+                return previews;
+            }
+        }
+        return null;
+    }
 
     @Override
-    public void getStoriesPreviewsByListId(
+    public void getStoriesPreviewsByListIdAsync(
             final String listID,
-            final String feed,
+            final String uncheckedFeed,
+            final boolean loadFavorites,
             final IGetStoriesPreviewsCallback callback
     ) {
-        if (listID != null) {
-            List<Integer> cached = null;
-            synchronized (cachedListIdsLock) {
-                cached = cachedListIds.get(listID);
-            }
-            if (cached != null) {
-                List<IPreviewStoryDTO> previews = new ArrayList<>();
-                synchronized (storyPreviewsLock) {
-                    for (int id : cached) {
-                        previews.add(storyPreviews.get(id));
+        @NonNull String feed =
+                (uncheckedFeed != null && !uncheckedFeed.isEmpty()) ? uncheckedFeed : "default";
+        final IFeedCallbackKey feedKey = new FeedCallbackKey(feed);
+        if (addToFeedCallbacksList(feedKey, callback)) return;
+        List<IPreviewStoryDTO> previews = getLocalPreviews(listID);
+        if (previews == null) {
+            new GetStoryListByFeed(
+                    feed,
+                    InAppStoryService.getInstance().getTagsString()
+            ).get(new IGetFeedCallback() {
+                @Override
+                public void onSuccess(final Pair<List<IPreviewStoryDTO>, Boolean> feedResponse) {
+                    setLocalPreviews(listID, feedResponse.first);
+                    if (feedResponse.second && loadFavorites) {
+                        new GetFavoriteStoryPreviews().get(new IGetFavoritePreviewsCallback() {
+                            @Override
+                            public void onSuccess(List<IFavoritePreviewStoryDTO> response) {
+                                synchronized (storyFavoritesLock) {
+                                    storyFavorites.clear();
+                                    storyFavorites.addAll(response);
+                                }
+                                feedCallbacksListSuccess(feedKey, feedResponse.first);
+                                updateFavoriteCell();
+                            }
+
+                            @Override
+                            public void onError() {
+                                feedCallbacksListSuccess(feedKey, feedResponse.first);
+                            }
+                        });
+                    } else {
+                        feedCallbacksListSuccess(feedKey, feedResponse.first);
                     }
-                    callback.onSuccess(previews);
-                    return;
                 }
-            }
+
+                @Override
+                public void onError() {
+                    feedCallbacksListError(feedKey);
+                }
+            });
+        } else {
+            feedCallbacksListSuccess(feedKey, previews);
         }
-        new GetStoryListByFeed(feed).get(new IGetFeedCallback() {
+    }
+
+    @Override
+    public int getStoryLastIndex(int storyId) {
+        synchronized (storyLastIndexesLock) {
+            Integer index = storyLastIndexes.get(storyId);
+            if (index != null) return index;
+        }
+        return 0;
+    }
+
+    @Override
+    public void setStoryLastIndex(int storyId, int index) {
+        synchronized (storyLastIndexesLock) {
+            storyLastIndexes.put(storyId, index);
+        }
+    }
+
+    @Override
+    public void clearStoriesIndexes() {
+        synchronized (storyLastIndexesLock) {
+            storyLastIndexes.clear();
+        }
+    }
+
+    @Override
+    public void getOnboardingStoriesAsync(String uncheckedFeed, Integer limit, IGetStoriesPreviewsCallback callback) {
+        @NonNull String feed =
+                (uncheckedFeed != null && !uncheckedFeed.isEmpty()) ? uncheckedFeed : "onboarding";
+        final IFeedCallbackKey feedKey = new FeedCallbackKey(feed);
+        if (addToFeedCallbacksList(feedKey, callback)) return;
+        new GetOnboardingStoryListByFeed(
+                feed,
+                limit,
+                InAppStoryService.getInstance().getTagsString()
+        ).get(new IGetFeedCallback() {
             @Override
             public void onSuccess(Pair<List<IPreviewStoryDTO>, Boolean> response) {
-
+                feedCallbacksListSuccess(feedKey, response.first);
             }
 
             @Override
             public void onError() {
-
+                feedCallbacksListError(feedKey);
             }
         });
     }
 
     @Override
-    public void getStoriesPreviewsFavoriteList(String listID) {
+    public void getFavoriteStoriesByListIdAsync(final String listID, IGetStoriesPreviewsCallback callback) {
+        final IFeedCallbackKey feedKey = new FavoriteCallbackKey();
+        if (addToFeedCallbacksList(feedKey, callback)) return;
+        List<IPreviewStoryDTO> previews = getLocalPreviews(listID);
+        if (previews == null) {
+            new GetFavoriteStoryList().get(new IGetFeedCallback() {
+                @Override
+                public void onSuccess(Pair<List<IPreviewStoryDTO>, Boolean> response) {
+                    setLocalPreviews(listID, response.first);
+                    feedCallbacksListSuccess(feedKey, response.first);
+                    List<IPreviewStoryDTO> newFavorites = response.first;
+                    synchronized (storyFavoritesLock) {
+                        storyFavorites.clear();
+                        for (IPreviewStoryDTO previewStoryDTO : newFavorites) {
+                            storyFavorites.add(new FavoritePreviewStoryDTO(previewStoryDTO));
+                        }
+                    }
+                    updateFavoriteCell();
+                    updateFavoriteList();
+                }
+
+                @Override
+                public void onError() {
+                    feedCallbacksListError(feedKey);
+                }
+            });
+        } else {
+            feedCallbacksListSuccess(feedKey, previews);
+        }
+    }
+
+    @Override
+    public List<IPreviewStoryDTO> getCachedFavorites() {
+        synchronized (storyFavoritesLock) {
+            List<IPreviewStoryDTO> previews = new ArrayList<>();
+            for (IFavoritePreviewStoryDTO favoritePreviewStory : storyFavorites) {
+                previews.add(storyPreviews.get(favoritePreviewStory.getId()));
+            }
+            return previews;
+        }
+    }
+
+    @Override
+    public List<IFavoritePreviewStoryDTO> getCachedFavoriteCell() {
+        synchronized (storyFavoritesLock) {
+            return new ArrayList<>(storyFavorites);
+        }
+    }
+
+
+    @Override
+    public void clearCachedList(String listID) {
         synchronized (cachedListIdsLock) {
             cachedListIds.remove(listID);
         }
     }
 
     @Override
-    public void getStoriesPreviewsFavoriteItem() {
-
-    }
-
-    @Override
-    public void removeCachedList(String listID) {
+    public void clearCachedLists() {
         synchronized (cachedListIdsLock) {
-            cachedListIds.remove(listID);
+            cachedListIds.clear();
         }
-    }
-
-    @Override
-    public void removeCachedLists() {
-
-    }
-
-
-    @Override
-    public void getOnboardingStories(String userId) {
-
     }
 
     @Override
     public void openStory(int storyId) {
-        int index = storyPreviews.indexOf(new PreviewStoryDTO(storyId));
-        if (index >= 0) {
-            storyPreviews.get(index).open();
-            synchronized (storyUpdatedCallbacksLock) {
-                for (IStoryUpdatedCallback callback : storyUpdatedCallbacks) {
-                    callback.update();
-                }
-            }
+        IPreviewStoryDTO previewStoryDTO = storyPreviews.get(storyId);
+        if (previewStoryDTO != null) {
+            previewStoryDTO.open();
+            updateItem(previewStoryDTO);
         }
     }
 
@@ -156,6 +456,86 @@ public class StoriesRepository implements IStoriesRepository {
 
     @Override
     public void removeStoryUpdateCallback(IStoryUpdatedCallback callback) {
+        synchronized (storyUpdatedCallbacksLock) {
+            storyUpdatedCallbacks.remove(callback);
+        }
+    }
+
+    private void addToFavorite() {
+        synchronized (storyFavoritesLock) {
+            if (!storyFavorites.contains(new FavoritePreviewStoryDTO(storyDTO.getId()))) {
+                synchronized (storyPreviewsLock) {
+                    IPreviewStoryDTO previewStoryDTO = storyPreviews.get(storyDTO.getId());
+                    if (previewStoryDTO != null)
+                        storyFavorites.add(new FavoritePreviewStoryDTO(previewStoryDTO));
+                }
+            }
+        }
+        updateFavoriteCell();
+        updateFavoriteList();
+    }
+
+    private void updateFavoriteCell() {
+        synchronized (favoriteCellUpdatedCallbacksLock) {
+            for (IFavoriteCellUpdatedCallback callback : favoriteCellUpdatedCallbacks) {
+                callback.onUpdate();
+            }
+        }
+    }
+
+    private void updateItem(IPreviewStoryDTO previewStoryDTO) {
+        synchronized (storyUpdatedCallbacksLock) {
+            for (IStoryUpdatedCallback callback : storyUpdatedCallbacks) {
+                callback.onUpdate(previewStoryDTO);
+            }
+        }
+    }
+
+    private void updateFavoriteList() {
+        synchronized (favoriteListUpdatedCallbacksLock) {
+            for (IFavoriteListUpdatedCallback callback : favoriteListUpdatedCallbacks) {
+                callback.onUpdate();
+            }
+        }
+    }
+
+    @Override
+    public void addToFavorite(int storyId) {
+
+    }
+
+    @Override
+    public void removeFromFavorite(int storyId) {
+        synchronized (storyFavoritesLock) {
+            IFavoritePreviewStoryDTO favoritePreviewStoryDTO =
+                    new FavoritePreviewStoryDTO(storyId);
+            storyFavorites.remove(favoritePreviewStoryDTO);
+        }
+        updateFavoriteCell();
+        updateFavoriteList();
+    }
+
+    @Override
+    public void removeAllFavorites() {
+        synchronized (storyFavoritesLock) {
+            storyFavorites.clear();
+        }
+        synchronized (cachedStoriesLock) {
+            for (IStoryDTO storyDTO : cachedStories.values()) {
+                storyDTO.setFavorite(false);
+            }
+        }
+    }
+
+    @Override
+    public void addStoryUpdatedCallback(IStoryUpdatedCallback callback) {
+        synchronized (storyUpdatedCallbacksLock) {
+            storyUpdatedCallbacks.add(callback);
+        }
+    }
+
+    @Override
+    public void removeStoryUpdatedCallback(IStoryUpdatedCallback callback) {
         synchronized (storyUpdatedCallbacksLock) {
             storyUpdatedCallbacks.remove(callback);
         }

@@ -1,20 +1,19 @@
 package com.inappstory.sdk.stories.cache;
 
-import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
-
 import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.ApiSettings;
-import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.callbacks.SimpleApiCallback;
-import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
@@ -115,7 +114,7 @@ class StoryDownloader {
 
     }
 
-    void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
+    void addStoryTask(int storyId, ArrayList<Integer> addIds, final Story.StoryType type) {
         synchronized (storyTasksLock) {
             if (storyTasks == null) storyTasks = new HashMap<>();
             for (StoryTaskData storyTaskKey : storyTasks.keySet()) {
@@ -147,8 +146,22 @@ class StoryDownloader {
                 if (taskByStoryId.loadType != 3) {
                     if (taskByStoryId.loadType == 6) {
                         taskByStoryId.loadType = 3;
-                        if (callback != null)
-                            callback.onDownload(manager.getStoryById(storyId, type), 3, type);
+                        IASCoreManager.getInstance().getStoriesRepository(type).getStoryByIdAsync(
+                                storyId,
+                                new IGetStoryCallback<IStoryDTO>() {
+                                    @Override
+                                    public void onSuccess(IStoryDTO response) {
+                                        if (callback != null)
+                                            callback.onDownload(response, 3, type);
+                                    }
+
+                                    @Override
+                                    public void onError() {
+
+                                    }
+                                }
+                        );
+
                     } else if (taskByStoryId.loadType == 5) {
                         taskByStoryId.loadType = 2;
                     } else {
@@ -257,64 +270,40 @@ class StoryDownloader {
     };
 
 
-    void loadStoryResult(StoryTaskData key, Response response) {
-        if (response.body != null) {
-            Story story = JsonParser.fromJson(response.body, Story.class);
-            int loadType;
-            synchronized (storyTasksLock) {
-                if (getStoryLoadType(key) < 4) {
-                    loadType = 3;
-                } else {
-                    loadType = 6;
-                }
-                setStoryLoadType(key, loadType);
-                firstPriority.remove(key);
-                secondPriority.remove(key);
+    void loadStoryResult(StoryTaskData key, IStoryDTO response) {
+        int loadType;
+        synchronized (storyTasksLock) {
+            if (getStoryLoadType(key) < 4) {
+                loadType = 3;
+            } else {
+                loadType = 6;
             }
-            if (story != null) {
-                if (callback != null) {
-                    callback.onDownload(story, loadType, key.storyType);
-                }
-            }
-        } else if (response.errorBody != null) {
-            loadStoryError(key);
+            setStoryLoadType(key, loadType);
+            firstPriority.remove(key);
+            secondPriority.remove(key);
+        }
+        if (callback != null) {
+            callback.onDownload(response, loadType, key.storyType);
         }
         handler.postDelayed(queueStoryReadRunnable, 200);
     }
 
 
-    void loadStory(StoryTaskData key) {
-
-        try {
-            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-            String storyUID;
-            Response response;
-            if (key.storyType == Story.StoryType.UGC) {
-                storyUID = ProfilingManager.getInstance().addTask("api_story_ugc");
-                response = networkClient.execute(
-                        networkClient.getApi().getUgcStoryById(
-                                Integer.toString(key.storyId),
-                                1,
-                                EXPAND_STRING
-                        )
-                );
-            } else {
-                storyUID = ProfilingManager.getInstance().addTask("api_story");
-                response = networkClient.execute(
-                        networkClient.getApi().getStoryById(
-                                Integer.toString(key.storyId),
-                                1,
-                                EXPAND_STRING
-                        )
-                );
+    void loadStory(final StoryTaskData key) {
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance()
+                .getStoriesRepository(key.storyType);
+        storiesRepository.getStoryByIdAsync(key.storyId, new IGetStoryCallback<com.inappstory.sdk.core.repository.stories.dto.IStoryDTO>() {
+            @Override
+            public void onSuccess(com.inappstory.sdk.core.repository.stories.dto.IStoryDTO response) {
+                loadStoryResult(key, response);
             }
-            ProfilingManager.getInstance().setReady(storyUID);
-            loadStoryResult(key, response);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            loadStoryError(key);
-            handler.postDelayed(queueStoryReadRunnable, 200);
-        }
+
+            @Override
+            public void onError() {
+                loadStoryError(key);
+                handler.postDelayed(queueStoryReadRunnable, 200);
+            }
+        });
     }
 
     void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {

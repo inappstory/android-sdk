@@ -12,6 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IStoryUpdatedCallback;
+import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
@@ -22,7 +27,6 @@ import com.inappstory.sdk.stories.ui.list.items.IStoriesListFavoriteItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListUGCEditorItem;
 import com.inappstory.sdk.stories.ui.list.items.IStoriesListItemWithCover;
 import com.inappstory.sdk.stories.ui.list.items.BaseStoriesListItem;
-import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListCommonItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListDeeplinkItemClick;
 import com.inappstory.sdk.stories.uidomain.list.items.story.IStoriesListGameItemClick;
@@ -35,15 +39,18 @@ public abstract class BaseStoriesListAdapter
         extends RecyclerView.Adapter<BaseStoriesListItem>
         implements IStoriesListAdapter,
         ClickCallback {
-    public List<PreviewStoryDTO> getStoriesData() {
+    public List<IPreviewStoryDTO> getStoriesData() {
         return storiesData;
     }
 
-    protected List<PreviewStoryDTO> storiesData = new ArrayList<>();
+    protected IStoriesRepository storiesRepository =
+            IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON);
+
+    protected List<IPreviewStoryDTO> storiesData = new ArrayList<>();
     private boolean isFavoriteList;
 
     @Override
-    public void updateStoriesData(List<PreviewStoryDTO> data) {
+    public void updateStoriesData(List<IPreviewStoryDTO> data) {
         this.storiesData.clear();
         this.storiesData.addAll(data);
         notifyDataSetChanged();
@@ -90,7 +97,17 @@ public abstract class BaseStoriesListAdapter
         this.storiesListGameItemClick = storiesListGameItemClick;
         this.favoriteItemClick = favoriteItemClick;
         this.ugcItemClick = ugcItemClick;
+        storiesRepository.addStoryUpdateCallback(storyUpdatedCallback);
     }
+
+    private final IStoryUpdatedCallback storyUpdatedCallback = new IStoryUpdatedCallback() {
+
+        @Override
+        public void onUpdate(IPreviewStoryDTO previewStoryDTO) {
+            BaseStoriesListAdapter.this.notify(previewStoryDTO);
+        }
+    };
+
 
     public int getIndexById(int id) {
         if (storiesData == null) return -1;
@@ -115,7 +132,6 @@ public abstract class BaseStoriesListAdapter
                 viewType
         );
     }
-
 
     @Override
     public void onBindViewHolder(@NonNull final BaseStoriesListItem holder, int position) {
@@ -156,7 +172,7 @@ public abstract class BaseStoriesListAdapter
             });
         } else if (holder instanceof IStoriesListCommonItem) {
             int hasUGC = useUGC ? 1 : 0;
-            final PreviewStoryDTO story = storiesData.get(position - hasUGC);
+            final IPreviewStoryDTO story = storiesData.get(position - hasUGC);
             if (story == null) return;
             String imgUrl = story.getImageUrl(manager.csCoverQuality());
             ((IStoriesListCommonItem) holder).bindCommon(
@@ -212,7 +228,7 @@ public abstract class BaseStoriesListAdapter
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
 
-        final PreviewStoryDTO current = storiesData.get(index);
+        final IPreviewStoryDTO current = storiesData.get(index);
         String gameInstanceId = current.getGameInstanceId();
         if (gameInstanceId != null) {
             if (storiesListGameItemClick != null)
@@ -229,8 +245,8 @@ public abstract class BaseStoriesListAdapter
                 );
         }
         if (storiesListCommonItemClick != null) {
-            ArrayList<PreviewStoryDTO> tempStoriesData = new ArrayList();
-            for (PreviewStoryDTO storyData : storiesData) {
+            ArrayList<IPreviewStoryDTO> tempStoriesData = new ArrayList();
+            for (IPreviewStoryDTO storyData : storiesData) {
                 if (!storyData.isHideInReader())
                     tempStoriesData.add(storyData);
             }
@@ -274,31 +290,23 @@ public abstract class BaseStoriesListAdapter
                 ((!storiesData.isEmpty() && useUGC) ? 1 : 0);
     }
 
-
     @Override
-    public void notify(PreviewStoryDTO data) {
+    public void notify(IPreviewStoryDTO data) {
         if (data == null) {
-            notifyDataSetChanged();
             return;
         }
         int ugcShift = useUGC ? 1 : 0;
-        int index = -1;
         for (int i = 0; i < storiesData.size(); i++) {
             if (storiesData.get(i).getId() == data.getId()) {
-                index = i;
+                storiesData.set(i, data);
+                notifyItemChanged(i + ugcShift);
                 break;
             }
-        }
-        if (index >= 0) {
-            storiesData.set(index, data);
-        }
-        if (index >= 0) {
-            notifyItemChanged(index + ugcShift);
         }
     }
 
     @Override
-    public List<PreviewStoryDTO> getCurrentStories() {
+    public List<IPreviewStoryDTO> getCurrentStories() {
         return storiesData;
     }
 
