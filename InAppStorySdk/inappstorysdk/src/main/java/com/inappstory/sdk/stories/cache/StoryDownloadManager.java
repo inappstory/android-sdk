@@ -334,8 +334,10 @@ public class StoryDownloadManager {
             @Override
             public void onDownload(Story story, int loadType, Story.StoryType type) {
                 Story local = getStoryById(story.id, type);
-                story.isOpened = local.isOpened;
-                story.lastIndex = local.lastIndex;
+                if (local != null) {
+                    story.isOpened = local.isOpened;
+                    story.lastIndex = local.lastIndex;
+                }
                 setStory(story, story.id, type);
                 storyLoaded(story.id, type);
                 try {
