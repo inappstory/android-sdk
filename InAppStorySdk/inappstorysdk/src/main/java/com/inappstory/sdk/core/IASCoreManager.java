@@ -2,6 +2,7 @@ package com.inappstory.sdk.core;
 
 import android.content.Context;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.files.FilesRepository;
 import com.inappstory.sdk.core.repository.files.IFilesRepository;
@@ -93,6 +94,20 @@ public class IASCoreManager {
                 callback.onError();
             }
         });
+    }
+
+    public boolean getSendNewStatistic() {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return false;
+        return inAppStoryManager.isSendStatistic()
+                && sessionRepository.isAllowStatV2();
+    }
+
+    public boolean getSendStatistic() {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return false;
+        return inAppStoryManager.isSendStatistic()
+                && sessionRepository.isAllowStatV1();
     }
 
     public void init(Context context) {

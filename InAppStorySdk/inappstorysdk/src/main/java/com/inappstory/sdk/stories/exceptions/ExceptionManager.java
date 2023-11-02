@@ -26,7 +26,7 @@ public class ExceptionManager {
         copiedLog.file = log.file;
         copiedLog.session = log.session;
         copiedLog.line = log.line;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }

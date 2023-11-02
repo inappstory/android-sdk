@@ -34,6 +34,15 @@ public class StoryDTO implements IStoryDTO {
         return slidesCount;
     }
 
+    @Override
+    public void setSlidesCount(int slidesCount) {
+        this.slidesCount = slidesCount;
+    }
+
+    public boolean checkIfEmpty() {
+        return (getLayout() == null || pages == null || pages.isEmpty());
+    }
+
     public HashMap<String, Object> getPayload() {
         return payload;
     }
@@ -54,19 +63,19 @@ public class StoryDTO implements IStoryDTO {
         return durations;
     }
 
-    public boolean getHasLike() {
+    public boolean hasLike() {
         return hasLike;
     }
 
-    public boolean getHasAudio() {
+    public boolean hasAudio() {
         return hasAudio;
     }
 
-    public boolean getHasFavorite() {
+    public boolean hasFavorite() {
         return hasFavorite;
     }
 
-    public boolean getHasShare() {
+    public boolean hasShare() {
         return hasShare;
     }
 
@@ -121,6 +130,16 @@ public class StoryDTO implements IStoryDTO {
     }
 
     @Override
+    public boolean hasSwipeUp() {
+        return hasSwipeUp;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return disableClose;
+    }
+
+    @Override
     public String getSlideEventPayload(int slideIndex) {
         if (slidesPayload == null) return null;
         for (PayloadObjectDTO payloadObject : slidesPayload) {
@@ -148,10 +167,15 @@ public class StoryDTO implements IStoryDTO {
     private String layout;
     private List<String> pages;
     private int[] durations;
+
     private boolean hasLike;
     private boolean hasAudio;
     private boolean hasFavorite;
     private boolean hasShare;
+    private boolean hasSwipeUp;
+    private boolean disableClose;
+    private int like;
+    private boolean favorite;
 
     public void setOpened(boolean opened) {
         isOpened = opened;
@@ -164,10 +188,6 @@ public class StoryDTO implements IStoryDTO {
     public void setFavorite(boolean favorite) {
         this.favorite = favorite;
     }
-
-    private int like;
-
-    private boolean favorite;
     private int[] slidesShare;
     private List<ImagePlaceholderMappingObjectDTO> imagePlaceholdersList;
     private List<ResourceMappingObjectDTO> srcList;
@@ -194,6 +214,8 @@ public class StoryDTO implements IStoryDTO {
         this.imagePlaceholdersList = new ArrayList<>();
         this.srcList = new ArrayList<>();
         this.slidesPayload = new ArrayList<>();
+        this.hasSwipeUp = story.hasSwipeUp();
+        this.disableClose = story.disableClose;
         for (ImagePlaceholderMappingObject object : story.getImagePlaceholdersList()) {
             this.imagePlaceholdersList.add(new ImagePlaceholderMappingObjectDTO(object));
         }

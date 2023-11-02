@@ -34,8 +34,27 @@ public interface IPreviewStoryDTO {
 
     String getImageUrl(int coverQuality);
 
-    void open();
-
     int getSlidesCount();
+
     HashMap<String, Object> getPayload();
+
+    boolean hasLike();
+
+    boolean hasFavorite();
+
+    boolean hasShare();
+
+    int getLike();
+
+    boolean getFavorite();
+
+    void setLike(int like);
+
+    void setFavorite(boolean favorite);
+
+    void setOpened(boolean isOpened);
+
+    boolean hasSwipeUp();
+
+    boolean disableClose();
 }

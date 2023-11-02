@@ -7,6 +7,7 @@ import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallbackAdapter;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFeedCallback;
@@ -30,7 +31,7 @@ public class GetFavoriteStoryList {
             return;
         }
         IASCoreManager.getInstance().getSession(
-                new IGetSessionCallback<SessionDTO>() {
+                new IGetSessionDTOCallbackAdapter(callback) {
                     @Override
                     public void onSuccess(SessionDTO session) {
                         final String loadStoriesUID =
@@ -78,11 +79,6 @@ public class GetFavoriteStoryList {
                                     }
                                 }
                         );
-                    }
-
-                    @Override
-                    public void onError() {
-                        callback.onError();
                     }
                 }
         );

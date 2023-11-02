@@ -9,9 +9,11 @@ import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.ImagePlaceholderMappingObjectDTO;
+import com.inappstory.sdk.core.repository.stories.dto.ResourceMappingObjectDTO;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
 
 import java.io.File;
@@ -72,16 +74,11 @@ public class WebPageConverter {
       }
   */
 
-    private String replaceResources(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
-        List<String> resourceKeys = new ArrayList<>();
-        resourceKeys.addAll(story.getSrcListKeys(index, null));
-        resourceKeys.addAll(story.getSrcListKeys(index, "video"));
-        List<String> resourceUrls = new ArrayList<>();
-        resourceUrls.addAll(story.getSrcListUrls(index, null));
-        resourceUrls.addAll(story.getSrcListUrls(index, "video"));
-        for (int i = 0; i < resourceKeys.size(); i++) {
-            String resource = resourceUrls.get(i);
-            String resourceKey = resourceKeys.get(i);
+    private String replaceResources(String innerWebData, IStoryDTO story, final int index, LruDiskCache cache) throws IOException {
+        List<ResourceMappingObjectDTO> resources = new ArrayList<>(story.getSrcList(index));
+        for (ResourceMappingObjectDTO resourceDTO: resources) {
+            String resource = resourceDTO.getUrl();
+            String resourceKey = resourceDTO.getKey();
             String key = Downloader.deleteQueryArgumentsFromUrl(resource, true);
             File file = Downloader.updateFile(cache.getFullFile(key), resource, cache, key);
             if (file != null && file.exists() && file.length() > 0) {
@@ -92,13 +89,13 @@ public class WebPageConverter {
         return innerWebData;
     }
 
-    private String replaceImagePlaceholders(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+    private String replaceImagePlaceholders(String innerWebData, IStoryDTO story, final int index, LruDiskCache cache) throws IOException {
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
                 InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults();
-        Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
-        for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
+        List<ImagePlaceholderMappingObjectDTO> replaceable = story.getImagePlaceholdersList(index);
+        for (ImagePlaceholderMappingObjectDTO entry : replaceable) {
             String placeholderKey = entry.getKey();
-            String placeholderName = entry.getValue();
+            String placeholderName = entry.getUrl();
             if (placeholderKey != null && placeholderName != null) {
                 Pair<ImagePlaceholderValue, ImagePlaceholderValue> placeholderValue
                         = imgPlaceholders.get(placeholderName);
@@ -159,7 +156,7 @@ public class WebPageConverter {
         return new Pair<>(tmpData, tmpLayout);
     }
 
-    public void replaceDataAndLoad(String innerWebData, Story story, int index, String layout,
+    public void replaceDataAndLoad(String innerWebData, IStoryDTO story, int index, String layout,
                                    WebPageConvertCallback callback) throws IOException {
         String localData = innerWebData;
         String newLayout = layout;

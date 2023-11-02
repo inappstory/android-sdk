@@ -40,6 +40,9 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
@@ -303,7 +306,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         InAppStoryService.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
         type = (Story.StoryType) getIntent().getSerializableExtra("storiesType");
         if (type == null) type = Story.StoryType.COMMON;
-        draggableFrame.type = type;
         if (savedInstanceState == null) {
             storiesFragment = new StoriesFragment();
             if (getIntent().getExtras() != null) {
@@ -352,35 +354,30 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             service.getListNotifier().closeReader(
                     getIntent().getStringExtra("listID")
             );
-
-            Story story = service.getDownloadManager()
-                    .getStoryById(service.getCurrentId(), type);
-            if (story != null) {
-                IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
-                        new SlideData(
-                                new StoryData(
-                                        story.id,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount(),
-                                        getIntent().getStringExtra("feedId"),
-                                        (SourceType) getIntent().getSerializableExtra("source")
-                                ),
-                                story.lastIndex
-                        ),
-                        action
-                );
-                useCaseCallbackCloseStory.invoke();
-            }
-            StatisticManager.getInstance().sendCloseStory(story.id, cause,
-                    story.lastIndex,
+        }
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IPreviewStoryDTO story = storiesRepository.getCurrentStory();
+        if (story != null) {
+            int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
+            IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
+                    new SlideData(
+                            new StoryData(
+                                    story,
+                                    getIntent().getStringExtra("feedId"),
+                                    (SourceType) getIntent().getSerializableExtra("source")
+                            ),
+                            lastIndex
+                    ),
+                    action
+            );
+            useCaseCallbackCloseStory.invoke();
+            StatisticManager.getInstance().sendCloseStory(story.getId(), cause,
+                    lastIndex,
                     story.getSlidesCount(),
                     getIntent().getStringExtra("feedId"));
         }
         cleanReader();
-
-        if (ScreensManager.getInstance().coordinates != null) animateFirst = true;
-        else animateFirst = false;
+        animateFirst = ScreensManager.getInstance().coordinates != null;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -402,12 +399,11 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
-        IASCoreManager.getInstance().getStoriesRepository(type).clearStoriesIndexes();
+        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(type);
+        repository.clearStoriesIndexes();
+        repository.setCurrentStory(null);
         cleaned = true;
     }
 

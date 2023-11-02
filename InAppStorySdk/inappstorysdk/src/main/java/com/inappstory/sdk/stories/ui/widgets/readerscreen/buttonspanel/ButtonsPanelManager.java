@@ -67,7 +67,7 @@ public class ButtonsPanelManager {
     }
 
     private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -162,30 +162,11 @@ public class ButtonsPanelManager {
                 ),
                 slideIndex
         );
-        inAppStoryService.favoriteStory(
-                storyId,
-                parentManager.getStoryType(),
-                parentManager.parentManager.listID,
-                slideData,
-                new FavoriteCallback() {
-                    @Override
-                    public void addedToFavorite(Story story) {
-                        if (callback != null)
-                            callback.onSuccess(1);
-                    }
-
-                    @Override
-                    public void removedFromFavorite() {
-                        if (callback != null)
-                            callback.onSuccess(0);
-                    }
-
-                    @Override
-                    public void onError() {
-
-                    }
-                }
-        );
+        if (story.getFavorite()) {
+            storiesRepository.addToFavorite(storyId);
+        } else {
+            storiesRepository.removeFromFavorite(storyId);
+        }
     }
 
     ButtonsPanel panel;
@@ -204,7 +185,7 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final ShareButtonClickCallback callback) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -267,8 +248,8 @@ public class ButtonsPanelManager {
                     public void errorDefault(String message) {
                         if (callback != null)
                             callback.onError();
-                        InAppStoryService service = InAppStoryService.getInstance();
-                        if (service != null) service.isShareProcess(false);
+
+                        IASCoreManager.getInstance().isShareProcess(false);
                     }
 
                     @Override

@@ -63,10 +63,7 @@ public class UgcPreviewStoryDTO implements IPreviewStoryDTO {
         return isOpened;
     }
 
-    @Override
-    public void open() {
 
-    }
 
     public int getSlidesCount() {
         return slidesCount;
@@ -74,6 +71,56 @@ public class UgcPreviewStoryDTO implements IPreviewStoryDTO {
 
     public HashMap<String, Object> getPayload() {
         return payload;
+    }
+
+    @Override
+    public boolean hasLike() {
+        return false;
+    }
+
+    @Override
+    public boolean hasFavorite() {
+        return false;
+    }
+
+    @Override
+    public boolean hasShare() {
+        return false;
+    }
+
+    @Override
+    public int getLike() {
+        return 0;
+    }
+
+    @Override
+    public boolean getFavorite() {
+        return false;
+    }
+
+    @Override
+    public void setLike(int like) {
+
+    }
+
+    @Override
+    public void setFavorite(boolean favorite) {
+
+    }
+
+    @Override
+    public void setOpened(boolean isOpened) {
+
+    }
+
+    @Override
+    public boolean hasSwipeUp() {
+        return false;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return false;
     }
 
     public boolean isHasAudio() {

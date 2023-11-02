@@ -35,6 +35,16 @@ public class UgcStoryDTO implements IStoryDTO {
     }
 
     @Override
+    public void setSlidesCount(int slidesCount) {
+
+    }
+
+    @Override
+    public boolean checkIfEmpty() {
+        return false;
+    }
+
+    @Override
     public String getSlideEventPayload(int slideIndex) {
         return null;
     }
@@ -59,19 +69,19 @@ public class UgcStoryDTO implements IStoryDTO {
         return durations;
     }
 
-    public boolean getHasLike() {
+    public boolean hasLike() {
         return hasLike;
     }
 
-    public boolean getHasAudio() {
+    public boolean hasAudio() {
         return hasAudio;
     }
 
-    public boolean getHasFavorite() {
+    public boolean hasFavorite() {
         return hasFavorite;
     }
 
-    public boolean getHasShare() {
+    public boolean hasShare() {
         return hasShare;
     }
 
@@ -127,6 +137,16 @@ public class UgcStoryDTO implements IStoryDTO {
 
     @Override
     public boolean isScreenshotShare(int index) {
+        return false;
+    }
+
+    @Override
+    public boolean hasSwipeUp() {
+        return false;
+    }
+
+    @Override
+    public boolean disableClose() {
         return false;
     }
 

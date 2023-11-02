@@ -11,6 +11,13 @@ import android.view.View;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.session.interfaces.EmptyNetworkErrorCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.NetworkErrorCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallbackAdapter;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -22,8 +29,6 @@ import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.core.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.core.network.models.Response;
-import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -43,7 +48,6 @@ import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShowSlide;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,20 +137,17 @@ public class StoriesViewManager {
 
     public static final Pattern FONT_SRC = Pattern.compile("@font-face [^}]*src: url\\(['\"](http[^'\"]*)['\"]\\)");
 
+    IStoryDTO story;
 
-    public void storyLoaded(int oId, int oInd, boolean alreadyLoaded) {
+    public void storyLoaded(IStoryDTO story, int oInd, boolean alreadyLoaded) {
         this.index = oInd;
+        this.story = story;
         loadedIndex = oInd;
-        loadedId = oId;
+        loadedId = story.getId();
         if (alreadyLoaded) return;
-        Story story = InAppStoryService.getInstance() != null ?
-                InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType()) : null;
         innerLoad(story);
     }
 
-    public void storyLoaded(int oId, int oInd) {
-        storyLoaded(oId, oInd, false);
-    }
 
     public StoriesViewManager() {
     }
@@ -157,7 +158,7 @@ public class StoriesViewManager {
         this.context = context;
     }
 
-    void innerLoad(Story story) {
+    void innerLoad(IStoryDTO story) {
         try {
             setWebViewSettings(story);
         } catch (IOException e) {
@@ -256,7 +257,6 @@ public class StoriesViewManager {
     public void loadStory(final int id, final int index) {
         if (InAppStoryService.isNull())
             return;
-        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, pageManager.getStoryType());
         synchronized (this) {
             if (loadedId == id && loadedIndex == index) return;
             if (story == null || story.checkIfEmpty()) {
@@ -289,8 +289,8 @@ public class StoriesViewManager {
         }
     }
 
-    void setWebViewSettings(Story story) throws IOException {
-        String innerWebData = story.pages.get(index);
+    void setWebViewSettings(IStoryDTO story) throws IOException {
+        String innerWebData = story.getPages().get(index);
         String layout = story.getLayout();//getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
 
@@ -394,10 +394,9 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.isShareProcess())
+        if (IASCoreManager.getInstance().isShareProcess())
             return;
-        service.isShareProcess(true);
+        IASCoreManager.getInstance().isShareProcess(true);
         InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             ScreensManager.getInstance().setTempShareId(id);
@@ -406,16 +405,13 @@ public class StoriesViewManager {
             ScreensManager.getInstance().setOldTempShareId(id);
             ScreensManager.getInstance().setOldTempShareStoryId(storyId);
         }
-        Story story = InAppStoryService.getInstance() != null ?
-                InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(storyId, pageManager.getStoryType()) : null;
         if (story != null && shareData != null) {
             shareData.payload = story.getSlideEventPayload(index);
-            pageManager.parentManager.showShareView(
+            pageManager.getParentManager().showShareView(
                     shareData, storyId, index
             );
         } else {
-            service.isShareProcess(false);
+            IASCoreManager.getInstance().isShareProcess(false);
         }
 
     }
@@ -455,26 +451,19 @@ public class StoriesViewManager {
 
     private GameStoryData getGameStoryData() {
         GameStoryData data = null;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.getDownloadManager() != null) {
-            Story.StoryType type = pageManager != null ? pageManager.getStoryType() : Story.StoryType.COMMON;
-            Story story = service.getDownloadManager().getStoryById(storyId, type);
-            if (story != null) {
-                data = new GameStoryData(
-                        new SlideData(
-                                new StoryData(
-                                        story.id,
-                                        type,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.slidesCount,
-                                        pageManager != null ? pageManager.getFeedId() : null,
-                                        pageManager != null ? pageManager.getSourceType() : SourceType.LIST
-                                ),
-                                story.lastIndex
-                        )
-                );
-            }
+        if (story != null && pageManager != null) {
+            int lastIndex = IASCoreManager.getInstance().getStoriesRepository(pageManager.getStoryType())
+                    .getStoryLastIndex(storyId);
+            data = new GameStoryData(
+                    new SlideData(
+                            new StoryData(
+                                    story,
+                                    pageManager != null ? pageManager.getFeedId() : null,
+                                    pageManager != null ? pageManager.getSourceType() : SourceType.LIST
+                            ),
+                            lastIndex
+                    )
+            );
         }
         return data;
     }
@@ -496,15 +485,17 @@ public class StoriesViewManager {
     private boolean storyIsLoaded = false;
 
     public void storyLoaded(int slideIndex) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         clearShowLoader();
         clearShowRefresh();
         storyIsLoaded = true;
-        Story story = service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
-        if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
+        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(
+                pageManager.getStoryType()
+        );
+        IPreviewStoryDTO storyDTO = repository.getCurrentStory();
+        int lastIndex = repository.getStoryLastIndex(storyId);
+        if ((slideIndex >= 0 && lastIndex != slideIndex)) {
             stopStory();
-        } else if (service.getCurrentId() != storyId) {
+        } else if (storyDTO.getId() != storyId) {
             stopStory();
             setLatestVisibleIndex(slideIndex);
         } else {
@@ -530,17 +521,11 @@ public class StoriesViewManager {
     }
 
     public void sendShowSlideEvents() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        Story story = service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if (story != null) {
             IUseCaseCallback useCaseShowSlideCallback = new UseCaseCallbackShowSlide(
                     new SlideData(
                             new StoryData(
-                                    story.id,
-                                    StringsUtils.getNonNull(story.statTitle),
-                                    StringsUtils.getNonNull(story.tags),
-                                    story.getSlidesCount(),
+                                    story,
                                     pageManager != null ? pageManager.getFeedId() : null,
                                     pageManager != null ? pageManager.getSourceType() : SourceType.LIST
                             ),
@@ -567,66 +552,77 @@ public class StoriesViewManager {
         storiesView.freezeUI();
     }
 
-    public void storySetLocalData(String data, boolean sendToServer) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        KeyValueStorage.saveString("story" + storyId + "__" + service.getUserId(), data);
-        if (!service.getSendStatistic()) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+    public void storySetLocalData(final String data, boolean sendToServer) {
+        KeyValueStorage.saveString("story" + storyId + "__" + InAppStoryManager.getInstance().getUserId(), data);
+        if (!IASCoreManager.getInstance().getSendStatistic()) return;
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
         if (sendToServer) {
-            networkClient.enqueue(
-                    networkClient.getApi().sendStoryData(
-                            Integer.toString(storyId),
-                            data,
-                            Session.getInstance().id
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
+            IASCoreManager.getInstance().getSession(new IGetSessionDTOCallbackAdapter(
+                    new EmptyNetworkErrorCallback()
+            ) {
+                @Override
+                public void onSuccess(SessionDTO response) {
+                    networkClient.enqueue(
+                            networkClient.getApi().sendStoryData(
+                                    Integer.toString(storyId),
+                                    data,
+                                    response.getId()
+                            ),
+                            new NetworkCallback<Response>() {
+                                @Override
+                                public void onSuccess(Response response) {
 
-                        }
+                                }
 
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
-            );
+                                @Override
+                                public Type getType() {
+                                    return null;
+                                }
+                            }
+                    );
+                }
+            });
+
         }
     }
 
     public SourceType source = SourceType.SINGLE;
 
-    public void storySendData(String data) {
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (!service.getSendStatistic()) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+    public void storySendData(final String data) {
+        if (!IASCoreManager.getInstance().getSendStatistic()) return;
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        networkClient.enqueue(
-                networkClient.getApi().sendStoryData(
-                        Integer.toString(storyId),
-                        data,
-                        Session.getInstance().id
-                ),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
+        IASCoreManager.getInstance().getSession(new IGetSessionDTOCallbackAdapter(
+                new EmptyNetworkErrorCallback()
+        ) {
+            @Override
+            public void onSuccess(SessionDTO response) {
+                networkClient.enqueue(
+                        networkClient.getApi().sendStoryData(
+                                Integer.toString(storyId),
+                                data,
+                                response.getId()
+                        ),
+                        new NetworkCallback<Response>() {
+                            @Override
+                            public void onSuccess(Response response) {
 
-                    }
+                            }
 
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                }
-        );
+                            @Override
+                            public Type getType() {
+                                return null;
+                            }
+                        }
+                );
+            }
+        });
+
     }
 
     public void stopStory() {

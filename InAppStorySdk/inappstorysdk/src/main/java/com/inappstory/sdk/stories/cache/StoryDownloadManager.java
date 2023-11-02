@@ -8,8 +8,10 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.core.network.JsonParser;
@@ -31,16 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class StoryDownloadManager {
-    public List<Story> getStories(Story.StoryType type) {
-        return getStoriesListByType(type);
-    }
 
     private Context context;
-
-    @WorkerThread
-    public void uploadingAdditional(List<Story> newStories, Story.StoryType type) {
-        addStories(newStories, type);
-    }
 
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
@@ -72,14 +66,6 @@ public class StoryDownloadManager {
     }
 
     public void cleanTasks() {
-        cleanTasks(true);
-    }
-
-    public void cleanTasks(boolean cleanStories) {
-        if (cleanStories) {
-            getStoriesListByType(Story.StoryType.UGC).clear();
-            getStoriesListByType(Story.StoryType.COMMON).clear();
-        }
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
     }
@@ -108,10 +94,6 @@ public class StoryDownloadManager {
         synchronized (lock) {
             subscribers.add(manager);
         }
-        Long errorTime = storyErrorDelayed.remove(manager.getStoryId());
-        if (errorTime != null) {
-            manager.storyLoadError();
-        }
     }
 
     public void removeSubscriber(ReaderPageManager manager) {
@@ -131,18 +113,9 @@ public class StoryDownloadManager {
         }
     }
 
-    HashMap<StoryTaskData, Long> storyErrorDelayed = new HashMap<>();
-    HashMap<SlideTaskData, Long> slideErrorDelayed = new HashMap<>();
 
     void storyError(StoryTaskData storyTaskData) {
         synchronized (lock) {
-            if (subscribers.isEmpty()) {
-                storyErrorDelayed.put(
-                        storyTaskData,
-                        System.currentTimeMillis()
-                );
-                return;
-            }
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == storyTaskData.storyId) {
                     subscriber.storyLoadError();
@@ -154,13 +127,6 @@ public class StoryDownloadManager {
 
     void slideError(SlideTaskData slideTaskData) {
         synchronized (lock) {
-            if (subscribers.isEmpty()) {
-                slideErrorDelayed.put(
-                        slideTaskData,
-                        System.currentTimeMillis()
-                );
-                return;
-            }
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == slideTaskData.storyId) {
                     subscriber.slideLoadError(slideTaskData.index);
@@ -287,21 +253,12 @@ public class StoryDownloadManager {
                 );
     }
 
-    public StoryDownloadManager(final Context context, ExceptionCache cache) {
+    public StoryDownloadManager(final Context context) {
         this.context = context;
         this.stories = new ArrayList<>();
         this.ugcStories = new ArrayList<>();
         this.favStories = new ArrayList<>();
         this.favoriteImages = new ArrayList<>();
-        if (cache != null) {
-            if (!cache.getStories().isEmpty())
-                this.stories.addAll(cache.getStories());
-            if (!cache.getStories().isEmpty())
-                this.favStories.addAll(cache.getFavStories());
-            if (!cache.getStories().isEmpty())
-                this.favoriteImages.addAll(cache.getFavoriteImages());
-
-        }
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
             public void onDownload(IStoryDTO story, int loadType, Story.StoryType type) {
@@ -368,13 +325,6 @@ public class StoryDownloadManager {
     }
 
 
-    public void clearAllFavoriteStatus(Story.StoryType type) {
-        List<Story> stories = getStoriesListByType(type);
-        for (Story story : stories) {
-            story.favorite = false;
-        }
-    }
-
     public Story getStoryById(int id, Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
@@ -388,24 +338,10 @@ public class StoryDownloadManager {
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
 
-    public void refreshLocals(Story.StoryType type) {
-        List<Story> lStories = new ArrayList<>();
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            lStories.addAll(stories);
-        }
-        synchronized (storiesLock) {
-            for (Story story : lStories) {
-                story.isOpened = false;
-            }
-            setLocalsOpened(lStories, type);
-        }
+    public void refreshLocals() {
+        //TODO set local stories open status
     }
 
-    void setLocalsOpened(List<Story> response, Story.StoryType type) {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().saveStoriesOpened(response, type);
-    }
 
 
     private List<Story> stories = new ArrayList<>();

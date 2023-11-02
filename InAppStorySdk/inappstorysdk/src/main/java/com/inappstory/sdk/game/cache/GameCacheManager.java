@@ -239,7 +239,7 @@ public class GameCacheManager {
     }
 
     private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
             return;

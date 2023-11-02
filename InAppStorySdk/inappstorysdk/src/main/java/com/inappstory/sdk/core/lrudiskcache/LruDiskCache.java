@@ -183,6 +183,7 @@ public class LruDiskCache {
     public File getFullFile(String key) {
         return FileManager.getFullFile(get(key));
     }
+
     public DownloadFileState get(String key) {
         synchronized (journal) {
             try {

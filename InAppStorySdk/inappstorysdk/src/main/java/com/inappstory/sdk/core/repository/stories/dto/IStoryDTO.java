@@ -15,6 +15,10 @@ public interface IStoryDTO {
 
     int getSlidesCount();
 
+    void setSlidesCount(int slidesCount);
+
+    boolean checkIfEmpty();
+
     String getSlideEventPayload(int slideIndex);
 
     HashMap<String, Object> getPayload();
@@ -27,13 +31,13 @@ public interface IStoryDTO {
 
     int[] getDurations();
 
-    boolean getHasLike();
+    boolean hasLike();
 
-    boolean getHasAudio();
+    boolean hasAudio();
 
-    boolean getHasFavorite();
+    boolean hasFavorite();
 
-    boolean getHasShare();
+    boolean hasShare();
 
     int getLike();
 
@@ -57,8 +61,11 @@ public interface IStoryDTO {
 
     List<PayloadObjectDTO> getSlidesPayload();
 
-    public boolean isScreenshotShare(int index);
+    boolean isScreenshotShare(int index);
 
+    boolean hasSwipeUp();
 
-    public int shareType(int index);
+    boolean disableClose();
+
+    int shareType(int index);
 }

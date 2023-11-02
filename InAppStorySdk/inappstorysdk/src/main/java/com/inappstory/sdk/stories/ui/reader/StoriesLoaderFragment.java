@@ -27,9 +27,10 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -58,21 +59,21 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     void setViews(View view) {
-        if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
-                getArguments().getInt("storyId"),
+        IStoryDTO story = IASCoreManager.getInstance().getStoriesRepository(
                 Story.StoryType.valueOf(
                         getArguments().getString(
                                 "storiesType",
                                 Story.StoryType.COMMON.name()
                         )
                 )
+        ).getStoryById(
+                getArguments().getInt("storyId")
         );
         if (story == null) return;
         if (buttonsPanel != null) {
             buttonsPanel.setButtonsVisibility(readerSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
-            buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+            buttonsPanel.setButtonsStatus(story.getLike(), story.getFavorite() ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
         setOffsets(view);
@@ -331,7 +332,6 @@ public class StoriesLoaderFragment extends Fragment {
         try {
             return createFragmentView(container);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             return new View(getContext());
         }
     }

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
 import com.inappstory.sdk.core.network.annotations.models.Ignore;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -30,6 +31,18 @@ public class StoryData {
     }
 
     public StoryData(IStoryDTO story, String feed, SourceType sourceType) {
+        this(
+                story.getId(),
+                Story.StoryType.COMMON,
+                StringsUtils.getNonNull(story.getStatTitle()),
+                StringsUtils.getNonNull(story.getTags()),
+                story.getSlidesCount(),
+                feed,
+                sourceType
+        );
+    }
+
+    public StoryData(IPreviewStoryDTO story, String feed, SourceType sourceType) {
         this(
                 story.getId(),
                 Story.StoryType.COMMON,

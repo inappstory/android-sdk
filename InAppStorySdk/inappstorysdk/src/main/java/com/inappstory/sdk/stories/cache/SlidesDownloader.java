@@ -5,8 +5,8 @@ import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.ImagePlaceholderMappingObjectDTO;
 import com.inappstory.sdk.core.repository.stories.dto.ResourceMappingObjectDTO;
@@ -116,7 +116,7 @@ class SlidesDownloader {
     //adjacent - for next and prev story
     void changePriority(Integer storyId, List<Integer> adjacents, StoryType type) {
         IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
-        IStoryDTO currentStory = storiesRepository.getStoryById(storyId);
+        IPreviewStoryDTO currentStory = storiesRepository.getStoryPreviewById(storyId);
         int lastIndex = storiesRepository.getStoryLastIndex(storyId);
         synchronized (pageTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
@@ -145,7 +145,7 @@ class SlidesDownloader {
             }
             int ind = Math.min(firstPriority.size(), 2);
             for (Integer adjacent : adjacents) {
-                IStoryDTO adjacentStory = storiesRepository.getStoryById(adjacent);
+                IPreviewStoryDTO adjacentStory = storiesRepository.getStoryPreviewById(adjacent);
                 int adjacentLastIndex = storiesRepository.getStoryLastIndex(storyId);
                 if (adjacentLastIndex < adjacentStory.getSlidesCount() - 1) {
                     SlideTaskData nk = new SlideTaskData(adjacent, adjacentLastIndex + 1, type);
@@ -203,7 +203,7 @@ class SlidesDownloader {
                 if (pageTasks.get(new SlideTaskData(key, i, type)) == null) {
                     SlideTask spt = new SlideTask();
                     spt.loadType = 0;
-                    spt.resources = story.getSrcList(i);
+                    spt.resources = new ArrayList<>(story.getSrcList(i));
                     List<ImagePlaceholderMappingObjectDTO> placeholdersList =
                             story.getImagePlaceholdersList(i);
                     for (ImagePlaceholderMappingObjectDTO placeholder : placeholdersList) {

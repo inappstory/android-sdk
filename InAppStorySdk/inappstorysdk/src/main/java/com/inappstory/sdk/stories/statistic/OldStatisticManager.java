@@ -133,7 +133,7 @@ public class OldStatisticManager {
 
     public boolean sendStatistic() {
         if (!InAppStoryService.isConnected()) return true;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return true;
         }

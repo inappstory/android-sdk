@@ -75,17 +75,16 @@ public class GameManager {
     }
 
     void gameInstanceSetData(final String gameInstanceId, final String data, boolean sendToServer) {
-        if (InAppStoryService.isNull()) return;
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
+                + "__" + InAppStoryManager.getInstance().getUserId(), data);
+        if (!IASCoreManager.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
                 @Override
@@ -123,7 +122,7 @@ public class GameManager {
     void storySetData(final String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         if (dataModel == null) return;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
             return;

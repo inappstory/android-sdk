@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.repository.session.usecase;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
@@ -33,7 +34,7 @@ public class CloseSession implements ICloseSession {
         final String sessionCloseUID =
                 ProfilingManager.getInstance().addTask("api_session_close");
 
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }

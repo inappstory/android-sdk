@@ -8,6 +8,7 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story.StoryType;
@@ -61,18 +62,16 @@ public class ReaderManager {
         if (lastSentId == storyId) return;
         lastSentId = storyId;
         IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
-        IStoryDTO story = storiesRepository.getStoryById(storyId);
-        if (story != null) {
-            IUseCaseCallback useCaseCallbackShowStory = new UseCaseCallbackShowStory(
-                    new StoryData(
-                            story,
-                            feedId,
-                            source
-                    ),
-                    CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction)
-            );
-            useCaseCallbackShowStory.invoke();
-        }
+        IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(storyId);
+        IUseCaseCallback useCaseCallbackShowStory = new UseCaseCallbackShowStory(
+                new StoryData(
+                        story,
+                        feedId,
+                        source
+                ),
+                CallbackManager.getInstance().getShowStoryActionTypeFromInt(latestShowStoryAction)
+        );
+        useCaseCallbackShowStory.invoke();
     }
 
     public void close() {
@@ -205,15 +204,15 @@ public class ReaderManager {
             }
         }
         if (InAppStoryService.isNull()) return;
+        InAppStoryService.getInstance().getDownloadManager().addStoryTask(
+                storiesIds.get(pos),
+                adds,
+                storyType);
         InAppStoryService.getInstance().getDownloadManager().changePriority(
                 storiesIds.get(pos),
                 adds,
                 storyType
         );
-        InAppStoryService.getInstance().getDownloadManager().addStoryTask(
-                storiesIds.get(pos),
-                adds,
-                storyType);
 
     }
 
@@ -238,7 +237,7 @@ public class ReaderManager {
         lastSentId = 0;
         currentStoryId = storiesIds.get(position);
         IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
-        IStoryDTO story = storiesRepository.getStoryById(currentStoryId);
+        IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(currentStoryId);
         int lastIndex = 0;
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
@@ -267,13 +266,7 @@ public class ReaderManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(150);
-                } catch (InterruptedException ignored) {
-
-                }
                 newStoryTask(pos);
-
                 if (storiesIds != null && storiesIds.size() > pos) {
                     changeStory();
                 }
@@ -330,16 +323,19 @@ public class ReaderManager {
     private String feedSlug;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
-        if (InAppStoryService.isNull()) return;
 
         IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
-        IStoryDTO story = storiesRepository.getStoryById(id);
-        IStoryDTO lastStory = storiesRepository.getStoryById(storiesIds.get(lastPos));
+        IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(id);
+        IPreviewStoryDTO lastStory = null;
+        int lastStoryLastIndex = 0;
+        if (lastPos >= 0 && hasCloseEvent) {
+            lastStory = storiesRepository.getStoryPreviewById(storiesIds.get(lastPos));
+            lastStoryLastIndex = storiesRepository.getStoryLastIndex(storiesIds.get(lastPos));
+        }
         int lastIndex = storiesRepository.getStoryLastIndex(id);
-        int lastStoryLastIndex = storiesRepository.getStoryLastIndex(storiesIds.get(lastPos));
         if (story == null) return;
         StatisticManager.getInstance().sendCurrentState();
-        if (hasCloseEvent) {
+        if (lastStory != null) {
             StatisticManager.getInstance().sendCloseStory(
                     lastStory.getId(),
                     whence,

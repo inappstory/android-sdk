@@ -8,6 +8,7 @@ import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.StoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
@@ -25,7 +26,7 @@ public class GetStoryById {
     final String storyId;
     final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
-    public void get(final IGetStoryCallback<Pair<com.inappstory.sdk.core.repository.stories.dto.IStoryDTO, IPreviewStoryDTO>> callback) {
+    public void get(final IGetStoryCallback<Pair<IStoryDTO, IPreviewStoryDTO>> callback) {
         final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError();
@@ -46,7 +47,7 @@ public class GetStoryById {
                                     @Override
                                     public void onSuccess(final Story response) {
                                         ProfilingManager.getInstance().setReady(storyUID);
-                                        callback.onSuccess(new Pair<com.inappstory.sdk.core.repository.stories.dto.IStoryDTO, IPreviewStoryDTO>(
+                                        callback.onSuccess(new Pair<IStoryDTO, IPreviewStoryDTO>(
                                                 new StoryDTO(response),
                                                 new PreviewStoryDTO(response)
                                         ));

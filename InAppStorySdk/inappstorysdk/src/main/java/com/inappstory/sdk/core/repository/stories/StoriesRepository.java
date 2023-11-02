@@ -9,18 +9,24 @@ import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IChangeFavoriteStatusCallback;
+import com.inappstory.sdk.core.repository.stories.interfaces.IChangeLikeStatusCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteCellUpdatedCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteListUpdatedCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFavoritePreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFeedCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
+import com.inappstory.sdk.core.repository.stories.interfaces.IRemoveAllStoriesFromFavoritesCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IStoryUpdatedCallback;
+import com.inappstory.sdk.core.repository.stories.usecase.ChangeStoryFavoriteStatus;
+import com.inappstory.sdk.core.repository.stories.usecase.ChangeStoryLikeStatus;
 import com.inappstory.sdk.core.repository.stories.usecase.GetFavoriteStoryList;
 import com.inappstory.sdk.core.repository.stories.usecase.GetFavoriteStoryPreviews;
 import com.inappstory.sdk.core.repository.stories.usecase.GetOnboardingStoryListByFeed;
 import com.inappstory.sdk.core.repository.stories.usecase.GetStoryById;
 import com.inappstory.sdk.core.repository.stories.usecase.GetStoryListByFeed;
+import com.inappstory.sdk.core.repository.stories.usecase.RemoveAllStoriesFromFavorites;
 import com.inappstory.sdk.core.repository.stories.utils.FavoriteCallbackKey;
 import com.inappstory.sdk.core.repository.stories.utils.FeedCallbackKey;
 import com.inappstory.sdk.core.repository.stories.utils.IFeedCallbackKey;
@@ -188,19 +194,19 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
-    public IStoryDTO getCurrentStory() {
-        synchronized (cachedStoriesLock) {
+    public IPreviewStoryDTO getCurrentStory() {
+        synchronized (storyPreviewsLock) {
             return currentStory;
         }
     }
 
-    private IStoryDTO currentStory = null;
+    private IPreviewStoryDTO currentStory = null;
 
     @Override
     public void setCurrentStory(Integer storyId) {
-        synchronized (cachedStoriesLock) {
+        synchronized (storyPreviewsLock) {
             if (storyId == null) currentStory = null;
-            else currentStory = cachedStories.get(storyId);
+            else currentStory = storyPreviews.get(storyId);
         }
     }
 
@@ -241,13 +247,15 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     private void setLocalPreviews(String listID, List<IPreviewStoryDTO> previews) {
-        if (listID == null) return;
-        List<Integer> cached = new ArrayList<>();
         synchronized (storyPreviewsLock) {
             for (IPreviewStoryDTO previewStory : previews) {
-                cached.add(previewStory.getId());
                 storyPreviews.put(previewStory.getId(), previewStory);
             }
+        }
+        if (listID == null) return;
+        List<Integer> cached = new ArrayList<>();
+        for (IPreviewStoryDTO previewStory : previews) {
+            cached.add(previewStory.getId());
         }
         synchronized (cachedListIdsLock) {
             cachedListIds.put(listID, cached);
@@ -350,6 +358,28 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
+    public void setOpenedStories(List<Integer> ids) {
+        synchronized (storyPreviewsLock) {
+            for (Integer id : ids) {
+                IPreviewStoryDTO previewStoryDTO = storyPreviews.get(id);
+                if (previewStoryDTO != null) previewStoryDTO.setOpened(true);
+            }
+        }
+
+        synchronized (cachedStoriesLock) {
+            for (Integer id : ids) {
+                IStoryDTO storyDTO = cachedStories.get(id);
+                if (storyDTO != null) storyDTO.setOpened(true);
+            }
+        }
+    }
+
+    @Override
+    public void getOpenedStories(List<Integer> ids) {
+
+    }
+
+    @Override
     public void getOnboardingStoriesAsync(String uncheckedFeed, Integer limit, IGetStoriesPreviewsCallback callback) {
         @NonNull String feed =
                 (uncheckedFeed != null && !uncheckedFeed.isEmpty()) ? uncheckedFeed : "onboarding";
@@ -439,12 +469,20 @@ public class StoriesRepository implements IStoriesRepository {
 
     @Override
     public void openStory(int storyId) {
-        IPreviewStoryDTO previewStoryDTO = storyPreviews.get(storyId);
-        if (previewStoryDTO != null) {
-            previewStoryDTO.open();
-            updateItem(previewStoryDTO);
+        IPreviewStoryDTO previewStoryDTO;
+        IStoryDTO cachedStoryDTO;
+        synchronized (cachedStoriesLock) {
+            cachedStoryDTO = cachedStories.get(storyId);
+            if (cachedStoryDTO != null) cachedStoryDTO.setOpened(true);
         }
+        synchronized (storyPreviewsLock) {
+            previewStoryDTO = storyPreviews.get(storyId);
+            if (previewStoryDTO == null) return;
+            previewStoryDTO.setOpened(true);
+        }
+        updateItem(previewStoryDTO);
     }
+
 
 
     @Override
@@ -461,19 +499,6 @@ public class StoriesRepository implements IStoriesRepository {
         }
     }
 
-    private void addToFavorite() {
-        synchronized (storyFavoritesLock) {
-            if (!storyFavorites.contains(new FavoritePreviewStoryDTO(storyDTO.getId()))) {
-                synchronized (storyPreviewsLock) {
-                    IPreviewStoryDTO previewStoryDTO = storyPreviews.get(storyDTO.getId());
-                    if (previewStoryDTO != null)
-                        storyFavorites.add(new FavoritePreviewStoryDTO(previewStoryDTO));
-                }
-            }
-        }
-        updateFavoriteCell();
-        updateFavoriteList();
-    }
 
     private void updateFavoriteCell() {
         synchronized (favoriteCellUpdatedCallbacksLock) {
@@ -499,32 +524,123 @@ public class StoriesRepository implements IStoriesRepository {
         }
     }
 
+    private final IChangeLikeStatusCallback changeLikeStatusCallback = new IChangeLikeStatusCallback() {
+        @Override
+        public void like(int storyId) {
+            changeStatus(1, storyId);
+        }
+
+        @Override
+        public void dislike(int storyId) {
+
+            changeStatus(-1, storyId);
+        }
+
+        @Override
+        public void clear(int storyId) {
+            changeStatus(0, storyId);
+        }
+
+        @Override
+        public void onError() {
+            //TODO update buttons status in reader
+        }
+
+        private void changeStatus(int status, int storyId) {
+            synchronized (cachedStoriesLock) {
+                IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
+                if (cachedStoryDTO != null)
+                    cachedStoryDTO.setLike(status);
+                //TODO update buttons status in reader
+            }
+        }
+    };
+
+    private final IChangeFavoriteStatusCallback changeFavoriteStatusCallback =
+            new IChangeFavoriteStatusCallback() {
+                @Override
+                public void addedToFavorite(int storyId) {
+                    synchronized (storyFavoritesLock) {
+                        if (!storyFavorites.contains(new FavoritePreviewStoryDTO(storyId))) {
+                            synchronized (storyPreviewsLock) {
+                                IPreviewStoryDTO previewStoryDTO = storyPreviews.get(storyId);
+                                if (previewStoryDTO != null)
+                                    storyFavorites.add(new FavoritePreviewStoryDTO(previewStoryDTO));
+                            }
+                        }
+                    }
+                    synchronized (cachedStoriesLock) {
+                        IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
+                        if (cachedStoryDTO != null)
+                            cachedStoryDTO.setFavorite(true);
+                        //TODO update buttons status in reader
+                    }
+                    updateFavoriteCell();
+                    updateFavoriteList();
+                }
+
+                @Override
+                public void removedFromFavorite(int storyId) {
+                    synchronized (storyFavoritesLock) {
+                        IFavoritePreviewStoryDTO favoritePreviewStoryDTO =
+                                new FavoritePreviewStoryDTO(storyId);
+                        storyFavorites.remove(favoritePreviewStoryDTO);
+                    }
+                    synchronized (cachedStoriesLock) {
+                        IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
+                        if (cachedStoryDTO != null)
+                            cachedStoryDTO.setFavorite(false);
+                        //TODO update buttons status in reader
+                    }
+                    updateFavoriteCell();
+                    updateFavoriteList();
+                }
+
+                @Override
+                public void onError() {
+                    //TODO update buttons status in reader
+                }
+            };
+
+
     @Override
     public void addToFavorite(int storyId) {
+        new ChangeStoryFavoriteStatus(storyId, false).changeStatus(
+                changeFavoriteStatusCallback
+        );
 
     }
 
     @Override
     public void removeFromFavorite(int storyId) {
-        synchronized (storyFavoritesLock) {
-            IFavoritePreviewStoryDTO favoritePreviewStoryDTO =
-                    new FavoritePreviewStoryDTO(storyId);
-            storyFavorites.remove(favoritePreviewStoryDTO);
-        }
-        updateFavoriteCell();
-        updateFavoriteList();
+        new ChangeStoryFavoriteStatus(storyId, true).changeStatus(
+                changeFavoriteStatusCallback
+        );
     }
 
     @Override
     public void removeAllFavorites() {
-        synchronized (storyFavoritesLock) {
-            storyFavorites.clear();
-        }
-        synchronized (cachedStoriesLock) {
-            for (IStoryDTO storyDTO : cachedStories.values()) {
-                storyDTO.setFavorite(false);
+        new RemoveAllStoriesFromFavorites().remove(new IRemoveAllStoriesFromFavoritesCallback() {
+            @Override
+            public void onRemove() {
+                synchronized (storyFavoritesLock) {
+                    storyFavorites.clear();
+                }
+                synchronized (cachedStoriesLock) {
+                    for (IStoryDTO storyDTO : cachedStories.values()) {
+                        storyDTO.setFavorite(false);
+                    }
+                    //TODO update buttons status in reader
+                }
+                updateFavoriteCell();
+                updateFavoriteList();
             }
-        }
+
+            @Override
+            public void onError() {
+            }
+        });
+
     }
 
     @Override
@@ -539,5 +655,23 @@ public class StoriesRepository implements IStoriesRepository {
         synchronized (storyUpdatedCallbacksLock) {
             storyUpdatedCallbacks.remove(callback);
         }
+    }
+
+    @Override
+    public void likeStory(int storyId) {
+        new ChangeStoryLikeStatus(storyId, true, false)
+                .changeStatus(changeLikeStatusCallback);
+    }
+
+    @Override
+    public void dislikeStory(int storyId) {
+        new ChangeStoryLikeStatus(storyId, false, false)
+                .changeStatus(changeLikeStatusCallback);
+    }
+
+    @Override
+    public void clearLikeDislikeStoryStatus(int storyId) {
+        new ChangeStoryLikeStatus(storyId, true, true)
+                .changeStatus(changeLikeStatusCallback);
     }
 }

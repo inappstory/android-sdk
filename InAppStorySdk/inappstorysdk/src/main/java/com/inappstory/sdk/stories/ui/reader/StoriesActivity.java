@@ -36,6 +36,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
@@ -90,6 +91,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     }
 
+    //TODO set elasticView statuses on story change
 
     @Override
     public void finish() {
@@ -353,7 +355,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         InAppStoryService.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
         type = (Story.StoryType) getIntent().getSerializableExtra("storiesType");
         if (type == null) type = Story.StoryType.COMMON;
-        draggableFrame.type = type;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             if (storiesFragment == null) {
                 setLoaderFragment();
@@ -478,31 +479,29 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
-        if (InAppStoryService.isNotNull()) {
-            IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
-            IStoryDTO story = storiesRepository.getCurrentStory();
-            if (story != null) {
-                int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
-                IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
-                        new SlideData(
-                                new StoryData(
-                                        story,
-                                        getIntent().getStringExtra("feedId"),
-                                        (SourceType) getIntent().getSerializableExtra("source")
-                                ),
-                                lastIndex
-                        ),
-                        action
-                );
-                useCaseCallbackCloseStory.invoke();
-                StatisticManager.getInstance().sendCloseStory(
-                        story.getId(),
-                        cause,
-                        lastIndex,
-                        story.getSlidesCount(),
-                        getIntent().getStringExtra("feedId")
-                );
-            }
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IPreviewStoryDTO story = storiesRepository.getCurrentStory();
+        if (story != null) {
+            int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
+            IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
+                    new SlideData(
+                            new StoryData(
+                                    story,
+                                    getIntent().getStringExtra("feedId"),
+                                    (SourceType) getIntent().getSerializableExtra("source")
+                            ),
+                            lastIndex
+                    ),
+                    action
+            );
+            useCaseCallbackCloseStory.invoke();
+            StatisticManager.getInstance().sendCloseStory(
+                    story.getId(),
+                    cause,
+                    lastIndex,
+                    story.getSlidesCount(),
+                    getIntent().getStringExtra("feedId")
+            );
         }
         cleanReader();
         animateFirst = true;
@@ -527,11 +526,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        //  OldStatisticManager.getInstance().closeStatisticEvent();
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
+        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(type);
+        repository.clearStoriesIndexes();
+        repository.setCurrentStory(null);
         cleaned = true;
     }
 

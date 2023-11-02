@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.constants.HttpMethods;
 import com.inappstory.sdk.core.network.models.Request;
@@ -34,7 +35,7 @@ public class JsApiNetwork {
         final JsApiResponse jsResponse = new JsApiResponse();
         jsResponse.requestId = requestId;
 
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (!InAppStoryService.isConnected() || networkClient == null) {
             jsResponse.status = 12163;
             return jsResponse;

@@ -24,6 +24,7 @@ import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
@@ -696,39 +697,12 @@ public class InAppStoryManager {
     private ExceptionCache exceptionCache;
 
     public void removeFromFavorite(final int storyId) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        IASCoreManager.getInstance().getSession(
-                new IGetSessionCallback<SessionDTO>() {
-                    @Override
-                    public void onSuccess(SessionDTO session) {
-                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
-                                .removeFromFavorite(storyId);
-                        service.removeStoryFromFavorite(storyId);
-                    }
-
-                    @Override
-                    public void onError() {
-
-                    }
-                });
+        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+                .removeFromFavorite(storyId);
     }
 
     public void removeAllFavorites() {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        IASCoreManager.getInstance().getSession(
-                new IGetSessionCallback<SessionDTO>() {
-                    @Override
-                    public void onSuccess(SessionDTO session) {
-                        service.removeAllStoriesFromFavorite();
-                    }
-
-                    @Override
-                    public void onError() {
-
-                    }
-                });
+        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).removeAllFavorites();
     }
 
     NetworkClient networkClient;
@@ -839,14 +813,11 @@ public class InAppStoryManager {
         this.userId = userId;
         IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
         IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
-        if (inAppStoryService.getFavoriteImages() != null)
-            inAppStoryService.getFavoriteImages().clear();
-        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
+        inAppStoryService.getDownloadManager().refreshLocals();
         closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
         IASCoreManager.getInstance().closeSession();
         OldStatisticManager.getInstance().eventCount = 0;
-        inAppStoryService.getDownloadManager().cleanTasks(false);
+        inAppStoryService.getDownloadManager().cleanTasks();
         inAppStoryService.setUserId(userId);
     }
 
@@ -870,18 +841,12 @@ public class InAppStoryManager {
 
     public void clearCachedList(String id) {
         if (id == null) return;
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.cachedListStories.remove(id);
-        }
+        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedList(id);
     }
 
 
     public void clearCachedLists() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.cachedListStories.clear();
-        }
+        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
     }
 
     public void setActionBarColor(int actionBarColor) {
@@ -946,13 +911,15 @@ public class InAppStoryManager {
     private static final Object lock = new Object();
 
     public static void logout() {
+        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
+        IASCoreManager.getInstance().closeSession();
+        OldStatisticManager.getInstance().clear();
         if (!isNull()) {
             InAppStoryService inAppStoryService = InAppStoryService.getInstance();
             if (inAppStoryService != null) {
-                inAppStoryService.cachedListStories.clear();
                 inAppStoryService.clearSubscribers();
                 inAppStoryService.getDownloadManager().cleanTasks();
-                inAppStoryService.logout();
             }
         }
     }
@@ -1045,15 +1012,10 @@ public class InAppStoryManager {
             }, 350);
             return;
         }
-
-        ArrayList<Story> stories = new ArrayList<Story>(response);
         ArrayList<Integer> storiesIds = new ArrayList<>();
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null)
-            inAppStoryService.getDownloadManager().uploadingAdditional(stories, storyType);
         ScreensManager.getInstance().openStoriesReader(
                 outerContext,
                 null,
@@ -1277,9 +1239,9 @@ public class InAppStoryManager {
                 lastSingleOpen.equals(storyId)) return;
         lastSingleOpen = storyId;
         IASCoreManager.getInstance().getStoriesRepository(type).getStoryByStringId(storyId,
-                new IGetStoryCallback<com.inappstory.sdk.core.repository.stories.dto.IStoryDTO>() {
+                new IGetStoryCallback<IStoryDTO>() {
                     @Override
-                    public void onSuccess(com.inappstory.sdk.core.repository.stories.dto.IStoryDTO story) {
+                    public void onSuccess(IStoryDTO story) {
                         if (story != null) {
                             //     service.getDownloadManager().addCompletedStoryTask(story,
                             //            Story.StoryType.COMMON);

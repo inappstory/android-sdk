@@ -67,10 +67,6 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
         return isOpened;
     }
 
-    @Override
-    public void open() {
-        isOpened = true;
-    }
     public String getImageUrl(int coverQuality) {
         Image proper = Image.getProperImage(images, coverQuality);
         if (proper != null) return proper.getUrl();
@@ -85,8 +81,54 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
         return payload;
     }
 
-    public boolean isHasAudio() {
-        return hasAudio;
+    @Override
+    public boolean hasLike() {
+        return hasLike;
+    }
+
+    @Override
+    public boolean hasFavorite() {
+        return hasFavorite;
+    }
+
+    @Override
+    public boolean hasShare() {
+        return hasShare;
+    }
+
+    @Override
+    public int getLike() {
+        return like;
+    }
+
+    @Override
+    public boolean getFavorite() {
+        return favorite;
+    }
+
+    @Override
+    public void setLike(int like) {
+        this.like = like;
+    }
+
+    @Override
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
+    @Override
+    public void setOpened(boolean isOpened) {
+        this.isOpened = isOpened;
+    }
+
+    @Override
+    public boolean hasSwipeUp() {
+        return hasSwipeUp;
+    }
+
+    @Override
+    public boolean disableClose() {
+        return disableClose;
     }
 
 
@@ -104,6 +146,13 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
     private String titleColor;
     private boolean hasAudio;
     private boolean isOpened;
+    private boolean hasLike;
+    private boolean hasFavorite;
+    private boolean hasShare;
+    private boolean hasSwipeUp;
+    private boolean disableClose;
+    private int like;
+    private boolean favorite;
 
     private HashMap<String, Object> payload;
     int slidesCount;
@@ -124,6 +173,13 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
         this.videoUrl = story.getVideoUrl();
         this.payload = story.payload;
         this.images = story.getImage();
+        this.hasFavorite = story.hasFavorite();
+        this.hasShare = story.hasShare();
+        this.hasLike = story.hasLike();
+        this.hasSwipeUp = story.hasSwipeUp();
+        this.disableClose = story.disableClose;
+        this.like = story.getLike();
+        this.favorite = story.isFavorite();
     }
 
 
@@ -133,7 +189,7 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
             return true;
         if (!(o instanceof PreviewStoryDTO))
             return false;
-        PreviewStoryDTO other = (PreviewStoryDTO)o;
+        PreviewStoryDTO other = (PreviewStoryDTO) o;
         return (this.getId() == other.getId());
     }
 

@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.filedownloader;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.core.network.utils.ResponseStringFromStream;
@@ -67,8 +68,8 @@ public abstract class FileDownload implements IFileDownload {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        if (InAppStoryManager.getNetworkClient() != null) {
-            urlConnection.setRequestProperty("User-Agent", InAppStoryManager.getNetworkClient().userAgent);
+        if (IASCoreManager.getInstance().getNetworkClient() != null) {
+            urlConnection.setRequestProperty("User-Agent", IASCoreManager.getInstance().getNetworkClient().userAgent);
         }
         if (offset > 0) {
             urlConnection.setRequestProperty("Range", "bytes=" + offset + "-");

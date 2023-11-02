@@ -81,21 +81,6 @@ public class InAppStoryService {
 
     }
 
-    private boolean sharingProcess = false;
-    private static final Object shareLock = new Object();
-
-    public boolean isShareProcess() {
-        synchronized (shareLock) {
-            return sharingProcess;
-        }
-    }
-
-    public void isShareProcess(boolean sharingProcess) {
-        synchronized (shareLock) {
-            this.sharingProcess = sharingProcess;
-        }
-    }
-
 
     public HashMap<String, List<IPreviewStoryDTO>> cachedListStories = new HashMap<>();
 
@@ -145,15 +130,6 @@ public class InAppStoryService {
     };
 
     public void saveStoriesOpened(List<Story> stories, Story.StoryType type) {
-  /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-        if (opens == null) opens = new HashSet<>();
-        for (Story story : stories) {
-            opens.add(Integer.toString(story.id));
-        }
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
-
-
-*/
         Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type));
         if (opens == null) opens = new HashSet<>();
         for (Story story : stories) {
@@ -227,12 +203,6 @@ public class InAppStoryService {
         gameCacheManager().clearGames();
     }
 
-    void logout() {
-        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        IASCoreManager.getInstance().closeSession();
-        OldStatisticManager.getInstance().clear();
-    }
-
 
     @NonNull
     public List<IFavoritePreviewStoryDTO> getFavoriteImages() {
@@ -275,7 +245,7 @@ public class InAppStoryService {
 
     private LruDiskCache infiniteCache; //use for games, etc.
 
-    private Object cacheLock = new Object();
+    private final Object cacheLock = new Object();
 
     public static final String IAS_PREFIX = File.separator + "ias" + File.separator;
 
@@ -565,168 +535,6 @@ public class InAppStoryService {
         storiesListNotifySet.remove(storiesListNotify);
     }
 
-    private void favoriteStoryWithInitStatus(
-            final int storyId,
-            final boolean initStatus,
-            final FavoriteCallback callback
-    ) {
-
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
-        networkClient.enqueue(
-                networkClient.getApi().storyFavorite(
-                        Integer.toString(storyId),
-                        initStatus ? 0 : 1
-                ),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        Story story = getDownloadManager().getStoryById(storyId, Story.StoryType.COMMON);
-                        if (story != null)
-                            story.favorite = !initStatus;
-                        if (!initStatus) {
-                            if (story != null)
-                                callback.addedToFavorite(story);
-                        } else {
-                            callback.removedFromFavorite();
-                        }
-                    }
-
-
-                    @Override
-                    public void errorDefault(String message) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (callback != null)
-                            callback.onError();
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                }
-        );
-    }
-
-    void removeStoryFromFavorite(final int storyId) {
-        favoriteStoryWithInitStatus(storyId, true, new FavoriteCallback() {
-
-            @Override
-            public void addedToFavorite(Story story) {
-                IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
-                        .addToFavorite(storyId);
-            }
-
-            @Override
-            public void removedFromFavorite() {
-                if (ScreensManager.getInstance().currentScreen != null) {
-                    ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
-                }
-                IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
-                        .removeFromFavorite(storyId);
-            }
-
-            @Override
-            public void onError() {
-
-            }
-        });
-
-    }
-
-    void removeAllStoriesFromFavorite() {
-
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
-        networkClient.enqueue(
-                networkClient.getApi().removeAllFavorites(),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        getDownloadManager()
-                                .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).removeAllFavorites();
-                        for (IAllStoriesListsNotify sub : getAllStoriesListsNotifySet()) {
-                            sub.clearAllFavorites();
-                        }
-                        if (ScreensManager.getInstance().currentScreen != null) {
-                            ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
-                        }
-                    }
-
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        super.onError(code, message);
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                }
-        );
-    }
-
-    public void favoriteStory(
-            final int storyId,
-            final Story.StoryType storyType,
-            final String listID,
-            SlideData slideData,
-            final FavoriteCallback callback
-    ) {
-        final Story story = getDownloadManager().getStoryById(storyId, storyType);
-        final boolean initStatus = story.favorite;
-        String feed = null;
-        if (slideData != null) feed = slideData.story.feed;
-        if (!story.favorite)
-            StatisticManager.getInstance().sendFavoriteStory(story.id, story.lastIndex, feed);
-        if (CallbackManager.getInstance().getFavoriteStoryCallback() != null) {
-            CallbackManager.getInstance().getFavoriteStoryCallback().favoriteStory(
-                    slideData,
-                    !story.favorite
-            );
-        }
-        favoriteStoryWithInitStatus(
-                storyId,
-                initStatus,
-                new FavoriteCallback() {
-                    @Override
-                    public void addedToFavorite(Story story) {
-                        if (callback != null)
-                            callback.addedToFavorite(story);
-                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
-                                .addToFavorite(storyId);
-                        for (IStoriesListNotify sub : getStoriesListNotifySet()) {
-                            if (listID.equals(sub.getListUID()))
-                                sub.scrollToLastOpenedStory();
-                        }
-                    }
-
-                    @Override
-                    public void removedFromFavorite() {
-                        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
-                                .removeFromFavorite(storyId);
-                        if (callback != null)
-                            callback.removedFromFavorite();
-                    }
-
-                    @Override
-                    public void onError() {
-                        callback.onError();
-                    }
-                }
-        );
-    }
-
     public void removeAllStoriesListsNotify(IAllStoriesListsNotify storiesListNotify) {
         if (allStoriesListsNotifySet != null)
             allStoriesListsNotifySet.remove(storiesListNotify);
@@ -761,11 +569,6 @@ public class InAppStoryService {
                         oldHandler.uncaughtException(thread, throwable);
                     return;
                 }
-                InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
-                        getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
-                        getInstance().getDownloadManager().favStories,
-                        getInstance().getDownloadManager().favoriteImages
-                ));
 
             }
             try {
@@ -774,9 +577,6 @@ public class InAppStoryService {
                         getInstance().onDestroy();
                 }
                 if (InAppStoryManager.getInstance() != null) {
-                    InAppStoryManager.getInstance().createServiceThread(
-                            InAppStoryManager.getInstance().context,
-                            InAppStoryManager.getInstance().getUserId());
                     if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
                         InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
                     }
@@ -827,7 +627,7 @@ public class InAppStoryService {
 
     public void createDownloadManager(ExceptionCache cache) {
         if (downloadManager == null)
-            downloadManager = new StoryDownloadManager(context, cache);
+            downloadManager = new StoryDownloadManager(context);
     }
 
     public void onCreate(Context context, ExceptionCache exceptionCache) {
@@ -853,19 +653,9 @@ public class InAppStoryService {
             INSTANCE = this;
         }
         spaceHandler.postDelayed(checkFreeSpace, 60000);
-
-
         if (exHandler == null) exHandler = new Handler();
         exHandler.postDelayed(exHandlerThread, 100);
     }
 
-    private static Object lock = new Object();
-
-    public int getCurrentId() {
-        return currentId;
-    }
-
-    public void setCurrentId(int currentId) {
-        this.currentId = currentId;
-    }
+    private static final Object lock = new Object();
 }

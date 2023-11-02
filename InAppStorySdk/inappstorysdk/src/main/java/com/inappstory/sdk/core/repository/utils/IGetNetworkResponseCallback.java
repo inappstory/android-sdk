@@ -1,7 +1,7 @@
 package com.inappstory.sdk.core.repository.utils;
 
-public interface IGetNetworkResponseCallback<T>  {
-    void onSuccess(T response);
+import com.inappstory.sdk.core.repository.session.interfaces.NetworkErrorCallback;
 
-    void onError();
+public interface IGetNetworkResponseCallback<T>  extends NetworkErrorCallback {
+    void onSuccess(T response);
 }

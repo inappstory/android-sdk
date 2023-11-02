@@ -26,6 +26,9 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
@@ -128,9 +131,8 @@ public class StoriesFragment extends Fragment
                                       IASShareData shareObject,
                                       int storyId,
                                       int slideIndex) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null)
-            service.isShareProcess(false);
+
+        IASCoreManager.getInstance().isShareProcess(false);
         Context context = getContext();
         ShareCallback callback = CallbackManager.getInstance().getShareCallback();
         if (context == null) return;
@@ -348,9 +350,10 @@ public class StoriesFragment extends Fragment
 
     public void swipeCloseEvent(int position, boolean check) {
         if (check) {
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentIds.get(position), readerManager.storyType);
-            if (story == null || story.disableClose) return;
+            IStoriesRepository repository =
+                    IASCoreManager.getInstance().getStoriesRepository(readerManager.storyType);
+            IStoryDTO storyDTO = repository.getStoryById(currentIds.get(position));
+            if (storyDTO == null || storyDTO.disableClose()) return;
             InAppStoryManager.closeStoryReader(CloseReader.SWIPE, StatisticManager.SWIPE);
         }
     }
@@ -364,9 +367,8 @@ public class StoriesFragment extends Fragment
 
 
     private int getCurIndexById(int id) {
-        if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, readerManager.storyType);
-        return st == null ? 0 : st.lastIndex;
+        return IASCoreManager.getInstance().getStoriesRepository(readerManager.storyType)
+                .getStoryLastIndex(id);
     }
 
 

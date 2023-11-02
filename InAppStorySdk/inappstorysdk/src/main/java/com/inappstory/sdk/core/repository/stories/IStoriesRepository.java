@@ -1,10 +1,7 @@
 package com.inappstory.sdk.core.repository.stories;
 
-import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
-import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteCellUpdatedCallback;
-import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteListUpdatedCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IStoryUpdatedCallback;
@@ -17,7 +14,7 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
 
     IStoryDTO getStoryById(int storyId);
 
-    IStoryDTO getCurrentStory();
+    IPreviewStoryDTO getCurrentStory();
 
     void setCurrentStory(Integer storyId);
 
@@ -40,6 +37,10 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
 
     void clearStoriesIndexes();
 
+    void setOpenedStories(List<Integer> ids);
+
+    void getOpenedStories(List<Integer> ids);
+
     void getOnboardingStoriesAsync(
             String uncheckedFeed,
             Integer limit,
@@ -58,6 +59,7 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
     void addStoryUpdateCallback(IStoryUpdatedCallback callback);
 
     void removeStoryUpdateCallback(IStoryUpdatedCallback callback);
+
     void addStoryUpdatedCallback(IStoryUpdatedCallback callback);
 
     void removeStoryUpdatedCallback(IStoryUpdatedCallback callback);

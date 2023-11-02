@@ -6,6 +6,7 @@ import android.text.TextUtils;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.models.Response;
@@ -509,7 +510,7 @@ public class StatisticManager {
 
 
     private void sendTask(final StatisticTask task) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) return;
         try {
             final Callable<Boolean> _ff = new Callable<Boolean>() {

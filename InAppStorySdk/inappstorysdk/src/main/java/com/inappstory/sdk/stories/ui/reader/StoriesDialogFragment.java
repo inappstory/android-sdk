@@ -30,7 +30,11 @@ import androidx.lifecycle.Observer;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -71,36 +75,30 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void onDismiss(DialogInterface dialogInterface) {
         ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            OldStatisticManager.getInstance().sendStatistic();
-            Story story = service.getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
+        OldStatisticManager.getInstance().sendStatistic();
+        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IPreviewStoryDTO story = storiesRepository.getCurrentStory();
+        if (story != null) {
+            int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
+            IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
+                    new SlideData(
+                            new StoryData(
+                                    story,
+                                    getArguments().getString("feedId"),
+                                    CallbackManager.getInstance().getSourceFromInt(
+                                            getArguments().getInt("source", 0)
+                                    )
+                            ),
+                            lastIndex
+                    ),
+                    CloseReader.CLICK
+            );
+            useCaseCallbackCloseStory.invoke();
 
-            if (story != null) {
-                IUseCaseCallback useCaseCallbackCloseStory = new UseCaseCallbackCloseStory(
-                        new SlideData(
-                                new StoryData(
-                                        story.id,
-                                        StringsUtils.getNonNull(story.statTitle),
-                                        StringsUtils.getNonNull(story.tags),
-                                        story.getSlidesCount(),
-                                        getArguments().getString("feedId"),
-                                        CallbackManager.getInstance().getSourceFromInt(
-                                                getArguments().getInt("source", 0)
-                                        )
-                                ),
-                                story.lastIndex
-                        ),
-                        CloseReader.CLICK
-                );
-                useCaseCallbackCloseStory.invoke();
-
-                String cause = StatisticManager.CLICK;
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                        story.getSlidesCount(),
-                        getArguments().getString("feedId"));
-            }
+            String cause = StatisticManager.CLICK;
+            StatisticManager.getInstance().sendCloseStory(story.getId(), cause, lastIndex,
+                    story.getSlidesCount(),
+                    getArguments().getString("feedId"));
 
         }
         cleanReader();
@@ -113,14 +111,11 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
-        List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories(type);
-        for (Story story : stories)
-            story.lastIndex = 0;
+        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(type);
+        repository.clearStoriesIndexes();
+        repository.setCurrentStory(null);
         cleaned = true;
     }
 

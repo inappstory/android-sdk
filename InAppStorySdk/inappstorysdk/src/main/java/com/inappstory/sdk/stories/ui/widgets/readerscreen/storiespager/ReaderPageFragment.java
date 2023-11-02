@@ -42,8 +42,10 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -161,27 +163,22 @@ public class ReaderPageFragment extends Fragment {
         }
     }
 
-    void setStoryId() {
-        storyId = getArguments().getInt("story_id");
-    }
 
-    void setViews(View view) {
-        if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId,
-                manager.getStoryType());
+
+
+    void setViews(View view, IPreviewStoryDTO story, int lastIndex) {
         if (story == null) return;
-        if (story.disableClose)
+        if (story.disableClose())
             close.setVisibility(View.GONE);
         if (buttonsPanel != null) {
             buttonsPanel.setButtonsVisibility(readerSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
-            buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+            buttonsPanel.setButtonsStatus(story.getLike(), story.getFavorite() ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
         setOffsets(view);
         if (storiesView != null)
-            storiesView.getManager().setIndex(story.lastIndex);
-
+            storiesView.getManager().setIndex(lastIndex);
     }
 
     public void storyLoadStart() {
@@ -599,31 +596,32 @@ public class ReaderPageFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         manager = new ReaderPageManager();
-        setStoryId();
+        storyId = getArguments().getInt("story_id");
         manager.host = this;
         if (parentManager == null && getParentFragment() instanceof StoriesFragment) {
             parentManager = ((StoriesFragment) getParentFragment()).readerManager;
         }
-        manager.parentManager = parentManager;
+        manager.setParentManager(parentManager);
         manager.setStoryId(storyId);
         if (parentManager != null) {
             parentManager.addSubscriber(manager);
         }
+
         bindViews(view);
         setActions();
-        if (setManagers() && InAppStoryService.getInstance() != null
-                && InAppStoryService.getInstance().getDownloadManager() != null) {
-            if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, manager.getStoryType()) != null)
-                manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(storyId, manager.getStoryType()).lastIndex);
-
-            setViews(view);
+        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(
+                manager.getStoryType()
+        );
+        IPreviewStoryDTO story = repository.getStoryPreviewById(storyId);
+        int lastIndex = repository.getStoryLastIndex(storyId);
+        if (setManagers()) {
+            manager.setSlideIndex(lastIndex);
+            setViews(view, story, lastIndex);
             InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
             manager.storyLoadedInCache();
         } else {
             InAppStoryManager.closeStoryReader();
         }
-
     }
 
 

@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.ApiSettings;
@@ -270,7 +269,7 @@ class StoryDownloader {
     };
 
 
-    void loadStoryResult(StoryTaskData key, IStoryDTO response) {
+    void loadStorySuccess(StoryTaskData key, IStoryDTO response) {
         int loadType;
         synchronized (storyTasksLock) {
             if (getStoryLoadType(key) < 4) {
@@ -292,10 +291,10 @@ class StoryDownloader {
     void loadStory(final StoryTaskData key) {
         IStoriesRepository storiesRepository = IASCoreManager.getInstance()
                 .getStoriesRepository(key.storyType);
-        storiesRepository.getStoryByIdAsync(key.storyId, new IGetStoryCallback<com.inappstory.sdk.core.repository.stories.dto.IStoryDTO>() {
+        storiesRepository.getStoryByIdAsync(key.storyId, new IGetStoryCallback<IStoryDTO>() {
             @Override
-            public void onSuccess(com.inappstory.sdk.core.repository.stories.dto.IStoryDTO response) {
-                loadStoryResult(key, response);
+            public void onSuccess(IStoryDTO response) {
+                loadStorySuccess(key, response);
             }
 
             @Override
@@ -306,24 +305,6 @@ class StoryDownloader {
         });
     }
 
-    void loadStoryFavoriteList(final NetworkCallback<List<Story>> callback) {
-        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null) {
-            callback.errorDefault("No network client");
-            return;
-        }
-        networkClient.enqueue(
-                networkClient.getApi().getStories(
-                        ApiSettings.getInstance().getTestKey(),
-                        1,
-                        null,
-                        "id, background_color, image"
-                ),
-                callback
-        );
-    }
-
-
     public static void generateCommonLoadListError(String feed) {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError(StringsUtils.getNonNull(feed));
@@ -333,7 +314,7 @@ class StoryDownloader {
     private static final String UGC_FEED = "UGC";
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (InAppStoryService.isNull() || networkClient == null) {
             generateCommonLoadListError(UGC_FEED);
             callback.onError("");
@@ -400,7 +381,7 @@ class StoryDownloader {
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             generateCommonLoadListError(feed);
             callback.onError("");
@@ -464,7 +445,7 @@ class StoryDownloader {
 
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (InAppStoryService.isNull() || networkClient == null) {
             generateCommonLoadListError(null);
             callback.onError("");

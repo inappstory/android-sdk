@@ -12,9 +12,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -134,7 +132,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-      //  Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
+        //  Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
         // if (st != null && (st.disableClose || st.hasSwipeUp()))
         //     return true;
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
@@ -142,12 +140,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        // if we're in a drag gesture and the user reverses up the we should take those events
-        Story st = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
-            if (st != null && (st.disableClose || st.hasSwipeUp()))
+            if (disableClose || hasSwipeUp)
                 disabledDragScale(dy);
             else {
                 dragScale(dy);
@@ -159,9 +153,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        Story st = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-        if (st != null && (st.disableClose || st.hasSwipeUp())) {
+        if (disableClose|| hasSwipeUp) {
             disabledDragScale(dyUnconsumed);
         } else {
             dragScale(dyUnconsumed);
@@ -187,18 +179,25 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         return super.onInterceptTouchEvent(ev);
     }
 
+    public void setDisableClose(boolean disableClose) {
+        this.disableClose = disableClose;
+    }
+
+    public void setHasSwipeUp(boolean hasSwipeUp) {
+        this.hasSwipeUp = hasSwipeUp;
+    }
+
+    private boolean disableClose = false;
+    private boolean hasSwipeUp = false;
+
     @Override
     public void onStopNestedScroll(View child) {
-        Story st = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
         if (totalDisabledDrag > 400) {
             swipeUpCallback();
-        } else if (st != null && !st.disableClose && totalDisabledDrag < -400) {
+        } else if (!disableClose && totalDisabledDrag < -400) {
             swipeDownCallback();
         }
-        if (Math.abs(totalDrag) >= dragDismissDistance &&
-                (st != null &&
-                        !(st.disableClose || st.hasSwipeUp()))) {
+        if (Math.abs(totalDrag) >= dragDismissDistance && !(disableClose || hasSwipeUp)) {
             dispatchDismissCallback();
         } else {
             if (mLastActionEvent == MotionEvent.ACTION_DOWN) {
@@ -331,8 +330,6 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
             }
         }
     }
-
-    public Story.StoryType type = Story.StoryType.COMMON;
 
     private void swipeUpCallback() {
         if (callbacks != null && !callbacks.isEmpty()) {

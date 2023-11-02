@@ -14,7 +14,7 @@ import java.lang.reflect.Type;
 
 public class GetGameModelUseCase {
     void get(final String gameId, final GameLoadCallback callback) {
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
