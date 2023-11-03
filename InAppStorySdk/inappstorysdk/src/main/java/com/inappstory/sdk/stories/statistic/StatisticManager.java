@@ -295,7 +295,7 @@ public class StatisticManager {
     public void generateBase(StatisticTask task) {
         task.sessionId = Session.getInstance().id;
         if (InAppStoryService.isNotNull())
-            task.userId = InAppStoryService.getInstance().getUserId();
+            task.userId = InAppStoryManager.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 

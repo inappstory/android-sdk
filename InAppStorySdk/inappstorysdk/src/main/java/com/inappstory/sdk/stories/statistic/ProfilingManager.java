@@ -67,7 +67,7 @@ public class ProfilingManager {
         ProfilingTask task = new ProfilingTask();
         task.sessionId = Session.getInstance().id;
         task.isAllowToForceSend = isAllowToSend();
-        task.userId = InAppStoryService.getInstance().getUserId();
+        task.userId = InAppStoryManager.getInstance().getUserId();
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();

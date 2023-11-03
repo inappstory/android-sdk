@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.ApiSettings;
@@ -396,7 +397,7 @@ class StoryDownloader {
                                 feed,
                                 ApiSettings.getInstance().getTestKey(),
                                 0,
-                                InAppStoryService.getInstance().getTagsString(),
+                                InAppStoryManager.getInstance().getTagsString(),
                                 null
                         ),
                         new LoadFeedCallback() {
@@ -460,7 +461,7 @@ class StoryDownloader {
                         networkClient.getApi().getStories(
                                 ApiSettings.getInstance().getTestKey(),
                                 isFavorite ? 1 : 0,
-                                isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
+                                isFavorite ? null : InAppStoryManager.getInstance().getTagsString(),
                                 null
                         ),
                         new LoadListCallback() {

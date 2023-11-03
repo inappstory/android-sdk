@@ -242,11 +242,12 @@ class SlidesDownloader {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().cacheError();
         }
+        handler.postDelayed(queuePageReadRunnable, 200);
         synchronized (pageTasksLock) {
             Objects.requireNonNull(pageTasks.get(key)).loadType = -1;
-            callback.onSlideError(key);
+            if (callback != null)
+                callback.onSlideError(key);
         }
-        handler.postDelayed(queuePageReadRunnable, 200);
     }
 
     private Handler handler;
@@ -269,7 +270,12 @@ class SlidesDownloader {
             loader.submit(new Callable() {
                 @Override
                 public Object call() throws Exception {
-                    return loadSlide(key);
+                    try {
+                        return loadSlide(key);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw new Exception();
+                    }
                 }
             });
         }
@@ -334,8 +340,8 @@ class SlidesDownloader {
                             synchronized (pageTasksLock) {
                                 slideTask.loadType = 2;
                             }
-                            manager.slideLoaded(slideTaskData);
                             handler.postDelayed(queuePageReadRunnable, 100);
+                            manager.slideLoaded(slideTaskData);
                         }
                     }
             );

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -132,14 +133,14 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        //  Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(InAppStoryService.getInstance().getCurrentId());
-        // if (st != null && (st.disableClose || st.hasSwipeUp()))
-        //     return true;
+        /*if (disableClose || hasSwipeUp)
+            return true;*/
         return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
+        Log.e("onNestedPreScroll", "elastic " + dx + " " + dy);
         if (draggingDown && dy > 0 || draggingUp && dy < 0) {
             if (disableClose || hasSwipeUp)
                 disabledDragScale(dy);
@@ -153,7 +154,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
                                int dxUnconsumed, int dyUnconsumed) {
-        if (disableClose|| hasSwipeUp) {
+        if (disableClose || hasSwipeUp) {
             disabledDragScale(dyUnconsumed);
         } else {
             dragScale(dyUnconsumed);

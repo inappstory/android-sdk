@@ -78,6 +78,7 @@ public class ReaderPageManager {
     public void setStoryId(int storyId) {
         this.storyId = storyId;
         previewStory = repository.getStoryPreviewById(storyId);
+        story = repository.getStoryById(storyId);
     }
 
     public int getStoryId() {
@@ -139,17 +140,16 @@ public class ReaderPageManager {
     }
 
     public void reloadStory() {
-        InAppStoryService.getInstance().getDownloadManager().reloadStory(storyId, getStoryType());
+        IASCoreManager.getInstance().downloadManager.reloadStory(storyId, getStoryType());
     }
 
     public void widgetEvent(String widgetName, String widgetData) {
-        if (story == null) return;
         int lastIndex = repository.getStoryLastIndex(storyId);
         if (CallbackManager.getInstance().getStoryWidgetCallback() != null) {
             CallbackManager.getInstance().getStoryWidgetCallback().widgetEvent(
                     new SlideData(
                             new StoryData(
-                                    story,
+                                    previewStory,
                                     getFeedId(),
                                     getSourceType()
                             ),
@@ -180,7 +180,7 @@ public class ReaderPageManager {
                             object.getLink().getTarget(),
                             new SlideData(
                                     new StoryData(
-                                            story,
+                                            previewStory,
                                             getFeedId(),
                                             getSourceType()
                                     ),
@@ -193,13 +193,12 @@ public class ReaderPageManager {
                 case "json":
                     if (object.getType() != null && !object.getType().isEmpty()) {
                         if ("swipeUpItems".equals(object.getType())) {
-                            if (story != null)
-                                showGoods(
-                                        object.getLink().getTarget(),
-                                        object.getElementId(),
-                                        story.getId(),
-                                        lastIndex
-                                );
+                            showGoods(
+                                    object.getLink().getTarget(),
+                                    object.getElementId(),
+                                    previewStory.getId(),
+                                    lastIndex
+                            );
                         }
                     }
                     break;
@@ -294,9 +293,9 @@ public class ReaderPageManager {
 
     List<Integer> durations = new ArrayList<>();
 
-    public void loadStoryAndSlide(int storyId, int slideIndex) {
+    public void loadStoryAndSlide(IStoryDTO story, int slideIndex) {
         if (checkIfManagersIsNull()) return;
-        webViewManager.loadStory(storyId, slideIndex);
+        webViewManager.loadStory(story, slideIndex);
     }
 
     public void openSlideByIndex(int index) {
@@ -407,12 +406,12 @@ public class ReaderPageManager {
         timerManager.stopTimer();
         timerManager.setCurrentDuration(localDurations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
-        InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId,
+        IASCoreManager.getInstance().downloadManager.changePriorityForSingle(storyId,
                 parentManager.storyType);
         if (getStoryType() == Story.StoryType.COMMON)
             InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
                     parentManager != null ? parentManager.getFeedId() : null);
-        loadStoryAndSlide(storyId, slideIndex);
+        loadStoryAndSlide(story, slideIndex);
     }
 
     public void setParentManager(ReaderManager parentManager) {
@@ -543,6 +542,7 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         story = repository.getStoryById(storyId);
         if (story == null) return;
+        webViewManager.setStory(story);
         if (this.durations == null)
             this.durations = new ArrayList<>();
         if (story.getDurations() != null && !(story.getDurations().length == 0)) {
@@ -556,7 +556,7 @@ public class ReaderPageManager {
         timelineManager.setSlidesCount(story.getSlidesCount());
         timelineManager.setDurations(this.durations, true);
         int lastIndex = repository.getStoryLastIndex(storyId);
-        webViewManager.loadStory(story.getId(), lastIndex);
+        webViewManager.loadStory(story, lastIndex);
     }
 
 }

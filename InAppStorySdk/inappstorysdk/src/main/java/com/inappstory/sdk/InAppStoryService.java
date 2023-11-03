@@ -84,26 +84,6 @@ public class InAppStoryService {
 
     public HashMap<String, List<IPreviewStoryDTO>> cachedListStories = new HashMap<>();
 
-    public String getUserId() {
-        if (userId == null && !InAppStoryManager.isNull())
-            return InAppStoryManager.getInstance().getUserId();
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    private String userId;
-
-    public String getTagsString() {
-        if (InAppStoryManager.getInstance() != null) {
-            return InAppStoryManager.getInstance().getTagsString();
-        } else {
-            return null;
-        }
-    }
-
     public boolean genException = false;
 
 
@@ -179,15 +159,6 @@ public class InAppStoryService {
                 && IASCoreManager.getInstance().sessionRepository.isAllowStatV1();
     }
 
-    public InAppStoryService(String userId) {
-        this.userId = userId;
-    }
-
-    public StoryDownloadManager getDownloadManager() {
-        return downloadManager;
-    }
-
-    StoryDownloadManager downloadManager;
     GameCacheManager gameCacheManager = new GameCacheManager();
 
     public GameCacheManager gameCacheManager() {
@@ -202,16 +173,6 @@ public class InAppStoryService {
     public void clearGames() {
         gameCacheManager().clearGames();
     }
-
-
-    @NonNull
-    public List<IFavoritePreviewStoryDTO> getFavoriteImages() {
-        if (downloadManager == null) return new ArrayList<>();
-        if (downloadManager.favoriteImages == null)
-            downloadManager.favoriteImages = new ArrayList<>();
-        return downloadManager.favoriteImages;
-    }
-
 
     private int currentId;
 
@@ -228,7 +189,6 @@ public class InAppStoryService {
 
     public void onDestroy() {
         spaceHandler.removeCallbacksAndMessages(null);
-        getDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;
     }
@@ -625,12 +585,8 @@ public class InAppStoryService {
         FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "temp"));
     }
 
-    public void createDownloadManager(ExceptionCache cache) {
-        if (downloadManager == null)
-            downloadManager = new StoryDownloadManager(context);
-    }
 
-    public void onCreate(Context context, ExceptionCache exceptionCache) {
+    public void onCreate(Context context) {
         this.context = context;
         new Handler().post(new Runnable() {
             @Override
@@ -641,7 +597,6 @@ public class InAppStoryService {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         OldStatisticManager.getInstance().statistic = new ArrayList<>();
-        createDownloadManager(exceptionCache);
         timerManager = new TimerManager();
         if (tempStoriesListNotifySet != null) {
             if (storiesListNotifySet == null) storiesListNotifySet = new HashSet<>();

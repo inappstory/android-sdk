@@ -524,7 +524,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private void replaceGameInstanceStorageData(Map<String, Object> serverData) throws JSONException {
         if (serverData == null || serverData.isEmpty()) return;
         String storageId = "gameInstance_" + manager.gameCenterId
-                + "__" + InAppStoryService.getInstance().getUserId();
+                + "__" + InAppStoryManager.getInstance().getUserId();
         String localStringData = KeyValueStorage.getString(storageId);
         if (localStringData == null) {
             KeyValueStorage.saveString(storageId, JsonParser.mapToJsonString(serverData));

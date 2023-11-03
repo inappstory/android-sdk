@@ -37,7 +37,6 @@ import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
@@ -58,7 +57,6 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCloseStory;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 
@@ -527,9 +525,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     public void cleanReader() {
         if (cleaned) return;
-        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(type);
-        repository.clearStoriesIndexes();
-        repository.setCurrentStory(null);
+        OldStatisticManager.getInstance().closeStatisticEvent();
+        IASCoreManager.getInstance().getStoriesRepository(type).clear();
+        IASCoreManager.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }
 

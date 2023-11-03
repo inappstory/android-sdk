@@ -217,8 +217,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
+        IASCoreManager.getInstance().downloadManager.clearCache();
     }
     //Test
 
@@ -227,7 +226,7 @@ public class InAppStoryManager {
      */
     public void clearCache(Context context) {
         if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
+        IASCoreManager.getInstance().downloadManager.clearCache();
     }
 
     /**
@@ -681,8 +680,8 @@ public class InAppStoryManager {
             @Override
             public void run() {
                 Looper.prepare();
-                service = new InAppStoryService(userId);
-                service.onCreate(context, exceptionCache);
+                service = new InAppStoryService();
+                service.onCreate(context);
                 Looper.loop();
             }
         });
@@ -813,12 +812,11 @@ public class InAppStoryManager {
         this.userId = userId;
         IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
         IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
-        inAppStoryService.getDownloadManager().refreshLocals();
+        IASCoreManager.getInstance().downloadManager.refreshLocals();
+        IASCoreManager.getInstance().downloadManager.cleanTasks();
         closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
         IASCoreManager.getInstance().closeSession();
         OldStatisticManager.getInstance().eventCount = 0;
-        inAppStoryService.getDownloadManager().cleanTasks();
-        inAppStoryService.setUserId(userId);
     }
 
 
@@ -902,10 +900,6 @@ public class InAppStoryManager {
                 ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             IASCoreManager.getInstance().setNetworkClient(new NetworkClient(context, cmsUrl));
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.getDownloadManager().initDownloaders();
-        }
     }
 
     private static final Object lock = new Object();
@@ -915,11 +909,11 @@ public class InAppStoryManager {
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         IASCoreManager.getInstance().closeSession();
         OldStatisticManager.getInstance().clear();
+        IASCoreManager.getInstance().downloadManager.cleanTasks();
         if (!isNull()) {
             InAppStoryService inAppStoryService = InAppStoryService.getInstance();
             if (inAppStoryService != null) {
                 inAppStoryService.clearSubscribers();
-                inAppStoryService.getDownloadManager().cleanTasks();
             }
         }
     }

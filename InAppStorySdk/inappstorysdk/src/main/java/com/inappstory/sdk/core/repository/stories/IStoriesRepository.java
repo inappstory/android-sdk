@@ -16,6 +16,8 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
 
     IPreviewStoryDTO getCurrentStory();
 
+    void clear();
+
     void setCurrentStory(Integer storyId);
 
     void getStoryByStringId(String storyId, IGetStoryCallback<IStoryDTO> callback);
@@ -34,8 +36,6 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
     int getStoryLastIndex(int storyId);
 
     void setStoryLastIndex(int storyId, int index);
-
-    void clearStoriesIndexes();
 
     void setOpenedStories(List<Integer> ids);
 

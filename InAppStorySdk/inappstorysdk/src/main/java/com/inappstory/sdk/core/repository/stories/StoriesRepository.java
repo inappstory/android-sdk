@@ -4,6 +4,7 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
@@ -200,6 +201,17 @@ public class StoriesRepository implements IStoriesRepository {
         }
     }
 
+    @Override
+    public void clear() {
+        synchronized (cachedStoriesLock) {
+            cachedStories.clear();
+        }
+        synchronized (storyLastIndexesLock) {
+            storyLastIndexes.clear();
+        }
+        setCurrentStory(null);
+    }
+
     private IPreviewStoryDTO currentStory = null;
 
     @Override
@@ -297,7 +309,7 @@ public class StoriesRepository implements IStoriesRepository {
         if (previews == null) {
             new GetStoryListByFeed(
                     feed,
-                    InAppStoryService.getInstance().getTagsString()
+                    InAppStoryManager.getInstance().getTagsString()
             ).get(new IGetFeedCallback() {
                 @Override
                 public void onSuccess(final Pair<List<IPreviewStoryDTO>, Boolean> feedResponse) {
@@ -351,13 +363,6 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
-    public void clearStoriesIndexes() {
-        synchronized (storyLastIndexesLock) {
-            storyLastIndexes.clear();
-        }
-    }
-
-    @Override
     public void setOpenedStories(List<Integer> ids) {
         synchronized (storyPreviewsLock) {
             for (Integer id : ids) {
@@ -388,7 +393,7 @@ public class StoriesRepository implements IStoriesRepository {
         new GetOnboardingStoryListByFeed(
                 feed,
                 limit,
-                InAppStoryService.getInstance().getTagsString()
+                InAppStoryManager.getInstance().getTagsString()
         ).get(new IGetFeedCallback() {
             @Override
             public void onSuccess(Pair<List<IPreviewStoryDTO>, Boolean> response) {

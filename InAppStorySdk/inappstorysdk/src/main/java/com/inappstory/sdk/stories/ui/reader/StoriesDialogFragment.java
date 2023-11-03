@@ -113,9 +113,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void cleanReader() {
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(type);
-        repository.clearStoriesIndexes();
-        repository.setCurrentStory(null);
+        IASCoreManager.getInstance().getStoriesRepository(type).clear();
+        IASCoreManager.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }
 

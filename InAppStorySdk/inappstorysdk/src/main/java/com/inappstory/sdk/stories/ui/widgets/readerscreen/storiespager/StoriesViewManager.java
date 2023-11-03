@@ -139,7 +139,12 @@ public class StoriesViewManager {
 
     IStoryDTO story;
 
+    public void setStory(IStoryDTO story) {
+        this.story = story;
+    }
+
     public void storyLoaded(IStoryDTO story, int oInd, boolean alreadyLoaded) {
+        pageManager.setStory(story);
         this.index = oInd;
         this.story = story;
         loadedIndex = oInd;
@@ -254,12 +259,13 @@ public class StoriesViewManager {
 
     boolean notFirstLoading = false;
 
-    public void loadStory(final int id, final int index) {
-        if (InAppStoryService.isNull())
-            return;
+    public void loadStory(IStoryDTO story, final int index) {
+        if (story == null) return;
+        this.story = story;
+        final int id = story.getId();
         synchronized (this) {
             if (loadedId == id && loadedIndex == index) return;
-            if (story == null || story.checkIfEmpty()) {
+            if (story.checkIfEmpty()) {
                 return;
             }
             if (story.getSlidesCount() <= index) return;
@@ -268,7 +274,7 @@ public class StoriesViewManager {
             loadedIndex = index;
             loadedId = id;
         }
-        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index,
+        slideInCache = IASCoreManager.getInstance().downloadManager.checkIfPageLoaded(id, index,
                 pageManager.getStoryType());
         if (slideInCache == 1) {
             innerLoad(story);

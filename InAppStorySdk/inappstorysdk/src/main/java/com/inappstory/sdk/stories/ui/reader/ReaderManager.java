@@ -142,7 +142,7 @@ public class ReaderManager {
                 @Override
                 public void run() {
                     IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
-                    IStoryDTO story = storiesRepository.getStoryById(storyId);
+                    IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(storyId);
                     if (story != null) {
                         if (story.getSlidesCount() <= slideIndex) {
                             storiesRepository.setStoryLastIndex(storyId, 0);
@@ -204,11 +204,12 @@ public class ReaderManager {
             }
         }
         if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().addStoryTask(
+        IASCoreManager.getInstance().downloadManager.addStoryTask(
                 storiesIds.get(pos),
                 adds,
-                storyType);
-        InAppStoryService.getInstance().getDownloadManager().changePriority(
+                storyType
+        );
+        IASCoreManager.getInstance().downloadManager.changePriority(
                 storiesIds.get(pos),
                 adds,
                 storyType
@@ -270,8 +271,6 @@ public class ReaderManager {
                 if (storiesIds != null && storiesIds.size() > pos) {
                     changeStory();
                 }
-
-
             }
         }).start();
     }

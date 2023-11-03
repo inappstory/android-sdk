@@ -3,7 +3,9 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -106,6 +108,7 @@ public class ReaderPager extends BothSideViewPager {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
+        ViewParent viewParent = getParentForAccessibility();
         if (cubeAnimation) {
             return true;
         }

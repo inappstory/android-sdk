@@ -16,6 +16,7 @@ import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.StoriesRepository;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 
 public class IASCoreManager {
     private static IASCoreManager INSTANCE;
@@ -28,6 +29,9 @@ public class IASCoreManager {
             return INSTANCE;
         }
     }
+
+
+    public StoryDownloadManager downloadManager = new StoryDownloadManager();
 
     public IFilesRepository filesRepository;
 

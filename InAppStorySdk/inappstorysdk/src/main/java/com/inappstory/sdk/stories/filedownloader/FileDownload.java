@@ -198,9 +198,13 @@ public abstract class FileDownload implements IFileDownload {
             if (loading) return;
             loading = true;
         }
+        if (url == null || url.isEmpty()) {
+            fileDownloadError(-1, "Wrong resource url");
+            return;
+        }
         String key = getCacheKey();
-        if (url == null || url.isEmpty() || key == null || key.isEmpty()) {
-            fileDownloadError(-1, "Wrong resource key or url");
+        if (key == null || key.isEmpty()) {
+            fileDownloadError(-1, "Wrong resource key");
             return;
         }
         generateRequestLog();

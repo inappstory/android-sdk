@@ -67,14 +67,14 @@ public class ButtonsPanelManager {
     }
 
     private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
-        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
         IStoriesRepository storiesRepository =
                 IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
         final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
+        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        if (networkClient == null) {
+            return;
+        }
         final int val;
         final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
         boolean liked = story.getLike() == 1;
@@ -185,15 +185,15 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final ShareButtonClickCallback callback) {
-        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
-        if (networkClient == null) {
-            return;
-        }
         if (IASCoreManager.getInstance().isShareProcess()) return;
         IStoriesRepository storiesRepository =
                 IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
         final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
+        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        if (networkClient == null) {
+            return;
+        }
         final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
         StatisticManager.getInstance().sendShareStory(
                 story.getId(),

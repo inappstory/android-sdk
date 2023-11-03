@@ -617,7 +617,7 @@ public class ReaderPageFragment extends Fragment {
         if (setManagers()) {
             manager.setSlideIndex(lastIndex);
             setViews(view, story, lastIndex);
-            InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
+            IASCoreManager.getInstance().downloadManager.addSubscriber(manager);
             manager.storyLoadedInCache();
         } else {
             InAppStoryManager.closeStoryReader();
@@ -633,7 +633,7 @@ public class ReaderPageFragment extends Fragment {
             if (parentManager != null)
                 parentManager.removeSubscriber(manager);
             if (InAppStoryService.getInstance() != null)
-                InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
+                IASCoreManager.getInstance().downloadManager.removeSubscriber(manager);
         }
         super.onDestroyView();
     }

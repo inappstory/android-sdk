@@ -13,18 +13,20 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCoreManager;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
@@ -44,6 +46,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
@@ -69,6 +72,7 @@ public class StoriesFragment extends Fragment
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
         if (isDestroyed) return;
+        Log.e("onPageScrolled", positionOffset + " " + positionOffsetPixels);
         if (positionOffset == 0f) {
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -289,7 +293,7 @@ public class StoriesFragment extends Fragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (InAppStoryService.isNull() || currentIds == null || currentIds.isEmpty()) {
+        if (currentIds == null || currentIds.isEmpty()) {
             closeFragment();
             return;
         }
@@ -374,15 +378,20 @@ public class StoriesFragment extends Fragment
 
     @Override
     public void onPageScrollStateChanged(int state) {
-        if (InAppStoryService.isNull()) return;
-        if (state == ViewPager.SCROLL_STATE_DRAGGING)
+        ViewParent v = storiesViewPager.getParentForAccessibility();
+        if (state == ViewPager.SCROLL_STATE_DRAGGING) {
+            if (v instanceof NestedScrollView) {
+                ((NestedScrollView) v).setNestedScrollingEnabled(false);
+            }
             readerManager.latestShowStoryAction = ShowStory.ACTION_SWIPE;
-        if (state == ViewPager.SCROLL_STATE_IDLE) {
+        } if (state == ViewPager.SCROLL_STATE_IDLE) {
+            if (v instanceof NestedScrollView) {
+                ((NestedScrollView) v).setNestedScrollingEnabled(true);
+            }
             if (getCurIndexById(readerManager.getCurrentStoryId()) ==
                     readerManager.getCurrentSlideIndex()) {
                 readerManager.resumeCurrent(false);
             }
-
         }
         readerManager.setCurrentSlideIndex(getCurIndexById(readerManager.getCurrentStoryId()));
 
