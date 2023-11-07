@@ -6,10 +6,9 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -61,7 +60,7 @@ public class ReaderManager {
     public void sendShowStoryEvents(int storyId) {
         if (lastSentId == storyId) return;
         lastSentId = storyId;
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(storyType);
         IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(storyId);
         IUseCaseCallback useCaseCallbackShowStory = new UseCaseCallbackShowStory(
                 new StoryData(
@@ -125,7 +124,7 @@ public class ReaderManager {
         if (parentFragment != null) {
             parentFragment.showShareView(shareData, storyId, slideIndex);
         } else {
-            IASCoreManager.getInstance().isShareProcess(false);
+            IASCore.getInstance().isShareProcess(false);
         }
     }
 
@@ -141,7 +140,7 @@ public class ReaderManager {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+                    IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(storyType);
                     IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(storyId);
                     if (story != null) {
                         if (story.getSlidesCount() <= slideIndex) {
@@ -204,12 +203,12 @@ public class ReaderManager {
             }
         }
         if (InAppStoryService.isNull()) return;
-        IASCoreManager.getInstance().downloadManager.addStoryTask(
+        IASCore.getInstance().downloadManager.addStoryTask(
                 storiesIds.get(pos),
                 adds,
                 storyType
         );
-        IASCoreManager.getInstance().downloadManager.changePriority(
+        IASCore.getInstance().downloadManager.changePriority(
                 storiesIds.get(pos),
                 adds,
                 storyType
@@ -237,7 +236,7 @@ public class ReaderManager {
         lastPos = position;
         lastSentId = 0;
         currentStoryId = storiesIds.get(position);
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(storyType);
         IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(currentStoryId);
         int lastIndex = 0;
         if (story != null) {
@@ -323,7 +322,7 @@ public class ReaderManager {
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
 
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(storyType);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(storyType);
         IPreviewStoryDTO story = storiesRepository.getStoryPreviewById(id);
         IPreviewStoryDTO lastStory = null;
         int lastStoryLastIndex = 0;

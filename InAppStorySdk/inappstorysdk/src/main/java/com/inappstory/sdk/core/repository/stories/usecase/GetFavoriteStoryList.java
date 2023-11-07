@@ -2,11 +2,10 @@ package com.inappstory.sdk.core.repository.stories.usecase;
 
 import android.util.Pair;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallbackAdapter;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
@@ -25,12 +24,12 @@ public class GetFavoriteStoryList {
 
 
     public void get(final IGetFeedCallback callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError();
             return;
         }
-        IASCoreManager.getInstance().getSession(
+        IASCore.getInstance().getSession(
                 new IGetSessionDTOCallbackAdapter(callback) {
                     @Override
                     public void onSuccess(SessionDTO session) {
@@ -74,7 +73,7 @@ public class GetFavoriteStoryList {
                                     public void error424(String message) {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
                                         callback.onError();
-                                        IASCoreManager.getInstance().closeSession();
+                                        IASCore.getInstance().closeSession();
                                         get(callback);
                                     }
                                 }

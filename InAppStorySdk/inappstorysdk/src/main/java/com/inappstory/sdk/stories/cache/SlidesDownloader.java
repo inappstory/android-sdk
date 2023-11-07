@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
@@ -92,7 +92,7 @@ class SlidesDownloader {
                             resource.getUrl(),
                             true
                     );
-                    if (IASCoreManager.getInstance().filesRepository.getLocalStoryFile(croppedUrl) == null) {
+                    if (IASCore.getInstance().filesRepository.getLocalStoryFile(croppedUrl) == null) {
                         synchronized (pageTasksLock) {
                             slideTask.loadType = 0;
                         }
@@ -115,7 +115,7 @@ class SlidesDownloader {
 
     //adjacent - for next and prev story
     void changePriority(Integer storyId, List<Integer> adjacents, StoryType type) {
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO currentStory = storiesRepository.getStoryPreviewById(storyId);
         int lastIndex = storiesRepository.getStoryLastIndex(storyId);
         synchronized (pageTasksLock) {
@@ -162,7 +162,7 @@ class SlidesDownloader {
 
     void changePriorityForSingle(Integer storyId, StoryType type) {
         synchronized (pageTasksLock) {
-            IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(type);
+            IStoriesRepository repository = IASCore.getInstance().getStoriesRepository(type);
             IStoryDTO currentStory = repository.getStoryById(storyId);
             int lastIndex = repository.getStoryLastIndex(storyId);
             int sc = currentStory.getSlidesCount();

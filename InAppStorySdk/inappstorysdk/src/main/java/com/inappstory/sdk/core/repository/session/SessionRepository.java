@@ -5,7 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.dto.StatisticPermissionDTO;
 import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
@@ -122,7 +122,7 @@ public class SessionRepository implements ISessionRepository {
     private void downloadFonts(@NonNull SessionResponse response) {
         if (response.cachedFonts != null) {
             for (CacheFontObject cacheFontObject : response.cachedFonts) {
-                IASCoreManager.getInstance().filesRepository.getFont(
+                IASCore.getInstance().filesRepository.getFont(
                         cacheFontObject.url,
                         new FileDownloadCallbackAdapter()
                 );

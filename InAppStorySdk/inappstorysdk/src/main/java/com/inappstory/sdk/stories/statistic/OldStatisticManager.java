@@ -2,20 +2,13 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.os.Handler;
 
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
-import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IUpdateSessionCallback;
 import com.inappstory.sdk.stories.api.models.Session;
-import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,7 +126,7 @@ public class OldStatisticManager {
 
     public boolean sendStatistic() {
         if (!InAppStoryService.isConnected()) return true;
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return true;
         }
@@ -160,7 +153,7 @@ public class OldStatisticManager {
 
             }
 
-            IASCoreManager.getInstance().sessionRepository.updateSession(sendingStatistic, new IUpdateSessionCallback() {
+            IASCore.getInstance().sessionRepository.updateSession(sendingStatistic, new IUpdateSessionCallback() {
                 @Override
                 public void onSuccess(Void response) {
                     OldStatisticManager.getInstance().cleanStatistic();

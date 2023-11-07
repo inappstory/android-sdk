@@ -4,7 +4,7 @@ import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
@@ -146,7 +146,7 @@ class StoryDownloader {
                 if (taskByStoryId.loadType != 3) {
                     if (taskByStoryId.loadType == 6) {
                         taskByStoryId.loadType = 3;
-                        IASCoreManager.getInstance().getStoriesRepository(type).getStoryByIdAsync(
+                        IASCore.getInstance().getStoriesRepository(type).getStoryByIdAsync(
                                 storyId,
                                 new IGetStoryCallback<IStoryDTO>() {
                                     @Override
@@ -290,7 +290,7 @@ class StoryDownloader {
 
 
     void loadStory(final StoryTaskData key) {
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance()
+        IStoriesRepository storiesRepository = IASCore.getInstance()
                 .getStoriesRepository(key.storyType);
         storiesRepository.getStoryByIdAsync(key.storyId, new IGetStoryCallback<IStoryDTO>() {
             @Override
@@ -315,14 +315,14 @@ class StoryDownloader {
     private static final String UGC_FEED = "UGC";
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (InAppStoryService.isNull() || networkClient == null) {
             generateCommonLoadListError(UGC_FEED);
             callback.onError("");
             return;
         }
         if (InAppStoryService.isConnected()) {
-            IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+            IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
                 @Override
                 public void onSuccess(SessionDTO session) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
@@ -362,7 +362,7 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    IASCoreManager.getInstance().closeSession();
+                                    IASCore.getInstance().closeSession();
                                     loadUgcStoryList(callback, payload);
                                 }
                             }
@@ -382,13 +382,13 @@ class StoryDownloader {
     }
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             generateCommonLoadListError(feed);
             callback.onError("");
             return;
         }
-        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
             public void onSuccess(SessionDTO session) {
                 final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
@@ -429,7 +429,7 @@ class StoryDownloader {
                                 ProfilingManager.getInstance().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
-                                IASCoreManager.getInstance().closeSession();
+                                IASCore.getInstance().closeSession();
                                 loadStoryListByFeed(feed, callback);
                             }
                         }
@@ -446,13 +446,13 @@ class StoryDownloader {
 
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (InAppStoryService.isNull() || networkClient == null) {
             generateCommonLoadListError(null);
             callback.onError("");
             return;
         }
-        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
             public void onSuccess(SessionDTO session) {
                 final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
@@ -489,7 +489,7 @@ class StoryDownloader {
                                 ProfilingManager.getInstance().setReady(loadStoriesUID);
                                 generateCommonLoadListError(null);
                                 callback.onError(message);
-                                IASCoreManager.getInstance().closeSession();
+                                IASCore.getInstance().closeSession();
                                 loadStoryList(callback, isFavorite);
                             }
                         }

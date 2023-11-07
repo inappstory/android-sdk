@@ -18,7 +18,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
@@ -131,7 +131,7 @@ public class StoriesWidgetService extends RemoteViewsService {
     public static final String UPDATE_AUTH = "ias_w.UPDATE_AUTH";
 
     private static NetworkClient getNetworkClient(Context context) {
-        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             checkApiSettings(context);
             networkClient = new NetworkClient(context, ApiSettings.getInstance().getHost());

@@ -2,7 +2,7 @@ package com.inappstory.sdk.core.repository.stories.usecase;
 
 import android.util.Pair;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
@@ -29,12 +29,12 @@ public class GetStoryListByFeed {
     final String tags;
 
     public void get(final IGetFeedCallback callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError();
             return;
         }
-        IASCoreManager.getInstance().getSession(
+        IASCore.getInstance().getSession(
                 new IGetSessionCallback<SessionDTO>() {
                     @Override
                     public void onSuccess(SessionDTO session) {
@@ -78,7 +78,7 @@ public class GetStoryListByFeed {
                                     public void error424(String message) {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
                                         callback.onError();
-                                        IASCoreManager.getInstance().closeSession();
+                                        IASCore.getInstance().closeSession();
                                         get(callback);
                                     }
                                 }

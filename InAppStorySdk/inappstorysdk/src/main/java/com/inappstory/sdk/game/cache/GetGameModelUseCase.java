@@ -2,8 +2,7 @@ package com.inappstory.sdk.game.cache;
 
 import static com.inappstory.sdk.core.network.NetworkClient.NC_IS_UNAVAILABLE;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
@@ -14,12 +13,12 @@ import java.lang.reflect.Type;
 
 public class GetGameModelUseCase {
     void get(final String gameId, final GameLoadCallback callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
         }
-        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
             public void onSuccess(SessionDTO session) {
                 networkClient.enqueue(

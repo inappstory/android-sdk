@@ -2,9 +2,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import android.os.Build;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -13,7 +11,6 @@ import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story.StoryType;
-import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -23,7 +20,6 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPag
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackLikeDislikeStory;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShareClick;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
 
@@ -68,10 +64,10 @@ public class ButtonsPanelManager {
 
     private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
         IStoriesRepository storiesRepository =
-                IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
+                IASCore.getInstance().getStoriesRepository(parentManager.getStoryType());
         final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
-        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -150,7 +146,7 @@ public class ButtonsPanelManager {
 
     public void favoriteClick(final ButtonClickCallback callback) {
         IStoriesRepository storiesRepository =
-                IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
+                IASCore.getInstance().getStoriesRepository(parentManager.getStoryType());
         final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
         final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
@@ -185,12 +181,12 @@ public class ButtonsPanelManager {
     }
 
     public void shareClick(final ShareButtonClickCallback callback) {
-        if (IASCoreManager.getInstance().isShareProcess()) return;
+        if (IASCore.getInstance().isShareProcess()) return;
         IStoriesRepository storiesRepository =
-                IASCoreManager.getInstance().getStoriesRepository(parentManager.getStoryType());
+                IASCore.getInstance().getStoriesRepository(parentManager.getStoryType());
         final IStoryDTO story = storiesRepository.getStoryById(storyId);
         if (story == null) return;
-        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
@@ -216,7 +212,7 @@ public class ButtonsPanelManager {
             parentManager.screenshotShare();
             return;
         }
-        IASCoreManager.getInstance().isShareProcess(true);
+        IASCore.getInstance().isShareProcess(true);
         if (callback != null)
             callback.onClick();
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");
@@ -249,7 +245,7 @@ public class ButtonsPanelManager {
                         if (callback != null)
                             callback.onError();
 
-                        IASCoreManager.getInstance().isShareProcess(false);
+                        IASCore.getInstance().isShareProcess(false);
                     }
 
                     @Override

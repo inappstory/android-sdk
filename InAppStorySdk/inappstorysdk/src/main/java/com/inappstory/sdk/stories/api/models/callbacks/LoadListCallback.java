@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.api.models.callbacks;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
@@ -30,7 +30,7 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         if (CallbackManager.getInstance().getErrorCallback() != null) {
             CallbackManager.getInstance().getErrorCallback().loadListError("");
         }
-        IASCoreManager.getInstance().closeSession();
+        IASCore.getInstance().closeSession();
     }
 
 }

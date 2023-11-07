@@ -5,7 +5,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
@@ -79,7 +79,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
             SourceType sourceType
     ) {
         IPreviewStoryDTO currentStory =
-                IASCoreManager.getInstance().getStoriesRepository(storyType).getStoryPreviewById(storyId);
+                IASCore.getInstance().getStoriesRepository(storyType).getStoryPreviewById(storyId);
         if (currentStory != null && currentPercentage > 0) {
             return new ShownStoriesListItem(
                     new StoryData(
@@ -121,7 +121,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
     @Override
     public boolean hasUgcEditor() {
-        return IASCoreManager.getInstance().sessionRepository.getUgcEditor() != null;
+        return IASCore.getInstance().sessionRepository.getUgcEditor() != null;
     }
 
     private void notifyListCallback(IPreviewStoryDTO current, int index) {
@@ -143,8 +143,8 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     @Override
     public void gameItemClick(IPreviewStoryDTO data, int index, Context context) {
         notifyListCallback(data, index);
-        IASCoreManager.getInstance().getStoriesRepository(storyType).openStory(data.getId());
-        IASCoreManager.getInstance().gameRepository.openGameReaderWithGC(
+        IASCore.getInstance().getStoriesRepository(storyType).openStory(data.getId());
+        IASCore.getInstance().gameRepository.openGameReaderWithGC(
                 context,
                 new GameStoryData(
                         new SlideData(
@@ -168,7 +168,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     @Override
     public void deeplinkItemClick(IPreviewStoryDTO data, int index, Context context) {
         notifyListCallback(data, index);
-        IASCoreManager.getInstance().getStoriesRepository(storyType).openStory(data.getId());
+        IASCore.getInstance().getStoriesRepository(storyType).openStory(data.getId());
         StatisticManager.getInstance().sendDeeplinkStory(data.getId(), data.getDeeplink(), feed);
         OldStatisticManager.getInstance().addDeeplinkClickStatistic(data.getId());
         IUseCaseCallbackWithContext callbackWithContext = new UseCaseCallbackCallToAction(
@@ -231,7 +231,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     ) {
         if (!iasManagerAndUserIdExists()) return;
         final IStoriesRepository storiesRepository =
-                IASCoreManager.getInstance().getStoriesRepository(storyType);
+                IASCore.getInstance().getStoriesRepository(storyType);
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         storiesRepository.getStoriesPreviewsByListIdAsync(
                 getCacheId(),
@@ -257,7 +257,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     public void loadFavoriteList(final GetStoriesList getStoriesList) {
         if (!iasManagerAndUserIdExists()) return;
         final IStoriesRepository storiesRepository =
-                IASCoreManager.getInstance().getStoriesRepository(storyType);
+                IASCore.getInstance().getStoriesRepository(storyType);
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         storiesRepository.getFavoriteStoriesByListIdAsync(
                 getCacheId(),

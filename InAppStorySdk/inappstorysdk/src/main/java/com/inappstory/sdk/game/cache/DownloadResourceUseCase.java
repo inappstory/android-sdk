@@ -3,13 +3,12 @@ package com.inappstory.sdk.game.cache;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
-import com.inappstory.sdk.stories.filedownloader.usecases.GameResourceDownload;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;
@@ -33,7 +32,7 @@ public class DownloadResourceUseCase {
             String url = resource.url;
             String fileName = resource.key;
             final File resourceFile = new File(directory + File.separator + fileName);
-            IASCoreManager.getInstance().filesRepository.getGameResource(
+            IASCore.getInstance().filesRepository.getGameResource(
                     url,
                     fileName,
                     resourceFile.getAbsolutePath(),

@@ -42,7 +42,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -609,7 +609,7 @@ public class ReaderPageFragment extends Fragment {
 
         bindViews(view);
         setActions();
-        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(
+        IStoriesRepository repository = IASCore.getInstance().getStoriesRepository(
                 manager.getStoryType()
         );
         IPreviewStoryDTO story = repository.getStoryPreviewById(storyId);
@@ -617,7 +617,10 @@ public class ReaderPageFragment extends Fragment {
         if (setManagers()) {
             manager.setSlideIndex(lastIndex);
             setViews(view, story, lastIndex);
-            IASCoreManager.getInstance().downloadManager.addSubscriber(manager);
+            IASCore.getInstance().downloadManager.addSubscriber(manager);
+            Log.e("updateProgress",
+                    "readerPageFragment " + storyId
+            );
             manager.storyLoadedInCache();
         } else {
             InAppStoryManager.closeStoryReader();
@@ -633,7 +636,7 @@ public class ReaderPageFragment extends Fragment {
             if (parentManager != null)
                 parentManager.removeSubscriber(manager);
             if (InAppStoryService.getInstance() != null)
-                IASCoreManager.getInstance().downloadManager.removeSubscriber(manager);
+                IASCore.getInstance().downloadManager.removeSubscriber(manager);
         }
         super.onDestroyView();
     }

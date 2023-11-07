@@ -28,7 +28,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -46,7 +46,6 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
@@ -136,7 +135,7 @@ public class StoriesFragment extends Fragment
                                       int storyId,
                                       int slideIndex) {
 
-        IASCoreManager.getInstance().isShareProcess(false);
+        IASCore.getInstance().isShareProcess(false);
         Context context = getContext();
         ShareCallback callback = CallbackManager.getInstance().getShareCallback();
         if (context == null) return;
@@ -355,7 +354,7 @@ public class StoriesFragment extends Fragment
     public void swipeCloseEvent(int position, boolean check) {
         if (check) {
             IStoriesRepository repository =
-                    IASCoreManager.getInstance().getStoriesRepository(readerManager.storyType);
+                    IASCore.getInstance().getStoriesRepository(readerManager.storyType);
             IStoryDTO storyDTO = repository.getStoryById(currentIds.get(position));
             if (storyDTO == null || storyDTO.disableClose()) return;
             InAppStoryManager.closeStoryReader(CloseReader.SWIPE, StatisticManager.SWIPE);
@@ -371,7 +370,7 @@ public class StoriesFragment extends Fragment
 
 
     private int getCurIndexById(int id) {
-        return IASCoreManager.getInstance().getStoriesRepository(readerManager.storyType)
+        return IASCore.getInstance().getStoriesRepository(readerManager.storyType)
                 .getStoryLastIndex(id);
     }
 

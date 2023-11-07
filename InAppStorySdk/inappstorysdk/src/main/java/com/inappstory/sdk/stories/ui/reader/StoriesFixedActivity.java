@@ -38,11 +38,10 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
@@ -57,7 +56,6 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCloseStory;
-import com.inappstory.sdk.utils.StringsUtils;
 
 public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -355,7 +353,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     getIntent().getStringExtra("listID")
             );
         }
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
             int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
@@ -401,8 +399,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     public void cleanReader() {
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        IASCoreManager.getInstance().getStoriesRepository(type).clear();
-        IASCoreManager.getInstance().downloadManager.cleanTasks();
+        IASCore.getInstance().getStoriesRepository(type).clear();
+        IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }
 

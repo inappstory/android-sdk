@@ -5,7 +5,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
@@ -140,7 +140,7 @@ public class ReaderPageManager {
     }
 
     public void reloadStory() {
-        IASCoreManager.getInstance().downloadManager.reloadStory(storyId, getStoryType());
+        IASCore.getInstance().downloadManager.reloadStory(storyId, getStoryType());
     }
 
     public void widgetEvent(String widgetName, String widgetData) {
@@ -284,8 +284,12 @@ public class ReaderPageManager {
     }
 
     public void restartSlide() {
+        Log.e("updateProgress",
+                "restartSlide " + durations
+        );
         if (checkIfManagersIsNull()) return;
         if (durations.size() <= slideIndex) return;
+
         timelineManager.setDurations(durations, false);
         timelineManager.startSegment(slideIndex);
         timerManager.restartTimer(durations.get(slideIndex));
@@ -318,6 +322,7 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         if (durations.size() <= slideIndex) return;
         durations.set(slideIndex, (int) duration);
+
         if (parentManager != null && parentManager.getCurrentStoryId() == storyId) {
             restartSlide();
         } else {
@@ -331,6 +336,9 @@ public class ReaderPageManager {
         if (story == null) return;
         this.durations.clear();
         this.durations.addAll(ArrayUtil.toIntegerList(story.getDurations()));
+        Log.e("updateProgress",
+                "resetCurrentDuration " + durations
+        );
         timelineManager.setDurations(durations, false);
     }
 
@@ -406,7 +414,7 @@ public class ReaderPageManager {
         timerManager.stopTimer();
         timerManager.setCurrentDuration(localDurations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
-        IASCoreManager.getInstance().downloadManager.changePriorityForSingle(storyId,
+        IASCore.getInstance().downloadManager.changePriorityForSingle(storyId,
                 parentManager.storyType);
         if (getStoryType() == Story.StoryType.COMMON)
             InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
@@ -416,7 +424,7 @@ public class ReaderPageManager {
 
     public void setParentManager(ReaderManager parentManager) {
         this.parentManager = parentManager;
-        repository = IASCoreManager.getInstance().getStoriesRepository(parentManager.storyType);
+        repository = IASCore.getInstance().getStoriesRepository(parentManager.storyType);
         story = repository.getStoryById(storyId);
     }
 
@@ -545,14 +553,17 @@ public class ReaderPageManager {
         webViewManager.setStory(story);
         if (this.durations == null)
             this.durations = new ArrayList<>();
-        if (story.getDurations() != null && !(story.getDurations().length == 0)) {
-            this.durations.clear();
-            this.durations.addAll(ArrayUtil.toIntegerList(story.getDurations()));
-            story.setSlidesCount(story.getDurations().length);
-            //TODO divide slides count and durations (return minimum) if necessary
+        if (this.durations.isEmpty()) {
+            if (story.getDurations() != null && !(story.getDurations().length == 0)) {
+                this.durations.clear();
+                this.durations.addAll(ArrayUtil.toIntegerList(story.getDurations()));
+                story.setSlidesCount(story.getDurations().length);
+                //TODO divide slides count and durations (return minimum) if necessary
+            }
+        }
+        if (this.durations.size() > slideIndex) {
             timerManager.setCurrentDuration(this.durations.get(slideIndex));
         }
-
         timelineManager.setSlidesCount(story.getSlidesCount());
         timelineManager.setDurations(this.durations, true);
         int lastIndex = repository.getStoryLastIndex(storyId);

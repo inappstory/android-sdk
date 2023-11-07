@@ -16,34 +16,21 @@ import android.util.Log;
 import android.util.Pair;
 import android.webkit.URLUtil;
 
-import androidx.annotation.NonNull;
-
-import com.inappstory.sdk.core.IASCoreManager;
-import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.StoryDTO;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.core.lrudiskcache.CacheType;
 import com.inappstory.sdk.core.lrudiskcache.FileManager;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.network.models.Response;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
-import com.inappstory.sdk.stories.cache.StoryDownloadManager;
-import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.callbacks.FavoriteCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
-import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -52,7 +39,6 @@ import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -149,14 +135,14 @@ public class InAppStoryService {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return false;
         return inAppStoryManager.isSendStatistic()
-                && IASCoreManager.getInstance().sessionRepository.isAllowStatV2();
+                && IASCore.getInstance().sessionRepository.isAllowStatV2();
     }
 
     public boolean getSendStatistic() {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager == null) return false;
         return inAppStoryManager.isSendStatistic()
-                && IASCoreManager.getInstance().sessionRepository.isAllowStatV1();
+                && IASCore.getInstance().sessionRepository.isAllowStatV1();
     }
 
     GameCacheManager gameCacheManager = new GameCacheManager();
@@ -402,7 +388,7 @@ public class InAppStoryService {
         }
 
         public void openStory(int storyId, Story.StoryType type) {
-            IASCoreManager.getInstance().getStoriesRepository(type).openStory(storyId);
+            IASCore.getInstance().getStoriesRepository(type).openStory(storyId);
         }
 
         public void closeReader(String listID) {
@@ -426,8 +412,8 @@ public class InAppStoryService {
         }
     }
 
-    Set<IStoriesListNotify> storiesListNotifySet;
-    Set<IAllStoriesListsNotify> allStoriesListsNotifySet;
+    Set<IStoriesListNotify> storiesListNotifySet = new HashSet<>();
+    Set<IAllStoriesListsNotify> allStoriesListsNotifySet = new HashSet<>();
     public static Set<IStoriesListNotify> tempStoriesListNotifySet;
     public static Set<IAllStoriesListsNotify> tempAllStoriesListsNotifySet;
 
@@ -475,6 +461,7 @@ public class InAppStoryService {
 
 
     public void clearSubscribers() {
+        if (storiesListNotifySet != null)
         for (IStoriesListNotify storiesListNotify : storiesListNotifySet) {
             storiesListNotify.unsubscribe();
         }

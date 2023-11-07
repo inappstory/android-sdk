@@ -1,8 +1,7 @@
 package com.inappstory.sdk.core.network;
 
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 
 /**
  * Класс для задания и хранения настроек по доступу к бекенду.
@@ -60,7 +59,7 @@ public class ApiSettings {
 
     public ApiSettings apiKey(String cmsKey) {
         if (ApiSettings.this.apiKey != null && cmsKey != null && !ApiSettings.this.apiKey.equals(cmsKey)) {
-            NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+            NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
             if (networkClient != null) networkClient.clear();
         }
         ApiSettings.this.apiKey = cmsKey;

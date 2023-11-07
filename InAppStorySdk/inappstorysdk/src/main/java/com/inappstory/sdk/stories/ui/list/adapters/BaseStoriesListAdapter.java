@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IStoryUpdatedCallback;
@@ -44,7 +44,7 @@ public abstract class BaseStoriesListAdapter
     }
 
     protected IStoriesRepository storiesRepository =
-            IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON);
+            IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON);
 
     protected List<IPreviewStoryDTO> storiesData = new ArrayList<>();
     private boolean isFavoriteList;

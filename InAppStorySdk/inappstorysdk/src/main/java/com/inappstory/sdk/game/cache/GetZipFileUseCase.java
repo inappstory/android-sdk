@@ -6,14 +6,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
-import com.inappstory.sdk.stories.filedownloader.usecases.ZipArchiveDownload;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.utils.ProgressCallback;
 
@@ -76,7 +74,7 @@ public class GetZipFileUseCase extends GameNameHolder {
                         }
                         File zipFile = new File(gameDir, url.hashCode() + ".zip");
                         ProfilingManager.getInstance().addTask("game_download", hash);
-                        IASCoreManager.getInstance().filesRepository.getZipArchive(
+                        IASCore.getInstance().filesRepository.getZipArchive(
                                 url,
                                 zipFile.getAbsolutePath(),
                                 new IFileDownloadCallback() {

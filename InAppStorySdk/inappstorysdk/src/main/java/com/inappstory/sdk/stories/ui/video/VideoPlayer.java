@@ -12,11 +12,8 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
-import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,7 +114,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     File file = null;
 
     private void downloadCoverVideo(@NonNull String url) throws Exception {
-        IASCoreManager.getInstance().filesRepository.getStoryPreview(
+        IASCore.getInstance().filesRepository.getStoryPreview(
                 url, new IFileDownloadCallback() {
                     @Override
                     public void onSuccess(String fileAbsolutePath) {

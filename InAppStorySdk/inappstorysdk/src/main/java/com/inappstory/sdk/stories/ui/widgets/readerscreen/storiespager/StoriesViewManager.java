@@ -10,10 +10,9 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.EmptyNetworkErrorCallback;
-import com.inappstory.sdk.core.repository.session.interfaces.NetworkErrorCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallbackAdapter;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -274,7 +273,7 @@ public class StoriesViewManager {
             loadedIndex = index;
             loadedId = id;
         }
-        slideInCache = IASCoreManager.getInstance().downloadManager.checkIfPageLoaded(id, index,
+        slideInCache = IASCore.getInstance().downloadManager.checkIfPageLoaded(id, index,
                 pageManager.getStoryType());
         if (slideInCache == 1) {
             innerLoad(story);
@@ -400,9 +399,9 @@ public class StoriesViewManager {
     }
 
     public void share(String id, String data) {
-        if (IASCoreManager.getInstance().isShareProcess())
+        if (IASCore.getInstance().isShareProcess())
             return;
-        IASCoreManager.getInstance().isShareProcess(true);
+        IASCore.getInstance().isShareProcess(true);
         InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             ScreensManager.getInstance().setTempShareId(id);
@@ -417,7 +416,7 @@ public class StoriesViewManager {
                     shareData, storyId, index
             );
         } else {
-            IASCoreManager.getInstance().isShareProcess(false);
+            IASCore.getInstance().isShareProcess(false);
         }
 
     }
@@ -448,7 +447,7 @@ public class StoriesViewManager {
     }
 
     public void openGameReaderFromGameCenter(String gameId) {
-        IASCoreManager.getInstance().gameRepository.openGameReaderWithGC(
+        IASCore.getInstance().gameRepository.openGameReaderWithGC(
                 context,
                 getGameStoryData(),
                 gameId
@@ -458,7 +457,7 @@ public class StoriesViewManager {
     private GameStoryData getGameStoryData() {
         GameStoryData data = null;
         if (story != null && pageManager != null) {
-            int lastIndex = IASCoreManager.getInstance().getStoriesRepository(pageManager.getStoryType())
+            int lastIndex = IASCore.getInstance().getStoriesRepository(pageManager.getStoryType())
                     .getStoryLastIndex(storyId);
             data = new GameStoryData(
                     new SlideData(
@@ -494,7 +493,7 @@ public class StoriesViewManager {
         clearShowLoader();
         clearShowRefresh();
         storyIsLoaded = true;
-        IStoriesRepository repository = IASCoreManager.getInstance().getStoriesRepository(
+        IStoriesRepository repository = IASCore.getInstance().getStoriesRepository(
                 pageManager.getStoryType()
         );
         IPreviewStoryDTO storyDTO = repository.getCurrentStory();
@@ -560,13 +559,13 @@ public class StoriesViewManager {
 
     public void storySetLocalData(final String data, boolean sendToServer) {
         KeyValueStorage.saveString("story" + storyId + "__" + InAppStoryManager.getInstance().getUserId(), data);
-        if (!IASCoreManager.getInstance().getSendStatistic()) return;
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        if (!IASCore.getInstance().getSendStatistic()) return;
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
         if (sendToServer) {
-            IASCoreManager.getInstance().getSession(new IGetSessionDTOCallbackAdapter(
+            IASCore.getInstance().getSession(new IGetSessionDTOCallbackAdapter(
                     new EmptyNetworkErrorCallback()
             ) {
                 @Override
@@ -598,12 +597,12 @@ public class StoriesViewManager {
     public SourceType source = SourceType.SINGLE;
 
     public void storySendData(final String data) {
-        if (!IASCoreManager.getInstance().getSendStatistic()) return;
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        if (!IASCore.getInstance().getSendStatistic()) return;
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        IASCoreManager.getInstance().getSession(new IGetSessionDTOCallbackAdapter(
+        IASCore.getInstance().getSession(new IGetSessionDTOCallbackAdapter(
                 new EmptyNetworkErrorCallback()
         ) {
             @Override

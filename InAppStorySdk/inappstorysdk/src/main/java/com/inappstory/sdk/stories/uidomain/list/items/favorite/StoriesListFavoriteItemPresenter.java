@@ -3,10 +3,9 @@ package com.inappstory.sdk.stories.uidomain.list.items.favorite;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFilesDownloadCallback;
-import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +24,7 @@ public final class StoriesListFavoriteItemPresenter implements IStoriesListFavor
         if (fileLink != null) {
             callback.onSuccess(fileLink);
         } else {
-            IASCoreManager.getInstance().filesRepository.getStoryPreview(
+            IASCore.getInstance().filesRepository.getStoryPreview(
                     url,
                     new IFileDownloadCallback() {
                 @Override

@@ -1,29 +1,11 @@
 package com.inappstory.sdk.stories.cache;
 
-import android.content.Context;
-import android.os.Handler;
+import android.util.Log;
 
-import androidx.annotation.WorkerThread;
-
-import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
-import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
-import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
-import com.inappstory.sdk.listwidget.StoriesWidgetService;
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.StoryListType;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
-import com.inappstory.sdk.stories.api.models.callbacks.SimpleListCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
 import java.io.IOException;
@@ -62,11 +44,11 @@ public class StoryDownloadManager {
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clear();
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.UGC).clear();
-        IASCoreManager.getInstance().filesRepository.clearCaches();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clear();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.UGC).clear();
+        IASCore.getInstance().filesRepository.clearCaches();
     }
 
 
@@ -120,6 +102,9 @@ public class StoryDownloadManager {
     }
 
     void storyLoaded(int storyId, Story.StoryType type) {
+        Log.e("updateProgress",
+                "storyLoaded " + storyId
+        );
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == storyId && subscriber.getStoryType() == type) {
@@ -142,7 +127,7 @@ public class StoryDownloadManager {
             final UrlWithAlter url,
             final IDownloadPageFileCallback pageFileCallback
     ) {
-        IASCoreManager.getInstance()
+        IASCore.getInstance()
                 .filesRepository
                 .getStoryFile(
                         url.getUrl(),

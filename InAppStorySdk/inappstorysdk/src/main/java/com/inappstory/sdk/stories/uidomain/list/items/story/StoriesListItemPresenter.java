@@ -3,9 +3,8 @@ package com.inappstory.sdk.stories.uidomain.list.items.story;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
-import com.inappstory.sdk.stories.filedownloader.usecases.StoryPreviewDownload;
 
 import java.util.HashMap;
 
@@ -16,7 +15,7 @@ public final class StoriesListItemPresenter implements IStoriesListItemPresenter
         if (fileLink != null) {
             callback.onSuccess(fileLink);
         } else {
-            IASCoreManager.getInstance().filesRepository.getStoryPreview(url, new IFileDownloadCallback() {
+            IASCore.getInstance().filesRepository.getStoryPreview(url, new IFileDownloadCallback() {
                 @Override
                 public void onSuccess(final String fileAbsolutePath) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {

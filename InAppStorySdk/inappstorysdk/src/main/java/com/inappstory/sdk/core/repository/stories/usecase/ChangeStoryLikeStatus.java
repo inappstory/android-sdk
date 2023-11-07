@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.repository.stories.usecase;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.models.Response;
@@ -23,12 +23,12 @@ public class ChangeStoryLikeStatus {
     }
 
     public void changeStatus(final IChangeLikeStatusCallback callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError();
             return;
         }
-        IASCoreManager.getInstance().getSession(new IGetSessionDTOCallbackAdapter(callback) {
+        IASCore.getInstance().getSession(new IGetSessionDTOCallbackAdapter(callback) {
             @Override
             public void onSuccess(SessionDTO response) {
                 final String favUID = ProfilingManager.getInstance().addTask("api_like");

@@ -9,7 +9,7 @@ import android.os.Build;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -78,15 +78,15 @@ public class GameManager {
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
                 + "__" + InAppStoryManager.getInstance().getUserId(), data);
-        if (!IASCoreManager.getInstance().getSendStatistic()) return;
+        if (!IASCore.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+            IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
                 @Override
                 public void onSuccess(SessionDTO session) {
                     networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
@@ -122,7 +122,7 @@ public class GameManager {
     void storySetData(final String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         if (dataModel == null) return;
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
@@ -132,7 +132,7 @@ public class GameManager {
 
         if (!InAppStoryService.getInstance().getSendStatistic()) return;
         if (sendToServer) {
-            IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+            IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
                 @Override
                 public void onSuccess(SessionDTO session) {
                     networkClient.enqueue(
@@ -284,7 +284,7 @@ public class GameManager {
     }
 
     void shareData(String id, String data) {
-        IASCoreManager service = IASCoreManager.getInstance();
+        IASCore service = IASCore.getInstance();
         if (service.isShareProcess()) return;
         service.isShareProcess(true);
         InnerShareData shareObj = JsonParser.fromJson(data, InnerShareData.class);

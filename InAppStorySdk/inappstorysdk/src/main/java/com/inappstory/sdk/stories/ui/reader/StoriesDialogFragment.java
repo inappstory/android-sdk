@@ -30,11 +30,10 @@ import androidx.lifecycle.Observer;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -49,10 +48,8 @@ import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCloseStory;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashSet;
-import java.util.List;
 
 public class StoriesDialogFragment extends DialogFragment implements BackPressHandler, BaseReaderScreen {
 
@@ -76,7 +73,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
         OldStatisticManager.getInstance().sendStatistic();
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
             int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
@@ -113,8 +110,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void cleanReader() {
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        IASCoreManager.getInstance().getStoriesRepository(type).clear();
-        IASCoreManager.getInstance().downloadManager.cleanTasks();
+        IASCore.getInstance().getStoriesRepository(type).clear();
+        IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }
 

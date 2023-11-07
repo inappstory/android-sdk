@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline;
 
+
 import java.util.ArrayList;
 
 public class StoryTimelineState {
@@ -60,6 +61,7 @@ public class StoryTimelineState {
 
     public void setCurrentStoryDurations(ArrayList<Integer> currentStoryDurations) {
         synchronized (lock) {
+
             this.currentStoryDurations = currentStoryDurations;
             this.slidesCount = currentStoryDurations.size();
             if (currentStoryDurations.isEmpty()) {

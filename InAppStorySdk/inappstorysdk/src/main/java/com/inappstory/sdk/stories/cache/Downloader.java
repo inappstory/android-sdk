@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.core.network.utils.ResponseStringFromStream;
@@ -228,8 +228,8 @@ public class Downloader {
         urlConnection.setConnectTimeout(300000);
         urlConnection.setReadTimeout(300000);
         urlConnection.setRequestMethod("GET");
-        if (IASCoreManager.getInstance().getNetworkClient() != null) {
-            urlConnection.setRequestProperty("User-Agent", IASCoreManager.getInstance().getNetworkClient().userAgent);
+        if (IASCore.getInstance().getNetworkClient() != null) {
+            urlConnection.setRequestProperty("User-Agent", IASCore.getInstance().getNetworkClient().userAgent);
         }
         if (downloadOffset > 0) {
             urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");

@@ -37,6 +37,7 @@ public class StoryTimelineManager implements IStoryTimelineManager {
         public void run() {
             if (paused) return;
             if (!timelineState.timelineIsActive()) return;
+
             if (timelineState.getCurrentStoryDurations().size() > 0 &&
                     timelineState.getCurrentStoryDuration() > 0 &&
                     timelineState.getCurrentSlideState() == StoryTimelineSegmentState.ANIMATED) {
@@ -44,6 +45,7 @@ public class StoryTimelineManager implements IStoryTimelineManager {
                 if (spentTime > restTime) {
                     next();
                 } else {
+                   
                     updateProgress(spentTime);
                 }
             }
@@ -132,6 +134,7 @@ public class StoryTimelineManager implements IStoryTimelineManager {
     public void setDurations(List<Integer> durations, boolean started) {
         if (started)
             startedDurations = new ArrayList<>(durations);
+
         timelineState.setCurrentStoryDurations(new ArrayList<>(durations));
     }
 

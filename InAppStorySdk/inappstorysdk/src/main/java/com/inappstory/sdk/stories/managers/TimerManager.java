@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.managers;
 import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -141,7 +141,7 @@ public class TimerManager {
             return;
         }
         Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
             int lastIndex = storiesRepository.getStoryLastIndex(story.getId());

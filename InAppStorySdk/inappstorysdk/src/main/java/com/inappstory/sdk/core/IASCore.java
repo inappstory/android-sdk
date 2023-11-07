@@ -18,14 +18,14 @@ import com.inappstory.sdk.core.repository.stories.StoriesRepository;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 
-public class IASCoreManager {
-    private static IASCoreManager INSTANCE;
+public class IASCore {
+    private static IASCore INSTANCE;
     private static final Object lock = new Object();
 
-    public static IASCoreManager getInstance() {
+    public static IASCore getInstance() {
         synchronized (lock) {
             if (INSTANCE == null)
-                INSTANCE = new IASCoreManager();
+                INSTANCE = new IASCore();
             return INSTANCE;
         }
     }

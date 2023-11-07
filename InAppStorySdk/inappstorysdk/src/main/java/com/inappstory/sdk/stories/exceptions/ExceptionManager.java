@@ -1,7 +1,7 @@
 package com.inappstory.sdk.stories.exceptions;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.JsonParser;
@@ -26,14 +26,14 @@ public class ExceptionManager {
         copiedLog.file = log.file;
         copiedLog.session = log.session;
         copiedLog.line = log.line;
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
             public void onSuccess(SessionDTO session) {
-                if (IASCoreManager.getInstance().sessionRepository.isAllowCrash()) {
+                if (IASCore.getInstance().sessionRepository.isAllowCrash()) {
                     networkClient.enqueue(
                             networkClient.getApi().sendException(
                                     copiedLog.session,
@@ -78,7 +78,7 @@ public class ExceptionManager {
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
-        SessionDTO sessionDTO = IASCoreManager.getInstance().sessionRepository.getSessionData();
+        SessionDTO sessionDTO = IASCore.getInstance().sessionRepository.getSessionData();
         if (sessionDTO != null) {
             log.session = sessionDTO.getId();
         }

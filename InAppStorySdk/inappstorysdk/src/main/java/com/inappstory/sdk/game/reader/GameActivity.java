@@ -44,7 +44,7 @@ import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -490,7 +490,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     }
 
     private void shareCustomOrDefault(IASShareData shareObject) {
-        IASCoreManager.getInstance().isShareProcess(false);
+        IASCore.getInstance().isShareProcess(false);
         if (CallbackManager.getInstance().getShareCallback() != null) {
             int storyId = -1;
             int slideIndex = 0;
@@ -596,7 +596,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private String generateJsonConfig() {
         GameConfigOptions options = new GameConfigOptions();
         options.fullScreen = isFullscreen;
-        NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (networkClient == null) {
             options.apiBaseUrl = new HostFromSecretKey(

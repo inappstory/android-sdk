@@ -1,10 +1,9 @@
 package com.inappstory.sdk.core.repository.session.usecase;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IUpdateSession;
 import com.inappstory.sdk.core.repository.session.interfaces.IUpdateSessionCallback;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
@@ -17,7 +16,7 @@ import java.util.List;
 public class UpdateSession implements IUpdateSession {
     @Override
     public void update(SessionDTO session, final List<List<Object>> stat, final IUpdateSessionCallback callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null || session == null) {
             callback.onError();
             return;

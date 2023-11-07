@@ -28,7 +28,7 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -59,7 +59,7 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     void setViews(View view) {
-        IStoryDTO story = IASCoreManager.getInstance().getStoriesRepository(
+        IStoryDTO story = IASCore.getInstance().getStoriesRepository(
                 Story.StoryType.valueOf(
                         getArguments().getString(
                                 "storiesType",

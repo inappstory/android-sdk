@@ -33,7 +33,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -477,7 +477,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
-        IStoriesRepository storiesRepository = IASCoreManager.getInstance().getStoriesRepository(type);
+        IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
             int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
@@ -526,8 +526,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void cleanReader() {
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        IASCoreManager.getInstance().getStoriesRepository(type).clear();
-        IASCoreManager.getInstance().downloadManager.cleanTasks();
+        IASCore.getInstance().getStoriesRepository(type).clear();
+        IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }
 

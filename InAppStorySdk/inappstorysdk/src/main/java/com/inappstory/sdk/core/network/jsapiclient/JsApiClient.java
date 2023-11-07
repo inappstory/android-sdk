@@ -4,7 +4,7 @@ import static com.inappstory.sdk.core.network.JsonParser.toMap;
 
 import android.content.Context;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
@@ -50,7 +50,7 @@ public class JsApiClient {
                                     final String cb,
                                     final String profilingKey,
                                     final JsApiResponseCallback callback) {
-        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
             public void onSuccess(SessionDTO session) {
 
@@ -61,7 +61,7 @@ public class JsApiClient {
 
             }
         });
-        IASCoreManager.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
+        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
             @Override
             public void onSuccess(SessionDTO session) {
                 sendRequest(

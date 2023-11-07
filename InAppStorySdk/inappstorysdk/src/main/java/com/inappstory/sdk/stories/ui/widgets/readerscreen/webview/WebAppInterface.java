@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
 import android.content.Context;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -120,6 +121,9 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyShowNextSlide(long delay) {
+        Log.e("updateProgress",
+                "storyShowNextSlide " + manager.storyId + " " + manager.index
+        );
         if (delay != 0) {
             InAppStoryManager.showDLog("jsDuration", delay + " showNext");
             manager.restartStoryWithDuration(delay);

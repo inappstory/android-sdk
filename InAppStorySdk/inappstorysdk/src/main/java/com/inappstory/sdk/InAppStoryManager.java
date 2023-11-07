@@ -16,7 +16,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.lrudiskcache.CacheSize;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
@@ -217,7 +217,7 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
-        IASCoreManager.getInstance().downloadManager.clearCache();
+        IASCore.getInstance().downloadManager.clearCache();
     }
     //Test
 
@@ -226,7 +226,7 @@ public class InAppStoryManager {
      */
     public void clearCache(Context context) {
         if (InAppStoryService.isNull()) return;
-        IASCoreManager.getInstance().downloadManager.clearCache();
+        IASCore.getInstance().downloadManager.clearCache();
     }
 
     /**
@@ -238,11 +238,11 @@ public class InAppStoryManager {
 
     @Deprecated
     public void openGame(String gameId) {
-        IASCoreManager.getInstance().gameRepository.openGameReaderWithGC(context, null, gameId);
+        IASCore.getInstance().gameRepository.openGameReaderWithGC(context, null, gameId);
     }
 
     public void openGame(String gameId, @NonNull Context context) {
-        IASCoreManager.getInstance().gameRepository.openGameReaderWithGC(context, null, gameId);
+        IASCore.getInstance().gameRepository.openGameReaderWithGC(context, null, gameId);
     }
 
     public void closeGame() {
@@ -696,12 +696,12 @@ public class InAppStoryManager {
     private ExceptionCache exceptionCache;
 
     public void removeFromFavorite(final int storyId) {
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON)
                 .removeFromFavorite(storyId);
     }
 
     public void removeAllFavorites() {
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).removeAllFavorites();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).removeAllFavorites();
     }
 
     NetworkClient networkClient;
@@ -739,7 +739,7 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_min_free_space_error));
             return;
         }
-        IASCoreManager.getInstance().init(builder.context);
+        IASCore.getInstance().init(builder.context);
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         createServiceThread(builder.context, builder.userId);
@@ -792,7 +792,7 @@ public class InAppStoryManager {
 
     private void setUserIdInner(final String userId, boolean firstTry) {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        IASCoreManager.getInstance().setUserId(userId);
+        IASCore.getInstance().setUserId(userId);
         if (inAppStoryService == null) {
             if (firstTry)
                 localHandler.postDelayed(new Runnable() {
@@ -810,12 +810,12 @@ public class InAppStoryManager {
         if (this.userId.equals(userId)) return;
         localOpensKey = null;
         this.userId = userId;
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
-        IASCoreManager.getInstance().downloadManager.refreshLocals();
-        IASCoreManager.getInstance().downloadManager.cleanTasks();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
+        IASCore.getInstance().downloadManager.refreshLocals();
+        IASCore.getInstance().downloadManager.cleanTasks();
         closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
-        IASCoreManager.getInstance().closeSession();
+        IASCore.getInstance().closeSession();
         OldStatisticManager.getInstance().eventCount = 0;
     }
 
@@ -839,12 +839,12 @@ public class InAppStoryManager {
 
     public void clearCachedList(String id) {
         if (id == null) return;
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedList(id);
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedList(id);
     }
 
 
     public void clearCachedLists() {
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
     }
 
     public void setActionBarColor(int actionBarColor) {
@@ -882,7 +882,7 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
-        IASCoreManager.getInstance().setUserId(userId);
+        IASCore.getInstance().setUserId(userId);
         if (!isNull()) {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
@@ -896,26 +896,20 @@ public class InAppStoryManager {
                 .apiKey(this.API_KEY)
                 .testKey(this.TEST_KEY)
                 .host(cmsUrl);
-        if (IASCoreManager.getInstance().getNetworkClient() == null ||
+        if (IASCore.getInstance().getNetworkClient() == null ||
                 ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
-            IASCoreManager.getInstance().setNetworkClient(new NetworkClient(context, cmsUrl));
+            IASCore.getInstance().setNetworkClient(new NetworkClient(context, cmsUrl));
         }
     }
 
     private static final Object lock = new Object();
 
     public static void logout() {
-        IASCoreManager.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        IASCoreManager.getInstance().closeSession();
+        IASCore.getInstance().closeSession();
         OldStatisticManager.getInstance().clear();
-        IASCoreManager.getInstance().downloadManager.cleanTasks();
-        if (!isNull()) {
-            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-            if (inAppStoryService != null) {
-                inAppStoryService.clearSubscribers();
-            }
-        }
+        IASCore.getInstance().downloadManager.cleanTasks();
     }
 
     @Deprecated
@@ -1038,7 +1032,7 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
-        IASCoreManager.getInstance().getSession(
+        IASCore.getInstance().getSession(
                 new IGetSessionCallback<SessionDTO>() {
                     @Override
                     public void onSuccess(SessionDTO session) {
@@ -1232,7 +1226,7 @@ public class InAppStoryManager {
         if (lastSingleOpen != null &&
                 lastSingleOpen.equals(storyId)) return;
         lastSingleOpen = storyId;
-        IASCoreManager.getInstance().getStoriesRepository(type).getStoryByStringId(storyId,
+        IASCore.getInstance().getStoriesRepository(type).getStoryByStringId(storyId,
                 new IGetStoryCallback<IStoryDTO>() {
                     @Override
                     public void onSuccess(IStoryDTO story) {

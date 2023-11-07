@@ -2,7 +2,7 @@ package com.inappstory.sdk.core.repository.stories.usecase;
 
 import android.util.Pair;
 
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
@@ -27,12 +27,12 @@ public class GetStoryById {
     final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
     public void get(final IGetStoryCallback<Pair<IStoryDTO, IPreviewStoryDTO>> callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError();
             return;
         }
-        IASCoreManager.getInstance().getSession(
+        IASCore.getInstance().getSession(
                 new IGetSessionCallback<SessionDTO>() {
                     @Override
                     public void onSuccess(SessionDTO session) {

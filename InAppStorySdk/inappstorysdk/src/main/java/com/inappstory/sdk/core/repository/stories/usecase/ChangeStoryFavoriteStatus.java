@@ -1,12 +1,10 @@
 package com.inappstory.sdk.core.repository.stories.usecase;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCoreManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallbackAdapter;
 import com.inappstory.sdk.core.repository.stories.interfaces.IChangeFavoriteStatusCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
@@ -23,12 +21,12 @@ public class ChangeStoryFavoriteStatus {
     }
 
     public void changeStatus(final IChangeFavoriteStatusCallback callback) {
-        final NetworkClient networkClient = IASCoreManager.getInstance().getNetworkClient();
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             callback.onError();
             return;
         }
-        IASCoreManager.getInstance().getSession(new IGetSessionDTOCallbackAdapter(callback) {
+        IASCore.getInstance().getSession(new IGetSessionDTOCallbackAdapter(callback) {
             @Override
             public void onSuccess(SessionDTO response) {
                 final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
