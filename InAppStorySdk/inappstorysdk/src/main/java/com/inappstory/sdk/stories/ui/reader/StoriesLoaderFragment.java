@@ -30,6 +30,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
@@ -59,14 +60,14 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     void setViews(View view) {
-        IStoryDTO story = IASCore.getInstance().getStoriesRepository(
+        IPreviewStoryDTO story = IASCore.getInstance().getStoriesRepository(
                 Story.StoryType.valueOf(
                         getArguments().getString(
                                 "storiesType",
                                 Story.StoryType.COMMON.name()
                         )
                 )
-        ).getStoryById(
+        ).getStoryPreviewById(
                 getArguments().getInt("storyId")
         );
         if (story == null) return;

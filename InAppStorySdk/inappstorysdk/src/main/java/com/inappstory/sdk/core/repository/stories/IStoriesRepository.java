@@ -2,6 +2,7 @@ package com.inappstory.sdk.core.repository.stories;
 
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IChangeStatusReaderCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IStoryUpdatedCallback;
@@ -63,4 +64,19 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
     void addStoryUpdatedCallback(IStoryUpdatedCallback callback);
 
     void removeStoryUpdatedCallback(IStoryUpdatedCallback callback);
+
+    void addReaderStatusChangeCallbacks(
+            IChangeStatusReaderCallback likeCallback,
+            IChangeStatusReaderCallback favoriteCallback,
+            IChangeStatusReaderCallback shareCallback,
+            int storyId
+    );
+
+    void removeReaderStatusChangeCallbacks(
+            IChangeStatusReaderCallback likeCallback,
+            IChangeStatusReaderCallback favoriteCallback,
+            IChangeStatusReaderCallback shareCallback,
+            int storyId
+    );
+
 }

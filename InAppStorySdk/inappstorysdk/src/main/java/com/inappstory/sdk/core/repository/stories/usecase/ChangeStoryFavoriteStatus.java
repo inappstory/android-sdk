@@ -40,9 +40,9 @@ public class ChangeStoryFavoriteStatus {
                             public void onSuccess(Response response) {
                                 ProfilingManager.getInstance().setReady(favUID);
                                 if (!initialStatus) {
-                                    callback.addedToFavorite(storyId);
+                                    callback.addedToFavorite();
                                 } else {
-                                    callback.removedFromFavorite(storyId);
+                                    callback.removedFromFavorite();
                                 }
                             }
 

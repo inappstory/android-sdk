@@ -2,9 +2,12 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IChangeStatusReaderCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
@@ -18,6 +21,7 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
+import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackFavoriteStory;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackLikeDislikeStory;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShareClick;
 
@@ -54,15 +58,15 @@ public class ButtonsPanelManager {
 
     ReaderPageManager parentManager;
 
-    public void likeClick(ButtonClickCallback callback) {
-        likeDislikeClick(callback, true);
+    public void likeClick() {
+        likeDislikeClick(true);
     }
 
-    public void dislikeClick(ButtonClickCallback callback) {
-        likeDislikeClick(callback, false);
+    public void dislikeClick() {
+        likeDislikeClick(false);
     }
 
-    private void likeDislikeClick(final ButtonClickCallback callback, boolean like) {
+    private void likeDislikeClick(boolean like) {
         IStoriesRepository storiesRepository =
                 IASCore.getInstance().getStoriesRepository(parentManager.getStoryType());
         final IStoryDTO story = storiesRepository.getStoryById(storyId);
@@ -71,7 +75,6 @@ public class ButtonsPanelManager {
         if (networkClient == null) {
             return;
         }
-        final int val;
         final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
         boolean liked = story.getLike() == 1;
         boolean disliked = story.getLike() == -1;
@@ -90,53 +93,13 @@ public class ButtonsPanelManager {
                 like ? liked : disliked
         );
         likeDislikeUseCaseCallback.invoke();
-        if (like) {
-            if (liked) {
-                val = 0;
-            } else {
-                StatisticManager.getInstance().sendLikeStory(story.getLike(), slideIndex,
-                        parentManager != null ? parentManager.getFeedId() : null);
-                val = 1;
-            }
+        if (like && !liked) {
+            storiesRepository.likeStory(storyId);
+        } else if (!like && !disliked) {
+            storiesRepository.dislikeStory(storyId);
         } else {
-            if (disliked) {
-                val = 0;
-            } else {
-                StatisticManager.getInstance().sendDislikeStory(story.getId(), slideIndex,
-                        parentManager != null ? parentManager.getFeedId() : null);
-                val = -1;
-            }
+            storiesRepository.clearLikeDislikeStoryStatus(storyId);
         }
-        final String likeUID =
-                ProfilingManager.getInstance().addTask("api_like");
-        networkClient.enqueue(
-                networkClient.getApi().storyLike(
-                        Integer.toString(storyId),
-                        val
-                ),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(likeUID);
-                        story.setLike(val);
-                        if (callback != null)
-                            callback.onSuccess(val);
-                    }
-
-
-                    @Override
-                    public void errorDefault(String message) {
-
-                        ProfilingManager.getInstance().setReady(likeUID);
-                        if (callback != null)
-                            callback.onError();
-                    }
-
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
     }
 
     public void removeStoryFromFavorite() {
@@ -144,7 +107,7 @@ public class ButtonsPanelManager {
             panel.forceRemoveFromFavorite();
     }
 
-    public void favoriteClick(final ButtonClickCallback callback) {
+    public void favoriteClick() {
         IStoriesRepository storiesRepository =
                 IASCore.getInstance().getStoriesRepository(parentManager.getStoryType());
         final IStoryDTO story = storiesRepository.getStoryById(storyId);
@@ -152,13 +115,18 @@ public class ButtonsPanelManager {
         final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
         SlideData slideData = new SlideData(
                 new StoryData(
-                       story,
+                        story,
                         getParentManager().getFeedId(),
                         getParentManager().getSourceType()
                 ),
                 slideIndex
         );
-        if (story.getFavorite()) {
+        IUseCaseCallback favoriteUseCaseCallback = new UseCaseCallbackFavoriteStory(
+                slideData,
+                !story.getFavorite()
+        );
+        favoriteUseCaseCallback.invoke();
+        if (!story.getFavorite()) {
             storiesRepository.addToFavorite(storyId);
         } else {
             storiesRepository.removeFromFavorite(storyId);
@@ -176,11 +144,8 @@ public class ButtonsPanelManager {
             panel.refreshSoundStatus();
     }
 
-    public abstract static class ShareButtonClickCallback implements ButtonClickCallback {
-        abstract void onClick();
-    }
 
-    public void shareClick(final ShareButtonClickCallback callback) {
+    public void shareClick(final @NonNull IChangeStatusReaderCallback callback) {
         if (IASCore.getInstance().isShareProcess()) return;
         IStoriesRepository storiesRepository =
                 IASCore.getInstance().getStoriesRepository(parentManager.getStoryType());
@@ -212,9 +177,8 @@ public class ButtonsPanelManager {
             parentManager.screenshotShare();
             return;
         }
+        callback.onProcess();
         IASCore.getInstance().isShareProcess(true);
-        if (callback != null)
-            callback.onClick();
         final String shareUID = ProfilingManager.getInstance().addTask("api_share");
         networkClient.enqueue(
                 networkClient.getApi().share(
@@ -224,6 +188,7 @@ public class ButtonsPanelManager {
                 new NetworkCallback<ShareObject>() {
                     @Override
                     public void onSuccess(ShareObject response) {
+                        callback.onSuccess(1);
                         ProfilingManager.getInstance().setReady(shareUID);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
                             ScreensManager.getInstance().setTempShareId(null);
@@ -242,9 +207,7 @@ public class ButtonsPanelManager {
 
                     @Override
                     public void errorDefault(String message) {
-                        if (callback != null)
-                            callback.onError();
-
+                        callback.onError();
                         IASCore.getInstance().isShareProcess(false);
                     }
 

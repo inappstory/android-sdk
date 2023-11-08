@@ -5,13 +5,13 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IChangeFavoriteStatusCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IChangeLikeStatusCallback;
+import com.inappstory.sdk.core.repository.stories.interfaces.IChangeStatusReaderCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteCellUpdatedCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IFavoriteListUpdatedCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFavoritePreviewsCallback;
@@ -43,6 +43,15 @@ public class StoriesRepository implements IStoriesRepository {
 
     private final Object cachedStoriesLock = new Object();
     private final Map<Integer, IStoryDTO> cachedStories = new HashMap<>();
+
+    private final Object readerShareLock = new Object();
+    private final Map<Integer, List<IChangeStatusReaderCallback>> readerShareCallbacks = new HashMap<>();
+
+    private final Object readerLikeLock = new Object();
+    private final Map<Integer, List<IChangeStatusReaderCallback>> readerLikeCallbacks = new HashMap<>();
+
+    private final Object readerFavoriteLock = new Object();
+    private final Map<Integer, List<IChangeStatusReaderCallback>> readerFavoriteCallbacks = new HashMap<>();
 
     private final Object cachedListIdsLock = new Object();
     private final Map<String, List<Integer>> cachedListIds = new HashMap<>();
@@ -489,7 +498,6 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
 
-
     @Override
     public void addStoryUpdateCallback(IStoryUpdatedCallback callback) {
         synchronized (storyUpdatedCallbacksLock) {
@@ -529,102 +537,98 @@ public class StoriesRepository implements IStoriesRepository {
         }
     }
 
-    private final IChangeLikeStatusCallback changeLikeStatusCallback = new IChangeLikeStatusCallback() {
-        @Override
-        public void like(int storyId) {
-            changeStatus(1, storyId);
-        }
-
-        @Override
-        public void dislike(int storyId) {
-
-            changeStatus(-1, storyId);
-        }
-
-        @Override
-        public void clear(int storyId) {
-            changeStatus(0, storyId);
-        }
-
-        @Override
-        public void onError() {
-            //TODO update buttons status in reader
-        }
-
-        private void changeStatus(int status, int storyId) {
-            synchronized (cachedStoriesLock) {
-                IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
-                if (cachedStoryDTO != null)
-                    cachedStoryDTO.setLike(status);
-                //TODO update buttons status in reader
-            }
-        }
-    };
-
-    private final IChangeFavoriteStatusCallback changeFavoriteStatusCallback =
-            new IChangeFavoriteStatusCallback() {
-                @Override
-                public void addedToFavorite(int storyId) {
-                    synchronized (storyFavoritesLock) {
-                        if (!storyFavorites.contains(new FavoritePreviewStoryDTO(storyId))) {
-                            synchronized (storyPreviewsLock) {
-                                IPreviewStoryDTO previewStoryDTO = storyPreviews.get(storyId);
-                                if (previewStoryDTO != null)
-                                    storyFavorites.add(new FavoritePreviewStoryDTO(previewStoryDTO));
-                            }
-                        }
-                    }
-                    synchronized (cachedStoriesLock) {
-                        IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
-                        if (cachedStoryDTO != null)
-                            cachedStoryDTO.setFavorite(true);
-                        //TODO update buttons status in reader
-                    }
-                    updateFavoriteCell();
-                    updateFavoriteList();
-                }
-
-                @Override
-                public void removedFromFavorite(int storyId) {
-                    synchronized (storyFavoritesLock) {
-                        IFavoritePreviewStoryDTO favoritePreviewStoryDTO =
-                                new FavoritePreviewStoryDTO(storyId);
-                        storyFavorites.remove(favoritePreviewStoryDTO);
-                    }
-                    synchronized (cachedStoriesLock) {
-                        IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
-                        if (cachedStoryDTO != null)
-                            cachedStoryDTO.setFavorite(false);
-                        //TODO update buttons status in reader
-                    }
-                    updateFavoriteCell();
-                    updateFavoriteList();
-                }
-
-                @Override
-                public void onError() {
-                    //TODO update buttons status in reader
-                }
-            };
 
 
     @Override
     public void addToFavorite(int storyId) {
-        new ChangeStoryFavoriteStatus(storyId, false).changeStatus(
-                changeFavoriteStatusCallback
-        );
-
+        changeStoryFavoriteStatus(storyId, false);
     }
 
     @Override
     public void removeFromFavorite(int storyId) {
-        new ChangeStoryFavoriteStatus(storyId, true).changeStatus(
-                changeFavoriteStatusCallback
+        changeStoryFavoriteStatus(storyId, true);
+    }
+
+    private void changeStoryFavoriteStatus(final int storyId, boolean initialStatus) {
+        final List<IChangeStatusReaderCallback> callbacks = new ArrayList<>();
+        synchronized (readerFavoriteLock) {
+            List<IChangeStatusReaderCallback> temp = null;
+            if ((temp = readerFavoriteCallbacks.get(storyId)) != null) {
+                callbacks.addAll(temp);
+            }
+        }
+        for (IChangeStatusReaderCallback readerCallback : callbacks) {
+            readerCallback.onProcess();
+        }
+        new ChangeStoryFavoriteStatus(storyId, initialStatus).changeStatus(
+                new IChangeFavoriteStatusCallback() {
+                    @Override
+                    public void addedToFavorite() {
+                        synchronized (storyFavoritesLock) {
+                            if (!storyFavorites.contains(new FavoritePreviewStoryDTO(storyId))) {
+                                synchronized (storyPreviewsLock) {
+                                    IPreviewStoryDTO previewStoryDTO = storyPreviews.get(storyId);
+                                    if (previewStoryDTO != null)
+                                        storyFavorites.add(new FavoritePreviewStoryDTO(previewStoryDTO));
+                                }
+                            }
+                        }
+                        changeFavoriteStatusForCaches(true);
+                    }
+
+                    @Override
+                    public void removedFromFavorite() {
+                        synchronized (storyFavoritesLock) {
+                            IFavoritePreviewStoryDTO favoritePreviewStoryDTO =
+                                    new FavoritePreviewStoryDTO(storyId);
+                            storyFavorites.remove(favoritePreviewStoryDTO);
+                        }
+
+                        changeFavoriteStatusForCaches(false);
+                    }
+
+                    private void changeFavoriteStatusForCaches(boolean status) {
+                        synchronized (cachedStoriesLock) {
+                            IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
+                            if (cachedStoryDTO != null)
+                                cachedStoryDTO.setFavorite(status);
+
+                        }
+                        synchronized (storyPreviewsLock) {
+                            IPreviewStoryDTO cachedStoryDTO = storyPreviews.get(storyId);
+                            if (cachedStoryDTO != null)
+                                cachedStoryDTO.setFavorite(status);
+
+                        }
+                        for (IChangeStatusReaderCallback readerCallback : callbacks) {
+                            readerCallback.onSuccess(status ? 1 : 0);
+                        }
+                        updateFavoriteCell();
+                        updateFavoriteList();
+                    }
+
+                    @Override
+                    public void onError() {
+                        for (IChangeStatusReaderCallback readerCallback : callbacks) {
+                            readerCallback.onError();
+                        }
+                    }
+                }
         );
     }
 
     @Override
     public void removeAllFavorites() {
+        final List<IChangeStatusReaderCallback> callbacks = new ArrayList<>();
+        synchronized (readerFavoriteLock) {
+            for (List<IChangeStatusReaderCallback> value: readerFavoriteCallbacks.values()) {
+                if (value != null)
+                    callbacks.addAll(value);
+            }
+        }
+        for (IChangeStatusReaderCallback readerCallback : callbacks) {
+            readerCallback.onProcess();
+        }
         new RemoveAllStoriesFromFavorites().remove(new IRemoveAllStoriesFromFavoritesCallback() {
             @Override
             public void onRemove() {
@@ -635,7 +639,14 @@ public class StoriesRepository implements IStoriesRepository {
                     for (IStoryDTO storyDTO : cachedStories.values()) {
                         storyDTO.setFavorite(false);
                     }
-                    //TODO update buttons status in reader
+                }
+                synchronized (storyPreviewsLock) {
+                    for (IPreviewStoryDTO storyDTO : storyPreviews.values()) {
+                        storyDTO.setFavorite(false);
+                    }
+                }
+                for (IChangeStatusReaderCallback readerCallback : callbacks) {
+                    readerCallback.onSuccess(0);
                 }
                 updateFavoriteCell();
                 updateFavoriteList();
@@ -643,6 +654,9 @@ public class StoriesRepository implements IStoriesRepository {
 
             @Override
             public void onError() {
+                for (IChangeStatusReaderCallback readerCallback : callbacks) {
+                    readerCallback.onError();
+                }
             }
         });
 
@@ -663,20 +677,133 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
+    public void addReaderStatusChangeCallbacks(
+            IChangeStatusReaderCallback likeCallback,
+            IChangeStatusReaderCallback favoriteCallback,
+            IChangeStatusReaderCallback shareCallback,
+            int storyId
+    ) {
+        synchronized (readerLikeLock) {
+            if (readerLikeCallbacks.get(storyId) == null)
+                readerLikeCallbacks.put(storyId,
+                        new ArrayList<IChangeStatusReaderCallback>()
+                );
+            readerLikeCallbacks.get(storyId).add(likeCallback);
+        }
+        synchronized (readerFavoriteLock) {
+            if (readerFavoriteCallbacks.get(storyId) == null)
+                readerFavoriteCallbacks.put(storyId,
+                        new ArrayList<IChangeStatusReaderCallback>()
+                );
+            readerFavoriteCallbacks.get(storyId).add(favoriteCallback);
+        }
+        synchronized (readerShareLock) {
+            if (readerShareCallbacks.get(storyId) == null)
+                readerShareCallbacks.put(storyId,
+                        new ArrayList<IChangeStatusReaderCallback>()
+                );
+            readerShareCallbacks.get(storyId).add(shareCallback);
+        }
+    }
+
+    @Override
+    public void removeReaderStatusChangeCallbacks(
+            IChangeStatusReaderCallback likeCallback,
+            IChangeStatusReaderCallback favoriteCallback,
+            IChangeStatusReaderCallback shareCallback,
+            int storyId
+    ) {
+        synchronized (readerLikeLock) {
+            if (readerLikeCallbacks.get(storyId) == null)
+                readerLikeCallbacks.put(storyId,
+                        new ArrayList<IChangeStatusReaderCallback>()
+                );
+            readerLikeCallbacks.get(storyId).remove(likeCallback);
+        }
+        synchronized (readerFavoriteLock) {
+            if (readerFavoriteCallbacks.get(storyId) == null)
+                readerFavoriteCallbacks.put(storyId,
+                        new ArrayList<IChangeStatusReaderCallback>()
+                );
+            readerFavoriteCallbacks.get(storyId).remove(favoriteCallback);
+        }
+        synchronized (readerShareLock) {
+            if (readerShareCallbacks.get(storyId) == null)
+                readerShareCallbacks.put(storyId,
+                        new ArrayList<IChangeStatusReaderCallback>()
+                );
+            readerShareCallbacks.get(storyId).remove(shareCallback);
+        }
+    }
+
+
+    @Override
     public void likeStory(int storyId) {
-        new ChangeStoryLikeStatus(storyId, true, false)
-                .changeStatus(changeLikeStatusCallback);
+        changeStoryLikeStatus(storyId, true, false);
     }
 
     @Override
     public void dislikeStory(int storyId) {
-        new ChangeStoryLikeStatus(storyId, false, false)
-                .changeStatus(changeLikeStatusCallback);
+        changeStoryLikeStatus(storyId, false, false);
     }
 
     @Override
     public void clearLikeDislikeStoryStatus(int storyId) {
-        new ChangeStoryLikeStatus(storyId, true, true)
-                .changeStatus(changeLikeStatusCallback);
+        changeStoryLikeStatus(storyId, true, true);
+    }
+
+    private void changeStoryLikeStatus(int storyId, boolean likeClicked, boolean initialStatus) {
+        final List<IChangeStatusReaderCallback> callbacks = new ArrayList<>();
+        synchronized (readerLikeLock) {
+            List<IChangeStatusReaderCallback> temp = null;
+            if ((temp = readerLikeCallbacks.get(storyId)) != null) {
+                callbacks.addAll(temp);
+            }
+        }
+        for (IChangeStatusReaderCallback readerCallback : callbacks) {
+            readerCallback.onProcess();
+        }
+        new ChangeStoryLikeStatus(storyId, likeClicked, initialStatus)
+                .changeStatus(
+                        new IChangeLikeStatusCallback() {
+                            @Override
+                            public void like(int storyId) {
+                                changeStatus(1, storyId);
+                            }
+
+                            @Override
+                            public void dislike(int storyId) {
+                                changeStatus(-1, storyId);
+                            }
+
+                            @Override
+                            public void clear(int storyId) {
+                                changeStatus(0, storyId);
+                            }
+
+                            @Override
+                            public void onError() {
+                                for (IChangeStatusReaderCallback readerCallback : callbacks) {
+                                    readerCallback.onError();
+                                }
+                            }
+
+                            private void changeStatus(int status, int storyId) {
+                                synchronized (cachedStoriesLock) {
+                                    IStoryDTO cachedStoryDTO = cachedStories.get(storyId);
+                                    if (cachedStoryDTO != null)
+                                        cachedStoryDTO.setLike(status);
+                                }
+                                synchronized (storyPreviewsLock) {
+                                    IPreviewStoryDTO cachedStoryDTO = storyPreviews.get(storyId);
+                                    if (cachedStoryDTO != null)
+                                        cachedStoryDTO.setLike(status);
+                                }
+                                for (IChangeStatusReaderCallback readerCallback : callbacks) {
+                                    readerCallback.onSuccess(status);
+                                }
+                            }
+                        }
+                );
     }
 }

@@ -210,6 +210,7 @@ public class StoryDTO implements IStoryDTO {
         this.hasLike = story.hasLike();
         this.hasShare = story.hasShare();
         this.like = story.getLike();
+        this.favorite = story.isFavorite();
         this.pages = story.getPages();
         this.imagePlaceholdersList = new ArrayList<>();
         this.srcList = new ArrayList<>();

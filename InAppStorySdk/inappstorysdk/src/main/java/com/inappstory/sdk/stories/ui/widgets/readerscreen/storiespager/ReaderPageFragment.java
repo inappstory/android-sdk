@@ -76,9 +76,10 @@ public class ReaderPageFragment extends Fragment {
 
     boolean setManagers() {
         boolean readerInitSuccess = true;
-        if (buttonsPanel != null)
+        if (buttonsPanel != null) {
             manager.setButtonsPanelManager(buttonsPanel.getManager(), storyId);
-        else
+            buttonsPanel.subscribe();
+        } else
             readerInitSuccess = false;
         if (timeline != null)
             manager.setTimelineManager(timeline.getTimelineManager(), storyId);
@@ -162,8 +163,6 @@ public class ReaderPageFragment extends Fragment {
             InAppStoryService.createExceptionLog(e);
         }
     }
-
-
 
 
     void setViews(View view, IPreviewStoryDTO story, int lastIndex) {
@@ -595,8 +594,8 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        manager = new ReaderPageManager();
         storyId = getArguments().getInt("story_id");
+        manager = new ReaderPageManager();
         manager.host = this;
         if (parentManager == null && getParentFragment() instanceof StoriesFragment) {
             parentManager = ((StoriesFragment) getParentFragment()).readerManager;
@@ -615,6 +614,7 @@ public class ReaderPageFragment extends Fragment {
         IPreviewStoryDTO story = repository.getStoryPreviewById(storyId);
         int lastIndex = repository.getStoryLastIndex(storyId);
         if (setManagers()) {
+
             manager.setSlideIndex(lastIndex);
             setViews(view, story, lastIndex);
             IASCore.getInstance().downloadManager.addSubscriber(manager);
@@ -630,6 +630,7 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        if (buttonsPanel != null) buttonsPanel.unsubscribe();
         if (storiesView != null)
             storiesView.destroyView();
         if (manager != null) {
