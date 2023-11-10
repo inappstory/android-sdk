@@ -48,9 +48,11 @@ public class StoryTimelineState {
 
     public long getCurrentStoryDuration() {
         synchronized (lock) {
+            if (currentStoryDurations.size() <= currentSlideIndex) return 0;
             return currentStoryDurations.get(currentSlideIndex);
         }
     }
+
 
     public ArrayList<Integer> getCurrentStoryDurations() {
         synchronized (lock) {

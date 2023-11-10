@@ -86,8 +86,7 @@ public class StoryTimelineManager implements IStoryTimelineManager {
         restTime = (long) (
                 (1f - timelineState.getCurrentSlideProgress()) *
                         timelineState
-                                .getCurrentStoryDurations()
-                                .get(timelineState.getCurrentSlideIndex())
+                                .getCurrentStoryDuration()
         );
         handler.post(loopedTimer);
     }
