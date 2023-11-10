@@ -108,9 +108,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
-
-
-    GameCacheManager gameCacheManager = InAppStoryService.getInstance().gameCacheManager();
     private IASWebView webView;
     private ImageView loader;
     private View closeButton;
@@ -859,105 +856,107 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private void downloadGame(
             final String gameId
     ) {
-        gameCacheManager.getGame(
-                gameId,
-                interruption,
-                new ProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
-                        if (totalSize == 0) return;
-                        final int percent = (int) ((loadedSize * 100) / totalSize);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.gameCacheManager().getGame(
+                    gameId,
+                    interruption,
+                    new ProgressCallback() {
+                        @Override
+                        public void onProgress(long loadedSize, long totalSize) {
+                            if (totalSize == 0) return;
+                            final int percent = (int) ((loadedSize * 100) / totalSize);
 
-                        if (customLoaderView != null)
-                            customLoaderView.post(new Runnable() {
+                            if (customLoaderView != null)
+                                customLoaderView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        loaderView.setProgress(percent, 100);
+                                    }
+                                });
+                        }
+                    },
+                    new UseCaseCallback<File>() {
+                        @Override
+                        public void onError(String message) {
+                            InAppStoryManager.showDLog("Game_Loading", message);
+                        }
+
+                        @Override
+                        public void onSuccess(File result) {
+                            setLoader(result);
+                        }
+                    },
+                    new UseCaseCallback<GameCenterData>() {
+                        @Override
+                        public void onError(String message) {
+
+                        }
+
+                        @Override
+                        public void onSuccess(final GameCenterData gameCenterData) {
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    loaderView.setProgress(percent, 100);
+                                    setLayout();
+                                    loaderView.setIndeterminate(false);
+                                    manager.resources = getIntent().getStringExtra("gameResources");
+                                    manager.gameConfig = gameCenterData.initCode;
+                                    manager.path = gameCenterData.url;
+                                    try {
+                                        GameScreenOptions options = gameCenterData.options;
+                                        manager.resources = JsonParser.getJson(gameCenterData.resources);
+                                        isFullscreen = options != null && options.fullScreen;
+                                        setOrientationFromOptions(options);
+                                        if (forceFullscreen != null)
+                                            isFullscreen = forceFullscreen;
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    replaceConfigs();
                                 }
                             });
-                    }
-                },
-                new UseCaseCallback<File>() {
-                    @Override
-                    public void onError(String message) {
-                        InAppStoryManager.showDLog("Game_Loading", message);
-                    }
-
-                    @Override
-                    public void onSuccess(File result) {
-                        setLoader(result);
-                    }
-                },
-                new UseCaseCallback<GameCenterData>() {
-                    @Override
-                    public void onError(String message) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(final GameCenterData gameCenterData) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                setLayout();
-                                loaderView.setIndeterminate(false);
-                                manager.resources = getIntent().getStringExtra("gameResources");
-                                manager.gameConfig = gameCenterData.initCode;
-                                manager.path = gameCenterData.url;
-                                try {
-                                    GameScreenOptions options = gameCenterData.options;
-                                    manager.resources = JsonParser.getJson(gameCenterData.resources);
-                                    isFullscreen = options != null && options.fullScreen;
-                                    setOrientationFromOptions(options);
-                                    if (forceFullscreen != null)
-                                        isFullscreen = forceFullscreen;
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                                replaceConfigs();
-                            }
-                        });
-                    }
-                },
-                new UseCaseCallback<FilePathAndContent>() {
-                    @Override
-                    public void onError(String message) {
-                        webView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                closeButton.setVisibility(View.VISIBLE);
-                                showRefresh.run();
-                            }
-                        });
-                        GameStoryData dataModel = getStoryDataModel();
-                        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-                            CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
-                                    dataModel,
-                                    getIntent().getStringExtra("gameId")
-                            );
                         }
-                        InAppStoryManager.showDLog("Game_Loading", message);
-                    }
-
-                    @Override
-                    public void onSuccess(final FilePathAndContent result) {
-                        manager.gameLoaded = true;
-                        webView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                webView.loadDataWithBaseURL(
-                                        result.getFilePath(),
-                                        webView.setDir(
-                                                result.getFileContent()
-                                        ),
-                                        "text/html; charset=utf-8", "UTF-8",
-                                        null);
+                    },
+                    new UseCaseCallback<FilePathAndContent>() {
+                        @Override
+                        public void onError(String message) {
+                            webView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    closeButton.setVisibility(View.VISIBLE);
+                                    showRefresh.run();
+                                }
+                            });
+                            GameStoryData dataModel = getStoryDataModel();
+                            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                                CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
+                                        dataModel,
+                                        getIntent().getStringExtra("gameId")
+                                );
                             }
-                        });
-                        refreshGame.postDelayed(showRefresh, 5000);
+                            InAppStoryManager.showDLog("Game_Loading", message);
+                        }
+
+                        @Override
+                        public void onSuccess(final FilePathAndContent result) {
+                            manager.gameLoaded = true;
+                            webView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    webView.loadDataWithBaseURL(
+                                            result.getFilePath(),
+                                            webView.setDir(
+                                                    result.getFileContent()
+                                            ),
+                                            "text/html; charset=utf-8", "UTF-8",
+                                            null);
+                                }
+                            });
+                            refreshGame.postDelayed(showRefresh, 5000);
+                        }
                     }
-                }
-        );
+            );
 
     }
 
