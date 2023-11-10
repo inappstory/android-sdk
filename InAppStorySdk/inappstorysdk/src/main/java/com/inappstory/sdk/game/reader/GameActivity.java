@@ -102,8 +102,6 @@ import java.util.UUID;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
 
-
-    GameCacheManager gameCacheManager = InAppStoryService.getInstance().gameCacheManager();
     private IASWebView webView;
     private ImageView loader;
     private View closeButton;
@@ -874,17 +872,19 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             final String gameId,
             final GameDownloadCallback callback
     ) {
-        gameCacheManager.getGame(gameId, new GameLoadCallback() {
-            @Override
-            public void onSuccess(GameCenterData gameCenterData) {
-                if (callback != null) callback.complete(gameCenterData);
-            }
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.gameCacheManager().getGame(gameId, new GameLoadCallback() {
+                @Override
+                public void onSuccess(GameCenterData gameCenterData) {
+                    if (callback != null) callback.complete(gameCenterData);
+                }
 
-            @Override
-            public void onError(String error) {
-                if (callback != null) callback.error(error);
-            }
-        });
+                @Override
+                public void onError(String error) {
+                    if (callback != null) callback.error(error);
+                }
+            });
 
     }
 
