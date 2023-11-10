@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.managers;
 
 import android.os.Handler;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -137,9 +137,6 @@ public class TimerManager {
     }
 
     public void pauseTimer() {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
         Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
         IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();

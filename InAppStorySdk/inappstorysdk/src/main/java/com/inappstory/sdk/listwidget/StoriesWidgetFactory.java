@@ -67,7 +67,6 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
         return mWidgetItems.size();
     }
 
@@ -151,7 +150,6 @@ public class StoriesWidgetFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public boolean hasStableIds() {
-        // TODO Auto-generated method stub
         return true;
     }
 

@@ -31,7 +31,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
@@ -88,8 +88,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         super.onStop();
 
     }
-
-    //TODO set elasticView statuses on story change
 
     @Override
     public void finish() {
@@ -267,6 +265,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
+    public void storyIsOpened(int currentStoryId) {
+        IPreviewStoryDTO previewStoryDTO =
+                IASCore.getInstance().getStoriesRepository(type).getStoryPreviewById(currentStoryId);
+        if (draggableFrame != null) {
+            draggableFrame.setDisableClose(previewStoryDTO.disableClose());
+            draggableFrame.setHasSwipeUp(previewStoryDTO.hasSwipeUp());
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;
@@ -275,7 +283,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         }
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_activity_stories_draggable);
-        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
+        if (InAppStoryManager.isNull()) {
             finish();
             return;
         }
@@ -296,7 +304,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         animatedContainer = findViewById(R.id.animatedContainer);
-        //scrollView = findViewById(R.id.scrollContainer);
         chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
             @Override
             public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
@@ -346,11 +353,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 StatusBarController.hideStatusBar(StoriesActivity.this, true);
             }
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             finish();
             return;
         }
-        InAppStoryService.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
+        IASCore.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
         type = (Story.StoryType) getIntent().getSerializableExtra("storiesType");
         if (type == null) type = Story.StoryType.COMMON;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
@@ -387,7 +393,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             t.addToBackStack("TEST");
             t.commit();
         } catch (IllegalStateException e) {
-            InAppStoryService.createExceptionLog(e);
             finishWithoutAnimation();
         }
     }
@@ -408,7 +413,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 t.addToBackStack("STORIES_FRAGMENT");
                 t.commit();
             } catch (IllegalStateException e) {
-                InAppStoryService.createExceptionLog(e);
                 finishWithoutAnimation();
             }
         } else {
@@ -471,7 +475,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void closeStoryReader(CloseReader action, String cause) {
         if (closing) return;
         closing = true;
-        InAppStoryService.getInstance().getListNotifier().closeReader(
+        IASCore.getInstance().getListNotifier().closeReader(
                 getIntent().getStringExtra("listID")
         );
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -526,7 +530,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void cleanReader() {
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        IASCore.getInstance().getStoriesRepository(type).clear();
+        IASCore.getInstance().getStoriesRepository(type).clearReaderModels();
         IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }

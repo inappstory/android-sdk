@@ -36,7 +36,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
@@ -114,6 +114,16 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             storiesFragment.removeAllStoriesFromFavorite();
     }
 
+    @Override
+    public void storyIsOpened(int currentStoryId) {
+        IPreviewStoryDTO previewStoryDTO =
+                IASCore.getInstance().getStoriesRepository(type).getStoryPreviewById(currentStoryId);
+        if (draggableFrame != null) {
+            draggableFrame.setDisableClose(previewStoryDTO.disableClose());
+            draggableFrame.setHasSwipeUp(previewStoryDTO.hasSwipeUp());
+        }
+    }
+
 
     @Override
     public void finish() {
@@ -167,13 +177,10 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
                 @Override
                 public void onAnimationStart(Animation animation) {
-                    // TODO Auto-generated method stub
-
                 }
 
                 @Override
                 public void onAnimationRepeat(Animation animation) {
-                    // TODO Auto-generated method stub
 
                 }
 
@@ -248,7 +255,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             bundle.putString(CS_READER_SETTINGS,
                     JsonParser.getJson(new StoriesReaderSettings(getIntent().getExtras())));
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
     }
@@ -265,7 +271,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
         super.onCreate(savedInstanceState1);
         setContentView(R.layout.cs_activity_stories);
-        if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
+        if (InAppStoryManager.isNull()) {
             finishWithoutAnimation();
             return;
         }
@@ -297,11 +303,10 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 StatusBarController.hideStatusBar(StoriesFixedActivity.this, true);
             }
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             finish();
             return;
         }
-        InAppStoryService.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
+        IASCore.getInstance().getListNotifier().openReader(getIntent().getStringExtra("listID"));
         type = (Story.StoryType) getIntent().getSerializableExtra("storiesType");
         if (type == null) type = Story.StoryType.COMMON;
         if (savedInstanceState == null) {
@@ -335,7 +340,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                         t.addToBackStack("STORIES_FRAGMENT");
                         t.commit();
                     } catch (IllegalStateException e) {
-                        InAppStoryService.createExceptionLog(e);
                         finishWithoutAnimation();
                     }
                 } else {
@@ -347,12 +351,9 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void closeStoryReader(CloseReader action, String cause) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            service.getListNotifier().closeReader(
-                    getIntent().getStringExtra("listID")
-            );
-        }
+        IASCore.getInstance().getListNotifier().closeReader(
+                getIntent().getStringExtra("listID")
+        );
         IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
@@ -399,7 +400,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     public void cleanReader() {
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        IASCore.getInstance().getStoriesRepository(type).clear();
+        IASCore.getInstance().getStoriesRepository(type).clearReaderModels();
         IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }

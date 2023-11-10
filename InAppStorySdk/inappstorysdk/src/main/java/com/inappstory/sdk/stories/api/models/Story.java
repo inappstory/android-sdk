@@ -1,9 +1,6 @@
 package com.inappstory.sdk.stories.api.models;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.network.annotations.models.Required;
 import com.inappstory.sdk.core.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
@@ -11,14 +8,13 @@ import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Paperrose on 08.07.2018.
  */
 
 
-public class Story implements Parcelable {
+public class Story {
     @Required
     public int id;
 
@@ -38,8 +34,7 @@ public class Story implements Parcelable {
     }
 
     public String getTitle() {
-        String tmp = title != null ? title : "";
-        return getReplacedField(tmp);
+        return title;
     }
 
     public String getSlideEventPayload(int slideIndex) {
@@ -52,11 +47,6 @@ public class Story implements Parcelable {
         return null;
     }
 
-    public boolean checkIfEmpty() {
-        boolean res = (getLayout() == null || pages == null || pages.isEmpty());
-        res = res && (slidesStructure == null || slidesStructure.isEmpty());
-        return res;
-    }
 
     public List<Image> getImage() {
         return image;
@@ -129,24 +119,6 @@ public class Story implements Parcelable {
 
     public String tags;
 
-    public String getSource() {
-        String tmp = source != null ? source : "";
-        return getReplacedField(tmp);
-    }
-
-    private String getReplacedField(String tmp) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return tmp;
-        Map<String, String> localPlaceholders = InAppStoryService.getInstance().getPlaceholders();
-        for (String key : localPlaceholders.keySet()) {
-            String modifiedKey = "%" + key + "%";
-            String value = localPlaceholders.get(key);
-            if (value != null) {
-                tmp = tmp.replace(modifiedKey, value);
-            }
-        }
-        return tmp;
-    }
 
     public String source;
 
@@ -183,19 +155,6 @@ public class Story implements Parcelable {
             slidesShare = new ArrayList<>();
         }
         return slidesShare;
-    }
-
-    public boolean isScreenshotShare(int index) {
-        return shareType(index) == 1;
-    }
-
-
-    public int shareType(int index) {
-        if (slidesShare == null) return 0;
-        if (slidesShare.size() <= index) return 0;
-        if (slidesShare.get(index) != null)
-            return slidesShare.get(index);
-        return 0;
     }
 
     public int getSlidesCount() {
@@ -259,75 +218,8 @@ public class Story implements Parcelable {
         return imagePlaceholdersList;
     }
 
-    public List<String> getPlaceholdersListNames(int index) {
-        ArrayList<String> res = new ArrayList<>();
-        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                String name = object.getUrl();
-                if (name != null) res.add(name);
-            }
-
-        }
-        return res;
-    }
-
-
-    public Map<String, String> getPlaceholdersList(int index, String type) {
-        Map<String, String> res = new HashMap<>();
-        for (ImagePlaceholderMappingObject object : getImagePlaceholdersList()) {
-            if (object.getIndex() == index && (object.getType().equals("image-placeholder"))) {
-                res.put(object.getKey(), object.getUrl());
-            }
-        }
-        return res;
-    }
-
-
-    public List<String> getSrcListKeys(int index, String type) {
-        ArrayList<String> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
-            String objType = object.getType();
-            if (object.getIndex() == index &&
-                    (
-                            (type == null && (objType == null || objType.equals("image")))
-                                    ||
-                                    (object.getType() != null && object.getType().equals(type))
-                    )
-            )
-                res.add(object.getKey());
-        }
-        return res;
-    }
-
-
-    public List<String> getSrcListUrls(int index, String type) {
-        ArrayList<String> res = new ArrayList<>();
-        for (ResourceMappingObject object : getSrcList()) {
-            String objType = object.getType();
-            if (object.getIndex() == index &&
-                    (
-                            (type == null && (objType == null || objType.equals("image")))
-                                    ||
-                                    (object.getType() != null && object.getType().equals(type))
-                    )
-            )
-                res.add(object.getUrl());
-
-        }
-        return res;
-    }
-
-
     public int getLike() {
         return like != null ? like : 0;
-    }
-
-    public boolean liked() {
-        return getLike() == 1;
-    }
-
-    public boolean disliked() {
-        return getLike() == -1;
     }
 
     public boolean isHideInReader() {
@@ -351,13 +243,6 @@ public class Story implements Parcelable {
         return hasAudio != null ? hasAudio : false;
     }
 
-    public void saveStoryOpened(StoryType type) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().saveStoryOpened(id, type);
-        }
-    }
-
-
     @SerializedName("like_functional")
     public Boolean hasLike;
 
@@ -379,109 +264,10 @@ public class Story implements Parcelable {
     @SerializedName("slides_structure")
     public List<SlideStructure> slidesStructure;
 
-    public List<Boolean> loadedPages = new ArrayList<>();
-
     @SerializedName("layout")
     public String layout;
 
     public Story() {
-    }
-
-    public Story getSimpleCopy() {
-        Story story = new Story();
-        story.id = id;
-        story.lastIndex = lastIndex;
-        story.title = title;
-        story.statTitle = statTitle;
-        story.source = source;
-        story.backgroundColor = backgroundColor;
-        story.image = image;
-        story.like = like;
-        story.hasAudio = hasAudio;
-        story.slidesCount = slidesCount;
-        story.titleColor = titleColor;
-        story.isOpened = isOpened;
-        story.durations = new ArrayList<>();
-        if (durations != null) {
-            story.durations.addAll(durations);
-            story.slidesCount = durations.size();
-        }
-        if (slidesShare != null) {
-            story.slidesShare.addAll(slidesShare);
-        }
-        story.favorite = favorite;
-        //nar.pages = pages;
-        return story;
-    }
-
-    public Story(Parcel in) {
-        super();
-        readFromParcel(in);
-    }
-
-    public void readFromParcel(Parcel in) {
-        if (durations == null) durations = new ArrayList<>();
-        if (slidesShare == null) slidesShare = new ArrayList<>();
-        if (pages == null) pages = new ArrayList<>();
-        id = in.readInt();
-        lastIndex = in.readInt();
-        title = in.readString();
-        source = in.readString();
-        backgroundColor = in.readString();
-        image = in.createTypedArrayList(Image.CREATOR);
-        like = in.readInt();
-        slidesCount = in.readInt();
-        titleColor = in.readString();
-        isOpened = (in.readInt() == 1);
-        in.readList(durations, Integer.class.getClassLoader());
-        if (durations != null || !durations.isEmpty()) {
-            slidesCount = durations.size();
-        }
-        in.readList(pages, String.class.getClassLoader());
-        favorite = (in.readInt() == 1);
-        layout = in.readString();
-        in.readList(slidesShare, Boolean.class.getClassLoader());
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        if (durations == null) durations = new ArrayList<>();
-        if (slidesShare == null) slidesShare = new ArrayList<>();
-        if (pages == null) pages = new ArrayList<>();
-        dest.writeInt(id);
-        dest.writeInt(lastIndex);
-        dest.writeString(title);
-        dest.writeString(statTitle);
-        dest.writeString(source);
-        dest.writeString(backgroundColor);
-        dest.writeTypedList(image);
-        dest.writeInt(like);
-        dest.writeInt((durations != null && !durations.isEmpty()) ? durations.size() : slidesCount);
-        dest.writeString(titleColor);
-        dest.writeInt(isOpened ? 1 : 0);
-        dest.writeList(durations);
-        dest.writeList(pages);
-        dest.writeInt(favorite ? 1 : 0);
-        dest.writeString(layout);
-        dest.writeList(slidesShare);
-
-    }
-
-    public static final Parcelable.Creator<Story> CREATOR = new Parcelable.Creator<Story>() {
-        public Story createFromParcel(Parcel in) {
-            return new Story(in);
-        }
-
-        public Story[] newArray(int size) {
-
-            return new Story[size];
-        }
-
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
     }
 
     @Override

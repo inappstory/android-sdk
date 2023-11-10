@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
@@ -26,7 +26,7 @@ public class UseCaseCallbackCallToAction implements IUseCaseCallbackWithContext 
         } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
             CallbackManager.getInstance().getUrlClickCallback().onUrlClick(deeplink);
         } else {
-            if (!InAppStoryService.isConnected()) {
+            if (IASCore.getInstance().notConnected()) {
                 if (CallbackManager.getInstance().getErrorCallback() != null) {
                     CallbackManager.getInstance().getErrorCallback().noConnection();
                 }
@@ -38,7 +38,7 @@ public class UseCaseCallbackCallToAction implements IUseCaseCallbackWithContext 
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(i);
             } catch (Exception e) {
-                InAppStoryService.createExceptionLog(e);
+
             }
         }
     }

@@ -2,12 +2,15 @@ package com.inappstory.sdk.core.repository.files;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
 
 public interface IFilesRepository {
+    LruDiskCache getInfiniteCache();
+
     void getStoryPreview(
             @NonNull String url,
             IFileDownloadCallback fileDownloadCallback
@@ -22,6 +25,8 @@ public interface IFilesRepository {
             @NonNull String url,
             @NonNull String cacheKey,
             @NonNull String downloadPath,
+            Long size,
+            String sha,
             IFileDownloadCallback fileDownloadCallback,
             @NonNull IFileDownloadProgressCallback progressCallback,
             @NonNull DownloadInterruption interruption
@@ -29,6 +34,8 @@ public interface IFilesRepository {
 
     void getGameSplash(
             @NonNull String url,
+            Long size,
+            String sha,
             IFileDownloadCallback fileDownloadCallback
     );
 
@@ -49,7 +56,10 @@ public interface IFilesRepository {
 
     void getZipArchive(
             @NonNull String url,
-            @NonNull String downloadPath,
+            @NonNull String zipArchiveName,
+            Long size,
+            String sha,
+            Long totalFilesSize,
             IFileDownloadCallback fileDownloadCallback,
             @NonNull IFileDownloadProgressCallback progressCallback,
             @NonNull DownloadInterruption interruption
@@ -57,5 +67,9 @@ public interface IFilesRepository {
 
     String getLocalStoryFile(@NonNull String url);
 
+    String getLocalGameResource(@NonNull String url);
+
     void clearCaches();
+
+    void removeOldGameFiles(String gameName, String newUrl);
 }

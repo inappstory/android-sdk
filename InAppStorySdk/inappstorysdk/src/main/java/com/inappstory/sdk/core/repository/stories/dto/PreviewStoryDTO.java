@@ -2,11 +2,14 @@ package com.inappstory.sdk.core.repository.stories.dto;
 
 import androidx.annotation.Nullable;
 
+
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class PreviewStoryDTO implements IPreviewStoryDTO {
@@ -19,7 +22,20 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
     }
 
     public String getTitle() {
-        return title;
+        return getFieldWithPlaceholders(title);
+    }
+
+    private String getFieldWithPlaceholders(String tmp) {
+        if (tmp == null) return "";
+        Map<String, String> localPlaceholders = IASCore.getInstance().getPlaceholders();
+        for (String key : localPlaceholders.keySet()) {
+            String modifiedKey = "%" + key + "%";
+            String value = localPlaceholders.get(key);
+            if (value != null) {
+                tmp = tmp.replace(modifiedKey, value);
+            }
+        }
+        return tmp;
     }
 
     public String getStatTitle() {

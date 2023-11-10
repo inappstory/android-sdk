@@ -262,7 +262,6 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         setLayout();
         setAdapter(adapter);
         listNotify.bindList(this);
-        allListsNotify.bindListAdapter(adapter);
     }
 
     private void setLayout() {
@@ -300,7 +299,6 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
                 Story.StoryType.COMMON
         );
         allListsNotify = new AllStoriesListsNotify(
-                Story.StoryType.COMMON,
                 new ChangeUserIdListNotify() {
                     @Override
                     public void onChange() {

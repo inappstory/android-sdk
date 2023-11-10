@@ -1,6 +1,5 @@
 package com.inappstory.sdk.core.repository.session.usecase;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
@@ -17,10 +16,7 @@ import java.util.List;
 public class CloseSession implements ICloseSession {
     private void clearCaches() {
         IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.clearGames();
-        }
+        IASCore.getInstance().gameRepository.clearGames();
     }
 
     @Override

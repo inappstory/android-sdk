@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.network.utils.ConnectionHeadersMap;
 import com.inappstory.sdk.core.network.utils.ResponseStringFromStream;
@@ -31,6 +32,9 @@ public abstract class FileDownload implements IFileDownload {
     private boolean loading = false;
     private final ApiLogRequest requestLog;
     private final ApiLogResponse responseLog;
+    private final Long checkSize;
+    private final Long needSpace;
+    private final String checkSha1;
 
     protected final LruDiskCache cache;
 
@@ -44,10 +48,30 @@ public abstract class FileDownload implements IFileDownload {
     ) {
         this.url = url;
         this.cache = cache;
+        this.checkSize = null;
+        this.checkSha1 = null;
+        this.needSpace = null;
         this.requestId = UUID.randomUUID().toString();
         this.requestLog = new ApiLogRequest();
         this.responseLog = new ApiLogResponse();
 
+    }
+
+    public FileDownload(
+            @NonNull String url,
+            Long checkSize,
+            String checkSha1,
+            Long needSpace,
+            @NonNull LruDiskCache cache
+    ) {
+        this.url = url;
+        this.cache = cache;
+        this.checkSize = checkSize;
+        this.checkSha1 = checkSha1;
+        this.needSpace = needSpace != null ? needSpace : checkSize;
+        this.requestId = UUID.randomUUID().toString();
+        this.requestLog = new ApiLogRequest();
+        this.responseLog = new ApiLogResponse();
     }
 
     private void generateRequestLog() {
@@ -83,6 +107,10 @@ public abstract class FileDownload implements IFileDownload {
 
         long sz = urlConnection.getContentLength();
         File outputFile = generateFileDirsAndGetOutputFile();
+        if (outputFile == null) {
+            fileDownloadError(-1, "Error in file name");
+            return null;
+        }
         long freeSpace = outputFile.getFreeSpace();
         if (freeSpace > 0 && sz > freeSpace) {
             urlConnection.disconnect();
@@ -153,7 +181,13 @@ public abstract class FileDownload implements IFileDownload {
                 }
             }
             releaseStreamAndFile(fileOutputStream, lock);
-            return new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
+            FileChecker fileChecker = new FileChecker();
+            if (fileChecker.checkWithShaAndSize(outputFile, checkSize, checkSha1, true)) {
+                return new DownloadFileState(outputFile, outputFile.length(), outputFile.length());
+            } else {
+                fileDownloadError(-1, "File is incorrect");
+                return null;
+            }
         } catch (Exception e) {
             releaseStreamAndFile(fileOutputStream, lock);
             if (allowPartial) {
@@ -178,7 +212,7 @@ public abstract class FileDownload implements IFileDownload {
         if (url == null || url.isEmpty() || key == null || key.isEmpty()) {
             fileDownloadError(-1, "Wrong resource key or url");
             return null;
-        } else  if (cache.hasKey(key)) {
+        } else if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
             if (fileState != null
                     && fileState.file != null
@@ -192,6 +226,7 @@ public abstract class FileDownload implements IFileDownload {
         }
         return null;
     }
+
 
     public void downloadOrGetFromCache() throws Exception {
         synchronized (downloadLock) {
@@ -221,15 +256,28 @@ public abstract class FileDownload implements IFileDownload {
                 if (fileState.downloadedSize != fileState.totalSize) {
                     offset = fileState.downloadedSize;
                 } else {
-                    fileDownloadSuccess(fileState.file.getAbsolutePath());
-                    headers.put("From Cache", "true");
-                    responseLog.generateFile(200, fileState.file.getAbsolutePath(), headers);
-                    InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
-                    return;
+                    FileChecker fileChecker = new FileChecker();
+                    if (fileChecker.checkWithShaAndSize(
+                            fileState.file,
+                            checkSize,
+                            checkSha1,
+                            true
+                    )) {
+                        fileDownloadSuccess(fileState.file.getAbsolutePath());
+                        headers.put("From Cache", "true");
+                        responseLog.generateFile(200, fileState.file.getAbsolutePath(), headers);
+                        InAppStoryManager.sendApiRequestResponseLog(requestLog, responseLog);
+                        return;
+                    } else {
+                        cache.delete(key);
+                    }
                 }
             }
         }
-
+        if (needSpace != null && needSpace > cache.getFreeSpace()) {
+            fileDownloadError(-1, "No free space to download file");
+            return;
+        }
         InAppStoryManager.showDLog("InAppStory_File", url);
         InAppStoryManager.sendApiRequestLog(requestLog);
 
@@ -278,13 +326,15 @@ public abstract class FileDownload implements IFileDownload {
         fileOutputStream.flush();
         try {
             lock.release();
-        } catch (Exception e2) {
+        } catch (Exception ignored) {
         }
         fileOutputStream.close();
     }
 
     private File generateFileDirsAndGetOutputFile() throws Exception {
-        File outputFile = new File(getDownloadFilePath());
+        String path = getDownloadFilePath();
+        if (path == null) return null;
+        File outputFile = new File(path);
         File parentFile = outputFile.getParentFile();
         if (parentFile != null)
             parentFile.mkdirs();

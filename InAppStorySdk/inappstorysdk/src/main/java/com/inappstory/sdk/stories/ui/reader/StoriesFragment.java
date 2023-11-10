@@ -165,7 +165,21 @@ public class StoriesFragment extends Fragment
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
+        parentScreenStoryIsOpened();
+    }
 
+    private void parentScreenStoryIsOpened() {
+        if (Sizes.isTablet(getContext())) {
+            if (getParentFragment() instanceof BaseReaderScreen) {
+                ((BaseReaderScreen) getParentFragment()).storyIsOpened(
+                        readerManager.getCurrentStoryId()
+                );
+            }
+        } else if (getActivity() instanceof BaseReaderScreen) {
+            ((BaseReaderScreen) getActivity()).storyIsOpened(
+                    readerManager.getCurrentStoryId()
+            );
+        }
     }
 
     public ReaderManager readerManager;
@@ -183,7 +197,7 @@ public class StoriesFragment extends Fragment
     private void closeFragment() {
         if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentScreen != null)
             ScreensManager.getInstance().currentScreen.forceFinish();
-        else if (!Sizes.isTablet()) {
+        else if (!Sizes.isTablet(getContext())) {
             Activity activity = getActivity();
             if (activity instanceof BaseReaderScreen)
                 ((BaseReaderScreen) activity).forceFinish();

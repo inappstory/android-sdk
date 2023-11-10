@@ -224,7 +224,6 @@ public class StoriesWidgetService extends RemoteViewsService {
 
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        // TODO Auto-generated method stub
         factory = new WeakReference<>(new StoriesWidgetFactory(this.getApplicationContext(), intent));
         return factory.get();
     }

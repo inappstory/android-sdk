@@ -88,6 +88,17 @@ public class LruDiskCache {
         }
     }
 
+
+    public void clearUntilSize(long needSize) {
+        synchronized (journal) {
+            try {
+                journal.checkFreeSize(needSize, getCacheSize());
+            } catch (IOException ignored) {
+
+            }
+        }
+    }
+
     public File put(String key, File file, long fileSize, long downloadedSize) throws IOException {
         synchronized (journal) {
             keyIsValid(key);
@@ -136,6 +147,11 @@ public class LruDiskCache {
 
     public long getCacheSize() {
         synchronized (journal) {
+            if (this == infiniteCache) {
+                return getFreeSpace() -
+                        (commonCache != null ? commonCache.getCacheSize() : 0) -
+                        (fastCache != null ? fastCache.getCacheSize() : 0);
+            }
             return cacheSize;
         }
     }

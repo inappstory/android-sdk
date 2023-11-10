@@ -6,8 +6,8 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 public class GeneratedViewSizes {
     public static Point getSizes() {
-        Point pt = Sizes.getScreenSize();
-        pt.y -= Sizes.dpToPxExt(60);
+        Point pt = Sizes.getScreenSize(null);
+        pt.y -= Sizes.dpToPxExt(60, null);
         pt.y -= fixedDrop;
         return pt;
     }
@@ -19,6 +19,6 @@ public class GeneratedViewSizes {
     }
 
     public static int getEMInDp() {
-        return Sizes.pxToDpExt(getEMInPx());
+        return Sizes.pxToDpExt(getEMInPx(), null);
     }
 }

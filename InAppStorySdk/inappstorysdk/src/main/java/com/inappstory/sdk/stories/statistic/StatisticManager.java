@@ -5,7 +5,7 @@ import android.os.HandlerThread;
 import android.text.TextUtils;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.network.NetworkClient;
@@ -44,7 +44,7 @@ public class StatisticManager {
     public static final String SWIPE = "swipe-close";
     public static final String CUSTOM = "custom-close";
 
-    private Object statisticTasksLock = new Object();
+    private final Object statisticTasksLock = new Object();
 
     public ArrayList<StatisticTask> getTasks() {
         return tasks;
@@ -64,8 +64,7 @@ public class StatisticManager {
 
 
     public void addTask(StatisticTask task, boolean force) {
-        if (!force && InAppStoryService.isNotNull() &&
-                !InAppStoryService.getInstance().getSendNewStatistic()) return;
+        if (!force && !IASCore.getInstance().getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -75,8 +74,7 @@ public class StatisticManager {
 
 
     public void addFakeTask(StatisticTask task) {
-        if (InAppStoryService.isNotNull() &&
-                !InAppStoryService.getInstance().getSendNewStatistic()) return;
+        if (!IASCore.getInstance().getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -190,13 +188,13 @@ public class StatisticManager {
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.isNull()
-                    || !InAppStoryService.isConnected()) {
+            if (getInstance().tasks == null || getInstance().tasks.size() == 0
+                    || IASCore.getInstance().notConnected()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
             }
             StatisticTask task;
-            synchronized (getInstance().statisticTasksLock) {
+            synchronized (statisticTasksLock) {
                 task = getInstance().tasks.get(0);
                 getInstance().tasks.remove(0);
                 saveTasksSP();
@@ -294,7 +292,7 @@ public class StatisticManager {
 
     public void generateBase(StatisticTask task) {
         task.sessionId = Session.getInstance().id;
-        if (InAppStoryService.isNotNull())
+        if (InAppStoryManager.getInstance() != null)
             task.userId = InAppStoryManager.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;
     }

@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
@@ -135,8 +135,6 @@ public abstract class BaseStoriesListAdapter
 
     @Override
     public void onBindViewHolder(@NonNull final BaseStoriesListItem holder, int position) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
         if (holder instanceof IStoriesListFavoriteItem && this instanceof IFavoriteCellUpdate) {
             ((IStoriesListFavoriteItem) holder).bindFavorite(((IFavoriteCellUpdate) this).getFavoriteImages());
             ((IStoriesListFavoriteItem) holder).setImages(((IFavoriteCellUpdate) this).getFavoriteImages());
@@ -222,9 +220,6 @@ public abstract class BaseStoriesListAdapter
 
     @Override
     public void onItemClick(int ind) {
-        if (InAppStoryService.isNull()) return;
-
-
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
 

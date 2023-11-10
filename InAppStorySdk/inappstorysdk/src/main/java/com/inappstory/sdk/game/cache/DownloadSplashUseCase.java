@@ -4,7 +4,7 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.GameSplashScreen;
@@ -56,24 +56,15 @@ public class DownloadSplashUseCase {
             splashScreenCallback.onError("splash screen is not valid");
             return;
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) {
-            splashScreenCallback.onError("InAppStory service is unavailable");
-            return;
-        }
         IASCore.getInstance().filesRepository.getGameSplash(
-                splashScreen.url, new IFileDownloadCallback() {
+                splashScreen.url,
+                splashScreen.size,
+                splashScreen.sha1,
+                new IFileDownloadCallback() {
                     @Override
                     public void onSuccess(String fileAbsolutePath) {
                         File file = new File(fileAbsolutePath);
-                        if (fileChecker.checkWithShaAndSize(
-                                file,
-                                splashScreen.size,
-                                splashScreen.sha1,
-                                true
-                        )) {
-                            splashScreenCallback.onSuccess(file);
-                        }
+                        splashScreenCallback.onSuccess(file);
                     }
 
                     @Override

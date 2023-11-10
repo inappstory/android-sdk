@@ -1,9 +1,10 @@
 package com.inappstory.sdk.stories.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.network.JsonParser;
 
 import java.util.HashMap;
@@ -15,15 +16,12 @@ public class KeyValueStorage {
         KeyValueStorage.context = context;
     }
 
+    @SuppressLint("StaticFieldLeak")
     private static Context context;
 
     private static final String SHARED_PREFERENCES_DEFAULT = "default_n";
 
     public static SharedPreferences getDefaultPreferences() {
-        if (context == null) {
-            if (InAppStoryService.isNull()) return null;
-            context = InAppStoryService.getInstance().getContext();
-        }
         if (context == null) return null;
         return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);
     }
@@ -75,7 +73,6 @@ public class KeyValueStorage {
             editor.putString(key, JsonParser.getJson(value));
             editor.apply();
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -96,12 +93,12 @@ public class KeyValueStorage {
      * Сохранение json объекта
      */
     public static void saveMap(String key, HashMap value) {
+        if (getDefaultPreferences() == null) return;
         SharedPreferences.Editor editor = getDefaultPreferences().edit();
         try {
             editor.putString(key, JsonParser.getJson(value));
             editor.apply();
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
         }
     }
 

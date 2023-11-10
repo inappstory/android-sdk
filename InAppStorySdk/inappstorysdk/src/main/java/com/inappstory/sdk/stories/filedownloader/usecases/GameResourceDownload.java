@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.filedownloader.usecases;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
@@ -18,11 +18,14 @@ public final class GameResourceDownload extends ProgressFileDownload {
     public GameResourceDownload(
             @NonNull String url,
             @NonNull String cacheKey,
+            Long checkSize,
+            String checkSha1,
+            Long needSpace,
             @NonNull LruDiskCache cache,
             @NonNull String downloadPath,
             @NonNull DownloadInterruption interruption
     ) {
-        super(url, cache);
+        super(url, checkSize, checkSha1, needSpace, cache);
         this.cacheKey = cacheKey;
         this.downloadPath = downloadPath;
         this.interruption = interruption;

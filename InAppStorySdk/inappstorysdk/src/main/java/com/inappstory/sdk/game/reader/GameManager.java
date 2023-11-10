@@ -8,7 +8,7 @@ import android.os.Build;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
@@ -120,7 +120,6 @@ public class GameManager {
     }
 
     void storySetData(final String data, boolean sendToServer) {
-        if (InAppStoryService.isNull()) return;
         if (dataModel == null) return;
         final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
@@ -130,7 +129,7 @@ public class GameManager {
         KeyValueStorage.saveString("story" + dataModel.slideData.story.id
                 + "__" + InAppStoryManager.getInstance().getUserId(), data);
 
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
+        if (!IASCore.getInstance().getSendStatistic()) return;
         if (sendToServer) {
             IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
                 @Override
@@ -240,7 +239,6 @@ public class GameManager {
     }
 
     void tapOnLink(String link, Context context) {
-        if (InAppStoryService.isNull()) return;
         SlideData data = null;
         if (dataModel != null) {
             data = dataModel.slideData;

@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 
@@ -58,7 +58,6 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
             bundle.putParcelableArray("states", null);
             return bundle;
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             return new Bundle();
         }
     }

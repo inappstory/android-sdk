@@ -19,6 +19,16 @@ public abstract class ProgressFileDownload extends FileDownload {
         super(url, cache);
     }
 
+    public ProgressFileDownload(
+            @NonNull String url,
+            Long checkSize,
+            String checkSha1,
+            Long needSpace,
+            @NonNull LruDiskCache cache
+    ) {
+        super(url, checkSize, checkSha1, needSpace, cache);
+    }
+
     public FileDownload addProgressCallback(IFileDownloadProgressCallback progressCallback) {
         synchronized (progressLock) {
             progressCallbacks.add(progressCallback);

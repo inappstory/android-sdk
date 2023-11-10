@@ -13,7 +13,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.stories.statistic.StatisticManager;

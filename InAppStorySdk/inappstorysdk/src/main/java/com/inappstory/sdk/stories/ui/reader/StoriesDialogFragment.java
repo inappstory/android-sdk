@@ -28,7 +28,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
@@ -110,7 +110,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void cleanReader() {
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        IASCore.getInstance().getStoriesRepository(type).clear();
+        IASCore.getInstance().getStoriesRepository(type).clearReaderModels();
         IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
     }
@@ -130,7 +130,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void closeStoryReader(CloseReader action, String cause) {
-        InAppStoryService.getInstance().getListNotifier().closeReader(getArguments().getString("listID"));
+        IASCore.getInstance().getListNotifier().closeReader(getArguments().getString("listID"));
         dismissAllowingStateLoss();
     }
 
@@ -173,6 +173,11 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     @Override
+    public void storyIsOpened(int currentStoryId) {
+
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
 
@@ -181,7 +186,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             return;
         int dialogHeight = getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
 
-        Point size = Sizes.getScreenSize();
+        Point size = Sizes.getScreenSize(getContext());
         if (Build.VERSION.SDK_INT >= 28) {
             if (getContext() instanceof Activity) {
                 WindowInsets insets =
@@ -294,7 +299,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                     fragmentArgs.getInt(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
             bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
 

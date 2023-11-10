@@ -15,7 +15,7 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.StoryLink;
@@ -90,14 +90,14 @@ public class ElementGenerator {
         }
         File fl = null;
         try {
-            fl = InAppStoryService.getInstance().getCommonCache().getFullFile(prePath + imgPath);
+          //  fl = InAppStoryService.getInstance().getCommonCache().getFullFile(prePath + imgPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
         if (fl == null) {
-            ImageLoader.getInstance().displayImage(prePath + imgPath,
+            /*ImageLoader.getInstance().displayImage(prePath + imgPath,
                     -1, (GeneratedImageView) generatedView.view,
-                    InAppStoryService.getInstance().getCommonCache());
+                    InAppStoryService.getInstance().getCommonCache());*/
         } else {
             BitmapFactory.Options options = new BitmapFactory.Options();
           //  options.inPreferredConfig = Bitmap.Config.;

@@ -40,7 +40,7 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.JsonParser;
@@ -160,7 +160,6 @@ public class ReaderPageFragment extends Fragment {
             }
             close.setLayoutParams(layoutParams);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -189,9 +188,9 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void setOffsets(View view) {
-        if (!Sizes.isTablet()) {
+        if (!Sizes.isTablet(view.getContext())) {
             if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(getContext());
+                Point screenSize = Sizes.getScreenSize(view.getContext());
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
                 float sn = 1.85f;
@@ -333,7 +332,6 @@ public class ReaderPageFragment extends Fragment {
         try {
             return createFragmentView(container);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             return new View(getContext());
         }
     }
@@ -352,7 +350,7 @@ public class ReaderPageFragment extends Fragment {
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        if (!Sizes.isTablet() && readerSettings.backgroundColor != Color.BLACK) {
+        if (!Sizes.isTablet(context) && readerSettings.backgroundColor != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
@@ -636,8 +634,7 @@ public class ReaderPageFragment extends Fragment {
         if (manager != null) {
             if (parentManager != null)
                 parentManager.removeSubscriber(manager);
-            if (InAppStoryService.getInstance() != null)
-                IASCore.getInstance().downloadManager.removeSubscriber(manager);
+            IASCore.getInstance().downloadManager.removeSubscriber(manager);
         }
         super.onDestroyView();
     }

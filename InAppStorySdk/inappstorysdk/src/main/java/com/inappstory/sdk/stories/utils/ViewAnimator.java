@@ -59,20 +59,20 @@ public class ViewAnimator {
         int duration = 1000;
         switch (animation) {
             case FADE_IN_UP:
-                yPlus = -Sizes.getScreenSize().y;
+                yPlus = -Sizes.getScreenSize(null).y;
                 xPlus = 0;
                 break;
             case FADE_IN_DOWN:
-                yPlus = Sizes.getScreenSize().y;
+                yPlus = Sizes.getScreenSize(null).y;
                 xPlus = 0;
                 break;
             case FADE_IN_LEFT:
                 yPlus = 0;
-                xPlus = -Sizes.getScreenSize().x;
+                xPlus = -Sizes.getScreenSize(null).x;
                 break;
             case FADE_IN_RIGHT:
                 yPlus = 0;
-                xPlus = Sizes.getScreenSize().x;
+                xPlus = Sizes.getScreenSize(null).x;
                 break;
         }
 
@@ -95,8 +95,8 @@ public class ViewAnimator {
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) gv.getLayoutParams();
         int xSize = lp.width;
         int ySize = lp.height;
-        if (xSize == -1) xSize = Sizes.getScreenSize().x;
-        if (ySize == -1) ySize = Sizes.getScreenSize().y;
+        if (xSize == -1) xSize = Sizes.getScreenSize(null).x;
+        if (ySize == -1) ySize = Sizes.getScreenSize(null).y;
 
         float from = 1f;
         float to = 1f;
@@ -139,9 +139,9 @@ public class ViewAnimator {
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) gv.getLayoutParams();
         int xSize = lp.width;
         int ySize = lp.height;
-        if (ySize == -1) ySize = Sizes.getScreenSize().y;
+        if (ySize == -1) ySize = Sizes.getScreenSize(null).y;
         if (xSize == -1) {
-            xSize = Sizes.getScreenSize().x;
+            xSize = Sizes.getScreenSize(null).x;
             gv.setPivotX(xSize / 2f);
             gv.setPivotY(ySize / 2f);
             gv.setScaleX(1.1f);
@@ -190,8 +190,8 @@ public class ViewAnimator {
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) gv.getLayoutParams();
         int xSize = lp.width;
         int ySize = lp.height;
-        if (xSize == -1) xSize = Sizes.getScreenSize().x;
-        if (ySize == -1) ySize = Sizes.getScreenSize().y;
+        if (xSize == -1) xSize = Sizes.getScreenSize(null).x;
+        if (ySize == -1) ySize = Sizes.getScreenSize(null).y;
 
         float xf = lp.topMargin;
         float xt = lp.topMargin;

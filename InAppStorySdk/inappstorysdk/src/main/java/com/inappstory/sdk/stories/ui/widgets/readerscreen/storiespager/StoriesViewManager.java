@@ -9,7 +9,7 @@ import android.os.Looper;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.EmptyNetworkErrorCallback;
@@ -18,9 +18,7 @@ import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.network.NetworkClient;
@@ -29,7 +27,6 @@ import com.inappstory.sdk.core.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.core.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.core.network.models.Response;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
@@ -48,7 +45,6 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackShowSlide;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.regex.Pattern;
@@ -166,7 +162,6 @@ public class StoriesViewManager {
         try {
             setWebViewSettings(story);
         } catch (IOException e) {
-            InAppStoryService.createExceptionLog(e);
         }
     }
 
@@ -283,7 +278,7 @@ public class StoriesViewManager {
             if (slideInCache == -1) {
                 pageManager.slideLoadError(index);
             } else {
-                if (!InAppStoryService.isConnected()) {
+                if (IASCore.getInstance().notConnected()) {
                     if (CallbackManager.getInstance().getErrorCallback() != null) {
                         CallbackManager.getInstance().getErrorCallback().noConnection();
                     }
@@ -324,29 +319,6 @@ public class StoriesViewManager {
     public void setStoriesView(SimpleStoriesView storiesWebView) {
         this.storiesView = storiesWebView;
         storiesWebView.checkIfClientIsSet();
-    }
-
-
-    public GameReaderLoadProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-    public File getCachedFile(String url, String key) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return null;
-        LruDiskCache cache = service.getCommonCache();
-        try {
-            return Downloader.updateFile(cache.getFullFile(key), url, cache, key);
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-            return null;
-        }
-    }
-
-    private GameReaderLoadProgressBar progressBar;
-
-    public void setProgressBar(GameReaderLoadProgressBar progressBar) {
-        this.progressBar = progressBar;
     }
 
     SimpleStoriesView storiesView;
@@ -422,13 +394,12 @@ public class StoriesViewManager {
     }
 
     public void storyStartedEvent() {
-        if (InAppStoryService.isNotNull())
-            pageManager.startStoryTimers();
+        pageManager.startStoryTimers();
         ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 
     public void storyResumedEvent(double startTime) {
-        if (InAppStoryService.isNull()) return;
+
     }
 
     public void setAudioManagerMode(String mode) {

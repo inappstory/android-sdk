@@ -18,11 +18,9 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 public class CoreProgressBar extends View {
 
-    private static final int FRAME_DURATION = 50; // ms
 
-
-    static final float STROKE_WIDTH = Sizes.dpToPxExt(4);
-    private static final float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
+    private float STROKE_WIDTH = 4;
+    private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
 
 
     public int getProgress() {
@@ -81,12 +79,14 @@ public class CoreProgressBar extends View {
     /**
      * инициализация элемента
      *
-     * @param con контекст (не используется)
+     * @param con   контекст (не используется)
      * @param attrs параметры элемента из xml (не используется)
      */
     private void init(Context con, AttributeSet attrs) {
 
         tf = Typeface.DEFAULT;
+        STROKE_WIDTH = Sizes.dpToPxExt(4, con);
+        STROKE_SIZE_HALF = STROKE_WIDTH / 2;
         setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
 
@@ -101,9 +101,9 @@ public class CoreProgressBar extends View {
         this.progress = progress;
     }
 
-    private static Paint COLOR_PAINT;
+    private Paint COLOR_PAINT;
 
-    static Paint getColorPaint(Resources resources) {
+    Paint getColorPaint(Resources resources) {
         if (COLOR_PAINT == null) {
             COLOR_PAINT = new Paint();
             COLOR_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
@@ -111,12 +111,12 @@ public class CoreProgressBar extends View {
             COLOR_PAINT.setStrokeWidth(STROKE_WIDTH);
             COLOR_PAINT.setAntiAlias(true);
         }
-
         return COLOR_PAINT;
     }
 
     /**
      * перед отрисовкой выравниваем местоположение битмапа и устанавливаем нужный угол
+     *
      * @param canvas
      */
     @Override
@@ -131,7 +131,9 @@ public class CoreProgressBar extends View {
         paint.setAntiAlias(true);
 
         long now = SystemClock.uptimeMillis();
-        if (now > lastFrameShown + FRAME_DURATION) {
+        // ms
+        int frameDuration = 50;
+        if (now > lastFrameShown + frameDuration) {
             currentFrame++;
             lastFrameShown = now;
         }
@@ -140,7 +142,7 @@ public class CoreProgressBar extends View {
 
         paint.setColor(getContext().getResources().getColor(R.color.cs_loaderColor));
         paint.setTypeface(tf);
-        paint.setTextSize(Sizes.dpToPxExt(12));
+        paint.setTextSize(Sizes.dpToPxExt(12, getContext()));
         paint.setTextAlign(Paint.Align.CENTER);
 
         paint.setStyle(Paint.Style.STROKE);

@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.filedownloader.usecases;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.filedownloader.AsyncFileDownload;
@@ -15,10 +15,13 @@ import java.util.concurrent.Executors;
 public final class GameSplashDownload extends AsyncFileDownload {
     public GameSplashDownload(
             @NonNull String url,
+            Long checkSize,
+            String checkSha1,
+            Long needSpace,
             @NonNull LruDiskCache cache,
             @NonNull ExecutorService service
     ) {
-        super(url, cache, service);
+        super(url, checkSize, checkSha1, needSpace, cache, service);
     }
 
     @Override

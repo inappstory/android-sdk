@@ -3,7 +3,8 @@ package com.inappstory.sdk.stories.uidomain.list.listnotify;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.inappstory.sdk.InAppStoryService;
+
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.ui.list.IStoriesListNotifyHandler;
 
@@ -23,9 +24,7 @@ public class StoriesListNotify implements IStoriesListNotify {
 
 
     public void unsubscribe() {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        service.removeStoriesListNotify(this);
+        IASCore.getInstance().getListNotifier().removeStoriesListNotify(this);
         storiesListNotifyHandler = null;
     }
 
@@ -36,7 +35,7 @@ public class StoriesListNotify implements IStoriesListNotify {
 
     @Override
     public void subscribe() {
-        InAppStoryService.checkAndAddStoriesListNotify(this);
+        IASCore.getInstance().getListNotifier().addStoriesListNotify(this);
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.os.Handler;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.interfaces.IUpdateSessionCallback;
@@ -30,7 +30,6 @@ public class OldStatisticManager {
         try {
             handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
         } finally {
             handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread,
                     statisticUpdateInterval);
@@ -69,11 +68,6 @@ public class OldStatisticManager {
     public Runnable statisticUpdateThread = new Runnable() {
         @Override
         public void run() {
-            if (InAppStoryService.isNull()
-                    || InAppStoryService.getInstance().getContext() == null) {
-                handler.removeCallbacks(statisticUpdateThread);
-                return;
-            }
             if (sendStatistic()) {
                 handler.postDelayed(statisticUpdateThread, statisticUpdateInterval);
             }
@@ -125,7 +119,7 @@ public class OldStatisticManager {
     }
 
     public boolean sendStatistic() {
-        if (!InAppStoryService.isConnected()) return true;
+        if (IASCore.getInstance().notConnected()) return true;
         final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
         if (networkClient == null) {
             return true;
@@ -137,7 +131,7 @@ public class OldStatisticManager {
                 return true;
             }
         }
-        if (!InAppStoryService.getInstance().getSendStatistic()) {
+        if (!IASCore.getInstance().getSendStatistic()) {
             Session.getInstance();
             Session.updateStatistic();
             if (statistic != null)
@@ -168,7 +162,6 @@ public class OldStatisticManager {
                 }
             });
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
         }
         return true;
     }

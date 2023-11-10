@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.cache;
 import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
@@ -61,11 +61,6 @@ class StoryDownloader {
     private final Object storyTasksLock = new Object();
     private HashMap<StoryTaskData, StoryTaskWithPriority> storyTasks = new HashMap<>();
 
-    void addCompletedStoryTask(int storyId, Story.StoryType type) {
-        synchronized (storyTasksLock) {
-            storyTasks.put(new StoryTaskData(storyId, type), new StoryTaskWithPriority(-1, 3));
-        }
-    }
 
     void cleanTasks() {
         synchronized (storyTasksLock) {
@@ -78,17 +73,6 @@ class StoryDownloader {
     void destroy() {
         if (handler != null) {
             handler.removeCallbacks(queueStoryReadRunnable);
-        }
-    }
-
-    boolean uploadAdditional() {
-        synchronized (storyTasksLock) {
-            if (!storyTasks.isEmpty()) {
-                for (StoryTaskData i : storyTasks.keySet()) {
-                    if (getStoryLoadType(i) <= 1) return false;
-                }
-            }
-            return true;
         }
     }
 
@@ -302,204 +286,6 @@ class StoryDownloader {
             public void onError() {
                 loadStoryError(key);
                 handler.postDelayed(queueStoryReadRunnable, 200);
-            }
-        });
-    }
-
-    public static void generateCommonLoadListError(String feed) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadListError(StringsUtils.getNonNull(feed));
-        }
-    }
-
-    private static final String UGC_FEED = "UGC";
-
-    void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
-        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
-            generateCommonLoadListError(UGC_FEED);
-            callback.onError("");
-            return;
-        }
-        if (InAppStoryService.isConnected()) {
-            IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
-                @Override
-                public void onSuccess(SessionDTO session) {
-                    final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getUgcStories(
-                                    payload,
-                                    null,
-                                    "slides_count"
-                            ),
-                            new NetworkCallback<List<Story>>() {
-                                @Override
-                                public void onSuccess(List<Story> response) {
-                                    if (InAppStoryService.isNull() || response == null) {
-                                        generateCommonLoadListError(UGC_FEED);
-                                        callback.onError("");
-                                    } else {
-                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                        callback.onSuccess(response);
-                                    }
-                                }
-
-                                @Override
-                                public Type getType() {
-                                    return new StoryListType();
-                                }
-
-                                @Override
-                                public void errorDefault(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(UGC_FEED);
-                                    callback.onError(message);
-                                }
-
-
-                                @Override
-                                public void error424(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError(message);
-                                    IASCore.getInstance().closeSession();
-                                    loadUgcStoryList(callback, payload);
-                                }
-                            }
-                    );
-                }
-
-                @Override
-                public void onError() {
-                    generateCommonLoadListError(UGC_FEED);
-                    callback.onError("");
-                }
-            });
-        } else {
-            generateCommonLoadListError(UGC_FEED);
-            callback.onError("");
-        }
-    }
-
-    void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
-        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
-        if (networkClient == null) {
-            generateCommonLoadListError(feed);
-            callback.onError("");
-            return;
-        }
-        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
-            @Override
-            public void onSuccess(SessionDTO session) {
-                final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
-                networkClient.enqueue(
-                        networkClient.getApi().getFeed(
-                                feed,
-                                ApiSettings.getInstance().getTestKey(),
-                                0,
-                                InAppStoryManager.getInstance().getTagsString(),
-                                null
-                        ),
-                        new LoadFeedCallback() {
-                            @Override
-                            public void onSuccess(Feed response) {
-                                if (InAppStoryService.isNull() || response == null) {
-                                    generateCommonLoadListError(feed);
-                                    callback.onError("");
-                                } else {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    callback.onSuccess(
-                                            response.getStories(),
-                                            response.hasFavorite(),
-                                            feed
-                                    );
-                                }
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                generateCommonLoadListError(feed);
-                                callback.onError(message);
-                            }
-
-
-                            @Override
-                            public void error424(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                generateCommonLoadListError(null);
-                                callback.onError(message);
-                                IASCore.getInstance().closeSession();
-                                loadStoryListByFeed(feed, callback);
-                            }
-                        }
-                );
-            }
-
-            @Override
-            public void onError() {
-                generateCommonLoadListError(feed);
-                callback.onError("");
-            }
-        });
-    }
-
-
-    void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
-        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
-            generateCommonLoadListError(null);
-            callback.onError("");
-            return;
-        }
-        IASCore.getInstance().getSession(new IGetSessionCallback<SessionDTO>() {
-            @Override
-            public void onSuccess(SessionDTO session) {
-                final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
-                        ? "api_favorite_list" : "api_story_list");
-                networkClient.enqueue(
-                        networkClient.getApi().getStories(
-                                ApiSettings.getInstance().getTestKey(),
-                                isFavorite ? 1 : 0,
-                                isFavorite ? null : InAppStoryManager.getInstance().getTagsString(),
-                                null
-                        ),
-                        new LoadListCallback() {
-                            @Override
-                            public void onSuccess(List<Story> response) {
-                                if (InAppStoryService.isNull()) {
-                                    generateCommonLoadListError(null);
-                                    callback.onError("");
-                                } else {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    callback.onSuccess(response);
-                                }
-                            }
-
-                            @Override
-                            public void errorDefault(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                generateCommonLoadListError(null);
-                                callback.onError(message);
-                            }
-
-
-                            @Override
-                            public void error424(String message) {
-                                ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                generateCommonLoadListError(null);
-                                callback.onError(message);
-                                IASCore.getInstance().closeSession();
-                                loadStoryList(callback, isFavorite);
-                            }
-                        }
-                );
-            }
-
-            @Override
-            public void onError() {
-                generateCommonLoadListError(null);
-                callback.onError("");
             }
         });
     }

@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StoryDownloadManager {
-    public void changePriority(int storyId, List<Integer> adjacent, Story.StoryType type) {
+    public void changePriority(int storyId, List<Integer> adjacent, StoryType type) {
         if (slidesDownloader != null)
             slidesDownloader.changePriority(storyId, adjacent, type);
     }
 
-    public void changePriorityForSingle(int storyId, Story.StoryType type) {
+    public void changePriorityForSingle(int storyId, StoryType type) {
         if (slidesDownloader != null)
             slidesDownloader.changePriorityForSingle(storyId, type);
 
@@ -44,10 +44,8 @@ public class StoryDownloadManager {
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clear();
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.UGC).clear();
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON).clearAll();
+        IASCore.getInstance().getStoriesRepository(StoryType.UGC).clearAll();
         IASCore.getInstance().filesRepository.clearCaches();
     }
 
@@ -101,7 +99,7 @@ public class StoryDownloadManager {
         }
     }
 
-    void storyLoaded(int storyId, Story.StoryType type) {
+    void storyLoaded(int storyId, StoryType type) {
         Log.e("updateProgress",
                 "storyLoaded " + storyId
         );
@@ -115,7 +113,7 @@ public class StoryDownloadManager {
         }
     }
 
-    public int checkIfPageLoaded(int storyId, int index, Story.StoryType type) {
+    public int checkIfPageLoaded(int storyId, int index, StoryType type) {
         try {
             return slidesDownloader.checkIfPageLoaded(new SlideTaskData(storyId, index, type));
         } catch (IOException e) {
@@ -161,7 +159,7 @@ public class StoryDownloadManager {
     public StoryDownloadManager() {
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
-            public void onDownload(IStoryDTO story, int loadType, Story.StoryType type) {
+            public void onDownload(IStoryDTO story, int loadType, StoryType type) {
                 storyLoaded(story.getId(), type);
                 try {
                     slidesDownloader.addStoryPages(story, loadType, type);
@@ -210,7 +208,7 @@ public class StoryDownloadManager {
         );
     }
 
-    public void addStoryTask(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
+    public void addStoryTask(int storyId, ArrayList<Integer> addIds, StoryType type) {
         try {
             storyDownloader.addStoryTask(storyId, addIds, type);
         } catch (Exception e) {
@@ -219,15 +217,11 @@ public class StoryDownloadManager {
     }
 
 
-    public void reloadStory(int storyId, Story.StoryType type) {
+    public void reloadStory(int storyId, StoryType type) {
         slidesDownloader.removeSlideTasks(new StoryTaskData(storyId, type));
         storyDownloader.reload(storyId, new ArrayList<Integer>(), type);
     }
 
     private StoryDownloader storyDownloader;
     private SlidesDownloader slidesDownloader;
-
-    public void refreshLocals() {
-        //TODO set local stories open status
-    }
 }

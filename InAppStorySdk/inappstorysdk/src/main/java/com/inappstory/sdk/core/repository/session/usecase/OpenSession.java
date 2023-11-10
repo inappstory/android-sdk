@@ -8,7 +8,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
@@ -46,7 +46,6 @@ public class OpenSession implements IOpenSession {
         try {
             pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
-            InAppStoryService.createExceptionLog(e);
         }
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
@@ -84,8 +83,8 @@ public class OpenSession implements IOpenSession {
                             callback.onError();
                             return;
                         }
-                        callback.onSuccess(response);
                         openSessionSuccess(response);
+                        callback.onSuccess(response);
                     }
 
                     @Override
@@ -104,12 +103,7 @@ public class OpenSession implements IOpenSession {
     }
 
     void openSessionSuccess(final SessionResponse response) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
-                InAppStoryService.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
-            }
-        });
+        IASCore.getInstance().saveSessionPlaceholders(response.placeholders);
+        IASCore.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
     }
 }

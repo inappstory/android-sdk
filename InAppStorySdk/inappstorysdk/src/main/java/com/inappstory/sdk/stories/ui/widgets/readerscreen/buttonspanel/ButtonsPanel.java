@@ -8,7 +8,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
@@ -57,7 +57,7 @@ public class ButtonsPanel extends LinearLayout {
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);
         share.setVisibility(hasShare ? VISIBLE : GONE);
         sound.setVisibility(hasSound ? VISIBLE : GONE);
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+        sound.setActivated(IASCore.getInstance().isSoundOn());
         if (hasFavorite || hasLike || hasShare || hasSound) {
             setVisibility(VISIBLE);
         } else {
@@ -71,7 +71,7 @@ public class ButtonsPanel extends LinearLayout {
 
 
     public void refreshSoundStatus() {
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+        sound.setActivated(IASCore.getInstance().isSoundOn());
     }
 
     ButtonsPanelManager manager;
@@ -119,7 +119,7 @@ public class ButtonsPanel extends LinearLayout {
                     soundClick();
                 }
             });
-            sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+            sound.setActivated(IASCore.getInstance().isSoundOn());
         }
     }
 

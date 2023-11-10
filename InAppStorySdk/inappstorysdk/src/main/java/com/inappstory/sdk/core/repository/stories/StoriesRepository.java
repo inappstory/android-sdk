@@ -5,6 +5,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -31,11 +32,17 @@ import com.inappstory.sdk.core.repository.stories.usecase.RemoveAllStoriesFromFa
 import com.inappstory.sdk.core.repository.stories.utils.FavoriteCallbackKey;
 import com.inappstory.sdk.core.repository.stories.utils.FeedCallbackKey;
 import com.inappstory.sdk.core.repository.stories.utils.IFeedCallbackKey;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class StoriesRepository implements IStoriesRepository {
     private final Object storyPreviewsLock = new Object();
@@ -67,6 +74,12 @@ public class StoriesRepository implements IStoriesRepository {
 
     private final Object favoriteListUpdatedCallbacksLock = new Object();
     List<IFavoriteListUpdatedCallback> favoriteListUpdatedCallbacks = new ArrayList<>();
+
+    StoryType type;
+
+    public StoriesRepository(StoryType type) {
+        this.type = type;
+    }
 
     @Override
     public void addFavoriteCellUpdatedCallback(IFavoriteCellUpdatedCallback callback) {
@@ -211,7 +224,7 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
-    public void clear() {
+    public void clearReaderModels() {
         synchronized (cachedStoriesLock) {
             cachedStories.clear();
         }
@@ -219,6 +232,15 @@ public class StoriesRepository implements IStoriesRepository {
             storyLastIndexes.clear();
         }
         setCurrentStory(null);
+    }
+
+    @Override
+    public void clearAll() {
+        synchronized (storyPreviewsLock) {
+            storyPreviews.clear();
+        }
+        clearReaderModels();
+        clearCachedLists();
     }
 
     private IPreviewStoryDTO currentStory = null;
@@ -273,6 +295,7 @@ public class StoriesRepository implements IStoriesRepository {
                 storyPreviews.put(previewStory.getId(), previewStory);
             }
         }
+        saveOpenedStories();
         if (listID == null) return;
         List<Integer> cached = new ArrayList<>();
         for (IPreviewStoryDTO previewStory : previews) {
@@ -372,7 +395,7 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
-    public void setOpenedStories(List<Integer> ids) {
+    public void setOpenedStories(Set<Integer> ids) {
         synchronized (storyPreviewsLock) {
             for (Integer id : ids) {
                 IPreviewStoryDTO previewStoryDTO = storyPreviews.get(id);
@@ -388,33 +411,101 @@ public class StoriesRepository implements IStoriesRepository {
         }
     }
 
-    @Override
-    public void getOpenedStories(List<Integer> ids) {
-
-    }
 
     @Override
-    public void getOnboardingStoriesAsync(String uncheckedFeed, Integer limit, IGetStoriesPreviewsCallback callback) {
-        @NonNull String feed =
+    public void getOnboardingStoriesAsync(
+            String uncheckedFeed,
+            Integer limit,
+            String tags,
+            IGetStoriesPreviewsCallback callback) {
+        @NonNull final String feed =
                 (uncheckedFeed != null && !uncheckedFeed.isEmpty()) ? uncheckedFeed : "onboarding";
         final IFeedCallbackKey feedKey = new FeedCallbackKey(feed);
         if (addToFeedCallbacksList(feedKey, callback)) return;
         new GetOnboardingStoryListByFeed(
                 feed,
                 limit,
-                InAppStoryManager.getInstance().getTagsString()
+                tags
         ).get(new IGetFeedCallback() {
             @Override
             public void onSuccess(Pair<List<IPreviewStoryDTO>, Boolean> response) {
-                feedCallbacksListSuccess(feedKey, response.first);
+                setLocalPreviews(null, response.first);
+                feedCallbacksListSuccess(feedKey, getNonOpenedStories(response.first));
             }
 
             @Override
             public void onError() {
                 feedCallbacksListError(feedKey);
+                if (CallbackManager.getInstance().getErrorCallback() != null) {
+                    CallbackManager.getInstance().getErrorCallback()
+                            .loadOnboardingError(StringsUtils.getNonNull(feed));
+                }
             }
         });
     }
+
+    private List<IPreviewStoryDTO> getNonOpenedStories(List<IPreviewStoryDTO> allStories) {
+        List<IPreviewStoryDTO> result = new ArrayList<>();
+        Set<String> opened = getOpenedStories();
+        for (IPreviewStoryDTO storyDTO: allStories) {
+            if (!opened.contains(Integer.toString(storyDTO.getId())) && !storyDTO.isOpened()) {
+                result.add(storyDTO);
+            }
+        }
+        return result;
+    }
+
+    private void saveOpenedStories() {
+        String key = getLocalOpensKey();
+        Set<String> opens = SharedPreferencesAPI.getStringSet(key);
+        if (opens == null) opens = new HashSet<>();
+        synchronized (storyPreviewsLock) {
+            for (IPreviewStoryDTO story : storyPreviews.values()) {
+                if (story.isOpened()) opens.add(Integer.toString(story.getId()));
+            }
+        }
+        synchronized (cachedStoriesLock) {
+            for (IStoryDTO story : cachedStories.values()) {
+                if (story.isOpened()) opens.add(Integer.toString(story.getId()));
+            }
+        }
+        SharedPreferencesAPI.saveStringSet(key, opens);
+    }
+
+    private String getLocalOpensKey() {
+        String userId = IASCore.getInstance().getUserId();
+        if (userId == null) return null;
+        String key = "opened" + userId;
+        return (type == StoryType.COMMON) ? key : type.name() + key;
+    }
+
+    private Set<String> getOpenedStories() {
+        String key = getLocalOpensKey();
+        Set<String> opens = SharedPreferencesAPI.getStringSet(key);
+        if (opens == null) opens = new HashSet<>();
+        synchronized (storyPreviewsLock) {
+            for (IPreviewStoryDTO story : storyPreviews.values()) {
+                if (story.isOpened()) opens.add(Integer.toString(story.getId()));
+            }
+        }
+        synchronized (cachedStoriesLock) {
+            for (IStoryDTO story : cachedStories.values()) {
+                if (story.isOpened()) opens.add(Integer.toString(story.getId()));
+            }
+        }
+        return opens;
+    }
+
+
+
+    private void saveStoryOpened(int id, StoryType type) {
+        String key = getLocalOpensKey();
+        Set<String> opens = SharedPreferencesAPI.getStringSet(key);
+        if (opens == null) opens = new HashSet<>();
+        opens.add(Integer.toString(id));
+        SharedPreferencesAPI.saveStringSet(key, opens);
+    }
+
 
     @Override
     public void getFavoriteStoriesByListIdAsync(final String listID, IGetStoriesPreviewsCallback callback) {
@@ -538,7 +629,6 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
 
-
     @Override
     public void addToFavorite(int storyId) {
         changeStoryFavoriteStatus(storyId, false);
@@ -621,7 +711,7 @@ public class StoriesRepository implements IStoriesRepository {
     public void removeAllFavorites() {
         final List<IChangeStatusReaderCallback> callbacks = new ArrayList<>();
         synchronized (readerFavoriteLock) {
-            for (List<IChangeStatusReaderCallback> value: readerFavoriteCallbacks.values()) {
+            for (List<IChangeStatusReaderCallback> value : readerFavoriteCallbacks.values()) {
                 if (value != null)
                     callbacks.addAll(value);
             }

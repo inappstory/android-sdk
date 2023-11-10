@@ -2,7 +2,6 @@ package com.inappstory.sdk.core.network.jsapiclient;
 
 import android.content.Context;
 
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.constants.HttpMethods;
@@ -35,7 +34,7 @@ public class JsApiNetwork {
         jsResponse.requestId = requestId;
 
         NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
-        if (!InAppStoryService.isConnected() || networkClient == null) {
+        if (IASCore.getInstance().notConnected() || networkClient == null) {
             jsResponse.status = 12163;
             return jsResponse;
         }

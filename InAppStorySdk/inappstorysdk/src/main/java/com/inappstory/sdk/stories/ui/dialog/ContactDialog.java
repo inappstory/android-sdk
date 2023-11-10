@@ -4,7 +4,6 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
-import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -113,7 +112,7 @@ public class ContactDialog {
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.cs_dialog_layout);
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        if (!isTablet()) {
+        if (!Sizes.isTablet(activity)) {
             dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
             dialog.getWindow().setDimAmount(0.05f);
         }
@@ -135,7 +134,7 @@ public class ContactDialog {
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
         int fullWidth;
         int fullHeight;
-        if (isTablet()) {
+        if (Sizes.isTablet(activity)) {
             fullWidth = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
             fullHeight = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
         } else {
@@ -462,13 +461,12 @@ public class ContactDialog {
     }
 
     private void keyboardFocus(final Activity activity, final AppCompatEditText et) {
-        if (!isTablet()) {
-            if (activity != null && !(activity.isFinishing() || activity.isDestroyed())) {
-                et.requestFocus();
-                InputMethodManager imm =
-                        (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
-            }
+        if (activity != null && !Sizes.isTablet(activity) &&
+                !(activity.isFinishing() || activity.isDestroyed())) {
+            et.requestFocus();
+            InputMethodManager imm =
+                    (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
         }
     }
 

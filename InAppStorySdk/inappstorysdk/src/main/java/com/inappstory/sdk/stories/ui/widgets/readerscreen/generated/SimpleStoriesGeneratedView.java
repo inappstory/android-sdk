@@ -4,7 +4,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -14,7 +13,7 @@ import android.widget.RelativeLayout;
 
 import androidx.core.util.Pair;
 
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.api.models.slidestructure.Element;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -200,7 +199,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
             return;
         }
 
-        int xSize = Sizes.getScreenSize().x;
+        int xSize = Sizes.getScreenSize(getContext()).x;
         int ySize = getHeight();
         float ratio = 480f / 310;
         float ratio2 = 1f * ySize / xSize;
@@ -208,7 +207,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         int leftPadding = 0;
         if (ratio2 > ratio) {
             xSize = (int) (1f * ySize / ratio);
-            leftPadding = (xSize - Sizes.getScreenSize().x) / 2;
+            leftPadding = (xSize - Sizes.getScreenSize(getContext()).x) / 2;
         } else {
             ySize = (int) (1f * xSize * ratio);
             topPadding = (ySize - getHeight()) / 2;
@@ -296,7 +295,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
-        if (!InAppStoryService.isConnected()) return true;
+        if (IASCore.getInstance().notConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();

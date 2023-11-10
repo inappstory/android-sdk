@@ -10,7 +10,7 @@ import android.os.HandlerThread;
 import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.network.models.Request;
 import com.inappstory.sdk.core.network.utils.GetUrl;
 import com.inappstory.sdk.core.network.utils.UserAgent;
@@ -43,7 +43,6 @@ public class ProfilingManager {
     private final Object tasksLock = new Object();
 
     public String addTask(String name, String hash) {
-        if (InAppStoryService.isNull()) return "";
         ProfilingTask task = new ProfilingTask();
         task.uniqueHash = hash;
         task.name = name;
@@ -62,7 +61,6 @@ public class ProfilingManager {
     }
 
     public String addTask(String name) {
-        if (InAppStoryService.isNull()) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = Session.getInstance().id;
@@ -141,7 +139,7 @@ public class ProfilingManager {
             synchronized (getInstance().tasksLock) {
                 readyIsEmpty = getInstance().readyTasks == null || getInstance().readyTasks.size() == 0;
             }
-            if (readyIsEmpty || !InAppStoryService.isConnected() || !isAllowToSend()) {
+            if (readyIsEmpty || IASCore.getInstance().notConnected() || !isAllowToSend()) {
                 handler.postDelayed(queueTasksRunnable, 100);
                 return;
             }

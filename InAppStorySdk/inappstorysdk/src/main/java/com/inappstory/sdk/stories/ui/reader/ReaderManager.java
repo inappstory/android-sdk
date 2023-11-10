@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -39,12 +39,15 @@ public class ReaderManager {
     public ReaderManager() {
     }
 
-    public ReaderManager(String listID,
-                         String feedId,
-                         String feedSlug,
-                         StoryType storyType,
-                         SourceType source,
-                         int latestShowStoryAction) {
+
+    public ReaderManager(
+            String listID,
+            String feedId,
+            String feedSlug,
+            StoryType storyType,
+            SourceType source,
+            int latestShowStoryAction
+    ) {
         this.listID = listID;
         this.feedId = feedId;
         this.feedSlug = feedSlug;
@@ -202,7 +205,6 @@ public class ReaderManager {
                 adds.add(storiesIds.get(pos - 1));
             }
         }
-        if (InAppStoryService.isNull()) return;
         IASCore.getInstance().downloadManager.addStoryTask(
                 storiesIds.get(pos),
                 adds,
@@ -253,10 +255,10 @@ public class ReaderManager {
 
         final int pos = position;
 
-        InAppStoryService.getInstance().getListNotifier().openStory(currentStoryId, storyType);
-        InAppStoryService.getInstance().getListNotifier().changeStory(currentStoryId, storyType, listID);
-        if (Sizes.isTablet()) {
-            if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {
+        IASCore.getInstance().getStoriesRepository(storyType).openStory(currentStoryId);
+        IASCore.getInstance().getListNotifier().changeStory(currentStoryId, storyType, listID);
+        if (parentFragment != null && parentFragment.getParentFragment() instanceof StoriesDialogFragment) {
+            if (Sizes.isTablet(parentFragment.getContext())) {
                 ((StoriesDialogFragment) parentFragment.getParentFragment()).changeStory(position);
             }
         }

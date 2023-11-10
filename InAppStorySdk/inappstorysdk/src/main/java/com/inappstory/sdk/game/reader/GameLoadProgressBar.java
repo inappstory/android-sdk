@@ -25,23 +25,20 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
 
     private int currentFrame = 0;             // Allocate paint outside onDraw to avoid unnecessary object creation
     private boolean isIndeterminate = true;
-
     private int progress = 0;
+    private final int strokeWidthDP = 4;
+    private final int sizeDP = 36;
+    private final boolean rounded = false;
+    private float STROKE_WIDTH = strokeWidthDP;
+    private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
+
+    private static Paint COLOR_PAINT;
+    private static Paint GRADIENT_PAINT;
 
     public GameLoadProgressBar(Context context) {
         this(context, null);
         initSize();
     }
-
-    private final int strokeWidthDP = 4;
-
-    private final int sizeDP = 36;
-    private final boolean rounded = false;
-    private float STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP);
-    private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
-
-    private static Paint COLOR_PAINT;
-    private static Paint GRADIENT_PAINT;
 
     Paint getColorPaint(Resources resources) {
         if (COLOR_PAINT == null) {

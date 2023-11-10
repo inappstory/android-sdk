@@ -5,7 +5,7 @@ import static java.util.UUID.randomUUID;
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
@@ -42,78 +42,37 @@ public class GetZipFileUseCase extends GameNameHolder {
             final ProgressCallback progressCallback,
             final long totalGameSize
     ) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) {
-            callback.onError("InAppStory service is unavailable");
-            return;
-        }
-        final FileChecker fileChecker = new FileChecker();
-        final LruDiskCache cache = inAppStoryService.getInfiniteCache();
-        new GetLocalZipFileUseCase(url, size, sha1).
-                get(cache, new UseCaseCallback<File>() {
+        final String hash = randomUUID().toString();
+        String gameName = getGameName(url);
+        ProfilingManager.getInstance().addTask("game_download", hash);
+        IASCore.getInstance().filesRepository.getZipArchive(
+                url,
+                gameName,
+                size,
+                sha1,
+                totalGameSize,
+                new IFileDownloadCallback() {
                     @Override
-                    public void onError(String message) {
-                        final String hash = randomUUID().toString();
-                        String gameName = getGameName(url);
-                        File gameDir = new File(
-                                cache.getCacheDir() +
-                                        File.separator + "zip" +
-                                        File.separator + gameName +
-                                        File.separator
-                        );
-                        if (!gameDir.getAbsolutePath().startsWith(
-                                cache.getCacheDir() +
-                                        File.separator + "zip")) {
-                            callback.onError("Error in game name");
-                            return;
-                        }
-                        if (totalGameSize >
-                                cache.getCacheDir().getFreeSpace()) {
-                            callback.onError("No free space for download");
-                            return;
-                        }
-                        File zipFile = new File(gameDir, url.hashCode() + ".zip");
-                        ProfilingManager.getInstance().addTask("game_download", hash);
-                        IASCore.getInstance().filesRepository.getZipArchive(
-                                url,
-                                zipFile.getAbsolutePath(),
-                                new IFileDownloadCallback() {
-                                    @Override
-                                    public void onSuccess(String fileAbsolutePath) {
-                                        File file = new File(fileAbsolutePath);
-                                        if (!fileChecker.checkWithShaAndSize(
-                                                file,
-                                                size,
-                                                sha1,
-                                                true
-                                        )) {
-                                            callback.onError("File sha or size is incorrect");
-                                        } else {
-                                            callback.onSuccess(file);
-                                        }
-                                        ProfilingManager.getInstance().setReady(hash);
-                                    }
-
-                                    @Override
-                                    public void onError(int errorCode, String error) {
-                                        callback.onError(error);
-                                    }
-                                },
-                                new IFileDownloadProgressCallback() {
-                                    @Override
-                                    public void onProgress(long currentProgress, long max) {
-                                        progressCallback.onProgress(currentProgress, max);
-                                    }
-                                },
-                                interruption
-                        );
+                    public void onSuccess(String fileAbsolutePath) {
+                        ProfilingManager.getInstance().setReady(hash);
+                        File file = new File(fileAbsolutePath);
+                        callback.onSuccess(file);
                     }
 
                     @Override
-                    public void onSuccess(File result) {
-                        callback.onSuccess(result);
+                    public void onError(int errorCode, String error) {
+                        ProfilingManager.getInstance().setReady(hash);
+                        callback.onError(error);
                     }
-                });
+                },
+                new IFileDownloadProgressCallback() {
+                    @Override
+                    public void onProgress(long currentProgress, long max) {
+                        progressCallback.onProgress(currentProgress, max);
+                    }
+                },
+                interruption
+        );
     }
 
 

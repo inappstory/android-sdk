@@ -28,20 +28,20 @@ public class GameReaderLoadProgressBar extends View implements IGameReaderLoader
 
     private int progress = 0;
 
-    public GameReaderLoadProgressBar(Context context) {
-        this(context, null);
-        initSize();
-    }
-
     private final int strokeWidthDP = 4;
 
     private final int sizeDP = 36;
     private final boolean rounded = false;
-    private float STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP);
+    private float STROKE_WIDTH = strokeWidthDP;
     private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
 
     private static Paint COLOR_PAINT;
     private static Paint GRADIENT_PAINT;
+
+    public GameReaderLoadProgressBar(Context context) {
+        this(context, null);
+        initSize();
+    }
 
     Paint getColorPaint(Resources resources) {
         if (COLOR_PAINT == null) {

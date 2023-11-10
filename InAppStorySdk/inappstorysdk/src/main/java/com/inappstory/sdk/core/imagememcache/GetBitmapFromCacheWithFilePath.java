@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.inappstory.sdk.InAppStoryService;
+
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -80,7 +80,6 @@ public class GetBitmapFromCacheWithFilePath {
                             }
                         });
                     } catch (Exception e) {
-                        InAppStoryService.createExceptionLog(e);
                     }
                 }
             });

@@ -51,7 +51,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.game.reader.GameStoryData;
@@ -235,7 +235,6 @@ public class ScreensManager {
             storiesDialogFragment.show(((FragmentActivity) context).getSupportFragmentManager(),
                     "OverlapFragment");
         } catch (IllegalStateException e) {
-            InAppStoryService.createExceptionLog(e);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -249,9 +248,6 @@ public class ScreensManager {
                                String gameConfig,
                                String resources,
                                String options) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
         Intent intent2 = new Intent(context, GameActivity.class);
         intent2.putExtra("gameUrl", gameUrl);
         if (data != null) {
@@ -274,7 +270,7 @@ public class ScreensManager {
         intent2.putExtra("gameResources", resources);
         intent2.putExtra("splashImagePath", splashImagePath != null ? splashImagePath : "");
 
-        if (Sizes.isTablet()) {
+        if (Sizes.isTablet(context)) {
             if (currentScreen != null) {
                 String observableUID = randomUUID().toString();
                 intent2.putExtra("observableUID", observableUID);
@@ -323,7 +319,7 @@ public class ScreensManager {
         lastOpenTry = System.currentTimeMillis();
         closeGameReader();
         closeUGCEditor();
-        if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
+        if (Sizes.isTablet(outerContext) && outerContext instanceof FragmentActivity) {
             closeStoryReader(CloseReader.CUSTOM, StatisticManager.CUSTOM);
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             Bundle bundle = new Bundle();
@@ -377,16 +373,13 @@ public class ScreensManager {
                         "DialogFragment");
                 currentScreen = storiesDialogFragment;
             } catch (IllegalStateException e) {
-                InAppStoryService.createExceptionLog(e);
 
             }
         } else {
             if (currentScreen != null) {
                 currentScreen.forceFinish();
             }
-            Context ctx = (InAppStoryService.isNotNull() ?
-                    InAppStoryService.getInstance().getContext() : outerContext);
-            Intent intent2 = new Intent(ctx,
+            Intent intent2 = new Intent(outerContext,
                     (manager != null ? manager.csIsDraggable()
                             : AppearanceManager.getCommonInstance().csIsDraggable()) ?
                             StoriesActivity.class : StoriesFixedActivity.class);
@@ -402,7 +395,7 @@ public class ScreensManager {
             intent2.putExtra("slideIndex", slideIndex);
             if (manager != null) {
                 int nightModeFlags =
-                        ctx.getResources().getConfiguration().uiMode &
+                        outerContext.getResources().getConfiguration().uiMode &
                                 Configuration.UI_MODE_NIGHT_MASK;
                 intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
                 intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
@@ -438,7 +431,7 @@ public class ScreensManager {
             }
             if (outerContext == null) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                ctx.startActivity(intent2);
+                outerContext.startActivity(intent2);
             } else {
                 if (!(outerContext instanceof Activity)) {
                     intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -548,7 +541,7 @@ public class ScreensManager {
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus, getGoodsDataCallback);
         } else {
             AlertDialog.Builder builder;
-            if (Sizes.isTablet() && !fullScreen) {
+            if (Sizes.isTablet(activity) && !fullScreen) {
                 builder = new AlertDialog.Builder(activity);
             } else {
                 builder = new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);

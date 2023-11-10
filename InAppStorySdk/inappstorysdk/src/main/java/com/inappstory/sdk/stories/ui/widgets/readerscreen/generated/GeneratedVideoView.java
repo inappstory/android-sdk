@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.lrudiskcache.Utils;
@@ -37,7 +37,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
     ImageView cover;
     TextureView tv;
 
-    LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
+    LruDiskCache cache = null;//InAppStoryService.getInstance().getCommonCache();
 
     private void init(Context context) {
         LayoutParams lp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -75,8 +75,8 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
             }
         }
         if (fl == null || !fl.exists()) {
-            ImageLoader.getInstance().displayImage(path,
-                    -1, cover, InAppStoryService.getInstance().getCommonCache());
+          /*  ImageLoader.getInstance().displayImage(path,
+                    -1, cover, InAppStoryService.getInstance().getCommonCache());*/
         } else {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -165,7 +165,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
 
         try {
             if (storyId == null)
-                storyId = Utils.hash(Downloader.deleteQueryArgumentsFromUrl(url, false));
+                storyId = Utils.hash(url);
             if (file == null)
                 if (cache.hasKey(url)) {
                     file = cache.getFullFile(url);

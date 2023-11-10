@@ -7,7 +7,7 @@ import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviews
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IStoryUpdatedCallback;
 
-import java.util.List;
+import java.util.Set;
 
 public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislikeStoriesManager {
 
@@ -17,7 +17,9 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
 
     IPreviewStoryDTO getCurrentStory();
 
-    void clear();
+    void clearReaderModels();
+
+    void clearAll();
 
     void setCurrentStory(Integer storyId);
 
@@ -38,13 +40,12 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
 
     void setStoryLastIndex(int storyId, int index);
 
-    void setOpenedStories(List<Integer> ids);
-
-    void getOpenedStories(List<Integer> ids);
+    void setOpenedStories(Set<Integer> ids);
 
     void getOnboardingStoriesAsync(
             String uncheckedFeed,
             Integer limit,
+            String tags,
             IGetStoriesPreviewsCallback callback
     );
 

@@ -29,7 +29,7 @@ import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
- * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStoriesInner()}.
+ * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
  * For a global setting, you must call the static method of the class {@link #setCommonInstance(AppearanceManager)}.
  */
 public class AppearanceManager {
@@ -252,15 +252,15 @@ public class AppearanceManager {
         return 1f;
     }
 
-    private int getScaledWidth() {
-        return (int) ((Sizes.getScreenSize().x -
+    private int getScaledWidth(Context context) {
+        return (int) ((Sizes.getScreenSize(context).x -
                 (float) (csColumnCount + 1) * csListItemMargin) / csColumnCount);
     }
 
 
     public Integer getRealWidth(Context context) {
         if (csColumnCount != null && csColumnCount > 0) {
-            return getScaledWidth();
+            return getScaledWidth(context);
         } else {
             if (csListItemWidth != null && csListItemWidth > 0)
                 return csListItemWidth;
@@ -276,7 +276,7 @@ public class AppearanceManager {
     public Integer getRealHeight(Context context) {
         float ratio = getCurrentRatio(context);
         if (csColumnCount != null && csColumnCount > 0) {
-            return (int) (getScaledWidth() / ratio);
+            return (int) (getScaledWidth(context) / ratio);
         } else {
             if (csListItemHeight != null && csListItemHeight > 0)
                 return csListItemHeight;
@@ -775,33 +775,33 @@ public class AppearanceManager {
             if (bold) {
                 if (italic) {
                     if (csCustomSecondaryBoldItalicFont == null)
-                        return getFont(secondary, bold, false);
+                        return getFont(true, true, false);
                     return csCustomSecondaryBoldItalicFont;
                 } else {
-                    if (csCustomSecondaryBoldFont == null) return getFont(secondary, false, italic);
+                    if (csCustomSecondaryBoldFont == null) return getFont(true, false, false);
                     return csCustomSecondaryBoldFont;
                 }
             } else {
                 if (italic) {
-                    if (csCustomSecondaryItalicFont == null) return getFont(secondary, bold, false);
+                    if (csCustomSecondaryItalicFont == null) return getFont(true, false, false);
                     return csCustomSecondaryItalicFont;
                 } else {
-                    if (csCustomSecondaryFont == null) return getFont(false, bold, italic);
+                    if (csCustomSecondaryFont == null) return getFont(false, false, false);
                     return csCustomSecondaryFont;
                 }
             }
         } else {
             if (bold) {
                 if (italic) {
-                    if (csCustomBoldItalicFont == null) return getFont(secondary, bold, false);
+                    if (csCustomBoldItalicFont == null) return getFont(false, true, false);
                     return csCustomBoldItalicFont;
                 } else {
-                    if (csCustomBoldFont == null) return getFont(secondary, false, italic);
+                    if (csCustomBoldFont == null) return getFont(false, false, false);
                     return csCustomBoldFont;
                 }
             } else {
                 if (italic) {
-                    if (csCustomItalicFont == null) return getFont(secondary, bold, false);
+                    if (csCustomItalicFont == null) return getFont(false, false, false);
                     return csCustomItalicFont;
                 } else {
                     if (csCustomFont == null) return null;
@@ -961,7 +961,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-
     public boolean csListItemTitleVisibility() {
         return csListItemTitleVisibility;
     }
@@ -983,27 +982,9 @@ public class AppearanceManager {
         return csListItemRatio;
     }
 
-
-    public boolean csListItemSourceVisibility() {
-        return csListItemSourceVisibility;
-    }
-
-    public int csListItemSourceSize() {
-        if (csListItemSourceSize == -1) return Sizes.dpToPxExt(14);
-        return csListItemSourceSize;
-    }
-
-    public int csListItemSourceColor() {
-        return csListItemSourceColor;
-    }
-
     public boolean csListItemBorderVisibility() {
         return csListItemBorderVisibility;
     }
-
-    /*public int csListItemBorderSize() {
-        return csListItemBorderSize;
-    }*/
 
     public int csListItemBorderColor() {
         return csListItemBorderColor;

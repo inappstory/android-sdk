@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.cache;
 import android.os.Handler;
 import android.util.Pair;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -85,14 +85,10 @@ class SlidesDownloader {
         SlideTask slideTask = pageTasks.get(key);
         if (slideTask != null) {
             if (slideTask.loadType == 2) {
-                ArrayList<ResourceMappingObjectDTO> resources = new ArrayList<>();
-                resources.addAll(slideTask.resources);
-                for (ResourceMappingObjectDTO resource : resources) {
-                    String croppedUrl = Downloader.deleteQueryArgumentsFromUrl(
-                            resource.getUrl(),
-                            true
-                    );
-                    if (IASCore.getInstance().filesRepository.getLocalStoryFile(croppedUrl) == null) {
+                for (ResourceMappingObjectDTO resource : slideTask.resources) {
+                    if (IASCore.getInstance().filesRepository.getLocalStoryFile(
+                            resource.getUrl()
+                    ) == null) {
                         synchronized (pageTasksLock) {
                             slideTask.loadType = 0;
                         }
@@ -131,8 +127,6 @@ class SlidesDownloader {
             for (int i = 0; i < sc; i++) {
                 SlideTaskData kv = new SlideTaskData(storyId, i, type);
                 secondPriority.remove(kv);
-                //       if (pageTasks.containsKey(kv) && pageTasks.get(kv).loadType != 0)
-                //           continue;
                 if (i == storiesRepository.getStoryLastIndex(storyId) || i == lastIndex + 1)
                     continue;
                 firstPriority.add(kv);
@@ -187,10 +181,8 @@ class SlidesDownloader {
     }
 
     void addStoryPages(IStoryDTO story, int loadType, StoryType type) throws Exception {
-        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>();
-        if (InAppStoryService.isNotNull()) {
-            imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults());
-        }
+        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
+                new HashMap<>(IASCore.getInstance().getImagePlaceholdersValuesWithDefaults());
         synchronized (pageTasksLock) {
             int key = story.getId();
             int sz;

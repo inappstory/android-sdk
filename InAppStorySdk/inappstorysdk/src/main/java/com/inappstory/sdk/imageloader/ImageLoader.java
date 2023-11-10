@@ -1,6 +1,5 @@
 package com.inappstory.sdk.imageloader;
 
-import static com.inappstory.sdk.InAppStoryService.IAS_PREFIX;
 import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_10;
 
 import android.content.Context;
@@ -16,12 +15,10 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.media.ThumbnailUtils;
-import android.os.Handler;
-import android.os.Looper;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.lrudiskcache.CacheType;
 import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
@@ -40,9 +37,10 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * TODO change Home Screen Widget
+ */
 public class ImageLoader {
-
-    MemoryCache memoryCache = new MemoryCache();
     MemoryCache memoryCache2 = new MemoryCache();
     private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     ExecutorService executorService;
@@ -66,29 +64,11 @@ public class ImageLoader {
 
     int stub_id = R.drawable.ic_stories_close;
 
-    public void displayImage(String path, int loader, ImageView imageView) {
-        displayImage(path, loader, imageView, null);
-    }
-
-    public void displayImage(String path, int loader, ImageView imageView, LruDiskCache cache) {
-        try {
-            stub_id = loader;
-            imageViews.put(imageView, path);
-            Bitmap bitmap = memoryCache.get(path);
-            if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-                if (imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView) imageView).onLoaded();
-                }
-            } else {
-                queuePhoto(path, imageView, cache);
-            }
-        } catch (Exception e) {
-
-        }
-    }
 
     LruDiskCache cache;
+
+
+    private final String IAS_PREFIX = File.separator + "ias" + File.separator;
 
     public void displayRemoteImage(final String url, int loader, final RemoteViews rv, final int id, final Integer cornerRadius, final Float ratio, Context context) {
         try {
@@ -139,11 +119,6 @@ public class ImageLoader {
         }
     }
 
-    private void queuePhoto(String url, ImageView imageView, LruDiskCache cache) {
-        PhotoToLoad p = new PhotoToLoad(url, imageView, cache);
-        executorService.submit(new PhotosLoader(p));
-    }
-
     public void addDarkGradient(Bitmap bitmap) {
         if (bitmap == null) return;
         Canvas canvas = new Canvas(bitmap);
@@ -157,20 +132,6 @@ public class ImageLoader {
                 new int[]{Color.TRANSPARENT, Color.parseColor("#AA000000")}, null,
                 Shader.TileMode.REPEAT);
         return shader;
-    }
-
-    public Bitmap getBitmap(String url, LruDiskCache cache) {
-        if (url == null) return null;
-
-        Bitmap bitmap = null;
-        try {
-            DownloadFileState fileState = Downloader.downloadOrGetFile(url, false, cache, null, null);
-            if (fileState == null || fileState.file == null) return null;
-            bitmap = decodeFile(fileState.file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bitmap;
     }
 
     public Bitmap getWidgetBitmap(String url, Integer pixels, boolean getThumbnail, Float ratio, String color, LruDiskCache lruDiskCache) {
@@ -261,7 +222,7 @@ public class ImageLoader {
             o.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(new FileInputStream(f), null, o);
             //Find the correct scale value. It should be the power of 2.
-            final int REQUIRED_SIZE = Sizes.dpToPxExt(800);
+            final int REQUIRED_SIZE = 1600;
             int width_tmp = o.outWidth, height_tmp = o.outHeight;
             int scale = 1;
             while (true) {
@@ -280,101 +241,8 @@ public class ImageLoader {
             fileInputStream.close();
             return bitmap;
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
         }
         return null;
-    }
-
-    private Bitmap decodeStream(InputStream stream) {
-        BitmapFactory.Options o = new BitmapFactory.Options();
-        o.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(stream, null, o);
-
-        final int REQUIRED_SIZE = Sizes.dpToPxExt(800);
-        int width_tmp = o.outWidth, height_tmp = o.outHeight;
-        int scale = 1;
-        while (true) {
-            if (width_tmp / 2 < REQUIRED_SIZE || height_tmp / 2 < REQUIRED_SIZE)
-                break;
-            width_tmp /= 2;
-            height_tmp /= 2;
-            scale *= 2;
-        }
-
-        BitmapFactory.Options o2 = new BitmapFactory.Options();
-        o2.inSampleSize = scale;
-        return BitmapFactory.decodeStream(stream, null, o2);
-    }
-
-    private class PhotoToLoad {
-        public String path;
-        public ImageView imageView;
-        public LruDiskCache cache;
-
-        public PhotoToLoad(String u, ImageView i, LruDiskCache c) {
-            path = u;
-            imageView = i;
-            cache = c;
-        }
-    }
-
-
-    class PhotosLoader implements Runnable {
-        PhotoToLoad photoToLoad;
-
-        PhotosLoader(PhotoToLoad photoToLoad) {
-            this.photoToLoad = photoToLoad;
-        }
-
-        @Override
-        public void run() {
-            if (imageViewReused(photoToLoad))
-                return;
-            Bitmap bmp = null;
-            if (photoToLoad.cache != null)
-                bmp = getBitmap(photoToLoad.path, photoToLoad.cache);
-            else
-                bmp = decodeFile(new File(photoToLoad.path));
-            if (bmp != null)
-                memoryCache.put(photoToLoad.path, bmp);
-            if (imageViewReused(photoToLoad))
-                return;
-            BitmapDisplayer bd = new BitmapDisplayer(bmp, photoToLoad);
-            new Handler(Looper.getMainLooper()).post(bd);
-        }
-    }
-
-    public boolean imageViewReused(PhotoToLoad photoToLoad) {
-        String tag = imageViews.get(photoToLoad.imageView);
-        if (tag == null || !tag.equals(photoToLoad.path))
-            return true;
-        return false;
-    }
-
-    class BitmapDisplayer implements Runnable {
-        Bitmap bitmap;
-        PhotoToLoad photoToLoad;
-
-        public BitmapDisplayer(Bitmap b, PhotoToLoad p) {
-            bitmap = b;
-            photoToLoad = p;
-        }
-
-        public void run() {
-            if (imageViewReused(photoToLoad))
-                return;
-            if (bitmap != null) {
-                photoToLoad.imageView.setImageBitmap(bitmap);
-                if (photoToLoad.imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView) photoToLoad.imageView).onLoaded();
-                }
-            }
-        }
-    }
-
-    public void clearCache() {
-        memoryCache.clear();
-        memoryCache2.clear();
     }
 
     public void clearWidgetCache() {

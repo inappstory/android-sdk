@@ -11,7 +11,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 
@@ -161,7 +161,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 }
             });
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
         }
 

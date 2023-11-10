@@ -2,9 +2,8 @@ package com.inappstory.sdk.game.cache;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.lrudiskcache.FileChecker;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
@@ -27,7 +26,6 @@ public class DownloadResourceUseCase {
             final ProgressCallback progressCallback,
             final UseCaseCallback<Void> useCaseCallback
     ) {
-        final FileChecker fileChecker = new FileChecker();
         try {
             String url = resource.url;
             String fileName = resource.key;
@@ -36,15 +34,11 @@ public class DownloadResourceUseCase {
                     url,
                     fileName,
                     resourceFile.getAbsolutePath(),
+                    resource.size,
+                    resource.sha1,
                     new IFileDownloadCallback() {
                         @Override
                         public void onSuccess(String fileAbsolutePath) {
-                            fileChecker.checkWithShaAndSize(
-                                    resourceFile,
-                                    resource.size,
-                                    resource.sha1,
-                                    true
-                            );
                             if (progressCallback != null)
                                 progressCallback.onProgress(resource.size, resource.size);
                             useCaseCallback.onSuccess(null);
@@ -65,7 +59,6 @@ public class DownloadResourceUseCase {
                     interruption
             );
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             e.printStackTrace();
             useCaseCallback.onError(e.getMessage());
         }

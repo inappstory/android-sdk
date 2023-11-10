@@ -9,4 +9,5 @@ public interface BaseReaderScreen {
     void shareComplete(boolean shared);
     void removeStoryFromFavorite(int id);
     void removeAllStoriesFromFavorite();
+    void storyIsOpened(int currentStoryId);
 }

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.ui.views.goodswidget;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -15,9 +16,15 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.imagememcache.GetBitmapFromCacheWithFilePath;
+import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCache;
+import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -146,18 +153,37 @@ public class SimpleCustomGoodsItem implements ICustomGoodsItem {
             setTypeface(oldPrice, true, false, false);
             oldPrice.setPaintFlags(oldPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
-
+        final AppCompatImageView imageView = (AppCompatImageView) view.findViewById(R.id.image);
         if (data.image != null && URLUtil.isNetworkUrl(data.image)) {
-            if (InAppStoryService.getInstance() != null)
-                ImageLoader.getInstance().displayImage(
-                        data.image,
-                        -1,
-                        (AppCompatImageView) view.findViewById(R.id.image),
-                        InAppStoryService.getInstance().getCommonCache()
-                );
+            IASCore.getInstance().filesRepository.getGoodsWidgetPreview(data.image,
+                    new IFileDownloadCallback() {
+                        @Override
+                        public void onSuccess(String fileAbsolutePath) {
+                            new GetBitmapFromCacheWithFilePath(
+                                    fileAbsolutePath,
+                                    new IGetBitmapFromMemoryCache() {
+                                        @Override
+                                        public void get(Bitmap bitmap) {
+                                            imageView.setImageBitmap(bitmap);
+                                        }
+                                    },
+                                    new IGetBitmapFromMemoryCacheError() {
+                                        @Override
+                                        public void onError() {
+                                            imageView.setBackgroundColor(goodsCellImageBackgroundColor);
+                                        }
+                                    }
+                            ).get();
+                        }
+
+                        @Override
+                        public void onError(int errorCode, String error) {
+                            imageView.setBackgroundColor(goodsCellImageBackgroundColor);
+                        }
+                    }
+            );
         } else {
-            ((AppCompatImageView) view.findViewById(R.id.image))
-                    .setBackgroundColor(goodsCellImageBackgroundColor);
+            imageView.setBackgroundColor(goodsCellImageBackgroundColor);
         }
     }
 

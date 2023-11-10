@@ -20,9 +20,11 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
+
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.IASWebViewClient;
+import com.inappstory.sdk.stories.ui.views.StoryReaderWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
@@ -102,9 +104,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public void slideStart() {
-        String funAfterCheck =
-                (InAppStoryService.getInstance() != null
-                        && InAppStoryService.getInstance().isSoundOn()) ?
+        String funAfterCheck = IASCore.getInstance().isSoundOn() ?
                         "story_slide_start('{\"muted\": false}');" :
                         "story_slide_start('{\"muted\": true}');";
         loadUrl("javascript:(function(){" +
@@ -160,7 +160,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public void changeSoundStatus() {
-        if (InAppStoryService.getInstance().isSoundOn()) {
+        if (IASCore.getInstance().isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
             loadUrl("javascript:(function(){story_slide_disable_audio();})()");
@@ -290,7 +290,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         if (!clientIsSet) {
             addJavascriptInterface(new WebAppInterface(getContext(),
                     getManager()), "Android");
-            setWebViewClient(new IASWebViewClient());
+            setWebViewClient(new StoryReaderWebViewClient());
             setWebChromeClient(new WebChromeClient() {
                 @Nullable
                 @Override
@@ -307,8 +307,6 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
 
                 @Override
                 public void onProgressChanged(WebView view, int newProgress) {
-                    if (getManager().getProgressBar() != null)
-                        getManager().getProgressBar().setProgress(newProgress, 100);
 
                 }
 
@@ -357,7 +355,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();
                 if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
-                    int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400));
+                    int sz = (!Sizes.isTablet(getContext()) ? Sizes.getScreenSize(getContext()).x
+                            : Sizes.dpToPxExt(400, getContext()));
                     coordinate1 = sz - coordinate1;
                 }
                 break;
@@ -380,7 +379,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 return true;
             }
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            if (Sizes.isTablet())
+            if (Sizes.isTablet(getContext()))
                 getManager().getPageManager().resumeSlide(false);
         }
         return c;

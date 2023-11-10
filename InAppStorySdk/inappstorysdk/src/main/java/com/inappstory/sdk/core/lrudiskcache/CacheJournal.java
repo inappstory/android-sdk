@@ -33,6 +33,11 @@ public class CacheJournal {
         putLink(item);
     }
 
+    public boolean checkFreeSize(long fileSize, long cacheSize) throws IOException {
+        if (fileSize > cacheSize) return true;
+        return removeOld(fileSize, cacheSize);
+    }
+
     public CacheJournal(FileManager fileManager) {
         this.fileManager = fileManager;
         readJournal();
@@ -109,7 +114,7 @@ public class CacheJournal {
         }
     }
 
-    private void removeOld(long newFileSize, long limitSize) throws IOException {
+    private boolean removeOld(long newFileSize, long limitSize) throws IOException {
         if (currentSize + newFileSize > limitSize) {
             List<CacheJournalItem> items = new ArrayList<>(itemsLinks.values());
             Collections.sort(items, new Utils.TimeComparator());
@@ -119,10 +124,11 @@ public class CacheJournal {
                 itemsLinks.remove(item.getKey());
                 currentSize -= item.getSize();
                 if (currentSize + newFileSize < limitSize) {
-                    break;
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     private void readJournal() {

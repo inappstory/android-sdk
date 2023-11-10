@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.media.AudioManager;
@@ -42,9 +43,11 @@ import androidx.lifecycle.MutableLiveData;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
 import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.imagememcache.GetBitmapFromCacheWithFilePath;
+import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCache;
+import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
@@ -67,6 +70,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
@@ -99,8 +103,7 @@ import java.util.Map;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
 
-
-    GameCacheManager gameCacheManager = InAppStoryService.getInstance().gameCacheManager();
+    GameCacheManager gameCacheManager = IASCore.getInstance().gameRepository.gameCacheManager();
     private IASWebView webView;
     private ImageView loader;
     private View closeButton;
@@ -288,7 +291,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             customLoaderView = loadProgressBar;
         }
         loaderView.setIndeterminate(true);
-        if (Sizes.isTablet() && baseContainer != null) {
+        if (Sizes.isTablet(this) && baseContainer != null) {
             baseContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -307,7 +310,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         webViewContainer = findViewById(R.id.webViewContainer);
 
         initWebView();
-        if (Sizes.isTablet()) {
+        if (Sizes.isTablet(this)) {
             getWindow().setStatusBarColor(Color.BLACK);
         }
 
@@ -360,14 +363,15 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         WindowInsets windowInsets = getWindow().getDecorView().getRootWindowInsets();
                         if (windowInsets != null) {
                             ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
-                                    Math.max(windowInsets.getSystemWindowInsetTop(), Sizes.dpToPxExt(16));
+                                    Math.max(windowInsets.getSystemWindowInsetTop(),
+                                            Sizes.dpToPxExt(16, GameActivity.this));
                             closeButton.requestLayout();
                         }
-                        if (Sizes.isTablet()) {
+                        if (Sizes.isTablet(GameActivity.this)) {
 
                             View gameContainer = findViewById(R.id.gameContainer);
                             if (gameContainer != null) {
-                                Point size = Sizes.getScreenSize();
+                                Point size = Sizes.getScreenSize(GameActivity.this);
                                 size.y -= (windowInsets.getSystemWindowInsetTop() +
                                         windowInsets.getSystemWindowInsetBottom());
                                 gameContainer.getLayoutParams().height = size.y;
@@ -571,6 +575,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             callback.complete(null, null);
         }
     }
+
     private void downloadGame() {
         downloadGame(
                 manager.gameCenterId
@@ -864,17 +869,44 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         if (splashFile == null || !splashFile.exists()) {
             loader.setBackgroundColor(Color.BLACK);
         } else {
-            ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
+            new GetBitmapFromCacheWithFilePath(
+                    splashFile.getAbsolutePath(),
+                    new IGetBitmapFromMemoryCache() {
+                        @Override
+                        public void get(Bitmap bitmap) {
+                            loader.setImageBitmap(bitmap);
+                        }
+                    },
+                    new IGetBitmapFromMemoryCacheError() {
+                        @Override
+                        public void onError() {
+                            loader.setBackgroundColor(Color.BLACK);
+                        }
+                    }
+            ).get();
         }
     }
 
     private void setLoaderOld() {
-        if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()
-                && InAppStoryService.isNotNull())
-            ImageLoader.getInstance().displayImage(manager.splashImagePath, -1, loader,
-                    InAppStoryService.getInstance().getCommonCache());
-        else
+        if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()) {
+            IASCore.getInstance().filesRepository.getGameSplash(
+                    manager.splashImagePath,
+                    null,
+                    null,
+                    new IFileDownloadCallback() {
+                        @Override
+                        public void onSuccess(String fileAbsolutePath) {
+                            setLoader(new File(fileAbsolutePath));
+                        }
+
+                        @Override
+                        public void onError(int errorCode, String error) {
+                            loader.setBackgroundColor(Color.BLACK);
+                        }
+                    });
+        } else {
             loader.setBackgroundColor(Color.BLACK);
+        }
     }
 
     @Override
@@ -1030,7 +1062,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 intent.putExtra("slideIndex", dataModel.slideData.index);
                 if (gameState != null)
                     intent.putExtra("gameState", gameState);
-                if (Sizes.isTablet()) {
+                if (Sizes.isTablet(this)) {
                     String observableUID = getIntent().getStringExtra("observableUID");
                     if (observableUID != null) {
                         MutableLiveData<GameCompleteEvent> liveData =
@@ -1053,7 +1085,6 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 finish();
             }
         } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
             closing = false;
         }
     }

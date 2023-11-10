@@ -22,16 +22,14 @@ import com.inappstory.sdk.core.network.ApiSettings;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.network.JsonParser;
 import com.inappstory.sdk.core.network.utils.HostFromSecretKey;
-import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
-import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.Feed;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -59,7 +57,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallba
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -70,10 +67,8 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -225,7 +220,6 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache without manager
      */
     public void clearCache(Context context) {
-        if (InAppStoryService.isNull()) return;
         IASCore.getInstance().downloadManager.clearCache();
     }
 
@@ -515,7 +509,7 @@ public class InAppStoryManager {
         }
     }
 
-    void setDefaultPlaceholders(@NonNull List<StoryPlaceholder> placeholders) {
+    public void setDefaultPlaceholders(@NonNull List<StoryPlaceholder> placeholders) {
         synchronized (placeholdersLock) {
             for (StoryPlaceholder placeholder : placeholders) {
                 String key = placeholder.name;
@@ -615,7 +609,7 @@ public class InAppStoryManager {
         }
     }
 
-    void setDefaultImagePlaceholder(@NonNull String key, @NonNull ImagePlaceholderValue value) {
+    public void setDefaultImagePlaceholder(@NonNull String key, @NonNull ImagePlaceholderValue value) {
         synchronized (placeholdersLock) {
             if (defaultImagePlaceholders == null) defaultImagePlaceholders = new HashMap<>();
             defaultImagePlaceholders.put(key, value);
@@ -664,14 +658,9 @@ public class InAppStoryManager {
 
     }
 
-    InAppStoryService service;
-
     Thread serviceThread;
 
     void createServiceThread(final Context context, final String userId) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().onDestroy();
-        }
         if (serviceThread != null) {
             serviceThread.interrupt();
             serviceThread = null;
@@ -680,8 +669,6 @@ public class InAppStoryManager {
             @Override
             public void run() {
                 Looper.prepare();
-                service = new InAppStoryService();
-                service.onCreate(context);
                 Looper.loop();
             }
         });
@@ -689,19 +676,15 @@ public class InAppStoryManager {
         serviceThread.start();
     }
 
-    void setExceptionCache(ExceptionCache exceptionCache) {
-        this.exceptionCache = exceptionCache;
-    }
-
     private ExceptionCache exceptionCache;
 
     public void removeFromFavorite(final int storyId) {
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON)
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON)
                 .removeFromFavorite(storyId);
     }
 
     public void removeAllFavorites() {
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).removeAllFavorites();
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON).removeAllFavorites();
     }
 
     NetworkClient networkClient;
@@ -739,26 +722,13 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_min_free_space_error));
             return;
         }
-        IASCore.getInstance().init(builder.context);
+
+
+        IASCore.getInstance().init(builder.context, builder.cacheSize);
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
-        createServiceThread(builder.context, builder.userId);
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            long commonCacheSize = MB_100;
-            long fastCacheSize = MB_10;
-            switch (builder.cacheSize) {
-                case CacheSize.SMALL:
-                    fastCacheSize = MB_5;
-                    commonCacheSize = MB_10;
-                    break;
-                case CacheSize.LARGE:
-                    commonCacheSize = MB_200;
-                    break;
-            }
-            inAppStoryService.getFastCache().setCacheSize(fastCacheSize);
-            inAppStoryService.getCommonCache().setCacheSize(commonCacheSize);
-        }
+        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
+        OldStatisticManager.getInstance();
         String domain = new HostFromSecretKey(
                 builder.apiKey
         ).get(builder.sandbox);
@@ -778,45 +748,27 @@ public class InAppStoryManager {
         new ExceptionManager().sendSavedException();
     }
 
-    private static void generateException() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.genException = true;
-        }
-    }
-
     private int getBytesLength(String value) {
         if (value == null) return 0;
         return value.getBytes(StandardCharsets.UTF_8).length;
     }
 
-    private void setUserIdInner(final String userId, boolean firstTry) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        IASCore.getInstance().setUserId(userId);
-        if (inAppStoryService == null) {
-            if (firstTry)
-                localHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        setUserIdInner(userId, false);
-                    }
-                }, 1000);
-            return;
-        }
+    private void setUserIdInner(final String userId) {
         if (userId == null || getBytesLength(userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
+                    R.string.ias_setter_user_length_error)
+            );
             return;
         }
         if (this.userId.equals(userId)) return;
-        localOpensKey = null;
         this.userId = userId;
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.UGC).clearCachedLists();
-        IASCore.getInstance().downloadManager.refreshLocals();
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(StoryType.UGC).clearCachedLists();
         IASCore.getInstance().downloadManager.cleanTasks();
         closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
         IASCore.getInstance().closeSession();
         OldStatisticManager.getInstance().eventCount = 0;
+        IASCore.getInstance().setUserId(userId);
     }
 
 
@@ -828,7 +780,7 @@ public class InAppStoryManager {
      * @param userId (userId) - can't be longer than 255 characters
      */
     public void setUserId(@NonNull String userId) {
-        setUserIdInner(userId, true);
+        setUserIdInner(userId);
     }
 
     private String userId;
@@ -839,12 +791,14 @@ public class InAppStoryManager {
 
     public void clearCachedList(String id) {
         if (id == null) return;
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedList(id);
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON).clearCachedList(id);
+        IASCore.getInstance().getStoriesRepository(StoryType.UGC).clearCachedList(id);
     }
 
 
     public void clearCachedLists() {
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(StoryType.UGC).clearCachedLists();
     }
 
     public void setActionBarColor(int actionBarColor) {
@@ -882,14 +836,12 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
-        IASCore.getInstance().setUserId(userId);
         if (!isNull()) {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
         }
-
-        OldStatisticManager.getInstance().statistic = new ArrayList<>();
         setInstance(this);
+        IASCore.getInstance().setUserId(userId);
         ApiSettings
                 .getInstance()
                 .cacheDirPath(context.getCacheDir().getAbsolutePath())
@@ -905,7 +857,7 @@ public class InAppStoryManager {
     private static final Object lock = new Object();
 
     public static void logout() {
-        IASCore.getInstance().getStoriesRepository(Story.StoryType.COMMON).clearCachedLists();
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON).clearCachedLists();
         OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         IASCore.getInstance().closeSession();
         OldStatisticManager.getInstance().clear();
@@ -923,20 +875,6 @@ public class InAppStoryManager {
         synchronized (lock) {
             INSTANCE = null;
         }
-    }
-
-
-    private String localOpensKey;
-
-    public String getLocalOpensKey(Story.StoryType type) {
-        if (localOpensKey == null && userId != null) {
-            localOpensKey = "opened" + userId;
-        }
-        return (type == Story.StoryType.COMMON) ? localOpensKey : type.name() + localOpensKey;
-    }
-
-    public String getLocalOpensKey() {
-        return getLocalOpensKey(Story.StoryType.COMMON);
     }
 
     /**
@@ -968,9 +906,8 @@ public class InAppStoryManager {
     private Handler localHandler = new Handler();
     private Object handlerToken = new Object();
 
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext,
+    private void showLoadedOnboardings(final List<IPreviewStoryDTO> response, final Context outerContext,
                                        final AppearanceManager manager, final String feed) {
-        Story.StoryType storyType = Story.StoryType.COMMON;
         if (response == null || response.size() == 0) {
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
                 CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
@@ -1001,8 +938,8 @@ public class InAppStoryManager {
             return;
         }
         ArrayList<Integer> storiesIds = new ArrayList<>();
-        for (Story story : response) {
-            storiesIds.add(story.id);
+        for (IPreviewStoryDTO story : response) {
+            storiesIds.add(story.getId());
         }
         ScreensManager.getInstance().openStoriesReader(
                 outerContext,
@@ -1012,7 +949,7 @@ public class InAppStoryManager {
                 0,
                 SourceType.ONBOARDING,
                 feed,
-                Story.StoryType.COMMON
+                StoryType.COMMON
         );
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
@@ -1022,88 +959,41 @@ public class InAppStoryManager {
         }
     }
 
-    private void showOnboardingStoriesInner(final Integer limit,
-                                            final String feed,
-                                            final List<String> tags,
-                                            final Context outerContext,
-                                            final AppearanceManager manager
+    private void showOnboardingStoriesInner(
+            final Integer limit,
+            final String feed,
+            final List<String> tags,
+            final Context outerContext,
+            final AppearanceManager manager
     ) {
         if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
             return;
         }
-        IASCore.getInstance().getSession(
-                new IGetSessionCallback<SessionDTO>() {
+        String tagsString = null;
+        if (tags != null) {
+            tagsString = TextUtils.join(",", tags);
+        } else if (getTags() != null) {
+            tagsString = TextUtils.join(",", getTags());
+        }
+
+        IASCore.getInstance().getStoriesRepository(StoryType.COMMON).getOnboardingStoriesAsync(
+                feed,
+                limit,
+                tagsString,
+                new IGetStoriesPreviewsCallback() {
                     @Override
-                    public void onSuccess(SessionDTO session) {
-                        String localTags = null;
-                        if (tags != null) {
-                            localTags = TextUtils.join(",", tags);
-                        } else if (getTags() != null) {
-                            localTags = TextUtils.join(",", getTags());
-                        }
-
-                        final String onboardUID =
-                                ProfilingManager.getInstance().addTask("api_onboarding");
-                        final String localFeed;
-                        if (feed != null) localFeed = feed;
-                        else localFeed = ONBOARDING_FEED;
-                        networkClient.enqueue(
-                                networkClient.getApi().getOnboardingFeed(
-                                        localFeed,
-                                        limit,
-                                        localTags == null ? getTagsString() : localTags
-                                ),
-                                new LoadFeedCallback() {
-                                    @Override
-                                    public void onSuccess(Feed response) {
-                                        if (InAppStoryManager.isNull()) return;
-                                        ProfilingManager.getInstance().setReady(onboardUID);
-                                        List<Story> notOpened = new ArrayList<>();
-                                        Set<String> opens = SharedPreferencesAPI.getStringSet(
-                                                InAppStoryManager.getInstance().getLocalOpensKey()
-                                        );
-                                        if (opens == null) opens = new HashSet<>();
-                                        List<Story> localStories = response.getStories();
-                                        for (Story story : localStories) {
-                                            boolean add = true;
-                                            for (String opened : opens) {
-                                                if (Integer.toString(story.id).equals(opened)) {
-                                                    add = false;
-                                                }
-                                            }
-                                            if (add) notOpened.add(story);
-                                        }
-                                        showLoadedOnboardings(notOpened, outerContext, manager, localFeed);
-                                    }
-
-                                    @Override
-                                    public void onError(int code, String message) {
-                                        ProfilingManager.getInstance().setReady(onboardUID);
-                                        loadOnboardingError(localFeed);
-                                    }
-
-                                    @Override
-                                    public void timeoutError() {
-                                        ProfilingManager.getInstance().setReady(onboardUID);
-                                        loadOnboardingError(localFeed);
-                                    }
-                                });
+                    public void onSuccess(List<IPreviewStoryDTO> response) {
+                        showLoadedOnboardings(response, outerContext, manager, feed);
                     }
 
                     @Override
                     public void onError() {
-                        loadOnboardingError(feed);
+
                     }
-                });
+                }
+        );
     }
-
-    private void loadOnboardingError(String feed) {
-        if (CallbackManager.getInstance().getErrorCallback() != null) {
-            CallbackManager.getInstance().getErrorCallback().loadOnboardingError(StringsUtils.getNonNull(feed));
-        }
-    }
-
 
     /**
      * Function for loading onboarding stories with custom tags
@@ -1210,7 +1100,7 @@ public class InAppStoryManager {
                                 final AppearanceManager manager,
                                 final IShowStoryCallback callback,
                                 final Integer slide,
-                                final Story.StoryType type,
+                                final StoryType type,
                                 final SourceType readerSource,
                                 final int readerAction) {
         if (this.userId == null || getBytesLength(this.userId) > 255) {
@@ -1231,8 +1121,6 @@ public class InAppStoryManager {
                     @Override
                     public void onSuccess(IStoryDTO story) {
                         if (story != null) {
-                            //     service.getDownloadManager().addCompletedStoryTask(story,
-                            //            Story.StoryType.COMMON);
                             if (ScreensManager.created == -1) {
                                 InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
                                 localHandler.postDelayed(new Runnable() {
@@ -1249,7 +1137,6 @@ public class InAppStoryManager {
                                                 readerSource,
                                                 readerAction
                                         );
-                                        // StoriesActivity.destroyed = 0;
                                     }
                                 }, 500);
                                 return;
@@ -1273,7 +1160,6 @@ public class InAppStoryManager {
                                 return;
                             }
 
-
                             try {
                                 int c = Integer.parseInt(lastSingleOpen);
                                 if (c != story.getId())
@@ -1295,7 +1181,7 @@ public class InAppStoryManager {
                                     readerAction,
                                     slide,
                                     null,
-                                    Story.StoryType.COMMON
+                                    StoryType.COMMON
                             );
                             localHandler.postDelayed(new Runnable() {
                                 @Override
@@ -1322,7 +1208,7 @@ public class InAppStoryManager {
 
     private void showStoryInner(final String storyId, final Context context,
                                 final AppearanceManager manager,
-                                final IShowStoryCallback callback, Story.StoryType type,
+                                final IShowStoryCallback callback, StoryType type,
                                 final SourceType readerSource,
                                 final int readerAction) {
         showStoryInner(storyId, context, manager, callback, null, type, readerSource, readerAction);
@@ -1342,7 +1228,7 @@ public class InAppStoryManager {
                 context,
                 manager,
                 callback,
-                Story.StoryType.COMMON,
+                StoryType.COMMON,
                 SourceType.SINGLE,
                 ShowStory.ACTION_OPEN
         );
@@ -1355,7 +1241,7 @@ public class InAppStoryManager {
                 manager,
                 callback,
                 slide,
-                Story.StoryType.COMMON,
+                StoryType.COMMON,
                 SourceType.SINGLE,
                 ShowStory.ACTION_OPEN
         );
@@ -1374,7 +1260,7 @@ public class InAppStoryManager {
                 context,
                 manager,
                 null,
-                Story.StoryType.COMMON,
+                StoryType.COMMON,
                 SourceType.SINGLE,
                 ShowStory.ACTION_OPEN
         );
@@ -1386,7 +1272,7 @@ public class InAppStoryManager {
                 context,
                 manager,
                 null,
-                Story.StoryType.COMMON,
+                StoryType.COMMON,
                 SourceType.SINGLE,
                 ShowStory.ACTION_CUSTOM
         );
@@ -1397,7 +1283,7 @@ public class InAppStoryManager {
             Context context,
             Integer slide,
             String managerSettings,
-            Story.StoryType type,
+            StoryType type,
             final SourceType readerSource,
             final int readerAction
     ) {

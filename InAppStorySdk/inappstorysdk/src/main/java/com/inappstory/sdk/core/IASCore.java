@@ -1,8 +1,19 @@
 package com.inappstory.sdk.core;
 
+
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.util.Pair;
+import android.webkit.URLUtil;
 
 import com.inappstory.sdk.InAppStoryManager;
+
+import com.inappstory.sdk.core.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.core.network.NetworkClient;
 import com.inappstory.sdk.core.repository.files.FilesRepository;
 import com.inappstory.sdk.core.repository.files.IFilesRepository;
@@ -15,8 +26,18 @@ import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.StoriesRepository;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.imageloader.ImageLoader;
+import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.uidomain.list.listnotify.ChangeUserIdListNotify;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class IASCore {
     private static IASCore INSTANCE;
@@ -31,6 +52,35 @@ public class IASCore {
     }
 
 
+
+    public Map<String, String> getPlaceholders() {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null)
+            return manager.getPlaceholdersCopy();
+        return new HashMap<>();
+    }
+
+    public void saveSessionPlaceholders(List<StoryPlaceholder> placeholders) {
+        if (placeholders == null) return;
+        InAppStoryManager.getInstance().setDefaultPlaceholders(placeholders);
+    }
+
+    public Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> getImagePlaceholdersValuesWithDefaults() {
+        return InAppStoryManager.getInstance().getImagePlaceholdersValuesWithDefaults();
+    }
+
+    public void saveSessionImagePlaceholders(List<StoryPlaceholder> placeholders) {
+        if (placeholders == null) return;
+        for (StoryPlaceholder placeholder : placeholders) {
+            if (!URLUtil.isNetworkUrl(placeholder.defaultVal))
+                continue;
+            String key = placeholder.name;
+            ImagePlaceholderValue defaultVal = ImagePlaceholderValue.createByUrl(placeholder.defaultVal);
+            InAppStoryManager.getInstance().setDefaultImagePlaceholder(key,
+                    defaultVal);
+        }
+    }
+
     public StoryDownloadManager downloadManager = new StoryDownloadManager();
 
     public IFilesRepository filesRepository;
@@ -41,20 +91,57 @@ public class IASCore {
 
     private IStoriesRepository ugcStoriesRepository;
 
+    private List<ChangeUserIdListNotify> changeUserIdListNotifies = new ArrayList<>();
+
+    private final Object changeUserIdLock = new Object();
+
+    public void addChangeUserIdListNotify(ChangeUserIdListNotify notify) {
+        synchronized (changeUserIdLock) {
+            changeUserIdListNotifies.add(notify);
+        }
+    }
+
+    public void removeChangeUserIdListNotify(ChangeUserIdListNotify notify) {
+        synchronized (changeUserIdLock) {
+            changeUserIdListNotifies.remove(notify);
+        }
+    }
+
     public IGameRepository gameRepository;
+
+    private ListNotifier listNotifier = new ListNotifier();
+
+    public ListNotifier getListNotifier() {
+        if (listNotifier == null) listNotifier = new ListNotifier();
+        return listNotifier;
+    }
+
+    //TODO remove this method
+    public LruDiskCache getInfiniteCache() {
+        return filesRepository.getInfiniteCache();
+    }
 
     public String getUserId() {
         return userId;
     }
 
     public void setUserId(String userId) {
-        this.userId = userId;
+        if (userId != null && this.userId != null && !this.userId.equals(userId)) {
+            this.userId = userId;
+            synchronized (changeUserIdLock) {
+                for (ChangeUserIdListNotify notify: changeUserIdListNotifies) {
+                    notify.onChange();
+                }
+            }
+        } else {
+            this.userId = userId;
+        }
     }
 
     private String userId;
 
-    public IStoriesRepository getStoriesRepository(Story.StoryType type) {
-        if (type == Story.StoryType.UGC) return ugcStoriesRepository;
+    public IStoriesRepository getStoriesRepository(StoryType type) {
+        if (type == StoryType.UGC) return ugcStoriesRepository;
         return storiesRepository;
     }
 
@@ -77,7 +164,6 @@ public class IASCore {
     }
 
     private NetworkClient networkClient;
-
 
 
     public void closeSession() {
@@ -114,13 +200,55 @@ public class IASCore {
                 && sessionRepository.isAllowStatV1();
     }
 
-    public void init(Context context) {
+    public void init(Context context, int cacheSizeType) {
+        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "Stories"));
+        FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "temp"));
+        connectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        new ImageLoader(context);
         if (filesRepository == null) {
-            filesRepository = new FilesRepository(context.getCacheDir());
+            filesRepository = new FilesRepository(context.getCacheDir(), cacheSizeType);
             sessionRepository = new SessionRepository(context);
-            storiesRepository = new StoriesRepository();
-            ugcStoriesRepository = new StoriesRepository();
+            storiesRepository = new StoriesRepository(StoryType.COMMON);
+            ugcStoriesRepository = new StoriesRepository(StoryType.UGC);
             gameRepository = new GameRepository();
+        }
+    }
+
+    ConnectivityManager connectivityManager;
+
+    public boolean isSoundOn() {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null)
+            return true;
+        else
+            return inAppStoryManager.soundOn();
+    }
+
+    public void changeSoundStatus() {
+        if (InAppStoryManager.getInstance() != null) {
+            InAppStoryManager.getInstance().soundOn(!InAppStoryManager.getInstance().soundOn());
+        }
+    }
+
+
+    public boolean notConnected() {
+        if (connectivityManager == null) return true;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Network nw = connectivityManager.getActiveNetwork();
+                if (nw == null) return true;
+                NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(nw);
+                return actNw == null || (!actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
+                        !actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) &&
+                        !actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) &&
+                        !actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH));
+            } else {
+                NetworkInfo nwInfo = connectivityManager.getActiveNetworkInfo();
+                return nwInfo == null || !nwInfo.isConnected();
+            }
+        } catch (Exception e) {
+            return false;
         }
     }
 

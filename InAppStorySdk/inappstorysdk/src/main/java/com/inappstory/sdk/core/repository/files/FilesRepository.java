@@ -2,6 +2,8 @@ package com.inappstory.sdk.core.repository.files;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
@@ -25,8 +27,16 @@ public class FilesRepository implements IFilesRepository {
     private HashMap<String, FileDownload> currentUseCases = new HashMap<>();
     private FilesRepositoryThreadsStorage threadsStorage = new FilesRepositoryThreadsStorage();
 
-    public FilesRepository(File cacheDir) {
-        cacheStorage = new FilesRepositoryCacheStorage(cacheDir);
+    final File cacheDir;
+
+    public FilesRepository(File cacheDir, int cacheSizeType) {
+        cacheStorage = new FilesRepositoryCacheStorage(cacheDir, cacheSizeType);
+        this.cacheDir = cacheDir;
+    }
+
+    @Override
+    public LruDiskCache getInfiniteCache() {
+        return cacheStorage.getInfiniteCache();
     }
 
     @Override
@@ -78,6 +88,8 @@ public class FilesRepository implements IFilesRepository {
             @NonNull final String url,
             @NonNull final String cacheKey,
             @NonNull final String downloadPath,
+            final Long size,
+            final String sha,
             final IFileDownloadCallback fileDownloadCallback,
             @NonNull final IFileDownloadProgressCallback progressCallback,
             @NonNull final DownloadInterruption interruption
@@ -91,6 +103,9 @@ public class FilesRepository implements IFilesRepository {
                         return new GameResourceDownload(
                                 url,
                                 cacheKey,
+                                size,
+                                sha,
+                                null,
                                 cacheStorage.getInfiniteCache(),
                                 downloadPath,
                                 interruption
@@ -105,6 +120,8 @@ public class FilesRepository implements IFilesRepository {
     @Override
     public void getGameSplash(
             @NonNull final String url,
+            final Long size,
+            final String sha,
             final IFileDownloadCallback fileDownloadCallback
     ) {
         if (cacheStorage == null) return;
@@ -115,6 +132,9 @@ public class FilesRepository implements IFilesRepository {
                     public FileDownload create() {
                         return new GameSplashDownload(
                                 url,
+                                size,
+                                sha,
+                                null,
                                 cacheStorage.getInfiniteCache(),
                                 threadsStorage.getGameSplashDownloadThread()
                         );
@@ -192,12 +212,16 @@ public class FilesRepository implements IFilesRepository {
     @Override
     public void getZipArchive(
             @NonNull final String url,
-            @NonNull final String downloadPath,
+            @NonNull final String zipArchiveName,
+            final Long size,
+            final String sha,
+            final Long totalFilesSize,
             @NonNull final IFileDownloadCallback fileDownloadCallback,
             @NonNull final IFileDownloadProgressCallback progressCallback,
             @NonNull final DownloadInterruption interruption
     ) {
         if (cacheStorage == null) return;
+
         getFileWithProgress(
                 url,
                 new IFileDownloadCreate() {
@@ -205,7 +229,10 @@ public class FilesRepository implements IFilesRepository {
                     public FileDownload create() {
                         return new ZipArchiveDownload(
                                 url,
-                                downloadPath,
+                                zipArchiveName,
+                                size,
+                                sha,
+                                totalFilesSize,
                                 cacheStorage.getInfiniteCache(),
                                 interruption
                         );
@@ -221,6 +248,19 @@ public class FilesRepository implements IFilesRepository {
         FileDownload downloadUseCase = new StoryFileDownload(
                 url,
                 cacheStorage.getCommonCache()
+        );
+        try {
+            return downloadUseCase.getFromCache();
+        } catch (Exception e) {
+            throw null;
+        }
+    }
+
+    @Override
+    public String getLocalGameResource(@NonNull String url) {
+        FileDownload downloadUseCase = new StoryFileDownload(
+                url,
+                cacheStorage.getInfiniteCache()
         );
         try {
             return downloadUseCase.getFromCache();
@@ -269,5 +309,28 @@ public class FilesRepository implements IFilesRepository {
     public void clearCaches() {
         if (cacheStorage == null) return;
         cacheStorage.clearCaches();
+    }
+
+    @Override
+    public void removeOldGameFiles(String gameName, String newUrl) {
+
+        File gameDir = new File(
+                cacheStorage.getInfiniteCache().getCacheDir() +
+                        File.separator + "zip" +
+                        File.separator + gameName +
+                        File.separator
+        );
+        if (!gameDir.getAbsolutePath().startsWith(
+                cacheStorage.getInfiniteCache().getCacheDir() +
+                        File.separator + "zip")) {
+            return;
+        }
+        if (gameDir.exists() && gameDir.isDirectory()) {
+            for (File gameDirFile : gameDir.listFiles()) {
+                if (gameDirFile.getAbsolutePath().contains("" + newUrl.hashCode()))
+                    continue;
+                FileManager.deleteRecursive(gameDirFile);
+            }
+        }
     }
 }

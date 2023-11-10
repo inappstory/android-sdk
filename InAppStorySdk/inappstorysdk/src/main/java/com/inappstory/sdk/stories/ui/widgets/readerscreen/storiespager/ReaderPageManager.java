@@ -4,14 +4,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.inappstory.sdk.InAppStoryService;
+
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.api.models.StoryLinkObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
@@ -85,8 +85,8 @@ public class ReaderPageManager {
         return storyId;
     }
 
-    public Story.StoryType getStoryType() {
-        return parentManager != null ? parentManager.storyType : Story.StoryType.COMMON;
+    public StoryType getStoryType() {
+        return parentManager != null ? parentManager.storyType : StoryType.COMMON;
     }
 
     private int storyId;
@@ -128,7 +128,11 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         parentManager.storyClick();
         if (payload == null || payload.isEmpty()) {
-            int sz = (!Sizes.isTablet() ? Sizes.getScreenSize().x : Sizes.dpToPxExt(400, host.getContext()));
+            int sz = (
+                    !Sizes.isTablet(host.getContext()) ?
+                            Sizes.getScreenSize(host.getContext()).x :
+                            Sizes.dpToPxExt(400, host.getContext())
+            );
             if (coordinate >= 0.3 * sz && !isForbidden) {
                 nextSlide(ShowStory.ACTION_TAP);
             } else if (coordinate < 0.3 * sz) {
@@ -174,7 +178,7 @@ public class ReaderPageManager {
                             action = ClickAction.SWIPE;
                         }
                     }
-                    if (getStoryType() == Story.StoryType.COMMON)
+                    if (getStoryType() == StoryType.COMMON)
                         OldStatisticManager.getInstance().addLinkOpenStatistic();
                     IUseCaseCallbackWithContext callbackWithContext = new UseCaseCallbackCallToAction(
                             object.getLink().getTarget(),
@@ -416,9 +420,11 @@ public class ReaderPageManager {
         StatisticManager.getInstance().sendCurrentState();
         IASCore.getInstance().downloadManager.changePriorityForSingle(storyId,
                 parentManager.storyType);
-        if (getStoryType() == Story.StoryType.COMMON)
-            InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
+        if (getStoryType() == StoryType.COMMON) {
+            OldStatisticManager.getInstance().addStatisticBlock(storyId, slideIndex);
+            StatisticManager.getInstance().createCurrentState(storyId, slideIndex,
                     parentManager != null ? parentManager.getFeedId() : null);
+        }
         loadStoryAndSlide(story, slideIndex);
     }
 
@@ -457,7 +463,6 @@ public class ReaderPageManager {
 
     public void prevSlide(int action) {
         if (checkIfManagersIsNull()) return;
-        if (InAppStoryService.isNull()) return;
         if (story == null) return;
 
         timerManager.setTimerDuration(0);
@@ -479,8 +484,7 @@ public class ReaderPageManager {
     }
 
     public void changeSoundStatus() {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().changeSoundStatus();
+        IASCore.getInstance().changeSoundStatus();
         if (parentManager != null) {
             parentManager.updateSoundStatus();
         }
