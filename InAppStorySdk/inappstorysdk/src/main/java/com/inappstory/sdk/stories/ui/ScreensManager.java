@@ -35,6 +35,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -296,15 +298,16 @@ public class ScreensManager {
 
     private Long lastOpenTry = -1L;
 
-    public void openStoriesReader(Context outerContext,
-                                  String listID,
-                                  AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds,
-                                  int index,
-                                  int source, int firstAction,
-                                  Integer slideIndex,
-                                  String feed,
-                                  Story.StoryType type
+    public void openStoriesReader(final Context outerContext,
+                                  final String listID,
+                                  final AppearanceManager appearanceManager,
+                                  final ArrayList<Integer> storiesIds,
+                                  final int index,
+                                  final int source,
+                                  final int firstAction,
+                                  final Integer slideIndex,
+                                  final String feed,
+                                  final Story.StoryType type
     ) {
 
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && outerContext instanceof Activity) {
@@ -313,135 +316,142 @@ public class ScreensManager {
                 //  return;
             }
         }*/
-        if (System.currentTimeMillis() - lastOpenTry < 1000) {
-            return;
-        }
-        lastOpenTry = System.currentTimeMillis();
-        closeGameReader();
-        closeUGCEditor();
-        if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
-            closeStoryReader(CloseStory.CUSTOM);
-            StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("index", index);
-            bundle.putInt("source", source);
-            bundle.putInt("firstAction", firstAction);
-            bundle.putString("storiesType", type.name());
-            bundle.putString("feedId", feed);
-            bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
-            bundle.putIntegerArrayList("stories_ids", storiesIds);
-            if (manager == null) {
-                manager = AppearanceManager.getCommonInstance();
-            }
-            if (manager != null) {
-                bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
-                bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-                bundle.putBoolean(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
-                bundle.putBoolean(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
-                bundle.putBoolean(CS_HAS_LIKE, manager.csHasLike());
-                bundle.putBoolean(CS_HAS_FAVORITE, manager.csHasFavorite());
-                bundle.putBoolean(CS_HAS_SHARE, manager.csHasShare());
-                bundle.putInt(CS_CLOSE_ICON, manager.csCloseIcon());
-                bundle.putInt(CS_REFRESH_ICON, manager.csRefreshIcon());
-                bundle.putInt(CS_SOUND_ICON, manager.csSoundIcon());
-                bundle.putInt(CS_FAVORITE_ICON, manager.csFavoriteIcon());
-                bundle.putInt(CS_LIKE_ICON, manager.csLikeIcon());
-                bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
-                bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
-                bundle.putInt(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
-                bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                bundle.putInt(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
-                if (manager.csTimerGradient() != null) {
-                    try {
-                        bundle.putSerializable(CS_TIMER_GRADIENT, manager.csTimerGradient());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
-                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
-                    bundle.putSerializable(CS_TIMER_GRADIENT, defaultGradient);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (System.currentTimeMillis() - lastOpenTry < 1000) {
+                    return;
                 }
-            }
-            storiesDialogFragment.setArguments(bundle);
-            if (currentScreen != null) {
-                currentScreen.forceFinish();
-            }
-            try {
-                storiesDialogFragment.show(
-                        ((FragmentActivity) outerContext).getSupportFragmentManager(),
-                        "DialogFragment");
-                currentScreen = storiesDialogFragment;
-            } catch (IllegalStateException e) {
-                InAppStoryService.createExceptionLog(e);
+                lastOpenTry = System.currentTimeMillis();
+                closeGameReader();
+                closeUGCEditor();
+                AppearanceManager manager = appearanceManager;
+                if (manager == null) {
+                    manager = AppearanceManager.getCommonInstance();
+                }
+                if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
+                    closeStoryReader(CloseStory.CUSTOM);
+                    StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("index", index);
+                    bundle.putInt("source", source);
+                    bundle.putInt("firstAction", firstAction);
+                    bundle.putString("storiesType", type.name());
+                    bundle.putString("feedId", feed);
+                    bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
+                    bundle.putIntegerArrayList("stories_ids", storiesIds);
 
-            }
-        } else {
-            if (currentScreen != null) {
-                currentScreen.forceFinish();
-            }
-            Context ctx = (InAppStoryService.isNotNull() ?
-                    InAppStoryService.getInstance().getContext() : outerContext);
-            Intent intent2 = new Intent(ctx,
-                    (manager != null ? manager.csIsDraggable()
-                            : AppearanceManager.getCommonInstance().csIsDraggable()) ?
-                            StoriesActivity.class : StoriesFixedActivity.class);
-            intent2.putExtra("index", index);
-            intent2.putExtra("source", source);
-            intent2.putExtra("firstAction", firstAction);
-            intent2.putExtra("storiesType", type.name());
-            if (listID != null)
-                intent2.putExtra("listID", listID);
-            if (feed != null)
-                intent2.putExtra("feedId", feed);
-            intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
-            intent2.putExtra("slideIndex", slideIndex);
-            if (manager != null) {
-                int nightModeFlags =
-                        ctx.getResources().getConfiguration().uiMode &
-                                Configuration.UI_MODE_NIGHT_MASK;
-                intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
-                intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-                intent2.putExtra(CS_READER_PRESENTATION_STYLE, manager.csStoryReaderPresentationStyle());
-                intent2.putExtra(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
-                intent2.putExtra(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
-                intent2.putExtra(CS_NAVBAR_COLOR, nightModeFlags == Configuration.UI_MODE_NIGHT_YES ?
-                        manager.csNightNavBarColor() : manager.csNavBarColor());
-                intent2.putExtra(CS_HAS_LIKE, manager.csHasLike());
-                intent2.putExtra(CS_HAS_FAVORITE, manager.csHasFavorite());
-                intent2.putExtra(CS_HAS_SHARE, manager.csHasShare());
-                intent2.putExtra(CS_CLOSE_ICON, manager.csCloseIcon());
-                intent2.putExtra(CS_REFRESH_ICON, manager.csRefreshIcon());
-                intent2.putExtra(CS_SOUND_ICON, manager.csSoundIcon());
-                intent2.putExtra(CS_FAVORITE_ICON, manager.csFavoriteIcon());
-                intent2.putExtra(CS_LIKE_ICON, manager.csLikeIcon());
-                intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
-                intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
-                intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
-                intent2.putExtra(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
-                if (manager.csTimerGradient() != null) {
+                    if (manager != null) {
+                        bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
+                        bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
+                        bundle.putBoolean(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
+                        bundle.putBoolean(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
+                        bundle.putBoolean(CS_HAS_LIKE, manager.csHasLike());
+                        bundle.putBoolean(CS_HAS_FAVORITE, manager.csHasFavorite());
+                        bundle.putBoolean(CS_HAS_SHARE, manager.csHasShare());
+                        bundle.putInt(CS_CLOSE_ICON, manager.csCloseIcon());
+                        bundle.putInt(CS_REFRESH_ICON, manager.csRefreshIcon());
+                        bundle.putInt(CS_SOUND_ICON, manager.csSoundIcon());
+                        bundle.putInt(CS_FAVORITE_ICON, manager.csFavoriteIcon());
+                        bundle.putInt(CS_LIKE_ICON, manager.csLikeIcon());
+                        bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
+                        bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
+                        bundle.putInt(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
+                        bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
+                        bundle.putInt(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
+                        if (manager.csTimerGradient() != null) {
+                            try {
+                                bundle.putSerializable(CS_TIMER_GRADIENT, manager.csTimerGradient());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            StoriesGradientObject defaultGradient = new StoriesGradientObject()
+                                    .csGradientHeight(Sizes.getScreenSize(outerContext).y);
+                            bundle.putSerializable(CS_TIMER_GRADIENT, defaultGradient);
+                        }
+                    }
+                    storiesDialogFragment.setArguments(bundle);
+                    if (currentScreen != null) {
+                        currentScreen.forceFinish();
+                    }
                     try {
-                        intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        storiesDialogFragment.show(
+                                ((FragmentActivity) outerContext).getSupportFragmentManager(),
+                                "DialogFragment");
+                        currentScreen = storiesDialogFragment;
+                    } catch (IllegalStateException e) {
+                        InAppStoryService.createExceptionLog(e);
+
                     }
                 } else {
-                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
-                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
-                    intent2.putExtra(CS_TIMER_GRADIENT, defaultGradient);
+                    if (currentScreen != null) {
+                        currentScreen.forceFinish();
+                    }
+                    Context ctx = (InAppStoryService.isNotNull() ?
+                            InAppStoryService.getInstance().getContext() : outerContext);
+                    Intent intent2 = new Intent(ctx,
+                            (manager == null || manager.csIsDraggable()) ?
+                                    StoriesActivity.class : StoriesFixedActivity.class);
+                    intent2.putExtra("index", index);
+                    intent2.putExtra("source", source);
+                    intent2.putExtra("firstAction", firstAction);
+                    intent2.putExtra("storiesType", type.name());
+                    if (listID != null)
+                        intent2.putExtra("listID", listID);
+                    if (feed != null)
+                        intent2.putExtra("feedId", feed);
+                    intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
+                    intent2.putExtra("slideIndex", slideIndex);
+                    if (manager != null) {
+                        int nightModeFlags =
+                                ctx.getResources().getConfiguration().uiMode &
+                                        Configuration.UI_MODE_NIGHT_MASK;
+                        intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
+                        intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
+                        intent2.putExtra(CS_READER_PRESENTATION_STYLE, manager.csStoryReaderPresentationStyle());
+                        intent2.putExtra(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
+                        intent2.putExtra(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
+                        intent2.putExtra(CS_NAVBAR_COLOR, nightModeFlags == Configuration.UI_MODE_NIGHT_YES ?
+                                manager.csNightNavBarColor() : manager.csNavBarColor());
+                        intent2.putExtra(CS_HAS_LIKE, manager.csHasLike());
+                        intent2.putExtra(CS_HAS_FAVORITE, manager.csHasFavorite());
+                        intent2.putExtra(CS_HAS_SHARE, manager.csHasShare());
+                        intent2.putExtra(CS_CLOSE_ICON, manager.csCloseIcon());
+                        intent2.putExtra(CS_REFRESH_ICON, manager.csRefreshIcon());
+                        intent2.putExtra(CS_SOUND_ICON, manager.csSoundIcon());
+                        intent2.putExtra(CS_FAVORITE_ICON, manager.csFavoriteIcon());
+                        intent2.putExtra(CS_LIKE_ICON, manager.csLikeIcon());
+                        intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
+                        intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
+                        intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
+                        intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
+                        intent2.putExtra(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
+                        if (manager.csTimerGradient() != null) {
+                            try {
+                                intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            StoriesGradientObject defaultGradient = new StoriesGradientObject()
+                                    .csGradientHeight(Sizes.getScreenSize(outerContext).y);
+                            intent2.putExtra(CS_TIMER_GRADIENT, defaultGradient);
+                        }
+                    }
+                    if (outerContext == null) {
+                        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        ctx.startActivity(intent2);
+                    } else {
+                        if (!(outerContext instanceof Activity)) {
+                            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        }
+                        outerContext.startActivity(intent2);
+                    }
                 }
             }
-            if (outerContext == null) {
-                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                ctx.startActivity(intent2);
-            } else {
-                if (!(outerContext instanceof Activity)) {
-                    intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                }
-                outerContext.startActivity(intent2);
-            }
-        }
+        });
+
     }
 
     public void openStoriesReader(Context outerContext,
