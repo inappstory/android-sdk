@@ -91,18 +91,17 @@ public class StoryTimelineManager implements IStoryTimelineManager {
     @Override
     public void resume() {
         resumedTime = System.currentTimeMillis();
+        if (!paused) return;
         paused = false;
         restTime = (long) (
                 (1f - timelineState.getCurrentSlideProgress()) *
-                        timelineState
-                                .getCurrentStoryDurations()
-                                .get(timelineState.getCurrentSlideIndex())
-        );
+                        timelineState.getCurrentStoryDuration());
         clearAndPost(loopedTimer);
     }
 
     @Override
     public void pause() {
+        paused = true;
         handler.removeCallbacks(loopedTimer);
     }
 
