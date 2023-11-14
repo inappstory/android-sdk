@@ -2,9 +2,8 @@ package com.inappstory.sdk.core.repository.files;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
 

@@ -1,13 +1,13 @@
 package com.inappstory.sdk.core.repository.stories.usecase;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.network.models.Response;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.models.Response;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallbackAdapter;
 import com.inappstory.sdk.core.repository.stories.interfaces.IChangeFavoriteStatusCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 
 import java.lang.reflect.Type;
 

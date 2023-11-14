@@ -34,17 +34,16 @@ import com.inappstory.sdk.InAppStoryManager;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
@@ -58,8 +57,6 @@ import com.inappstory.sdk.stories.utils.StatusBarController;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
 import com.inappstory.sdk.usecase.callbacks.UseCaseCallbackCloseStory;
 
-import java.util.ArrayList;
-
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
 
     public boolean pauseDestroyed = false;
@@ -72,8 +69,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
             StatusBarController.showStatusBar(this);
-
-            OldStatisticManager.getInstance().sendStatistic();
+            IASCore.getInstance().statisticV1Repository.forceSend();
             ScreensManager.created = 0;
             cleanReader();
             System.gc();
@@ -290,7 +286,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        ScreensManager.getInstance().currentScreen = this;
+        ScreensManager.getInstance().currentStoriesReaderScreen = this;
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -314,7 +310,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             @Override
             public void onDragDismissed() {
                 animateFirst = true;
-                InAppStoryManager.closeStoryReader(CloseReader.SWIPE, StatisticManager.SWIPE);
+                InAppStoryManager.closeStoryReader(CloseReader.SWIPE, StatisticV2Manager.SWIPE);
             }
 
             @Override
@@ -377,10 +373,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             FragmentManager fragmentManager = getSupportFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             Bundle bundle = new Bundle();
-            ArrayList<Integer> ids = getIntent().getIntegerArrayListExtra("stories_ids");
-            bundle.putInt("storyId", ids.get(getIntent().getIntExtra("index", 0)));
-            bundle.putSerializable("storiesType", type);
-            setAppearanceSettings(bundle);
+            bundle.putSerializable(
+                    "launchData",
+                    getIntent().getSerializableExtra("launchData")
+            );
+            bundle.putSerializable(
+                    "appearanceSettings",
+                    getIntent().getSerializableExtra("appearanceSettings")
+            );
             storiesLoaderFragment.setArguments(bundle);
             FragmentTransaction t = fragmentManager.beginTransaction()
                     /*.setCustomAnimations(
@@ -468,7 +468,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onBackPressed() {
-        closeStoryReader(CloseReader.CUSTOM, StatisticManager.BACK);
+        closeStoryReader(CloseReader.CUSTOM, StatisticV2Manager.BACK);
     }
 
     @Override
@@ -497,7 +497,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                     action
             );
             useCaseCallbackCloseStory.invoke();
-            StatisticManager.getInstance().sendCloseStory(
+            StatisticV2Manager.getInstance().sendCloseStory(
                     story.getId(),
                     cause,
                     lastIndex,
@@ -527,9 +527,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     boolean cleaned = false;
 
-    public void cleanReader() {
+    private void cleanReader() {
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
         IASCore.getInstance().getStoriesRepository(type).clearReaderModels();
         IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
@@ -538,13 +537,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onDestroy() {
-        if (ScreensManager.getInstance().currentScreen == this)
-            ScreensManager.getInstance().currentScreen = null;
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
         if (!pauseDestroyed) {
 
             StatusBarController.showStatusBar(this);
-
-            OldStatisticManager.getInstance().sendStatistic();
+            IASCore.getInstance().statisticV1Repository.forceSend();
             ScreensManager.created = 0;
             cleanReader();
             System.gc();

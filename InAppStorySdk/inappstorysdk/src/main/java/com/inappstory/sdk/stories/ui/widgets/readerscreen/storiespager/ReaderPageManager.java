@@ -6,13 +6,14 @@ import android.util.Log;
 
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.models.js.StoryIdSlideIndex;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
-import com.inappstory.sdk.stories.api.models.StoryLinkObject;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
+import com.inappstory.sdk.core.models.js.StoryLinkObject;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
@@ -20,9 +21,8 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
@@ -179,7 +179,9 @@ public class ReaderPageManager {
                         }
                     }
                     if (getStoryType() == StoryType.COMMON)
-                        OldStatisticManager.getInstance().addLinkOpenStatistic();
+                        IASCore.getInstance().statisticV1Repository.setTypeToTransition(
+                                new StoryIdSlideIndex(storyId, slideIndex)
+                        );
                     IUseCaseCallbackWithContext callbackWithContext = new UseCaseCallbackCallToAction(
                             object.getLink().getTarget(),
                             new SlideData(
@@ -417,12 +419,14 @@ public class ReaderPageManager {
         timelineManager.setSegment(slideIndex);
         timerManager.stopTimer();
         timerManager.setCurrentDuration(localDurations.get(slideIndex));
-        StatisticManager.getInstance().sendCurrentState();
+        StatisticV2Manager.getInstance().sendCurrentState();
         IASCore.getInstance().downloadManager.changePriorityForSingle(storyId,
                 parentManager.storyType);
         if (getStoryType() == StoryType.COMMON) {
-            OldStatisticManager.getInstance().addStatisticBlock(storyId, slideIndex);
-            StatisticManager.getInstance().createCurrentState(storyId, slideIndex,
+            IASCore.getInstance().statisticV1Repository.addStatisticEvent(
+                    new StoryIdSlideIndex(storyId, slideIndex)
+            );
+            StatisticV2Manager.getInstance().createCurrentState(storyId, slideIndex,
                     parentManager != null ? parentManager.getFeedId() : null);
         }
         loadStoryAndSlide(story, slideIndex);

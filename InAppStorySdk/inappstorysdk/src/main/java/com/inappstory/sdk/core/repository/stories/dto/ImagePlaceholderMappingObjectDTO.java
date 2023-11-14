@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.repository.stories.dto;
 
-import com.inappstory.sdk.stories.api.models.ImagePlaceholderMappingObject;
+import com.inappstory.sdk.core.models.api.ImagePlaceholderMappingObject;
 
 /**
  * Created by paperrose on 19.02.2018.

@@ -6,8 +6,9 @@ import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
 
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.StoryLoadedData;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.game.reader.GameLaunchData;
+import com.inappstory.sdk.core.models.js.StoryIdSlideIndex;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
@@ -44,7 +45,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyLoadingFailed(String data) {
         if (data != null) {
-            StoryLoadedData loadedData = JsonParser.fromJson(data, StoryLoadedData.class);
+            StoryIdSlideIndex loadedData = JsonParser.fromJson(data, StoryIdSlideIndex.class);
             manager.slideLoadError(loadedData.index);
         }
         logMethod("");
@@ -74,10 +75,23 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void openGameReader(String gameFile, String coverFile,
-                               String initCode, String gameResources, String options) {
-        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, options);
-        logMethod(gameFile);
+    public void openGameReader(
+            String gameUrl,
+            String splashScreenPath,
+            String gameConfig,
+            String resources,
+            String options
+    ) {
+        manager.openGameReaderWithoutGameCenter(
+                new GameLaunchData(
+                        gameUrl,
+                        splashScreenPath,
+                        gameConfig,
+                        resources,
+                        options
+                )
+        );
+        logMethod(gameUrl);
     }
 
     @JavascriptInterface
@@ -87,10 +101,18 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
-    public void openGameReader(String gameFile, String coverFile,
-                               String initCode, String gameResources) {
-        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, null);
-        logMethod(gameFile);
+    public void openGameReader(String gameUrl, String splashScreenPath,
+                               String gameConfig, String resources) {
+        manager.openGameReaderWithoutGameCenter(
+                new GameLaunchData(
+                        gameUrl,
+                        splashScreenPath,
+                        gameConfig,
+                        resources,
+                        null
+                )
+        );
+        logMethod(gameUrl);
     }
 
 
@@ -169,7 +191,7 @@ public class WebAppInterface {
     @JavascriptInterface
     public void storyLoaded(String data) {
         if (data != null) {
-            int slideIndex = JsonParser.fromJson(data, StoryLoadedData.class).index;
+            int slideIndex = JsonParser.fromJson(data, StoryIdSlideIndex.class).index;
             manager.storyLoaded(slideIndex);
         } else {
             manager.storyLoaded(-1);

@@ -17,23 +17,24 @@ import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallb
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.game.reader.GameLaunchData;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.core.network.ApiSettings;
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.network.jsapiclient.JsApiClient;
-import com.inappstory.sdk.core.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.core.network.models.Response;
-import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
+import com.inappstory.sdk.core.utils.network.ApiSettings;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.core.utils.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.core.utils.network.models.Response;
+import com.inappstory.sdk.core.models.api.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStoriesGeneratedView;
@@ -66,7 +67,7 @@ public class StoriesViewManager {
 
     public void sendStoryWidgetEvent(String name, String data, String eventData) {
         if (data != null)
-            StatisticManager.getInstance().sendStoryWidgetEvent(name, data,
+            StatisticV2Manager.getInstance().sendStoryWidgetEvent(name, data,
                     pageManager != null ? pageManager.getFeedId() : null);
         if (eventData != null)
             pageManager.widgetEvent(name, eventData);
@@ -444,17 +445,13 @@ public class StoriesViewManager {
         return data;
     }
 
-    public void openGameReaderWithoutGameCenter(String gameUrl, String splashScreenPath, String gameConfig, String resources, String options) {
+    public void openGameReaderWithoutGameCenter(GameLaunchData gameLaunchData) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
         ScreensManager.getInstance().openGameReader(
                 context,
                 getGameStoryData(),
                 null,
-                gameUrl,
-                splashScreenPath,
-                gameConfig,
-                resources,
-                options
+                gameLaunchData
         );
     }
 

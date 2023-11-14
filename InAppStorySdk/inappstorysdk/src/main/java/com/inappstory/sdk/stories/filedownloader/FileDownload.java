@@ -4,14 +4,14 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.lrudiskcache.FileChecker;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.core.network.utils.ConnectionHeadersMap;
-import com.inappstory.sdk.core.network.utils.ResponseStringFromStream;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.cache.DownloadFileState;
+import com.inappstory.sdk.core.utils.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.network.utils.ConnectionHeadersMap;
+import com.inappstory.sdk.core.utils.network.utils.ResponseStringFromStream;
+import com.inappstory.sdk.core.models.logs.ApiLogRequest;
+import com.inappstory.sdk.core.models.logs.ApiLogRequestHeader;
+import com.inappstory.sdk.core.models.logs.ApiLogResponse;
+import com.inappstory.sdk.core.cache.DownloadFileState;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
 import java.io.File;

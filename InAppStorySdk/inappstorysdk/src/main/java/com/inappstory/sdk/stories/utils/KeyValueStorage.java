@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 
 import java.util.HashMap;
 

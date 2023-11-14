@@ -4,18 +4,17 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Handler;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IOpenSession;
-import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.models.api.SessionResponse;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.lang.reflect.Type;

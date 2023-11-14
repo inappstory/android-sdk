@@ -1,6 +1,6 @@
 package com.inappstory.sdk.inner.share;
 
-import com.inappstory.sdk.core.network.annotations.models.SerializedName;
+import com.inappstory.sdk.core.utils.network.annotations.models.SerializedName;
 
 public class InnerShareFile {
     public String getFile() {

@@ -3,8 +3,8 @@ package com.inappstory.sdk.core.repository.stories.usecase;
 import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
@@ -12,8 +12,8 @@ import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.StoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.models.api.Story;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 
 import java.lang.reflect.Type;
 

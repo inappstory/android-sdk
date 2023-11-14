@@ -1,22 +1,13 @@
 package com.inappstory.sdk.stories.ui.views.goodswidget;
 
-import android.content.Context;
-import android.graphics.Paint;
-import android.graphics.Typeface;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 
-import com.inappstory.sdk.R;
-import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 
 import java.util.ArrayList;
 
@@ -46,8 +37,8 @@ public class GoodsWidgetAdapter extends RecyclerView.Adapter<GoodsWidgetItem> {
     public void onItemClick(GoodsItemData data) {
         if (data != null) {
             if (config != null) {
-                if (StatisticManager.getInstance() != null) {
-                    StatisticManager.getInstance().sendGoodsClick(config.storyId,
+                if (StatisticV2Manager.getInstance() != null) {
+                    StatisticV2Manager.getInstance().sendGoodsClick(config.storyId,
                             config.slideIndex, config.widgetId, data.sku, config.feedId);
                 }
             }

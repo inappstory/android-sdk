@@ -43,12 +43,12 @@ import com.inappstory.sdk.InAppStoryManager;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
@@ -232,7 +232,7 @@ public class ReaderPageFragment extends Fragment {
             close.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    InAppStoryManager.closeStoryReader(CloseReader.CLICK, StatisticManager.CLICK);
+                    InAppStoryManager.closeStoryReader(CloseReader.CLICK, StatisticV2Manager.CLICK);
                 }
             });
         if (refresh != null)

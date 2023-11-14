@@ -2,10 +2,10 @@ package com.inappstory.sdk.core.repository.stories.dto;
 
 import androidx.annotation.Nullable;
 
-import com.inappstory.sdk.stories.api.models.ImagePlaceholderMappingObject;
-import com.inappstory.sdk.stories.api.models.PayloadObject;
-import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.ImagePlaceholderMappingObject;
+import com.inappstory.sdk.core.models.api.PayloadObject;
+import com.inappstory.sdk.core.models.api.ResourceMappingObject;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.utils.ArrayUtil;
 
 import java.util.ArrayList;

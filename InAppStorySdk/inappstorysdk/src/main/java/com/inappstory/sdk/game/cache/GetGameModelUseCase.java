@@ -1,13 +1,13 @@
 package com.inappstory.sdk.game.cache;
 
-import static com.inappstory.sdk.core.network.NetworkClient.NC_IS_UNAVAILABLE;
+import static com.inappstory.sdk.core.utils.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.stories.api.models.GameCenterData;
+import com.inappstory.sdk.core.models.api.GameCenterData;
 
 import java.lang.reflect.Type;
 

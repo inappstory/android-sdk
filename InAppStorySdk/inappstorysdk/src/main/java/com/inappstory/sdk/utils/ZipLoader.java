@@ -7,25 +7,21 @@ import android.os.Looper;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.lrudiskcache.FileChecker;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.api.models.GameCenterData;
-import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.utils.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.models.api.GameCenterData;
+import com.inappstory.sdk.core.models.api.WebResource;
+import com.inappstory.sdk.core.cache.DownloadFileState;
+import com.inappstory.sdk.core.cache.DownloadInterruption;
+import com.inappstory.sdk.core.cache.Downloader;
+import com.inappstory.sdk.core.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

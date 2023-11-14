@@ -1,17 +1,17 @@
 package com.inappstory.sdk.core.repository.files;
 
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_200;
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_5;
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_50;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_100;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_200;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_50;
 
 import android.os.Handler;
 
 
-import com.inappstory.sdk.core.lrudiskcache.CacheSize;
-import com.inappstory.sdk.core.lrudiskcache.CacheType;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.lrudiskcache.CacheSize;
+import com.inappstory.sdk.core.utils.lrudiskcache.CacheType;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
 
 import java.io.File;
 import java.io.IOException;

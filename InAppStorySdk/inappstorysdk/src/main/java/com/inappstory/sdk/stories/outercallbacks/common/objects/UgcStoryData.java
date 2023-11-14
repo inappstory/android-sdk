@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashMap;

@@ -2,13 +2,13 @@ package com.inappstory.sdk.stories.exceptions;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.core.models.logs.ExceptionLog;
+import com.inappstory.sdk.core.utils.sharedpref.SharedPreferencesAPI;
 
 import java.lang.reflect.Type;
 import java.util.UUID;

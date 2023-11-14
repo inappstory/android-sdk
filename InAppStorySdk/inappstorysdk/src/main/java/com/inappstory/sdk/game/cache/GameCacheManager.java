@@ -1,17 +1,17 @@
 package com.inappstory.sdk.game.cache;
 
-import static com.inappstory.sdk.core.network.NetworkClient.NC_IS_UNAVAILABLE;
+import static com.inappstory.sdk.core.utils.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.lrudiskcache.FileManager;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
-import com.inappstory.sdk.stories.api.models.GameCenterData;
-import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.models.api.GameCenterData;
+import com.inappstory.sdk.core.models.api.WebResource;
+import com.inappstory.sdk.core.cache.DownloadInterruption;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.ProgressCallback;
 

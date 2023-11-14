@@ -19,11 +19,9 @@ import com.inappstory.sdk.AppearanceManager;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.imagememcache.GetBitmapFromCacheWithFilePath;
-import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCache;
-import com.inappstory.sdk.core.imagememcache.IGetBitmapFromMemoryCacheError;
-import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
+import com.inappstory.sdk.core.utils.imagememcache.GetBitmapFromCacheWithFilePath;
+import com.inappstory.sdk.core.utils.imagememcache.IGetBitmapFromMemoryCache;
+import com.inappstory.sdk.core.utils.imagememcache.IGetBitmapFromMemoryCacheError;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.ui.views.RoundedCornerLayout;
 import com.inappstory.sdk.stories.utils.Sizes;

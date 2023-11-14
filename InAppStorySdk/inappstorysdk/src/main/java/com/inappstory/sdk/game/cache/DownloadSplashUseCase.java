@@ -6,8 +6,8 @@ import androidx.annotation.WorkerThread;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.lrudiskcache.FileChecker;
-import com.inappstory.sdk.stories.api.models.GameSplashScreen;
+import com.inappstory.sdk.core.utils.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.models.api.GameSplashScreen;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 

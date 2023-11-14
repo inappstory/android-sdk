@@ -29,10 +29,11 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
+import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -320,6 +321,9 @@ public class StoriesLoaderFragment extends Fragment {
         relativeLayout.addView(gradientView);
     }
 
+    StoriesReaderAppearanceSettings readerAppearanceSettings = null;
+    StoriesReaderLaunchData launchData = null;
+
     StoriesReaderSettings readerSettings = null;
     StoriesGradientObject timerGradient = null;
 
@@ -328,6 +332,9 @@ public class StoriesLoaderFragment extends Fragment {
         readerSettings = JsonParser.fromJson(
                 getArguments().getString(CS_READER_SETTINGS),
                 StoriesReaderSettings.class
+        );
+        readerAppearanceSettings = (StoriesReaderAppearanceSettings)getArguments().getSerializable(
+                StoriesReaderAppearanceSettings.SERIALIZABLE_KEY
         );
         timerGradient = (StoriesGradientObject) getArguments().getSerializable(CS_TIMER_GRADIENT);
         try {

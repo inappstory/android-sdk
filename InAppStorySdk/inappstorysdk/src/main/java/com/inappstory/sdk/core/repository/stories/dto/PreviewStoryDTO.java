@@ -4,11 +4,9 @@ import androidx.annotation.Nullable;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.stories.api.models.Image;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -67,7 +65,7 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
     }
 
     @Override
-    public List<Image> getImages() {
+    public IListOfImages getImages() {
         return images;
     }
 
@@ -84,9 +82,8 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
     }
 
     public String getImageUrl(int coverQuality) {
-        Image proper = Image.getProperImage(images, coverQuality);
-        if (proper != null) return proper.getUrl();
-        return null;
+        IImageDTO proper = images.getProperImage(coverQuality);
+        return proper != null ? proper.getUrl() : null;
     }
 
     public int getSlidesCount() {
@@ -156,7 +153,7 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
     private String deeplink;
     private String gameInstanceId;
     private boolean hideInReader;
-    private List<Image> images;
+    private IListOfImages images;
     private String videoUrl;
     private String backgroundColor;
     private String titleColor;
@@ -188,7 +185,7 @@ public class PreviewStoryDTO implements IPreviewStoryDTO {
         this.hideInReader = story.isHideInReader();
         this.videoUrl = story.getVideoUrl();
         this.payload = story.payload;
-        this.images = story.getImage();
+        this.images = new ListOfImages(story.getImage());
         this.hasFavorite = story.hasFavorite();
         this.hasShare = story.hasShare();
         this.hasLike = story.hasLike();

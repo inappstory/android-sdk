@@ -3,11 +3,8 @@ package com.inappstory.sdk.stories.filedownloader.usecases;
 import androidx.annotation.NonNull;
 
 
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
-import com.inappstory.sdk.stories.filedownloader.FileDownload;
-import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
-import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.ProgressFileDownload;
 
 import java.io.File;

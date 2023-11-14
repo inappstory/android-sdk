@@ -3,9 +3,8 @@ package com.inappstory.sdk.stories.filedownloader.usecases;
 import androidx.annotation.NonNull;
 
 
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.filedownloader.FileDownload;
-import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 
 public final class StoryFileDownload extends FileDownload {
     public StoryFileDownload(

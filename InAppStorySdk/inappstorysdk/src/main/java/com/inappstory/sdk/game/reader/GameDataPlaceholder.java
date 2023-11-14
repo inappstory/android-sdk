@@ -1,6 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
-import com.inappstory.sdk.core.network.annotations.models.SerializedName;
+import com.inappstory.sdk.core.utils.network.annotations.models.SerializedName;
 
 public class GameDataPlaceholder {
     public GameDataPlaceholder(String type, String name, String value) {

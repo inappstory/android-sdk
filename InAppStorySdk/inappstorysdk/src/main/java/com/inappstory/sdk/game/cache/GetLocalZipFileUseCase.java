@@ -2,9 +2,9 @@ package com.inappstory.sdk.game.cache;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.core.lrudiskcache.FileChecker;
-import com.inappstory.sdk.core.lrudiskcache.FileManager;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.lrudiskcache.FileChecker;
+import com.inappstory.sdk.core.utils.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
 
 import java.io.File;
 

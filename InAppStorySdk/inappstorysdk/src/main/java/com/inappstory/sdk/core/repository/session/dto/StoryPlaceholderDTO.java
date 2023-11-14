@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.repository.session.dto;
 
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
+import com.inappstory.sdk.core.models.StoryPlaceholder;
 
 public class StoryPlaceholderDTO {
     public String getName() {

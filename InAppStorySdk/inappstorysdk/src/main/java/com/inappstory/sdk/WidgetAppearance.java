@@ -3,9 +3,9 @@ package com.inappstory.sdk;
 import android.content.Context;
 import android.graphics.Color;
 
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.core.network.annotations.models.Ignore;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.annotations.models.Ignore;
+import com.inappstory.sdk.core.utils.sharedpref.SharedPreferencesAPI;
 
 public class WidgetAppearance {
     public Integer getTextColor() {

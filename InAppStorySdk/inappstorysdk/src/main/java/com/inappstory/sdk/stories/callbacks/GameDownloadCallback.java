@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.callbacks;
 
-import com.inappstory.sdk.stories.api.models.GameCenterData;
+import com.inappstory.sdk.core.models.api.GameCenterData;
 
 public interface GameDownloadCallback {
     void complete(GameCenterData data);

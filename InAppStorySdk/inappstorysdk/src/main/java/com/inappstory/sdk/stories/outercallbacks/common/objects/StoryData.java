@@ -1,12 +1,14 @@
 package com.inappstory.sdk.stories.outercallbacks.common.objects;
 
-import com.inappstory.sdk.core.network.annotations.models.Ignore;
+import com.inappstory.sdk.core.utils.network.annotations.models.Ignore;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.utils.StringsUtils;
 
-public class StoryData {
+import java.io.Serializable;
+
+public class StoryData implements Serializable {
     public int id;
     public String title;
     public String tags;
@@ -18,6 +20,7 @@ public class StoryData {
 
     public StoryData() {
     }
+
     public StoryData(Story story, String feed, SourceType sourceType) {
         this(
                 story.id,

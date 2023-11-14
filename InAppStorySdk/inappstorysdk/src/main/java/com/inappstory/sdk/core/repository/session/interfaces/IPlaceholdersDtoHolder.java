@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.repository.session.interfaces;
 
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
+import com.inappstory.sdk.core.models.StoryPlaceholder;
 
 import java.util.List;
 

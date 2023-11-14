@@ -1,6 +1,6 @@
 package com.inappstory.sdk.game.reader;
 
-import static com.inappstory.sdk.core.network.NetworkClient.NC_IS_UNAVAILABLE;
+import static com.inappstory.sdk.core.utils.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -13,21 +13,21 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.core.network.ApiSettings;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.ApiSettings;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.network.jsapiclient.JsApiClient;
-import com.inappstory.sdk.core.network.jsapiclient.JsApiResponseCallback;
-import com.inappstory.sdk.core.network.models.Response;
-import com.inappstory.sdk.stories.api.models.GameCenterData;
-import com.inappstory.sdk.stories.api.models.UrlObject;
-import com.inappstory.sdk.stories.api.models.WebResource;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.jsapiclient.JsApiClient;
+import com.inappstory.sdk.core.utils.network.jsapiclient.JsApiResponseCallback;
+import com.inappstory.sdk.core.utils.network.models.Response;
+import com.inappstory.sdk.core.models.api.GameCenterData;
+import com.inappstory.sdk.core.models.UrlObject;
+import com.inappstory.sdk.core.models.api.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallbackWithContext;
@@ -175,7 +175,7 @@ public class GameManager {
 
     void sendGameStat(String name, String data) {
         if (dataModel != null)
-            StatisticManager.getInstance().sendGameEvent(name, data, dataModel.slideData.story.feed);
+            StatisticV2Manager.getInstance().sendGameEvent(name, data, dataModel.slideData.story.feed);
     }
 
     private void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {

@@ -16,12 +16,11 @@ import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
 
-import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.StoryLink;
-import com.inappstory.sdk.stories.api.models.StoryLinkObject;
-import com.inappstory.sdk.stories.api.models.slidestructure.Element;
-import com.inappstory.sdk.stories.api.models.slidestructure.Source;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.core.models.js.StoryLink;
+import com.inappstory.sdk.core.models.js.StoryLinkObject;
+import com.inappstory.sdk.core.models.api.slidestructure.Element;
+import com.inappstory.sdk.core.models.api.slidestructure.Source;
 
 import java.io.File;
 

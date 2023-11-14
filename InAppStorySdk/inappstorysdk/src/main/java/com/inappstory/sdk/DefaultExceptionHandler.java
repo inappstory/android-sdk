@@ -2,7 +2,7 @@ package com.inappstory.sdk;
 
 import android.util.Log;
 
-import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.core.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 
 class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {

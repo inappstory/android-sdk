@@ -1,25 +1,5 @@
 package com.inappstory.sdk.stories.ui;
 
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
-import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
-import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
@@ -28,7 +8,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -53,24 +32,25 @@ import androidx.lifecycle.MutableLiveData;
 import com.inappstory.sdk.AppearanceManager;
 
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.game.reader.GameActivity;
+import com.inappstory.sdk.game.reader.GameLaunchData;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.share.IASShareData;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
-import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
-import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
@@ -153,22 +133,22 @@ public class ScreensManager {
         this.tempShareStoryId = tempShareStoryId;
     }
 
-    public BaseReaderScreen currentScreen;
+    public BaseReaderScreen currentStoriesReaderScreen;
     public OverlapFragmentObserver overlapFragmentObserver;
 
     public void closeStoryReader(CloseReader action, String cause) {
-        if (currentScreen != null)
-            currentScreen.closeStoryReader(action, cause);
+        if (currentStoriesReaderScreen != null)
+            currentStoriesReaderScreen.closeStoryReader(action, cause);
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
-        if (currentScreen == fragment)
-            currentScreen = null;
+        if (currentStoriesReaderScreen == fragment)
+            currentStoriesReaderScreen = null;
     }
 
     public void clearCurrentActivity(FragmentActivity activity) {
-        if (activity == currentScreen)
-            currentScreen = null;
+        if (activity == currentStoriesReaderScreen)
+            currentStoriesReaderScreen = null;
     }
 
     public GameActivity currentGameActivity;
@@ -241,42 +221,42 @@ public class ScreensManager {
     }
 
     public void openGameReader(Context context,
-                               GameStoryData data,
+                               GameStoryData gameStoryData,
                                String gameId,
-                               String gameUrl,
-                               String splashImagePath,
-                               String gameConfig,
-                               String resources,
-                               String options) {
+                               GameLaunchData gameLaunchData) {
         Intent intent2 = new Intent(context, GameActivity.class);
-        intent2.putExtra("gameUrl", gameUrl);
-        if (data != null) {
-            intent2.putExtra("storyId", Integer.toString(data.slideData.story.id));
-            intent2.putExtra("slideIndex", data.slideData.index);
-            intent2.putExtra("slidesCount", data.slideData.story.slidesCount);
-            intent2.putExtra("feedId", data.slideData.story.feed);
-            intent2.putExtra("storyType", Story.nameFromStoryType(data.slideData.story.storyType));
-            intent2.putExtra("tags", data.slideData.story.tags);
-            intent2.putExtra("title", data.slideData.story.title);
+        if (gameStoryData != null) {
+            intent2.putExtra("storyId", Integer.toString(gameStoryData.slideData.story.id));
+            intent2.putExtra("slideIndex", gameStoryData.slideData.index);
+            intent2.putExtra("slidesCount", gameStoryData.slideData.story.slidesCount);
+            intent2.putExtra("feedId", gameStoryData.slideData.story.feed);
+            intent2.putExtra("storyType", Story.nameFromStoryType(gameStoryData.slideData.story.storyType));
+            intent2.putExtra("tags", gameStoryData.slideData.story.tags);
+            intent2.putExtra("title", gameStoryData.slideData.story.title);
+            intent2.putExtra("gameStoryData", gameStoryData);
         }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().startGame(
-                    data, gameId
+                    gameStoryData, gameId
             );
         }
-        intent2.putExtra("options", options);
         intent2.putExtra("gameId", gameId);
-        intent2.putExtra("gameConfig", gameConfig);
-        intent2.putExtra("gameResources", resources);
-        intent2.putExtra("splashImagePath", splashImagePath != null ? splashImagePath : "");
+        intent2.putExtra("gameLaunchData", gameLaunchData);
+        if (gameLaunchData != null) {
+            intent2.putExtra("options", gameLaunchData.getOptions());
+            intent2.putExtra("gameConfig", gameLaunchData.getGameConfig());
+            intent2.putExtra("gameResources", gameLaunchData.getResources());
+            intent2.putExtra("splashImagePath", gameLaunchData.getSplashImagePath());
+            intent2.putExtra("gameUrl", gameLaunchData.getGameUrl());
+        }
 
         if (Sizes.isTablet(context)) {
-            if (currentScreen != null) {
+            if (currentStoriesReaderScreen != null) {
                 String observableUID = randomUUID().toString();
                 intent2.putExtra("observableUID", observableUID);
                 gameObservables.put(observableUID,
                         new MutableLiveData<GameCompleteEvent>());
-                currentScreen.observeGameReader(observableUID);
+                currentStoriesReaderScreen.observeGameReader(observableUID);
             }
         }
         if (context instanceof Activity) {
@@ -306,149 +286,50 @@ public class ScreensManager {
             String feed,
             Story.StoryType type
     ) {
+        if (manager == null) {
+            manager = AppearanceManager.getCommonInstance();
+        }
+        if (manager == null)
+            manager = new AppearanceManager();
 
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && outerContext instanceof Activity) {
-            if (((Activity) outerContext).isInMultiWindowMode()) {
-                Toast.makeText(outerContext, "Unsupported in split mode", Toast.LENGTH_LONG).show();
-                //  return;
-            }
-        }*/
         if (System.currentTimeMillis() - lastOpenTry < 1000) {
             return;
         }
         lastOpenTry = System.currentTimeMillis();
         closeGameReader();
         closeUGCEditor();
-        if (Sizes.isTablet(outerContext) && outerContext instanceof FragmentActivity) {
-            closeStoryReader(CloseReader.CUSTOM, StatisticManager.CUSTOM);
-            StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("index", index);
-            bundle.putSerializable("source", sourceType);
-            bundle.putInt("firstAction", firstAction);
-            bundle.putSerializable("storiesType", type);
-            bundle.putString("feedId", feed);
-            bundle.putInt("slideIndex", slideIndex != null ? slideIndex : 0);
-            bundle.putIntegerArrayList("stories_ids", (ArrayList<Integer>) storiesIds);
-            if (manager == null) {
-                manager = AppearanceManager.getCommonInstance();
-            }
-            if (manager != null) {
-                bundle.putInt(CS_CLOSE_POSITION, manager.csClosePosition());
-                bundle.putInt(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-                bundle.putBoolean(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
-                bundle.putBoolean(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
-                bundle.putBoolean(CS_HAS_LIKE, manager.csHasLike());
-                bundle.putBoolean(CS_HAS_FAVORITE, manager.csHasFavorite());
-                bundle.putBoolean(CS_HAS_SHARE, manager.csHasShare());
-                bundle.putInt(CS_CLOSE_ICON, manager.csCloseIcon());
-                bundle.putInt(CS_REFRESH_ICON, manager.csRefreshIcon());
-                bundle.putInt(CS_SOUND_ICON, manager.csSoundIcon());
-                bundle.putInt(CS_FAVORITE_ICON, manager.csFavoriteIcon());
-                bundle.putInt(CS_LIKE_ICON, manager.csLikeIcon());
-                bundle.putInt(CS_DISLIKE_ICON, manager.csDislikeIcon());
-                bundle.putInt(CS_SHARE_ICON, manager.csShareIcon());
-                bundle.putInt(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
-                bundle.putBoolean(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                bundle.putInt(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
-                if (manager.csTimerGradient() != null) {
-                    try {
-                        bundle.putSerializable(CS_TIMER_GRADIENT, manager.csTimerGradient());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
-                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
-                    bundle.putSerializable(CS_TIMER_GRADIENT, defaultGradient);
-                }
-            }
-            storiesDialogFragment.setArguments(bundle);
-            if (currentScreen != null) {
-                currentScreen.forceFinish();
-            }
-            try {
-                storiesDialogFragment.show(
-                        ((FragmentActivity) outerContext).getSupportFragmentManager(),
-                        "DialogFragment");
-                currentScreen = storiesDialogFragment;
-            } catch (IllegalStateException e) {
-
-            }
-        } else {
-            if (currentScreen != null) {
-                currentScreen.forceFinish();
-            }
-            Intent intent2 = new Intent(outerContext,
-                    (manager != null ? manager.csIsDraggable()
-                            : AppearanceManager.getCommonInstance().csIsDraggable()) ?
-                            StoriesActivity.class : StoriesFixedActivity.class);
-            intent2.putExtra("index", index);
-            intent2.putExtra("source", sourceType);
-            intent2.putExtra("firstAction", firstAction);
-            intent2.putExtra("storiesType", type);
-            if (listID != null)
-                intent2.putExtra("listID", listID);
-            if (feed != null)
-                intent2.putExtra("feedId", feed);
-            intent2.putIntegerArrayListExtra("stories_ids", (ArrayList<Integer>) storiesIds);
-            intent2.putExtra("slideIndex", slideIndex);
-            if (manager != null) {
-                int nightModeFlags =
-                        outerContext.getResources().getConfiguration().uiMode &
-                                Configuration.UI_MODE_NIGHT_MASK;
-                intent2.putExtra(CS_CLOSE_POSITION, manager.csClosePosition());
-                intent2.putExtra(CS_STORY_READER_ANIMATION, manager.csStoryReaderAnimation());
-                intent2.putExtra(CS_READER_PRESENTATION_STYLE, manager.csStoryReaderPresentationStyle());
-                intent2.putExtra(CS_CLOSE_ON_OVERSCROLL, manager.csCloseOnOverscroll());
-                intent2.putExtra(CS_CLOSE_ON_SWIPE, manager.csCloseOnSwipe());
-                intent2.putExtra(CS_NAVBAR_COLOR, nightModeFlags == Configuration.UI_MODE_NIGHT_YES ?
-                        manager.csNightNavBarColor() : manager.csNavBarColor());
-                intent2.putExtra(CS_HAS_LIKE, manager.csHasLike());
-                intent2.putExtra(CS_HAS_FAVORITE, manager.csHasFavorite());
-                intent2.putExtra(CS_HAS_SHARE, manager.csHasShare());
-                intent2.putExtra(CS_CLOSE_ICON, manager.csCloseIcon());
-                intent2.putExtra(CS_REFRESH_ICON, manager.csRefreshIcon());
-                intent2.putExtra(CS_SOUND_ICON, manager.csSoundIcon());
-                intent2.putExtra(CS_FAVORITE_ICON, manager.csFavoriteIcon());
-                intent2.putExtra(CS_LIKE_ICON, manager.csLikeIcon());
-                intent2.putExtra(CS_DISLIKE_ICON, manager.csDislikeIcon());
-                intent2.putExtra(CS_SHARE_ICON, manager.csShareIcon());
-                intent2.putExtra(CS_TIMER_GRADIENT_ENABLE, manager.csTimerGradientEnable());
-                intent2.putExtra(CS_READER_RADIUS, manager.csReaderRadius(outerContext));
-                intent2.putExtra(CS_READER_BACKGROUND_COLOR, manager.csReaderBackgroundColor());
-                if (manager.csTimerGradient() != null) {
-                    try {
-                        intent2.putExtra(CS_TIMER_GRADIENT, manager.csTimerGradient());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    StoriesGradientObject defaultGradient = new StoriesGradientObject()
-                            .csGradientHeight(Sizes.getScreenSize(outerContext).y);
-                    intent2.putExtra(CS_TIMER_GRADIENT, defaultGradient);
-                }
-            }
-            if (outerContext == null) {
-                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                outerContext.startActivity(intent2);
-            } else {
-                if (!(outerContext instanceof Activity)) {
-                    intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                }
-                outerContext.startActivity(intent2);
-            }
+        if (currentStoriesReaderScreen != null) {
+            currentStoriesReaderScreen.forceFinish();
         }
+        IASCore.getInstance().getOpenStoriesReader().onOpen(
+                outerContext,
+                new StoriesReaderAppearanceSettings(
+                        manager,
+                        outerContext
+                ),
+                new StoriesReaderLaunchData(
+                        listID,
+                        feed,
+                        storiesIds,
+                        index,
+                        firstAction,
+                        sourceType,
+                        slideIndex,
+                        type
+                )
+        );
     }
 
-    public void openStoriesReader(Context outerContext,
-                                  String listID,
-                                  AppearanceManager manager,
-                                  List<Integer> storiesIds,
-                                  int index,
-                                  SourceType sourceType,
-                                  String feed,
-                                  Story.StoryType type) {
+    public void openStoriesReader(
+            Context outerContext,
+            String listID,
+            AppearanceManager manager,
+            List<Integer> storiesIds,
+            int index,
+            SourceType sourceType,
+            String feed,
+            Story.StoryType type
+    ) {
         openStoriesReader(
                 outerContext,
                 listID,
@@ -508,8 +389,8 @@ public class ScreensManager {
 
             @Override
             public void itemClick(String sku) {
-                if (StatisticManager.getInstance() != null) {
-                    StatisticManager.getInstance().sendGoodsClick(storyId,
+                if (StatisticV2Manager.getInstance() != null) {
+                    StatisticV2Manager.getInstance().sendGoodsClick(storyId,
                             slideIndex, widgetId, sku, feedId);
                 }
             }
@@ -531,8 +412,8 @@ public class ScreensManager {
             //goodsDialog.getWindow().getAttributes().windowAnimations = R.style.SlidingDialogAnimation;
             goodsDialog.show();
 
-            if (StatisticManager.getInstance() != null) {
-                StatisticManager.getInstance().sendGoodsOpen(storyId,
+            if (StatisticV2Manager.getInstance() != null) {
+                StatisticV2Manager.getInstance().sendGoodsOpen(storyId,
                         slideIndex, widgetId, feedId);
             }
             ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
@@ -562,8 +443,8 @@ public class ScreensManager {
             //  goodsDialog.findViewById(R.id.goods_container).setTranslationY(Sizes.dpToPxExt(240));
             // goodsDialog.findViewById(R.id.goods_container).animate().translationY(0).setDuration(600).start();
 
-            if (StatisticManager.getInstance() != null) {
-                StatisticManager.getInstance().sendGoodsOpen(storyId,
+            if (StatisticV2Manager.getInstance() != null) {
+                StatisticV2Manager.getInstance().sendGoodsOpen(storyId,
                         slideIndex, widgetId, feedId);
             }
             final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);

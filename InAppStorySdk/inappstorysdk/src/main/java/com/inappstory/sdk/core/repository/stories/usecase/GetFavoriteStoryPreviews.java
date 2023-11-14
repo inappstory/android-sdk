@@ -2,16 +2,16 @@ package com.inappstory.sdk.core.repository.stories.usecase;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.ApiSettings;
-import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.ApiSettings;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.stories.dto.FavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IFavoritePreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFavoritePreviewsCallback;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.models.api.Story;
+import com.inappstory.sdk.core.models.callbacks.LoadListCallback;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 
 import java.util.ArrayList;
 import java.util.List;

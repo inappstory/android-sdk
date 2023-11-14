@@ -2,8 +2,8 @@ package com.inappstory.sdk.game.cache;
 
 import androidx.annotation.WorkerThread;
 
-import com.inappstory.sdk.stories.api.models.WebResource;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
+import com.inappstory.sdk.core.models.api.WebResource;
+import com.inappstory.sdk.core.cache.DownloadInterruption;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.util.List;

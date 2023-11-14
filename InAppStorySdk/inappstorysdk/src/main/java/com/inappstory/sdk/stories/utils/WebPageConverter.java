@@ -9,8 +9,8 @@ import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.ImagePlaceholderMappingObjectDTO;
 import com.inappstory.sdk.core.repository.stories.dto.ResourceMappingObjectDTO;
-import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
-import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
+import com.inappstory.sdk.core.models.ImagePlaceholderType;
+import com.inappstory.sdk.core.models.ImagePlaceholderValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;

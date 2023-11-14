@@ -9,9 +9,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.Downloader;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

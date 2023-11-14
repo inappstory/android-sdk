@@ -6,20 +6,22 @@ import android.content.Context;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.repository.statistic.IStatisticV1Repository;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.screen.IOpenGameReader;
+import com.inappstory.sdk.stories.outercallbacks.screen.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.ShownStoriesListItem;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IAllStoriesListsNotify;
@@ -116,7 +118,7 @@ public class StoriesListPresenter implements IStoriesListPresenter {
 
     @Override
     public void onWindowFocusChanged() {
-        OldStatisticManager.getInstance().sendStatistic();
+        IASCore.getInstance().statisticV1Repository.forceSend();
     }
 
     @Override
@@ -141,7 +143,12 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     @Override
-    public void gameItemClick(IPreviewStoryDTO data, int index, Context context) {
+    public void gameItemClick(
+            IPreviewStoryDTO data,
+            int index,
+            Context context,
+            IOpenGameReader callback
+    ) {
         notifyListCallback(data, index);
         IASCore.getInstance().getStoriesRepository(storyType).openStory(data.getId());
         IASCore.getInstance().gameRepository.openGameReaderWithGC(
@@ -159,7 +166,6 @@ public class StoriesListPresenter implements IStoriesListPresenter {
                                 ),
                                 0
                         )
-
                 ),
                 data.getGameInstanceId()
         );
@@ -169,8 +175,8 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     public void deeplinkItemClick(IPreviewStoryDTO data, int index, Context context) {
         notifyListCallback(data, index);
         IASCore.getInstance().getStoriesRepository(storyType).openStory(data.getId());
-        StatisticManager.getInstance().sendDeeplinkStory(data.getId(), data.getDeeplink(), feed);
-        OldStatisticManager.getInstance().addDeeplinkClickStatistic(data.getId());
+        StatisticV2Manager.getInstance().sendDeeplinkStory(data.getId(), data.getDeeplink(), feed);
+        IASCore.getInstance().statisticV1Repository.onDeeplinkClick(data.getId());
         IUseCaseCallbackWithContext callbackWithContext = new UseCaseCallbackCallToAction(
                 data.getDeeplink(),
                 new SlideData(
@@ -190,7 +196,12 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     @Override
-    public void commonItemClick(List<IPreviewStoryDTO> data, int index, Context context) {
+    public void commonItemClick(
+            List<IPreviewStoryDTO> data,
+            int index,
+            Context context,
+            IOpenStoriesReader callback
+    ) {
         if (index == -1) {
             if (CallbackManager.getInstance().getErrorCallback() != null) {
                 CallbackManager.getInstance().getErrorCallback().emptyLinkError();
@@ -278,19 +289,19 @@ public class StoriesListPresenter implements IStoriesListPresenter {
     }
 
     @Override
-    public void sendPreviewsToStatistic(List<Integer> indexes, String feed,
+    public void sendPreviewsToStatistic(List<Integer> ids, String feed,
                                         boolean isFavoriteList) {
-        List<Integer> newIndexes =
-                OldStatisticManager.getInstance().newStatisticPreviews(indexes);
+        IStatisticV1Repository statisticV1Repository = IASCore.getInstance().statisticV1Repository;
+        List<Integer> newIds = statisticV1Repository.getNonViewedStoryIds(ids);
         try {
-            if (StatisticManager.getInstance() != null) {
-                StatisticManager.getInstance().sendViewStory(newIndexes,
-                        isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feed);
+            if (StatisticV2Manager.getInstance() != null) {
+                StatisticV2Manager.getInstance().sendViewStory(newIds,
+                        isFavoriteList ? StatisticV2Manager.FAVORITE : StatisticV2Manager.LIST, feed);
             }
         } catch (Exception e) {
 
         }
-        OldStatisticManager.getInstance().previewStatisticEvent(indexes);
+        statisticV1Repository.setViewedStoryIds(newIds);
     }
 
     private String cacheId;

@@ -1,7 +1,7 @@
 package com.inappstory.sdk.core.repository.session.dto;
 
-import com.inappstory.sdk.stories.api.models.SessionEditor;
-import com.inappstory.sdk.stories.api.models.UGCVersionToSDKBuild;
+import com.inappstory.sdk.core.models.api.SessionEditor;
+import com.inappstory.sdk.core.models.api.UGCVersionToSDKBuild;
 
 import java.util.ArrayList;
 import java.util.HashMap;

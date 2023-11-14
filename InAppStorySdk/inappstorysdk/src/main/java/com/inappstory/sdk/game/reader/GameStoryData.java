@@ -3,7 +3,9 @@ package com.inappstory.sdk.game.reader;
 
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 
-public class GameStoryData {
+import java.io.Serializable;
+
+public class GameStoryData implements Serializable {
     public SlideData slideData;
 
     public GameStoryData(

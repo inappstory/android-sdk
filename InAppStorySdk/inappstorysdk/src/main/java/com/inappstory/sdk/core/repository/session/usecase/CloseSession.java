@@ -1,14 +1,14 @@
 package com.inappstory.sdk.core.repository.session.usecase;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.ICloseSession;
-import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.models.api.SessionResponse;
+import com.inappstory.sdk.core.models.StatisticSendObject;
+import com.inappstory.sdk.core.models.api.Story;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 
 import java.lang.reflect.Type;
 import java.util.List;

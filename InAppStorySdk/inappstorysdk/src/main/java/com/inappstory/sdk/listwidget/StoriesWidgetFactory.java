@@ -12,9 +12,9 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.WidgetAppearance;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.core.models.api.Story;
+import com.inappstory.sdk.core.utils.sharedpref.SharedPreferencesAPI;
 
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;

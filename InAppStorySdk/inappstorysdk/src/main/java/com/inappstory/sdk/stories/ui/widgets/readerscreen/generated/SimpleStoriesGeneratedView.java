@@ -14,8 +14,8 @@ import android.widget.RelativeLayout;
 import androidx.core.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.stories.api.models.slidestructure.Element;
-import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
+import com.inappstory.sdk.core.models.api.slidestructure.Element;
+import com.inappstory.sdk.core.models.api.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;

@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+import com.inappstory.sdk.core.models.logs.WebConsoleLog;
 
 import java.util.UUID;
 

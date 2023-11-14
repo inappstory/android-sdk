@@ -15,10 +15,6 @@ public class GameRepository implements IGameRepository {
                 context,
                 data,
                 gameId,
-                null,
-                null,
-                null,
-                null,
                 null
         );
     }

@@ -4,12 +4,12 @@ import android.os.Handler;
 
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.models.js.StoryIdSlideIndex;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
 public class TimerManager {
@@ -54,14 +54,15 @@ public class TimerManager {
     public long pauseTime = 0;
 
     public void resumeTimer() {
-        StatisticManager.getInstance().cleanFakeEvents();
+        StatisticV2Manager.getInstance().cleanFakeEvents();
         resumeLocalTimer();
-        if (OldStatisticManager.getInstance().currentEvent == null) return;
-        OldStatisticManager.getInstance().currentEvent.eventType = 1;
-        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
+        if (storyIdSlideIndex != null) {
+            IASCore.getInstance().statisticV1Repository.addStatisticEvent(storyIdSlideIndex);
+            storyIdSlideIndex = null;
+        }
         pauseTime += System.currentTimeMillis() - startPauseTime;
-        if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
-            StatisticManager.getInstance().currentState.storyPause = pauseTime;
+        if (StatisticV2Manager.getInstance() != null && StatisticV2Manager.getInstance().currentState != null)
+            StatisticV2Manager.getInstance().currentState.storyPause = pauseTime;
         startPauseTime = 0;
     }
 
@@ -73,16 +74,7 @@ public class TimerManager {
         }
     }
 
-    public void resumeTimer(int timer) {
-        StatisticManager.getInstance().cleanFakeEvents();
-        startTimer(timer, false);
-        if (OldStatisticManager.getInstance().currentEvent == null) return;
-        OldStatisticManager.getInstance().currentEvent.eventType = 1;
-        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
-        pauseTime += System.currentTimeMillis() - startPauseTime;
-        StatisticManager.getInstance().currentState.storyPause = pauseTime;
-        startPauseTime = 0;
-    }
+    private StoryIdSlideIndex storyIdSlideIndex;
 
 
     public void startTimer(long timerDuration, boolean clearDuration) {
@@ -142,15 +134,14 @@ public class TimerManager {
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
             int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
-            StatisticManager.getInstance().addFakeEvents(story.getId(), lastIndex, story.getSlidesCount(),
+            storyIdSlideIndex = new StoryIdSlideIndex(story.getId(), lastIndex);
+            StatisticV2Manager.getInstance().addFakeEvents(story.getId(), lastIndex, story.getSlidesCount(),
                     pageManager != null ? pageManager.getFeedId() : null);
         }
 
         pauseLocalTimer();
         startPauseTime = System.currentTimeMillis();
-        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        OldStatisticManager.getInstance().sendStatistic();
-        OldStatisticManager.getInstance().eventCount++;
+        IASCore.getInstance().statisticV1Repository.forceSend();
     }
 
 }

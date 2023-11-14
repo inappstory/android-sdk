@@ -1,7 +1,6 @@
 package com.inappstory.sdk.core.repository.session.dto;
 
-import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.api.models.StatisticPermissions;
+import com.inappstory.sdk.core.models.api.SessionResponse;
 
 public class StatisticPermissionDTO {
     public boolean isAllowProfiling() {

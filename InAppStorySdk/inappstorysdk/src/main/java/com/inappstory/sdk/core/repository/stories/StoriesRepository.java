@@ -32,9 +32,9 @@ import com.inappstory.sdk.core.repository.stories.usecase.RemoveAllStoriesFromFa
 import com.inappstory.sdk.core.repository.stories.utils.FavoriteCallbackKey;
 import com.inappstory.sdk.core.repository.stories.utils.FeedCallbackKey;
 import com.inappstory.sdk.core.repository.stories.utils.IFeedCallbackKey;
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
+import com.inappstory.sdk.core.utils.sharedpref.SharedPreferencesAPI;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;

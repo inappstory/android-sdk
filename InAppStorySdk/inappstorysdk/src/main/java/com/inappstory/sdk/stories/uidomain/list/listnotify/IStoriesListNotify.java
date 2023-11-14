@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.uidomain.list.listnotify;
 
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.ui.list.IStoriesListNotifyHandler;
 
 public interface IStoriesListNotify {

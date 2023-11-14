@@ -1,9 +1,7 @@
 package com.inappstory.sdk;
 
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_10;
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_100;
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_200;
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_5;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -17,23 +15,23 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.lrudiskcache.CacheSize;
-import com.inappstory.sdk.core.network.ApiSettings;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.core.network.utils.HostFromSecretKey;
+import com.inappstory.sdk.core.utils.lrudiskcache.CacheSize;
+import com.inappstory.sdk.core.utils.network.ApiSettings;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoriesPreviewsCallback;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetStoryCallback;
-import com.inappstory.sdk.stories.api.models.ExceptionCache;
-import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
-import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
-import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
-import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+import com.inappstory.sdk.core.models.ExceptionCache;
+import com.inappstory.sdk.core.models.ImagePlaceholderValue;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
+import com.inappstory.sdk.core.models.StoryPlaceholder;
+import com.inappstory.sdk.core.models.logs.ApiLogRequest;
+import com.inappstory.sdk.core.models.logs.ApiLogResponse;
+import com.inappstory.sdk.core.models.logs.ExceptionLog;
+import com.inappstory.sdk.core.models.logs.WebConsoleLog;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
@@ -55,10 +53,10 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
+import com.inappstory.sdk.stories.outercallbacks.screen.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.utils.sharedpref.SharedPreferencesAPI;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
@@ -92,6 +90,10 @@ public class InAppStoryManager {
         synchronized (lock) {
             return INSTANCE == null;
         }
+    }
+
+    public void setOpenStoriesReader(IOpenStoriesReader openStoriesReader) {
+        IASCore.getInstance().setOpenStoriesReader(openStoriesReader);
     }
 
     public static void setInstance(InAppStoryManager manager) {
@@ -227,7 +229,7 @@ public class InAppStoryManager {
      * use to force close story reader
      */
     public static void closeStoryReader() {
-        closeStoryReader(CloseReader.CUSTOM, StatisticManager.CUSTOM);
+        closeStoryReader(CloseReader.CUSTOM, StatisticV2Manager.CUSTOM);
     }
 
     @Deprecated
@@ -728,7 +730,6 @@ public class InAppStoryManager {
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
-        OldStatisticManager.getInstance();
         String domain = new HostFromSecretKey(
                 builder.apiKey
         ).get(builder.sandbox);
@@ -765,9 +766,8 @@ public class InAppStoryManager {
         IASCore.getInstance().getStoriesRepository(StoryType.COMMON).clearCachedLists();
         IASCore.getInstance().getStoriesRepository(StoryType.UGC).clearCachedLists();
         IASCore.getInstance().downloadManager.cleanTasks();
-        closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
+        closeStoryReader(CloseReader.AUTO, StatisticV2Manager.AUTO);
         IASCore.getInstance().closeSession();
-        OldStatisticManager.getInstance().eventCount = 0;
         IASCore.getInstance().setUserId(userId);
     }
 
@@ -858,9 +858,7 @@ public class InAppStoryManager {
 
     public static void logout() {
         IASCore.getInstance().getStoriesRepository(StoryType.COMMON).clearCachedLists();
-        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
         IASCore.getInstance().closeSession();
-        OldStatisticManager.getInstance().clear();
         IASCore.getInstance().downloadManager.cleanTasks();
     }
 
@@ -906,8 +904,12 @@ public class InAppStoryManager {
     private Handler localHandler = new Handler();
     private Object handlerToken = new Object();
 
-    private void showLoadedOnboardings(final List<IPreviewStoryDTO> response, final Context outerContext,
-                                       final AppearanceManager manager, final String feed) {
+    private void showLoadedOnboardings(
+            final List<IPreviewStoryDTO> response,
+            final Context outerContext,
+            final AppearanceManager manager,
+            final String feed
+    ) {
         if (response == null || response.size() == 0) {
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
                 CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
@@ -918,7 +920,7 @@ public class InAppStoryManager {
             return;
         }
         if (ScreensManager.created == -1) {
-            InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
+            InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticV2Manager.AUTO);
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -1122,7 +1124,7 @@ public class InAppStoryManager {
                     public void onSuccess(IStoryDTO story) {
                         if (story != null) {
                             if (ScreensManager.created == -1) {
-                                InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
+                                InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticV2Manager.AUTO);
                                 localHandler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {

@@ -39,17 +39,16 @@ import com.inappstory.sdk.InAppStoryManager;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -81,7 +80,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             ScreensManager.getInstance().closeGameReader();
             StatusBarController.showStatusBar(this);
 
-            OldStatisticManager.getInstance().sendStatistic();
+            IASCore.getInstance().statisticV1Repository.forceSend();
             ScreensManager.created = 0;
             cleanReader();
             System.gc();
@@ -210,7 +209,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void onBackPressed() {
-        closeStoryReader(CloseReader.CUSTOM, StatisticManager.BACK);
+        closeStoryReader(CloseReader.CUSTOM, StatisticV2Manager.BACK);
     }
 
     @Override
@@ -280,7 +279,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        ScreensManager.getInstance().currentScreen = this;
+        ScreensManager.getInstance().currentStoriesReaderScreen = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -370,7 +369,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     action
             );
             useCaseCallbackCloseStory.invoke();
-            StatisticManager.getInstance().sendCloseStory(story.getId(), cause,
+            StatisticV2Manager.getInstance().sendCloseStory(story.getId(), cause,
                     lastIndex,
                     story.getSlidesCount(),
                     getIntent().getStringExtra("feedId"));
@@ -397,9 +396,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     boolean cleaned = false;
 
-    public void cleanReader() {
+    private void cleanReader() {
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
         IASCore.getInstance().getStoriesRepository(type).clearReaderModels();
         IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
@@ -411,12 +409,11 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void onDestroy() {
-        if (ScreensManager.getInstance().currentScreen == this)
-            ScreensManager.getInstance().currentScreen = null;
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
-
-            OldStatisticManager.getInstance().sendStatistic();
+            IASCore.getInstance().statisticV1Repository.forceSend();
             ScreensManager.created = 0;
             cleanReader();
             System.gc();

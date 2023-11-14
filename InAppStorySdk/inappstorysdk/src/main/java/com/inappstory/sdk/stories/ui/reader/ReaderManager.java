@@ -7,17 +7,18 @@ import android.os.Looper;
 import com.inappstory.sdk.InAppStoryManager;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.models.js.StoryIdSlideIndex;
+import com.inappstory.sdk.core.repository.statistic.IStatisticV1Repository;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -138,7 +139,12 @@ public class ReaderManager {
 
     public void showSingleStory(final int storyId, final int slideIndex) {
         if (storyType == StoryType.COMMON)
-            OldStatisticManager.getInstance().addLinkOpenStatistic();
+            IASCore.getInstance().statisticV1Repository.setTypeToTransition(
+                    new StoryIdSlideIndex(
+                            storyId,
+                            slideIndex
+                    )
+            );
         if (storiesIds.contains(storyId)) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -171,20 +177,20 @@ public class ReaderManager {
 
     void sendStat(int position, SourceType source) {
         if (lastPos < position && lastPos > -1) {
-            sendStatBlock(true, StatisticManager.NEXT, storiesIds.get(position));
+            sendStatBlock(true, StatisticV2Manager.NEXT, storiesIds.get(position));
         } else if (lastPos > position && lastPos > -1) {
-            sendStatBlock(true, StatisticManager.PREV, storiesIds.get(position));
+            sendStatBlock(true, StatisticV2Manager.PREV, storiesIds.get(position));
         } else if (lastPos == -1) {
-            String whence = StatisticManager.DIRECT;
+            String whence = StatisticV2Manager.DIRECT;
             switch (source) {
                 case ONBOARDING:
-                    whence = StatisticManager.ONBOARDING;
+                    whence = StatisticV2Manager.ONBOARDING;
                     break;
                 case LIST:
-                    whence = StatisticManager.LIST;
+                    whence = StatisticV2Manager.LIST;
                     break;
                 case FAVORITE:
-                    whence = StatisticManager.FAVORITE;
+                    whence = StatisticV2Manager.FAVORITE;
                     break;
                 default:
                     break;
@@ -281,14 +287,18 @@ public class ReaderManager {
     }
 
     void changeStory() {
+        IStatisticV1Repository statisticV1Repository = IASCore.getInstance().statisticV1Repository;
         if (storyType == StoryType.COMMON)
-            OldStatisticManager.getInstance().addStatisticBlock(currentStoryId,
-                    currentSlideIndex);
-
-        ArrayList<Integer> lst = new ArrayList<>();
+            statisticV1Repository.addStatisticEvent(
+                    new StoryIdSlideIndex(
+                            currentStoryId,
+                            currentSlideIndex
+                    )
+            );
+        List<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
         if (storyType == StoryType.COMMON)
-            OldStatisticManager.getInstance().previewStatisticEvent(lst);
+            statisticV1Repository.setViewedStoryIds(lst);
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 if (pageManager.getStoryId() != currentStoryId) {
@@ -334,9 +344,9 @@ public class ReaderManager {
         }
         int lastIndex = storiesRepository.getStoryLastIndex(id);
         if (story == null) return;
-        StatisticManager.getInstance().sendCurrentState();
+        StatisticV2Manager.getInstance().sendCurrentState();
         if (lastStory != null) {
-            StatisticManager.getInstance().sendCloseStory(
+            StatisticV2Manager.getInstance().sendCloseStory(
                     lastStory.getId(),
                     whence,
                     lastStoryLastIndex,
@@ -344,9 +354,9 @@ public class ReaderManager {
                     feedId
             );
         }
-        StatisticManager.getInstance().sendViewStory(id, whence, feedId);
-        StatisticManager.getInstance().sendOpenStory(id, whence, feedId);
-        StatisticManager.getInstance().createCurrentState(story.getId(), lastIndex, feedId);
+        StatisticV2Manager.getInstance().sendViewStory(id, whence, feedId);
+        StatisticV2Manager.getInstance().sendOpenStory(id, whence, feedId);
+        StatisticV2Manager.getInstance().createCurrentState(story.getId(), lastIndex, feedId);
     }
 
     public void shareComplete(boolean shared) {
@@ -465,16 +475,16 @@ public class ReaderManager {
     public void pauseCurrent(boolean withBackground) {
         if (getCurrentSubscriber() != null)
             getCurrentSubscriber().pauseSlide(withBackground);
-        StatisticManager.getInstance().pauseStoryEvent(withBackground);
+        StatisticV2Manager.getInstance().pauseStoryEvent(withBackground);
     }
 
     public void resumeCurrent(boolean withBackground) {
         if (getCurrentSubscriber() != null)
             getCurrentSubscriber().resumeSlide(withBackground);
-        if (withBackground && OldStatisticManager.getInstance() != null) {
-            OldStatisticManager.getInstance().refreshTimer();
+        if (withBackground) {
+            IASCore.getInstance().statisticV1Repository.refreshTimer();
         }
-        StatisticManager.getInstance().resumeStoryEvent(withBackground);
+        StatisticV2Manager.getInstance().resumeStoryEvent(withBackground);
     }
 
     public void swipeUp() {

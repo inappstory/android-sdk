@@ -1,8 +1,7 @@
 package com.inappstory.sdk.core.repository.stories.dto;
 
 
-import com.inappstory.sdk.core.network.annotations.models.SerializedName;
-import com.inappstory.sdk.stories.api.models.ResourceMappingObject;
+import com.inappstory.sdk.core.models.api.ResourceMappingObject;
 
 /**
  * Created by paperrose on 19.02.2018.

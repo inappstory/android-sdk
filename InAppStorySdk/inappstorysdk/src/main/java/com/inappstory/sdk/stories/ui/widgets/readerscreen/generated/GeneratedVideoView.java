@@ -17,10 +17,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 
-import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.core.lrudiskcache.Utils;
-import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.lrudiskcache.Utils;
 
 import java.io.File;
 import java.io.IOException;

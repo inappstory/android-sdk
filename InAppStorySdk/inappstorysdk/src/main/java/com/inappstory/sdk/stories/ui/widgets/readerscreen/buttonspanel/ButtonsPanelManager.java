@@ -9,15 +9,14 @@ import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IChangeStatusReaderCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
-import com.inappstory.sdk.core.network.NetworkClient;
-import com.inappstory.sdk.core.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.core.network.models.Response;
-import com.inappstory.sdk.stories.api.models.ShareObject;
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.models.api.ShareObject;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.usecase.callbacks.IUseCaseCallback;
@@ -156,7 +155,7 @@ public class ButtonsPanelManager {
             return;
         }
         final int slideIndex = storiesRepository.getStoryLastIndex(storyId);
-        StatisticManager.getInstance().sendShareStory(
+        StatisticV2Manager.getInstance().sendShareStory(
                 story.getId(),
                 slideIndex,
                 story.shareType(slideIndex),

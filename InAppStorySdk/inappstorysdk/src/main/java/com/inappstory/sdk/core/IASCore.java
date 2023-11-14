@@ -12,9 +12,11 @@ import android.webkit.URLUtil;
 
 import com.inappstory.sdk.InAppStoryManager;
 
-import com.inappstory.sdk.core.lrudiskcache.FileManager;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.repository.statistic.IStatisticV1Repository;
+import com.inappstory.sdk.core.repository.statistic.StatisticV1Repository;
+import com.inappstory.sdk.core.utils.lrudiskcache.FileManager;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
 import com.inappstory.sdk.core.repository.files.FilesRepository;
 import com.inappstory.sdk.core.repository.files.IFilesRepository;
 import com.inappstory.sdk.core.repository.game.GameRepository;
@@ -27,10 +29,12 @@ import com.inappstory.sdk.core.repository.session.dto.UgcEditorDTO;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.StoriesRepository;
 import com.inappstory.sdk.imageloader.ImageLoader;
-import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
-import com.inappstory.sdk.stories.cache.StoryDownloadManager;
+import com.inappstory.sdk.core.models.ImagePlaceholderValue;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
+import com.inappstory.sdk.core.models.StoryPlaceholder;
+import com.inappstory.sdk.core.cache.StoryDownloadManager;
+import com.inappstory.sdk.stories.outercallbacks.screen.DefaultOpenStoriesReader;
+import com.inappstory.sdk.stories.outercallbacks.screen.IOpenStoriesReader;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.ChangeUserIdListNotify;
 
 import java.io.File;
@@ -90,6 +94,8 @@ public class IASCore {
     private IStoriesRepository storiesRepository;
 
     private IStoriesRepository ugcStoriesRepository;
+
+    public IStatisticV1Repository statisticV1Repository;
 
     private List<ChangeUserIdListNotify> changeUserIdListNotifies = new ArrayList<>();
 
@@ -166,6 +172,18 @@ public class IASCore {
     private NetworkClient networkClient;
 
 
+    public IOpenStoriesReader getOpenStoriesReader() {
+        return openStoriesReader;
+    }
+
+    public void setOpenStoriesReader(IOpenStoriesReader openStoriesReader) {
+        this.openStoriesReader = openStoriesReader;
+    }
+
+    private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
+
+
+
     public void closeSession() {
         sessionRepository.closeSession();
     }
@@ -212,6 +230,7 @@ public class IASCore {
             storiesRepository = new StoriesRepository(StoryType.COMMON);
             ugcStoriesRepository = new StoriesRepository(StoryType.UGC);
             gameRepository = new GameRepository();
+            statisticV1Repository = new StatisticV1Repository();
         }
     }
 

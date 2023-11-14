@@ -33,11 +33,11 @@ import androidx.appcompat.widget.AppCompatTextView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
-import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
-import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.utils.network.JsonParser;
+import com.inappstory.sdk.core.models.js.dialogstructure.CenterStructure;
+import com.inappstory.sdk.core.models.js.dialogstructure.DialogStructure;
+import com.inappstory.sdk.core.models.js.dialogstructure.SizeStructure;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -390,7 +390,7 @@ public class ContactDialog {
 
         dialog.getWindow().setLayout(dialogWidth, WRAP_CONTENT);
         dialog.show();
-        StatisticManager.getInstance().pauseStoryEvent(false);
+        StatisticV2Manager.getInstance().pauseStoryEvent(false);
         AppCompatEditText et = (inttype == PHONE) ?
                 editText.getCountryCodeText() : editText.getMainText();
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -405,7 +405,7 @@ public class ContactDialog {
                             editText.clearFocus();
                             InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                            StatisticManager.getInstance().resumeStoryEvent(true);
+                            StatisticV2Manager.getInstance().resumeStoryEvent(true);
                         }
                     });
                 }

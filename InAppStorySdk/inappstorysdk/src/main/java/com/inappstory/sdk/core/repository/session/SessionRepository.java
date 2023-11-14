@@ -15,12 +15,12 @@ import com.inappstory.sdk.core.repository.session.interfaces.IUpdateSessionCallb
 import com.inappstory.sdk.core.repository.session.usecase.CloseSession;
 import com.inappstory.sdk.core.repository.session.usecase.OpenSession;
 import com.inappstory.sdk.core.repository.session.usecase.UpdateSession;
-import com.inappstory.sdk.stories.api.models.CacheFontObject;
-import com.inappstory.sdk.stories.api.models.SessionResponse;
-import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
+import com.inappstory.sdk.core.models.api.CacheFontObject;
+import com.inappstory.sdk.core.models.api.SessionResponse;
+import com.inappstory.sdk.core.models.StoryPlaceholder;
+import com.inappstory.sdk.core.repository.statistic.IStatisticV1Repository;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.filedownloader.FileDownloadCallbackAdapter;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,8 +65,7 @@ public class SessionRepository implements ISessionRepository {
                 new IGetSessionCallback<SessionResponse>() {
                     @Override
                     public void onSuccess(SessionResponse session) {
-                        OldStatisticManager.getInstance().refreshCallbacks();
-                        OldStatisticManager.getInstance().eventCount = 0;
+                        IASCore.getInstance().statisticV1Repository.refreshStatisticProcess();
                         downloadFonts(session);
                         List<IGetSessionCallback<SessionDTO>> localCallbacks;
                         SessionDTO localDTO;
@@ -133,13 +132,14 @@ public class SessionRepository implements ISessionRepository {
 
     @Override
     public void closeSession() {
-        OldStatisticManager statisticManager = OldStatisticManager.getInstance();
+        IStatisticV1Repository statisticV1Repository = IASCore.getInstance().statisticV1Repository;
+        statisticV1Repository.completeCurrentStatisticRecord();
         List<List<Object>> stat = new ArrayList<>(
                 isAllowStatV1() ?
-                        statisticManager.statistic :
+                        statisticV1Repository.getCurrentStatistic() :
                         new ArrayList<List<Object>>()
         );
-        statisticManager.clear();
+        statisticV1Repository.clear();
         new CloseSession().close(
                 sessionDTO,
                 stat

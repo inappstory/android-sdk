@@ -5,7 +5,7 @@ import android.os.Looper;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.ui.list.IStoriesListNotifyHandler;
 
 public class StoriesListNotify implements IStoriesListNotify {

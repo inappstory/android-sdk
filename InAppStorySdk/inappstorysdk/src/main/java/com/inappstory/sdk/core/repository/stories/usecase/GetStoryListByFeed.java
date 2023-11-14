@@ -3,17 +3,17 @@ package com.inappstory.sdk.core.repository.stories.usecase;
 import android.util.Pair;
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.ApiSettings;
-import com.inappstory.sdk.core.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.ApiSettings;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
 import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
 import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionCallback;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.dto.PreviewStoryDTO;
 import com.inappstory.sdk.core.repository.stories.interfaces.IGetFeedCallback;
-import com.inappstory.sdk.stories.api.models.Feed;
-import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.callbacks.LoadFeedCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.models.api.Feed;
+import com.inappstory.sdk.core.models.api.Story;
+import com.inappstory.sdk.core.models.callbacks.LoadFeedCallback;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 
 import java.util.ArrayList;
 import java.util.List;

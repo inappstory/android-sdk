@@ -7,12 +7,10 @@ import androidx.annotation.WorkerThread;
 
 
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.lrudiskcache.FileChecker;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.DownloadInterruption;
+import com.inappstory.sdk.core.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadProgressCallback;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 import com.inappstory.sdk.utils.ProgressCallback;
 
 import java.io.File;

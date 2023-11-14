@@ -2,11 +2,10 @@ package com.inappstory.sdk.stories.filedownloader;
 
 import androidx.annotation.NonNull;
 
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 public abstract class ProgressFileDownload extends FileDownload {
     List<IFileDownloadProgressCallback> progressCallbacks = new ArrayList<>();

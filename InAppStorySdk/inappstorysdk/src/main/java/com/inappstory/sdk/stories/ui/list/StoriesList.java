@@ -22,9 +22,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
+import com.inappstory.sdk.stories.outercallbacks.screen.IOpenGameReader;
+import com.inappstory.sdk.stories.outercallbacks.screen.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -465,15 +467,26 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
         this.favoriteItemClick = favoriteItemClick;
     }
 
-    AppearanceManager appearanceManager;
-    OnFavoriteItemClick favoriteItemClick;
-    OnUGCItemClick ugcItemClick;
+    private AppearanceManager appearanceManager;
+    private OnFavoriteItemClick favoriteItemClick;
+    private OnUGCItemClick ugcItemClick;
+
+    public void setOpenGameReader(IOpenGameReader openGameReader) {
+        this.openGameReader = openGameReader;
+    }
+
+    public void setOpenStoriesReader(IOpenStoriesReader openStoriesReader) {
+        this.openStoriesReader = openStoriesReader;
+    }
+
+    private IOpenGameReader openGameReader;
+    private IOpenStoriesReader openStoriesReader;
 
     IStoriesListCommonItemClick commonItemClick = new IStoriesListCommonItemClick() {
 
         @Override
         public void onClick(List<IPreviewStoryDTO> storiesData, int index) {
-            presenter.commonItemClick(storiesData, index, getContext());
+            presenter.commonItemClick(storiesData, index, getContext(), openStoriesReader);
         }
     };
 
@@ -482,7 +495,7 @@ public class StoriesList extends RecyclerView implements IStoriesListNotifyHandl
 
         @Override
         public void onClick(IPreviewStoryDTO storiesData, int index) {
-            presenter.gameItemClick(storiesData, index, getContext());
+            presenter.gameItemClick(storiesData, index, getContext(), openGameReader);
         }
     };
 

@@ -36,14 +36,13 @@ import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
@@ -195,20 +194,13 @@ public class StoriesFragment extends Fragment
     Serializable timerGradient;
 
     private void closeFragment() {
-        if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentScreen != null)
-            ScreensManager.getInstance().currentScreen.forceFinish();
+        if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentStoriesReaderScreen != null)
+            ScreensManager.getInstance().currentStoriesReaderScreen.forceFinish();
         else if (!Sizes.isTablet(getContext())) {
             Activity activity = getActivity();
             if (activity instanceof BaseReaderScreen)
                 ((BaseReaderScreen) activity).forceFinish();
         }
-    }
-
-
-    @Override
-    public void onDestroyView() {
-        OldStatisticManager.getInstance().currentEvent = null;
-        super.onDestroyView();
     }
 
     public void pause() {
@@ -371,7 +363,7 @@ public class StoriesFragment extends Fragment
                     IASCore.getInstance().getStoriesRepository(readerManager.storyType);
             IStoryDTO storyDTO = repository.getStoryById(currentIds.get(position));
             if (storyDTO == null || storyDTO.disableClose()) return;
-            InAppStoryManager.closeStoryReader(CloseReader.SWIPE, StatisticManager.SWIPE);
+            InAppStoryManager.closeStoryReader(CloseReader.SWIPE, StatisticV2Manager.SWIPE);
         }
     }
 
@@ -461,7 +453,7 @@ public class StoriesFragment extends Fragment
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
-                    InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticManager.AUTO);
+                    InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticV2Manager.AUTO);
                 }
             }
         });

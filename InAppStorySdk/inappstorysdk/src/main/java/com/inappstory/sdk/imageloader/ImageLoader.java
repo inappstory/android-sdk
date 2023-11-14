@@ -1,6 +1,6 @@
 package com.inappstory.sdk.imageloader;
 
-import static com.inappstory.sdk.core.lrudiskcache.LruDiskCache.MB_10;
+import static com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache.MB_10;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,18 +20,14 @@ import android.widget.RemoteViews;
 
 
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.core.lrudiskcache.CacheType;
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
-import com.inappstory.sdk.stories.cache.DownloadFileState;
-import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
-import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.core.utils.lrudiskcache.CacheType;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.cache.DownloadFileState;
+import com.inappstory.sdk.core.cache.Downloader;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;

@@ -3,7 +3,7 @@ package com.inappstory.sdk.stories.filedownloader.usecases;
 import androidx.annotation.NonNull;
 
 
-import com.inappstory.sdk.core.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.core.utils.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.filedownloader.AsyncFileDownload;
 
 import java.util.concurrent.ExecutorService;

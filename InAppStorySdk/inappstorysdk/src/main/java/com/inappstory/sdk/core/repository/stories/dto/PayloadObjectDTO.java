@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core.repository.stories.dto;
 
-import com.inappstory.sdk.stories.api.models.PayloadObject;
+import com.inappstory.sdk.core.models.api.PayloadObject;
 
 public class PayloadObjectDTO {
     public PayloadObjectDTO(String eventType, int slideIndex, String payload) {

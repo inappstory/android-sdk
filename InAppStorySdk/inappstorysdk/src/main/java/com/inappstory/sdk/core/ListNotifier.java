@@ -1,6 +1,6 @@
 package com.inappstory.sdk.core;
 
-import com.inappstory.sdk.stories.api.models.Story.StoryType;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.uidomain.list.listnotify.IStoriesListNotify;
 
 import java.util.HashSet;

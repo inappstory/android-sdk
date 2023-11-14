@@ -9,9 +9,10 @@ import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
+import com.inappstory.sdk.core.repository.stories.dto.ListOfImages;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
-import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Image;
+import com.inappstory.sdk.core.models.CachedSessionData;
+import com.inappstory.sdk.core.models.api.Image;
 import com.inappstory.sdk.stories.ui.list.StoriesList;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.list.UGCListItemSimpleAppearance;
@@ -88,6 +89,7 @@ public class AppearanceManager {
 
     public AppearanceManager() {
     }
+
 
     public AppearanceManager(AppearanceManager other) {
         this.csListItemTitleVisibility = other.csListItemTitleVisibility;
@@ -232,7 +234,7 @@ public class AppearanceManager {
     private UGCListItemSimpleAppearance csUGCListItemSimpleAppearance
             = new UGCListItemSimpleAppearance();
     private int csReaderRadius = -1;
-    private int csCoverQuality = Image.QUALITY_MEDIUM;
+    private int csCoverQuality = ListOfImages.QUALITY_MEDIUM;
 
     private boolean csCloseOnSwipe = true;
     private boolean csCloseOnOverscroll = true;
@@ -342,8 +344,8 @@ public class AppearanceManager {
      * use to set quality for story covers
      *
      * @param csCoverQuality (csCoverQuality) quality for covers
-     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_MEDIUM}
-     *                       {@link com.inappstory.sdk.stories.api.models.Image#QUALITY_HIGH}
+     *                       {@link ListOfImages#QUALITY_MEDIUM}
+     *                       {@link ListOfImages#QUALITY_HIGH}
      * @return {@link AppearanceManager}
      */
     public AppearanceManager csCoverQuality(int csCoverQuality) {

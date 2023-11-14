@@ -31,18 +31,17 @@ import com.inappstory.sdk.AppearanceManager;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.network.JsonParser;
+import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
-import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
-import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -72,7 +71,6 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void onDismiss(DialogInterface dialogInterface) {
         ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
-        OldStatisticManager.getInstance().sendStatistic();
         IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
@@ -92,8 +90,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             );
             useCaseCallbackCloseStory.invoke();
 
-            String cause = StatisticManager.CLICK;
-            StatisticManager.getInstance().sendCloseStory(story.getId(), cause, lastIndex,
+            String cause = StatisticV2Manager.CLICK;
+            StatisticV2Manager.getInstance().sendCloseStory(story.getId(), cause, lastIndex,
                     story.getSlidesCount(),
                     getArguments().getString("feedId"));
 
@@ -101,15 +99,14 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         cleanReader();
         removeGameObservables();
         super.onDismiss(dialogInterface);
-        if (ScreensManager.getInstance().currentScreen == this)
-            ScreensManager.getInstance().currentScreen = null;
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
     }
 
     boolean cleaned = false;
 
-    public void cleanReader() {
+    private void cleanReader() {
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
         IASCore.getInstance().getStoriesRepository(type).clearReaderModels();
         IASCore.getInstance().downloadManager.cleanTasks();
         cleaned = true;
@@ -218,7 +215,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     public void onDestroyView() {
-        OldStatisticManager.getInstance().sendStatistic();
+        IASCore.getInstance().statisticV1Repository.forceSend();
         ScreensManager.created = System.currentTimeMillis();
         super.onDestroyView();
     }
