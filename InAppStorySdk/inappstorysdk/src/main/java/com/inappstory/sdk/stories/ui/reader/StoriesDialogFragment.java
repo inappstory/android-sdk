@@ -43,7 +43,6 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -102,8 +101,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         cleanReader();
         removeGameObservables();
         super.onDismiss(dialogInterface);
-        if (ScreensManager.getInstance().currentScreen == this)
-            ScreensManager.getInstance().currentScreen = null;
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
     }
 
     boolean cleaned = false;
@@ -123,7 +122,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     Observer<GameCompleteEvent> gameCompleteObserver = new Observer<GameCompleteEvent>() {
         @Override
         public void onChanged(GameCompleteEvent event) {
-            storiesFragment.readerManager.gameComplete(
+            storiesContentFragment.readerManager.gameComplete(
                     event.getGameState(),
                     event.getStoryId(),
                     event.getSlideIndex()
@@ -162,29 +161,29 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void shareComplete(boolean shared) {
-        storiesFragment.readerManager.shareComplete(shared);
+        storiesContentFragment.readerManager.shareComplete(shared);
     }
 
     @Override
     public void removeStoryFromFavorite(int id) {
-        if (storiesFragment != null)
-            storiesFragment.removeStoryFromFavorite(id);
+        if (storiesContentFragment != null)
+            storiesContentFragment.removeStoryFromFavorite(id);
     }
 
     @Override
     public void removeAllStoriesFromFavorite() {
-        if (storiesFragment != null)
-            storiesFragment.removeAllStoriesFromFavorite();
+        if (storiesContentFragment != null)
+            storiesContentFragment.removeAllStoriesFromFavorite();
     }
 
     @Override
     public void timerIsLocked() {
-        if (storiesFragment != null) storiesFragment.timerIsLocked();
+        if (storiesContentFragment != null) storiesContentFragment.timerIsLocked();
     }
 
     @Override
     public void timerIsUnlocked() {
-        if (storiesFragment != null) storiesFragment.timerIsUnlocked();
+        if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
     }
 
 
@@ -270,7 +269,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
                 type = Story.StoryType.UGC;
         }
         if (savedInstanceState == null) {
-            storiesFragment = new StoriesFragment();
+            storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
             args.putBoolean("isDialogFragment", true);
             args.putInt("index", getArguments().getInt("index", 0));
@@ -281,15 +280,15 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
             args.putInt("slideIndex", getArguments().getInt("slideIndex", 0));
             setAppearanceSettings(args);
             args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));
-            storiesFragment.setArguments(args);
+            storiesContentFragment.setArguments(args);
         } else {
-            storiesFragment =
-                    (StoriesFragment) getChildFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
+            storiesContentFragment =
+                    (StoriesContentFragment) getChildFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
-        if (storiesFragment != null) {
+        if (storiesContentFragment != null) {
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.dialog_fragment, storiesFragment);
+                    .replace(R.id.dialog_fragment, storiesContentFragment);
             t.addToBackStack("STORIES_FRAGMENT");
             t.commitAllowingStateLoss();
         } else {
@@ -298,7 +297,7 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     }
 
-    StoriesFragment storiesFragment;
+    StoriesContentFragment storiesContentFragment;
 
     private void setAppearanceSettings(Bundle bundle) {
         try {

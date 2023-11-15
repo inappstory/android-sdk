@@ -20,8 +20,8 @@ public class StoryShareBroadcastReceiver extends BroadcastReceiver {
                 ScreensManager.getInstance().currentGameActivity.shareComplete(
                         shareId, true);
             } else {
-                if (ScreensManager.getInstance().currentScreen != null)
-                    ScreensManager.getInstance().currentScreen.shareComplete(true);
+                if (ScreensManager.getInstance().currentStoriesReaderScreen != null)
+                    ScreensManager.getInstance().currentStoriesReaderScreen.shareComplete(true);
             }
         }
     }

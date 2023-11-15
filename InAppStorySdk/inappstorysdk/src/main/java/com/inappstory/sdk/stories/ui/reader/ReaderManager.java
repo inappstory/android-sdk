@@ -11,6 +11,7 @@ import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -20,7 +21,6 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -192,7 +192,7 @@ public class ReaderManager {
                     slideIndex,
                     parentFragment.readerSettings,
                     storyType,
-                    ShowStory.SINGLE,
+                    SourceType.SINGLE,
                     ShowStory.ACTION_CUSTOM
             );
         }
@@ -428,7 +428,7 @@ public class ReaderManager {
     private int currentSlideIndex;
     private List<Integer> storiesIds;
 
-    public void setParentFragment(StoriesFragment parentFragment) {
+    public void setParentFragment(StoriesContentFragment parentFragment) {
         this.parentFragment = parentFragment;
     }
 
@@ -444,7 +444,7 @@ public class ReaderManager {
         firstStoryId = -1;
     }
 
-    private StoriesFragment parentFragment;
+    private StoriesContentFragment parentFragment;
     private HashSet<ReaderPageManager> subscribers = new HashSet<>();
 
     public void addSubscriber(ReaderPageManager manager) {

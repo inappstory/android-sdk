@@ -28,8 +28,6 @@ import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -49,11 +47,10 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
+import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.progresstimeline.Timeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -603,8 +600,8 @@ public class ReaderPageFragment extends Fragment {
         manager = new ReaderPageManager();
         setStoryId();
         manager.host = this;
-        if (parentManager == null && getParentFragment() instanceof StoriesFragment) {
-            parentManager = ((StoriesFragment) getParentFragment()).readerManager;
+        if (parentManager == null && getParentFragment() instanceof StoriesContentFragment) {
+            parentManager = ((StoriesContentFragment) getParentFragment()).readerManager;
         }
         manager.parentManager = parentManager;
         manager.setStoryId(storyId);

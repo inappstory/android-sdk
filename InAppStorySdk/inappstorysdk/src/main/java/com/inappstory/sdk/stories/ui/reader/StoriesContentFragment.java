@@ -10,7 +10,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -50,10 +49,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
-public class StoriesFragment extends Fragment
+public class StoriesContentFragment extends Fragment
         implements BackPressHandler, ViewPager.OnPageChangeListener, OverlapFragmentObserver {
 
-    public StoriesFragment() {
+    public StoriesContentFragment() {
         super();
     }
 
@@ -175,8 +174,8 @@ public class StoriesFragment extends Fragment
     Serializable timerGradient;
 
     private void closeFragment() {
-        if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentScreen != null)
-            ScreensManager.getInstance().currentScreen.forceFinish();
+        if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentStoriesReaderScreen != null)
+            ScreensManager.getInstance().currentStoriesReaderScreen.forceFinish();
         else if (!Sizes.isTablet()) {
             Activity activity = getActivity();
             if (activity instanceof BaseReaderScreen)

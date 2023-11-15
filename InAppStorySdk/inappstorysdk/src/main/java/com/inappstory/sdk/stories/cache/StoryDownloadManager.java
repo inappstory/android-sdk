@@ -81,7 +81,7 @@ public class StoryDownloadManager {
             final GetStoryByIdCallback storyByIdCallback,
             final String id,
             final Story.StoryType type,
-            final int readerSource
+            final SourceType readerSource
     ) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null || InAppStoryService.isNull()) {
@@ -115,7 +115,7 @@ public class StoryDownloadManager {
                                             StoryData.getStoryData(
                                                     response,
                                                     null,
-                                                    CallbackManager.getInstance().getSourceFromInt(readerSource),
+                                                    readerSource,
                                                     type
                                             )
                                     );

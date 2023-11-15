@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -10,6 +11,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 
 public class ButtonsPanel extends LinearLayout {
@@ -44,10 +46,16 @@ public class ButtonsPanel extends LinearLayout {
             favorite.setActivated(favVal == 1);
     }
 
-    public void setButtonsVisibility(StoriesReaderSettings readerSettings, boolean hasLike, boolean hasFavorite, boolean hasShare, boolean hasSound) {
-        hasLike = hasLike && readerSettings.hasLike;
-        hasFavorite = hasFavorite && readerSettings.hasFavorite;
-        hasShare = hasShare && readerSettings.hasShare;
+    public void setButtonsVisibility(
+            StoriesReaderAppearanceSettings readerSettings,
+            boolean hasLike,
+            boolean hasFavorite,
+            boolean hasShare,
+            boolean hasSound
+    ) {
+        hasLike = hasLike && readerSettings.csHasLike();
+        hasFavorite = hasFavorite && readerSettings.csHasFavorite();
+        hasShare = hasShare && readerSettings.csHasShare();
         like.setVisibility(hasLike ? VISIBLE : GONE);
         dislike.setVisibility(hasLike ? VISIBLE : GONE);
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);
@@ -119,12 +127,13 @@ public class ButtonsPanel extends LinearLayout {
         }
     }
 
-    public void setIcons(StoriesReaderSettings readerSettings) {
-        like.setImageDrawable(getResources().getDrawable(readerSettings.likeIcon));
-        dislike.setImageDrawable(getResources().getDrawable(readerSettings.dislikeIcon));
-        favorite.setImageDrawable(getResources().getDrawable(readerSettings.favoriteIcon));
-        share.setImageDrawable(getResources().getDrawable(readerSettings.shareIcon));
-        sound.setImageDrawable(getResources().getDrawable(readerSettings.soundIcon));
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public void setIcons(StoriesReaderAppearanceSettings readerSettings) {
+        like.setImageDrawable(getResources().getDrawable(readerSettings.csLikeIcon()));
+        dislike.setImageDrawable(getResources().getDrawable(readerSettings.csDislikeIcon()));
+        favorite.setImageDrawable(getResources().getDrawable(readerSettings.csFavoriteIcon()));
+        share.setImageDrawable(getResources().getDrawable(readerSettings.csShareIcon()));
+        sound.setImageDrawable(getResources().getDrawable(readerSettings.csSoundIcon()));
     }
 
     public void likeClick() {

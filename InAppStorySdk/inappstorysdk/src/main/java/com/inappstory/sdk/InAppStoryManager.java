@@ -44,6 +44,8 @@ import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -52,6 +54,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.FavoriteStoryCall
 import com.inappstory.sdk.stories.outercallbacks.common.reader.LikeDislikeStoryCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowStoryCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -752,8 +755,8 @@ public class InAppStoryManager {
                             InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
                         }
 
-                        if (ScreensManager.getInstance().currentScreen != null) {
-                            ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
+                        if (ScreensManager.getInstance().currentStoriesReaderScreen != null) {
+                            ScreensManager.getInstance().currentStoriesReaderScreen.removeAllStoriesFromFavorite();
                         }
                     }
 
@@ -794,8 +797,8 @@ public class InAppStoryManager {
                                 story.favorite = favorite;
                             InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
                         }
-                        if (ScreensManager.getInstance().currentScreen != null) {
-                            ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
+                        if (ScreensManager.getInstance().currentStoriesReaderScreen != null) {
+                            ScreensManager.getInstance().currentStoriesReaderScreen.removeStoryFromFavorite(storyId);
                         }
                     }
 
@@ -950,6 +953,15 @@ public class InAppStoryManager {
         }
     }
 
+    public IOpenStoriesReader getOpenStoriesReader() {
+        return openStoriesReader;
+    }
+
+    public void setOpenStoriesReader(IOpenStoriesReader openStoriesReader) {
+        this.openStoriesReader = openStoriesReader;
+    }
+
+    private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
 
     public void clearCachedLists() {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
@@ -1141,7 +1153,7 @@ public class InAppStoryManager {
                 manager,
                 storiesIds,
                 0,
-                ShowStory.ONBOARDING,
+                SourceType.ONBOARDING,
                 feed,
                 Story.StoryType.COMMON);
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
@@ -1342,7 +1354,7 @@ public class InAppStoryManager {
                                 final IShowStoryCallback callback,
                                 final Integer slide,
                                 final Story.StoryType type,
-                                final int readerSource,
+                                final SourceType readerSource,
                                 final int readerAction) {
         final InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) {
@@ -1478,7 +1490,7 @@ public class InAppStoryManager {
     private void showStoryInner(final String storyId, final Context context,
                                 final AppearanceManager manager,
                                 final IShowStoryCallback callback, Story.StoryType type,
-                                final int readerSource,
+                                final SourceType readerSource,
                                 final int readerAction) {
         showStoryInner(storyId, context, manager, callback, null, type, readerSource, readerAction);
     }
@@ -1498,7 +1510,7 @@ public class InAppStoryManager {
                 manager,
                 callback,
                 Story.StoryType.COMMON,
-                ShowStory.SINGLE,
+                SourceType.SINGLE,
                 ShowStory.ACTION_OPEN
         );
     }
@@ -1511,7 +1523,7 @@ public class InAppStoryManager {
                 callback,
                 slide,
                 Story.StoryType.COMMON,
-                ShowStory.SINGLE,
+                SourceType.SINGLE,
                 ShowStory.ACTION_OPEN
         );
     }
@@ -1524,11 +1536,27 @@ public class InAppStoryManager {
      * @param manager (manager) {@link AppearanceManager} for reader. May be null
      */
     public void showStory(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_OPEN);
+        showStoryInner(
+                storyId,
+                context,
+                manager,
+                null,
+                Story.StoryType.COMMON,
+                SourceType.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
     }
 
     public void showStoryCustom(String storyId, Context context, AppearanceManager manager) {
-        showStoryInner(storyId, context, manager, null, Story.StoryType.COMMON, ShowStory.SINGLE, ShowStory.ACTION_CUSTOM);
+        showStoryInner(
+                storyId,
+                context,
+                manager,
+                null,
+                Story.StoryType.COMMON,
+                SourceType.SINGLE,
+                ShowStory.ACTION_CUSTOM
+        );
     }
 
     public void showStoryWithSlide(
@@ -1537,7 +1565,7 @@ public class InAppStoryManager {
             Integer slide,
             String managerSettings,
             Story.StoryType type,
-            final int readerSource,
+            final SourceType readerSource,
             final int readerAction
     ) {
         AppearanceManager appearanceManager = new AppearanceManager();

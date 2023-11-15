@@ -32,6 +32,8 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -54,6 +56,7 @@ public class StoriesLoaderFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+
         bindViews(view);
         setViews(view);
     }
@@ -71,7 +74,7 @@ public class StoriesLoaderFragment extends Fragment {
         );
         if (story == null) return;
         if (buttonsPanel != null) {
-            buttonsPanel.setButtonsVisibility(readerSettings,
+            buttonsPanel.setButtonsVisibility(appearanceSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
@@ -98,6 +101,7 @@ public class StoriesLoaderFragment extends Fragment {
             }
         }
     }
+
 
     private void setCutout(View view, int minusOffset) {
         if (Build.VERSION.SDK_INT >= 28) {
@@ -138,7 +142,7 @@ public class StoriesLoaderFragment extends Fragment {
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        if (!Sizes.isTablet() && readerSettings.backgroundColor != Color.BLACK) {
+        if (!Sizes.isTablet() && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
@@ -171,14 +175,14 @@ public class StoriesLoaderFragment extends Fragment {
         aboveButtonsPanel.setBackgroundColor(Color.BLACK);
         aboveButtonsPanel.setVisibility(View.GONE);
         RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                Sizes.dpToPxExt(readerSettings.radius, context));
+                Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), context));
         aboveLp.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         aboveButtonsPanel.setLayoutParams(aboveLp);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             main = new CardView(context);
             main.setLayoutParams(contentLP);
-            ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius, getContext()));
+            ((CardView) main).setRadius(Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), getContext()));
             ((CardView) main).setCardBackgroundColor(Color.BLACK);
             main.setElevation(0);
 
@@ -215,7 +219,7 @@ public class StoriesLoaderFragment extends Fragment {
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
-        buttonsPanel.setIcons(readerSettings);
+        buttonsPanel.setIcons(appearanceSettings);
     }
 
 
@@ -227,7 +231,7 @@ public class StoriesLoaderFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             readerContainer.setElevation(9);
         }
-        if (readerSettings.timerGradientEnable)
+        if (appearanceSettings.csTimerGradientEnable())
             addGradient(context, readerContainer);
 
         createLoader();
@@ -272,14 +276,14 @@ public class StoriesLoaderFragment extends Fragment {
             gradientView.setOutlineProvider(null);
         }
         gradientView.setClickable(false);
+        StoriesGradientObject timerGradient = appearanceSettings.csTimerGradient();
         if (timerGradient != null) {
             List<Integer> colors = timerGradient.csColors;
             List<Float> locations = timerGradient.csLocations;
             final int[] colorsArray = new int[timerGradient.csColors.size()];
             final float[] locationsArray = new float[timerGradient.csColors.size()];
 
-            if (colors == null ||
-                    colors.isEmpty()) {
+            if (colors.isEmpty()) {
                 return;
             }
             if (colors.size() != locations.size()) return;
@@ -319,16 +323,23 @@ public class StoriesLoaderFragment extends Fragment {
         relativeLayout.addView(gradientView);
     }
 
-    StoriesReaderSettings readerSettings = null;
-    StoriesGradientObject timerGradient = null;
+
+    StoriesReaderAppearanceSettings appearanceSettings;
+    StoriesReaderLaunchData launchData;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        readerSettings = JsonParser.fromJson(
-                getArguments().getString(CS_READER_SETTINGS),
-                StoriesReaderSettings.class
+    public View onCreateView(
+            LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
+        Bundle arguments = requireArguments();
+        appearanceSettings = (StoriesReaderAppearanceSettings) arguments.getSerializable(
+                StoriesReaderAppearanceSettings.SERIALIZABLE_KEY
         );
-        timerGradient = (StoriesGradientObject) getArguments().getSerializable(CS_TIMER_GRADIENT);
+        launchData = (StoriesReaderLaunchData) arguments.getSerializable(
+                StoriesReaderLaunchData.SERIALIZABLE_KEY
+        );
         try {
             return createFragmentView(container);
         } catch (Exception e) {

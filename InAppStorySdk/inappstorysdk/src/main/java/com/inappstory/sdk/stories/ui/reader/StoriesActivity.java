@@ -11,8 +11,6 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -25,9 +23,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.Nullable;
@@ -58,7 +53,6 @@ import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 
@@ -225,10 +219,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
-            if (storiesFragment == null || storiesFragment.readerManager == null) return;
+            if (storiesContentFragment == null || storiesContentFragment.readerManager == null) return;
             if (data != null) {
                 String storyId = data.getStringExtra("storyId");
-                storiesFragment.readerManager.gameComplete(
+                storiesContentFragment.readerManager.gameComplete(
                         data.getStringExtra("gameState"),
                         storyId != null ? Integer.parseInt(storyId) : 0,
                         data.getIntExtra("slideIndex", 0)
@@ -264,29 +258,29 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     Story.StoryType type = Story.StoryType.COMMON;
 
     public void shareComplete(boolean shared) {
-        storiesFragment.readerManager.shareComplete(shared);
+        storiesContentFragment.readerManager.shareComplete(shared);
     }
 
     @Override
     public void removeStoryFromFavorite(int id) {
-        if (storiesFragment != null)
-            storiesFragment.removeStoryFromFavorite(id);
+        if (storiesContentFragment != null)
+            storiesContentFragment.removeStoryFromFavorite(id);
     }
 
     @Override
     public void removeAllStoriesFromFavorite() {
-        if (storiesFragment != null)
-            storiesFragment.removeAllStoriesFromFavorite();
+        if (storiesContentFragment != null)
+            storiesContentFragment.removeAllStoriesFromFavorite();
     }
 
     @Override
     public void timerIsLocked() {
-        if (storiesFragment != null) storiesFragment.timerIsLocked();
+        if (storiesContentFragment != null) storiesContentFragment.timerIsLocked();
     }
 
     @Override
     public void timerIsUnlocked() {
-        if (storiesFragment != null) storiesFragment.timerIsUnlocked();
+        if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
     }
 
     @Override
@@ -297,7 +291,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
         super.onCreate(savedInstanceState1);
-        setContentView(R.layout.cs_activity_stories_draggable);
+        setContentView(R.layout.cs_mainscreen_stories_draggable);
         if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             finish();
             return;
@@ -306,7 +300,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        ScreensManager.getInstance().currentScreen = this;
+        ScreensManager.getInstance().currentStoriesReaderScreen = this;
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -340,27 +334,27 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
             @Override
             public void touchPause() {
-                if (storiesFragment != null && storiesFragment.readerManager != null)
-                    storiesFragment.readerManager.pauseCurrent(false);
+                if (storiesContentFragment != null && storiesContentFragment.readerManager != null)
+                    storiesContentFragment.readerManager.pauseCurrent(false);
             }
 
             @Override
             public void touchResume() {
-                if (storiesFragment != null && storiesFragment.readerManager != null)
-                    storiesFragment.readerManager.resumeCurrent(false);
+                if (storiesContentFragment != null && storiesContentFragment.readerManager != null)
+                    storiesContentFragment.readerManager.resumeCurrent(false);
             }
 
             @Override
             public void swipeDown() {
-                if (storiesFragment != null) {
-                    storiesFragment.swipeDownEvent();
+                if (storiesContentFragment != null) {
+                    storiesContentFragment.swipeDownEvent();
                 }
             }
 
             @Override
             public void swipeUp() {
-                if (storiesFragment != null) {
-                    storiesFragment.swipeUpEvent();
+                if (storiesContentFragment != null) {
+                    storiesContentFragment.swipeUpEvent();
                 }
             }
         };
@@ -381,7 +375,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             draggableFrame.type = type;
         }
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
-            if (storiesFragment == null) {
+            if (storiesContentFragment == null) {
                 setLoaderFragment();
                 startAnim(savedInstanceState1);
             } else {
@@ -421,17 +415,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
 
     private void setStoriesFragment() {
-        if (storiesFragment != null) {
+        if (storiesContentFragment != null) {
             try {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
-                        /*.setCustomAnimations(
-                                android.R.anim.fade_in,
-                                android.R.anim.fade_out,
-                                android.R.anim.fade_in,
-                                android.R.anim.fade_out
-                        )*/
-                        .replace(R.id.fragments_layout, storiesFragment);
+                        .replace(R.id.fragments_layout, storiesContentFragment);
                 t.addToBackStack("STORIES_FRAGMENT");
                 t.commit();
             } catch (IllegalStateException e) {
@@ -445,7 +433,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     private void createStoriesFragment(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
-            storiesFragment = new StoriesFragment();
+            storiesContentFragment = new StoriesContentFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
 
@@ -458,16 +446,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
                 setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
-                storiesFragment.setArguments(bundle);
+                storiesContentFragment.setArguments(bundle);
             }
 
         } else {
-            storiesFragment = (StoriesFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
+            storiesContentFragment = (StoriesContentFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
 
     }
 
-    StoriesFragment storiesFragment;
+    StoriesContentFragment storiesContentFragment;
     StoriesReaderSettings storiesReaderSettings;
 
     private void setAppearanceSettings(Bundle bundle) {
@@ -568,7 +556,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void cleanReader() {
         if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        //  OldStatisticManager.getInstance().closeStatisticEvent();
         InAppStoryService.getInstance().setCurrentIndex(0);
         InAppStoryService.getInstance().setCurrentId(0);
         if (InAppStoryService.getInstance().getDownloadManager() != null) {
@@ -580,8 +567,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onDestroy() {
-        if (ScreensManager.getInstance().currentScreen == this)
-            ScreensManager.getInstance().currentScreen = null;
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
         if (!pauseDestroyed) {
 
             StatusBarController.showStatusBar(this);

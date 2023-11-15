@@ -9,4 +9,5 @@ public interface BaseReaderScreen {
     void removeAllStoriesFromFavorite();
     void timerIsLocked();
     void timerIsUnlocked();
+    void onBackPressed();
 }

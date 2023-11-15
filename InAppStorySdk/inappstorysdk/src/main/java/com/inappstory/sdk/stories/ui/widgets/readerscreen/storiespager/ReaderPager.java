@@ -11,17 +11,17 @@ import androidx.annotation.Nullable;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.reader.BothSideViewPager;
-import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
+import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CoverTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
 public class ReaderPager extends BothSideViewPager {
-    public void setHost(StoriesFragment host) {
+    public void setHost(StoriesContentFragment host) {
         this.host = host;
     }
 
-    StoriesFragment host;
+    StoriesContentFragment host;
 
     public ReaderPager(@NonNull Context context) {
         super(context);

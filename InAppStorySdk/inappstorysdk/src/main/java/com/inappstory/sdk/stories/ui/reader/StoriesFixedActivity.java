@@ -51,7 +51,6 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
-import com.inappstory.sdk.utils.StringsUtils;
 
 public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen {
 
@@ -92,22 +91,22 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     }
 
 
-    StoriesFragment storiesFragment;
+    StoriesContentFragment storiesContentFragment;
 
     public void shareComplete(boolean shared) {
-        storiesFragment.readerManager.shareComplete(shared);
+        storiesContentFragment.readerManager.shareComplete(shared);
     }
 
     @Override
     public void removeStoryFromFavorite(int id) {
-        if (storiesFragment != null)
-            storiesFragment.removeStoryFromFavorite(id);
+        if (storiesContentFragment != null)
+            storiesContentFragment.removeStoryFromFavorite(id);
     }
 
     @Override
     public void removeAllStoriesFromFavorite() {
-        if (storiesFragment != null)
-            storiesFragment.removeAllStoriesFromFavorite();
+        if (storiesContentFragment != null)
+            storiesContentFragment.removeAllStoriesFromFavorite();
     }
 
 
@@ -206,10 +205,10 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
-            if (storiesFragment == null || storiesFragment.readerManager == null) return;
+            if (storiesContentFragment == null || storiesContentFragment.readerManager == null) return;
             if (data != null) {
                 String storyId = data.getStringExtra("storyId");
-                storiesFragment.readerManager.gameComplete(
+                storiesContentFragment.readerManager.gameComplete(
                         data.getStringExtra("gameState"),
                         storyId != null ? Integer.parseInt(storyId) : 0,
                         data.getIntExtra("slideIndex", 0)
@@ -270,7 +269,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        ScreensManager.getInstance().currentScreen = this;
+        ScreensManager.getInstance().currentStoriesReaderScreen = this;
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -306,7 +305,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         }
 
         if (savedInstanceState == null) {
-            storiesFragment = new StoriesFragment();
+            storiesContentFragment = new StoriesContentFragment();
             if (getIntent().getExtras() != null) {
                 Bundle bundle = new Bundle();
                 bundle.putString("listID", getIntent().getStringExtra("listID"));
@@ -318,21 +317,21 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                 bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
                 setAppearanceSettings(bundle);
                 bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
-                storiesFragment.setArguments(bundle);
+                storiesContentFragment.setArguments(bundle);
             }
         } else {
-            storiesFragment = (StoriesFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
+            storiesContentFragment = (StoriesContentFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
 
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (storiesFragment != null) {
+                if (storiesContentFragment != null) {
                     try {
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         FragmentTransaction t = fragmentManager.beginTransaction()
-                                .replace(R.id.fragments_layout, storiesFragment);
+                                .replace(R.id.fragments_layout, storiesContentFragment);
                         t.addToBackStack("STORIES_FRAGMENT");
                         t.commit();
                     } catch (IllegalStateException e) {
@@ -348,12 +347,12 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void timerIsLocked() {
-        if (storiesFragment != null) storiesFragment.timerIsLocked();
+        if (storiesContentFragment != null) storiesContentFragment.timerIsLocked();
     }
 
     @Override
     public void timerIsUnlocked() {
-        if (storiesFragment != null) storiesFragment.timerIsUnlocked();
+        if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
     }
 
 
@@ -443,8 +442,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void onDestroy() {
-        if (ScreensManager.getInstance().currentScreen == this)
-            ScreensManager.getInstance().currentScreen = null;
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
 
