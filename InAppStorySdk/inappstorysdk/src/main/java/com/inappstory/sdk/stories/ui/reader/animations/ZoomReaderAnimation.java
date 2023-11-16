@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.ui.reader.animations;
 
-import android.util.Log;
 import android.view.View;
 
 public class ZoomReaderAnimation extends ReaderAnimation {
@@ -14,7 +13,6 @@ public class ZoomReaderAnimation extends ReaderAnimation {
         super(backgroundView);
         this.pivotX = pivotX;
         this.pivotY = pivotY;
-        Log.e("pivots", pivotX + " " + pivotY + " " + backgroundView.getAlpha());
         this.startedBackgroundAlpha = backgroundView.getAlpha();
     }
 

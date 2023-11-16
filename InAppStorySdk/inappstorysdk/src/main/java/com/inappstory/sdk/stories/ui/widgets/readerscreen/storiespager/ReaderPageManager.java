@@ -305,10 +305,14 @@ public class ReaderPageManager {
         if (checkIfManagersIsNull()) return;
         timelineManager.setSlidesCount(story.getSlidesCount());
         this.durations = new ArrayList<>();
-        if (story.durations != null)
+        if (story.durations == null) {
+            for (int i = 0; i < story.slidesCount; i++) {
+                this.durations.add(0);
+            }
+        } else {
             this.durations.addAll(story.durations);
+        }
         timelineManager.setDurations(this.durations, true);
-
         webViewManager.loadStory(story.id, story.lastIndex);
 
     }
@@ -455,7 +459,7 @@ public class ReaderPageManager {
 
     public SourceType getSourceType() {
         if (parentManager != null)
-            return CallbackManager.getInstance().getSourceFromInt(parentManager.source);
+            return parentManager.source;
         return SourceType.LIST;
     }
 

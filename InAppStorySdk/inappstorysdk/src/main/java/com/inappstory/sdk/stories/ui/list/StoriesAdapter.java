@@ -287,9 +287,16 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        ScreensManager.getInstance().openStoriesReader(context, listID, manager, tempStories,
+        ScreensManager.getInstance().openStoriesReader(
+                context,
+                listID,
+                manager,
+                tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
-                isFavoriteList ? ShowStory.FAVORITE : ShowStory.LIST, feed, Story.StoryType.COMMON);
+                isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
+                feed,
+                Story.StoryType.COMMON
+        );
     }
 
 

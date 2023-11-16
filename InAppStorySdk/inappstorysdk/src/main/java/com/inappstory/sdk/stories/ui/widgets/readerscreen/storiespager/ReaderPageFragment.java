@@ -11,6 +11,7 @@ import static com.inappstory.sdk.AppearanceManager.TOP_LEFT;
 import static com.inappstory.sdk.AppearanceManager.TOP_RIGHT;
 import static com.inappstory.sdk.AppearanceManager.TOP_START;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -42,14 +43,13 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
-import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
@@ -102,7 +102,7 @@ public class ReaderPageFragment extends Fragment {
         try {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) close.getLayoutParams();
             RelativeLayout.LayoutParams storiesProgressViewLP = (RelativeLayout.LayoutParams) timeline.getLayoutParams();
-            int cp = readerSettings.closePosition;
+            int cp = appearanceSettings.csClosePosition();
             int viewsMargin = Sizes.dpToPxExt(8, getContext());
             storiesProgressViewLP.leftMargin =
                     storiesProgressViewLP.rightMargin =
@@ -169,11 +169,19 @@ public class ReaderPageFragment extends Fragment {
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId,
                 manager.getStoryType());
         if (story == null) return;
+        if (timeline != null) {
+            timeline.getTimelineManager().setSlidesCount(story.getSlidesCount());
+        }
         if (story.disableClose)
             close.setVisibility(View.GONE);
         if (buttonsPanel != null) {
-            buttonsPanel.setButtonsVisibility(readerSettings,
-                    story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
+            buttonsPanel.setButtonsVisibility(
+                    appearanceSettings,
+                    story.hasLike(),
+                    story.hasFavorite(),
+                    story.hasShare(),
+                    story.hasAudio()
+            );
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
@@ -330,9 +338,8 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        readerSettings = JsonParser.fromJson(getArguments().getString(CS_READER_SETTINGS),
-                StoriesReaderSettings.class);
-        timerGradient = (StoriesGradientObject) getArguments().getSerializable(CS_TIMER_GRADIENT);
+        appearanceSettings = (StoriesReaderAppearanceSettings)
+                requireArguments().getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
         try {
             return createFragmentView(container);
         } catch (Exception e) {
@@ -355,7 +362,7 @@ public class ReaderPageFragment extends Fragment {
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        if (!Sizes.isTablet() && readerSettings.backgroundColor != Color.BLACK) {
+        if (!Sizes.isTablet() && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
@@ -363,6 +370,7 @@ public class ReaderPageFragment extends Fragment {
         return res;
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void createRefreshButton(Context context) {
         refresh = new ImageView(context);
         refresh.setId(R.id.ias_refresh_button);
@@ -374,7 +382,7 @@ public class ReaderPageFragment extends Fragment {
         refresh.setElevation(18);
         ((ImageView) refresh).setScaleType(ImageView.ScaleType.FIT_XY);
         refresh.setVisibility(View.GONE);
-        ((ImageView) refresh).setImageDrawable(getResources().getDrawable(readerSettings.refreshIcon));
+        ((ImageView) refresh).setImageDrawable(getResources().getDrawable(appearanceSettings.csRefreshIcon()));
         refresh.setLayoutParams(refreshLp);
     }
 
@@ -398,13 +406,13 @@ public class ReaderPageFragment extends Fragment {
         aboveButtonsPanel.setBackgroundColor(Color.BLACK);
         aboveButtonsPanel.setVisibility(View.GONE);
         RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                Sizes.dpToPxExt(readerSettings.radius, context));
+                Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), context));
         aboveLp.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         aboveButtonsPanel.setLayoutParams(aboveLp);
 
         main = new CardView(context);
         main.setLayoutParams(contentLP);
-        ((CardView) main).setRadius(Sizes.dpToPxExt(readerSettings.radius, getContext()));
+        ((CardView) main).setRadius(Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), getContext()));
         ((CardView) main).setCardBackgroundColor(Color.TRANSPARENT);
         main.setElevation(0);
 
@@ -432,7 +440,7 @@ public class ReaderPageFragment extends Fragment {
 
         // readerContainer.addView(createProgressContainer(context));
         readerContainer.addView(createWebViewContainer(context));
-        if (readerSettings.timerGradientEnable)
+        if (appearanceSettings.csTimerGradientEnable())
             addGradient(context, readerContainer);
 
         createLoader();
@@ -501,7 +509,7 @@ public class ReaderPageFragment extends Fragment {
         buttonsPanel.setOrientation(LinearLayout.HORIZONTAL);
         buttonsPanel.setBackgroundColor(Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
-        buttonsPanel.setIcons(readerSettings);
+        buttonsPanel.setIcons(appearanceSettings);
     }
 
     private void addGradient(Context context, RelativeLayout relativeLayout) {
@@ -513,6 +521,7 @@ public class ReaderPageFragment extends Fragment {
         gradientView.setElevation(8);
         gradientView.setOutlineProvider(null);
         gradientView.setClickable(false);
+        StoriesGradientObject timerGradient = appearanceSettings.csTimerGradient();
         if (timerGradient != null) {
             List<Integer> colors = timerGradient.csColors;
             List<Float> locations = timerGradient.csLocations;
@@ -565,7 +574,7 @@ public class ReaderPageFragment extends Fragment {
         RelativeLayout timelineContainer = new RelativeLayout(context);
         RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
-        int offset = Sizes.dpToPxExt(Math.max(0, readerSettings.radius - 16), getContext()) / 2;
+        int offset = Sizes.dpToPxExt(Math.max(0, appearanceSettings.csReaderRadius() - 16), getContext()) / 2;
         tclp.setMargins(offset, offset, offset, 0);
         timelineContainer.setLayoutParams(tclp);
         timelineContainer.setId(R.id.ias_timeline_container);
@@ -583,7 +592,7 @@ public class ReaderPageFragment extends Fragment {
                 Sizes.dpToPxExt(30, getContext()))
         );
         close.setBackground(null);
-        close.setImageDrawable(getResources().getDrawable(readerSettings.closeIcon));
+        close.setImageDrawable(getResources().getDrawable(appearanceSettings.csCloseIcon()));
         timelineContainer.addView(timeline);
         timelineContainer.addView(close);
 
@@ -591,8 +600,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
 
-    StoriesReaderSettings readerSettings = null;
-    StoriesGradientObject timerGradient = null;
+    StoriesReaderAppearanceSettings appearanceSettings = null;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

@@ -334,22 +334,32 @@ public class ScreensManager {
                 AppearanceManager manager = appearanceManager;
                 if (manager == null) manager = AppearanceManager.getCommonInstance();
                 if (manager == null) manager = new AppearanceManager();
+                StoriesReaderAppearanceSettings appearanceSettings = new StoriesReaderAppearanceSettings(
+                        manager,
+                        outerContext
+                );
+                StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+                        listID,
+                        feed,
+                        storiesIds,
+                        index,
+                        firstAction,
+                        source,
+                        slideIndex,
+                        type
+                );
+                Bundle bundle = new Bundle();
+                bundle.putSerializable(
+                        launchData.getSerializableKey(),
+                        launchData
+                );
+                bundle.putSerializable(
+                        appearanceSettings.getSerializableKey(),
+                        appearanceSettings
+                );
                 inAppStoryManager.getOpenStoriesReader().onOpen(
                         outerContext,
-                        new StoriesReaderAppearanceSettings(
-                                manager,
-                                outerContext
-                        ),
-                        new StoriesReaderLaunchData(
-                                listID,
-                                feed,
-                                storiesIds,
-                                index,
-                                firstAction,
-                                source,
-                                slideIndex,
-                                type
-                        )
+                        bundle
                 );
             }
         });

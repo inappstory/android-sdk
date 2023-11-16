@@ -1,11 +1,8 @@
 package com.inappstory.sdk.stories.ui.reader;
 
-import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
 
 import android.app.Activity;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -42,10 +39,11 @@ import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
+import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class StoriesMainFragment extends Fragment implements BaseReaderScreen {
+public class StoriesMainFragment extends Fragment implements BaseReaderScreen, BackPressHandler {
 
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;
@@ -70,11 +68,18 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen {
     }
 
     private void useContentFragment(FragmentAction<StoriesContentFragment> action) {
+        if (!isAdded()) {
+            return;
+        }
         if (action != null) {
-            Fragment fragmentById = getChildFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
-            if (fragmentById instanceof StoriesContentFragment) {
-                action.invoke((StoriesContentFragment) fragmentById);
-                return;
+            try {
+                Fragment fragmentById = getChildFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
+                if (fragmentById instanceof StoriesContentFragment) {
+                    action.invoke((StoriesContentFragment) fragmentById);
+                    return;
+                }
+            } catch (IllegalStateException e) {
+
             }
             action.error();
         }
@@ -149,6 +154,12 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen {
             setStartAnimations()
                     .setListener(new HandlerAnimatorListenerAdapter() {
                         @Override
+                        public void onAnimationStart() {
+                            super.onAnimationStart();
+                            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
+                        }
+
+                        @Override
                         public void onAnimationEnd() {
                             window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             isAnimation = false;
@@ -187,6 +198,7 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen {
         blockView = view.findViewById(R.id.blockView);
         backTintView = view.findViewById(R.id.background);
         animatedContainer = view.findViewById(R.id.animatedContainer);
+        animatedContainer.setAlpha(0f);
         ScreensManager.getInstance().currentStoriesReaderScreen = this;
         return view;
     }
@@ -259,7 +271,6 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen {
                 });
             }
         };
-        backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
         useContentFragment(new FragmentAction<StoriesContentFragment>() {
             @Override
             public void invoke(StoriesContentFragment fragment) {
@@ -351,8 +362,15 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen {
             animateFirst = false;
             closeAnim();
         } else {
-            getParentFragmentManager().popBackStack();
+            requireActivity().getSupportFragmentManager().popBackStack();
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
     }
 
     private ReaderAnimation setFinishAnimations() {
@@ -483,9 +501,9 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen {
 
     boolean closing = false;
 
-    @Override
-    public void onBackPressed() {
+    public boolean onBackPressed() {
         closeStoryReader(-1);
+        return true;
     }
 
     StoriesReaderAppearanceSettings appearanceSettings;

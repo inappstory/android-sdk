@@ -1,8 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-
 import android.os.Bundle;
 import android.os.Parcelable;
 
@@ -12,6 +9,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.ui.reader.ReaderManager;
 
 import java.io.Serializable;
@@ -30,23 +29,21 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         super(fm, behavior);
     }
 
-    String readerSettings;
+    StoriesReaderAppearanceSettings appearanceSettings;
 
     ReaderManager manager;
-    int source = 0;
+    SourceType source = SourceType.SINGLE;
 
     public ReaderPagerAdapter(@NonNull FragmentManager fm,
-                              int source,
-                              String readerSettings,
-                              Serializable timerGradient,
+                              SourceType source,
+                              StoriesReaderAppearanceSettings appearanceSettings,
                               List<Integer> ids,
                               ReaderManager manager) {
         super(fm);
         this.storiesIds.clear();
         this.source = source;
         this.storiesIds.addAll(ids);
-        this.readerSettings = readerSettings;
-        this.timerGradient = timerGradient;
+        this.appearanceSettings = appearanceSettings;
         this.manager = manager;
     }
 
@@ -82,9 +79,8 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         ReaderPageFragment frag = new ReaderPageFragment();
         Bundle a = new Bundle();
         a.putInt("story_id", storiesIds.get(position));
-        a.putInt("source", source);
-        a.putString(CS_READER_SETTINGS, readerSettings);
-        a.putSerializable(CS_TIMER_GRADIENT, timerGradient);
+        a.putSerializable("source", source);
+        a.putSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY, appearanceSettings);
         frag.setArguments(a);
         frag.parentManager = manager;
         return frag;

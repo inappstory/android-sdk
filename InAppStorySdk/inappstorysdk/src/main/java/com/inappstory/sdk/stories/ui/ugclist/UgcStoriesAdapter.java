@@ -232,10 +232,15 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 tempStories.add(storyId);
         }
         ScreensManager.getInstance().openStoriesReader(
-                context, listID,
-                manager, tempStories,
-                tempStories.indexOf(storiesIds.get(index)), ShowStory.UGC_LIST,
-                null, Story.StoryType.UGC);
+                context,
+                listID,
+                manager,
+                tempStories,
+                tempStories.indexOf(storiesIds.get(index)),
+                SourceType.LIST,
+                null,
+                Story.StoryType.UGC
+        );
     }
 
     @Override

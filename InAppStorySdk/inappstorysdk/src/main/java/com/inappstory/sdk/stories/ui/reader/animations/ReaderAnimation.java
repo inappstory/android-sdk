@@ -41,6 +41,7 @@ public abstract class ReaderAnimation {
     @MainThread
     public void start() {
         final long startTime = System.currentTimeMillis();
+        listener.onAnimationStart();
         if (getAnimationDuration() == 0) {
             listener.onAnimationEnd();
             return;

@@ -46,6 +46,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -1563,32 +1564,35 @@ public class InAppStoryManager {
             String storyId,
             Context context,
             Integer slide,
-            String managerSettings,
+            StoriesReaderAppearanceSettings settings,
             Story.StoryType type,
             final SourceType readerSource,
             final int readerAction
     ) {
         AppearanceManager appearanceManager = new AppearanceManager();
-        if (managerSettings != null) {
-            StoriesReaderSettings settings = JsonParser.fromJson(managerSettings, StoriesReaderSettings.class);
-            appearanceManager.csHasLike(settings.hasLike);
-            appearanceManager.csHasFavorite(settings.hasFavorite);
-            appearanceManager.csHasShare(settings.hasShare);
-            appearanceManager.csClosePosition(settings.closePosition);
-            appearanceManager.csCloseOnOverscroll(settings.closeOnOverscroll);
-            appearanceManager.csCloseOnSwipe(settings.closeOnSwipe);
-            appearanceManager.csIsDraggable(true);
-            appearanceManager.csTimerGradientEnable(settings.timerGradientEnable);
-            appearanceManager.csStoryReaderAnimation(settings.readerAnimation);
-            appearanceManager.csCloseIcon(settings.closeIcon);
-            appearanceManager.csDislikeIcon(settings.dislikeIcon);
-            appearanceManager.csLikeIcon(settings.likeIcon);
-            appearanceManager.csRefreshIcon(settings.refreshIcon);
-            appearanceManager.csFavoriteIcon(settings.favoriteIcon);
-            appearanceManager.csShareIcon(settings.shareIcon);
-            appearanceManager.csSoundIcon(settings.soundIcon);
+        if (settings != null) {
+            appearanceManager.csHasLike(settings.csHasLike());
+            appearanceManager.csHasFavorite(settings.csHasFavorite());
+            appearanceManager.csHasShare(settings.csHasShare());
+            appearanceManager.csClosePosition(settings.csClosePosition());
+            appearanceManager.csCloseOnOverscroll(settings.csCloseOnOverscroll());
+            appearanceManager.csCloseOnSwipe(settings.csCloseOnSwipe());
+            appearanceManager.csIsDraggable(settings.csIsDraggable());
+            appearanceManager.csTimerGradientEnable(settings.csTimerGradientEnable());
+            appearanceManager.csStoryReaderAnimation(settings.csStoryReaderAnimation());
+            appearanceManager.csCloseIcon(settings.csCloseIcon());
+            appearanceManager.csDislikeIcon(settings.csDislikeIcon());
+            appearanceManager.csLikeIcon(settings.csLikeIcon());
+            appearanceManager.csRefreshIcon(settings.csRefreshIcon());
+            appearanceManager.csFavoriteIcon(settings.csFavoriteIcon());
+            appearanceManager.csShareIcon(settings.csShareIcon());
+            appearanceManager.csSoundIcon(settings.csSoundIcon());
+            appearanceManager.csStoryReaderPresentationStyle(
+                    settings.csStoryReaderPresentationStyle()
+            );
         }
-        showStoryInner(storyId, context, appearanceManager, null, slide, type, readerSource, readerAction);
+        showStoryInner(storyId, context, appearanceManager,
+                null, slide, type, readerSource, readerAction);
     }
 
     public static class Builder {

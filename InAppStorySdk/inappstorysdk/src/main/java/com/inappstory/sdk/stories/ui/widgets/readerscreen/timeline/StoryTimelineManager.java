@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class StoryTimelineManager implements IStoryTimelineManager {
@@ -129,6 +130,7 @@ public class StoryTimelineManager implements IStoryTimelineManager {
 
     @Override
     public void setDurations(List<Integer> durations, boolean started) {
+        Log.e("StoryTimelineDurations", Arrays.toString(durations.toArray()));
         if (started)
             startedDurations = new ArrayList<>(durations);
         timelineState.setCurrentStoryDurations(new ArrayList<>(durations));

@@ -18,13 +18,14 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
     @Override
     public void onOpen(
             Context context,
-            StoriesReaderAppearanceSettings appearanceSettings,
-            StoriesReaderLaunchData launchData
+            Bundle bundle
+          //  StoriesReaderAppearanceSettings appearanceSettings,
+          //  StoriesReaderLaunchData launchData
     ) {
         if (context == null) return;
         if (Sizes.isTablet() && context instanceof FragmentActivity) {
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
-            Bundle bundle = new Bundle();
+        /*    Bundle bundle = new Bundle();
             bundle.putSerializable(
                     launchData.getSerializableKey(),
                     launchData
@@ -32,7 +33,7 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             bundle.putSerializable(
                     appearanceSettings.getSerializableKey(),
                     appearanceSettings
-            );
+            );*/
             storiesDialogFragment.setArguments(bundle);
             try {
                 storiesDialogFragment.show(
@@ -44,14 +45,15 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             }
         } else {
             Intent intent2 = new Intent(context, StoriesActivity.class);
-            intent2.putExtra(
+            intent2.putExtras(bundle);
+       /*     intent2.putExtra(
                     appearanceSettings.getSerializableKey(),
                     appearanceSettings
             );
             intent2.putExtra(
                     launchData.getSerializableKey(),
                     launchData
-            );
+            );*/
             if (!(context instanceof Activity)) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }

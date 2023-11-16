@@ -37,6 +37,8 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -147,7 +149,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     private ReaderAnimation setStartAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
-        switch (getIntent().getIntExtra(CS_READER_PRESENTATION_STYLE, 0)) {
+        switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(true);
             case AppearanceManager.FADE:
@@ -168,7 +170,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     private ReaderAnimation setFinishAnimations() {
         Point screenSize = Sizes.getScreenSize(StoriesActivity.this);
-        switch (getIntent().getIntExtra(CS_READER_PRESENTATION_STYLE, 0)) {
+        switch (appearanceSettings.csStoryReaderPresentationStyle()) {
             case AppearanceManager.DISABLE:
                 return new DisabledReaderAnimation().setAnimations(false);
             case AppearanceManager.FADE:
@@ -219,7 +221,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GAME_READER_REQUEST && resultCode == RESULT_OK) {
-            if (storiesContentFragment == null || storiesContentFragment.readerManager == null) return;
+            if (storiesContentFragment == null || storiesContentFragment.readerManager == null)
+                return;
             if (data != null) {
                 String storyId = data.getStringExtra("storyId");
                 storiesContentFragment.readerManager.gameComplete(
@@ -296,8 +299,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finish();
             return;
         }
-
-        int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
+        appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
+                .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
+        launchData = (StoriesReaderLaunchData) getIntent().
+                getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+        int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
         ScreensManager.getInstance().currentStoriesReaderScreen = this;
@@ -307,17 +313,21 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
-        closeOnSwipe = getIntent().getBooleanExtra(CS_CLOSE_ON_SWIPE, true);
-        closeOnOverscroll = getIntent().getBooleanExtra(CS_CLOSE_ON_OVERSCROLL, true);
+        closeOnSwipe = appearanceSettings.csCloseOnSwipe();
+        closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
 
         draggableFrame = findViewById(R.id.draggable_frame);
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         animatedContainer = findViewById(R.id.animatedContainer);
-        //scrollView = findViewById(R.id.scrollContainer);
         chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(StoriesActivity.this) {
             @Override
-            public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
+            public void onDrag(
+                    float elasticOffset,
+                               float elasticOffsetPixels,
+                    float rawOffset,
+                    float rawOffsetPixels
+            ) {
                 super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
                 backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
             }
@@ -359,21 +369,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             }
         };
         try {
-            if (!getIntent().getBooleanExtra("statusBarVisibility", false)) {
-                StatusBarController.hideStatusBar(StoriesActivity.this, true);
-            }
+            StatusBarController.hideStatusBar(StoriesActivity.this, true);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             finish();
             return;
         }
         InAppStoryService.getInstance().getListReaderConnector().openReader();
-        String stStoriesType = getIntent().getStringExtra("storiesType");
-        if (stStoriesType != null) {
-            if (stStoriesType.equals(Story.StoryType.UGC.name()))
-                type = Story.StoryType.UGC;
-            draggableFrame.type = type;
-        }
+        type = launchData.getType();
+        draggableFrame.type = type;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
             if (storiesContentFragment == null) {
                 setLoaderFragment();
@@ -392,9 +396,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             FragmentManager fragmentManager = getSupportFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             Bundle bundle = new Bundle();
-            ArrayList<Integer> ids = getIntent().getIntegerArrayListExtra("stories_ids");
-            bundle.putInt("storyId", ids.get(getIntent().getIntExtra("index", 0)));
-            bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
             setAppearanceSettings(bundle);
             storiesLoaderFragment.setArguments(bundle);
             FragmentTransaction t = fragmentManager.beginTransaction()
@@ -434,21 +435,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     private void createStoriesFragment(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
-            if (getIntent().getExtras() != null) {
-                Bundle bundle = new Bundle();
-
-                bundle.putInt("source", getIntent().getIntExtra("source", ShowStory.SINGLE));
-                bundle.putInt("firstAction", getIntent().getIntExtra("firstAction", ShowStory.ACTION_OPEN));
-                bundle.putString("listID", getIntent().getStringExtra("listID"));
-                bundle.putString("feedId", getIntent().getStringExtra("feedId"));
-                bundle.putInt("slideIndex", getIntent().getIntExtra("slideIndex", 0));
-                bundle.putInt("index", getIntent().getIntExtra("index", 0));
-                bundle.putString("storiesType", getIntent().getStringExtra("storiesType"));
-                setAppearanceSettings(bundle);
-                bundle.putIntegerArrayList("stories_ids", getIntent().getIntegerArrayListExtra("stories_ids"));
-                storiesContentFragment.setArguments(bundle);
-            }
-
+            Bundle bundle = new Bundle();
+            setAppearanceSettings(bundle);
+            storiesContentFragment.setArguments(bundle);
         } else {
             storiesContentFragment = (StoriesContentFragment) getSupportFragmentManager().findFragmentByTag("STORIES_FRAGMENT");
         }
@@ -456,20 +445,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     StoriesContentFragment storiesContentFragment;
-    StoriesReaderSettings storiesReaderSettings;
+    StoriesReaderAppearanceSettings appearanceSettings;
+    StoriesReaderLaunchData launchData;
 
     private void setAppearanceSettings(Bundle bundle) {
-        int color = getIntent().getIntExtra(CS_READER_BACKGROUND_COLOR,
-                getResources().getColor(R.color.black)
-        );
-        backTintView.setBackgroundColor(color);
-        storiesReaderSettings = new StoriesReaderSettings(
-                getIntent().getExtras()
-        );
+        backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
         try {
-            bundle.putSerializable(CS_TIMER_GRADIENT, getIntent().getSerializableExtra(CS_TIMER_GRADIENT));
-            bundle.putInt(CS_STORY_READER_ANIMATION, getIntent().getIntExtra(CS_STORY_READER_ANIMATION, ANIMATION_CUBE));
-            bundle.putString(CS_READER_SETTINGS, JsonParser.getJson(storiesReaderSettings));
+            bundle.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
+            bundle.putSerializable(launchData.getSerializableKey(), launchData);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -499,10 +482,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                             new SlideData(
                                     StoryData.getStoryData(
                                             story,
-                                            getIntent().getStringExtra("feedId"),
-                                            CallbackManager.getInstance().getSourceFromInt(
-                                                    getIntent().getIntExtra("source", 0)
-                                            ),
+                                            launchData.getFeed(),
+                                            launchData.getSourceType(),
                                             type
                                     ),
                                     story.lastIndex,
@@ -526,9 +507,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         cause = StatisticManager.SWIPE;
                         break;
                 }
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                StatisticManager.getInstance().sendCloseStory(
+                        story.id,
+                        cause,
+                        story.lastIndex,
                         story.getSlidesCount(),
-                        getIntent().getStringExtra("feedId"));
+                        launchData.getFeed()
+                );
             }
         }
         cleanReader();

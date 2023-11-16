@@ -1,11 +1,5 @@
 package com.inappstory.sdk.stories.ui.reader;
 
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +16,6 @@ import android.widget.RelativeLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
-import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
@@ -34,6 +27,9 @@ import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -45,7 +41,6 @@ import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
@@ -170,8 +165,8 @@ public class StoriesContentFragment extends Fragment
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
 
-    String readerSettings;
-    Serializable timerGradient;
+    StoriesReaderAppearanceSettings appearanceSettings;
+    StoriesReaderLaunchData launchData;
 
     private void closeFragment() {
         if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentStoriesReaderScreen != null)
@@ -225,43 +220,45 @@ public class StoriesContentFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Context context = getContext();
+        Context context = requireContext();
         try {
-            requireArguments();
-        } catch (IllegalStateException e) {
+            Bundle arguments = requireArguments();
+            appearanceSettings = (StoriesReaderAppearanceSettings) arguments
+                    .getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
+            launchData = (StoriesReaderLaunchData) arguments
+                    .getSerializable(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+            currentIds = launchData.getStoriesIds();
+            readerAnimation = appearanceSettings.csStoryReaderAnimation();
+            ind = launchData.getListIndex();
+
+            Story.StoryType type = launchData.getType();
+            readerManager = new ReaderManager(
+                    launchData.getListUniqueId(),
+                    launchData.getFeed(),
+                    launchData.getFeed(),
+                    type,
+                    launchData.getSourceType() != null ? launchData.getSourceType() : SourceType.SINGLE,
+                    launchData.getFirstAction()
+            );
+            if (currentIds != null && !currentIds.isEmpty()) {
+                readerManager.setStoriesIds(currentIds);
+                readerManager.firstStoryId = currentIds.get(ind);
+                readerManager.startedSlideInd = arguments.getInt("slideIndex", 0);
+            }
+
+            closeOnSwipe = appearanceSettings.csCloseOnSwipe();
+            closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
+
+            created = true;
+        } catch (Exception e) {
             closeFragment();
             return new View(context);
         }
-        Bundle arguments = getArguments();
 
 
-        currentIds = arguments.getIntegerArrayList("stories_ids");
-        readerSettings = arguments.getString(CS_READER_SETTINGS);
-        timerGradient = arguments.getSerializable(CS_TIMER_GRADIENT);
-        ind = arguments.getInt("index", 0);
-        readerAnimation = arguments.getInt(CS_STORY_READER_ANIMATION,
-                AppearanceManager.ANIMATION_CUBE);
-        Story.StoryType type =
-                Story.StoryType.valueOf(getArguments().getString("storiesType", Story.StoryType.COMMON.name()));
-        readerManager = new ReaderManager(arguments.getString("listID", null),
-                arguments.getString("feedId", null),
-                arguments.getString("feedSlug", null), type,
-                arguments.getInt("source", ShowStory.SINGLE),
-                arguments.getInt("firstAction", ShowStory.ACTION_OPEN));
 
-        if (currentIds != null && !currentIds.isEmpty()) {
-            readerManager.setStoriesIds(currentIds);
-            readerManager.firstStoryId = currentIds.get(ind);
-            readerManager.startedSlideInd = arguments.getInt("slideIndex", 0);
-        }
-        closeOnSwipe = arguments.getBoolean(CS_CLOSE_ON_SWIPE, true);
-        closeOnOverscroll = arguments.getBoolean(CS_CLOSE_ON_OVERSCROLL, true);
-
-
-        created = true;
 
         RelativeLayout resView = new RelativeLayout(context);
-        //   resView.setBackgroundColor(getResources().getColor(R.color.black));
         storiesViewPager = new ReaderPager(context);
         storiesViewPager.setHost(this);
         storiesViewPager.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -280,7 +277,7 @@ public class StoriesContentFragment extends Fragment
         return resView;//inflater.inflate(R.layout.cs_fragment_stories, container, false);
     }
 
-    int source = 0;
+    SourceType source = SourceType.SINGLE;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -293,13 +290,12 @@ public class StoriesContentFragment extends Fragment
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         storiesViewPager.setParameters(readerAnimation);
-        source = (getArguments() != null) ? getArguments().getInt("source", 0) : 0;
+        source = launchData.getSourceType();
         outerViewPagerAdapter =
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
                         source,
-                        readerSettings,
-                        timerGradient,
+                        appearanceSettings,
                         currentIds, readerManager);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
@@ -312,7 +308,6 @@ public class StoriesContentFragment extends Fragment
 
             }
         }
-        //  storiesViewPager.getAdapter().notifyDataSetChanged();
     }
 
     public void swipeUpEvent() {
