@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class QuestionStructure {
+import java.io.Serializable;
+
+public class QuestionStructure implements Serializable {
     public PaddingStructure padding;
     public TextStructure text;
 }

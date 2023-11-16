@@ -499,9 +499,22 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen, B
         });
     }
 
+    @Override
+    public FragmentManager getStoriesReaderFragmentManager() {
+        return getChildFragmentManager();
+    }
+
     boolean closing = false;
 
     public boolean onBackPressed() {
+        Fragment fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_outer_top_container);
+        if (fragmentById instanceof BackPressHandler && ((BackPressHandler) fragmentById).onBackPressed()) {
+            return true;
+        }
+        fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_dialog_container);
+        if (fragmentById instanceof BackPressHandler && ((BackPressHandler) fragmentById).onBackPressed()) {
+            return true;
+        }
         closeStoryReader(-1);
         return true;
     }

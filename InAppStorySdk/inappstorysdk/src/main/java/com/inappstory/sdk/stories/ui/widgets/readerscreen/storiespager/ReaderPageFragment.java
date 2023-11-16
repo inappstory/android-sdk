@@ -367,6 +367,7 @@ public class ReaderPageFragment extends Fragment {
         }
         setLinearContainer(context, linearLayout);
         res.addView(linearLayout);
+
         return res;
     }
 

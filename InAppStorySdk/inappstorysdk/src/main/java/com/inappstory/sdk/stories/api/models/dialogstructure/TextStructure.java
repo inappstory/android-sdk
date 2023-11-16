@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class TextStructure {
+import java.io.Serializable;
+
+public class TextStructure implements Serializable {
     public float size;
     public float lineHeight;
     public String align;

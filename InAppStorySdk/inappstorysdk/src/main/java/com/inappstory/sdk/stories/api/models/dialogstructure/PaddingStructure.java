@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class PaddingStructure {
+import java.io.Serializable;
+
+public class PaddingStructure implements Serializable {
     public float top;
     public float bottom;
     public float left;

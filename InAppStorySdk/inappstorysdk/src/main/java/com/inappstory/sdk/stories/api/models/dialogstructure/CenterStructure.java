@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class CenterStructure {
+import java.io.Serializable;
+
+public class CenterStructure implements Serializable {
     public float x;
     public float y;
 

@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class BorderStructure {
+import java.io.Serializable;
+
+public class BorderStructure implements Serializable {
     public float radius;
     public float width;
     public String color;

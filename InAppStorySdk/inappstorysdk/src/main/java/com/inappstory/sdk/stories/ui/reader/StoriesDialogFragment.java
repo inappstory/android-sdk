@@ -186,6 +186,11 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
         if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
     }
 
+    @Override
+    public FragmentManager getStoriesReaderFragmentManager() {
+        return getChildFragmentManager();
+    }
+
 
     @Override
     public void onStart() {

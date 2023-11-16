@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
@@ -55,6 +55,15 @@ public class StoriesContentFragment extends Fragment
 
     boolean created = false;
 
+    public BaseReaderScreen getStoriesReader() {
+        BaseReaderScreen screen = null;
+        if (getActivity() instanceof BaseReaderScreen) {
+            screen = (BaseReaderScreen) getActivity();
+        } else if (getParentFragment() instanceof BaseReaderScreen) {
+            screen = (BaseReaderScreen) getParentFragment();
+        }
+        return screen;
+    }
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -258,13 +267,13 @@ public class StoriesContentFragment extends Fragment
 
 
 
-        RelativeLayout resView = new RelativeLayout(context);
+        FrameLayout resView = new FrameLayout(context);
         storiesViewPager = new ReaderPager(context);
         storiesViewPager.setHost(this);
-        storiesViewPager.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+        storiesViewPager.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         invMask = new View(context);
-        invMask.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+        invMask.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         invMask.setVisibility(View.GONE);
         storiesViewPager.setId(R.id.ias_stories_pager);

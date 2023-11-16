@@ -43,14 +43,6 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesLoaderFragment extends Fragment {
 
-    ButtonsPanel buttonsPanel;
-    View aboveButtonsPanel;
-
-    View blackBottom;
-    View blackTop;
-    View refresh;
-    StoryTimeline timeline;
-    AppCompatImageView close;
 
 
     @Override
@@ -71,12 +63,15 @@ public class StoriesLoaderFragment extends Fragment {
                 launchData.getType()
         );
         if (story == null) return;
-        if (buttonsPanel != null) {
+        ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
+        View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
+        if (buttonsPanel != null && aboveButtonsPanel != null) {
             buttonsPanel.setButtonsVisibility(appearanceSettings,
                     story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
+        StoryTimeline timeline = view.findViewById(R.id.ias_timeline);
         if (timeline != null) {
             StoryTimelineManager timelineManager = timeline.getTimelineManager();
             timelineManager.setSlidesCount(story.getSlidesCount());
@@ -86,6 +81,8 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     private void setOffsets(View view) {
+        View blackBottom = view.findViewById(R.id.ias_black_bottom);
+        View blackTop = view.findViewById(R.id.ias_black_top);
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
                 Point screenSize = Sizes.getScreenSize(getContext());
@@ -124,12 +121,8 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     void bindViews(View view) {
-        refresh = view.findViewById(R.id.ias_refresh_button);
-        blackBottom = view.findViewById(R.id.ias_black_bottom);
-        blackTop = view.findViewById(R.id.ias_black_top);
-        buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
-        timeline = view.findViewById(R.id.ias_timeline);
-        close = view.findViewById(R.id.ias_close_button);
+        View timeline = view.findViewById(R.id.ias_timeline);
+        View close = view.findViewById(R.id.ias_close_button);
         try {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) close.getLayoutParams();
             RelativeLayout.LayoutParams storiesProgressViewLP = (RelativeLayout.LayoutParams) timeline.getLayoutParams();
@@ -190,9 +183,6 @@ public class StoriesLoaderFragment extends Fragment {
             InAppStoryService.createExceptionLog(e);
         }
     }
-
-    LinearLayout linearLayout;
-
     View createFragmentView(ViewGroup root) {
         Context context = getContext();
 
@@ -200,7 +190,7 @@ public class StoriesLoaderFragment extends Fragment {
         res.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        linearLayout = new LinearLayout(context);
+        LinearLayout linearLayout = new LinearLayout(context);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -218,12 +208,19 @@ public class StoriesLoaderFragment extends Fragment {
         return res;
     }
 
+    @Override
+    public void onDestroyView() {
+
+        super.onDestroyView();
+
+    }
+
     private void setLinearContainer(Context context, LinearLayout linearLayout) {
-        blackTop = new View(context);
+        View blackTop = new View(context);
         blackTop.setId(R.id.ias_black_top);
         blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
         blackTop.setBackgroundColor(Color.TRANSPARENT);
-        blackBottom = new View(context);
+        View blackBottom = new View(context);
         blackBottom.setId(R.id.ias_black_bottom);
         blackBottom.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
         blackBottom.setBackgroundColor(Color.TRANSPARENT);
@@ -234,7 +231,8 @@ public class StoriesLoaderFragment extends Fragment {
         RelativeLayout.LayoutParams contentLP = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
         contentLP.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
-        aboveButtonsPanel = new View(context);
+        View aboveButtonsPanel = new View(context);
+        aboveButtonsPanel.setId(R.id.ias_above_buttons_panel);
         aboveButtonsPanel.setBackgroundColor(Color.BLACK);
         aboveButtonsPanel.setVisibility(View.GONE);
         RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -252,8 +250,7 @@ public class StoriesLoaderFragment extends Fragment {
                 CardView.LayoutParams.MATCH_PARENT));
         cardContent.addView(createTimelineContainer(context));
         main.addView(cardContent);
-        createButtonsPanel(context);
-        content.addView(buttonsPanel);
+        content.addView(createButtonsPanel(context));
         content.addView(aboveButtonsPanel);
         content.addView(main);
         linearLayout.addView(blackTop);
@@ -289,8 +286,8 @@ public class StoriesLoaderFragment extends Fragment {
         return timelineContainer;
     }
 
-    private void createButtonsPanel(Context context) {
-        buttonsPanel = new ButtonsPanel(context);
+    private ButtonsPanel createButtonsPanel(Context context) {
+        ButtonsPanel buttonsPanel = new ButtonsPanel(context);
         RelativeLayout.LayoutParams buttonsPanelParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
         );
@@ -301,20 +298,7 @@ public class StoriesLoaderFragment extends Fragment {
         buttonsPanel.setBackgroundColor(Color.BLACK);
         buttonsPanel.setLayoutParams(buttonsPanelParams);
         buttonsPanel.setIcons(appearanceSettings);
-    }
-
-    View loader;
-    RelativeLayout loaderContainer;
-
-    private void createLoader() {
-        Context context = getContext();
-        loader = new RelativeLayout(context);
-        loader.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            loader.setElevation(8);
-        }
-        ((ViewGroup) loader).addView(AppearanceManager.getLoader(context));
+        return buttonsPanel;
     }
 
     StoriesReaderAppearanceSettings appearanceSettings;

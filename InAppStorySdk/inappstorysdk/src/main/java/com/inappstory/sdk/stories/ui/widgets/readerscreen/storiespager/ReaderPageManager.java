@@ -40,6 +40,8 @@ public class ReaderPageManager {
     TimerManager timerManager;
     ReaderPageFragment host;
 
+
+
     public void unlockShareButton() {
         buttonsPanelManager.unlockShareButton();
     }

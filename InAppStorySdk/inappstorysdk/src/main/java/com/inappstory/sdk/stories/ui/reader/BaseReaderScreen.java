@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import androidx.fragment.app.FragmentManager;
+
 public interface BaseReaderScreen {
     void closeStoryReader(int action);
     void forceFinish();
@@ -9,4 +11,5 @@ public interface BaseReaderScreen {
     void removeAllStoriesFromFavorite();
     void timerIsLocked();
     void timerIsUnlocked();
+    FragmentManager getStoriesReaderFragmentManager();
 }

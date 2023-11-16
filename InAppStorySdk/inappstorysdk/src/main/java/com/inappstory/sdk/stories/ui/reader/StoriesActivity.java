@@ -287,6 +287,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
+    public FragmentManager getStoriesReaderFragmentManager() {
+        return getSupportFragmentManager();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState1) {
 
         cleaned = false;

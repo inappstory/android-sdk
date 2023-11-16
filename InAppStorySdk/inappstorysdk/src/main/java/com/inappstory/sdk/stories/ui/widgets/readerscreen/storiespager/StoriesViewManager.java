@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
-import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
@@ -24,26 +23,25 @@ import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
-import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.dialog.ContactDialog;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.SimpleStoriesGeneratedView;
+import com.inappstory.sdk.stories.ui.dialog.CancelListener;
+import com.inappstory.sdk.stories.ui.dialog.ContactDialogCreator;
+import com.inappstory.sdk.stories.ui.dialog.SendListener;
+import com.inappstory.sdk.stories.ui.dialog.ShowListener;
+import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView;
 import com.inappstory.sdk.stories.utils.AudioModes;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -245,14 +243,6 @@ public class StoriesViewManager {
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
     }
 
-    private void initViews(SlideStructure slideStructure) {
-
-        ((SimpleStoriesGeneratedView) storiesView).initViews(slideStructure);
-    }
-
-
-    boolean notFirstLoading = false;
-
     public void loadStory(final int id, final int index) {
         if (InAppStoryService.isNull())
             return;
@@ -347,30 +337,50 @@ public class StoriesViewManager {
     SimpleStoriesView storiesView;
 
     public void storyShowTextInput(String id, String data) {
-        ContactDialog alert = new ContactDialog(storyId, id, data,
-                new ContactDialog.SendListener() {
-                    @Override
-                    public void onSend(final String id, final String data) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                storiesView.sendDialog(id, data);
-                            }
-                        });
-                    }
-                },
-                new ContactDialog.CancelListener() {
-                    @Override
-                    public void onCancel(final String id) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                storiesView.cancelDialog(id);
-                            }
-                        });
-                    }
-                });
-        alert.showDialog((Activity) storiesView.getActivityContext());
+        final StoriesContentFragment storiesContentFragment =
+                (StoriesContentFragment) pageManager.host.getParentFragment();
+        final BaseReaderScreen readerScreen =
+                storiesContentFragment != null ? storiesContentFragment.getStoriesReader() : null;
+        if (readerScreen != null) {
+            ContactDialogCreator contactDialogCreator = new ContactDialogCreator(storyId, id, data,
+                    new ShowListener() {
+                        @Override
+                        public void onShow() {
+                            readerScreen.timerIsLocked();
+                            pageManager.parentManager.pauseCurrent(false);
+                        }
+                    },
+                    new SendListener() {
+                        @Override
+                        public void onSend(final String id, final String data) {
+                            readerScreen.timerIsUnlocked();
+                            pageManager.parentManager.resumeCurrent(false);
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    storiesView.sendDialog(id, data);
+                                }
+                            });
+                        }
+                    },
+                    new CancelListener() {
+                        @Override
+                        public void onCancel(final String id) {
+                            readerScreen.timerIsUnlocked();
+                            pageManager.parentManager.resumeCurrent(false);
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    storiesView.cancelDialog(id);
+                                }
+                            });
+                        }
+                    });
+
+            contactDialogCreator.showDialog(
+                    readerScreen.getStoriesReaderFragmentManager()
+            );
+        }
     }
 
     public void storyClick(String payload) {
@@ -452,7 +462,6 @@ public class StoriesViewManager {
             service.openGameReaderWithGC(context, getGameStoryData(), gameId);
         }
     }
-
 
 
     private GameStoryData getGameStoryData() {

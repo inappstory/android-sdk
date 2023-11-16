@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models.dialogstructure;
 
-public class InputStructure {
+import java.io.Serializable;
+
+public class InputStructure implements Serializable {
     public BackgroundStructure background;
     public BorderStructure border;
     public TextStructure text;

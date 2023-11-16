@@ -6,75 +6,76 @@ import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
 import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
 
-import android.app.Activity;
-import android.app.Dialog;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
+import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class ContactDialog {
+public class ContactDialogFragment extends Fragment implements BackPressHandler {
 
+    @Nullable
+    @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
+        Bundle arguments = requireArguments();
+        dialogStructure = (DialogStructure) arguments.getSerializable(DialogStructure.SERIALIZABLE_KEY);
+        dialogId = arguments.getString("dialogId");
+        storyId = arguments.getInt("storyId");
+        return inflater.inflate(R.layout.cs_dialog_layout, container, false);
+    }
 
-    public DialogStructure dialogStructure;
-    String id;
+    private DialogStructure dialogStructure;
+    String dialogId;
     int storyId;
-    SendListener sendListener;
-    CancelListener cancelListener;
 
-    public interface CancelListener {
-        void onCancel(String id);
-    }
+    public SendListener sendListener;
+    public CancelListener cancelListener;
 
-    public interface SendListener {
-        void onSend(String id, String data);
-    }
-
-    public ContactDialog(int storyId, String id, String data,
-                         SendListener sendListener, CancelListener cancelListener) {
-        this.dialogStructure = JsonParser.fromJson(data, DialogStructure.class);
-        this.id = id;
-        this.storyId = storyId;
-        this.sendListener = sendListener;
-        this.cancelListener = cancelListener;
+    public ContactDialogFragment() {
     }
 
     public static int hex2color(String colorStr) {
         return Color.parseColor(colorStr);
     }
-
-    public double coeff = 1;
-
 
     private int flags = 0;
 
@@ -98,30 +99,112 @@ public class ContactDialog {
 
     float factor = 1;
 
-    public void showDialog(final Activity activity) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                showDialogInner(activity);
-            }
-        });
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        bindViews(view);
+        view.getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
     }
 
-    private void showDialogInner(final Activity activity) {
-        final Dialog dialog = new Dialog(activity, R.style.StoriesSDKAppTheme_DialogTheme);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        globalLayoutListener = null;
+        sendListener = null;
+        cancelListener = null;
+    }
 
-        dialog.setCancelable(true);
-        dialog.setContentView(R.layout.cs_dialog_layout);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        if (!isTablet()) {
-            dialog.getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
-            dialog.getWindow().setDimAmount(0.05f);
-        }
-        final FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
+    @Override
+    public void onDestroyView() {
+        if (getView() != null && globalLayoutListener != null)
+            getView().getViewTreeObserver().removeOnGlobalLayoutListener(globalLayoutListener);
+        super.onDestroyView();
+    }
 
-        //  contentContainer.setUseCompatPadding(true);
+    ViewTreeObserver.OnGlobalLayoutListener globalLayoutListener;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Rect rect = new Rect();
+                if (getActivity() != null) {
+                    getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+                    int size = Sizes.getScreenSize(getActivity()).y - rect.height();
+                    if (size > 100) {
+                        newCenterStructure = new CenterStructure(
+                                50f,
+                                50f * (Sizes.getScreenSize(getActivity()).y - size) /
+                                        Sizes.getScreenSize(getActivity()).y);
+                    } else {
+                        newCenterStructure = new CenterStructure(50, 50);
+                    }
+                    if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                animateDialogArea();
+                            }
+                        });
+                    }
+                }
+            }
+        };
+    }
+
+    ValueAnimator animator;
+
+    private void animateDialogArea() {
+        animator = ValueAnimator.ofFloat(currentCenterStructure.y, newCenterStructure.y);
+        final FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) dialogArea.getLayoutParams();
+        animator.setDuration(500);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float value = (float) animation.getAnimatedValue();
+                layoutParams.topMargin =
+                        (int) (fullHeight * value / 100 - dialogHeight / 2);
+                dialogArea.requestLayout();
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                isAnimated = true;
+                super.onAnimationStart(animation);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                currentCenterStructure = newCenterStructure;
+                isAnimated = false;
+                animator = null;
+                super.onAnimationEnd(animation);
+            }
+        });
+        animator.start();
+        //  dialogAreaParams.topMargin(leftMargin, topMargin, rightMargin, bottomMargin);
+    }
+
+    boolean isAnimated = true;
+
+    int fullWidth;
+    int fullHeight;
+    int dialogHeight;
+    int dialogWidth;
+
+    CenterStructure startedCenterStructure;
+    CenterStructure newCenterStructure;
+    CenterStructure currentCenterStructure;
+    FrameLayout dialogArea;
+
+    private void bindViews(@NonNull View dialog) {
+        FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
         final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
+
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
         editBorderContainer.setElevation(0f);
         editContainer.setElevation(0f);
@@ -134,26 +217,24 @@ public class ContactDialog {
         AppCompatTextView text = dialog.findViewById(R.id.text);
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
-        int fullWidth;
-        int fullHeight;
+
         if (isTablet()) {
-            fullWidth = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
-            fullHeight = activity.getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
+            fullWidth = getContext().getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
+            fullHeight = getContext().getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
         } else {
-            fullWidth = Sizes.getScreenSize(activity).x;
-            fullHeight = Sizes.getScreenSize(activity).y;
+            fullWidth = Sizes.getScreenSize(getContext()).x;
+            fullHeight = Sizes.getScreenSize(getContext()).y;
         }
         if (dialogStructure.size == null) {
             dialogStructure.size = new SizeStructure();
             dialogStructure.size.width = 95;
             dialogStructure.size.height = 40;
         }
-        final int dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
-        int dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);
-
-
+        dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
+        dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);
         factor = (1f * fullWidth) / dialogStructure.configV2.factor;
         LinearLayout parentContainer = dialog.findViewById(R.id.parentContainer);
+        dialogArea = dialog.findViewById(R.id.dialogArea);
         LinearLayout contentContainer = dialog.findViewById(R.id.contentContainer);
         contentContainer.setPaddingRelative(
                 getSize(dialogStructure.configV2.main.padding.left),
@@ -199,8 +280,13 @@ public class ContactDialog {
         editText.setHintTextColor(hex2color(dialogStructure.configV2.main.input.text.color));
         editText.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 getSize(dialogStructure.configV2.main.input.text.size));
-
         editBorderContainer.setPaddingRelative(
+                getSize(dialogStructure.configV2.main.input.border.width),
+                getSize(dialogStructure.configV2.main.input.border.width),
+                getSize(dialogStructure.configV2.main.input.border.width),
+                getSize(dialogStructure.configV2.main.input.border.width)
+        );
+        editContainer.setPaddingRelative(
                 getSize(dialogStructure.configV2.main.input.padding.left),
                 getSize(dialogStructure.configV2.main.input.padding.top),
                 getSize(dialogStructure.configV2.main.input.padding.right),
@@ -240,20 +326,22 @@ public class ContactDialog {
         }
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) editContainer.getLayoutParams();
         int borderWidth = getSize(dialogStructure.configV2.main.input.border.width);
-        lp.setMargins(borderWidth,
+        lp.setMargins(
                 borderWidth,
                 borderWidth,
-                borderWidth);
+                borderWidth,
+                borderWidth
+        );
         editContainer.setLayoutParams(lp);
-        CenterStructure centerStructure = dialogStructure.size.center;
-        if (centerStructure == null) centerStructure = new CenterStructure(50, 50);
-        RelativeLayout.LayoutParams parentParams = new RelativeLayout.LayoutParams(dialogWidth, WRAP_CONTENT);
-        int topMargin = (int) (fullHeight * centerStructure.y / 100 - dialogHeight / 2);
-        int bottomMargin = (int) (fullHeight * (100 - centerStructure.y) / 100 - dialogHeight / 2);
-        int leftMargin = (int) (fullWidth * centerStructure.x / 100 - dialogWidth / 2);
-        int rightMargin = (int) (fullWidth * (100 - centerStructure.x) / 100 - dialogWidth / 2);
-        parentParams.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
-        //parentContainer.setLayoutParams(parentParams);
+        startedCenterStructure = dialogStructure.size.center;
+        currentCenterStructure = dialogStructure.size.center;
+        if (startedCenterStructure == null) startedCenterStructure = new CenterStructure(50, 50);
+        newCenterStructure = new CenterStructure(50, 50);
+        FrameLayout.LayoutParams dialogAreaParams = new FrameLayout.LayoutParams(dialogWidth, WRAP_CONTENT);
+        int topMargin = (int) (fullHeight * startedCenterStructure.y / 100 - dialogHeight / 2);
+        int leftMargin = (int) (fullWidth * startedCenterStructure.x / 100 - dialogWidth / 2);
+        dialogAreaParams.setMargins(leftMargin, topMargin, 0, 0);
+        dialogArea.setLayoutParams(dialogAreaParams);
         buttonText.setPaddingRelative(
                 getSize(dialogStructure.configV2.main.button.padding.left),
                 getSize(dialogStructure.configV2.main.button.padding.top),
@@ -389,88 +477,59 @@ public class ContactDialog {
                 editText.getMainText().addTextChangedListener(this);
             }
         });
-
-        dialog.getWindow().setLayout(dialogWidth, WRAP_CONTENT);
-        dialog.show();
         StatisticManager.getInstance().pauseStoryEvent(false);
-        AppCompatEditText et = (inttype == PHONE) ?
+        final AppCompatEditText et = (inttype == PHONE) ?
                 editText.getCountryCodeText() : editText.getMainText();
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-
-                View view = activity.getCurrentFocus();
-                if (view != null) {
-                    view.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            editText.clearFocus();
-                            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-                            StatisticManager.getInstance().resumeStoryEvent(true);
-                        }
-                    });
-                }
-
-
-            }
-        });
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
-        }, 100);
-        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+       /* dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialogInterface) {
 
-                cancelListener.onCancel(id);
+                cancelListener.onCancel(dialogId);
             }
-        });
+        });*/
         final int finalInttype = inttype;
         buttonBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (validate(finalInttype, editText.getMainText().getText().toString(),
                         editText.getMaskLength())) {
-                    dialog.dismiss();
+                    hideDialog();
                     String val = editText.getText().replaceAll("\"", "\\\\\"");
-                    //URLEncoder.encode(val, StandardCharsets.UTF_8.toString());
-                    sendListener.onSend(id, val);
+                    if (sendListener != null)
+                        sendListener.onSend(dialogId, val);
                 } else {
                     editBorderContainer.setBackground(editBorderContainerErrorGradient);
                     editText.setTextColor(Color.RED);
                 }
             }
         });
-        keyboardFocusCheck(activity, et);
-    }
-
-    private void keyboardFocusCheck(final Activity activity, final AppCompatEditText et) {
-        View focused = activity.getCurrentFocus();
-        Runnable focusedRunnable = new Runnable() {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                keyboardFocus(activity, et);
-            }
-        };
-        if (focused != null) {
-            focused.postDelayed(focusedRunnable, 200);
-        } else {
-            new Handler().postDelayed(focusedRunnable, 500);
-        }
-    }
-
-    private void keyboardFocus(final Activity activity, final AppCompatEditText et) {
-        if (!isTablet()) {
-            if (activity != null && !(activity.isFinishing() || activity.isDestroyed())) {
                 et.requestFocus();
                 InputMethodManager imm =
-                        (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
             }
-        }
+        }, 500);
+        animateDialogArea();
+        dialog.findViewById(R.id.emptyArea).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideDialog();
+                if (cancelListener != null)
+                    cancelListener.onCancel(dialogId);
+            }
+        });
+    }
+
+    private void hideDialog() {
+        getParentFragmentManager().popBackStack();
+        final TextMultiInput editText = getView().findViewById(R.id.editText);
+        editText.clearFocus();
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+        StatisticManager.getInstance().resumeStoryEvent(true);
     }
 
     boolean validate(int type, String value, int length) {
@@ -491,5 +550,13 @@ public class ContactDialog {
 
     public final static boolean isValidEmail(CharSequence target) {
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        hideDialog();
+        if (cancelListener != null)
+            cancelListener.onCancel(dialogId);
+        return true;
     }
 }
