@@ -511,7 +511,7 @@ public class ContactDialogFragment extends Fragment implements BackPressHandler 
                         (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
             }
-        }, 500);
+        }, 200);
         animateDialogArea();
         dialog.findViewById(R.id.emptyArea).setOnClickListener(new View.OnClickListener() {
             @Override

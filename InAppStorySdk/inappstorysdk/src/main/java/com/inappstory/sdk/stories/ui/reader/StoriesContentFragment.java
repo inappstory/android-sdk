@@ -35,6 +35,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
@@ -138,13 +139,22 @@ public class StoriesContentFragment extends Fragment
         if (context == null) return;
         if (callback != null) {
             ScreensManager.getInstance().openOverlapContainerForShare(
-                    context,
+                    new CancelListener() {
+                        @Override
+                        public void onCancel(String id) {
+                            getStoriesReader().timerIsUnlocked();
+                            readerManager.resumeCurrent(false);
+                        }
+                    },
+                    getStoriesReader().getStoriesReaderFragmentManager(),
                     this,
                     slidePayload,
                     storyId,
                     slideIndex,
                     shareObject
             );
+            getStoriesReader().timerIsLocked();
+            readerManager.pauseCurrent(false);
         } else {
             new IASShareManager().shareDefault(
                     StoryShareBroadcastReceiver.class,

@@ -378,7 +378,7 @@ public class StoriesViewManager {
                     });
 
             contactDialogCreator.showDialog(
-                    readerScreen.getStoriesReaderFragmentManager()
+                    readerScreen
             );
         }
     }

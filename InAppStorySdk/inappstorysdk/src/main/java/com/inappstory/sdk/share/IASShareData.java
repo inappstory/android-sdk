@@ -3,10 +3,11 @@ package com.inappstory.sdk.share;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IASShareData {
+public class IASShareData implements Serializable {
     String url;
     public List<String> files;
     String payload;

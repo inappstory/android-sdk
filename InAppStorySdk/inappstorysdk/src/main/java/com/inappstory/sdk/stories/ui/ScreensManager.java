@@ -50,6 +50,8 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
@@ -72,6 +74,7 @@ import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
@@ -221,7 +224,8 @@ public class ScreensManager {
     }
 
     public void openOverlapContainerForShare(
-            Context context,
+            CancelListener cancelListener,
+            FragmentManager fragmentManager,
             OverlapFragmentObserver observer,
             String slidePayload,
             int storyId,
@@ -229,18 +233,19 @@ public class ScreensManager {
             IASShareData shareData
     ) {
         try {
-            if (!(context instanceof FragmentActivity)) return;
             this.overlapFragmentObserver = observer;
-            OverlapFragment storiesDialogFragment = new OverlapFragment();
-            storiesDialogFragment.setCancelable(false);
+            OverlapFragment overlapFragment = new OverlapFragment();
             Bundle bundle = new Bundle();
             bundle.putString("slidePayload", slidePayload);
             bundle.putInt("storyId", storyId);
             bundle.putInt("slideIndex", slideIndex);
-            bundle.putString("shareData", JsonParser.getJson(shareData));
-            storiesDialogFragment.setArguments(bundle);
-            storiesDialogFragment.show(((FragmentActivity) context).getSupportFragmentManager(),
-                    "OverlapFragment");
+            bundle.putSerializable("shareData", shareData);
+            overlapFragment.setArguments(bundle);
+            overlapFragment.cancelListener = cancelListener;
+            FragmentTransaction t = fragmentManager.beginTransaction()
+                    .replace(R.id.ias_outer_top_container, overlapFragment);
+            t.addToBackStack("OverlapFragment");
+            t.commit();
         } catch (IllegalStateException e) {
             InAppStoryService.createExceptionLog(e);
         } catch (Exception e) {
@@ -299,24 +304,11 @@ public class ScreensManager {
 
     private Long lastOpenTry = -1L;
 
-    public void openStoriesReader(final Context outerContext,
-                                  final String listID,
-                                  final AppearanceManager appearanceManager,
-                                  final ArrayList<Integer> storiesIds,
-                                  final int index,
-                                  final SourceType source,
-                                  final int firstAction,
-                                  final Integer slideIndex,
-                                  final String feed,
-                                  final Story.StoryType type
+    public void openStoriesReader(
+            final Context outerContext,
+            final AppearanceManager appearanceManager,
+            final StoriesReaderLaunchData launchData
     ) {
-
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && outerContext instanceof Activity) {
-            if (((Activity) outerContext).isInMultiWindowMode()) {
-                Toast.makeText(outerContext, "Unsupported in split mode", Toast.LENGTH_LONG).show();
-                //  return;
-            }
-        }*/
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -338,16 +330,6 @@ public class ScreensManager {
                         manager,
                         outerContext
                 );
-                StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
-                        listID,
-                        feed,
-                        storiesIds,
-                        index,
-                        firstAction,
-                        source,
-                        slideIndex,
-                        type
-                );
                 Bundle bundle = new Bundle();
                 bundle.putSerializable(
                         launchData.getSerializableKey(),
@@ -366,28 +348,6 @@ public class ScreensManager {
 
     }
 
-    public void openStoriesReader(Context outerContext,
-                                  String listID,
-                                  AppearanceManager manager,
-                                  ArrayList<Integer> storiesIds,
-                                  int index,
-                                  SourceType source,
-                                  String feed,
-                                  Story.StoryType type) {
-        openStoriesReader(
-                outerContext,
-                listID,
-                manager,
-                storiesIds,
-                index,
-                source,
-                ShowStory.ACTION_OPEN,
-                0,
-                feed,
-                type);
-    }
-
-
     public Dialog goodsDialog;
 
     public void hideGoods() {
@@ -401,7 +361,7 @@ public class ScreensManager {
 
     public void showGoods(
             String skusString,
-            Activity activity,
+            Context context,
             final ShowGoodsCallback showGoodsCallback,
             boolean fullScreen,
             final String widgetId,
@@ -417,7 +377,6 @@ public class ScreensManager {
         if (screen != null) screen.timerIsLocked();
 
         showGoodsCallback.onPause();
-        LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView;
         final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
 
@@ -459,8 +418,8 @@ public class ScreensManager {
                 }
             }
         };
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView(activity) != null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);
+        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView(context) != null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.StoriesSDKAppTheme_GoodsDialog);
             dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
             builder.setView(dialogView);
             goodsDialog = builder.create();
@@ -482,14 +441,14 @@ public class ScreensManager {
             }
             ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
                     .addView(AppearanceManager.getCommonInstance()
-                            .csCustomGoodsWidget().getWidgetView(activity));
+                            .csCustomGoodsWidget().getWidgetView(context));
             AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus, getGoodsDataCallback);
         } else {
             AlertDialog.Builder builder;
             if (Sizes.isTablet() && !fullScreen) {
-                builder = new AlertDialog.Builder(activity);
+                builder = new AlertDialog.Builder(context);
             } else {
-                builder = new AlertDialog.Builder(activity, R.style.StoriesSDKAppTheme_GoodsDialog);
+                builder = new AlertDialog.Builder(context, R.style.StoriesSDKAppTheme_GoodsDialog);
             }
             dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
             builder.setView(dialogView);
@@ -519,7 +478,7 @@ public class ScreensManager {
                 iGoodsWidgetAppearance = new GoodsWidgetAppearanceAdapter();
             }
             if (iGoodsWidgetAppearance instanceof GoodsWidgetAppearanceAdapter) {
-                ((GoodsWidgetAppearanceAdapter) iGoodsWidgetAppearance).context = activity;
+                ((GoodsWidgetAppearanceAdapter) iGoodsWidgetAppearance).context = context;
             }
 
             final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
@@ -530,7 +489,7 @@ public class ScreensManager {
             Log.e("goodsWidgetHeight", "" + iGoodsWidgetAppearance.getBackgroundHeight());
             bottomLine.requestLayout();
             final ImageView refresh = goodsDialog.findViewById(R.id.refresh_button);
-            refresh.setImageDrawable(activity.getResources().getDrawable(AppearanceManager.getCommonInstance().csRefreshIcon()));
+            refresh.setImageDrawable(context.getResources().getDrawable(AppearanceManager.getCommonInstance().csRefreshIcon()));
 
             final GetGoodsDataCallback callback = new GetGoodsDataCallback() {
                 @Override

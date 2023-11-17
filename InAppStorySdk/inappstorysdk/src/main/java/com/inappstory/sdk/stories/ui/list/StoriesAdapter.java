@@ -18,6 +18,7 @@ import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -287,15 +288,20 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        ScreensManager.getInstance().openStoriesReader(
-                context,
+        StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 listID,
-                manager,
+                feed,
                 tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
+                ShowStory.ACTION_OPEN,
                 isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
-                feed,
+                0,
                 Story.StoryType.COMMON
+        );
+        ScreensManager.getInstance().openStoriesReader(
+                context,
+                manager,
+                launchData
         );
     }
 

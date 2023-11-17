@@ -17,6 +17,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -231,15 +232,20 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             if (story == null || !story.isHideInReader())
                 tempStories.add(storyId);
         }
-        ScreensManager.getInstance().openStoriesReader(
-                context,
+        StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 listID,
-                manager,
+                null,
                 tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
+                ShowStory.ACTION_OPEN,
                 SourceType.LIST,
-                null,
+                0,
                 Story.StoryType.UGC
+        );
+        ScreensManager.getInstance().openStoriesReader(
+                context,
+                manager,
+                launchData
         );
     }
 

@@ -47,6 +47,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCal
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.onboarding.OnboardingLoadCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CallToActionCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickOnShareStoryCallback;
@@ -1148,15 +1149,21 @@ public class InAppStoryManager {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null)
             inAppStoryService.getDownloadManager().uploadingAdditional(stories, storyType);
+        StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
+                null,
+                feed,
+                storiesIds,
+                0,
+                ShowStory.ACTION_OPEN,
+                SourceType.ONBOARDING,
+                0,
+                Story.StoryType.COMMON
+        );
         ScreensManager.getInstance().openStoriesReader(
                 outerContext,
                 null,
-                manager,
-                storiesIds,
-                0,
-                SourceType.ONBOARDING,
-                feed,
-                Story.StoryType.COMMON);
+                launchData
+        );
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
             CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
         }
@@ -1448,17 +1455,20 @@ public class InAppStoryManager {
                             );
                             ArrayList<Integer> stIds = new ArrayList<>();
                             stIds.add(story.id);
-                            ScreensManager.getInstance().openStoriesReader(
-                                    context,
+                            StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                                     null,
-                                    manager,
+                                    null,
                                     stIds,
                                     0,
-                                    readerSource,
                                     readerAction,
+                                    readerSource,
                                     slide,
-                                    null,
-                                    Story.StoryType.COMMON
+                                    type
+                            );
+                            ScreensManager.getInstance().openStoriesReader(
+                                    context,
+                                    manager,
+                                    launchData
                             );
                             localHandler.postDelayed(new Runnable() {
                                 @Override

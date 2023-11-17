@@ -522,7 +522,13 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 slideIndex = dataModel.slideData.index;
             }
             ScreensManager.getInstance().openOverlapContainerForShare(
-                    this, this, null, storyId, slideIndex, shareObject
+                    null,
+                    getSupportFragmentManager(),
+                    this,
+                    null,
+                    storyId,
+                    slideIndex,
+                    shareObject
             );
         } else {
             new IASShareManager().shareDefault(

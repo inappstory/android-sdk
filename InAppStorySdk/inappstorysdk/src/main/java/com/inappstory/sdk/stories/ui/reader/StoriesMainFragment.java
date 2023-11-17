@@ -134,7 +134,7 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen, B
         try {
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.fragments_layout, storiesContentFragment);
+                    .replace(R.id.fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
             t.addToBackStack("STORIES_FRAGMENT");
             t.commit();
         } catch (IllegalStateException e) {

@@ -12,20 +12,21 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.dialog.CancelListener;
+import com.inappstory.sdk.stories.utils.BackPressHandler;
 
 import java.util.HashMap;
 
-public class OverlapFragment extends DialogFragment {
+public class OverlapFragment extends Fragment implements BackPressHandler {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -45,7 +46,8 @@ public class OverlapFragment extends DialogFragment {
             OverlapFragmentObserver observer = ScreensManager.getInstance().overlapFragmentObserver;
             if (observer != null) observer.closeView(data);
             ScreensManager.getInstance().cleanOverlapFragmentObserver();
-            dismissAllowingStateLoss();
+            getParentFragmentManager().popBackStack();
+            if (cancelListener != null) cancelListener.onCancel(null);
         }
     };
 
@@ -54,39 +56,8 @@ public class OverlapFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         OverlapFragmentObserver observer = ScreensManager.getInstance().overlapFragmentObserver;
         if (observer != null) observer.viewIsOpened();
-        setStyle(DialogFragment.STYLE_NO_FRAME,
-                R.style.OverlapDialogTheme);
     }
 
-    @Override
-    public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        Dialog dialog = getDialog();
-        if (dialog != null) {
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.setCancelable(false);
-            dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                @Override
-                public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent event) {
-                    boolean click = (keyCode == KeyEvent.KEYCODE_BACK)
-                            && (event.getAction() == KeyEvent.ACTION_UP);
-                    return click && !callback.onBackPress(shareActions);
-                }
-            });
-            View decorView = dialog.getWindow().getDecorView();
-            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
-            int width = ViewGroup.LayoutParams.MATCH_PARENT;
-            int height = ViewGroup.LayoutParams.MATCH_PARENT;
-            dialog.getWindow().setLayout(width, height);
-            decorView.setSystemUiVisibility(uiOptions);
-        }
-    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -99,9 +70,7 @@ public class OverlapFragment extends DialogFragment {
             content.put("storyId", getArguments().getInt("storyId"));
             content.put("slideIndex", getArguments().getInt("slideIndex"));
             content.put("shareData",
-                    JsonParser.fromJson(
-                            getArguments().getString("shareData"), IASShareData.class
-                    )
+                    (IASShareData) getArguments().getSerializable("shareData")
             );
             readerTopContainer.removeAllViews();
             View shareView = callback.getView(context, content, shareActions);
@@ -115,5 +84,12 @@ public class OverlapFragment extends DialogFragment {
             readerTopContainer.setVisibility(View.VISIBLE);
             callback.viewIsVisible(shareView);
         }
+    }
+
+    public CancelListener cancelListener;
+
+    @Override
+    public boolean onBackPressed() {
+        return callback.onBackPress(shareActions);
     }
 }

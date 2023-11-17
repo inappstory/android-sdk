@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
+import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 
 public class ContactDialogCreator {
 
@@ -40,20 +41,21 @@ public class ContactDialogCreator {
         this.cancelListener = cancelListener;
     }
 
-    public void showDialog(final FragmentManager parentFragmentManager) {
+    public void showDialog(final BaseReaderScreen readerScreen) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                showDialogInner(parentFragmentManager);
+                showDialogInner(readerScreen);
             }
         });
     }
 
-    private void showDialogInner(final FragmentManager parentFragmentManager) {
-        if (parentFragmentManager == null) {
+    private void showDialogInner(BaseReaderScreen readerScreen) {
+        if (readerScreen == null) {
             this.cancelListener.onCancel(dialogId);
             return;
         }
+        FragmentManager parentFragmentManager = readerScreen.getStoriesReaderFragmentManager();
         Fragment oldFragment =
                 parentFragmentManager.findFragmentById(R.id.ias_dialog_container);
         if (oldFragment != null) {
