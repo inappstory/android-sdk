@@ -356,6 +356,11 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     }
 
     @Override
+    public Context getReaderContext() {
+        return this;
+    }
+
+    @Override
     public FragmentManager getStoriesReaderFragmentManager() {
         return getSupportFragmentManager();
     }

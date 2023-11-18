@@ -287,6 +287,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
+    public Context getReaderContext() {
+        return this;
+    }
+
+    @Override
     public FragmentManager getStoriesReaderFragmentManager() {
         return getSupportFragmentManager();
     }

@@ -49,6 +49,7 @@ import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -75,6 +76,9 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.dialog.CancelListener;
+import com.inappstory.sdk.stories.ui.goods.GoodsDataCallbackImpl;
+import com.inappstory.sdk.stories.ui.goods.GoodsRecyclerView;
+import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
@@ -91,6 +95,7 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ScreensManager {
@@ -350,218 +355,32 @@ public class ScreensManager {
 
     public Dialog goodsDialog;
 
-    public void hideGoods() {
-        if (goodsDialog != null) {
-            goodsDialog.dismiss();
-            goodsDialog = null;
-        }
-        BaseReaderScreen screen = ScreensManager.getInstance().currentStoriesReaderScreen;
-        if (screen != null) screen.timerIsUnlocked();
-    }
-
     public void showGoods(
             String skusString,
-            Context context,
-            final ShowGoodsCallback showGoodsCallback,
-            boolean fullScreen,
+            BaseReaderScreen readerScreen,
             final String widgetId,
             final SlideData slideData
     ) {
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
-            showGoodsCallback.onEmptyResume(widgetId);
-            Log.d("InAppStory_SDK_error", "Empty goods widget");
-            return;
-        }
-        if (goodsDialog != null) return;
-        BaseReaderScreen screen = ScreensManager.getInstance().currentStoriesReaderScreen;
-        if (screen != null) screen.timerIsLocked();
-
-        showGoodsCallback.onPause();
-        View dialogView;
-        final ArrayList<String> skus = JsonParser.listFromJson(skusString, String.class);
-
         final String localTaskId;
         if (widgetId != null) localTaskId = widgetId;
         else localTaskId = randomUUID().toString();
-        GetGoodsDataCallback getGoodsDataCallback = new GetGoodsDataCallback() {
-            @Override
-            public void onSuccess(ArrayList<GoodsItemData> data) {
-                if (data == null || data.isEmpty()) return;
-            }
-
-            @Override
-            public void onError() {
-
-            }
-
-            @Override
-            public void onClose() {
-                hideGoods();
-            }
-
-            @Override
-            public void itemClick(String sku) {
-                if (slideData == null) return;
-                StoryWidgetCallback callback = CallbackManager.getInstance().getStoryWidgetCallback();
-                if (callback != null) {
-                    Map<String, String> widgetData = new HashMap<>();
-                    widgetData.put("story_id", "" + slideData.story.id);
-                    widgetData.put("feed_id", slideData.story.feed);
-                    widgetData.put("slide_index", "" + slideData.index);
-                    widgetData.put("widget_id", widgetId);
-                    widgetData.put("widget_value", sku);
-                    callback.widgetEvent(slideData, "w-goods-click", widgetData);
-                }
-                if (StatisticManager.getInstance() != null) {
-                    StatisticManager.getInstance().sendGoodsClick(slideData.story.id,
-                            slideData.index, widgetId, sku, slideData.story.feed);
-                }
-            }
-        };
-        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetView(context) != null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.StoriesSDKAppTheme_GoodsDialog);
-            dialogView = inflater.inflate(R.layout.cs_goods_custom, null);
-            builder.setView(dialogView);
-            goodsDialog = builder.create();
-            //dialog.setContentView(R.layout.cs_goods_recycler);
-            goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    showGoodsCallback.onResume(widgetId);
-                    goodsDialog = null;
-                }
-            });
-            //goodsDialog.getWindow().getAttributes().windowAnimations = R.style.SlidingDialogAnimation;
-            goodsDialog.show();
-
-            if (StatisticManager.getInstance() != null && slideData != null) {
-                StatisticManager.getInstance().sendGoodsOpen(slideData.story.id,
-                        slideData.index, widgetId, slideData.story.feed);
-            }
-            ((RelativeLayout) goodsDialog.findViewById(R.id.cs_widget_container))
-                    .addView(AppearanceManager.getCommonInstance()
-                            .csCustomGoodsWidget().getWidgetView(context));
-            AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus, getGoodsDataCallback);
-        } else {
-            AlertDialog.Builder builder;
-            if (Sizes.isTablet() && !fullScreen) {
-                builder = new AlertDialog.Builder(context);
-            } else {
-                builder = new AlertDialog.Builder(context, R.style.StoriesSDKAppTheme_GoodsDialog);
-            }
-            dialogView = inflater.inflate(R.layout.cs_goods_recycler, null);
-            builder.setView(dialogView);
-            goodsDialog = builder.create();
-            goodsDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            goodsDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            goodsDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            WindowManager.LayoutParams attrs = goodsDialog.getWindow().getAttributes();
-            attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
-            goodsDialog.getWindow().setAttributes(attrs);
-            View decorView = goodsDialog.getWindow().getDecorView();
-            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_FULLSCREEN;
-            decorView.setSystemUiVisibility(uiOptions);
-            goodsDialog.show();
-            //  goodsDialog.findViewById(R.id.goods_container).setTranslationY(Sizes.dpToPxExt(240));
-            // goodsDialog.findViewById(R.id.goods_container).animate().translationY(0).setDuration(600).start();
-
-            if (StatisticManager.getInstance() != null && slideData != null) {
-                StatisticManager.getInstance().sendGoodsOpen(slideData.story.id,
-                        slideData.index, widgetId, slideData.story.feed);
-            }
-            final GoodsWidget goodsList = goodsDialog.findViewById(R.id.goods_list);
-            goodsList.setConfig(new GoodsWidget.GoodsWidgetConfig(widgetId, slideData));
-            final FrameLayout loaderContainer = goodsDialog.findViewById(R.id.loader_container);
-            IGoodsWidgetAppearance iGoodsWidgetAppearance = AppearanceManager.getCommonInstance().csCustomGoodsWidget().getWidgetAppearance();
-            if (iGoodsWidgetAppearance == null) {
-                iGoodsWidgetAppearance = new GoodsWidgetAppearanceAdapter();
-            }
-            if (iGoodsWidgetAppearance instanceof GoodsWidgetAppearanceAdapter) {
-                ((GoodsWidgetAppearanceAdapter) iGoodsWidgetAppearance).context = context;
-            }
-
-            final View bottomLine = goodsDialog.findViewById(R.id.bottom_line);
-            View closeButtonBackground = goodsDialog.findViewById(R.id.hide_goods_container);
-            bottomLine.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
-            closeButtonBackground.setBackgroundColor(iGoodsWidgetAppearance.getBackgroundColor());
-            bottomLine.getLayoutParams().height = iGoodsWidgetAppearance.getBackgroundHeight();
-            Log.e("goodsWidgetHeight", "" + iGoodsWidgetAppearance.getBackgroundHeight());
-            bottomLine.requestLayout();
-            final ImageView refresh = goodsDialog.findViewById(R.id.refresh_button);
-            refresh.setImageDrawable(context.getResources().getDrawable(AppearanceManager.getCommonInstance().csRefreshIcon()));
-
-            final GetGoodsDataCallback callback = new GetGoodsDataCallback() {
-                @Override
-                public void onSuccess(ArrayList<GoodsItemData> data) {
-                    ProfilingManager.getInstance().setReady(localTaskId);
-                    bottomLine.setVisibility(View.VISIBLE);
-                    loaderContainer.setVisibility(View.GONE);
-                    if (data == null || data.isEmpty()) return;
-                    if (goodsList != null)
-                        goodsList.setItems(data, this);
-                }
-
-                @Override
-                public void onError() {
-                    ProfilingManager.getInstance().setReady(localTaskId);
-                    loaderContainer.setVisibility(View.GONE);
-                    refresh.setVisibility(View.VISIBLE);
-                }
-
-                @Override
-                public void onClose() {
-                    hideGoods();
-                }
-
-                @Override
-                public void itemClick(String sku) {
-
-                }
-            };
-            goodsDialog.findViewById(R.id.close_area).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    hideGoods();
-                }
-            });
-            goodsDialog.findViewById(R.id.close_area)
-                    .setBackgroundColor(iGoodsWidgetAppearance.getDimColor());
-            loaderContainer.addView(AppearanceManager.getLoader(goodsDialog.getContext()));
-            loaderContainer.setVisibility(View.VISIBLE);
-
-            goodsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialogInterface) {
-                    showGoodsCallback.onResume(widgetId);
-                    goodsDialog = null;
-                }
-            });
-            ProfilingManager.getInstance().addTask("goods_resources", localTaskId);
-            AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus, callback);
-            AppCompatImageView hideGoods = goodsDialog.findViewById(R.id.hide_goods);
-            hideGoods.setImageDrawable(iGoodsWidgetAppearance.getCloseButtonImage());
-            hideGoods.setColorFilter(
-                    new PorterDuffColorFilter(iGoodsWidgetAppearance.getCloseButtonColor(),
-                            PorterDuff.Mode.SRC_ATOP)
-            );
-            hideGoods.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    hideGoods();
-                }
-            });
-            refresh.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    refresh.setVisibility(View.GONE);
-                    loaderContainer.setVisibility(View.VISIBLE);
-                    ProfilingManager.getInstance().addTask("goods_resources", localTaskId);
-                    AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus,
-                            callback);
-                }
-            });
+        final FragmentManager fragmentManager = readerScreen.getStoriesReaderFragmentManager();
+        if (StatisticManager.getInstance() != null && slideData != null) {
+            StatisticManager.getInstance().sendGoodsOpen(slideData.story.id,
+                    slideData.index, widgetId, slideData.story.feed);
         }
+
+        GoodsWidgetFragment fragment = new GoodsWidgetFragment();
+        Bundle args = new Bundle();
+        args.putString("localTaskId", localTaskId);
+        args.putSerializable("slideData", slideData);
+        args.putString("widgetId", widgetId);
+        args.putString("skusString", skusString);
+        fragment.setArguments(args);
+        FragmentTransaction t = fragmentManager.beginTransaction()
+                .replace(R.id.ias_outer_top_container, fragment);
+        t.addToBackStack("GoodsWidgetFragment");
+        t.commit();
 
     }
 }

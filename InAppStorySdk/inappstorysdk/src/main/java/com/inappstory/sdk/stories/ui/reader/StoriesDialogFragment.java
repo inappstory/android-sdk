@@ -6,6 +6,7 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -184,6 +185,11 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     @Override
     public void timerIsUnlocked() {
         if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
+    }
+
+    @Override
+    public Context getReaderContext() {
+        return getContext();
     }
 
     @Override

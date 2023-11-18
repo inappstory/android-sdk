@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.ui.reader;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
@@ -497,6 +498,11 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen, B
                 fragment.timerIsUnlocked();
             }
         });
+    }
+
+    @Override
+    public Context getReaderContext() {
+        return getContext();
     }
 
     @Override

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -275,8 +276,6 @@ public class StoriesContentFragment extends Fragment
         }
 
 
-
-
         FrameLayout resView = new FrameLayout(context);
         storiesViewPager = new ReaderPager(context);
         storiesViewPager.setHost(this);
@@ -297,6 +296,18 @@ public class StoriesContentFragment extends Fragment
     }
 
     SourceType source = SourceType.SINGLE;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (readerManager != null) readerManager.host = this;
+    }
+
+    @Override
+    public void onDetach() {
+        if (readerManager != null && readerManager.host == this) readerManager.host = null;
+        super.onDetach();
+    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {

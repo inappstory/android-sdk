@@ -4,32 +4,44 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
+import androidx.fragment.app.FragmentManager;
+
+import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.goods.GoodsDataCallbackImpl;
+import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
+import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class ReaderManager {
 
     private String listID;
     public Story.StoryType storyType;
+    public StoriesContentFragment host;
 
     public SourceType source = SourceType.SINGLE;
 
@@ -107,17 +119,64 @@ public class ReaderManager {
         ScreensManager.getInstance().hideGoods();
     }
 
+    ShowGoodsCallback currentShowGoodsCallback = null;
+
+    GetGoodsDataCallback getGoodsDataCallback;
+
     public void showGoods(
             String skusString,
             String widgetId,
-            ShowGoodsCallback showGoodsCallback,
+            final ShowGoodsCallback showGoodsCallback,
             SlideData slideData
     ) {
+
+        this.currentShowGoodsCallback = new ShowGoodsCallback() {
+            @Override
+            public void onPause() {
+                showGoodsCallback.onPause();
+            }
+
+            @Override
+            public void onResume(String widgetId) {
+                currentShowGoodsCallback = null;
+                showGoodsCallback.onResume(widgetId);
+            }
+
+            @Override
+            public void onEmptyResume(String widgetId) {
+                currentShowGoodsCallback = null;
+                showGoodsCallback.onEmptyResume(widgetId);
+            }
+        };
+        BaseReaderScreen screen = ScreensManager.getInstance().currentStoriesReaderScreen;
+        if (screen == null) {
+            showGoodsCallback.onEmptyResume(widgetId);
+            Log.d("InAppStory_SDK_error", "Something wrong");
+            return;
+        }
+        if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
+            showGoodsCallback.onEmptyResume(widgetId);
+            Log.d("InAppStory_SDK_error", "Empty goods widget");
+            return;
+        }
+
+        screen.timerIsLocked();
+        FragmentManager fragmentManager = screen.getStoriesReaderFragmentManager();
+        if (fragmentManager.findFragmentById(R.id.ias_outer_top_container) != null) {
+            showGoodsCallback.onEmptyResume(widgetId);
+            Log.d("InAppStory_SDK_error", "Top container is busy");
+            return;
+        }
+        showGoodsCallback.onPause();
+        getGoodsDataCallback = new GoodsDataCallbackImpl(slideData, widgetId) {
+            @Override
+            public void onClose() {
+                hideGoods();
+            }
+        };
         ScreensManager.getInstance().showGoods(
                 skusString,
-                parentFragment.getActivity(),
-                showGoodsCallback,
-                false,
+                screen,
                 widgetId,
                 slideData
         );

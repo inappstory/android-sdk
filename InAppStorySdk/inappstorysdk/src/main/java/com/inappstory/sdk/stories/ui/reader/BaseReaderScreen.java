@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import android.content.Context;
+
 import androidx.fragment.app.FragmentManager;
 
 public interface BaseReaderScreen {
@@ -11,5 +13,6 @@ public interface BaseReaderScreen {
     void removeAllStoriesFromFavorite();
     void timerIsLocked();
     void timerIsUnlocked();
+    Context getReaderContext();
     FragmentManager getStoriesReaderFragmentManager();
 }
