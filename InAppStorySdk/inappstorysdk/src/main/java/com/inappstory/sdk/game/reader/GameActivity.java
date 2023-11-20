@@ -204,7 +204,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                ScreensManager.getInstance().showGoods(
+               /* ScreensManager.getInstance().showGoods(
                         skusString,
                         GameActivity.this,
                         new ShowGoodsCallback() {
@@ -229,7 +229,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                         true,
                         widgetId,
                         dataModel.slideData
-                );
+                );*/
             }
         });
     }

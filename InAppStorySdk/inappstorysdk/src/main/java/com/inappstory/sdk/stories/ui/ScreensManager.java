@@ -69,34 +69,15 @@ import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
-import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
-import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.dialog.CancelListener;
-import com.inappstory.sdk.stories.ui.goods.GoodsDataCallbackImpl;
-import com.inappstory.sdk.stories.ui.goods.GoodsRecyclerView;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
-import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
-import com.inappstory.sdk.stories.ui.reader.StoriesFixedActivity;
-import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdapter;
-import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
-import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ScreensManager {
 
@@ -354,6 +335,8 @@ public class ScreensManager {
     }
 
     public Dialog goodsDialog;
+
+    public void hideGoods() {}
 
     public void showGoods(
             String skusString,

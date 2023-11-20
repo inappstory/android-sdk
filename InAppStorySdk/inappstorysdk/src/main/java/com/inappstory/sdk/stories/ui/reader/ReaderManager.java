@@ -115,13 +115,9 @@ public class ReaderManager {
             manager.swipeUp();
     }
 
-    public void hideGoods() {
-        ScreensManager.getInstance().hideGoods();
-    }
 
     ShowGoodsCallback currentShowGoodsCallback = null;
 
-    GetGoodsDataCallback getGoodsDataCallback;
 
     public void showGoods(
             String skusString,
@@ -168,12 +164,6 @@ public class ReaderManager {
             return;
         }
         showGoodsCallback.onPause();
-        getGoodsDataCallback = new GoodsDataCallbackImpl(slideData, widgetId) {
-            @Override
-            public void onClose() {
-                hideGoods();
-            }
-        };
         ScreensManager.getInstance().showGoods(
                 skusString,
                 screen,

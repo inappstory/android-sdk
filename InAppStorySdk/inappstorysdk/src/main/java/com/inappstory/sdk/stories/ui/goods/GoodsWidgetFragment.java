@@ -14,8 +14,11 @@ import androidx.fragment.app.Fragment;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
@@ -24,6 +27,8 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GoodsWidgetFragment extends Fragment implements BackPressHandler {
     GetGoodsDataCallback getGoodsDataCallback;
@@ -78,7 +83,24 @@ public class GoodsWidgetFragment extends Fragment implements BackPressHandler {
 
                 @Override
                 public void itemClick(String sku) {
-
+                    SlideData slideData =
+                            (SlideData) getArguments().getSerializable("slideData");
+                    String widgetId = getArguments().getString("widgetId");
+                    if (slideData == null) return;
+                    StoryWidgetCallback callback = CallbackManager.getInstance().getStoryWidgetCallback();
+                    if (callback != null) {
+                        Map<String, String> widgetData = new HashMap<>();
+                        widgetData.put("story_id", "" + slideData.story.id);
+                        widgetData.put("feed_id", slideData.story.feed);
+                        widgetData.put("slide_index", "" + slideData.index);
+                        widgetData.put("widget_id", widgetId);
+                        widgetData.put("widget_value", sku);
+                        callback.widgetEvent(slideData, "w-goods-click", widgetData);
+                    }
+                    if (StatisticManager.getInstance() != null) {
+                        StatisticManager.getInstance().sendGoodsClick(slideData.story.id,
+                                slideData.index, widgetId, sku, slideData.story.feed);
+                    }
                 }
             };
             layout.addView(goodsRecyclerView);
@@ -102,13 +124,18 @@ public class GoodsWidgetFragment extends Fragment implements BackPressHandler {
         widgetView.setOnHideGoodsClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                hideGoods();
             }
         });
+
         widgetView.setOnRefreshClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                final ArrayList<String> skus = JsonParser.listFromJson(
+                        getArguments().getString("skusString"),
+                        String.class
+                );
+                AppearanceManager.getCommonInstance().csCustomGoodsWidget().getSkus(skus, getGoodsDataCallback);
             }
         });
         return widgetView;
