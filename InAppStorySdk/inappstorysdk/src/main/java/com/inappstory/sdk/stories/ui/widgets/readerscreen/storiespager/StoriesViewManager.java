@@ -347,14 +347,14 @@ public class StoriesViewManager {
                         @Override
                         public void onShow() {
                             readerScreen.timerIsLocked();
-                            pageManager.parentManager.pauseCurrent(false);
+                            pageManager.getParentManager().pauseCurrent(false);
                         }
                     },
                     new SendListener() {
                         @Override
                         public void onSend(final String id, final String data) {
                             readerScreen.timerIsUnlocked();
-                            pageManager.parentManager.resumeCurrent(false);
+                            pageManager.getParentManager().resumeCurrent(false);
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -367,7 +367,7 @@ public class StoriesViewManager {
                         @Override
                         public void onCancel(final String id) {
                             readerScreen.timerIsUnlocked();
-                            pageManager.parentManager.resumeCurrent(false);
+                            pageManager.getParentManager().resumeCurrent(false);
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -421,7 +421,7 @@ public class StoriesViewManager {
                         .getStoryById(storyId, pageManager.getStoryType()) : null;
         if (story != null && shareData != null) {
             shareData.payload = story.getSlideEventPayload(index);
-            pageManager.parentManager.showShareView(
+            pageManager.getParentManager().showShareView(
                     shareData, storyId, index
             );
         } else {

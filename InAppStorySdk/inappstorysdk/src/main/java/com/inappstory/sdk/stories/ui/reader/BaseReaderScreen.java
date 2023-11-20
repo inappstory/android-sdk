@@ -1,8 +1,9 @@
 package com.inappstory.sdk.stories.ui.reader;
 
-import android.content.Context;
 
 import androidx.fragment.app.FragmentManager;
+
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 public interface BaseReaderScreen {
     void closeStoryReader(int action);
@@ -13,6 +14,6 @@ public interface BaseReaderScreen {
     void removeAllStoriesFromFavorite();
     void timerIsLocked();
     void timerIsUnlocked();
-    Context getReaderContext();
+    void setShowGoodsCallback(ShowGoodsCallback callback);
     FragmentManager getStoriesReaderFragmentManager();
 }

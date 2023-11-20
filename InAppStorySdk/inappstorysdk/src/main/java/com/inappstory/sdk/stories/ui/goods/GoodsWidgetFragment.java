@@ -25,6 +25,7 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,16 @@ import java.util.Map;
 
 public class GoodsWidgetFragment extends Fragment implements BackPressHandler {
     GetGoodsDataCallback getGoodsDataCallback;
+
+    public BaseReaderScreen getStoriesReader() {
+        BaseReaderScreen screen = null;
+        if (getActivity() instanceof BaseReaderScreen) {
+            screen = (BaseReaderScreen) getActivity();
+        } else if (getParentFragment() instanceof BaseReaderScreen) {
+            screen = (BaseReaderScreen) getParentFragment();
+        }
+        return screen;
+    }
 
     @Nullable
     @Override
@@ -108,9 +119,13 @@ public class GoodsWidgetFragment extends Fragment implements BackPressHandler {
         return fragmentView;
     }
 
-    private void hideGoods() {
-        BaseReaderScreen screen = ScreensManager.getInstance().currentStoriesReaderScreen;
-        if (screen != null) screen.timerIsUnlocked();
+    public void hideGoods() {
+        BaseReaderScreen readerScreen = getStoriesReader();
+        if (readerScreen instanceof ShowGoodsCallback) {
+            ((ShowGoodsCallback) readerScreen).goodsIsClosed(
+                    getArguments().getString("widgetId")
+            );
+        }
         getParentFragmentManager().popBackStack();
     }
 

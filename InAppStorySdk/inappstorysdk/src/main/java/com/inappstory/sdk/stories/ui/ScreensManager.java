@@ -1,55 +1,17 @@
 package com.inappstory.sdk.stories.ui;
 
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_POSITION;
-import static com.inappstory.sdk.AppearanceManager.CS_DISLIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_FAVORITE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_FAVORITE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_LIKE;
-import static com.inappstory.sdk.AppearanceManager.CS_HAS_SHARE;
-import static com.inappstory.sdk.AppearanceManager.CS_LIKE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_RADIUS;
-import static com.inappstory.sdk.AppearanceManager.CS_REFRESH_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SHARE_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_SOUND_ICON;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT_ENABLE;
 import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -61,9 +23,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.game.reader.GameStoryData;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.share.IASShareData;
-import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -75,6 +35,7 @@ import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.HashMap;
@@ -340,7 +301,7 @@ public class ScreensManager {
 
     public void showGoods(
             String skusString,
-            BaseReaderScreen readerScreen,
+            final BaseReaderScreen readerScreen,
             final String widgetId,
             final SlideData slideData
     ) {

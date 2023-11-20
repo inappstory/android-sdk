@@ -41,10 +41,14 @@ import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class StoriesMainFragment extends Fragment implements BaseReaderScreen, BackPressHandler {
+public class StoriesMainFragment extends Fragment implements
+        BaseReaderScreen,
+        BackPressHandler,
+        ShowGoodsCallback {
 
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;
@@ -52,7 +56,31 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen, B
     View animatedContainer;
 
 
+    ShowGoodsCallback currentGoodsCallback = null;
+
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
+
+    @Override
+    public void goodsIsOpened() {
+        timerIsLocked();
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsOpened();
+    }
+
+    @Override
+    public void goodsIsClosed(String widgetId) {
+        timerIsUnlocked();
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsClosed(widgetId);
+        currentGoodsCallback = null;
+    }
+
+    @Override
+    public void goodsIsCanceled(String widgetId) {
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsCanceled(widgetId);
+        currentGoodsCallback = null;
+    }
 
     private interface FragmentAction<T extends Fragment> {
         void invoke(T fragment);
@@ -501,8 +529,8 @@ public class StoriesMainFragment extends Fragment implements BaseReaderScreen, B
     }
 
     @Override
-    public Context getReaderContext() {
-        return getContext();
+    public void setShowGoodsCallback(ShowGoodsCallback callback) {
+        currentGoodsCallback = callback;
     }
 
     @Override

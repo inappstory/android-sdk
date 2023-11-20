@@ -612,7 +612,7 @@ public class ReaderPageFragment extends Fragment {
         if (parentManager == null && getParentFragment() instanceof StoriesContentFragment) {
             parentManager = ((StoriesContentFragment) getParentFragment()).readerManager;
         }
-        manager.parentManager = parentManager;
+        manager.setParentManager(parentManager);
         manager.setStoryId(storyId);
         if (parentManager != null) {
             parentManager.addSubscriber(manager);

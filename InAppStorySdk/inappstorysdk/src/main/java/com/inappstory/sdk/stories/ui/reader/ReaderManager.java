@@ -18,24 +18,18 @@ import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.goods.GoodsDataCallbackImpl;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
-import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 public class ReaderManager {
 
@@ -115,55 +109,33 @@ public class ReaderManager {
             manager.swipeUp();
     }
 
-
-    ShowGoodsCallback currentShowGoodsCallback = null;
-
-
     public void showGoods(
             String skusString,
             String widgetId,
             final ShowGoodsCallback showGoodsCallback,
             SlideData slideData
     ) {
-
-        this.currentShowGoodsCallback = new ShowGoodsCallback() {
-            @Override
-            public void onPause() {
-                showGoodsCallback.onPause();
-            }
-
-            @Override
-            public void onResume(String widgetId) {
-                currentShowGoodsCallback = null;
-                showGoodsCallback.onResume(widgetId);
-            }
-
-            @Override
-            public void onEmptyResume(String widgetId) {
-                currentShowGoodsCallback = null;
-                showGoodsCallback.onEmptyResume(widgetId);
-            }
-        };
-        BaseReaderScreen screen = ScreensManager.getInstance().currentStoriesReaderScreen;
+        BaseReaderScreen screen = getReaderScreen();
         if (screen == null) {
-            showGoodsCallback.onEmptyResume(widgetId);
+            showGoodsCallback.goodsIsCanceled(widgetId);
             Log.d("InAppStory_SDK_error", "Something wrong");
             return;
         }
         if (AppearanceManager.getCommonInstance().csCustomGoodsWidget() == null) {
-            showGoodsCallback.onEmptyResume(widgetId);
+            showGoodsCallback.goodsIsCanceled(widgetId);
             Log.d("InAppStory_SDK_error", "Empty goods widget");
             return;
         }
-
-        screen.timerIsLocked();
         FragmentManager fragmentManager = screen.getStoriesReaderFragmentManager();
         if (fragmentManager.findFragmentById(R.id.ias_outer_top_container) != null) {
-            showGoodsCallback.onEmptyResume(widgetId);
+            showGoodsCallback.goodsIsCanceled(widgetId);
             Log.d("InAppStory_SDK_error", "Top container is busy");
             return;
         }
-        showGoodsCallback.onPause();
+        if (screen instanceof ShowGoodsCallback) {
+            screen.setShowGoodsCallback(showGoodsCallback);
+            ((ShowGoodsCallback) screen).goodsIsOpened();
+        }
         ScreensManager.getInstance().showGoods(
                 skusString,
                 screen,
@@ -491,6 +463,10 @@ public class ReaderManager {
         parentFragment.setArguments(bundle);
         startedSlideInd = 0;
         firstStoryId = -1;
+    }
+
+    public BaseReaderScreen getReaderScreen() {
+        return parentFragment.getStoriesReader();
     }
 
     private StoriesContentFragment parentFragment;

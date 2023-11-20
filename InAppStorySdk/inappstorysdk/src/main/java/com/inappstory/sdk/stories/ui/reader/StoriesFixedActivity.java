@@ -49,6 +49,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
@@ -356,8 +357,8 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     }
 
     @Override
-    public Context getReaderContext() {
-        return this;
+    public void setShowGoodsCallback(ShowGoodsCallback callback) {
+
     }
 
     @Override

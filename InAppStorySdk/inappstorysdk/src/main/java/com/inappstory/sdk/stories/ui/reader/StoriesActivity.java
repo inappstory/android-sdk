@@ -53,12 +53,13 @@ import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
 import java.util.ArrayList;
 
-public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen {
+public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen, ShowGoodsCallback {
 
     public boolean pauseDestroyed = false;
 
@@ -88,6 +89,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         super.onStop();
 
     }
+
+    ShowGoodsCallback currentGoodsCallback = null;
 
     public void unsubscribeClicks() {
         draggableFrame.removeListener(chromeFader);
@@ -287,8 +290,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
-    public Context getReaderContext() {
-        return this;
+    public void setShowGoodsCallback(ShowGoodsCallback callback) {
+        currentGoodsCallback = callback;
     }
 
     @Override
@@ -575,5 +578,27 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             pauseDestroyed = true;
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void goodsIsOpened() {
+        timerIsLocked();
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsOpened();
+    }
+
+    @Override
+    public void goodsIsClosed(String widgetId) {
+        timerIsUnlocked();
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsClosed(widgetId);
+        currentGoodsCallback = null;
+    }
+
+    @Override
+    public void goodsIsCanceled(String widgetId) {
+        if (currentGoodsCallback != null)
+            currentGoodsCallback.goodsIsCanceled(widgetId);
+        currentGoodsCallback = null;
     }
 }

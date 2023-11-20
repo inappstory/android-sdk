@@ -43,6 +43,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.HashSet;
@@ -188,8 +189,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     }
 
     @Override
-    public Context getReaderContext() {
-        return getContext();
+    public void setShowGoodsCallback(ShowGoodsCallback callback) {
+
     }
 
     @Override

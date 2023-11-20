@@ -376,14 +376,14 @@ public class ReaderPageManager {
             public void run() {
                 parentManager.showGoods(skus, widgetId, new ShowGoodsCallback() {
                     @Override
-                    public void onPause() {
+                    public void goodsIsOpened() {
                         if (checkIfManagersIsNull()) return;
                         parentManager.pauseCurrent(true);
                         parentManager.unsubscribeClicks();
                     }
 
                     @Override
-                    public void onResume(String widgetId) {
+                    public void goodsIsClosed(String widgetId) {
                         if (checkIfManagersIsNull()) return;
                         parentManager.resumeCurrent(true);
                         parentManager.subscribeClicks();
@@ -391,7 +391,7 @@ public class ReaderPageManager {
                     }
 
                     @Override
-                    public void onEmptyResume(String widgetId) {
+                    public void goodsIsCanceled(String widgetId) {
                         if (checkIfManagersIsNull()) return;
                         webViewManager.goodsWidgetComplete(widgetId);
                     }
@@ -463,6 +463,10 @@ public class ReaderPageManager {
         if (parentManager != null)
             return parentManager.source;
         return SourceType.LIST;
+    }
+
+    public ReaderManager getParentManager() {
+        return parentManager;
     }
 
     ReaderManager parentManager;
