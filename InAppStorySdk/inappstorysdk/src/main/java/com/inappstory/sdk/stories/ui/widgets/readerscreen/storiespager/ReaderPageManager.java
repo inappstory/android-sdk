@@ -315,13 +315,13 @@ public class ReaderPageManager {
             this.durations.addAll(story.durations);
         }
         timelineManager.setDurations(this.durations, true);
-        webViewManager.loadStory(story.id, story.lastIndex);
+        webViewManager.loadStory(story, story.lastIndex);
 
     }
 
-    public void loadStoryAndSlide(int storyId, int slideIndex) {
+    public void loadStoryAndSlide(Story story, int slideIndex) {
         if (checkIfManagersIsNull()) return;
-        webViewManager.loadStory(storyId, slideIndex);
+        webViewManager.loadStory(story, slideIndex);
     }
 
     public void openSlideByIndex(int index) {
@@ -452,7 +452,7 @@ public class ReaderPageManager {
         if (getStoryType() == Story.StoryType.COMMON)
             InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
                     parentManager != null ? parentManager.getFeedId() : null);
-        loadStoryAndSlide(storyId, slideIndex);
+        loadStoryAndSlide(host.story, slideIndex);
     }
 
     public void setParentManager(ReaderManager parentManager) {
@@ -584,11 +584,10 @@ public class ReaderPageManager {
         }
     }
 
-    public void storyLoadedInCache() {
+    public void storyLoadedInCache(Story story) {
         if (checkIfManagersIsNull()) return;
         if (InAppStoryService.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
-        if (story == null) return;
+        host.story = story;
         if (story.durations != null && !story.durations.isEmpty()) {
             if (this.durations == null)
                 this.durations = new ArrayList<>();

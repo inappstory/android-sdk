@@ -44,7 +44,9 @@ import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.outercallbacks.common.errors.ErrorCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.gamereader.GameReaderCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.DefaultOpenStoriesReader;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenGameReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
@@ -245,14 +247,14 @@ public class InAppStoryManager {
     public void openGame(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && context != null) {
-            service.openGameReaderWithGC(context, null, gameId);
+            service.openGameReaderWithGC(context, null, gameId, null);
         }
     }
 
     public void openGame(String gameId, @NonNull Context context) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null) {
-            service.openGameReaderWithGC(context, null, gameId);
+            service.openGameReaderWithGC(context, null, gameId, null);
         }
     }
 
@@ -964,6 +966,16 @@ public class InAppStoryManager {
     }
 
     private IOpenStoriesReader openStoriesReader = new DefaultOpenStoriesReader();
+
+    public IOpenGameReader getOpenGameReader() {
+        return openGameReader;
+    }
+
+    public void setOpenGameReader(IOpenGameReader openGameReader) {
+        this.openGameReader = openGameReader;
+    }
+
+    private IOpenGameReader openGameReader = new DefaultOpenGameReader();
 
     public void clearCachedLists() {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();

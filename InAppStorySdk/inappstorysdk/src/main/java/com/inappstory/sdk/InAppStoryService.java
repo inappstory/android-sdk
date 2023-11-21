@@ -437,7 +437,8 @@ public class InAppStoryService {
     public void openGameReaderWithGC(
             Context context,
             GameStoryData data,
-            String gameId
+            String gameId,
+            String observableId
     ) {
         ScreensManager.getInstance().openGameReader(
                 context,
@@ -447,7 +448,8 @@ public class InAppStoryService {
                 null,
                 null,
                 null,
-                null
+                null,
+                observableId
         );
     }
 

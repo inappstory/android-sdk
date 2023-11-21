@@ -5,6 +5,7 @@ import com.inappstory.sdk.stories.api.models.Story.StoryType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 
 import java.util.List;
+import java.util.UUID;
 
 public class StoriesReaderLaunchData implements SerializableWithKey {
     public static String SERIALIZABLE_KEY = "storiesReaderLaunchData";
@@ -27,6 +28,7 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
         this.slideIndex = slideIndex;
         this.feed = feed;
         this.type = type;
+        this.readerUniqueId = UUID.randomUUID().toString();
     }
 
     public String getListUniqueId() {
@@ -69,6 +71,12 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
     private final Integer slideIndex;
     private final String feed;
     private final StoryType type;
+
+    public String getReaderUniqueId() {
+        return readerUniqueId;
+    }
+
+    private final String readerUniqueId;
 
 
     @Override

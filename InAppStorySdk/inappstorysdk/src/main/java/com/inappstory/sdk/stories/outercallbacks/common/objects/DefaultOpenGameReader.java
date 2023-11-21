@@ -6,58 +6,36 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.MutableLiveData;
 
+import com.inappstory.sdk.game.reader.GameActivity;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class DefaultOpenGameReader implements IOpenStoriesReader {
+public class DefaultOpenGameReader implements IOpenGameReader {
 
     @Override
     public void onOpen(
             Context context,
             Bundle bundle
-          //  StoriesReaderAppearanceSettings appearanceSettings,
-          //  StoriesReaderLaunchData launchData
+
     ) {
         if (context == null) return;
-        if (Sizes.isTablet() && context instanceof FragmentActivity) {
-            StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
-        /*    Bundle bundle = new Bundle();
-            bundle.putSerializable(
-                    launchData.getSerializableKey(),
-                    launchData
-            );
-            bundle.putSerializable(
-                    appearanceSettings.getSerializableKey(),
-                    appearanceSettings
-            );*/
-            storiesDialogFragment.setArguments(bundle);
-            try {
-                storiesDialogFragment.show(
-                        ((FragmentActivity) context).getSupportFragmentManager(),
-                        "DialogFragment");
-                ScreensManager.getInstance().currentStoriesReaderScreen = storiesDialogFragment;
-            } catch (IllegalStateException ignored) {
-
-            }
+        Intent intent2 = new Intent(context, GameActivity.class);
+        intent2.putExtras(bundle);
+        if (context instanceof Activity) {
+            ((Activity) context).startActivity(intent2);
+            ((Activity) context).overridePendingTransition(0, 0);
         } else {
-            Intent intent2 = new Intent(context, StoriesActivity.class);
-            intent2.putExtras(bundle);
-       /*     intent2.putExtra(
-                    appearanceSettings.getSerializableKey(),
-                    appearanceSettings
-            );
-            intent2.putExtra(
-                    launchData.getSerializableKey(),
-                    launchData
-            );*/
-            if (!(context instanceof Activity)) {
+            try {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent2);
+            } catch (Exception e) {
             }
-            context.startActivity(intent2);
         }
     }
 }

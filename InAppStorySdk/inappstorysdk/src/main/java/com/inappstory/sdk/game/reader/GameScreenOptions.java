@@ -2,7 +2,9 @@ package com.inappstory.sdk.game.reader;
 
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 
-public class GameScreenOptions {
+import java.io.Serializable;
+
+public class GameScreenOptions implements Serializable {
     @SerializedName("screenOrientation")
     public String screenOrientation;
     @SerializedName("fullScreen")

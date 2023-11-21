@@ -43,6 +43,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -164,11 +165,39 @@ public class ReaderPageFragment extends Fragment {
         storyId = getArguments().getInt("story_id");
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        if (InAppStoryService.getInstance() != null
+                && InAppStoryService.getInstance().getDownloadManager() != null) {
+            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                    storyId,
+                    manager.getStoryType()
+            );
+            if (story != null)
+                this.story = story;
+        }
+        if (story != null) {
+            outState.putInt("lastIndex", story.lastIndex);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    int lastIndex = -1;
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
+            lastIndex = savedInstanceState.getInt("lastIndex");
+        }
+    }
+
+
+    Story story;
+
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId,
-                manager.getStoryType());
-        if (story == null) return;
+        setOffsets(view);
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.getSlidesCount());
         }
@@ -185,7 +214,6 @@ public class ReaderPageFragment extends Fragment {
             buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
             aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
         }
-        setOffsets(view);
         if (storiesView != null)
             storiesView.getManager().setIndex(story.lastIndex);
 
@@ -272,7 +300,6 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void showLoaderContainer() {
-        Log.e("showLoaderContainer", "show");
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -280,9 +307,6 @@ public class ReaderPageFragment extends Fragment {
                 refresh.setVisibility(View.GONE);
                 loader.setVisibility(View.VISIBLE);
                 showLoaderContainerAnimated();
-               /* Animation anim = new AlphaAnimation(0f, 1f);
-                anim.setDuration(200);
-                loaderContainer.startAnimation(anim);*/
             }
         });
 
@@ -301,7 +325,6 @@ public class ReaderPageFragment extends Fragment {
     }
 
     public void storyLoadError() {
-        Log.e("hideLoader", "storyLoadError");
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -621,19 +644,36 @@ public class ReaderPageFragment extends Fragment {
         setActions();
         if (setManagers() && InAppStoryService.getInstance() != null
                 && InAppStoryService.getInstance().getDownloadManager() != null) {
-            if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, manager.getStoryType()) != null)
-                manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(storyId, manager.getStoryType()).lastIndex);
-
-            setViews(view);
             InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
-            manager.storyLoadedInCache();
         } else {
             InAppStoryManager.closeStoryReader();
         }
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (InAppStoryService.getInstance() != null
+                && InAppStoryService.getInstance().getDownloadManager() != null && story == null) {
+            story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+                    storyId,
+                    manager.getStoryType()
+            );
+            if (story != null) {
+                loadIfStoryIsNotNull();
+            }
+        }
+    }
+
+    void loadIfStoryIsNotNull() {
+        if (lastIndex >= 0) {
+            story.lastIndex = lastIndex;
+        }
+        manager.setSlideIndex(story.lastIndex);
+        setViews(getView());
+        manager.storyLoadedInCache(story);
+    }
 
     @Override
     public void onDestroyView() {

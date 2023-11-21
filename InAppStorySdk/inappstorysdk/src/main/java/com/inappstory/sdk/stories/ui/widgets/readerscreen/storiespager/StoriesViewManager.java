@@ -10,6 +10,7 @@ import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -23,6 +24,7 @@ import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ShowSlideCallback;
@@ -46,6 +48,7 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -243,22 +246,24 @@ public class StoriesViewManager {
         ((SimpleStoriesWebView) storiesView).loadWebData(layout, webdata);
     }
 
-    public void loadStory(final int id, final int index) {
+    public void loadStory(Story story, int index) {
         if (InAppStoryService.isNull())
             return;
-        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, pageManager.getStoryType());
         synchronized (this) {
-            if (loadedId == id && loadedIndex == index) return;
             if (story == null || story.checkIfEmpty()) {
                 return;
             }
+            if (loadedId == story.id && loadedIndex == index)
+                return;
             if (story.getSlidesCount() <= index) return;
-            storyId = id;
+            storyId = story.id;
             this.index = index;
             loadedIndex = index;
-            loadedId = id;
+            loadedId = storyId;
         }
-        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index,
+        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(
+                storyId,
+                index,
                 pageManager.getStoryType());
         if (slideInCache == 1) {
             innerLoad(story);
@@ -458,8 +463,20 @@ public class StoriesViewManager {
 
     public void openGameReaderFromGameCenter(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();
+        final StoriesContentFragment storiesContentFragment =
+                (StoriesContentFragment) pageManager.host.getParentFragment();
+        String uniqueId = null;
+        if (storiesContentFragment != null) {
+            uniqueId = storiesContentFragment.getReaderUniqueId();
+            storiesContentFragment.observeGameReader();
+        }
         if (service != null && context != null) {
-            service.openGameReaderWithGC(context, getGameStoryData(), gameId);
+            service.openGameReaderWithGC(
+                    context,
+                    getGameStoryData(),
+                    gameId,
+                    uniqueId
+            );
         }
     }
 
@@ -479,8 +496,21 @@ public class StoriesViewManager {
         return data;
     }
 
-    public void openGameReaderWithoutGameCenter(String gameUrl, String splashScreenPath, String gameConfig, String resources, String options) {
+    public void openGameReaderWithoutGameCenter(
+            String gameUrl,
+            String splashScreenPath,
+            String gameConfig,
+            String resources,
+            String options
+    ) {
         ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
+        final StoriesContentFragment storiesContentFragment =
+                (StoriesContentFragment) pageManager.host.getParentFragment();
+        String uniqueId = null;
+        if (storiesContentFragment != null) {
+            uniqueId = storiesContentFragment.getReaderUniqueId();
+            storiesContentFragment.observeGameReader();
+        }
         ScreensManager.getInstance().openGameReader(
                 context,
                 getGameStoryData(),
@@ -488,8 +518,9 @@ public class StoriesViewManager {
                 gameUrl,
                 splashScreenPath,
                 gameConfig,
-                resources,
-                options
+                JsonParser.listFromJson(resources, WebResource.class),
+                JsonParser.fromJson(options, GameScreenOptions.class),
+                uniqueId
         );
     }
 
@@ -497,14 +528,10 @@ public class StoriesViewManager {
 
     public void storyLoaded(int slideIndex) {
         if (InAppStoryService.isNull()) return;
-
-        Log.e("currentSlideIsLoaded", storyId + " 0 " + slideIndex);
         clearShowLoader();
         clearShowRefresh();
         storyIsLoaded = true;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
-        Log.e("currentSlideIsLoaded", storyId + " " + slideIndex + " " + story.lastIndex + " " + InAppStoryService.getInstance().getCurrentId());
-
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
             stopStory();
         } else if (InAppStoryService.getInstance().getCurrentId() != storyId) {
@@ -522,8 +549,6 @@ public class StoriesViewManager {
             }, 200);
         }
         pageManager.host.storyLoadedSuccess();
-
-
     }
 
 

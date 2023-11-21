@@ -16,8 +16,8 @@ public class StoryShareBroadcastReceiver extends BroadcastReceiver {
             shareId = ScreensManager.getInstance().getOldTempShareId();
         }
         if (shareId != null) {
-            if (ScreensManager.getInstance().currentGameActivity != null) {
-                ScreensManager.getInstance().currentGameActivity.shareComplete(
+            if (ScreensManager.getInstance().currentGameScreen != null) {
+                ScreensManager.getInstance().currentGameScreen.shareComplete(
                         shareId, true);
             } else {
                 if (ScreensManager.getInstance().currentStoriesReaderScreen != null)

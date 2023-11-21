@@ -30,11 +30,13 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
@@ -183,6 +185,7 @@ public class StoriesLoaderFragment extends Fragment {
             InAppStoryService.createExceptionLog(e);
         }
     }
+
     View createFragmentView(ViewGroup root) {
         Context context = getContext();
 
@@ -281,6 +284,12 @@ public class StoriesLoaderFragment extends Fragment {
         );
         close.setBackground(null);
         close.setImageDrawable(getResources().getDrawable(appearanceSettings.csCloseIcon()));
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                InAppStoryManager.closeStoryReader(CloseStory.CLICK);
+            }
+        });
         timelineContainer.addView(timeline);
         timelineContainer.addView(close);
         return timelineContainer;

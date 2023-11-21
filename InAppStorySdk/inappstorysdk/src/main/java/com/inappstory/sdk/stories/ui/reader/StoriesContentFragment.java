@@ -1,6 +1,5 @@
 package com.inappstory.sdk.stories.ui.reader;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -14,6 +13,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -23,6 +23,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
+import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
 import com.inappstory.sdk.stories.api.models.Story;
@@ -40,7 +41,6 @@ import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
-import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
 import java.util.HashMap;
@@ -57,6 +57,14 @@ public class StoriesContentFragment extends Fragment
 
     boolean created = false;
 
+    public String getReaderUniqueId() {
+        return launchData.getReaderUniqueId();
+    }
+
+    public void observeGameReader() {
+
+    }
+
     public BaseReaderScreen getStoriesReader() {
         BaseReaderScreen screen = null;
         if (getActivity() instanceof BaseReaderScreen) {
@@ -65,6 +73,35 @@ public class StoriesContentFragment extends Fragment
             screen = (BaseReaderScreen) getParentFragment();
         }
         return screen;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && service.getDownloadManager() != null) {
+            try {
+                outState.putString("stories", JsonParser.getJson(
+                        service.getDownloadManager().getStoriesListByType(
+                                launchData.getType()
+                        )
+                ));
+            } catch (Exception ignored) {
+
+            }
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (savedInstanceState != null && service != null && service.getDownloadManager() != null) {
+            service.getDownloadManager().putStories(
+                    JsonParser.listFromJson(savedInstanceState.getString("stories"), Story.class),
+                    launchData.getType()
+            );
+        }
     }
 
     @Override
@@ -188,14 +225,10 @@ public class StoriesContentFragment extends Fragment
     StoriesReaderAppearanceSettings appearanceSettings;
     StoriesReaderLaunchData launchData;
 
-    private void closeFragment() {
-        if (ScreensManager.getInstance() != null && ScreensManager.getInstance().currentStoriesReaderScreen != null)
-            ScreensManager.getInstance().currentStoriesReaderScreen.forceFinish();
-        else if (!Sizes.isTablet()) {
-            Activity activity = getActivity();
-            if (activity instanceof BaseReaderScreen)
-                ((BaseReaderScreen) activity).forceFinish();
-        }
+    public void forceFinish() {
+        BaseReaderScreen readerScreen = getStoriesReader();
+        if (readerScreen != null)
+            readerScreen.forceFinish();
     }
 
 
@@ -206,11 +239,12 @@ public class StoriesContentFragment extends Fragment
     }
 
     public void pause() {
-        readerManager.pauseCurrent(true);
+        if (readerManager != null)
+            readerManager.pauseCurrent(true);
     }
 
     public void resume() {
-        if (!created) {
+        if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
             readerManager.resumeWithShareId();
         }
@@ -271,7 +305,7 @@ public class StoriesContentFragment extends Fragment
 
             created = true;
         } catch (Exception e) {
-            closeFragment();
+            forceFinish();
             return new View(context);
         }
 
@@ -313,7 +347,7 @@ public class StoriesContentFragment extends Fragment
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (InAppStoryService.isNull() || currentIds == null || currentIds.isEmpty()) {
-            closeFragment();
+            forceFinish();
             return;
         }
         readerManager.setParentFragment(this);
@@ -335,7 +369,7 @@ public class StoriesContentFragment extends Fragment
             try {
                 onPageSelected(0);
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
     }

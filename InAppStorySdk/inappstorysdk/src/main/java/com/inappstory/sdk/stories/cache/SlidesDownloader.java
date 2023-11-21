@@ -141,7 +141,7 @@ class SlidesDownloader {
     List<SlideTaskData> secondPriority = new ArrayList<>();
 
     //adjacent - for next and prev story
-    void changePriority(Integer storyId, List<Integer> adjacents, Story.StoryType type) {
+    boolean changePriority(Integer storyId, List<Integer> adjacents, Story.StoryType type) {
         synchronized (pageTasksLock) {
             for (int i = firstPriority.size() - 1; i >= 0; i--) {
                 if (!secondPriority.contains(firstPriority.get(i))) {
@@ -150,7 +150,7 @@ class SlidesDownloader {
             }
             firstPriority.clear();
             Story currentStory = manager.getStoryById(storyId, type);
-            if (currentStory == null) return;
+            if (currentStory == null) return false;
             int sc = currentStory.getSlidesCount();
             for (int i = 0; i < sc; i++) {
                 SlideTaskData kv = new SlideTaskData(storyId, i, type);
@@ -181,6 +181,7 @@ class SlidesDownloader {
                 firstPriority.add(ind, ck);
             }
         }
+        return true;
     }
 
     void changePriorityForSingle(Integer storyId, Story.StoryType type) {

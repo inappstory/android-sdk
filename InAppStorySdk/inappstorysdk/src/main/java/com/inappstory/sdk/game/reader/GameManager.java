@@ -34,11 +34,12 @@ import com.inappstory.sdk.utils.ZipLoader;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GameManager {
     String path;
     String gameCenterId;
-    String resources;
+    List<WebResource> resources;
     String splashImagePath;
     boolean gameLoaded;
     String gameConfig;
@@ -46,17 +47,17 @@ public class GameManager {
     GameStoryData dataModel;
     ZipLoadCallback callback;
 
-    public GameManager(GameActivity host) {
+    public GameManager(GameReaderContentFragment host) {
         this.host = host;
     }
 
     void loadGame(GameCenterData gameCenterData) {
-        ArrayList<WebResource> resourceList = new ArrayList<>();
-
+        ArrayList<WebResource> resourceList;
         if (resources != null) {
-            resourceList = JsonParser.listFromJson(resources, WebResource.class);
+            resourceList = new ArrayList<>(resources);
+        } else {
+            resourceList = new ArrayList<>();
         }
-
         String[] urlParts = ZipLoader.urlParts(path);
         ZipLoader.getInstance().downloadAndUnzip(
                 resourceList,
@@ -103,7 +104,7 @@ public class GameManager {
     void openUrl(String data) {
         UrlObject urlObject = JsonParser.fromJson(data, UrlObject.class);
         if (urlObject != null && urlObject.url != null && !urlObject.url.isEmpty())
-            tapOnLink(urlObject.url, host);
+            tapOnLink(urlObject.url, host.getContext());
     }
 
     void storySetData(String data, boolean sendToServer) {
@@ -139,7 +140,7 @@ public class GameManager {
         }
     }
 
-    GameActivity host;
+    GameReaderContentFragment host;
 
     void showGoods(String skusString, String widgetId) {
         host.showGoods(skusString, widgetId);
@@ -168,7 +169,7 @@ public class GameManager {
                 && !options.openStory.id.isEmpty()) {
             InAppStoryManager.getInstance().showStoryCustom(
                     options.openStory.id,
-                    host,
+                    host.getContext(),
                     AppearanceManager.getCommonInstance()
             );
         }
@@ -200,7 +201,7 @@ public class GameManager {
 
     void sendApiRequest(String data) {
         new JsApiClient(
-                host,
+                host.getContext(),
                 ApiSettings.getInstance().getHost()
         ).sendApiRequest(data, new JsApiResponseCallback() {
             @Override
@@ -239,7 +240,7 @@ public class GameManager {
     }
 
     int pausePlaybackOtherApp() {
-        AudioManager am = (AudioManager) host.getSystemService(Context.AUDIO_SERVICE);
+        AudioManager am = (AudioManager) host.getContext().getSystemService(Context.AUDIO_SERVICE);
         return am.requestAudioFocus(host.audioFocusChangeListener,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN);

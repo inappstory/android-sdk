@@ -256,11 +256,14 @@ public class ReaderManager {
             }
         }
         if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().changePriority(
+        if (!InAppStoryService.getInstance().getDownloadManager().changePriority(
                 storiesIds.get(pos),
                 adds,
                 storyType
-        );
+        )) {
+            host.forceFinish();
+            return;
+        }
         InAppStoryService.getInstance().getDownloadManager().addStoryTask(
                 storiesIds.get(pos),
                 adds,

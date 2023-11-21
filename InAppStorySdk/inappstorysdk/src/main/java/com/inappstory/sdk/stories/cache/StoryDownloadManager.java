@@ -159,9 +159,10 @@ public class StoryDownloadManager {
         });
     }
 
-    public void changePriority(int storyId, List<Integer> adjacent, Story.StoryType type) {
+    public boolean changePriority(int storyId, List<Integer> adjacent, Story.StoryType type) {
         if (slidesDownloader != null)
-            slidesDownloader.changePriority(storyId, adjacent, type);
+            return slidesDownloader.changePriority(storyId, adjacent, type);
+        return false;
     }
 
     public void changePriorityForSingle(int storyId, Story.StoryType type) {
@@ -283,11 +284,11 @@ public class StoryDownloadManager {
         }
     }
 
-    void storyLoaded(int storyId, Story.StoryType type) {
+    void storyLoaded(Story story, Story.StoryType type) {
         synchronized (lock) {
             for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == storyId && subscriber.getStoryType() == type) {
-                    subscriber.storyLoadedInCache();
+                if (subscriber.getStoryId() == story.id && subscriber.getStoryType() == type) {
+                    subscriber.storyLoadedInCache(story);
                     return;
                 }
             }
@@ -389,7 +390,7 @@ public class StoryDownloadManager {
                     story.lastIndex = local.lastIndex;
                 }
                 setStory(story, story.id, type);
-                storyLoaded(story.id, type);
+                storyLoaded(story, type);
                 try {
                     slidesDownloader.addStoryPages(story, loadType, type);
                 } catch (Exception e) {
@@ -539,7 +540,7 @@ public class StoryDownloadManager {
             story.lastIndex = local.lastIndex;
             stories.set(stories.indexOf(local), story);
             setStory(story, story.id, type);
-            storyLoaded(story.id, type);
+            storyLoaded(story, type);
             try {
                 slidesDownloader.addStoryPages(story, 3, type);
             } catch (Exception e) {

@@ -1,15 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
-import static com.inappstory.sdk.AppearanceManager.ANIMATION_CUBE;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_OVERSCROLL;
-import static com.inappstory.sdk.AppearanceManager.CS_CLOSE_ON_SWIPE;
-import static com.inappstory.sdk.AppearanceManager.CS_NAVBAR_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_BACKGROUND_COLOR;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_PRESENTATION_STYLE;
-import static com.inappstory.sdk.AppearanceManager.CS_READER_SETTINGS;
-import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
-import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
-import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
+
+import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READER_REQUEST;
 
 import android.content.Context;
 import android.content.Intent;
@@ -57,7 +49,6 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
-import java.util.ArrayList;
 
 public class StoriesActivity extends AppCompatActivity implements BaseReaderScreen, ShowGoodsCallback {
 

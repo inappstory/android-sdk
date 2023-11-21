@@ -1,6 +1,6 @@
 package com.inappstory.sdk.stories.ui;
 
-import static com.inappstory.sdk.game.reader.GameActivity.GAME_READER_REQUEST;
+import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
 import android.app.Activity;
@@ -21,11 +21,15 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.game.reader.BaseGameReaderScreen;
 import com.inappstory.sdk.game.reader.GameActivity;
+import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
@@ -35,10 +39,10 @@ import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
-import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class ScreensManager {
 
@@ -128,7 +132,7 @@ public class ScreensManager {
             currentStoriesReaderScreen = null;
     }
 
-    public GameActivity currentGameActivity;
+    public BaseGameReaderScreen currentGameScreen;
 
     int tempShareStoryId;
 
@@ -153,9 +157,9 @@ public class ScreensManager {
     }
 
     public void closeGameReader() {
-        if (currentGameActivity != null) {
-            currentGameActivity.close();
-            currentGameActivity = null;
+        if (currentGameScreen != null) {
+            currentGameScreen.forceFinish();
+            currentGameScreen = null;
         }
     }
 
@@ -206,47 +210,37 @@ public class ScreensManager {
                                String gameUrl,
                                String splashImagePath,
                                String gameConfig,
-                               String resources,
-                               String options) {
+                               List<WebResource> gameResources,
+                               GameScreenOptions options,
+                               String observableId) {
         if (InAppStoryService.isNull()) {
             return;
         }
-        Intent intent2 = new Intent(context, GameActivity.class);
-        intent2.putExtra("gameUrl", gameUrl);
-        if (data != null) {
-            intent2.putExtra("slideData", data.slideData);
-        }
+        gameObservables.put(observableId,
+                new MutableLiveData<GameCompleteEvent>());
+        GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
+                gameId,
+                observableId,
+                gameUrl,
+                splashImagePath,
+                gameConfig,
+                gameResources,
+                options,
+                data.slideData
+        );
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().startGame(
                     data, gameId
             );
         }
-        intent2.putExtra("options", options);
-        intent2.putExtra("gameId", gameId);
-        intent2.putExtra("gameConfig", gameConfig);
-        intent2.putExtra("gameResources", resources);
-        intent2.putExtra("splashImagePath", splashImagePath != null ? splashImagePath : "");
-
-        if (Sizes.isTablet()) {
-            if (currentStoriesReaderScreen != null) {
-                String observableUID = randomUUID().toString();
-                intent2.putExtra("observableUID", observableUID);
-                gameObservables.put(observableUID,
-                        new MutableLiveData<GameCompleteEvent>());
-                currentStoriesReaderScreen.observeGameReader(observableUID);
-            }
-        }
-        if (context instanceof Activity) {
-            ((Activity) context).startActivityForResult(intent2, GAME_READER_REQUEST);
-            ((Activity) context).overridePendingTransition(0, 0);
-        } else {
-            try {
-                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent2);
-            } catch (Exception e) {
-            }
-        }
-
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(gameReaderLaunchData.getSerializableKey(), gameReaderLaunchData);
+        inAppStoryManager.getOpenGameReader().onOpen(
+                context,
+                bundle
+        );
     }
 
     private Long lastOpenTry = -1L;
@@ -297,7 +291,8 @@ public class ScreensManager {
 
     public Dialog goodsDialog;
 
-    public void hideGoods() {}
+    public void hideGoods() {
+    }
 
     public void showGoods(
             String skusString,

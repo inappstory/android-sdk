@@ -1,6 +1,8 @@
 package com.inappstory.sdk.stories.api.models;
 
-public class WebResource {
+import java.io.Serializable;
+
+public class WebResource implements Serializable {
     public String key;
     public String url;
     public String sha1;

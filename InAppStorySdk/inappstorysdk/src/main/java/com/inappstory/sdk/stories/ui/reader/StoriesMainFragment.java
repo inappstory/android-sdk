@@ -3,15 +3,16 @@ package com.inappstory.sdk.stories.ui.reader;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowId;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
@@ -151,26 +152,15 @@ public class StoriesMainFragment extends Fragment implements
     }
 
     private void createStoriesFragment(Bundle savedInstanceState) {
-        StoriesContentFragment storiesContentFragment = null;
-        if (savedInstanceState != null) {
-            storiesContentFragment = (StoriesContentFragment) getChildFragmentManager()
-                    .findFragmentByTag("STORIES_FRAGMENT");
-        }
-        if (storiesContentFragment == null) {
-            storiesContentFragment = new StoriesContentFragment();
+        if (savedInstanceState == null) {
+            StoriesContentFragment storiesContentFragment = new StoriesContentFragment();
             storiesContentFragment.setArguments(getArguments());
-        }
-        try {
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .replace(R.id.fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
             t.addToBackStack("STORIES_FRAGMENT");
-            t.commit();
-        } catch (IllegalStateException e) {
-            InAppStoryService.createExceptionLog(e);
-            forceFinish();
+            t.commitAllowingStateLoss();
         }
-
     }
 
     public void startAnim(final Bundle savedInstanceState) {
@@ -216,6 +206,7 @@ public class StoriesMainFragment extends Fragment implements
             @Nullable Bundle savedInstanceState
     ) {
         Bundle arguments = requireArguments();
+        Log.e("StoriesMainFragment", "onCreateView " + this);
         appearanceSettings = (StoriesReaderAppearanceSettings) arguments.getSerializable(
                 StoriesReaderAppearanceSettings.SERIALIZABLE_KEY
         );
@@ -227,7 +218,11 @@ public class StoriesMainFragment extends Fragment implements
         blockView = view.findViewById(R.id.blockView);
         backTintView = view.findViewById(R.id.background);
         animatedContainer = view.findViewById(R.id.animatedContainer);
-        animatedContainer.setAlpha(0f);
+        if (savedInstanceState == null) {
+            animatedContainer.setAlpha(0f);
+        } else {
+            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
+        }
         ScreensManager.getInstance().currentStoriesReaderScreen = this;
         return view;
     }
@@ -308,7 +303,7 @@ public class StoriesMainFragment extends Fragment implements
 
             @Override
             public void error() {
-                setLoaderFragment();
+                setLoaderFragment(savedInstanceState);
                 try {
                     startAnim(savedInstanceState);
                 } catch (Exception e) {
@@ -395,11 +390,40 @@ public class StoriesMainFragment extends Fragment implements
         }
     }
 
+    int oldOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (orientationChangeIsLocked()) {
+            oldOrientation = getActivity().getRequestedOrientation();
+            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        ScreensManager.getInstance().currentStoriesReaderScreen = this;
+    }
+
+    boolean orientationChangeIsLocked() {
+        return !Sizes.isTablet() && false;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (orientationChangeIsLocked()) {
+            getActivity().setRequestedOrientation(oldOrientation);
+        }
+        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
+            ScreensManager.getInstance().currentStoriesReaderScreen = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
-            ScreensManager.getInstance().currentStoriesReaderScreen = null;
     }
 
     private ReaderAnimation setFinishAnimations() {
@@ -557,13 +581,14 @@ public class StoriesMainFragment extends Fragment implements
     StoriesReaderLaunchData launchData;
 
 
-    private void setLoaderFragment() {
+    private void setLoaderFragment(Bundle savedInstanceState) {
+        if (savedInstanceState != null) return;
         try {
             FragmentManager fragmentManager = getChildFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             storiesLoaderFragment.setArguments(getArguments());
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.fragments_layout, storiesLoaderFragment);
+                    .replace(R.id.fragments_layout, storiesLoaderFragment, "STORIES_LOADER_FRAGMENT");
             t.addToBackStack("STORIES_LOADER_FRAGMENT");
             t.commitAllowingStateLoss();
         } catch (Exception e) {
