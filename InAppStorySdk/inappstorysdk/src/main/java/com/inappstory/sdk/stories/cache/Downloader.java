@@ -7,6 +7,7 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
@@ -381,8 +382,9 @@ public class Downloader {
         if (responseHeaders.containsKey("content-encoding")) {
             decompression = responseHeaders.get("content-encoding");
         }
+        ResponseStringFromStream responseStringFromStream = new ResponseStringFromStream();
         if (status > 350) {
-            String res = new ResponseStringFromStream().get(
+            String res = responseStringFromStream.get(
                     urlConnection.getErrorStream(),
                     decompression
             );
@@ -393,7 +395,10 @@ public class Downloader {
         FileOutputStream fileOutputStream = new FileOutputStream(outputFile,
                 allowPartial && downloadOffset > 0);
         FileLock lock = fileOutputStream.getChannel().lock();
-        InputStream inputStream = urlConnection.getInputStream();
+        InputStream inputStream = responseStringFromStream.getInputStream(
+                urlConnection.getInputStream(),
+                decompression
+        );
 
         String contentType = urlConnection.getHeaderField("Content-Type");
 
