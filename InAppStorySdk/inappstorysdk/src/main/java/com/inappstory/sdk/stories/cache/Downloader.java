@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.cache;
 
+import static com.inappstory.sdk.network.NetworkHandler.getDecompressedStream;
 import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
 
 import android.graphics.Bitmap;
@@ -389,7 +390,10 @@ public class Downloader {
 
         FileOutputStream fileOutputStream = new FileOutputStream(outputFile, allowPartial && downloadOffset > 0);
         FileLock lock = fileOutputStream.getChannel().lock();
-        InputStream inputStream = urlConnection.getInputStream();
+        InputStream inputStream = getDecompressedStream(
+                urlConnection.getInputStream(),
+                decompression
+        );
 
         String contentType = urlConnection.getHeaderField("Content-Type");
 

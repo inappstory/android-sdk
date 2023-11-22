@@ -166,22 +166,11 @@ public final class NetworkHandler implements InvocationHandler {
 
     //Test
     public static String getResponseFromStream(InputStream inputStream, String decompression) throws Exception {
-        BufferedReader bufferedReader;
-        if (decompression != null) {
-            switch (decompression) {
-                case "br":
-                    bufferedReader = new BufferedReader(new InputStreamReader(new BrotliInputStream(inputStream)));
-                    break;
-                case "gzip":
-                    bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
-                    break;
-                default:
-                    bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            }
-        } else {
-            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        }
-
+        BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(
+                        getDecompressedStream(inputStream, decompression)
+                )
+        );
         String inputLine;
         StringBuffer response = new StringBuffer();
         while ((inputLine = bufferedReader.readLine()) != null) {
@@ -189,6 +178,20 @@ public final class NetworkHandler implements InvocationHandler {
         }
         bufferedReader.close();
         return response.toString();
+    }
+
+    public static InputStream getDecompressedStream(InputStream inputStream, String decompression) throws Exception {
+        if (decompression != null) {
+            switch (decompression) {
+                case "br":
+                    return new BrotliInputStream(inputStream);
+                case "gzip":
+                    return new GZIPInputStream(inputStream);
+                default:
+                    break;
+            }
+        }
+        return inputStream;
     }
 
     public static HashMap<String, String> getHeaders(@NonNull final HttpURLConnection connection) {
