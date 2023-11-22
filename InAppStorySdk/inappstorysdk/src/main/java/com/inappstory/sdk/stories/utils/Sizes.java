@@ -59,12 +59,19 @@ public class Sizes {
     }
 
     public static Point getScreenSize(Context context) {
-        Context con = context;
-        WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         return size;
+    }
+
+    public static int getFullPhoneHeight(Context context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metrics);
+        wm.getDefaultDisplay().getRealMetrics(metrics);
+        return metrics.heightPixels;
     }
 
     public static int dpFloatToPxExt(float dp, Context context) {

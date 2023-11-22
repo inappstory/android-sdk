@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.channels.FileLock;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -340,6 +341,7 @@ public class Downloader {
         if (downloadOffset > 0) {
             urlConnection.setRequestProperty("Range", "bytes=" + downloadOffset + "-");
         }
+        //String curl = toCurlRequest(urlConnection, null);
         try {
             urlConnection.connect();
         } catch (Exception e) {
@@ -381,8 +383,9 @@ public class Downloader {
         if (responseHeaders.containsKey("content-encoding")) {
             decompression = responseHeaders.get("content-encoding");
         }
+        ResponseStringFromStream responseStringFromStream = new ResponseStringFromStream();
         if (status > 350) {
-            String res = new ResponseStringFromStream().get(
+            String res = responseStringFromStream.get(
                     urlConnection.getErrorStream(),
                     decompression
             );
@@ -393,8 +396,10 @@ public class Downloader {
         FileOutputStream fileOutputStream = new FileOutputStream(outputFile,
                 allowPartial && downloadOffset > 0);
         FileLock lock = fileOutputStream.getChannel().lock();
-        InputStream inputStream = urlConnection.getInputStream();
-
+        InputStream inputStream = responseStringFromStream.getInputStream(
+                urlConnection.getInputStream(),
+                decompression
+        );
         String contentType = urlConnection.getHeaderField("Content-Type");
 
         if (contentType != null)
@@ -427,6 +432,30 @@ public class Downloader {
                 return new DownloadFileState(outputFile, sz, outputFile.length());
             return null;
         }
+    }
+
+    public static String toCurlRequest(HttpURLConnection connection, byte[] body) {
+        StringBuilder builder = new StringBuilder("curl -v ");
+
+        // Method
+        builder.append("-X ").append(connection.getRequestMethod()).append(" \\\n  ");
+
+        // Headers
+        for (Map.Entry<String, List<String>> entry : connection.getRequestProperties().entrySet()) {
+            builder.append("-H \"").append(entry.getKey()).append(":");
+            for (String value : entry.getValue())
+                builder.append(" ").append(value);
+            builder.append("\" \\\n  ");
+        }
+
+        // Body
+        if (body != null)
+            builder.append("-d '").append(new String(body)).append("' \\\n  ");
+
+        // URL
+        builder.append("\"").append(connection.getURL()).append("\"");
+
+        return builder.toString();
     }
 
     private static void releaseStreamAndFile(FileOutputStream fileOutputStream, FileLock lock) throws IOException {

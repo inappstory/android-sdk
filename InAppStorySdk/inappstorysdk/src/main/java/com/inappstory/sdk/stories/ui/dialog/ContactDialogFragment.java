@@ -20,7 +20,6 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -44,10 +43,10 @@ import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
-import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class ContactDialogFragment extends Fragment implements BackPressHandler {
+public class ContactDialogFragment extends Fragment implements IASBackPressHandler {
 
     @Nullable
     @Override

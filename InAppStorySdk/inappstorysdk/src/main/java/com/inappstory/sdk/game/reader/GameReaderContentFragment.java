@@ -13,6 +13,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
@@ -78,6 +79,7 @@ import com.inappstory.sdk.stories.ui.views.IGameLoaderView;
 import com.inappstory.sdk.stories.ui.views.IGameReaderLoaderView;
 import com.inappstory.sdk.stories.ui.views.IProgressLoaderView;
 import com.inappstory.sdk.stories.utils.AudioModes;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
@@ -86,14 +88,13 @@ import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver {
+public class GameReaderContentFragment extends Fragment implements OverlapFragmentObserver, IASBackPressHandler {
     private IASWebView webView;
     private ImageView loader;
     private View closeButton;
@@ -126,7 +127,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     GameManager manager;
 
-    public BaseGameReaderScreen getGameReaderReader() {
+    public BaseGameReaderScreen getBaseGameReader() {
         BaseGameReaderScreen screen = null;
         if (getActivity() instanceof BaseGameReaderScreen) {
             screen = (BaseGameReaderScreen) getActivity();
@@ -230,7 +231,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
             ScreensManager.getInstance().openOverlapContainerForShare(
                     null,
-                    getGameReaderReader().getGameReaderFragmentManager(),
+                    getBaseGameReader().getGameReaderFragmentManager(),
                     this,
                     null,
                     storyId,
@@ -246,6 +247,19 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     }
 
+    int oldOrientation = 0;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        getActivity().setRequestedOrientation(oldOrientation);
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -253,6 +267,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             forceFinish();
             return;
         }
+        if (getActivity() != null)
+            oldOrientation = getActivity().getRequestedOrientation();
         manager.callback = new ZipLoadCallback() {
             @Override
             public void onLoad(String baseUrl, String data) {
@@ -303,6 +319,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 closeGame();
             }
         });
+        checkInsets();
         checkIntentValues(gameLoadedCallback);
     }
 
@@ -549,15 +566,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void resumeGame() {
-        if (webView != null) {
-            webView.evaluateJavascript("resumeUI();", null);
-        }
+        webView.evaluateJavascript("resumeUI();", null);
     }
 
     private void pauseGame() {
-        if (webView != null) {
-            webView.evaluateJavascript("pauseUI();", null);
-        }
+        webView.evaluateJavascript("pauseUI();", null);
     }
 
     Runnable showRefresh = new Runnable() {
@@ -593,6 +606,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     public void forceFinish() {
+        getBaseGameReader().forceFinish();
     }
 
     private void checkIntentValues(final GameLoadedCallback callback) {
@@ -824,6 +838,42 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     }
 
+    private void checkInsets() {
+        if (Build.VERSION.SDK_INT >= 28) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    if (getActivity() == null) return;
+                    if (getActivity().getWindow() != null) {
+                        WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
+                        if (windowInsets != null) {
+                            ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
+                                    Math.max(windowInsets.getSystemWindowInsetTop(), Sizes.dpToPxExt(16));
+                            closeButton.requestLayout();
+                        }
+                        if (Sizes.isTablet()) {
+
+                            View gameContainer = getView().findViewById(R.id.gameContainer);
+                            if (gameContainer != null) {
+                                Point size = Sizes.getScreenSize();
+                                size.y -= (windowInsets.getSystemWindowInsetTop() +
+                                        windowInsets.getSystemWindowInsetBottom());
+                                gameContainer.getLayoutParams().height = size.y;
+                                gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
+                                gameContainer.requestLayout();
+                            }
+                        }
+                    }
+
+                    closeButton.setVisibility(View.VISIBLE);
+                }
+            });
+        } else {
+            closeButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+
     private String generateJsonPlaceholders() {
         String st = "[]";
         try {
@@ -959,5 +1009,31 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 pauseGame();
             }
         });
+    }
+
+    private void gameReaderGestureBack() {
+        if (manager.gameLoaded) {
+            webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String s) {
+                    if (!s.equals("true"))
+                        closeGame();
+                }
+            });
+        } else {
+            gameCompleted(null, null);
+        }
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (!onBackPressedLocked) {
+            if (gameReaderGestureBack) {
+                gameReaderGestureBack();
+            } else {
+                closeGame();
+            }
+        }
+        return true;
     }
 }

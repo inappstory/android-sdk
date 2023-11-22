@@ -19,19 +19,18 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GetGoodsDataCallback;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsItemData;
 import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidget;
-import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GoodsWidgetFragment extends Fragment implements BackPressHandler {
+public class GoodsWidgetFragment extends Fragment implements IASBackPressHandler {
     GetGoodsDataCallback getGoodsDataCallback;
 
     public BaseReaderScreen getStoriesReader() {

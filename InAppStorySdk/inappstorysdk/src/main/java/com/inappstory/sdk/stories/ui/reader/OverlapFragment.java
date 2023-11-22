@@ -1,10 +1,7 @@
 package com.inappstory.sdk.stories.ui.reader;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +19,11 @@ import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.CancelListener;
-import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 
 import java.util.HashMap;
 
-public class OverlapFragment extends Fragment implements BackPressHandler {
+public class OverlapFragment extends Fragment implements IASBackPressHandler {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

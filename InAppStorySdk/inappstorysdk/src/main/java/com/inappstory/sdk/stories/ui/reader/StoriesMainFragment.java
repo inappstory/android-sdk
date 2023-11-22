@@ -40,15 +40,16 @@ import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAd
 import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
+import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
-import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
 public class StoriesMainFragment extends Fragment implements
         BaseReaderScreen,
-        BackPressHandler,
+        IASBackPressHandler,
         ShowGoodsCallback {
 
     ElasticDragDismissFrameLayout draggableFrame;
@@ -83,19 +84,6 @@ public class StoriesMainFragment extends Fragment implements
         currentGoodsCallback = null;
     }
 
-    private interface FragmentAction<T extends Fragment> {
-        void invoke(T fragment);
-
-        void error();
-    }
-
-    private abstract class StoriesContentFragmentAction
-            implements FragmentAction<StoriesContentFragment> {
-        @Override
-        public void error() {
-
-        }
-    }
 
     private void useContentFragment(FragmentAction<StoriesContentFragment> action) {
         if (!isAdded()) {
@@ -403,7 +391,7 @@ public class StoriesMainFragment extends Fragment implements
     }
 
     boolean orientationChangeIsLocked() {
-        return !Sizes.isTablet() && false;
+        return !Sizes.isTablet();
     }
 
     @Override
@@ -566,11 +554,11 @@ public class StoriesMainFragment extends Fragment implements
 
     public boolean onBackPressed() {
         Fragment fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_outer_top_container);
-        if (fragmentById instanceof BackPressHandler && ((BackPressHandler) fragmentById).onBackPressed()) {
+        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return true;
         }
         fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_dialog_container);
-        if (fragmentById instanceof BackPressHandler && ((BackPressHandler) fragmentById).onBackPressed()) {
+        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
             return true;
         }
         closeStoryReader(-1);

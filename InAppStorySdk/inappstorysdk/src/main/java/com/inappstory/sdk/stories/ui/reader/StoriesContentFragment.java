@@ -40,14 +40,14 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
-import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class StoriesContentFragment extends Fragment
-        implements BackPressHandler, ViewPager.OnPageChangeListener, OverlapFragmentObserver {
+        implements IASBackPressHandler, ViewPager.OnPageChangeListener, OverlapFragmentObserver {
 
     public StoriesContentFragment() {
         super();

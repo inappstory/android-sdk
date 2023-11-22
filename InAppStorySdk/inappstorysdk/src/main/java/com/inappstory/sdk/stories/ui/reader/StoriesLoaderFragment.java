@@ -16,6 +16,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 
+import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +42,10 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPa
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.Sizes;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class StoriesLoaderFragment extends Fragment {
@@ -77,6 +82,11 @@ public class StoriesLoaderFragment extends Fragment {
         if (timeline != null) {
             StoryTimelineManager timelineManager = timeline.getTimelineManager();
             timelineManager.setSlidesCount(story.getSlidesCount());
+            List<Integer> durations = new ArrayList<>();
+            for (int i= 0; i < story.getSlidesCount(); i++) {
+                durations.add(0);
+            }
+            timelineManager.setDurations(durations, true);
         }
         setOffsets(view);
 

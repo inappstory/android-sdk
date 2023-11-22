@@ -1,5 +1,5 @@
 package com.inappstory.sdk.stories.utils;
 
-public interface BackPressHandler {
+public interface IASBackPressHandler {
     boolean onBackPressed();
 }

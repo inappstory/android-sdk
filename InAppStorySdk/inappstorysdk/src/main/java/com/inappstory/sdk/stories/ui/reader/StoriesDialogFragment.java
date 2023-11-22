@@ -6,7 +6,6 @@ import static com.inappstory.sdk.AppearanceManager.CS_STORY_READER_ANIMATION;
 import static com.inappstory.sdk.AppearanceManager.CS_TIMER_GRADIENT;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -42,14 +41,14 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.utils.BackPressHandler;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.HashSet;
 import java.util.List;
 
-public class StoriesDialogFragment extends DialogFragment implements BackPressHandler, BaseReaderScreen {
+public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseReaderScreen {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -231,8 +230,8 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     @Override
     public boolean onBackPressed() {
         Fragment frag = getChildFragmentManager().findFragmentById(R.id.dialog_fragment);
-        if (frag != null && frag instanceof BackPressHandler) {
-            if (((BackPressHandler) frag).onBackPressed())
+        if (frag != null && frag instanceof IASBackPressHandler) {
+            if (((IASBackPressHandler) frag).onBackPressed())
                 return true;
         }
         dismissAllowingStateLoss();
