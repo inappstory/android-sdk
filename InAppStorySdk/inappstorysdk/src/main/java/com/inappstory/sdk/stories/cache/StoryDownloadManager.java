@@ -45,7 +45,7 @@ public class StoryDownloadManager {
 
     static final String EXPAND_STRING = "slides_html,slides_structure,layout,slides_duration,src_list,img_placeholder_src_list,slides_screenshot_share,slides_payload";
 
-    Object storiesLock = new Object();
+    private final Object storiesLock = new Object();
 
     public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback,
                                  final int id,
@@ -272,6 +272,7 @@ public class StoryDownloadManager {
     public void addStories(List<Story> storiesToAdd, Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
         for (Story story : storiesToAdd) {
+            if (story == null) continue;
             if (!stories.contains(story))
                 stories.add(story);
             else {
@@ -313,21 +314,19 @@ public class StoryDownloadManager {
 
     public void putStories(List<Story> storiesToPut, Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
-        if (stories.isEmpty()) {
-            stories.addAll(storiesToPut);
-        } else {
-            for (int i = 0; i < storiesToPut.size(); i++) {
-                boolean newStory = true;
-                for (int j = 0; j < stories.size(); j++) {
-                    if (stories.get(j).id == storiesToPut.get(i).id) {
-                        stories.get(j).isOpened = storiesToPut.get(i).isOpened;
-                        newStory = false;
-                        stories.set(j, storiesToPut.get(i));
-                    }
+        if (storiesToPut == null) return;
+        for (Story story : storiesToPut) {
+            if (story == null) continue;
+            boolean newStory = true;
+            for (int j = 0; j < stories.size(); j++) {
+                if (stories.get(j).id == story.id) {
+                    stories.get(j).isOpened = story.isOpened;
+                    newStory = false;
+                    stories.set(j, story);
                 }
-                if (newStory) {
-                    stories.add(storiesToPut.get(i));
-                }
+            }
+            if (newStory) {
+                stories.add(story);
             }
         }
     }
@@ -347,13 +346,9 @@ public class StoryDownloadManager {
         this.favStories = new ArrayList<>();
         this.favoriteImages = new ArrayList<>();
         if (cache != null) {
-            if (!cache.getStories().isEmpty())
-                this.stories.addAll(cache.getStories());
-            if (!cache.getStories().isEmpty())
-                this.favStories.addAll(cache.getFavStories());
-            if (!cache.getStories().isEmpty())
-                this.favoriteImages.addAll(cache.getFavoriteImages());
-
+            this.stories.addAll(cache.getStories());
+            this.favStories.addAll(cache.getFavStories());
+            this.favoriteImages.addAll(cache.getFavoriteImages());
         }
         this.storyDownloader = new StoryDownloader(new DownloadStoryCallback() {
             @Override
@@ -385,7 +380,8 @@ public class StoryDownloadManager {
                     DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
                         Downloader.downloadOrGetFile(urlWithAlter.getAlter(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
-                        if (state != null && state.getFullFile() != null) return DownloadPageFileStatus.SUCCESS;
+                        if (state != null && state.getFullFile() != null)
+                            return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;
                     }
                     if (state != null && state.getFullFile() != null)
@@ -436,6 +432,7 @@ public class StoryDownloadManager {
     public void clearAllFavoriteStatus(Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
         for (Story story : stories) {
+            if (story == null) continue;
             story.favorite = false;
         }
     }
@@ -444,6 +441,7 @@ public class StoryDownloadManager {
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
             for (Story story : stories) {
+                if (story == null) continue;
                 if (story.id == id) return story;
             }
         }
@@ -451,6 +449,7 @@ public class StoryDownloadManager {
     }
 
     public void setStory(final Story story, int id, Story.StoryType type) {
+        if (story == null) return;
         List<Story> stories = getStoriesListByType(type);
         Story cur = getStoryById(id, type);
         if (cur == null) {
@@ -488,8 +487,9 @@ public class StoryDownloadManager {
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
             for (Story story : stories) {
-                if (story != null)
-                    story.lastIndex = 0;
+                if (story == null)
+                    continue;
+                story.lastIndex = 0;
             }
         }
     }
@@ -499,6 +499,7 @@ public class StoryDownloadManager {
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
             for (Story localStory : stories) {
+                if (localStory == null) continue;
                 if (localStory.id == story.id) {
                     noStory = false;
                     break;
@@ -534,6 +535,7 @@ public class StoryDownloadManager {
                 if (callback != null) {
                     List<Integer> ids = new ArrayList<>();
                     for (Story story : response) {
+                        if (story == null) continue;
                         ids.add(story.id);
                     }
                     callback.storiesLoaded(ids);
@@ -595,6 +597,7 @@ public class StoryDownloadManager {
                 List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
                 synchronized (storiesLock) {
                     for (Story story : response) {
+                        if (story == null) continue;
                         if (!stories.contains(story)) {
                             newStories.add(story);
                         }
@@ -628,9 +631,12 @@ public class StoryDownloadManager {
                             List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
                             synchronized (storiesLock) {
                                 for (Story st : stories) {
+                                    if (st == null) continue;
                                     for (Story st2 : response2) {
+                                        if (st2 == null) continue;
                                         if (st2.id == st.id) {
                                             st.isOpened = true;
+                                            break;
                                         }
                                     }
                                 }
@@ -712,6 +718,7 @@ public class StoryDownloadManager {
                 List<Story> stories = getStoriesListByType(Story.StoryType.COMMON);
                 synchronized (storiesLock) {
                     for (Story story : response) {
+                        if (story == null) continue;
                         if (!stories.contains(story)) {
                             newStories.add(story);
                         }
@@ -750,10 +757,10 @@ public class StoryDownloadManager {
 
 
     public void refreshLocals(Story.StoryType type) {
-        List<Story> lStories = new ArrayList<>();
+        List<Story> lStories;
         List<Story> stories = getStoriesListByType(type);
         synchronized (storiesLock) {
-            lStories.addAll(stories);
+            lStories = new ArrayList<>(stories);
         }
         synchronized (storiesLock) {
             for (Story story : lStories) {
