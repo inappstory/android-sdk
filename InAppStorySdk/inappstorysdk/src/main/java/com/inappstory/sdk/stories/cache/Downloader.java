@@ -5,6 +5,7 @@ import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -114,6 +115,7 @@ public class Downloader {
         String key = cropUrl(url, cropUrl);
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
+
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
             if (fileState != null

@@ -36,4 +36,12 @@ public class SlideTaskData {
     public Integer storyId;
     public Integer index;
     public Story.StoryType storyType;
+
+    @Override
+    public String toString() {
+        return "Slide{" +
+                ", storyId = " + storyId +
+                ", slideIndex = " + index +
+                '}';
+    }
 }
