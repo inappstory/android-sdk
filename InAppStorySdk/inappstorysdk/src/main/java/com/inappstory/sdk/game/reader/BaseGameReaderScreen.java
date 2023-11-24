@@ -3,12 +3,11 @@ package com.inappstory.sdk.game.reader;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
+import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
 public interface BaseGameReaderScreen {
     void forceFinish();
-
-    void shareComplete(String shareId, boolean shared);
 
     void pause();
 

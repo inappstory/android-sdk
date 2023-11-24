@@ -277,6 +277,7 @@ public class ReaderPageManager {
     boolean isPaused;
 
     public void resumeSlide(boolean withBackground) {
+        Log.e("resumeSlide", "" + withBackground);
         if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
         isPaused = false;

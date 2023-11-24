@@ -94,10 +94,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     StoriesContentFragment storiesContentFragment;
 
-    public void shareComplete(boolean shared) {
-        storiesContentFragment.readerManager.shareComplete(shared);
-    }
-
     @Override
     public void removeStoryFromFavorite(int id) {
         if (storiesContentFragment != null)
@@ -332,7 +328,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     try {
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         FragmentTransaction t = fragmentManager.beginTransaction()
-                                .replace(R.id.fragments_layout, storiesContentFragment);
+                                .replace(R.id.activity_fragments_layout, storiesContentFragment);
                         t.addToBackStack("STORIES_FRAGMENT");
                         t.commit();
                     } catch (IllegalStateException e) {

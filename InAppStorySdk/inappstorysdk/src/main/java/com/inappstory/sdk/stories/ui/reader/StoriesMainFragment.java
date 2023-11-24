@@ -70,6 +70,12 @@ public class StoriesMainFragment extends Fragment implements
     }
 
     @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        Log.e("SavedBundle", this + " " + outState);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void goodsIsClosed(String widgetId) {
         timerIsUnlocked();
         if (currentGoodsCallback != null)
@@ -145,7 +151,7 @@ public class StoriesMainFragment extends Fragment implements
             storiesContentFragment.setArguments(getArguments());
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
+                    .replace(R.id.activity_fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
             t.addToBackStack("STORIES_FRAGMENT");
             t.commitAllowingStateLoss();
         }
@@ -490,17 +496,6 @@ public class StoriesMainFragment extends Fragment implements
     }
 
     @Override
-    public void shareComplete(final boolean shared) {
-        useContentFragment(new StoriesContentFragmentAction() {
-            @Override
-            public void invoke(StoriesContentFragment fragment) {
-                if (fragment.readerManager != null)
-                    fragment.readerManager.shareComplete(shared);
-            }
-        });
-    }
-
-    @Override
     public void removeStoryFromFavorite(final int id) {
         useContentFragment(new StoriesContentFragmentAction() {
             @Override
@@ -576,7 +571,7 @@ public class StoriesMainFragment extends Fragment implements
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             storiesLoaderFragment.setArguments(getArguments());
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.fragments_layout, storiesLoaderFragment, "STORIES_LOADER_FRAGMENT");
+                    .replace(R.id.activity_fragments_layout, storiesLoaderFragment, "STORIES_LOADER_FRAGMENT");
             t.addToBackStack("STORIES_LOADER_FRAGMENT");
             t.commitAllowingStateLoss();
         } catch (Exception e) {

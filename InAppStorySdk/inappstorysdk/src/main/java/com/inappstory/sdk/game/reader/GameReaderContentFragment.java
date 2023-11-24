@@ -60,6 +60,8 @@ import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
+import com.inappstory.sdk.share.IShareCompleteListener;
+import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
@@ -230,7 +232,17 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 slideIndex = dataModel.slideData.index;
             }
             ScreensManager.getInstance().openOverlapContainerForShare(
-                    null,
+                    new ShareListener() {
+                        @Override
+                        public void onSuccess(boolean shared) {
+
+                        }
+
+                        @Override
+                        public void onCancel() {
+
+                        }
+                    },
                     getBaseGameReader().getGameReaderFragmentManager(),
                     this,
                     null,
@@ -934,7 +946,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState
     ) {
-        View view = inflater.inflate(R.layout.cs_game_reader_content_layout, null);
+        View view = inflater.inflate(R.layout.cs_game_reader_content_layout, container, false);
         gameReaderLaunchData = (GameReaderLaunchData) getArguments().getSerializable(
                 GameReaderLaunchData.SERIALIZABLE_KEY
         );
@@ -983,13 +995,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             public void run() {
                 boolean shared = false;
                 if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-                String id;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    id = ScreensManager.getInstance().getTempShareId();
-                } else {
-                    id = ScreensManager.getInstance().getOldTempShareId();
+                IShareCompleteListener shareCompleteListener =
+                        ScreensManager.getInstance().shareCompleteListener();
+                if (shareCompleteListener != null) {
+                    shareCompleteListener.complete(shared);
                 }
-                shareComplete(id, shared);
                 if (!shared)
                     resumeGame();
                 shareViewIsShown = false;

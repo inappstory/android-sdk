@@ -398,29 +398,15 @@ public class ReaderManager {
         StatisticManager.getInstance().createCurrentState(story2.id, story2.lastIndex, feedId);
     }
 
-    public void shareComplete(boolean shared) {
-        ScreensManager.getInstance().setTempShareStatus(shared);
-    }
-
-    void resumeWithShareId() {
+    void shareComplete() {
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 pageManager.unlockShareButton();
             }
         }
-        if (ScreensManager.getInstance().getOldTempShareId() != null) {
-            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getOldTempShareStoryId());
-            if (rm != null) {
-                rm.shareComplete("" + ScreensManager.getInstance().getOldTempShareStoryId(),
-                        true);
-            }
-        } else if (ScreensManager.getInstance().getTempShareId() != null) {
-            ReaderPageManager rm = getSubscriberByStoryId(ScreensManager.getInstance().getTempShareStoryId());
-            if (rm != null) {
-                rm.shareComplete("" + ScreensManager.getInstance().getTempShareId(),
-                        ScreensManager.getInstance().getTempShareStatus());
-            }
-        }
+
+        ScreensManager.getInstance().shareCompleteListener().complete(true);
+
         ScreensManager.getInstance().clearShareIds();
     }
 

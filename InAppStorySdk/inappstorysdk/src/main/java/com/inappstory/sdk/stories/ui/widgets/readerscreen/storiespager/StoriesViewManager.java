@@ -5,7 +5,6 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -22,6 +21,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -48,7 +48,6 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -414,13 +413,14 @@ public class StoriesViewManager {
             return;
         service.isShareProcess(true);
         InnerShareData shareData = JsonParser.fromJson(data, InnerShareData.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            ScreensManager.getInstance().setTempShareId(id);
-            ScreensManager.getInstance().setTempShareStoryId(storyId);
-        } else {
-            ScreensManager.getInstance().setOldTempShareId(id);
-            ScreensManager.getInstance().setOldTempShareStoryId(storyId);
-        }
+        ScreensManager.getInstance().shareCompleteListener(
+                new IShareCompleteListener(id, storyId) {
+                    @Override
+                    public void complete(String shareId, boolean shared) {
+                        shareComplete(shareId, shared);
+                    }
+                }
+        );
         Story story = InAppStoryService.getInstance() != null ?
                 InAppStoryService.getInstance().getDownloadManager()
                         .getStoryById(storyId, pageManager.getStoryType()) : null;

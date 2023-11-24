@@ -13,12 +13,12 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OverlappingContainerActions;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 
 import java.util.HashMap;
@@ -27,7 +27,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.cs_overlap_dialog_fragment, null);
+        return inflater.inflate(R.layout.cs_overlap_dialog_fragment, container, false);
     }
 
     FrameLayout readerTopContainer;
@@ -39,14 +39,20 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
         public void closeView(HashMap<String, Object> data) {
             boolean shared = false;
             if (data.containsKey("shared")) shared = (boolean) data.get("shared");
-            ScreensManager.getInstance().setTempShareStatus(shared);
+
             OverlapFragmentObserver observer = ScreensManager.getInstance().overlapFragmentObserver;
             if (observer != null) observer.closeView(data);
             ScreensManager.getInstance().cleanOverlapFragmentObserver();
-            getParentFragmentManager().popBackStack();
-            if (cancelListener != null) cancelListener.onCancel(null);
+            try {
+                getParentFragmentManager().popBackStack();
+            } catch (IllegalStateException e) {
+                ScreensManager.getInstance().setTempShareStatus(shared);
+            }
+            if (shareListener != null) shareListener.onSuccess(shared);
         }
     };
+
+    private boolean closed = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,8 +63,18 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
 
 
     @Override
+    public void onResume() {
+        super.onResume();
+        Boolean shared = ScreensManager.getInstance().getTempShareStatus();
+        if (shared != null) {
+            getParentFragmentManager().popBackStack();
+        }
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         readerTopContainer = view.findViewById(R.id.ias_stories_top_container);
         Context context = getContext();
         if (callback != null && context != null) {
@@ -83,7 +99,7 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
         }
     }
 
-    public CancelListener cancelListener;
+    public ShareListener shareListener;
 
     @Override
     public boolean onBackPressed() {

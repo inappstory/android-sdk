@@ -6,7 +6,6 @@ import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READ
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,7 +25,6 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -34,7 +32,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLau
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
-import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -254,10 +251,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     Story.StoryType type = Story.StoryType.COMMON;
 
-    public void shareComplete(boolean shared) {
-        storiesContentFragment.readerManager.shareComplete(shared);
-    }
-
     @Override
     public void removeStoryFromFavorite(int id) {
         if (storiesContentFragment != null)
@@ -409,7 +402,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                             android.R.anim.fade_in,
                             android.R.anim.fade_out
                     )*/
-                    .replace(R.id.fragments_layout, storiesLoaderFragment);
+                    .replace(R.id.activity_fragments_layout, storiesLoaderFragment);
             t.addToBackStack("TEST");
             t.commit();
         } catch (IllegalStateException e) {
@@ -424,7 +417,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             try {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
-                        .replace(R.id.fragments_layout, storiesContentFragment);
+                        .replace(R.id.activity_fragments_layout, storiesContentFragment);
                 t.addToBackStack("STORIES_FRAGMENT");
                 t.commit();
             } catch (IllegalStateException e) {

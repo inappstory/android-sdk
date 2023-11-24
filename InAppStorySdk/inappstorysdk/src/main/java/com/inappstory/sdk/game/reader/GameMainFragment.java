@@ -28,7 +28,7 @@ public class GameMainFragment extends Fragment
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState
     ) {
-        return inflater.inflate(R.layout.cs_game_reader_layout, container);
+        return inflater.inflate(R.layout.cs_game_reader_layout, container, false);
     }
 
     private void createGameContentFragment(
@@ -46,7 +46,7 @@ public class GameMainFragment extends Fragment
                 fragment.setArguments(args);
                 FragmentManager fragmentManager = getGameReaderFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
-                        .replace(R.id.fragments_layout, fragment, fragmentTag);
+                        .replace(R.id.activity_fragments_layout, fragment, fragmentTag);
                 t.addToBackStack(fragmentTag);
                 t.commit();
             } catch (IllegalStateException e) {
@@ -74,10 +74,7 @@ public class GameMainFragment extends Fragment
         getParentFragmentManager().popBackStack();
     }
 
-    @Override
-    public void shareComplete(String shareId, boolean shared) {
 
-    }
 
     @Override
     public void pause() {

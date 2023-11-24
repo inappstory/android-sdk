@@ -53,7 +53,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.cs_stories_dialog_fragment, null);
+        return inflater.inflate(R.layout.cs_stories_dialog_fragment, container, false);
     }
 
     private void removeGameObservables() {
@@ -158,11 +158,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
             }
         });
 
-    }
-
-    @Override
-    public void shareComplete(boolean shared) {
-        storiesContentFragment.readerManager.shareComplete(shared);
     }
 
     @Override

@@ -11,7 +11,6 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
-import com.inappstory.sdk.stories.ui.reader.StoriesContentFragment;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -44,7 +43,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
                 fragment.setArguments(args);
                 FragmentManager fragmentManager = getGameReaderFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
-                        .replace(R.id.fragments_layout, fragment, fragmentTag);
+                        .replace(R.id.activity_fragments_layout, fragment, fragmentTag);
                 t.addToBackStack(fragmentTag);
                 t.commit();
             } catch (IllegalStateException e) {
@@ -102,10 +101,6 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         finish();
     }
 
-    @Override
-    public void shareComplete(String shareId, boolean shared) {
-
-    }
 
     @Override
     public void pause() {

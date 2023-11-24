@@ -1,18 +1,14 @@
 package com.inappstory.sdk.stories.ui;
 
-import static com.inappstory.sdk.game.reader.GameReaderContentFragment.GAME_READER_REQUEST;
 import static java.util.UUID.randomUUID;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
@@ -22,10 +18,11 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.BaseGameReaderScreen;
-import com.inappstory.sdk.game.reader.GameActivity;
 import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.share.IASShareData;
+import com.inappstory.sdk.share.IShareCompleteListener;
+import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
@@ -38,8 +35,6 @@ import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
-import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
-import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,56 +57,13 @@ public class ScreensManager {
     }
 
     public void clearShareIds() {
-        setTempShareStatus(false);
-        setTempShareStoryId(0);
-        setTempShareId(null);
-        setOldTempShareStoryId(0);
-        setOldTempShareId(null);
+        shareCompleteListener(null);
     }
 
     public static long created = 0;
 
-    public void setOldTempShareId(String tempShareId) {
-        this.oldTempShareId = tempShareId;
-    }
-
-    public void setOldTempShareStoryId(int tempShareStoryId) {
-        this.oldTempShareStoryId = tempShareStoryId;
-    }
-
-    public int getOldTempShareStoryId() {
-        return oldTempShareStoryId;
-    }
-
-    public String getOldTempShareId() {
-        return oldTempShareId;
-    }
-
-
-    public int getTempShareStoryId() {
-        return tempShareStoryId;
-    }
-
-    public String getTempShareId() {
-        return tempShareId;
-    }
-
-    public boolean getTempShareStatus() {
-        return tempShareStatus;
-    }
-
     public void setTempShareStatus(boolean tempShareStatus) {
         this.tempShareStatus = tempShareStatus;
-    }
-
-    public void setTempShareId(String tempShareId) {
-        this.tempShareStatus = false;
-        this.tempShareId = tempShareId;
-    }
-
-
-    public void setTempShareStoryId(int tempShareStoryId) {
-        this.tempShareStoryId = tempShareStoryId;
     }
 
     public BaseReaderScreen currentStoriesReaderScreen;
@@ -122,27 +74,33 @@ public class ScreensManager {
             currentStoriesReaderScreen.closeStoryReader(action);
     }
 
-    public void clearCurrentFragment(StoriesDialogFragment fragment) {
-        if (currentStoriesReaderScreen == fragment)
-            currentStoriesReaderScreen = null;
-    }
-
-    public void clearCurrentActivity(FragmentActivity activity) {
-        if (activity == currentStoriesReaderScreen)
-            currentStoriesReaderScreen = null;
-    }
 
     public BaseGameReaderScreen currentGameScreen;
 
-    int tempShareStoryId;
 
-    String tempShareId;
+    public Boolean getTempShareStatus() {
+        Boolean status = tempShareStatus;
+        tempShareStatus = null;
+        return status;
+    }
 
-    boolean tempShareStatus = false;
+    private Boolean tempShareStatus = null;
 
-    int oldTempShareStoryId;
+    private IShareCompleteListener shareCompleteListener = null;
 
-    String oldTempShareId;
+    private final Object shareListenerLock = new Object();
+
+    public void shareCompleteListener(IShareCompleteListener shareCompleteListener)  {
+        synchronized (shareListenerLock) {
+            this.shareCompleteListener = shareCompleteListener;
+        }
+    }
+
+    public IShareCompleteListener shareCompleteListener() {
+        synchronized (shareListenerLock) {
+            return this.shareCompleteListener;
+        }
+    }
 
     public Point coordinates = null;
 
@@ -163,7 +121,6 @@ public class ScreensManager {
         }
     }
 
-
     HashMap<String, MutableLiveData<GameCompleteEvent>> gameObservables = new HashMap<>();
 
     public MutableLiveData<GameCompleteEvent> getGameObserver(String id) {
@@ -175,7 +132,7 @@ public class ScreensManager {
     }
 
     public void openOverlapContainerForShare(
-            CancelListener cancelListener,
+            ShareListener shareListener,
             FragmentManager fragmentManager,
             OverlapFragmentObserver observer,
             String slidePayload,
@@ -192,7 +149,7 @@ public class ScreensManager {
             bundle.putInt("slideIndex", slideIndex);
             bundle.putSerializable("shareData", shareData);
             overlapFragment.setArguments(bundle);
-            overlapFragment.cancelListener = cancelListener;
+            overlapFragment.shareListener = shareListener;
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .replace(R.id.ias_outer_top_container, overlapFragment);
             t.addToBackStack("OverlapFragment");

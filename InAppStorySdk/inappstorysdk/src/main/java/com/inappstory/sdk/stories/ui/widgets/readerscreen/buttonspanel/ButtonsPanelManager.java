@@ -8,6 +8,7 @@ import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.ShareObject;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -255,13 +256,14 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(ShareObject response) {
                         ProfilingManager.getInstance().setReady(shareUID);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                            ScreensManager.getInstance().setTempShareId(null);
-                            ScreensManager.getInstance().setTempShareStoryId(storyId);
-                        } else {
-                            ScreensManager.getInstance().setOldTempShareId(null);
-                            ScreensManager.getInstance().setOldTempShareStoryId(storyId);
-                        }
+                        ScreensManager.getInstance().shareCompleteListener(new IShareCompleteListener(
+                                null, storyId
+                        ) {
+                            @Override
+                            public void complete(String shareId, boolean shared) {
+                                pageManager.shareComplete(shareId, shared);
+                            }
+                        });
                         InnerShareData shareData = new InnerShareData();
                         shareData.text = response.getUrl();
                         shareData.payload = story.getSlideEventPayload(slideIndex);

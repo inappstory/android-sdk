@@ -179,6 +179,7 @@ public class ReaderPageFragment extends Fragment {
         if (story != null) {
             outState.putInt("lastIndex", story.lastIndex);
         }
+        Log.e("SavedBundle", this + " " + outState);
         super.onSaveInstanceState(outState);
     }
 

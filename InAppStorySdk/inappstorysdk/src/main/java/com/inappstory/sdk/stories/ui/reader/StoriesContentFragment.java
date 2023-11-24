@@ -13,7 +13,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -23,9 +22,9 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IASShareManager;
+import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
@@ -73,35 +72,6 @@ public class StoriesContentFragment extends Fragment
             screen = (BaseReaderScreen) getParentFragment();
         }
         return screen;
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && service.getDownloadManager() != null) {
-            try {
-                outState.putString("stories", JsonParser.getJson(
-                        service.getDownloadManager().getStoriesListByType(
-                                launchData.getType()
-                        )
-                ));
-            } catch (Exception ignored) {
-
-            }
-        }
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (savedInstanceState != null && service != null && service.getDownloadManager() != null) {
-            service.getDownloadManager().putStories(
-                    JsonParser.listFromJson(savedInstanceState.getString("stories"), Story.class),
-                    launchData.getType()
-            );
-        }
     }
 
     @Override
@@ -177,12 +147,18 @@ public class StoriesContentFragment extends Fragment
         if (context == null) return;
         if (callback != null) {
             ScreensManager.getInstance().openOverlapContainerForShare(
-                    new CancelListener() {
+                    new ShareListener() {
                         @Override
-                        public void onCancel(String id) {
+                        public void onSuccess(boolean shared) {
+                            getStoriesReader().timerIsUnlocked();
+                        }
+
+                        @Override
+                        public void onCancel() {
                             getStoriesReader().timerIsUnlocked();
                             readerManager.resumeCurrent(false);
                         }
+
                     },
                     getStoriesReader().getStoriesReaderFragmentManager(),
                     this,
@@ -246,7 +222,9 @@ public class StoriesContentFragment extends Fragment
     public void resume() {
         if (!created && readerManager != null) {
             readerManager.resumeCurrent(true);
-            readerManager.resumeWithShareId();
+            if (ScreensManager.getInstance().shareCompleteListener() != null) {
+                readerManager.shareComplete();
+            }
         }
         created = false;
     }
@@ -527,8 +505,6 @@ public class StoriesContentFragment extends Fragment
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-
-                if (readerManager != null) readerManager.resumeWithShareId();
                 boolean shared = false;
                 if (data.containsKey("shared")) shared = (boolean) data.get("shared");
                 if (!shared)

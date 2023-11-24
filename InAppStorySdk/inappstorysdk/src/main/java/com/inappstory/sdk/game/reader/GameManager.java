@@ -18,6 +18,7 @@ import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
+import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.UrlObject;
@@ -256,7 +257,7 @@ public class GameManager {
 
 
     void onResume() {
-        String shareId = null;
+     /*   String shareId = null;
         if (ScreensManager.getInstance().getTempShareId() != null) {
             shareId = ScreensManager.getInstance().getTempShareId();
         } else if (ScreensManager.getInstance().getOldTempShareId() != null) {
@@ -265,7 +266,7 @@ public class GameManager {
         if (shareId != null) {
             host.shareComplete(shareId, false);
         }
-        ScreensManager.getInstance().clearShareIds();
+        ScreensManager.getInstance().clearShareIds();*/
     }
 
     void shareData(String id, String data) {
@@ -274,13 +275,15 @@ public class GameManager {
             return;
         service.isShareProcess(true);
         InnerShareData shareObj = JsonParser.fromJson(data, InnerShareData.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            ScreensManager.getInstance().setTempShareId(id);
-            ScreensManager.getInstance().setTempShareStoryId(-1);
-        } else {
-            ScreensManager.getInstance().setOldTempShareId(id);
-            ScreensManager.getInstance().setOldTempShareStoryId(-1);
-        }
+        ScreensManager.getInstance().shareCompleteListener(
+                new IShareCompleteListener(id, -1) {
+                    @Override
+                    public void complete(String shareId, boolean shared) {
+                        if (host != null && host.isAdded())
+                            host.shareComplete(shareId, shared);
+                    }
+                }
+        );
         host.share(shareObj);
 
     }
