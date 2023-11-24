@@ -31,7 +31,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderApp
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.dialog.CancelListener;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
@@ -183,7 +182,7 @@ public class ScreensManager {
                 gameConfig,
                 gameResources,
                 options,
-                data.slideData
+                data != null ? data.slideData : null
         );
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().startGame(

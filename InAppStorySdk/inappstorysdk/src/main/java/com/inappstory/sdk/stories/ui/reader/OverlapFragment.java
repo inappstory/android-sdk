@@ -48,7 +48,12 @@ public class OverlapFragment extends Fragment implements IASBackPressHandler {
             } catch (IllegalStateException e) {
                 ScreensManager.getInstance().setTempShareStatus(shared);
             }
-            if (shareListener != null) shareListener.onSuccess(shared);
+            if (shareListener != null) {
+                if (shared)
+                    shareListener.onSuccess(true);
+                else
+                    shareListener.onCancel();
+            }
         }
     };
 
