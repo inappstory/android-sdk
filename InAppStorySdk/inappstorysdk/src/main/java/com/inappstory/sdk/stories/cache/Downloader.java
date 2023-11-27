@@ -44,6 +44,11 @@ public class Downloader {
      *
      * @param url ссылка
      */
+    public static String deleteQueryArgumentsFromUrlOld(String url, boolean delete) {
+        return url;//delete ? url.split("\\?")[0] : url;
+    }
+
+
     public static String deleteQueryArgumentsFromUrl(String url, boolean delete) {
         return delete ? url.split("\\?")[0] : url;
     }
@@ -79,6 +84,7 @@ public class Downloader {
             DownloadInterruption interruption,
             String hash
     ) throws Exception {
+        Log.e("downloadUrl", url);
         String requestId = UUID.randomUUID().toString();
         ApiLogRequest requestLog = new ApiLogRequest();
         ApiLogResponse responseLog = new ApiLogResponse();
@@ -87,7 +93,7 @@ public class Downloader {
         requestLog.isStatic = true;
         requestLog.id = requestId;
         responseLog.id = requestId;
-        String key = deleteQueryArgumentsFromUrl(url, deleteArguments);
+        String key = deleteQueryArgumentsFromUrlOld(url, deleteArguments);
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
         if (cache.hasKey(key)) {
@@ -151,6 +157,7 @@ public class Downloader {
             File img,
             FileLoadProgressCallback callback
     ) throws Exception {
+        Log.e("downloadUrl", url);
         long offset = 0;
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
@@ -200,7 +207,7 @@ public class Downloader {
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
-        String key = deleteQueryArgumentsFromUrl(url, false);
+        String key = deleteQueryArgumentsFromUrlOld(url, false);
 
         if (cache.hasKey(key)) {
             return updateFile(cache.getFullFile(key), url, cache, key);
@@ -296,7 +303,7 @@ public class Downloader {
 
     public static String getFontFile(String url) {
         if (url == null || url.isEmpty()) return null;
-        String key = deleteQueryArgumentsFromUrl(url, true);
+        String key = deleteQueryArgumentsFromUrlOld(url, true);
         File img = null;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;

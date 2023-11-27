@@ -1,8 +1,6 @@
 package com.inappstory.sdk.stories.ui.views;
 
-import android.annotation.TargetApi;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
@@ -49,7 +47,7 @@ public class IASWebViewClient extends WebViewClient {
             file = new File(filePath);
         } else if (!url.startsWith("data:") && URLUtil.isValidUrl(url)) {
             // skip any data URI scheme (data:content/type;)
-            file = getCachedFile(url, Downloader.deleteQueryArgumentsFromUrl(url, true));
+            file = getCachedFile(url, Downloader.deleteQueryArgumentsFromUrlOld(url, true));
         }
         return file;
     }
