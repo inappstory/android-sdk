@@ -28,6 +28,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -195,6 +196,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
         }
+
+        ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();

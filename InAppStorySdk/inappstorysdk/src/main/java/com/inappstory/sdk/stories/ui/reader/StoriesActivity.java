@@ -201,7 +201,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         }
                     })
                     .start();
-            ScreensManager.getInstance().coordinates = null;
+            ScreensManager.getInstance().clearCoordinates();
         } catch (Exception e) {
             finishWithoutAnimation();
         }
@@ -526,11 +526,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void forceFinish() {
         finishWithoutAnimation();
-    }
-
-    @Override
-    public void observeGameReader(String observableUID) {
-
     }
 
     boolean cleaned = false;

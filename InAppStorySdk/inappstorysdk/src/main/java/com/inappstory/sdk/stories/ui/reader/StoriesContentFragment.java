@@ -28,6 +28,8 @@ import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
+import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -46,7 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class StoriesContentFragment extends Fragment
-        implements IASBackPressHandler, ViewPager.OnPageChangeListener, OverlapFragmentObserver {
+        implements
+        IASBackPressHandler,
+        ViewPager.OnPageChangeListener,
+        OverlapFragmentObserver,
+        GameCompleteEventObserver
+{
 
     public StoriesContentFragment() {
         super();
@@ -57,7 +64,7 @@ public class StoriesContentFragment extends Fragment
     boolean created = false;
 
     public String getReaderUniqueId() {
-        return launchData.getReaderUniqueId();
+        return getLaunchData().getReaderUniqueId();
     }
 
     public void observeGameReader() {
@@ -198,8 +205,8 @@ public class StoriesContentFragment extends Fragment
     boolean closeOnSwipe = true;
     boolean closeOnOverscroll = true;
 
-    StoriesReaderAppearanceSettings appearanceSettings;
-    StoriesReaderLaunchData launchData;
+    private StoriesReaderAppearanceSettings appearanceSettings;
+    private StoriesReaderLaunchData launchData;
 
     public void forceFinish() {
         BaseReaderScreen readerScreen = getStoriesReader();
@@ -249,16 +256,32 @@ public class StoriesContentFragment extends Fragment
     ReaderPager storiesViewPager;
 
 
+    private StoriesReaderLaunchData getLaunchData() {
+        if (launchData == null) {
+            Bundle arguments = requireArguments();
+            launchData = (StoriesReaderLaunchData) arguments
+                    .getSerializable(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+        }
+        return launchData;
+    }
+
+    public StoriesReaderAppearanceSettings getAppearanceSettings() {
+        if (appearanceSettings == null) {
+            Bundle arguments = requireArguments();
+            appearanceSettings = (StoriesReaderAppearanceSettings) arguments
+                    .getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
+        }
+        return appearanceSettings;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Context context = requireContext();
         try {
             Bundle arguments = requireArguments();
-            appearanceSettings = (StoriesReaderAppearanceSettings) arguments
-                    .getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
-            launchData = (StoriesReaderLaunchData) arguments
-                    .getSerializable(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+            StoriesReaderAppearanceSettings appearanceSettings = getAppearanceSettings();
+            StoriesReaderLaunchData launchData = getLaunchData();
             currentIds = launchData.getStoriesIds();
             readerAnimation = appearanceSettings.csStoryReaderAnimation();
             ind = launchData.getListIndex();
@@ -313,11 +336,13 @@ public class StoriesContentFragment extends Fragment
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (readerManager != null) readerManager.host = this;
+        ScreensManager.getInstance().putGameObserver(getReaderUniqueId(), this);
     }
 
     @Override
     public void onDetach() {
         if (readerManager != null && readerManager.host == this) readerManager.host = null;
+        ScreensManager.getInstance().removeGameObserver(getReaderUniqueId());
         super.onDetach();
     }
 
@@ -332,12 +357,12 @@ public class StoriesContentFragment extends Fragment
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         storiesViewPager.setParameters(readerAnimation);
-        source = launchData.getSourceType();
+        source = getLaunchData().getSourceType();
         outerViewPagerAdapter =
                 new ReaderPagerAdapter(
                         getChildFragmentManager(),
                         source,
-                        appearanceSettings,
+                        getAppearanceSettings(),
                         currentIds, readerManager);
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
@@ -517,5 +542,14 @@ public class StoriesContentFragment extends Fragment
     @Override
     public void viewIsOpened() {
 
+    }
+
+    @Override
+    public void gameComplete(GameCompleteEvent event) {
+        readerManager.gameComplete(
+                event.getGameState(),
+                event.getStoryId(),
+                event.getSlideIndex()
+        );
     }
 }

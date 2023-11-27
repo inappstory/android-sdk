@@ -40,7 +40,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.BuildConfig;
@@ -69,6 +68,7 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.cache.DownloadInterruption;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
@@ -442,20 +442,18 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             GameStoryData dataModel = getStoryDataModel();
             if (dataModel != null) {
                 closing = true;
-                if (Sizes.isTablet()) {
-                    String observableUID = gameReaderLaunchData.getObservableUID();
-                    if (observableUID != null) {
-                        MutableLiveData<GameCompleteEvent> liveData =
-                                ScreensManager.getInstance().getGameObserver(observableUID);
-                        if (liveData != null) {
-                            liveData.postValue(
-                                    new GameCompleteEvent(
-                                            gameState,
-                                            dataModel.slideData.story.id,
-                                            dataModel.slideData.index
-                                    )
-                            );
-                        }
+                String observableUID = gameReaderLaunchData.getObservableUID();
+                if (observableUID != null) {
+                    GameCompleteEventObserver observer =
+                            ScreensManager.getInstance().getGameObserver(observableUID);
+                    if (observer != null) {
+                        observer.gameComplete(
+                                new GameCompleteEvent(
+                                        gameState,
+                                        dataModel.slideData.story.id,
+                                        dataModel.slideData.index
+                                )
+                        );
                     }
                 }
                 forceFinish();

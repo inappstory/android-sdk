@@ -7,6 +7,11 @@ public class HandlerAnimatorListenerAdapter implements HandlerAnimatorListener {
     }
 
     @Override
+    public void onAnimationProgress(float progress) {
+
+    }
+
+    @Override
     public void onAnimationEnd() {
 
     }

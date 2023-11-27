@@ -211,7 +211,7 @@ public class ReaderManager {
                     storyId + "",
                     parentFragment.getContext(),
                     slideIndex,
-                    parentFragment.appearanceSettings,
+                    parentFragment.getAppearanceSettings(),
                     storyType,
                     SourceType.SINGLE,
                     ShowStory.ACTION_CUSTOM

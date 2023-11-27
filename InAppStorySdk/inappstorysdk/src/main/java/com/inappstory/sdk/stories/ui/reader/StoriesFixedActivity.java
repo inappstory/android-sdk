@@ -424,11 +424,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         finishWithoutAnimation();
     }
 
-    @Override
-    public void observeGameReader(String observableUID) {
-
-    }
-
     boolean cleaned = false;
 
     public void cleanReader() {

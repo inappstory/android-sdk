@@ -34,6 +34,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.dialog.ContactDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -47,7 +48,7 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
-public class StoriesMainFragment extends Fragment implements
+public abstract class StoriesMainFragment extends Fragment implements
         BaseReaderScreen,
         IASBackPressHandler,
         ShowGoodsCallback {
@@ -61,6 +62,14 @@ public class StoriesMainFragment extends Fragment implements
     ShowGoodsCallback currentGoodsCallback = null;
 
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
+
+    public static StoriesMainFragment newInstance(Bundle bundle) {
+        StoriesMainFragment fragment;
+        if (Sizes.isTablet()) fragment = new StoriesMainTabletFragment();
+        else fragment = new StoriesMainPhoneFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
 
     @Override
     public void goodsIsOpened() {
@@ -135,11 +144,11 @@ public class StoriesMainFragment extends Fragment implements
                 return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
             default:
                 Point coordinates = ScreensManager.getInstance().coordinates;
-                float pivotX = screenSize.x / 2f;
-                float pivotY = screenSize.y / 2f;
+                float pivotX = -screenSize.x / 2f;
+                float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
-                    pivotY = coordinates.y;
-                    pivotX = coordinates.x;
+                    pivotX += coordinates.x;
+                    pivotY += coordinates.y;
                 }
                 return new ZoomReaderAnimation(animatedContainer, pivotX, pivotY).setAnimations(true);
         }
@@ -154,6 +163,29 @@ public class StoriesMainFragment extends Fragment implements
                     .replace(R.id.activity_fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
             t.addToBackStack("STORIES_FRAGMENT");
             t.commitAllowingStateLoss();
+        } else {
+            clearDialog();
+            clearOverlap();
+        }
+    }
+
+    private void clearDialog() {
+        FragmentManager parentFragmentManager = getStoriesReaderFragmentManager();
+        Fragment oldFragment =
+                parentFragmentManager.findFragmentById(R.id.ias_dialog_container);
+        if (oldFragment != null) {
+            FragmentTransaction transaction = parentFragmentManager.beginTransaction().remove(oldFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        }
+    }
+
+    private void clearOverlap() {
+        FragmentManager parentFragmentManager = getStoriesReaderFragmentManager();
+        Fragment oldFragment =
+                parentFragmentManager.findFragmentById(R.id.ias_outer_top_container);
+        if (oldFragment != null) {
+            parentFragmentManager.beginTransaction().remove(oldFragment).commit();
         }
     }
 
@@ -167,9 +199,15 @@ public class StoriesMainFragment extends Fragment implements
             setStartAnimations()
                     .setListener(new HandlerAnimatorListenerAdapter() {
                         @Override
+                        public void onAnimationProgress(float progress) {
+                            super.onAnimationProgress(progress);
+                            openAnimationProgress(progress);
+                        }
+
+                        @Override
                         public void onAnimationStart() {
                             super.onAnimationStart();
-                            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
+                            openAnimationStart();
                         }
 
                         @Override
@@ -215,7 +253,7 @@ public class StoriesMainFragment extends Fragment implements
         if (savedInstanceState == null) {
             animatedContainer.setAlpha(0f);
         } else {
-            backTintView.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
+            reInitUI();
         }
         ScreensManager.getInstance().currentStoriesReaderScreen = this;
         return view;
@@ -233,7 +271,7 @@ public class StoriesMainFragment extends Fragment implements
             @Override
             public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
                 super.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
-                backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
+                StoriesMainFragment.this.onDrag(rawOffset);
             }
 
             @Override
@@ -434,14 +472,13 @@ public class StoriesMainFragment extends Fragment implements
                         screenSize.y
                 ).setAnimations(false);
             default:
-                float pivotX = (screenSize.x - draggableFrame.getX()) / 2f;
-                float pivotY = (screenSize.y - draggableFrame.getY()) / 2f;
                 Point coordinates = ScreensManager.getInstance().coordinates;
+                float pivotX = -screenSize.x / 2f;
+                float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
-                    pivotX = coordinates.x - draggableFrame.getX();
-                    pivotY = coordinates.y - draggableFrame.getY();
+                    pivotX += coordinates.x;
+                    pivotY += coordinates.y;
                 }
-
                 return new ZoomReaderAnimation(animatedContainer,
                         pivotX,
                         pivotY
@@ -455,6 +492,12 @@ public class StoriesMainFragment extends Fragment implements
             setFinishAnimations()
                     .setListener(new HandlerAnimatorListenerAdapter() {
                         @Override
+                        public void onAnimationProgress(float progress) {
+                            super.onAnimationProgress(progress);
+                            closeAnimationProgress(progress);
+                        }
+
+                        @Override
                         public void onAnimationEnd() {
                             draggableFrame.setVisibility(View.GONE);
                             forceFinish();
@@ -464,7 +507,7 @@ public class StoriesMainFragment extends Fragment implements
                         }
                     })
                     .start();
-            ScreensManager.getInstance().coordinates = null;
+            ScreensManager.getInstance().clearCoordinates();
         } catch (Exception e) {
             forceFinish();
         }
@@ -490,10 +533,6 @@ public class StoriesMainFragment extends Fragment implements
         finishAfterTransition();
     }
 
-    @Override
-    public void observeGameReader(String observableUID) {
-
-    }
 
     @Override
     public void removeStoryFromFavorite(final int id) {
@@ -580,4 +619,13 @@ public class StoriesMainFragment extends Fragment implements
         }
     }
 
+    abstract void openAnimationProgress(float progress);
+
+    abstract void openAnimationStart();
+
+    abstract void closeAnimationProgress(float progress);
+
+    abstract void reInitUI();
+
+    abstract void onDrag(float rawOffset);
 }

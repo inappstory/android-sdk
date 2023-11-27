@@ -5,6 +5,7 @@ import android.view.View;
 public class ZoomReaderAnimation extends ReaderAnimation {
 
     float startedBackgroundAlpha;
+
     public ZoomReaderAnimation(
             View backgroundView,
             float pivotX,
@@ -22,8 +23,8 @@ public class ZoomReaderAnimation extends ReaderAnimation {
 
     @Override
     void animatorUpdateStartAnimations(float value) {
-        backgroundView.setPivotX(pivotX);
-        backgroundView.setPivotY(pivotY);
+        backgroundView.setTranslationX(pivotX * (1 - value));
+        backgroundView.setTranslationY(pivotY * (1 - value));
         backgroundView.setScaleX(value);
         backgroundView.setScaleY(value);
         backgroundView.setAlpha(value);
@@ -31,8 +32,8 @@ public class ZoomReaderAnimation extends ReaderAnimation {
 
     @Override
     void animatorUpdateFinishAnimations(float value) {
-        backgroundView.setPivotX(pivotX);
-        backgroundView.setPivotY(pivotY);
+        backgroundView.setTranslationX(pivotX * (1 - value));
+        backgroundView.setTranslationY(pivotY * (1 - value));
         backgroundView.setScaleX(value);
         backgroundView.setScaleY(value);
         backgroundView.setAlpha(startedBackgroundAlpha * value);

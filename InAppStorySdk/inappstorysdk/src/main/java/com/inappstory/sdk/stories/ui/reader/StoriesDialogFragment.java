@@ -45,7 +45,6 @@ import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-import java.util.HashSet;
 import java.util.List;
 
 public class StoriesDialogFragment extends DialogFragment implements IASBackPressHandler, BaseReaderScreen {
@@ -56,14 +55,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         return inflater.inflate(R.layout.cs_stories_dialog_fragment, container, false);
     }
 
-    private void removeGameObservables() {
-        for (String observableID : observerIDs) {
-            MutableLiveData<GameCompleteEvent> observableData =
-                    ScreensManager.getInstance().getGameObserver(observableID);
-            if (observableData == null) continue;
-            observableData.removeObserver(gameCompleteObserver);
-        }
-    }
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
@@ -100,7 +91,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
         }
         cleanReader();
-        removeGameObservables();
         super.onDismiss(dialogInterface);
         if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
             ScreensManager.getInstance().currentStoriesReaderScreen = null;
@@ -120,19 +110,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         cleaned = true;
     }
 
-    Observer<GameCompleteEvent> gameCompleteObserver = new Observer<GameCompleteEvent>() {
-        @Override
-        public void onChanged(GameCompleteEvent event) {
-            storiesContentFragment.readerManager.gameComplete(
-                    event.getGameState(),
-                    event.getStoryId(),
-                    event.getSlideIndex()
-            );
-        }
-    };
-
-    HashSet<String> observerIDs = new HashSet<>();
-
     @Override
     public void closeStoryReader(int action) {
         InAppStoryService.getInstance().getListReaderConnector().closeReader();
@@ -142,22 +119,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     @Override
     public void forceFinish() {
         dismissAllowingStateLoss();
-    }
-
-    @Override
-    public void observeGameReader(String observableId) {
-        final String localObservableId = observableId;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                MutableLiveData<GameCompleteEvent> observableData =
-                        ScreensManager.getInstance().getGameObserver(localObservableId);
-                if (observableData == null) return;
-                observableData.observe(getViewLifecycleOwner(), gameCompleteObserver);
-                observerIDs.add(localObservableId);
-            }
-        });
-
     }
 
     @Override

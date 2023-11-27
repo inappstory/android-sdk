@@ -25,6 +25,7 @@ import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItemWithStoryData;
 import com.inappstory.sdk.stories.utils.Sizes;

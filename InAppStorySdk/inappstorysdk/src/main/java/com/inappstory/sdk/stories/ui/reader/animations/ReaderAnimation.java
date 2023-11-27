@@ -66,7 +66,9 @@ public abstract class ReaderAnimation {
                             animatorUpdateFinishAnimations(1f - progress);
                         }
                     });
-
+                if (listener != null) {
+                    listener.onAnimationProgress(progress);
+                }
                 if (progress == 1f) {
                     if (listener != null) {
                         new Handler(Looper.getMainLooper()).post(new Runnable() {

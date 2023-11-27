@@ -11,7 +11,6 @@ import android.os.Looper;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -25,13 +24,14 @@ import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.share.ShareListener;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
-import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
+import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
@@ -101,7 +101,13 @@ public class ScreensManager {
         }
     }
 
+    public ActiveStoryItem activeStoryItem = null;
     public Point coordinates = null;
+
+    public void clearCoordinates() {
+        coordinates = null;
+        activeStoryItem = null;
+    }
 
     public interface CloseUgcReaderCallback {
         void onClose();
@@ -120,10 +126,18 @@ public class ScreensManager {
         }
     }
 
-    HashMap<String, MutableLiveData<GameCompleteEvent>> gameObservables = new HashMap<>();
+    HashMap<String, GameCompleteEventObserver> gameObservables = new HashMap<>();
 
-    public MutableLiveData<GameCompleteEvent> getGameObserver(String id) {
+    public GameCompleteEventObserver getGameObserver(String id) {
         return gameObservables.get(id);
+    }
+
+    public void putGameObserver(String id, GameCompleteEventObserver observer) {
+        gameObservables.put(id, observer);
+    }
+
+    public void removeGameObserver(String id) {
+        gameObservables.remove(id);
     }
 
     public void cleanOverlapFragmentObserver() {
@@ -172,8 +186,7 @@ public class ScreensManager {
         if (InAppStoryService.isNull()) {
             return;
         }
-        gameObservables.put(observableId,
-                new MutableLiveData<GameCompleteEvent>());
+
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
                 gameId,
                 observableId,
