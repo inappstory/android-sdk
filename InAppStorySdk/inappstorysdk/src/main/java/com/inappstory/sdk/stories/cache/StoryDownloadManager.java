@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.cache;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.WorkerThread;
 
@@ -402,15 +403,28 @@ public class StoryDownloadManager {
             @Override
             public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
-                    DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
+                    DownloadFileState state = Downloader.downloadOrGetFile(
+                            urlWithAlter.getUrl(),
+                            true,
+                            InAppStoryService.getInstance().getCommonCache(),
+                            null,
+                            null
+                    );
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                        Downloader.downloadOrGetFile(urlWithAlter.getAlter(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
-                        if (state != null && state.getFullFile() != null)
-                            return DownloadPageFileStatus.SUCCESS;
-                        return DownloadPageFileStatus.SKIP;
+                        state = Downloader.downloadOrGetFile(urlWithAlter.getAlter(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
+                        if (state == null || state.getFullFile() != null)
+                            return DownloadPageFileStatus.SKIP;
                     }
-                    if (state != null && state.getFullFile() != null)
+                    if (state != null && state.getFullFile() != null) {
+                        Log.d("IAS_TAG", "downloadFile: "
+                                + slideTaskData.toString()
+                                + " "
+                                + urlWithAlter.getUrl()
+                                + " "
+                                + state.file.getAbsolutePath()
+                        );
                         return DownloadPageFileStatus.SUCCESS;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

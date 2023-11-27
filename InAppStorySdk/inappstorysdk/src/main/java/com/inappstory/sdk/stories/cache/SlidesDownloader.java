@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
 import android.os.Handler;
+import android.util.Log;
 import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryService;
@@ -320,6 +321,7 @@ class SlidesDownloader {
             for (UrlWithAlter urlWithAlter : slideTask.urlsWithAlter) {
                 if (callback != null) {
                     callback.downloadFile(urlWithAlter, slideTaskData);
+                    Log.d("IAS_TAG", "download placeholder: " + slideTaskData.toString() + " " + urlWithAlter.getUrl());
                 }
             }
 

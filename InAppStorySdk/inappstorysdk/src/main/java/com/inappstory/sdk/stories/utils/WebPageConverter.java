@@ -121,6 +121,17 @@ public class WebPageConverter {
                             }
                         }
                     }
+                    Log.d(
+                            "IAS_TAG",
+                            "replace placeholder: "
+                                    + story.id
+                                    + " "
+                                    + index
+                                    + " "
+                                    + placeholderKey
+                                    + " "
+                                    + path
+                    );
                     innerWebData = innerWebData.replace(placeholderKey, path);
                 }
             }

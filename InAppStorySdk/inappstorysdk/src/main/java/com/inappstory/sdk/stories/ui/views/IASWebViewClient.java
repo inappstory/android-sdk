@@ -58,6 +58,13 @@ public class IASWebViewClient extends WebViewClient {
         File file = getFileByUrl(url);
         WebResourceResponse response = null;
         if (file != null && file.exists()) {
+            Log.d(
+                    "IAS_TAG",
+                    "web view replace: "
+                            + url
+                            + " "
+                            + file.getAbsolutePath()
+            );
             try {
                 String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
                         MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath())
