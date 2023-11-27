@@ -111,7 +111,7 @@ class SlidesDownloader {
                 allUrls.addAll(slideTask.urls);
                 allUrls.addAll(slideTask.videoUrls);
                 for (String url : allUrls) {
-                    String croppedUrl = Downloader.deleteQueryArgumentsFromUrl(url, true);
+                    String croppedUrl = Downloader.deleteQueryArgumentsFromUrlOld(url, true);
                     if (!cache.hasKey(croppedUrl)) {
                         remove = true;
                     } else {

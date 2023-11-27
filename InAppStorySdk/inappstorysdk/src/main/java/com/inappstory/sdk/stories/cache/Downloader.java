@@ -7,7 +7,6 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
@@ -44,6 +43,10 @@ public class Downloader {
      *
      * @param url ссылка
      */
+    public static String deleteQueryArgumentsFromUrlOld(String url, boolean delete) {
+        return url;//delete ? url.split("\\?")[0] : url;
+    }
+
     public static String deleteQueryArgumentsFromUrl(String url, boolean delete) {
         return delete ? url.split("\\?")[0] : url;
     }
@@ -87,7 +90,7 @@ public class Downloader {
         requestLog.isStatic = true;
         requestLog.id = requestId;
         responseLog.id = requestId;
-        String key = deleteQueryArgumentsFromUrl(url, deleteArguments);
+        String key = deleteQueryArgumentsFromUrlOld(url, deleteArguments);
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
         if (cache.hasKey(key)) {
@@ -200,7 +203,7 @@ public class Downloader {
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
-        String key = deleteQueryArgumentsFromUrl(url, false);
+        String key = deleteQueryArgumentsFromUrlOld(url, false);
 
         if (cache.hasKey(key)) {
             return updateFile(cache.getFullFile(key), url, cache, key);
@@ -296,7 +299,7 @@ public class Downloader {
 
     public static String getFontFile(String url) {
         if (url == null || url.isEmpty()) return null;
-        String key = deleteQueryArgumentsFromUrl(url, true);
+        String key = deleteQueryArgumentsFromUrlOld(url, true);
         File img = null;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;

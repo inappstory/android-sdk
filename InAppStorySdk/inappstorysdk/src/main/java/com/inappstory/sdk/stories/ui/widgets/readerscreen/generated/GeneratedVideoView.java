@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.Surface;
@@ -166,7 +165,7 @@ public class GeneratedVideoView extends RelativeLayout implements TextureView.Su
 
         try {
             if (storyId == null)
-                storyId = Utils.hash(Downloader.deleteQueryArgumentsFromUrl(url, false));
+                storyId = Utils.hash(Downloader.deleteQueryArgumentsFromUrlOld(url, false));
             if (file == null)
                 if (cache.hasKey(url)) {
                     file = cache.getFullFile(url);

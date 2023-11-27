@@ -233,7 +233,7 @@ public class ZipLoader {
                         }
                     }
                     File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(
-                            Downloader.deleteQueryArgumentsFromUrl(url, true)
+                            Downloader.deleteQueryArgumentsFromUrlOld(url, true)
                     );
                     if (cachedArchive != null) {
                         if (gameCenterData != null &&
