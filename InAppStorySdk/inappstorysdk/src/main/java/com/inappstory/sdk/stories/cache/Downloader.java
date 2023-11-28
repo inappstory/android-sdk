@@ -5,7 +5,6 @@ import static com.inappstory.sdk.network.NetworkHandler.getResponseFromStream;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
@@ -48,6 +47,10 @@ public class Downloader {
      *
      * @param url ссылка
      */
+    public static String cropUrlOld(String url, boolean crop) {
+        return url;// ? url.split("\\?")[0] : url;
+    }
+
     public static String cropUrl(String url, boolean crop) {
         return crop ? url.split("\\?")[0] : url;
     }
@@ -112,7 +115,7 @@ public class Downloader {
         requestLog.isStatic = true;
         requestLog.id = requestId;
         responseLog.id = requestId;
-        String key = cropUrl(url, cropUrl);
+        String key = cropUrlOld(url, cropUrl);
         HashMap<String, String> headers = new HashMap<>();
         long offset = 0;
 
@@ -179,7 +182,7 @@ public class Downloader {
             File img,
             FileLoadProgressCallback callback
     ) throws Exception {
-        String key = hashKey + "_" + cropUrl(url, true);
+        String key = hashKey + "_" + cropUrlOld(url, true);
         long offset = 0;
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
@@ -227,7 +230,7 @@ public class Downloader {
 
     public static File getCoverVideo(@NonNull String url,
                                      LruDiskCache cache) throws IOException {
-        String key = cropUrl(url, false);
+        String key = cropUrlOld(url, false);
 
         if (cache.hasKey(key)) {
             return updateFile(cache.getFullFile(key), url, cache, key);
@@ -298,7 +301,7 @@ public class Downloader {
 
     public static String getFontFile(String url) {
         if (url == null || url.isEmpty()) return null;
-        String key = cropUrl(url, true);
+        String key = cropUrlOld(url, true);
         File img = null;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return null;
