@@ -18,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -42,6 +43,7 @@ import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
+import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
@@ -75,7 +77,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     protected void onStop() {
         super.onStop();
-
     }
 
     ShowGoodsCallback currentGoodsCallback = null;
@@ -402,7 +403,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                             android.R.anim.fade_in,
                             android.R.anim.fade_out
                     )*/
-                    .replace(R.id.activity_fragments_layout, storiesLoaderFragment);
+                    .replace(R.id.stories_fragments_layout, storiesLoaderFragment);
             t.addToBackStack("TEST");
             t.commit();
         } catch (IllegalStateException e) {
@@ -417,7 +418,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             try {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
-                        .replace(R.id.activity_fragments_layout, storiesContentFragment);
+                        .replace(R.id.stories_fragments_layout, storiesContentFragment);
                 t.addToBackStack("STORIES_FRAGMENT");
                 t.commit();
             } catch (IllegalStateException e) {
@@ -459,6 +460,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onBackPressed() {
+        Fragment fragmentById = getStoriesReaderFragmentManager().findFragmentById(R.id.ias_outer_top_container);
+        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
+            return;
+        }
+        fragmentById = getStoriesReaderFragmentManager().findFragmentById(R.id.ias_dialog_container);
+        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
+            return;
+        }
         closeStoryReader(-1);
     }
 

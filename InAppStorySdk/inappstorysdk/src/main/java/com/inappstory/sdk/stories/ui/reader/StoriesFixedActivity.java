@@ -328,7 +328,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
                     try {
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         FragmentTransaction t = fragmentManager.beginTransaction()
-                                .replace(R.id.activity_fragments_layout, storiesContentFragment);
+                                .replace(R.id.stories_fragments_layout, storiesContentFragment);
                         t.addToBackStack("STORIES_FRAGMENT");
                         t.commit();
                     } catch (IllegalStateException e) {

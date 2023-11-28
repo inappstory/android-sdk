@@ -34,7 +34,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.dialog.ContactDialogFragment;
 import com.inappstory.sdk.stories.ui.reader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
@@ -99,7 +98,6 @@ public abstract class StoriesMainFragment extends Fragment implements
         currentGoodsCallback = null;
     }
 
-
     private void useContentFragment(FragmentAction<StoriesContentFragment> action) {
         if (!isAdded()) {
             return;
@@ -160,13 +158,17 @@ public abstract class StoriesMainFragment extends Fragment implements
             storiesContentFragment.setArguments(getArguments());
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.activity_fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
+                    .replace(R.id.stories_fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
             t.addToBackStack("STORIES_FRAGMENT");
             t.commitAllowingStateLoss();
-        } else {
-            clearDialog();
-            clearOverlap();
         }
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        clearDialog();
+        clearOverlap();
     }
 
     private void clearDialog() {
@@ -174,9 +176,8 @@ public abstract class StoriesMainFragment extends Fragment implements
         Fragment oldFragment =
                 parentFragmentManager.findFragmentById(R.id.ias_dialog_container);
         if (oldFragment != null) {
-            FragmentTransaction transaction = parentFragmentManager.beginTransaction().remove(oldFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            parentFragmentManager.beginTransaction().replace(R.id.ias_dialog_container, new Fragment()).commit();
+            parentFragmentManager.popBackStack();
         }
     }
 
@@ -185,7 +186,8 @@ public abstract class StoriesMainFragment extends Fragment implements
         Fragment oldFragment =
                 parentFragmentManager.findFragmentById(R.id.ias_outer_top_container);
         if (oldFragment != null) {
-            parentFragmentManager.beginTransaction().remove(oldFragment).commit();
+            parentFragmentManager.beginTransaction().replace(R.id.ias_outer_top_container, new Fragment()).commit();
+            parentFragmentManager.popBackStack();
         }
     }
 
@@ -327,6 +329,12 @@ public abstract class StoriesMainFragment extends Fragment implements
                 });
             }
         };
+        backTintView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                outsideClick();
+            }
+        });
         useContentFragment(new FragmentAction<StoriesContentFragment>() {
             @Override
             public void invoke(StoriesContentFragment fragment) {
@@ -610,7 +618,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
             storiesLoaderFragment.setArguments(getArguments());
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.activity_fragments_layout, storiesLoaderFragment, "STORIES_LOADER_FRAGMENT");
+                    .replace(R.id.stories_fragments_layout, storiesLoaderFragment, "STORIES_LOADER_FRAGMENT");
             t.addToBackStack("STORIES_LOADER_FRAGMENT");
             t.commitAllowingStateLoss();
         } catch (Exception e) {
@@ -628,4 +636,6 @@ public abstract class StoriesMainFragment extends Fragment implements
     abstract void reInitUI();
 
     abstract void onDrag(float rawOffset);
+
+    abstract void outsideClick();
 }

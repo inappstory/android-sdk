@@ -30,4 +30,9 @@ public class StoriesMainPhoneFragment extends StoriesMainFragment {
     void onDrag(float rawOffset) {
         backTintView.setAlpha(Math.min(1f, Math.max(0f, 1f - rawOffset)));
     }
+
+    @Override
+    void outsideClick() {
+
+    }
 }

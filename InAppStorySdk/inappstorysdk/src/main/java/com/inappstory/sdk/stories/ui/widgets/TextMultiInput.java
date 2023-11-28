@@ -47,6 +47,23 @@ public class TextMultiInput extends LinearLayout {
 
     private String baseHint = "";
 
+    @Override
+    public void setOnFocusChangeListener(OnFocusChangeListener l) {
+        this.onFocusChangeListener = l;
+        OnFocusChangeListener focusChangeListener = new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                onFocusChangeListener.onFocusChange(v, hasFocus());
+            }
+        };
+        if (inputType == PHONE) {
+            getCountryCodeText().setOnFocusChangeListener(focusChangeListener);
+        }
+        getMainText().setOnFocusChangeListener(focusChangeListener);
+    }
+
+    OnFocusChangeListener onFocusChangeListener;
+
     public void setTextColor(int textColor) {
         getMainText().setTextColor(textColor);
         if (inputType == PHONE) {
@@ -54,6 +71,53 @@ public class TextMultiInput extends LinearLayout {
         }
     }
 
+    @Override
+    public boolean hasFocus() {
+        if (inputType == PHONE) {
+            if (getCountryCodeText() == null || getMainText() == null) return false;
+            return getCountryCodeText().hasFocus() || getMainText().hasFocus();
+        } else {
+            if (getMainText() == null) return false;
+            return getMainText().hasFocus();
+        }
+    }
+
+    @Override
+    public void clearFocus() {
+        View mt = getMainText();
+        if (mt == null) return;
+        View currentFocus = null;
+        if (inputType == PHONE) {
+            View cct = getCountryCodeText();
+            if (cct == null) return;
+            if (cct.hasFocus()) {
+                currentFocus = cct;
+            }
+        } else {
+            getMainText().clearFocus();
+        }
+        if (mt.hasFocus()) {
+            currentFocus = mt;
+        }
+        if (currentFocus != null && onFocusChangeListener != null) {
+            currentFocus.clearFocus();
+            onFocusChangeListener.onFocusChange(currentFocus, false);
+        }
+    }
+
+    public void requestFocusField() {
+        View currentFocus = null;
+        if (inputType == PHONE) {
+            if (getCountryCodeText() == null) return;
+            currentFocus = getCountryCodeText();
+        } else {
+            if (getMainText() == null) return;
+            currentFocus = getMainText();
+        }
+        currentFocus.requestFocus();
+       /* if (onFocusChangeListener != null)
+            onFocusChangeListener.onFocusChange(currentFocus, false);*/
+    }
 
     public String getText() {
         if (inputType == PHONE) {

@@ -5,7 +5,7 @@
     android:background="@android:color/transparent">
 
     <FrameLayout
-        android:id="@+id/activity_fragments_layout"
+        android:id="@+id/stories_fragments_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

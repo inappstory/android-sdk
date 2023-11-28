@@ -307,11 +307,6 @@ public class ReaderManager {
         final int pos = position;
 
         InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId, listID);
-        if (Sizes.isTablet()) {
-            if (parentFragment.getParentFragment() instanceof StoriesDialogFragment) {
-                ((StoriesDialogFragment) parentFragment.getParentFragment()).changeStory(position);
-            }
-        }
         InAppStoryService.getInstance().setCurrentId(currentStoryId);
         if (story != null) {
             currentSlideIndex = story.lastIndex;

@@ -34,6 +34,8 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
@@ -52,7 +54,12 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.cs_stories_dialog_fragment, container, false);
+
+        appearanceSettings = (StoriesReaderAppearanceSettings) getArguments()
+                .getSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
+        launchData = (StoriesReaderLaunchData) getArguments().
+                getSerializable(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+        return inflater.inflate(R.layout.cs_mainscreen_stories_draggable, container, false);
     }
 
 
@@ -71,10 +78,8 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                             new SlideData(
                                     StoryData.getStoryData(
                                             story,
-                                            getArguments().getString("feedId"),
-                                            CallbackManager.getInstance().getSourceFromInt(
-                                                    getArguments().getInt("source", 0)
-                                            ),
+                                            launchData.getFeed(),
+                                            launchData.getSourceType(),
                                             type
                                     ),
                                     story.lastIndex,
@@ -86,7 +91,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
                 String cause = StatisticManager.CLICK;
                 StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
                         story.getSlidesCount(),
-                        getArguments().getString("feedId"));
+                        launchData.getFeed());
             }
 
         }
@@ -185,7 +190,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     @Override
     public boolean onBackPressed() {
-        Fragment frag = getChildFragmentManager().findFragmentById(R.id.dialog_fragment);
+        Fragment frag = getChildFragmentManager().findFragmentById(R.id.stories_fragments_layout);
         if (frag != null && frag instanceof IASBackPressHandler) {
             if (((IASBackPressHandler) frag).onBackPressed())
                 return true;
@@ -203,7 +208,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.dialog_fragment);
+        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.stories_fragments_layout);
         if (null != currentFragment && currentFragment.onOptionsItemSelected(item)) {
             return true;
         }
@@ -219,10 +224,14 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
 
     public void changeStory(int index) {
-        getArguments().putInt("index", index);
+       // getArguments().putInt("index", index);
     }
 
     Story.StoryType type = Story.StoryType.COMMON;
+
+
+    StoriesReaderAppearanceSettings appearanceSettings;
+    StoriesReaderLaunchData launchData;
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -230,23 +239,13 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         cleaned = false;
         int color = getArguments().getInt(AppearanceManager.CS_READER_BACKGROUND_COLOR, Color.BLACK);
         view.setBackgroundColor(color);
-        String stStoriesType = getArguments().getString("storiesType", Story.StoryType.COMMON.name());
-        if (stStoriesType != null) {
-            if (stStoriesType.equals(Story.StoryType.UGC.name()))
-                type = Story.StoryType.UGC;
-        }
+        type = launchData.getType();
         if (savedInstanceState == null) {
             storiesContentFragment = new StoriesContentFragment();
             Bundle args = new Bundle();
-            args.putBoolean("isDialogFragment", true);
-            args.putInt("index", getArguments().getInt("index", 0));
-
-            args.putInt("source", getArguments().getInt("source", ShowStory.SINGLE));
-            args.putInt("firstAction", getArguments().getInt("firstAction", ShowStory.ACTION_OPEN));
-            args.putString("storiesType", getArguments().getString("storiesType"));
-            args.putInt("slideIndex", getArguments().getInt("slideIndex", 0));
+            args.putSerializable(appearanceSettings.getSerializableKey(), appearanceSettings);
+            args.putSerializable(launchData.getSerializableKey(), launchData);
             setAppearanceSettings(args);
-            args.putIntegerArrayList("stories_ids", getArguments().getIntegerArrayList("stories_ids"));
             storiesContentFragment.setArguments(args);
         } else {
             storiesContentFragment =
@@ -255,7 +254,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         if (storiesContentFragment != null) {
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction t = fragmentManager.beginTransaction()
-                    .replace(R.id.dialog_fragment, storiesContentFragment);
+                    .replace(R.id.stories_fragments_layout, storiesContentFragment);
             t.addToBackStack("STORIES_FRAGMENT");
             t.commitAllowingStateLoss();
         } else {

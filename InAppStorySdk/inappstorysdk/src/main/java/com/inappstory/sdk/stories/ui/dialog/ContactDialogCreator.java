@@ -70,7 +70,7 @@ public class ContactDialogCreator {
         fragment.setArguments(arguments);
         FragmentTransaction t = parentFragmentManager.beginTransaction()
                 .replace(R.id.ias_dialog_container, fragment);
-        t.addToBackStack("IASDialogFragment");
+        t.addToBackStack(ContactDialogFragment.TAG);
         t.commit();
         fragment.sendListener = this.sendListener;
         fragment.cancelListener = this.cancelListener;

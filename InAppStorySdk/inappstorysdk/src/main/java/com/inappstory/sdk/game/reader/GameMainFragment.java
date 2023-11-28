@@ -46,7 +46,7 @@ public class GameMainFragment extends Fragment
                 fragment.setArguments(args);
                 FragmentManager fragmentManager = getGameReaderFragmentManager();
                 FragmentTransaction t = fragmentManager.beginTransaction()
-                        .replace(R.id.activity_fragments_layout, fragment, fragmentTag);
+                        .replace(R.id.stories_fragments_layout, fragment, fragmentTag);
                 t.addToBackStack(fragmentTag);
                 t.commit();
             } catch (IllegalStateException e) {

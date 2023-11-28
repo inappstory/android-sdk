@@ -20,6 +20,7 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -42,6 +43,7 @@ import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
+import com.inappstory.sdk.stories.ui.utils.OnKeyboardVisibilityListener;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -65,6 +67,8 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     private DialogStructure dialogStructure;
     String dialogId;
     int storyId;
+
+    public static final String TAG = "IASDialogFragment";
 
     public SendListener sendListener;
     public CancelListener cancelListener;
@@ -103,56 +107,85 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         bindViews(view);
-        view.getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
+        if (getActivity() != null)
+            getActivity().getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        globalLayoutListener = null;
         sendListener = null;
         cancelListener = null;
     }
 
     @Override
     public void onDestroyView() {
-        if (getView() != null && globalLayoutListener != null)
-            getView().getViewTreeObserver().removeOnGlobalLayoutListener(globalLayoutListener);
-        super.onDestroyView();
+        //   if (getView() != null && globalLayoutListener != null)
+        if (getActivity() != null)
+            getActivity().getWindow().getDecorView().getViewTreeObserver().removeOnGlobalLayoutListener(globalLayoutListener);
+
+       super.onDestroyView();
     }
 
     ViewTreeObserver.OnGlobalLayoutListener globalLayoutListener;
+
+
+
+    private final int defaultKeyboardHeightDP = 100;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                Rect rect = new Rect();
-                if (getActivity() != null) {
-                    getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-                    int size = Sizes.getScreenSize(getActivity()).y - rect.height();
-                    if (size > 100) {
-                        newCenterStructure = new CenterStructure(
-                                50f,
-                                50f * (Sizes.getScreenSize(getActivity()).y - size) /
-                                        Sizes.getScreenSize(getActivity()).y);
-                    } else {
-                        newCenterStructure = new CenterStructure(50, 50);
-                    }
-                    if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                animateDialogArea();
-                            }
-                        });
+            private boolean alreadyOpen;
+            private final Rect rect = new Rect();
+            private Runnable checkRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (getActivity() != null) {
+                        getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+                        int size = Sizes.getScreenSize(getActivity()).y - rect.height();
+
+                        boolean isShown = size >= Sizes.dpToPxExt(defaultKeyboardHeightDP, getActivity());
+                        if (isShown == alreadyOpen) {
+                            return;
+                        }
+                        alreadyOpen = isShown;
+
+                        if (isShown) {
+                            newCenterStructure = new CenterStructure(
+                                    50f,
+                                    50f * (Sizes.getScreenSize(getActivity()).y - size) /
+                                            Sizes.getScreenSize(getActivity()).y);
+
+                        } else {
+                            newCenterStructure = new CenterStructure(50, 50);
+                            // if (editText != null) editText.clearFocus();
+                        }
+                        keyboardIsShown = isShown;
+                        if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
+                            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    animateDialogArea();
+                                }
+                            });
+                        }
                     }
                 }
+            };
+            private Handler keyboardHandler = new Handler(Looper.getMainLooper());
+
+            @Override
+            public void onGlobalLayout() {
+                Log.e("keyboardSize", "onGlobalLayout");
+                keyboardHandler.removeCallbacks(checkRunnable);
+                keyboardHandler.postDelayed(checkRunnable, 500);
             }
         };
     }
+
+    boolean keyboardIsShown = false;
 
     ValueAnimator animator;
 
@@ -200,6 +233,60 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
     CenterStructure currentCenterStructure;
     FrameLayout dialogArea;
 
+    private void showKeyboard(View view) {
+        // view.requestFocus();
+        if (getContext() == null) return;
+        InputMethodManager imm =
+                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+     /*   new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (getActivity() != null) {
+                    Rect rect = new Rect();
+                    getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+                    int size = Sizes.getScreenSize(getActivity()).y - rect.height();
+                    newCenterStructure = new CenterStructure(
+                            50f,
+                            50f * (Sizes.getScreenSize(getActivity()).y - size) /
+                                    Sizes.getScreenSize(getActivity()).y);
+                    if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                animateDialogArea();
+                            }
+                        });
+                    }
+
+                }
+            }
+        }, 300);*/
+    }
+
+    private void hideKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+       /* new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (getActivity() != null) {
+                    newCenterStructure = new CenterStructure(50, 50);
+                    if (!isAnimated && (newCenterStructure.y != currentCenterStructure.y)) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                animateDialogArea();
+                            }
+                        });
+                    }
+                }
+            }
+        }, 300);*/
+    }
+
+    TextMultiInput editText = null;
+
     private void bindViews(@NonNull View dialog) {
         FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
         final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
@@ -207,7 +294,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
         editBorderContainer.setElevation(0f);
         editContainer.setElevation(0f);
-        final TextMultiInput editText = dialog.findViewById(R.id.editText);
+        editText = dialog.findViewById(R.id.editText);
         String type = dialogStructure.configV2.main.input.type;
         int inttype = TEXT;
         if (type.equals("email")) inttype = MAIL;
@@ -477,58 +564,58 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
             }
         });
         StatisticManager.getInstance().pauseStoryEvent(false);
-        final AppCompatEditText et = (inttype == PHONE) ?
-                editText.getCountryCodeText() : editText.getMainText();
-       /* dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
-
-                cancelListener.onCancel(dialogId);
-            }
-        });*/
         final int finalInttype = inttype;
         buttonBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (validate(finalInttype, editText.getMainText().getText().toString(),
                         editText.getMaskLength())) {
-                    hideDialog();
-                    String val = editText.getText().replaceAll("\"", "\\\\\"");
-                    if (sendListener != null)
+                    if (hideKeyboardOrDialog() && sendListener != null) {
+                        String val = editText.getText().replaceAll("\"", "\\\\\"");
                         sendListener.onSend(dialogId, val);
+                    }
                 } else {
                     editBorderContainer.setBackground(editBorderContainerErrorGradient);
                     editText.setTextColor(Color.RED);
                 }
             }
         });
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    showKeyboard(v);
+                } else {
+                    hideKeyboard(v);
+                }
+            }
+        });
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                et.requestFocus();
-                InputMethodManager imm =
-                        (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT);
+                editText.requestFocusField();
             }
         }, 200);
         animateDialogArea();
         dialog.findViewById(R.id.emptyArea).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hideDialog();
-                if (cancelListener != null)
+                if (hideKeyboardOrDialog() && cancelListener != null) {
                     cancelListener.onCancel(dialogId);
+                }
             }
         });
     }
 
-    private void hideDialog() {
-        getParentFragmentManager().popBackStack();
-        final TextMultiInput editText = getView().findViewById(R.id.editText);
-        editText.clearFocus();
-        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
-        StatisticManager.getInstance().resumeStoryEvent(true);
+    private boolean hideKeyboardOrDialog() {
+        if (keyboardIsShown) {
+            if (editText != null) editText.clearFocus();
+            return false;
+        } else {
+            StatisticManager.getInstance().resumeStoryEvent(true);
+            getParentFragmentManager().popBackStack();
+            return true;
+        }
     }
 
     boolean validate(int type, String value, int length) {
@@ -553,9 +640,9 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
 
     @Override
     public boolean onBackPressed() {
-        hideDialog();
-        if (cancelListener != null)
+        if (hideKeyboardOrDialog() && cancelListener != null) {
             cancelListener.onCancel(dialogId);
+        }
         return true;
     }
 }

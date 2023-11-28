@@ -27,6 +27,7 @@
             android:background="@android:color/transparent"
             android:fitsSystemWindows="false"
             app:dragDismissDistance="250dp"
+            android:clickable="true"
             app:dragDismissEnableBottomDrag="true"
             app:dragDismissScale="0.90">
 
@@ -36,7 +37,7 @@
                 android:layout_height="match_parent"
                 android:fillViewport="true">
                 <FrameLayout
-                    android:id="@+id/activity_fragments_layout"
+                    android:id="@+id/stories_fragments_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1" />

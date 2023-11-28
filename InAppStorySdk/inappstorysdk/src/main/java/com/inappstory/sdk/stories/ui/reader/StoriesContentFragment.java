@@ -6,9 +6,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -349,6 +351,7 @@ public class StoriesContentFragment extends Fragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         if (InAppStoryService.isNull() || currentIds == null || currentIds.isEmpty()) {
             forceFinish();
             return;
