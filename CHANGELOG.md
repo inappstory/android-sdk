@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+
+Version *1.17.6 (806)*
+----------------------------
+
+* Fixed: link caching (use QS)
+* Fixed: crash with durations array
+* Fixed: crash with null values in stories cache
+* Fixed: images decompression
+
+  
+Version *1.16.9 (759)*
+----------------------------
+
+* Fixed: link caching (use QS)
+* Fixed: crash with durations array
+* Fixed: crash with null values in stories cache
+* Fixed: images decompression
+
 Version *1.17.5 (805)*
 ----------------------------
 
