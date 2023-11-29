@@ -106,6 +106,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class GameActivity extends AppCompatActivity implements OverlapFragmentObserver {
 
@@ -587,6 +588,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
             isFullscreen = options != null && options.fullScreen;
             if (forceFullscreen != null)
                 isFullscreen = forceFullscreen;
+            setOrientationFromOptions(options);
             manager.resources = getIntent().getStringExtra("gameResources");
             manager.gameConfig = getIntent().getStringExtra("gameConfig");
             manager.splashImagePath = getIntent().getStringExtra("splashImagePath");
@@ -847,7 +849,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     private void setOrientationFromOptions(GameScreenOptions options) {
         if (options != null) {
-            if (options.screenOrientation == "landscape") {
+            if ("landscape".equals(options.screenOrientation)) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 return;
             }
