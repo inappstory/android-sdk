@@ -5,6 +5,8 @@ import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -157,7 +159,7 @@ public class GameManager {
             StatisticManager.getInstance().sendGameEvent(name, data, dataModel.slideData.story.feed);
     }
 
-    private void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
+    private void gameCompletedWithObject(String gameState, final GameFinishOptions options, String eventData) {
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().finishGame(
                     dataModel,
@@ -165,6 +167,7 @@ public class GameManager {
                     gameCenterId
             );
         }
+        host.gameCompleted(gameState, null);
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
@@ -173,8 +176,8 @@ public class GameManager {
                     host.getContext(),
                     AppearanceManager.getCommonInstance()
             );
+
         }
-        host.gameCompleted(gameState, null);
 
     }
 

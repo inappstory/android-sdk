@@ -62,6 +62,28 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
+    @Override
+    public void resumeReader() {
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment fragment) {
+                if (fragment.readerManager != null)
+                    fragment.readerManager.resumeCurrent(true);
+            }
+        });
+    }
+
+    @Override
+    public void pauseReader() {
+        useContentFragment(new StoriesContentFragmentAction() {
+            @Override
+            public void invoke(StoriesContentFragment fragment) {
+                if (fragment.readerManager != null)
+                    fragment.readerManager.pauseCurrent(true);
+            }
+        });
+    }
+
     public static StoriesMainFragment newInstance(Bundle bundle) {
         StoriesMainFragment fragment;
         if (Sizes.isTablet()) fragment = new StoriesMainTabletFragment();
@@ -264,6 +286,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.e("StoriesMainFragment", "onViewCreated " + this);
         if (getActivity() == null) return;
         if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             forceFinish();
@@ -420,12 +443,11 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     void finishAfterTransition() {
-        ScreensManager.getInstance().hideGoods();
-        ScreensManager.getInstance().closeGameReader();
         if (animateFirst) {
             animateFirst = false;
             closeAnim();
         } else {
+            Log.e("StoriesMainFragment", "finishWithoutTransition " + this);
             requireActivity().getSupportFragmentManager().popBackStack();
         }
     }
@@ -458,11 +480,13 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onDestroy() {
+        Log.e("StoriesMainFragment", "onDestroy " + this);
         super.onDestroy();
     }
 
     @Override
     public void onDestroyView() {
+        Log.e("StoriesMainFragment", "onDestroyView " + this);
         super.onDestroyView();
     }
 
@@ -508,10 +532,11 @@ public abstract class StoriesMainFragment extends Fragment implements
                         @Override
                         public void onAnimationEnd() {
                             draggableFrame.setVisibility(View.GONE);
+                            if (getActivity() != null)
+                                getActivity().
+                                        getWindow().
+                                        clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             forceFinish();
-                            requireActivity().
-                                    getWindow().
-                                    clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                         }
                     })
                     .start();

@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.ui;
 
 import static java.util.UUID.randomUUID;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -55,6 +54,29 @@ public class ScreensManager {
         }
     }
 
+    public void subscribeGameScreen(BaseGameReaderScreen screen) {
+        if (currentGameScreen != null && currentGameScreen != screen) {
+            currentGameScreen.forceFinish();
+        }
+        currentGameScreen = screen;
+    }
+
+    public void resumeStoriesReader() {
+        if (currentStoriesReaderScreen != null)
+            currentStoriesReaderScreen.resumeReader();
+    }
+
+    public void pauseStoriesReader() {
+        if (currentStoriesReaderScreen != null)
+            currentStoriesReaderScreen.pauseReader();
+    }
+
+    public void unsubscribeGameScreen(BaseGameReaderScreen screen) {
+        if (screen == currentGameScreen) {
+            currentGameScreen = null;
+        }
+    }
+
     public void clearShareIds() {
         shareCompleteListener(null);
     }
@@ -74,7 +96,7 @@ public class ScreensManager {
     }
 
 
-    public BaseGameReaderScreen currentGameScreen;
+    private BaseGameReaderScreen currentGameScreen;
 
 
     public Boolean getTempShareStatus() {
@@ -89,7 +111,7 @@ public class ScreensManager {
 
     private final Object shareListenerLock = new Object();
 
-    public void shareCompleteListener(IShareCompleteListener shareCompleteListener)  {
+    public void shareCompleteListener(IShareCompleteListener shareCompleteListener) {
         synchronized (shareListenerLock) {
             this.shareCompleteListener = shareCompleteListener;
         }
@@ -122,7 +144,6 @@ public class ScreensManager {
     public void closeGameReader() {
         if (currentGameScreen != null) {
             currentGameScreen.forceFinish();
-            currentGameScreen = null;
         }
     }
 
@@ -174,6 +195,8 @@ public class ScreensManager {
         }
     }
 
+
+
     public void openGameReader(Context context,
                                GameStoryData data,
                                String gameId,
@@ -186,7 +209,7 @@ public class ScreensManager {
         if (InAppStoryService.isNull()) {
             return;
         }
-
+        closeGameReader();
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
                 gameId,
                 observableId,
@@ -256,11 +279,6 @@ public class ScreensManager {
             }
         });
 
-    }
-
-    public Dialog goodsDialog;
-
-    public void hideGoods() {
     }
 
     public void showGoods(

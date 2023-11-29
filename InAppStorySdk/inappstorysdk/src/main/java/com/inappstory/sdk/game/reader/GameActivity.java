@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 
@@ -22,6 +23,7 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
+        ScreensManager.getInstance().subscribeGameScreen(this);
         createGameContentFragment(
                 savedInstanceState,
                 (GameReaderLaunchData) getIntent().getSerializableExtra(GameReaderLaunchData.SERIALIZABLE_KEY)
@@ -93,6 +95,8 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
 
     @Override
     protected void onDestroy() {
+
+        ScreensManager.getInstance().unsubscribeGameScreen(this);
         super.onDestroy();
     }
 

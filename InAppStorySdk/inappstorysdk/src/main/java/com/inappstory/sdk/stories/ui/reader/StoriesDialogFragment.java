@@ -65,7 +65,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
-        ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
         if (InAppStoryService.isNotNull()) {
             OldStatisticManager.getInstance().sendStatistic();
@@ -146,6 +145,16 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     @Override
     public void timerIsUnlocked() {
         if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
+    }
+
+    @Override
+    public void pauseReader() {
+
+    }
+
+    @Override
+    public void resumeReader() {
+
     }
 
     @Override

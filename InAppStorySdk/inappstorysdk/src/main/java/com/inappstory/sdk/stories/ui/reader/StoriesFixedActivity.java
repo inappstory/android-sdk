@@ -73,7 +73,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         super.onPause();
         if (isFinishing()) {
 
-            ScreensManager.getInstance().hideGoods();
+           // ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
             StatusBarController.showStatusBar(this);
 
@@ -109,8 +109,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void finish() {
-
-        ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
         if (animateFirst &&
                 android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
@@ -350,6 +348,16 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     @Override
     public void timerIsUnlocked() {
         if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
+    }
+
+    @Override
+    public void pauseReader() {
+
+    }
+
+    @Override
+    public void resumeReader() {
+
     }
 
     @Override

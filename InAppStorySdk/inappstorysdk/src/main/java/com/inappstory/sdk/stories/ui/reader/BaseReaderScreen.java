@@ -12,6 +12,8 @@ public interface BaseReaderScreen {
     void removeAllStoriesFromFavorite();
     void timerIsLocked();
     void timerIsUnlocked();
+    void pauseReader();
+    void resumeReader();
     void setShowGoodsCallback(ShowGoodsCallback callback);
     FragmentManager getStoriesReaderFragmentManager();
 }

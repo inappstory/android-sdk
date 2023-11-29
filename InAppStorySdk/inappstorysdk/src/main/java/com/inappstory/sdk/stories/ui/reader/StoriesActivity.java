@@ -60,7 +60,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
         unsubscribeClicks();
         if (isFinishing()) {
-            ScreensManager.getInstance().hideGoods();
+           // ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
             StatusBarController.showStatusBar(this);
 
@@ -93,7 +93,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void finish() {
 
-        ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
         if (animateFirst &&
                 android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
@@ -150,11 +149,11 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
             default:
                 Point coordinates = ScreensManager.getInstance().coordinates;
-                float pivotX = screenSize.x / 2f;
-                float pivotY = screenSize.y / 2f;
+                float pivotX = -screenSize.x / 2f;
+                float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
-                    pivotY = coordinates.y;
-                    pivotX = coordinates.x;
+                    pivotX += coordinates.x;
+                    pivotY += coordinates.y;
                 }
                 return new ZoomReaderAnimation(animatedContainer, pivotX, pivotY).setAnimations(true);
         }
@@ -174,14 +173,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         screenSize.y
                 ).setAnimations(false);
             default:
-                float pivotX = (screenSize.x - draggableFrame.getX()) / 2f;
-                float pivotY = (screenSize.y - draggableFrame.getY()) / 2f;
                 Point coordinates = ScreensManager.getInstance().coordinates;
+                float pivotX = -screenSize.x / 2f;
+                float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
-                    pivotX = coordinates.x - draggableFrame.getX();
-                    pivotY = coordinates.y - draggableFrame.getY();
+                    pivotX += coordinates.x;
+                    pivotY += coordinates.y;
                 }
-
                 return new ZoomReaderAnimation(animatedContainer,
                         pivotX,
                         pivotY
@@ -272,6 +270,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     @Override
     public void timerIsUnlocked() {
         if (storiesContentFragment != null) storiesContentFragment.timerIsUnlocked();
+    }
+
+    @Override
+    public void pauseReader() {
+
+    }
+
+    @Override
+    public void resumeReader() {
+
     }
 
     @Override

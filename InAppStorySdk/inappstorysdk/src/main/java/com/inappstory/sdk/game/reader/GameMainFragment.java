@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
+import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -57,12 +58,26 @@ public class GameMainFragment extends Fragment
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ScreensManager.getInstance().pauseStoriesReader();
+    }
+
+    @Override
+    public void onDestroy() {
+        ScreensManager.getInstance().resumeStoriesReader();
+        super.onDestroy();
+    }
+
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (getArguments() == null) {
             forceFinish();
             return;
         }
+        ScreensManager.getInstance().subscribeGameScreen(this);
         createGameContentFragment(
                 savedInstanceState,
                 (GameReaderLaunchData) getArguments().getSerializable(GameReaderLaunchData.SERIALIZABLE_KEY)
@@ -70,10 +85,16 @@ public class GameMainFragment extends Fragment
     }
 
     @Override
+    public void onDestroyView() {
+        ScreensManager.getInstance().unsubscribeGameScreen(this);
+        super.onDestroyView();
+    }
+
+
+    @Override
     public void forceFinish() {
         getParentFragmentManager().popBackStack();
     }
-
 
 
     @Override

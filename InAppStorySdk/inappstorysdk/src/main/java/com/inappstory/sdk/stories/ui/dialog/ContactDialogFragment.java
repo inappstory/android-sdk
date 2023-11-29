@@ -43,7 +43,6 @@ import com.inappstory.sdk.stories.api.models.dialogstructure.CenterStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.DialogStructure;
 import com.inappstory.sdk.stories.api.models.dialogstructure.SizeStructure;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
-import com.inappstory.sdk.stories.ui.utils.OnKeyboardVisibilityListener;
 import com.inappstory.sdk.stories.ui.widgets.TextMultiInput;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -124,11 +123,10 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         if (getActivity() != null)
             getActivity().getWindow().getDecorView().getViewTreeObserver().removeOnGlobalLayoutListener(globalLayoutListener);
 
-       super.onDestroyView();
+        super.onDestroyView();
     }
 
     ViewTreeObserver.OnGlobalLayoutListener globalLayoutListener;
-
 
 
     private final int defaultKeyboardHeightDP = 100;
@@ -570,9 +568,11 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
             public void onClick(View view) {
                 if (validate(finalInttype, editText.getMainText().getText().toString(),
                         editText.getMaskLength())) {
-                    if (hideKeyboardOrDialog() && sendListener != null) {
+                    if (sendListener != null) {
                         String val = editText.getText().replaceAll("\"", "\\\\\"");
                         sendListener.onSend(dialogId, val);
+                        hideKeyboard();
+                        hideDialog();
                     }
                 } else {
                     editBorderContainer.setBackground(editBorderContainerErrorGradient);
@@ -600,22 +600,26 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         dialog.findViewById(R.id.emptyArea).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (hideKeyboardOrDialog() && cancelListener != null) {
+                if (hideKeyboard() && cancelListener != null) {
                     cancelListener.onCancel(dialogId);
+                    hideDialog();
                 }
             }
         });
     }
 
-    private boolean hideKeyboardOrDialog() {
+    private boolean hideKeyboard() {
         if (keyboardIsShown) {
             if (editText != null) editText.clearFocus();
             return false;
         } else {
-            StatisticManager.getInstance().resumeStoryEvent(true);
-            getParentFragmentManager().popBackStack();
             return true;
         }
+    }
+
+    private void hideDialog() {
+        StatisticManager.getInstance().resumeStoryEvent(true);
+        getParentFragmentManager().popBackStack();
     }
 
     boolean validate(int type, String value, int length) {
@@ -638,10 +642,12 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
     }
 
+
     @Override
     public boolean onBackPressed() {
-        if (hideKeyboardOrDialog() && cancelListener != null) {
+        if (hideKeyboard() && cancelListener != null) {
             cancelListener.onCancel(dialogId);
+            hideDialog();
         }
         return true;
     }

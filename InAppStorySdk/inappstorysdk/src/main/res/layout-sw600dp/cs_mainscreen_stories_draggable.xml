@@ -58,10 +58,10 @@
             android:visibility="gone" />
 
 
-        <FrameLayout
-            android:id="@+id/ias_outer_top_container"
-            android:layout_gravity="center"
-            android:layout_width="@dimen/cs_tablet_width"
-            android:layout_height="@dimen/cs_tablet_height" />
     </FrameLayout>
+    <FrameLayout
+        android:id="@+id/ias_outer_top_container"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </FrameLayout>
