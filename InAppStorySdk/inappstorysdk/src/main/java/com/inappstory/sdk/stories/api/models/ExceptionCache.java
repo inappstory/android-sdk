@@ -7,15 +7,30 @@ import java.util.List;
 
 public class ExceptionCache {
     public List<Story> getStories() {
-        return stories;
+        List<Story> nonNullStories = new ArrayList<>();
+        if (stories == null) return nonNullStories;
+        for (Story story: stories) {
+            if (story != null) nonNullStories.add(story);
+        }
+        return nonNullStories;
     }
 
     public List<Story> getFavStories() {
-        return favStories;
+        List<Story> nonNullStories = new ArrayList<>();
+        if (favStories == null) return nonNullStories;
+        for (Story story: favStories) {
+            if (story != null) nonNullStories.add(story);
+        }
+        return nonNullStories;
     }
 
     public List<FavoriteImage> getFavoriteImages() {
-        return favoriteImages;
+        List<FavoriteImage> nonNullFavoriteImages = new ArrayList<>();
+        if (favoriteImages == null) return nonNullFavoriteImages;
+        for (FavoriteImage favoriteImage: favoriteImages) {
+            if (favoriteImage != null) nonNullFavoriteImages.add(favoriteImage);
+        }
+        return nonNullFavoriteImages;
     }
 
     private List<Story> stories;
