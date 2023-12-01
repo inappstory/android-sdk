@@ -19,6 +19,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -188,7 +189,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     }
 
     @Override
-    public void onItemClick(int ind) {
+    public void onItemClick(int ind, StoryItemCoordinates coordinates) {
 
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
@@ -301,7 +302,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 ShowStory.ACTION_OPEN,
                 isFavoriteList ? SourceType.FAVORITE : SourceType.LIST,
                 0,
-                Story.StoryType.COMMON
+                Story.StoryType.COMMON,
+                coordinates
         );
         ScreensManager.getInstance().openStoriesReader(
                 context,

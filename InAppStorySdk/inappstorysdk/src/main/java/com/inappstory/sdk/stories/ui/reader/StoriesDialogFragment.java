@@ -158,6 +158,11 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     @Override
+    public void disableDrag(boolean disable) {
+
+    }
+
+    @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
 
     }

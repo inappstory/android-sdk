@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -41,7 +42,8 @@ import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
 import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
-import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
@@ -60,9 +62,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
         unsubscribeClicks();
         if (isFinishing()) {
-           // ScreensManager.getInstance().hideGoods();
+            // ScreensManager.getInstance().hideGoods();
             ScreensManager.getInstance().closeGameReader();
-            StatusBarController.showStatusBar(this);
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) {
+                inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
+            }
 
             OldStatisticManager.getInstance().sendStatistic();
             ScreensManager.created = 0;
@@ -114,7 +119,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         super.onResume();
         subscribeClicks();
         Log.e("activityLifecycle", "onResume");
-        StatusBarController.hideStatusBar(this, true);
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
+        }
     }
 
     public void startAnim(final Bundle savedInstanceState) {
@@ -148,14 +156,22 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             case AppearanceManager.POPUP:
                 return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
             default:
-                Point coordinates = ScreensManager.getInstance().coordinates;
+                StoryItemCoordinates coordinates = ScreensManager.getInstance().coordinates;
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
-                    pivotX += coordinates.x;
-                    pivotY += coordinates.y;
+                    pivotX += coordinates.x();
+                    pivotY += coordinates.y();
+                    return new ZoomReaderFromCellAnimation(animatedContainer,
+                            pivotX,
+                            pivotY
+                    ).setAnimations(true);
+                } else {
+                    return new ZoomReaderCenterAnimation(animatedContainer,
+                            -pivotX,
+                            -pivotY
+                    ).setAnimations(true);
                 }
-                return new ZoomReaderAnimation(animatedContainer, pivotX, pivotY).setAnimations(true);
         }
     }
 
@@ -173,17 +189,23 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                         screenSize.y
                 ).setAnimations(false);
             default:
-                Point coordinates = ScreensManager.getInstance().coordinates;
+                StoryItemCoordinates coordinates = ScreensManager.getInstance().coordinates;
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
-                    pivotX += coordinates.x;
-                    pivotY += coordinates.y;
+                    pivotX += coordinates.x();
+                    pivotY += coordinates.y();
+                    return new ZoomReaderFromCellAnimation(animatedContainer,
+                            pivotX,
+                            pivotY
+                    ).setAnimations(false);
+                } else {
+                    return new ZoomReaderCenterAnimation(animatedContainer,
+                            -pivotX,
+                            -pivotY
+                    ).setAnimations(false);
                 }
-                return new ZoomReaderAnimation(animatedContainer,
-                        pivotX,
-                        pivotY
-                ).setAnimations(false);
+
         }
     }
 
@@ -281,6 +303,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void resumeReader() {
 
     }
+    @Override
+    public void disableDrag(boolean disable) {
+        boolean draggable = appearanceSettings == null || appearanceSettings.csIsDraggable();
+        if (draggableFrame != null)
+            draggableFrame.dragIsDisabled(draggable && disable);
+    }
 
     @Override
     public void setShowGoodsCallback(ShowGoodsCallback callback) {
@@ -305,10 +333,12 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finish();
             return;
         }
+
         appearanceSettings = (StoriesReaderAppearanceSettings) getIntent()
                 .getSerializableExtra(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY);
         launchData = (StoriesReaderLaunchData) getIntent().
                 getSerializableExtra(StoriesReaderLaunchData.SERIALIZABLE_KEY);
+
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
@@ -323,6 +353,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         closeOnOverscroll = appearanceSettings.csCloseOnOverscroll();
 
         draggableFrame = findViewById(R.id.draggable_frame);
+
         blockView = findViewById(R.id.blockView);
         backTintView = findViewById(R.id.background);
         animatedContainer = findViewById(R.id.animatedContainer);
@@ -330,7 +361,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             @Override
             public void onDrag(
                     float elasticOffset,
-                               float elasticOffsetPixels,
+                    float elasticOffsetPixels,
                     float rawOffset,
                     float rawOffsetPixels
             ) {
@@ -374,14 +405,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
                 }
             }
         };
-        try {
-            StatusBarController.hideStatusBar(StoriesActivity.this, true);
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-            finish();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) {
+            forceFinish();
             return;
         }
-        InAppStoryService.getInstance().getListReaderConnector().openReader();
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
+        }
+        service.getListReaderConnector().openReader();
         type = launchData.getType();
         draggableFrame.type = type;
         if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
@@ -436,6 +469,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         } else {
             finishWithoutAnimation();
         }
+
+        disableDrag(false);
     }
 
     private void createStoriesFragment(Bundle savedInstanceState) {
@@ -564,9 +599,10 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
             ScreensManager.getInstance().currentStoriesReaderScreen = null;
         if (!pauseDestroyed) {
-
-            StatusBarController.showStatusBar(this);
-
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) {
+                inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
+            }
             OldStatisticManager.getInstance().sendStatistic();
             ScreensManager.created = 0;
             cleanReader();

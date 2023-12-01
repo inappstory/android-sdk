@@ -30,6 +30,8 @@
         <item name="android:windowSoftInputMode">adjustResize|adjustPan</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">

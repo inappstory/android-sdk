@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
@@ -45,6 +46,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class StoriesList extends RecyclerView {
     public StoriesList(@NonNull Context context) {
@@ -498,10 +500,11 @@ public class StoriesList extends RecyclerView {
         if (layoutManager == null) return;
         final int ind = adapter.getIndexById(storyId);
         if (ind == -1) return;
+        if (!Objects.equals(listID, getUniqueID())) return;
         if (layoutManager instanceof LinearLayoutManager) {
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(Math.max(ind, 0), 0);
         }
-        if (ind >= 0 && this.uniqueID != null && this.uniqueID.equals(listID)) {
+        if (ind >= 0) {
             ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
             renewCoordinates(ind);
         }
@@ -517,7 +520,7 @@ public class StoriesList extends RecyclerView {
                 v.getLocationOnScreen(location);
                 int x = location[0];
                 int y = location[1];
-                ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2,
+                ScreensManager.getInstance().coordinates = new StoryItemCoordinates(x + v.getWidth() / 2,
                         y + v.getHeight() / 2);
 
             }

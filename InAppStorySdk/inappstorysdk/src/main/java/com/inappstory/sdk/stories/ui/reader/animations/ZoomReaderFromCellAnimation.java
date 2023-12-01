@@ -2,11 +2,11 @@ package com.inappstory.sdk.stories.ui.reader.animations;
 
 import android.view.View;
 
-public class ZoomReaderAnimation extends ReaderAnimation {
+public class ZoomReaderFromCellAnimation extends ReaderAnimation {
 
     float startedBackgroundAlpha;
 
-    public ZoomReaderAnimation(
+    public ZoomReaderFromCellAnimation(
             View backgroundView,
             float pivotX,
             float pivotY

@@ -253,6 +253,12 @@ public class InAppStoryManager {
 
     public void openGame(String gameId, @NonNull Context context) {
         InAppStoryService service = InAppStoryService.getInstance();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
+            }
+        });
         if (service != null) {
             service.openGameReaderWithGC(context, null, gameId, null);
         }
@@ -271,7 +277,6 @@ public class InAppStoryManager {
             @Override
             public void run() {
                 ScreensManager.getInstance().closeStoryReader(action);
-                //ScreensManager.getInstance().hideGoods();
                 ScreensManager.getInstance().closeGameReader();
                 ScreensManager.getInstance().closeUGCEditor();
             }
@@ -1164,7 +1169,8 @@ public class InAppStoryManager {
                 ShowStory.ACTION_OPEN,
                 SourceType.ONBOARDING,
                 0,
-                Story.StoryType.COMMON
+                Story.StoryType.COMMON,
+                null
         );
         ScreensManager.getInstance().openStoriesReader(
                 outerContext,
@@ -1394,7 +1400,8 @@ public class InAppStoryManager {
                 readerAction,
                 readerSource,
                 slide,
-                type
+                type,
+                null
         );
         ScreensManager.getInstance().openStoriesReader(
                 context,

@@ -23,6 +23,7 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
@@ -189,10 +190,14 @@ public class StoryListItem extends BaseStoryListItem {
                 v.getLocationOnScreen(location);
                 int x = location[0];
                 int y = location[1];
-                ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
+                ScreensManager.getInstance().coordinates =
+                        new StoryItemCoordinates(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
                         y + v.getHeight() / 2);
                 if (StoryListItem.this.callback != null)
-                    StoryListItem.this.callback.onItemClick(getAbsoluteAdapterPosition());
+                    StoryListItem.this.callback.onItemClick(
+                            getAbsoluteAdapterPosition(),
+                            ScreensManager.getInstance().coordinates
+                    );
             }
         });
         if (getListItem != null) {

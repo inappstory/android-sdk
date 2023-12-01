@@ -120,7 +120,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     boolean gameReaderGestureBack = false;
     boolean hasSplashFile = false;
-    Boolean forceFullscreen = false;
+    Boolean forceFullscreen = true;
     private boolean isFullscreen = false;
 
     DownloadInterruption interruption = new DownloadInterruption();
@@ -270,6 +270,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     public void onDetach() {
         super.onDetach();
         getActivity().setRequestedOrientation(oldOrientation);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (isFullscreen) {
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null && getActivity() != null)
+                inAppStoryManager.getOpenGameReader().onRestoreScreen(getActivity());
+        }
+        super.onDestroyView();
     }
 
     @Override
@@ -638,15 +648,25 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             downloadGame();
         } else {
             GameScreenOptions options = gameReaderLaunchData.getOptions();
-            isFullscreen = options != null && options.fullScreen;
-            if (forceFullscreen != null)
-                isFullscreen = forceFullscreen;
+            setOrientationFromOptions(options);
+            setFullScreenFromOptions(options);
             manager.resources = gameReaderLaunchData.getGameResources();
             manager.gameConfig = gameReaderLaunchData.getGameConfig();
             manager.splashImagePath = gameReaderLaunchData.getSplashImagePath();
             replaceConfigs();
             setLoaderOld();
             callback.complete(null, null);
+        }
+    }
+
+    private void setFullScreenFromOptions(GameScreenOptions options) {
+        isFullscreen = options != null && options.fullScreen;
+        if (forceFullscreen != null)
+            isFullscreen = forceFullscreen;
+        if (isFullscreen) {
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null && getActivity() != null)
+                inAppStoryManager.getOpenGameReader().onShowInFullscreen(getActivity());
         }
     }
 
@@ -723,10 +743,8 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     try {
                                         GameScreenOptions options = gameCenterData.options;
                                         manager.resources = gameCenterData.resources;
-                                        isFullscreen = options != null && options.fullScreen;
                                         setOrientationFromOptions(options);
-                                        if (forceFullscreen != null)
-                                            isFullscreen = forceFullscreen;
+                                        setFullScreenFromOptions(options);
                                     } catch (Exception ignored) {
 
                                     }

@@ -27,6 +27,7 @@ import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
@@ -124,7 +125,7 @@ public class ScreensManager {
     }
 
     public ActiveStoryItem activeStoryItem = null;
-    public Point coordinates = null;
+    public StoryItemCoordinates coordinates = null;
 
     public void clearCoordinates() {
         coordinates = null;
@@ -197,19 +198,38 @@ public class ScreensManager {
 
 
 
-    public void openGameReader(Context context,
-                               GameStoryData data,
-                               String gameId,
-                               String gameUrl,
-                               String splashImagePath,
-                               String gameConfig,
-                               List<WebResource> gameResources,
-                               GameScreenOptions options,
-                               String observableId) {
+    public void openGameReader(final Context context,
+                               final GameStoryData data,
+                               final String gameId,
+                               final String gameUrl,
+                               final String splashImagePath,
+                               final String gameConfig,
+                               final List<WebResource> gameResources,
+                               final GameScreenOptions options,
+                               final String observableId) {
         if (InAppStoryService.isNull()) {
             return;
         }
-        closeGameReader();
+        if (currentGameScreen != null) {
+            closeGameReader();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    openGameReader(
+                            context,
+                            data,
+                            gameId,
+                            gameUrl,
+                            splashImagePath,
+                            gameConfig,
+                            gameResources, options,
+                            observableId
+                    );
+                }
+            }, 500);
+            return;
+        }
+        //TODO skip same game id?
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
                 gameId,
                 observableId,

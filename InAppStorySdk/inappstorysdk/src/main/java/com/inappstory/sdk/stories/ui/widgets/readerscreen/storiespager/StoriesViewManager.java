@@ -438,6 +438,11 @@ public class StoriesViewManager {
     public void storyStartedEvent() {
         if (InAppStoryService.isNotNull())
             pageManager.startStoryTimers();
+
+        final StoriesContentFragment storiesContentFragment =
+                (StoriesContentFragment) pageManager.host.getParentFragment();
+        if (storiesContentFragment != null)
+            storiesContentFragment.disableDrag(storyId, pageManager.getStoryType());
         ProfilingManager.getInstance().setReady(storyId + "_" + index);
     }
 

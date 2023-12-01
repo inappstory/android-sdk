@@ -241,6 +241,7 @@ public class ReaderPageFragment extends Fragment {
                 } else {
                     setCutout(view, 0);
                 }
+
                 blackBottom.setLayoutParams(lp);
                 blackTop.setLayoutParams(lp);
             }
@@ -258,6 +259,7 @@ public class ReaderPageFragment extends Fragment {
                     if (view1 != null) {
                         RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
                         lp1.topMargin += Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
+                        Log.e("topOffsetHeight", ReaderPageFragment.this + " " + lp1.topMargin + " ");
                         view1.setLayoutParams(lp1);
                     }
                 }

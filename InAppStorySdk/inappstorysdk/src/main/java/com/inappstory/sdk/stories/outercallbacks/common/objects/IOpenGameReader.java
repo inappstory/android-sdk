@@ -8,4 +8,12 @@ public interface IOpenGameReader {
             Context context,
             Bundle bundle
     );
+
+    void onHideStatusBar(Context context);
+
+    void onRestoreStatusBar(Context context);
+
+    void onShowInFullscreen(Context context);
+
+    void onRestoreScreen(Context context);
 }

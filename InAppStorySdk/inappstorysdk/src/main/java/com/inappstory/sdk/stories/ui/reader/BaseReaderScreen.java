@@ -14,6 +14,7 @@ public interface BaseReaderScreen {
     void timerIsUnlocked();
     void pauseReader();
     void resumeReader();
+    void disableDrag(boolean disable);
     void setShowGoodsCallback(ShowGoodsCallback callback);
     FragmentManager getStoriesReaderFragmentManager();
 }

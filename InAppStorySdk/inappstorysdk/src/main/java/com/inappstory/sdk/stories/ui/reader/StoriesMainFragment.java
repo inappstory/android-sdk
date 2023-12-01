@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -39,7 +40,8 @@ import com.inappstory.sdk.stories.ui.reader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.HandlerAnimatorListenerAdapter;
 import com.inappstory.sdk.stories.ui.reader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animations.ReaderAnimation;
-import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderCenterAnimation;
+import com.inappstory.sdk.stories.ui.reader.animations.ZoomReaderFromCellAnimation;
 import com.inappstory.sdk.stories.ui.utils.FragmentAction;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.utils.IASBackPressHandler;
@@ -51,6 +53,13 @@ public abstract class StoriesMainFragment extends Fragment implements
         BaseReaderScreen,
         IASBackPressHandler,
         ShowGoodsCallback {
+
+    @Override
+    public void disableDrag(boolean disable) {
+        boolean draggable = appearanceSettings == null || appearanceSettings.csIsDraggable();
+        if (draggableFrame != null)
+            draggableFrame.dragIsDisabled(draggable && disable);
+    }
 
     ElasticDragDismissFrameLayout draggableFrame;
     View blockView;
@@ -163,14 +172,23 @@ public abstract class StoriesMainFragment extends Fragment implements
             case AppearanceManager.POPUP:
                 return new PopupReaderAnimation(animatedContainer, screenSize.y, 0f).setAnimations(true);
             default:
-                Point coordinates = ScreensManager.getInstance().coordinates;
+                StoryItemCoordinates coordinates = ScreensManager.getInstance().coordinates;
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
+
                 if (coordinates != null) {
-                    pivotX += coordinates.x;
-                    pivotY += coordinates.y;
+                    pivotX += coordinates.x();
+                    pivotY += coordinates.y();
+                    return new ZoomReaderFromCellAnimation(animatedContainer,
+                            pivotX,
+                            pivotY
+                    ).setAnimations(true);
+                } else {
+                    return new ZoomReaderCenterAnimation(animatedContainer,
+                            -pivotX,
+                            -pivotY
+                    ).setAnimations(true);
                 }
-                return new ZoomReaderAnimation(animatedContainer, pivotX, pivotY).setAnimations(true);
         }
     }
 
@@ -184,6 +202,8 @@ public abstract class StoriesMainFragment extends Fragment implements
             t.addToBackStack("STORIES_FRAGMENT");
             t.commitAllowingStateLoss();
         }
+
+        disableDrag(false);
     }
 
     @Override
@@ -286,12 +306,18 @@ public abstract class StoriesMainFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.e("StoriesMainFragment", "onViewCreated " + this);
-        if (getActivity() == null) return;
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            inAppStoryManager.getOpenStoriesReader().onHideStatusBar(getActivity());
+        }
+        if (getActivity() == null) {
+            return;
+        }
         if (InAppStoryManager.isNull() || InAppStoryService.isNull()) {
             forceFinish();
             return;
         }
+
         chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(getActivity()) {
             @Override
             public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
@@ -486,6 +512,10 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onDestroyView() {
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(getActivity());
+        }
         Log.e("StoriesMainFragment", "onDestroyView " + this);
         super.onDestroyView();
     }
@@ -504,17 +534,22 @@ public abstract class StoriesMainFragment extends Fragment implements
                         screenSize.y
                 ).setAnimations(false);
             default:
-                Point coordinates = ScreensManager.getInstance().coordinates;
+                StoryItemCoordinates coordinates = ScreensManager.getInstance().coordinates;
                 float pivotX = -screenSize.x / 2f;
                 float pivotY = -screenSize.y / 2f;
                 if (coordinates != null) {
-                    pivotX += coordinates.x;
-                    pivotY += coordinates.y;
+                    pivotX += coordinates.x();
+                    pivotY += coordinates.y();
+                    return new ZoomReaderFromCellAnimation(animatedContainer,
+                            pivotX,
+                            pivotY
+                    ).setAnimations(false);
+                } else {
+                    return new ZoomReaderCenterAnimation(animatedContainer,
+                            -pivotX,
+                            -pivotY
+                    ).setAnimations(false);
                 }
-                return new ZoomReaderAnimation(animatedContainer,
-                        pivotX,
-                        pivotY
-                ).setAnimations(false);
         }
     }
 
@@ -631,6 +666,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         closeStoryReader(-1);
         return true;
     }
+
 
     StoriesReaderAppearanceSettings appearanceSettings;
     StoriesReaderLaunchData launchData;

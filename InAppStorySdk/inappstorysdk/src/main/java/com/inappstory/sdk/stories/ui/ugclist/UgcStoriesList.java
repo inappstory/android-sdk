@@ -24,6 +24,7 @@ import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
@@ -33,6 +34,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
+import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 
@@ -136,9 +138,35 @@ public class UgcStoriesList extends RecyclerView {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         manager.list = this;
+        if (
+                ScreensManager.getInstance().activeStoryItem != null
+                        && uniqueID != null
+                        && uniqueID.equals(
+                        ScreensManager.getInstance().activeStoryItem.getUniqueListId()
+                )
+        ) {
+            renewCoordinates(ScreensManager.getInstance().activeStoryItem.getListIndex());
+        }
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
+    }
+
+    private void renewCoordinates(final int index) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int[] location = new int[2];
+                View v = layoutManager.findViewByPosition(index);
+                if (v == null) return;
+                v.getLocationOnScreen(location);
+                int x = location[0];
+                int y = location[1];
+                ScreensManager.getInstance().coordinates = new StoryItemCoordinates(x + v.getWidth() / 2,
+                        y + v.getHeight() / 2);
+
+            }
+        }, 950);
     }
 
     private void init(AttributeSet attributeSet) {
@@ -292,25 +320,15 @@ public class UgcStoriesList extends RecyclerView {
         if (ind == -1) return;
         if (layoutManager instanceof LinearLayoutManager) {
             ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
-        } else if (layoutManager instanceof GridLayoutManager) {
-            ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(ind > 0 ? ind : 0, 0);
         }
-        if (ind >= 0 && listID != null && this.uniqueID != null && this.uniqueID.equals(listID)) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    int[] location = new int[2];
-                    View v = layoutManager.findViewByPosition(ind);
-                    if (v == null) return;
-                    v.getLocationOnScreen(location);
-                    int x = location[0];
-                    int y = location[1];
-                    ScreensManager.getInstance().coordinates = new Point(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, getContext()),
-                            y + v.getHeight() / 2);
+        if (ind >= 0 && this.uniqueID != null && this.uniqueID.equals(listID)) {
+            ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
+            renewCoordinates(ind);
+        }
+    }
 
-                }
-            }, 950);
-        }
+    public void setUniqueID(String uniqueID) {
+        this.uniqueID = uniqueID;
     }
 
     @Override

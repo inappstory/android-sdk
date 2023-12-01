@@ -18,6 +18,7 @@ import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
@@ -29,6 +30,7 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
 import com.inappstory.sdk.stories.ui.list.ClickCallback;
+import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -142,12 +144,13 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
     Long clickTimestamp = -1L;
 
     @Override
-    public void onItemClick(int ind) {
+    public void onItemClick(int ind, StoryItemCoordinates coordinates) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         if (System.currentTimeMillis() - clickTimestamp < 1500) {
             return;
         }
+        ScreensManager.getInstance().activeStoryItem = new ActiveStoryItem(ind, listID);
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
@@ -242,7 +245,8 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
                 ShowStory.ACTION_OPEN,
                 SourceType.LIST,
                 0,
-                Story.StoryType.UGC
+                Story.StoryType.UGC,
+                coordinates
         );
         ScreensManager.getInstance().openStoriesReader(
                 context,

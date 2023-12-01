@@ -41,6 +41,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
@@ -54,6 +55,11 @@ import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
 public class StoriesFixedActivity extends AppCompatActivity implements BaseReaderScreen {
+
+    @Override
+    public void disableDrag(boolean disable) {
+
+    }
 
     public boolean pauseDestroyed = false;
 
@@ -144,11 +150,11 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             Animation anim = new ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, x, y);
             anim.setDuration(200);
             animationSet.addAnimation(anim);
-            Point coordinates = ScreensManager.getInstance().coordinates;
+            StoryItemCoordinates coordinates = ScreensManager.getInstance().coordinates;
             if (coordinates != null) {
-                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x -
+                Animation anim2 = new TranslateAnimation(draggableFrame.getX(), coordinates.x() -
                         Sizes.getScreenSize(StoriesFixedActivity.this).x / 2,
-                        0f, coordinates.y - draggableFrame.getY());
+                        0f, coordinates.y() - draggableFrame.getY());
                 anim2.setDuration(200);
                 animationSet.addAnimation(anim2);
 

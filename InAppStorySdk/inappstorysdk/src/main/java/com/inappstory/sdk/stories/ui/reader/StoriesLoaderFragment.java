@@ -39,6 +39,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderApp
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageFragment;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -49,19 +50,6 @@ import java.util.List;
 
 
 public class StoriesLoaderFragment extends Fragment {
-
-
-
-    @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
-        super.onViewCreated(view, savedInstanceState);
-
-        bindViews(view);
-        setViews(view);
-    }
 
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
@@ -89,7 +77,6 @@ public class StoriesLoaderFragment extends Fragment {
             timelineManager.setDurations(durations, true);
         }
         setOffsets(view);
-
     }
 
     private void setOffsets(View view) {
@@ -117,14 +104,16 @@ public class StoriesLoaderFragment extends Fragment {
     private void setCutout(View view, int minusOffset) {
         if (Build.VERSION.SDK_INT >= 28) {
             if (getActivity() != null && getActivity().getWindow() != null &&
-                    getActivity().getWindow().getDecorView() != null &&
                     getActivity().getWindow().getDecorView().getRootWindowInsets() != null) {
+                Log.e("topOffsetHeight", StoriesLoaderFragment.this + " setOffsets");
+
                 DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
                 if (cutout != null) {
                     View view1 = view.findViewById(R.id.ias_timeline_container);
                     if (view1 != null) {
                         RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
                         lp1.topMargin += Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
+                        Log.e("topOffsetHeight", StoriesLoaderFragment.this + " " + lp1.topMargin + " ");
                         view1.setLayoutParams(lp1);
                     }
                 }
@@ -336,12 +325,27 @@ public class StoriesLoaderFragment extends Fragment {
         launchData = (StoriesReaderLaunchData) arguments.getSerializable(
                 StoriesReaderLaunchData.SERIALIZABLE_KEY
         );
+        View view = new View(getContext());
         try {
-            return createFragmentView(container);
+            view = createFragmentView(container);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
-            return new View(getContext());
         }
+        view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                if (v.isAttachedToWindow()) {
+                    bindViews(v);
+                    setViews(v);
+                }
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+
+            }
+        });
+        return view;
     }
 
 

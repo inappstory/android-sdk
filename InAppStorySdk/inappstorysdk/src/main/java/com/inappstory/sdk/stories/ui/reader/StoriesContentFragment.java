@@ -54,8 +54,7 @@ public class StoriesContentFragment extends Fragment
         IASBackPressHandler,
         ViewPager.OnPageChangeListener,
         OverlapFragmentObserver,
-        GameCompleteEventObserver
-{
+        GameCompleteEventObserver {
 
     public StoriesContentFragment() {
         super();
@@ -190,13 +189,38 @@ public class StoriesContentFragment extends Fragment
     @Override
     public void onPageSelected(int position) {
         if (isDestroyed) return;
-
         readerManager.onPageSelected(source, position);
         if (getArguments() != null) {
             getArguments().putInt("index", position);
         }
-
+        StoriesReaderLaunchData launchData = getLaunchData();
+        if (launchData == null
+                || launchData.getStoriesIds() == null
+                || launchData.getStoriesIds().size() <= position) {
+            return;
+        }
+        disableDrag(launchData.getStoriesIds().get(position), launchData.getType());
     }
+
+    public void disableDrag(int storyId, Story.StoryType type) {
+        StoriesReaderLaunchData launchData = getLaunchData();
+        if (storiesViewPager == null || launchData == null) return;
+        if (launchData.getStoriesIds().get(
+                storiesViewPager.getCurrentItem()
+        ) != storyId) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) {
+            return;
+        }
+        Story st = service.getDownloadManager().getStoryById(
+                storyId,
+                type
+        );
+        if (st == null) return;
+        BaseReaderScreen screen = getStoriesReader();
+        if (screen != null) screen.disableDrag(st.disableClose || st.hasSwipeUp());
+    }
+
 
     public ReaderManager readerManager;
 

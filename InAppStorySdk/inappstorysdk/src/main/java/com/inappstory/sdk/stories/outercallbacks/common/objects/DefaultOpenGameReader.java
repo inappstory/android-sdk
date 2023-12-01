@@ -38,4 +38,25 @@ public class DefaultOpenGameReader implements IOpenGameReader {
             }
         }
     }
+
+    @Override
+    public void onHideStatusBar(Context context) {
+
+    }
+
+    @Override
+    public void onRestoreStatusBar(Context context) {
+
+    }
+
+    @Override
+    public void onShowInFullscreen(Context context) {
+
+    }
+
+    @Override
+    public void onRestoreScreen(Context context) {
+
+    }
+
 }
