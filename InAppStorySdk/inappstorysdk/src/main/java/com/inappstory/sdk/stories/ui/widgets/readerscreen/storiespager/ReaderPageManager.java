@@ -595,8 +595,9 @@ public class ReaderPageManager {
             this.durations.clear();
             this.durations.addAll(story.durations);
             story.setSlidesCount(story.durations.size());
-
-            timerManager.setCurrentDuration(this.durations.get(slideIndex));
+            if (slideIndex < story.durations.size()) {
+                timerManager.setCurrentDuration(story.durations.get(slideIndex));
+            }
             //timelineManager.setStoryDurations(story.durations);
         }
 
