@@ -120,7 +120,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     boolean gameReaderGestureBack = false;
     boolean hasSplashFile = false;
-    Boolean forceFullscreen = true;
+    Boolean forceFullscreen = null;
     private boolean isFullscreen = false;
 
     DownloadInterruption interruption = new DownloadInterruption();
