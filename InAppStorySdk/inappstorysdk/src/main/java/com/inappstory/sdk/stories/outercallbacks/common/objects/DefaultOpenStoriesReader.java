@@ -3,15 +3,23 @@ package com.inappstory.sdk.stories.outercallbacks.common.objects;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 
+import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.fragment.app.FragmentActivity;
 
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
+import com.inappstory.sdk.stories.utils.ActivityUtils;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StatusBarController;
+
+import java.lang.reflect.Method;
 
 
 public class DefaultOpenStoriesReader implements IOpenStoriesReader {
@@ -20,21 +28,21 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
     public void onOpen(
             Context context,
             Bundle bundle
-            //  StoriesReaderAppearanceSettings appearanceSettings,
-            //  StoriesReaderLaunchData launchData
     ) {
         if (context == null) return;
+        if (context instanceof Activity) {
+            Window window = ((Activity) context).getWindow();
+            Integer gameThemeId = ActivityUtils.getThemeResId((Activity) context);
+            bundle.putInt("themeId", gameThemeId != null ? gameThemeId : R.style.StoriesSDKAppTheme_GameActivity);
+            bundle.putInt("parentSystemUIVisibility",
+                    window.getDecorView().getSystemUiVisibility()
+            );
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                bundle.putInt("parentLayoutInDisplayCutoutMode", window.getAttributes().layoutInDisplayCutoutMode);
+            }
+        }
         if (Sizes.isTablet() && context instanceof FragmentActivity) {
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
-        /*    Bundle bundle = new Bundle();
-            bundle.putSerializable(
-                    launchData.getSerializableKey(),
-                    launchData
-            );
-            bundle.putSerializable(
-                    appearanceSettings.getSerializableKey(),
-                    appearanceSettings
-            );*/
             storiesDialogFragment.setArguments(bundle);
             try {
                 storiesDialogFragment.show(
@@ -46,21 +54,15 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             }
         } else {
             Intent intent2 = new Intent(context, StoriesActivity.class);
-            intent2.putExtras(bundle);
-       /*     intent2.putExtra(
-                    appearanceSettings.getSerializableKey(),
-                    appearanceSettings
-            );
-            intent2.putExtra(
-                    launchData.getSerializableKey(),
-                    launchData
-            );*/
             if (!(context instanceof Activity)) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
+            intent2.putExtras(bundle);
             context.startActivity(intent2);
         }
     }
+
+
 
     @Override
     public void onHideStatusBar(Context context) {

@@ -51,6 +51,8 @@ import java.util.List;
 
 public class StoriesLoaderFragment extends Fragment {
 
+    int storyId = -1;
+
     void setViews(View view) {
         if (InAppStoryService.getInstance() == null) return;
         Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
@@ -58,6 +60,7 @@ public class StoriesLoaderFragment extends Fragment {
                 launchData.getType()
         );
         if (story == null) return;
+        storyId = story.id;
         ButtonsPanel buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
         View aboveButtonsPanel = view.findViewById(R.id.ias_above_buttons_panel);
         if (buttonsPanel != null && aboveButtonsPanel != null) {
@@ -295,7 +298,7 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     private ButtonsPanel createButtonsPanel(Context context) {
-        ButtonsPanel buttonsPanel = new ButtonsPanel(context);
+        ButtonsPanel buttonsPanel = new ButtonsPanel(context, storyId);
         RelativeLayout.LayoutParams buttonsPanelParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
         );

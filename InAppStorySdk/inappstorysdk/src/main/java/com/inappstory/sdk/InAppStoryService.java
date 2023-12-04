@@ -676,7 +676,7 @@ public class InAppStoryService {
         exHandler.postDelayed(exHandlerThread, 100);
     }
 
-    private static Object lock = new Object();
+    private static final Object lock = new Object();
 
     public int getCurrentId() {
         return currentId;

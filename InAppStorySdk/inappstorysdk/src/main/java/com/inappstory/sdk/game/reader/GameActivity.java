@@ -21,6 +21,8 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        int theme = getIntent().getIntExtra("themeId", R.style.StoriesSDKAppTheme_GameActivity);
+        setTheme(theme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cs_game_reader_layout);
         ScreensManager.getInstance().subscribeGameScreen(this);

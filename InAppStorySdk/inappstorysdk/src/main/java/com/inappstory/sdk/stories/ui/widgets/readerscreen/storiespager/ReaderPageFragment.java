@@ -92,6 +92,8 @@ public class ReaderPageFragment extends Fragment {
 
 
     void bindViews(View view) {
+
+        Log.e("ReaderPageFragmentLP", this + " bindViews");
         close = view.findViewById(R.id.ias_close_button);
         refresh = view.findViewById(R.id.ias_refresh_button);
         blackBottom = view.findViewById(R.id.ias_black_bottom);
@@ -197,7 +199,9 @@ public class ReaderPageFragment extends Fragment {
     Story story;
 
     void setViews(View view) {
+        Log.e("ReaderPageFragmentLP", storyId + " setViews");
         if (InAppStoryService.getInstance() == null) return;
+
         setOffsets(view);
         if (timeline != null) {
             timeline.getTimelineManager().setSlidesCount(story.getSlidesCount());
@@ -205,6 +209,7 @@ public class ReaderPageFragment extends Fragment {
         if (story.disableClose)
             close.setVisibility(View.GONE);
         if (buttonsPanel != null) {
+            Log.e("ReaderPageFragmentLP", storyId + " buttonsPanel");
             buttonsPanel.setButtonsVisibility(
                     appearanceSettings,
                     story.hasLike(),
@@ -241,7 +246,6 @@ public class ReaderPageFragment extends Fragment {
                 } else {
                     setCutout(view, 0);
                 }
-
                 blackBottom.setLayoutParams(lp);
                 blackTop.setLayoutParams(lp);
             }
@@ -392,6 +396,8 @@ public class ReaderPageFragment extends Fragment {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
+
+        Log.e("ReaderPageFragmentLP", this + " createFragmentView");
         res.addView(linearLayout);
 
         return res;
@@ -526,7 +532,7 @@ public class ReaderPageFragment extends Fragment {
 
 
     private void createButtonsPanel(Context context) {
-        buttonsPanel = new ButtonsPanel(context);
+        buttonsPanel = new ButtonsPanel(context, getArguments().getInt("story_id"));
         RelativeLayout.LayoutParams buttonsPanelParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
         );
@@ -657,15 +663,16 @@ public class ReaderPageFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (InAppStoryService.getInstance() != null
-                && InAppStoryService.getInstance().getDownloadManager() != null && story == null) {
-            story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+        boolean storyIsEmpty = (story == null);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && service.getDownloadManager() != null && storyIsEmpty) {
+            story = service.getDownloadManager().getStoryById(
                     storyId,
                     manager.getStoryType()
             );
-            if (story != null) {
-                loadIfStoryIsNotNull();
-            }
+        }
+        if (story != null) {
+            loadIfStoryIsNotNull();
         }
     }
 

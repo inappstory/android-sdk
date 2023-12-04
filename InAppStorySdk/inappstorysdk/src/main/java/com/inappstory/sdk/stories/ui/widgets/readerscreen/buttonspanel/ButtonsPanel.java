@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -22,8 +23,11 @@ public class ButtonsPanel extends LinearLayout {
     public AppCompatImageView favorite;
     public AppCompatImageView share;
 
-    public ButtonsPanel(Context context) {
+    private int storyId;
+
+    public ButtonsPanel(Context context, int storyId) {
         super(context);
+        this.storyId = storyId;
         init();
     }
 
@@ -62,11 +66,18 @@ public class ButtonsPanel extends LinearLayout {
         share.setVisibility(hasShare ? VISIBLE : GONE);
         sound.setVisibility(hasSound ? VISIBLE : GONE);
         sound.setActivated(InAppStoryService.getInstance().isSoundOn());
-        if (hasFavorite || hasLike || hasShare || hasSound) {
+        boolean isVisible = (hasFavorite || hasLike || hasShare || hasSound);
+        if (isVisible) {
             setVisibility(VISIBLE);
         } else {
             setVisibility(GONE);
         }
+    }
+
+    @Override
+    public void setVisibility(int visibility) {
+
+        super.setVisibility(visibility);
     }
 
     public ButtonsPanelManager getManager() {
