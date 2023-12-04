@@ -872,7 +872,7 @@ public class InAppStoryManager {
             return;
         }
         if (builder.apiKey == null &&
-                builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
+                context.getResources().getString(R.string.csApiKey).isEmpty()) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
                     R.string.ias_api_key_error));
             return;
@@ -887,7 +887,7 @@ public class InAppStoryManager {
                     R.string.ias_builder_tags_length_error));
             return;
         }
-        long freeSpace = builder.context.getCacheDir().getFreeSpace();
+        long freeSpace = context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
                     R.string.ias_min_free_space_error));
@@ -1638,8 +1638,6 @@ public class InAppStoryManager {
 
     public static class Builder {
 
-        Context context;
-
         public boolean sandbox() {
             return sandbox;
         }
@@ -1679,11 +1677,6 @@ public class InAppStoryManager {
         Map<String, ImagePlaceholderValue> imagePlaceholders;
 
         public Builder() {
-        }
-
-        public Builder context(Context context) {
-            Builder.this.context = context;
-            return Builder.this;
         }
 
         @Deprecated
