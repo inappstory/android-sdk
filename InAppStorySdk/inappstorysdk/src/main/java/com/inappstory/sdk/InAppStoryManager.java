@@ -6,6 +6,7 @@ import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_200;
 import static com.inappstory.sdk.lrudiskcache.LruDiskCache.MB_5;
 
 import android.annotation.SuppressLint;
+import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,7 +22,6 @@ import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.models.Response;
-import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
@@ -67,7 +67,6 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -678,15 +677,41 @@ public class InAppStoryManager {
 
     String TEST_KEY = null;
 
-    public InAppStoryManager() {
+    public static void initSDK(@NonNull Context context) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        boolean calledFromApplication = false;
+        for (StackTraceElement stackTraceElement : stackTraceElements) {
+            try {
+                if (Application.class.isAssignableFrom(Class.forName(stackTraceElement.getClassName()))) {
+                    calledFromApplication = true;
+                }
+            } catch (ClassNotFoundException e) {
 
+            }
+        }
+        if (!(context instanceof Application)) calledFromApplication = false;
+        if (!calledFromApplication)
+            showELog(IAS_ERROR_TAG, "Method must be called from Application class and context has to be an applicationContext");
+        synchronized (lock) {
+            if (INSTANCE == null) {
+                INSTANCE = new InAppStoryManager(context);
+            }
+        }
+        INSTANCE.createServiceThread(context);
     }
 
     InAppStoryService service;
 
     Thread serviceThread;
 
-    void createServiceThread(final Context context, final String userId) {
+    private InAppStoryManager(Context context) {
+        this.context = context;
+        KeyValueStorage.setContext(context);
+        SharedPreferencesAPI.setContext(context);
+        this.soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
+    }
+
+    void createServiceThread(final Context context) {
         if (InAppStoryService.isNotNull()) {
             InAppStoryService.getInstance().onDestroy();
         }
@@ -698,7 +723,7 @@ public class InAppStoryManager {
             @Override
             public void run() {
                 Looper.prepare();
-                service = new InAppStoryService(userId);
+                service = new InAppStoryService();
                 service.onCreate(context, exceptionCache);
                 Looper.loop();
             }
@@ -840,35 +865,37 @@ public class InAppStoryManager {
         return "";
     }
 
-    private InAppStoryManager(final Builder builder) {
-        if (builder.context == null) {
-            showELog(IAS_ERROR_TAG, "InAppStoryManager.Builder data is not valid. 'context' can't be null");
+    private void build(final Builder builder) {
+        Context context = this.context;
+        if (context == null) {
+            showELog(IAS_ERROR_TAG, "InAppStoryManager data is not valid. 'context' can't be null");
             return;
         }
         if (builder.apiKey == null &&
                 builder.context.getResources().getString(R.string.csApiKey).isEmpty()) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_api_key_error));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
+                    R.string.ias_api_key_error));
             return;
         }
         if (getBytesLength(builder.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_user_length_error));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
+                    R.string.ias_builder_user_length_error));
             return;
         }
         if (builder.tags != null && getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_builder_tags_length_error));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
+                    R.string.ias_builder_tags_length_error));
             return;
         }
         long freeSpace = builder.context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(builder.context, R.string.ias_min_free_space_error));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
+                    R.string.ias_min_free_space_error));
             return;
         }
-
-        KeyValueStorage.setContext(builder.context);
-        SharedPreferencesAPI.setContext(builder.context);
-        createServiceThread(builder.context, builder.userId);
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
+            inAppStoryService.setUserId(builder.userId);
             long commonCacheSize = MB_100;
             long fastCacheSize = MB_10;
             switch (builder.cacheSize) {
@@ -889,10 +916,9 @@ public class InAppStoryManager {
 
         this.isSandbox = builder.sandbox;
         initManager(
-                builder.context,
+                context,
                 domain,
-                builder.apiKey != null ? builder.apiKey : builder.context
-                        .getResources().getString(R.string.csApiKey),
+                builder.apiKey != null ? builder.apiKey : context.getResources().getString(R.string.csApiKey),
                 builder.testKey != null ? builder.testKey : null,
                 builder.userId,
                 builder.tags != null ? builder.tags : null,
@@ -1058,14 +1084,12 @@ public class InAppStoryManager {
     private static final Object lock = new Object();
 
     public static void logout() {
-        if (!isNull()) {
-            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-            if (inAppStoryService != null) {
-                inAppStoryService.listStoriesIds.clear();
-                inAppStoryService.getListSubscribers().clear();
-                inAppStoryService.getDownloadManager().cleanTasks();
-                inAppStoryService.logout();
-            }
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService != null) {
+            inAppStoryService.listStoriesIds.clear();
+            inAppStoryService.getListSubscribers().clear();
+            inAppStoryService.getDownloadManager().cleanTasks();
+            inAppStoryService.logout();
         }
     }
 
@@ -1075,11 +1099,7 @@ public class InAppStoryManager {
     }
 
     private static void localDestroy() {
-
         logout();
-        synchronized (lock) {
-            INSTANCE = null;
-        }
     }
 
 
@@ -1759,7 +1779,14 @@ public class InAppStoryManager {
          * @return {@link InAppStoryManager}
          */
         public InAppStoryManager create() {
-            return new InAppStoryManager(Builder.this);
+            synchronized (lock) {
+                if (INSTANCE == null) {
+                    showELog(IAS_ERROR_TAG, "Method InAppStoryManager.init must be called from Application class");
+                    return null;
+                }
+            }
+            INSTANCE.build(Builder.this);
+            return INSTANCE;
         }
     }
 }

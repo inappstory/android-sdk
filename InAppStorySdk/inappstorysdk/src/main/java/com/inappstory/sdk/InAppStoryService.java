@@ -89,7 +89,7 @@ public class InAppStoryService {
 
     public String getUserId() {
         if (userId == null && !InAppStoryManager.isNull())
-            return InAppStoryManager.getInstance().getUserId();
+            userId = InAppStoryManager.getInstance().getUserId();
         return userId;
     }
 
@@ -200,6 +200,7 @@ public class InAppStoryService {
     public InAppStoryService(String userId) {
         this.userId = userId;
     }
+
 
     public StoryDownloadManager getDownloadManager() {
         return downloadManager;
@@ -433,7 +434,6 @@ public class InAppStoryService {
     }
 
 
-
     public void openGameReaderWithGC(
             Context context,
             GameStoryData data,
@@ -592,8 +592,10 @@ public class InAppStoryService {
                 }
                 if (InAppStoryManager.getInstance() != null) {
                     InAppStoryManager.getInstance().createServiceThread(
-                            InAppStoryManager.getInstance().context,
-                            InAppStoryManager.getInstance().getUserId());
+                            InAppStoryManager.getInstance().context
+                    );
+                    if (InAppStoryService.getInstance() != null)
+                        InAppStoryService.getInstance().setUserId(InAppStoryManager.getInstance().getUserId());
                     if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
                         InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
                     }
