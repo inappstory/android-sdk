@@ -19,7 +19,7 @@ public final class FontDownload extends AsyncFileDownload {
 
     @Override
     public String getCacheKey() {
-        return deleteQueryArgumentsFromUrl(url);
+        return url;
     }
 
     @Override

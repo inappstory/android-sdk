@@ -29,7 +29,7 @@ public final class ZipArchiveDownload extends ProgressFileDownload {
 
     @Override
     public String getCacheKey() {
-        return deleteQueryArgumentsFromUrl(url);
+        return url;
     }
 
     @Override

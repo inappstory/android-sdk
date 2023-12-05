@@ -16,7 +16,7 @@ public final class StoryFileDownload extends FileDownload {
 
     @Override
     public String getCacheKey() {
-        return deleteQueryArgumentsFromUrl(url);
+        return url;
     }
 
     @Override
