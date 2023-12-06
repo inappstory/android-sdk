@@ -23,7 +23,7 @@
         </provider>
 
         <activity
-            android:name="com.inappstory.sdk.stories.ui.reader.StoriesActivity"
+            android:name="com.inappstory.sdk.stories.ui.oldreader.StoriesActivity"
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:theme="@style/StoriesSDKAppTheme.Transparent"

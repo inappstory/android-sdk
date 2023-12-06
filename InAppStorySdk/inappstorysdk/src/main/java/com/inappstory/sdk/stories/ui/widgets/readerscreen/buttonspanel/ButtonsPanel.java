@@ -13,7 +13,7 @@ import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.interfaces.IChangeStatusReaderCallback;
-import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
+import com.inappstory.sdk.stories.ui.oldreader.StoriesReaderSettings;
 
 public class ButtonsPanel extends LinearLayout {
 
@@ -77,7 +77,7 @@ public class ButtonsPanel extends LinearLayout {
     ButtonsPanelManager manager;
 
     public void init() {
-        inflate(getContext(), R.layout.cs_buttons_panel, this);
+        inflate(getContext(), R.layout.ias_reader_buttons_panel, this);
         manager = new ButtonsPanelManager(this);
         like = findViewById(R.id.likeButton);
         dislike = findViewById(R.id.dislikeButton);

@@ -13,7 +13,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 
 
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SourceType;
-import com.inappstory.sdk.stories.ui.reader.ReaderManager;
+import com.inappstory.sdk.stories.ui.oldreader.ReaderManager;
 
 import java.io.Serializable;
 import java.util.ArrayList;

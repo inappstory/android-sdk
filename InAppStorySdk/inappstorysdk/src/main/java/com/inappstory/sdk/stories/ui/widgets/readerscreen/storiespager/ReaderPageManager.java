@@ -23,7 +23,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
-import com.inappstory.sdk.stories.ui.reader.ReaderManager;
+import com.inappstory.sdk.stories.ui.oldreader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;

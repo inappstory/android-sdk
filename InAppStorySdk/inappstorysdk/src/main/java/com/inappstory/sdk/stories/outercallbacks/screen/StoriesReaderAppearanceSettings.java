@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesGradientObject;
+import com.inappstory.sdk.stories.ui.oldreader.StoriesGradientObject;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesReaderAppearanceSettings implements SerializableWithKey {

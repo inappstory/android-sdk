@@ -14,20 +14,35 @@ android {
         consumerProguardFiles 'consumer-rules.pro'
     }
 
+    sourceSets {
+        main {
+            res.srcDirs = [
+                    'src/main/res',
+                    'src/main/res/layouts',
+                    'src/main/res/ias_layouts',
+                    'src/main/res/ias_layouts/ias_reader',
+                    'src/main/res/ias_layouts/ias_game_reader',
+                    'src/main/res/ias_layouts/ias_list',
+                    'src/main/res/ias_layouts/ias_widgets',
+                    'src/main/res/ias_layouts/ias_goods'
+            ]
+        }
+    }
+
     testOptions {
         unitTests.returnDefaultValues = true
     }
 
     buildTypes {
         release {
-          //  buildConfigField("int", "VERSION_CODE", "${defaultConfig.versionCode}")
-         //   buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
+            //  buildConfigField("int", "VERSION_CODE", "${defaultConfig.versionCode}")
+            //   buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-         //   buildConfigField("int", "VERSION_CODE", "${defaultConfig.versionCode}")
-         //   buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
+            //   buildConfigField("int", "VERSION_CODE", "${defaultConfig.versionCode}")
+            //   buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
         }
     }
 

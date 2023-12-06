@@ -57,8 +57,9 @@ import com.inappstory.sdk.stories.outercallbacks.screen.IOpenStoriesReader;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.core.utils.sharedpref.SharedPreferencesAPI;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
+import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
+import com.inappstory.sdk.stories.ui.oldreader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -727,6 +728,7 @@ public class InAppStoryManager {
 
 
         IASCore.getInstance().init(builder.context, builder.cacheSize);
+        IASUICore.getInstance().init(builder.context);
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());

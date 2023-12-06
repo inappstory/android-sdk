@@ -34,7 +34,7 @@ import com.inappstory.sdk.utils.StringsUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoriesListPresenter implements IStoriesListPresenter {
+public final class StoriesListPresenter implements IStoriesListPresenter {
 
     private final IStoriesListNotify storiesListNotify;
     private final IAllStoriesListsNotify allStoriesListsNotify;

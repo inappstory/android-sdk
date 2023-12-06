@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewParent;
 
@@ -12,8 +11,8 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
-import com.inappstory.sdk.stories.ui.reader.BothSideViewPager;
-import com.inappstory.sdk.stories.ui.reader.StoriesFragment;
+import com.inappstory.sdk.stories.ui.oldreader.BothSideViewPager;
+import com.inappstory.sdk.stories.ui.oldreader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CoverTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;

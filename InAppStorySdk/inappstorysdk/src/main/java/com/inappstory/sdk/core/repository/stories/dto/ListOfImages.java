@@ -9,6 +9,7 @@ public class ListOfImages implements IListOfImages {
 
     public ListOfImages(List<Image> images) {
         this.images = new ArrayList<>();
+        if (images == null) return;
         for (Image image : images) {
             this.images.add(new ImageDTO(image));
         }

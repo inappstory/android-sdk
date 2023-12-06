@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class IASCore {
+public final class IASCore {
     private static IASCore INSTANCE;
     private static final Object lock = new Object();
 
