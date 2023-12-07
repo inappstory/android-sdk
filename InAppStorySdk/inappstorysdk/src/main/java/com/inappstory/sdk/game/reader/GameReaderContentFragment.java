@@ -1027,6 +1027,18 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        pauseGame();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        resumeGame();
+    }
+
+    @Override
     public void viewIsOpened() {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
