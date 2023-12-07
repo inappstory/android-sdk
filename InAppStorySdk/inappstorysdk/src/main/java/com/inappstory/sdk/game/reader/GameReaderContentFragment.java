@@ -1035,7 +1035,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     @Override
     public void onResume() {
         super.onResume();
-        resumeGame();
+        if (!shareViewIsShown) {
+            manager.onResume();
+            resumeGame();
+        }
     }
 
     @Override
