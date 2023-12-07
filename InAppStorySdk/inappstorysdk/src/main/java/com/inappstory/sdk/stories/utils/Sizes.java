@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -63,8 +64,18 @@ public class Sizes {
     public static int dpToPxExt(int dp, Context context) {
         return Math.round(dp * getPixelScaleFactorExt(context));
     }
+
     public static int pxToDpExt(int dp, Context context) {
         return Math.round(dp / getPixelScaleFactorExt(context));
+    }
+
+
+    public static float typedDpToPx(float dpValue, Context context) {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dpValue,
+                context.getResources().getDisplayMetrics()
+        );
     }
 }
 

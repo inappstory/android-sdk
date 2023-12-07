@@ -24,8 +24,8 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     }
 
     @Override
-    public LiveData<Boolean> isOpenCloseAnimation() {
-        return openCloseAnimation;
+    public LiveData<Boolean> isOpenAnimation() {
+        return openAnimation;
     }
 
     @Override
@@ -52,8 +52,8 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     }
 
     @Override
-    public void openCloseAnimation(boolean animated) {
-        this.openCloseAnimation.postValue(animated);
+    public void openAnimationStatus(boolean animated) {
+        this.openAnimation.postValue(animated);
     }
 
     @Override
@@ -63,9 +63,9 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
 
     private StoriesReaderState state;
 
-    private final MutableLiveData<Boolean> isOpened = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isOpened = new MutableLiveData<>(true);
     private final MutableLiveData<Boolean> pagerAnimation = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> openCloseAnimation = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> openAnimation = new MutableLiveData<>();
     private final MutableLiveData<Integer> currentIndex = new MutableLiveData<>(0);
 
     private List<IStoriesReaderPageViewModel> pageViewModels = new ArrayList<>();
@@ -73,6 +73,11 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     public IStoriesReaderPageViewModel getPageViewModel(int index) {
         if (pageViewModels.size() <= index) return null;
         return pageViewModels.get(index);
+    }
+
+    @Override
+    public IStoriesReaderPageViewModel getLaunchedViewModel() {
+        return getPageViewModel(state.launchData().getListIndex());
     }
 
     public void initNewState(@NonNull StoriesReaderState state) {

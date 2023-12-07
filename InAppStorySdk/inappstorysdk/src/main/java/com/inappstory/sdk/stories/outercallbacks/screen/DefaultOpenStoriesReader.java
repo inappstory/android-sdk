@@ -7,9 +7,13 @@ import android.os.Bundle;
 
 import androidx.fragment.app.FragmentActivity;
 
+import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.oldreader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.oldreader.StoriesDialogFragment;
+import com.inappstory.sdk.stories.ui.reader.StoriesMainActivity;
+import com.inappstory.sdk.stories.uidomain.reader.IStoriesReaderViewModel;
+import com.inappstory.sdk.stories.uidomain.reader.StoriesReaderState;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 
@@ -43,8 +47,15 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
 
             }
         } else {
-            Intent intent2 = new Intent(context, StoriesActivity.class);
-            intent2.putExtra(
+            IStoriesReaderViewModel storiesReaderViewModel = IASUICore.getInstance().getStoriesReaderVM();
+            storiesReaderViewModel.initNewState(
+                    new StoriesReaderState()
+                            .launchData(launchData)
+                            .appearanceSettings(appearanceSettings)
+            );
+            storiesReaderViewModel.openAnimationStatus(true);
+            Intent intent2 = new Intent(context, StoriesMainActivity.class);
+            /*intent2.putExtra(
                     appearanceSettings.getSerializableKey(),
                     appearanceSettings
             );
@@ -54,7 +65,7 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             );
             if (!(context instanceof Activity)) {
                 intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
+            }*/
             context.startActivity(intent2);
         }
     }

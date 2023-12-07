@@ -6,14 +6,15 @@ import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewMod
 
 public interface IStoriesReaderViewModel {
     IStoriesReaderPageViewModel getPageViewModel(int index);
+    IStoriesReaderPageViewModel getLaunchedViewModel();
     void initNewState(StoriesReaderState state);
     StoriesReaderState getState();
     LiveData<Boolean> isOpened();
-    LiveData<Boolean> isOpenCloseAnimation();
+    LiveData<Boolean> isOpenAnimation();
     LiveData<Boolean> isPagerAnimation();
     LiveData<Integer> currentIndex();
     void currentIndex(int index);
     void pagerAnimation(boolean animated);
-    void openCloseAnimation(boolean animated);
+    void openAnimationStatus(boolean animated);
     void isOpened(boolean isOpened);
 }

@@ -30,10 +30,19 @@
             tools:ignore="LockedOrientationActivity" />
 
         <activity
+            android:name=".stories.ui.reader.StoriesMainActivity"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/StoriesSDKAppTheme.Transparent"
+            tools:ignore="LockedOrientationActivity">
+
+        </activity>
+
+        <activity
             android:name=".game.reader.GameActivity"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/StoriesSDKAppTheme.GameActivity" />
+            android:theme="@style/StoriesSDKAppTheme.GameActivity"
+            android:windowSoftInputMode="adjustResize" />
 
         <receiver android:name=".stories.utils.StoryShareBroadcastReceiver" />
 

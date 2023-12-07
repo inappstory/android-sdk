@@ -9,9 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.reader.content.IStoriesReaderPagerScreen;
 
 public class StoriesReaderPagerFragment extends Fragment implements IStoriesReaderPagerScreen {
+
+    public static final String TAG = "StoriesReaderPagerFragment";
+
     @Nullable
     @Override
     public View onCreateView(
@@ -19,7 +23,7 @@ public class StoriesReaderPagerFragment extends Fragment implements IStoriesRead
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState
     ) {
-        return super.onCreateView(inflater, container, savedInstanceState);
+        return inflater.inflate(R.layout.ias_reader_pager, container, false);
     }
 
     @Override

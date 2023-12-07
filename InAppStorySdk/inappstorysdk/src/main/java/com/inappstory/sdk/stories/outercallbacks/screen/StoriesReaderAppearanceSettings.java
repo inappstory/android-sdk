@@ -93,6 +93,12 @@ public class StoriesReaderAppearanceSettings implements SerializableWithKey {
 
     private final int csClosePosition;
     private final int csStoryReaderAnimation;
+
+    public int csStoryReaderPresentationStyle() {
+        return csStoryReaderPresentationStyle;
+    }
+
+    private final int csStoryReaderPresentationStyle;
     private final boolean csCloseOnOverscroll;
     private final boolean csCloseOnSwipe;
     private final boolean csHasLike;
@@ -133,6 +139,7 @@ public class StoriesReaderAppearanceSettings implements SerializableWithKey {
         csShareIcon = manager.csShareIcon();
         csReaderRadius = manager.csReaderRadius(context);
         csTimerGradientEnable = manager.csTimerGradientEnable();
+        csStoryReaderPresentationStyle = manager.csStoryReaderPresentationStyle();
         csReaderBackgroundColor = manager.csReaderBackgroundColor();
         int nightModeFlags =
                 context.getResources().getConfiguration().uiMode &

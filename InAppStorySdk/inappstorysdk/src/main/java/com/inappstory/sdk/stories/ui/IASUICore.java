@@ -17,7 +17,11 @@ public final class IASUICore {
         }
     }
 
-    IStoriesReaderViewModel storiesReaderVM;
+    public IStoriesReaderViewModel getStoriesReaderVM() {
+        return storiesReaderVM;
+    }
+
+    private IStoriesReaderViewModel storiesReaderVM;
 
     public void init(Context context) {
         storiesReaderVM = new StoriesReaderViewModel();

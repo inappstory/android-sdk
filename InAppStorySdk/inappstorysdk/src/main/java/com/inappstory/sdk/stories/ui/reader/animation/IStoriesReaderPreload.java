@@ -1,4 +1,4 @@
 package com.inappstory.sdk.stories.ui.reader.animation;
 
-public interface IStoriesReaderAnimation {
+public interface IStoriesReaderPreload {
 }
