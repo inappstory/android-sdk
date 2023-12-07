@@ -2,6 +2,8 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.content.Context;
 
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
+
 public interface SimpleStoriesView {
     void slidePause();
     void slideStart();
@@ -25,4 +27,6 @@ public interface SimpleStoriesView {
     void screenshotShare();
     void goodsWidgetComplete(String widgetId);
     StoriesViewManager getManager();
+
+    void disableTouchEvent(DisableTouchEvent disableDispatchTouchEvent);
 }

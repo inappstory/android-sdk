@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="ias_stories_pager" type="id"/>
-    <item name="ias_inv_mask" type="id"/>
-
-
-
-    <item name="ias_black_top" type="id"/>
+    <item name="ias_touch_holder" type="id"/>
+    <item name="ias_black_top_offset" type="id"/>
     <item name="ias_buttons_panel" type="id"/>
     <item name="ias_parent_container" type="id"/>
     <item name="ias_rounded_container" type="id"/>
@@ -16,6 +13,6 @@
     <item name="ias_timeline" type="id"/>
     <item name="ias_reader_gradient" type="id"/>
     <item name="ias_close_button" type="id"/>
-    <item name="ias_black_bottom" type="id"/>
+    <item name="ias_black_bottom_offset" type="id"/>
     <item name="ias_refresh_button" type="id"/>
 </resources>

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.uidomain.reader.page;
+package com.inappstory.sdk.stories.uidomain.reader.views.bottompanel;
 
 public final class BottomPanelLikeState {
     public BottomPanelLikeState like(int like) {

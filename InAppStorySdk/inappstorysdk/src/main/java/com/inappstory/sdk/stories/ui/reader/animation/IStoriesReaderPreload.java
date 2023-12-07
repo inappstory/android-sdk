@@ -1,4 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader.animation;
 
-public interface IStoriesReaderPreload {
+import com.inappstory.sdk.stories.ui.reader.IStoriesReaderScreenChild;
+
+public interface IStoriesReaderPreload extends IStoriesReaderScreenChild {
 }

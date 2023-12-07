@@ -121,8 +121,8 @@ public class StoriesLoaderFragment extends Fragment {
 
     void bindViews(View view) {
         refresh = view.findViewById(R.id.ias_refresh_button);
-        blackBottom = view.findViewById(R.id.ias_black_bottom);
-        blackTop = view.findViewById(R.id.ias_black_top);
+        blackBottom = view.findViewById(R.id.ias_black_bottom_offset);
+        blackTop = view.findViewById(R.id.ias_black_top_offset);
         buttonsPanel = view.findViewById(R.id.ias_buttons_panel);
     }
 
@@ -155,11 +155,11 @@ public class StoriesLoaderFragment extends Fragment {
 
     private void setLinearContainer(Context context, LinearLayout linearLayout) {
         blackTop = new View(context);
-        blackTop.setId(R.id.ias_black_top);
+        blackTop.setId(R.id.ias_black_top_offset);
         blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
         blackTop.setBackgroundColor(Color.TRANSPARENT);
         blackBottom = new View(context);
-        blackBottom.setId(R.id.ias_black_bottom);
+        blackBottom.setId(R.id.ias_black_bottom_offset);
         blackBottom.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
         blackBottom.setBackgroundColor(Color.TRANSPARENT);
         RelativeLayout content = new RelativeLayout(context);

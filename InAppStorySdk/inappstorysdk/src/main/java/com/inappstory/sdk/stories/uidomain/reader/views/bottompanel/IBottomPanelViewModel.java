@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.uidomain.reader.page;
+package com.inappstory.sdk.stories.uidomain.reader.views.bottompanel;
 
 import androidx.lifecycle.LiveData;
 

@@ -14,13 +14,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
+import com.inappstory.sdk.databinding.IasReaderContainerBinding;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.oldreader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.oldreader.animations.DisabledReaderAnimation;
 import com.inappstory.sdk.stories.ui.oldreader.animations.FadeReaderAnimation;
 import com.inappstory.sdk.stories.ui.oldreader.animations.HandlerAnimatorListenerAdapter;
@@ -28,12 +27,11 @@ import com.inappstory.sdk.stories.ui.oldreader.animations.PopupReaderAnimation;
 import com.inappstory.sdk.stories.ui.oldreader.animations.ReaderAnimation;
 import com.inappstory.sdk.stories.ui.oldreader.animations.ZoomReaderAnimation;
 import com.inappstory.sdk.stories.ui.reader.animation.StoriesReaderPreloadFragment;
-import com.inappstory.sdk.stories.ui.reader.content.StoriesReaderPagerFragment;
 import com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout;
 import com.inappstory.sdk.stories.uidomain.reader.IStoriesReaderViewModel;
 import com.inappstory.sdk.stories.utils.Sizes;
 
-public class StoriesReaderContainerFragment extends Fragment implements IStoriesReaderContainer {
+public final class StoriesReaderContainerFragment extends Fragment implements IStoriesReaderContainer {
     public static final String TAG = "StoriesReaderContainerFragment";
 
     @Nullable
@@ -43,7 +41,7 @@ public class StoriesReaderContainerFragment extends Fragment implements IStories
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState
     ) {
-        return inflater.inflate(R.layout.ias_reader_container, container, false);
+        return IasReaderContainerBinding.inflate(inflater, container, false).getRoot();
     }
 
 
@@ -52,22 +50,9 @@ public class StoriesReaderContainerFragment extends Fragment implements IStories
     private View backTintView;
     private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
-    IStoriesReaderScreen getParentScreen() {
-        Activity activity = getActivity();
-        if (activity instanceof IStoriesReaderScreen) {
-            return (IStoriesReaderScreen) activity;
-        } else {
-            Fragment parent = getParentFragment();
-            if (parent instanceof IStoriesReaderScreen) {
-                return (IStoriesReaderScreen) parent;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void forceClose() {
-        IStoriesReaderScreen parentScreen = getParentScreen();
+        IStoriesReaderScreen parentScreen = getStoriesReaderScreen();
         if (parentScreen != null) parentScreen.forceClose();
     }
 
@@ -237,8 +222,9 @@ public class StoriesReaderContainerFragment extends Fragment implements IStories
                     })
                     .start();
         } catch (Exception e) {
-            getParentScreen().forceClose();
-            return;
+            IStoriesReaderScreen readerScreen = getStoriesReaderScreen();
+            if (readerScreen != null)
+                readerScreen.forceClose();
         }
 
     }
@@ -276,5 +262,19 @@ public class StoriesReaderContainerFragment extends Fragment implements IStories
                         pivotY
                 ).setAnimations(false);
         }
+    }
+
+    @Override
+    public IStoriesReaderScreen getStoriesReaderScreen() {
+        Activity activity = getActivity();
+        if (activity instanceof IStoriesReaderScreen) {
+            return (IStoriesReaderScreen) activity;
+        } else {
+            Fragment parent = getParentFragment();
+            if (parent instanceof IStoriesReaderScreen) {
+                return (IStoriesReaderScreen) parent;
+            }
+        }
+        return null;
     }
 }

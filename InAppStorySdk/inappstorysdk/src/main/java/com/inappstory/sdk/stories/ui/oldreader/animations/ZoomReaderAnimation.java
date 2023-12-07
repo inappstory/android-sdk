@@ -40,7 +40,7 @@ public class ZoomReaderAnimation extends ReaderAnimation {
 
     @Override
     int getStartAnimationDuration() {
-        return 3300;
+        return 300;
     }
 
     @Override

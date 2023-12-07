@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.uidomain.reader.page;
+package com.inappstory.sdk.stories.uidomain.reader.views.bottompanel;
 
 public final class BottomPanelVisibilityState {
     public BottomPanelVisibilityState hasFavorite(boolean hasFavorite) {

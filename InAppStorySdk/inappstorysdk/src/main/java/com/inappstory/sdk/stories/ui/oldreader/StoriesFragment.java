@@ -47,7 +47,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
+import com.inappstory.sdk.stories.ui.reader.views.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPagerAdapter;
 import com.inappstory.sdk.stories.utils.BackPressHandler;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -285,7 +285,9 @@ public class StoriesFragment extends Fragment
         RelativeLayout resView = new RelativeLayout(context);
         //   resView.setBackgroundColor(getResources().getColor(R.color.black));
         storiesViewPager = new ReaderPager(context);
-        storiesViewPager.setHost(this);
+        //storiesViewPager.setReaderPagerListener(this);
+
+
         storiesViewPager.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         invMask = new View(context);
@@ -293,7 +295,7 @@ public class StoriesFragment extends Fragment
                 ViewGroup.LayoutParams.MATCH_PARENT));
         invMask.setVisibility(View.GONE);
         storiesViewPager.setId(R.id.ias_stories_pager);
-        invMask.setId(R.id.ias_inv_mask);
+        invMask.setId(R.id.ias_touch_holder);
         invMask.setClickable(true);
         storiesViewPager.setElevation(4);
         invMask.setElevation(10);
@@ -460,7 +462,7 @@ public class StoriesFragment extends Fragment
             public void run() {
                 if (storiesViewPager.getAdapter() != null &&
                         storiesViewPager.getCurrentItem() < storiesViewPager.getAdapter().getCount() - 1) {
-                    storiesViewPager.cubeAnimation = true;
+                    storiesViewPager.lock();
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
                     InAppStoryManager.closeStoryReader(CloseReader.AUTO, StatisticV2Manager.AUTO);
@@ -477,7 +479,7 @@ public class StoriesFragment extends Fragment
 
                 if (storiesViewPager.getCurrentItem() > 0) {
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() - 1);
-                    storiesViewPager.cubeAnimation = true;
+                    storiesViewPager.lock();
                 } else {
                     readerManager.restartCurrentStory();
                 }

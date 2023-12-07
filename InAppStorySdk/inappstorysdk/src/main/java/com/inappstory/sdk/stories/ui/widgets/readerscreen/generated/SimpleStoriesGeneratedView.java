@@ -16,9 +16,9 @@ import androidx.core.util.Pair;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.models.api.slidestructure.Element;
 import com.inappstory.sdk.core.models.api.slidestructure.SlideStructure;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.ViewAnimator;
 
@@ -294,7 +294,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+        //if (((ReaderPager)getParentForAccessibility()).locked) return false;
         if (IASCore.getInstance().notConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -313,7 +313,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+       // if (((ReaderPager)getParentForAccessibility()).locked) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             lastTempTap = System.currentTimeMillis();
@@ -331,7 +331,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+      //  if (((ReaderPager)getParentForAccessibility()).locked) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {
@@ -382,5 +382,10 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     @Override
     public StoriesViewManager getManager() {
         return manager;
+    }
+
+    @Override
+    public void disableTouchEvent(DisableTouchEvent disableDispatchTouchEvent) {
+
     }
 }

@@ -1,35 +1,31 @@
-package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
+package com.inappstory.sdk.stories.ui.reader.views;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
-import com.inappstory.sdk.R;
 import com.inappstory.sdk.stories.ui.oldreader.BothSideViewPager;
-import com.inappstory.sdk.stories.ui.oldreader.StoriesFragment;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CoverTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;
 
-public class ReaderPager extends BothSideViewPager {
-    public void setHost(StoriesFragment host) {
-        this.host = host;
+public final class StoriesReaderPager extends BothSideViewPager {
+    public void setPagerSwipeListener(StoriesReaderPagerSwipeListener pagerSwipeListener) {
+        this.pagerSwipeListener = pagerSwipeListener;
     }
 
-    StoriesFragment host;
+    StoriesReaderPagerSwipeListener pagerSwipeListener;
 
-    public ReaderPager(@NonNull Context context) {
+    public StoriesReaderPager(@NonNull Context context) {
         super(context);
         init(context);
     }
 
-    public ReaderPager(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public StoriesReaderPager(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context);
     }
@@ -37,8 +33,6 @@ public class ReaderPager extends BothSideViewPager {
     private void init(@NonNull Context context) {
         setLayoutDirection(context.getResources().getConfiguration().getLayoutDirection());
     }
-
-    public boolean canUseNotLoaded;
 
     @Override
     protected int getChildDrawingOrder(int childCount, int i) {
@@ -48,28 +42,17 @@ public class ReaderPager extends BothSideViewPager {
 
     private float pressedX;
     private float pressedY;
-    boolean startMove;
 
     public static PageTransformer cubeTransformer = new CubeTransformer();
     public static PageTransformer depthTransformer = new DepthTransformer();
     public static PageTransformer coverTransformer = new CoverTransformer();
 
-    public void setTransformAnimation(int transformAnimation) {
-        this.transformAnimation = transformAnimation;
-    }
 
     private int transformAnimation;
-    boolean closeOnSwipe;
 
     public void setParameters(int transformAnimation) {
         this.transformAnimation = transformAnimation;
         init();
-    }
-
-    public void init(@Nullable AttributeSet attrs) {
-        if (attrs != null) {
-            TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ReaderPager);
-        }
     }
 
     public void init() {
@@ -94,21 +77,23 @@ public class ReaderPager extends BothSideViewPager {
 
     public void pageScrolled(float positionOffset) {
         if (positionOffset == 0f) {
-            cubeAnimation = false;
+            locked = false;
             requestDisallowInterceptTouchEvent(false);
         } else {
-            cubeAnimation = true;
+            locked = true;
             requestDisallowInterceptTouchEvent(true);
         }
     }
 
-    public boolean cubeAnimation = false;
+    public boolean locked = false;
 
+    public void lock() {
+        locked = true;
+    }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        ViewParent viewParent = getParentForAccessibility();
-        if (cubeAnimation) {
+        if (locked) {
             return true;
         }
         float pressedEndX = 0f;
@@ -133,24 +118,24 @@ public class ReaderPager extends BothSideViewPager {
             pressedEndY = motionEvent.getY() - pressedY;
             pressedEndX = motionEvent.getX() - pressedX;
             if (pressedEndY > 400) {
-                host.swipeDownEvent(getCurrentItem());
+                pagerSwipeListener.swipeDown(getCurrentItem());
                 return true;
             }
             if (pressedEndY < -400) {
-                host.swipeUpEvent(getCurrentItem());
+                pagerSwipeListener.swipeUp(getCurrentItem());
                 return true;
             }
             if (swipeRightCondition &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX > 300) {
-                host.swipeRightEvent(getCurrentItem());
+                pagerSwipeListener.swipeRight(getCurrentItem());
                 return true;
             }
 
             if (swipeLeftCondition &&
                     pressedEndX * pressedEndX > pressedEndY * pressedEndY &&
                     pressedEndX < -300) {
-                host.swipeLeftEvent(getCurrentItem());
+                pagerSwipeListener.swipeLeft(getCurrentItem());
                 return true;
             }
         }

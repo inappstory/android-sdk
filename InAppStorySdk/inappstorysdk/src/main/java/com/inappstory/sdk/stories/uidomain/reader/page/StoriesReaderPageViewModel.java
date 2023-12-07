@@ -3,6 +3,8 @@ package com.inappstory.sdk.stories.uidomain.reader.page;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.BottomPanelViewModel;
+
 public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewModel {
     public StoriesReaderPageViewModel(StoriesReaderPageState initState) {
         this.state = initState;
