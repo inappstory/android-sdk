@@ -1,42 +1,41 @@
-package com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel;
+package com.inappstory.sdk.stories.ui.reader.views.buttonspanel;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
-
+import androidx.lifecycle.Observer;
 
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.IASCore;
-import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.interfaces.IChangeStatusReaderCallback;
+import com.inappstory.sdk.databinding.IasReaderButtonsPanelBinding;
+import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderAppearanceSettings;
 import com.inappstory.sdk.stories.ui.oldreader.StoriesReaderSettings;
+import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.BottomPanelLikeState;
+import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.IBottomPanelViewModel;
 
-public class ButtonsPanel extends LinearLayout {
-
-    public AppCompatImageView like;
-    public AppCompatImageView sound;
-    public AppCompatImageView dislike;
-    public AppCompatImageView favorite;
-    public AppCompatImageView share;
+public class BottomPanel extends LinearLayout {
 
 
-    public ButtonsPanel(Context context) {
+    private IBottomPanelViewModel viewModel;
+
+    public BottomPanel(Context context) {
         super(context);
         init();
     }
 
-    public ButtonsPanel(Context context, @Nullable AttributeSet attrs) {
+    public BottomPanel(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
 
-
-    public ButtonsPanel(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public BottomPanel(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -67,70 +66,84 @@ public class ButtonsPanel extends LinearLayout {
         }
     }
 
-    public ButtonsPanelManager getManager() {
-        return manager;
-    }
-
-
     public void refreshSoundStatus() {
         sound.setActivated(IASCore.getInstance().isSoundOn());
     }
 
-    ButtonsPanelManager manager;
+    IasReaderButtonsPanelBinding binding;
 
-    public void init() {
-        inflate(getContext(), R.layout.ias_reader_buttons_panel, this);
-        manager = new ButtonsPanelManager(this);
-        like = findViewById(R.id.ias_like_button);
-        dislike = findViewById(R.id.ias_dislike_button);
-        favorite = findViewById(R.id.ias_favorite_button);
-        sound = findViewById(R.id.ias_sound_button);
-        share = findViewById(R.id.ias_share_button);
-        if (like != null)
-            like.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    likeClick();
-                }
-            });
-        if (dislike != null)
-            dislike.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dislikeClick();
-                }
-            });
-        if (favorite != null)
-            favorite.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    favoriteClick();
-                }
-            });
-        if (share != null)
-            share.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    shareClick();
-                }
-            });
-        if (sound != null) {
-            sound.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    soundClick();
-                }
-            });
-            sound.setActivated(IASCore.getInstance().isSoundOn());
+    public void setViewModel(IBottomPanelViewModel viewModel) {
+        this.viewModel = viewModel;
+        if (isAttachedToWindow()) {
+            observeStates();
         }
     }
 
-    public void setIcons(StoriesReaderSettings readerSettings) {
-        like.setImageDrawable(getResources().getDrawable(readerSettings.likeIcon));
-        dislike.setImageDrawable(getResources().getDrawable(readerSettings.dislikeIcon));
-        favorite.setImageDrawable(getResources().getDrawable(readerSettings.favoriteIcon));
-        share.setImageDrawable(getResources().getDrawable(readerSettings.shareIcon));
-        sound.setImageDrawable(getResources().getDrawable(readerSettings.soundIcon));
+    private void observeStates() {
+        viewModel.likeStateLD().observeForever(new Observer<BottomPanelLikeState>() {
+            @Override
+            public void onChanged(BottomPanelLikeState bottomPanelLikeState) {
+
+            }
+        });
+    }
+
+    private void removeObservers() {
+
+    }
+
+
+    public void init() {
+        binding = IasReaderButtonsPanelBinding.inflate(LayoutInflater.from(getContext()));
+        binding.iasLikeButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                likeClick();
+            }
+        });
+        binding.iasDislikeButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dislikeClick();
+            }
+        });
+        binding.iasFavoriteButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                favoriteClick();
+            }
+        });
+        binding.iasShareButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                shareClick();
+            }
+        });
+        binding.iasSoundButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                soundClick();
+            }
+        });
+        binding.iasSoundButton.setActivated(IASCore.getInstance().isSoundOn());
+    }
+
+    public void setIcons(StoriesReaderAppearanceSettings appearanceSettings) {
+        binding.iasLikeButton.setImageDrawable(
+                getResources().getDrawable(appearanceSettings.csLikeIcon())
+        );
+        binding.iasDislikeButton.setImageDrawable(
+                getResources().getDrawable(appearanceSettings.csDislikeIcon())
+        );
+        binding.iasFavoriteButton.setImageDrawable(
+                getResources().getDrawable(appearanceSettings.csFavoriteIcon())
+        );
+        binding.iasShareButton.setImageDrawable(
+                getResources().getDrawable(appearanceSettings.csShareIcon())
+        );
+        binding.iasSoundButton.setImageDrawable(
+                getResources().getDrawable(appearanceSettings.csSoundIcon())
+        );
     }
 
 
@@ -206,35 +219,17 @@ public class ButtonsPanel extends LinearLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-
-    }
-
-    public void subscribe() {
-        IStoriesRepository repository = IASCore.getInstance()
-                .getStoriesRepository(manager.getParentManager().getStoryType());
-        repository.addReaderStatusChangeCallbacks(
-                likeDislikeCallback,
-                favoriteCallback,
-                shareCallback,
-                manager.storyId
-        );
-    }
-
-    public void unsubscribe() {
-        IStoriesRepository repository = IASCore.getInstance()
-                .getStoriesRepository(manager.getParentManager().getStoryType());
-        repository.removeReaderStatusChangeCallbacks(
-                likeDislikeCallback,
-                favoriteCallback,
-                shareCallback,
-                manager.storyId
-        );
+        if (viewModel != null) {
+            observeStates();
+        }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-
+        if (viewModel != null) {
+            removeObservers();
+        }
     }
 
     IChangeStatusReaderCallback favoriteCallback = new IChangeStatusReaderCallback() {

@@ -15,4 +15,10 @@
     <item name="ias_close_button" type="id"/>
     <item name="ias_black_bottom_offset" type="id"/>
     <item name="ias_refresh_button" type="id"/>
+
+    <item name="ias_like_button" type="id"/>
+    <item name="ias_dislike_button" type="id"/>
+    <item name="ias_favorite_button" type="id"/>
+    <item name="ias_share_button" type="id"/>
+    <item name="ias_sound_button" type="id"/>
 </resources>

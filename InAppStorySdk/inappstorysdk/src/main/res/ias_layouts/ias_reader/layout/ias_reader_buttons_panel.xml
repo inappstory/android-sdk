@@ -6,7 +6,7 @@
     android:background="#000000"
     android:layout_height="60dp">
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/likeButton"
+        android:id="@id/ias_like_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginStart="18dp"
@@ -15,7 +15,7 @@
         app:srcCompat="@drawable/ic_stories_status_like" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/dislikeButton"
+        android:id="@id/ias_dislike_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginStart="8dp"
@@ -24,7 +24,7 @@
         app:srcCompat="@drawable/ic_stories_status_dislike"/>
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/favoriteButton"
+        android:id="@id/ias_favorite_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginStart="8dp"
@@ -39,7 +39,7 @@
 
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/soundButton"
+        android:id="@id/ias_sound_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"
@@ -48,7 +48,7 @@
         app:srcCompat="@drawable/ic_stories_status_sound" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/shareButton"
+        android:id="@id/ias_share_button"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="15dp"

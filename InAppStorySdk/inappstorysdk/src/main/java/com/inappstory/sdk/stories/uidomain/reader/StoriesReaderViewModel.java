@@ -70,9 +70,17 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
 
     private List<IStoriesReaderPageViewModel> pageViewModels = new ArrayList<>();
 
+    @Override
     public IStoriesReaderPageViewModel getPageViewModel(int index) {
         if (pageViewModels.size() <= index) return null;
         return pageViewModels.get(index);
+    }
+
+    @Override
+    public IStoriesReaderPageViewModel getPageViewModelByStoryId(int storyId) {
+        int index = state.launchData().getStoriesIds().indexOf(storyId);
+        if (index == -1) return null;
+        return getPageViewModel(index);
     }
 
     @Override
@@ -80,6 +88,7 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
         return getPageViewModel(state.launchData().getListIndex());
     }
 
+    @Override
     public void initNewState(@NonNull StoriesReaderState state) {
         this.state = state;
         pageViewModels.clear();

@@ -21,15 +21,19 @@ public interface IBottomPanelViewModel {
             boolean hasSound
     );
 
-    void like(int like);
+    void shareClick();
+
+    void likeClick();
+
+    void dislikeClick();
+
+    void favoriteClick();
+
+    void soundClick();
 
     void likeEnabled(boolean enabled);
-
-    void favorite(boolean favorite);
 
     void favoriteEnabled(boolean enabled);
 
     void shareEnabled(boolean enabled);
-
-    void soundOn(boolean soundOn);
 }

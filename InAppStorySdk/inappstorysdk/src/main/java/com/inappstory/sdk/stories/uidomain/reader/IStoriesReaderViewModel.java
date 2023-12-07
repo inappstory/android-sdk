@@ -6,6 +6,7 @@ import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewMod
 
 public interface IStoriesReaderViewModel {
     IStoriesReaderPageViewModel getPageViewModel(int index);
+    IStoriesReaderPageViewModel getPageViewModelByStoryId(int storyId);
     IStoriesReaderPageViewModel getLaunchedViewModel();
     void initNewState(StoriesReaderState state);
     StoriesReaderState getState();

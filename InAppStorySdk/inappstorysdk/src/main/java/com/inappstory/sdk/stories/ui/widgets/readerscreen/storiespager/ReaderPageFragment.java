@@ -78,7 +78,7 @@ public class ReaderPageFragment extends Fragment {
         boolean readerInitSuccess = true;
         if (buttonsPanel != null) {
             manager.setButtonsPanelManager(buttonsPanel.getManager(), storyId);
-            buttonsPanel.subscribe();
+           // buttonsPanel.subscribe();
         } else
             readerInitSuccess = false;
         if (timeline != null)
@@ -628,7 +628,7 @@ public class ReaderPageFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        if (buttonsPanel != null) buttonsPanel.unsubscribe();
+       // if (buttonsPanel != null) buttonsPanel.unsubscribe();
         if (storiesView != null)
             storiesView.destroyView();
         if (manager != null) {
