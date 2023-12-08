@@ -65,19 +65,4 @@ public interface IStoriesRepository extends IFavoriteStoriesManager, ILikeDislik
     void addStoryUpdatedCallback(IStoryUpdatedCallback callback);
 
     void removeStoryUpdatedCallback(IStoryUpdatedCallback callback);
-
-    void addReaderStatusChangeCallbacks(
-            IChangeStatusReaderCallback likeCallback,
-            IChangeStatusReaderCallback favoriteCallback,
-            IChangeStatusReaderCallback shareCallback,
-            int storyId
-    );
-
-    void removeReaderStatusChangeCallbacks(
-            IChangeStatusReaderCallback likeCallback,
-            IChangeStatusReaderCallback favoriteCallback,
-            IChangeStatusReaderCallback shareCallback,
-            int storyId
-    );
-
 }

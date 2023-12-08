@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.inappstory.sdk.stories.uidomain.reader.IStoriesReaderViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.StoriesReaderViewModel;
+import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
+import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.IBottomPanelViewModel;
 
 public final class IASUICore {
     private static IASUICore INSTANCE;
@@ -19,6 +21,19 @@ public final class IASUICore {
 
     public IStoriesReaderViewModel getStoriesReaderVM() {
         return storiesReaderVM;
+    }
+
+    public IStoriesReaderPageViewModel getStoriesReaderPageVM(int storyId) {
+        if (storiesReaderVM != null) {
+            return storiesReaderVM.getPageViewModelByStoryId(storyId);
+        }
+        return null;
+    }
+
+    public IBottomPanelViewModel getStoriesReaderPageBottomPanelVM(int storyId) {
+        IStoriesReaderPageViewModel pageViewModel = getStoriesReaderPageVM(storyId);
+        if (pageViewModel != null) return pageViewModel.getBottomPanelViewModel();
+        return null;
     }
 
     private IStoriesReaderViewModel storiesReaderVM;

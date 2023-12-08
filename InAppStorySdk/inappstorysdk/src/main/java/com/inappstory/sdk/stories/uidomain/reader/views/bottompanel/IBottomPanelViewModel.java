@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 
 public interface IBottomPanelViewModel {
 
-    BottomPanelVisibilityState visibilityStateLD();
+    BottomPanelVisibilityState visibilityState();
 
     LiveData<BottomPanelFavoriteState> favoriteStateLD();
 
@@ -31,9 +31,15 @@ public interface IBottomPanelViewModel {
 
     void soundClick();
 
+    void changeLikeStatus(int like);
+
+    void changeFavoriteStatus(boolean favorite);
+
     void likeEnabled(boolean enabled);
 
     void favoriteEnabled(boolean enabled);
 
     void shareEnabled(boolean enabled);
+
+    void soundOn(boolean soundOn);
 }

@@ -16,7 +16,7 @@ import androidx.core.util.Pair;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.models.api.slidestructure.Element;
 import com.inappstory.sdk.core.models.api.slidestructure.SlideStructure;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.SimpleStoriesView;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoryDisplay;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -25,7 +25,7 @@ import com.inappstory.sdk.stories.utils.ViewAnimator;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SimpleStoriesGeneratedView extends RelativeLayout implements SimpleStoriesView {
+public class SimpleStoriesGeneratedView extends RelativeLayout implements StoryDisplay {
     public SimpleStoriesGeneratedView(Context context) {
         super(context);
         init();
@@ -357,7 +357,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     }
 
     @Override
-    public void setStoriesView(SimpleStoriesView storiesView) {
+    public void setStoriesView(StoryDisplay storiesView) {
 
     }
 

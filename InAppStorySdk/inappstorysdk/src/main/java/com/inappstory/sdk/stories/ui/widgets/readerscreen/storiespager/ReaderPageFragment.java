@@ -63,7 +63,7 @@ import java.util.List;
 public class ReaderPageFragment extends Fragment {
     ReaderPageManager manager;
     StoryTimeline timeline;
-    SimpleStoriesView storiesView;
+    StoryDisplay storiesView;
     ButtonsPanel buttonsPanel;
     View aboveButtonsPanel;
     ReaderManager parentManager;

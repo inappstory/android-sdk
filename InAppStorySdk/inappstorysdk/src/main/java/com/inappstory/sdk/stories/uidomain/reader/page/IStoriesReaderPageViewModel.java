@@ -16,4 +16,14 @@ public interface IStoriesReaderPageViewModel {
     void updateIsActive(boolean isActive);
 
     LiveData<Boolean> isActiveLD();
+
+    void shareClick();
+
+    void likeClick();
+
+    void dislikeClick();
+
+    void favoriteClick();
+
+    void soundClick();
 }

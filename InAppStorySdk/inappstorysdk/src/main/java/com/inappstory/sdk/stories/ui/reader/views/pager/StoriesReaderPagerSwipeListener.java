@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.reader.views;
+package com.inappstory.sdk.stories.ui.reader.views.pager;
 
 public interface StoriesReaderPagerSwipeListener {
     void swipeDown(int index);

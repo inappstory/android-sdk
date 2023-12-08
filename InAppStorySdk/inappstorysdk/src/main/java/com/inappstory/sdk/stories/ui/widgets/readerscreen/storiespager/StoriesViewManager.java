@@ -317,12 +317,12 @@ public class StoriesViewManager {
     boolean isVideo = false;
 
 
-    public void setStoriesView(SimpleStoriesView storiesWebView) {
+    public void setStoriesView(StoryDisplay storiesWebView) {
         this.storiesView = storiesWebView;
         storiesWebView.checkIfClientIsSet();
     }
 
-    SimpleStoriesView storiesView;
+    StoryDisplay storiesView;
 
     public void storyShowTextInput(String id, String data) {
         ContactDialog alert = new ContactDialog(storyId, id, data,

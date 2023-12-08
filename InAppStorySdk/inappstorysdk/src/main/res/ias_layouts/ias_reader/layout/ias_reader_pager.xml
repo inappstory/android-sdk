@@ -3,7 +3,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:background="#00FF00"
     android:layout_height="match_parent">
-    <com.inappstory.sdk.stories.ui.reader.views.StoriesReaderPager
+    <com.inappstory.sdk.stories.ui.reader.views.pager.StoriesReaderPager
         android:orientation="vertical"
         android:id="@id/ias_stories_pager"
         android:layout_width="match_parent"

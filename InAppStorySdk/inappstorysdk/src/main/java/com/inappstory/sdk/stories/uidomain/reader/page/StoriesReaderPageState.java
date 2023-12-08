@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.uidomain.reader.page;
 
+import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderAppearanceSettings;
 
 public final class StoriesReaderPageState {
@@ -7,11 +8,13 @@ public final class StoriesReaderPageState {
     public StoriesReaderPageState(
             StoriesReaderAppearanceSettings appearanceSettings,
             int storyId,
+            StoryType storyType,
             boolean hasSwipeUp,
             boolean disableClose
     ) {
         this.appearanceSettings = appearanceSettings;
         this.storyId = storyId;
+        this.storyType = storyType;
         this.hasSwipeUp = hasSwipeUp;
         this.disableClose = disableClose;
     }
@@ -33,6 +36,11 @@ public final class StoriesReaderPageState {
 
     public StoriesReaderPageState storyId(int storyId) {
         this.storyId = storyId;
+        return this;
+    }
+
+    public StoriesReaderPageState storyType(StoryType storyType) {
+        this.storyType = storyType;
         return this;
     }
 
@@ -65,6 +73,12 @@ public final class StoriesReaderPageState {
 
     private StoriesReaderAppearanceSettings appearanceSettings;
     private int storyId;
+
+    public StoryType getStoryType() {
+        return storyType;
+    }
+
+    private StoryType storyType;
     private boolean hasSwipeUp;
     private boolean disableClose;
     private boolean isActive;
@@ -73,6 +87,7 @@ public final class StoriesReaderPageState {
         return new StoriesReaderPageState(
                 this.appearanceSettings,
                 this.storyId,
+                this.storyType,
                 this.hasSwipeUp,
                 this.disableClose
         );
@@ -80,7 +95,8 @@ public final class StoriesReaderPageState {
 
     public StoriesReaderPageState(
             StoriesReaderAppearanceSettings appearanceSettings,
-            int storyId
+            int storyId,
+            StoryType storyType
     ) {
         this.appearanceSettings = appearanceSettings;
         this.storyId = storyId;

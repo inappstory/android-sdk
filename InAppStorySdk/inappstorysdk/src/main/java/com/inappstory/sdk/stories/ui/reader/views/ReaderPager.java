@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.stories.ui.oldreader.BothSideViewPager;
+import com.inappstory.sdk.stories.ui.reader.views.pager.StoriesReaderPagerSwipeListener;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CoverTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.CubeTransformer;
 import com.inappstory.sdk.stories.ui.widgets.viewpagertransforms.DepthTransformer;

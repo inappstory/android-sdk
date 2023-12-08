@@ -8,6 +8,7 @@ import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.BottomPanelV
 public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewModel {
     public StoriesReaderPageViewModel(StoriesReaderPageState initState) {
         this.state = initState;
+        bottomPanelViewModel = new BottomPanelViewModel(this);
     }
 
     private final StoriesReaderPageState state;
@@ -16,7 +17,7 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
         return state;
     }
 
-    private final BottomPanelViewModel bottomPanelViewModel = new BottomPanelViewModel();
+    private final BottomPanelViewModel bottomPanelViewModel;
 
     public BottomPanelViewModel getBottomPanelViewModel() {
         return bottomPanelViewModel;
@@ -40,5 +41,30 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
 
     public LiveData<Boolean> isActiveLD() {
         return isActive;
+    }
+
+    @Override
+    public void shareClick() {
+
+    }
+
+    @Override
+    public void likeClick() {
+
+    }
+
+    @Override
+    public void dislikeClick() {
+
+    }
+
+    @Override
+    public void favoriteClick() {
+
+    }
+
+    @Override
+    public void soundClick() {
+
     }
 }

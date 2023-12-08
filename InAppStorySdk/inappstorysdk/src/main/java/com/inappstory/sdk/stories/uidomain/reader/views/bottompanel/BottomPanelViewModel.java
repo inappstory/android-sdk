@@ -3,12 +3,46 @@ package com.inappstory.sdk.stories.uidomain.reader.views.bottompanel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-public final class BottomPanelViewModel implements IBottomPanelViewModel {
-    public BottomPanelViewModel() {
+import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.models.api.Story.StoryType;
+import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderAppearanceSettings;
+import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 
+public final class BottomPanelViewModel implements IBottomPanelViewModel {
+    IStoriesReaderPageViewModel pageViewModel;
+
+    public BottomPanelViewModel(IStoriesReaderPageViewModel pageViewModel) {
+        this.pageViewModel = pageViewModel;
+        StoriesReaderAppearanceSettings appearanceSettings = pageViewModel.getState().appearanceSettings();
+        soundOnState.postValue(InAppStoryManager.getInstance().soundOn());
+        int storyId = pageViewModel.getState().storyId();
+        StoryType storyType = pageViewModel.getState().getStoryType();
+        IPreviewStoryDTO previewStoryDTO = IASCore.getInstance()
+                .getStoriesRepository(storyType)
+                .getStoryPreviewById(storyId);
+        if (previewStoryDTO != null) {
+            setVisibility(
+                    appearanceSettings.csHasFavorite() && previewStoryDTO.hasFavorite(),
+                    appearanceSettings.csHasLike() && previewStoryDTO.hasLike(),
+                    appearanceSettings.csHasShare() && previewStoryDTO.hasShare(),
+                    previewStoryDTO.hasAudio()
+            );
+            changeLikeStatus(previewStoryDTO.getLike());
+            changeFavoriteStatus(previewStoryDTO.getFavorite());
+        } else {
+            setVisibility(
+                    appearanceSettings.csHasFavorite(),
+                    appearanceSettings.csHasLike(),
+                    appearanceSettings.csHasShare(),
+                    false
+            );
+        }
     }
 
-    public BottomPanelVisibilityState visibilityStateLD() {
+    @Override
+    public BottomPanelVisibilityState visibilityState() {
         return visibilityState;
     }
 
@@ -55,13 +89,40 @@ public final class BottomPanelViewModel implements IBottomPanelViewModel {
                 .hasSound(hasSound);
     }
 
-    public void like(int like) {
+    @Override
+    public void shareClick() {
+        pageViewModel.shareClick();
+    }
+
+    @Override
+    public void likeClick() {
+        pageViewModel.likeClick();
+    }
+
+    @Override
+    public void dislikeClick() {
+        pageViewModel.dislikeClick();
+    }
+
+    @Override
+    public void favoriteClick() {
+        pageViewModel.favoriteClick();
+    }
+
+    @Override
+    public void soundClick() {
+        pageViewModel.soundClick();
+    }
+
+    @Override
+    public void changeLikeStatus(int like) {
         this.likeState.postValue(
                 new BottomPanelLikeState()
                         .like(like)
         );
     }
 
+    @Override
     public void likeEnabled(boolean enabled) {
         BottomPanelLikeState state = likeState.getValue();
         if (state == null) return;
@@ -71,13 +132,15 @@ public final class BottomPanelViewModel implements IBottomPanelViewModel {
         );
     }
 
-    public void favorite(boolean favorite) {
+    @Override
+    public void changeFavoriteStatus(boolean favorite) {
         this.favoriteState.postValue(
                 new BottomPanelFavoriteState()
                         .favorite(favorite)
         );
     }
 
+    @Override
     public void favoriteEnabled(boolean enabled) {
         BottomPanelFavoriteState state = this.favoriteState.getValue();
         if (state == null) return;
@@ -87,10 +150,12 @@ public final class BottomPanelViewModel implements IBottomPanelViewModel {
         );
     }
 
+    @Override
     public void shareEnabled(boolean enabled) {
         this.shareEnabledState.postValue(enabled);
     }
 
+    @Override
     public void soundOn(boolean soundOn) {
         this.soundOnState.postValue(soundOn);
     }

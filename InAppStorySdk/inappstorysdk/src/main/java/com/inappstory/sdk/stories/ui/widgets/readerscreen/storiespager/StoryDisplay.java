@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
 
-public interface SimpleStoriesView {
+public interface StoryDisplay {
     void slidePause();
     void slideStart();
     void restartVideo();
@@ -22,7 +22,7 @@ public interface SimpleStoriesView {
     float getCoordinate();
     void shareComplete(String stId, boolean success);
     void freezeUI();
-    void setStoriesView(SimpleStoriesView storiesView);
+    void setStoriesView(StoryDisplay storiesView);
     void checkIfClientIsSet();
     void screenshotShare();
     void goodsWidgetComplete(String widgetId);

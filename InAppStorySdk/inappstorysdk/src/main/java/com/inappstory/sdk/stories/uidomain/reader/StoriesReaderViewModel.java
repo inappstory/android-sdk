@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.page.StoriesReaderPageState;
@@ -89,9 +90,15 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     }
 
     @Override
+    public List<IStoriesReaderPageViewModel> getPageViewModels() {
+        return pageViewModels;
+    }
+
+    @Override
     public void initNewState(@NonNull StoriesReaderState state) {
         this.state = state;
         pageViewModels.clear();
+        Story.StoryType storyType = state.launchData().getType();
         List<Integer> ids = state.launchData().getStoriesIds();
         for (int i = 0; i < ids.size(); i++) {
             int currentSlide = 0;
@@ -99,19 +106,22 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
             if (i == state.launchData().getListIndex() && currentStoryOpenIndex != null) {
                 currentSlide = currentStoryOpenIndex;
             }
-            IPreviewStoryDTO previewStoryDTO = IASCore.getInstance().getStoriesRepository(
-                    state.launchData().getType()).getStoryPreviewById(ids.get(i));
+            IPreviewStoryDTO previewStoryDTO = IASCore.getInstance()
+                    .getStoriesRepository(storyType)
+                    .getStoryPreviewById(ids.get(i));
             StoriesReaderPageViewModel pageViewModel = new StoriesReaderPageViewModel(
                     previewStoryDTO != null ?
                             new StoriesReaderPageState(
                                     state.appearanceSettings(),
                                     ids.get(i),
+                                    storyType,
                                     previewStoryDTO.hasSwipeUp(),
                                     previewStoryDTO.disableClose()
                             ) :
                             new StoriesReaderPageState(
                                     state.appearanceSettings(),
-                                    ids.get(i)
+                                    ids.get(i),
+                                    storyType
                             )
             );
             pageViewModel.updateCurrentSlide(currentSlide);

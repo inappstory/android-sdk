@@ -11,7 +11,8 @@ import androidx.fragment.app.Fragment;
 
 import com.inappstory.sdk.databinding.IasReaderPagerBinding;
 import com.inappstory.sdk.stories.ui.IASUICore;
-import com.inappstory.sdk.stories.ui.reader.views.StoriesReaderPagerSwipeListener;
+import com.inappstory.sdk.stories.ui.reader.views.pager.StoriesReaderPagerAdapter;
+import com.inappstory.sdk.stories.ui.reader.views.pager.StoriesReaderPagerSwipeListener;
 import com.inappstory.sdk.stories.uidomain.reader.StoriesReaderState;
 
 public final class StoriesReaderPagerFragment extends Fragment implements IStoriesReaderPagerScreen,
@@ -43,7 +44,10 @@ public final class StoriesReaderPagerFragment extends Fragment implements IStori
 
         binding.iasStoriesPager.setPagerSwipeListener(this);
         binding.iasStoriesPager.setParameters(state.appearanceSettings().csStoryReaderAnimation());
-
+        binding.iasStoriesPager.setAdapter(new StoriesReaderPagerAdapter(
+                getChildFragmentManager(),
+                state.launchData().getStoriesIds()
+        ));
     }
 
     @Override

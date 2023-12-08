@@ -209,27 +209,6 @@ public class ButtonsPanel extends LinearLayout {
 
     }
 
-    public void subscribe() {
-        IStoriesRepository repository = IASCore.getInstance()
-                .getStoriesRepository(manager.getParentManager().getStoryType());
-        repository.addReaderStatusChangeCallbacks(
-                likeDislikeCallback,
-                favoriteCallback,
-                shareCallback,
-                manager.storyId
-        );
-    }
-
-    public void unsubscribe() {
-        IStoriesRepository repository = IASCore.getInstance()
-                .getStoriesRepository(manager.getParentManager().getStoryType());
-        repository.removeReaderStatusChangeCallbacks(
-                likeDislikeCallback,
-                favoriteCallback,
-                shareCallback,
-                manager.storyId
-        );
-    }
 
     @Override
     protected void onDetachedFromWindow() {

@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.reader.views;
+package com.inappstory.sdk.stories.ui.reader.views.pager;
 
 import android.content.Context;
 import android.util.AttributeSet;

@@ -35,6 +35,9 @@ import com.inappstory.sdk.core.repository.stories.utils.IFeedCallbackKey;
 import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.core.utils.sharedpref.SharedPreferencesAPI;
+import com.inappstory.sdk.stories.ui.IASUICore;
+import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
+import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.IBottomPanelViewModel;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
@@ -447,7 +450,7 @@ public class StoriesRepository implements IStoriesRepository {
     private List<IPreviewStoryDTO> getNonOpenedStories(List<IPreviewStoryDTO> allStories) {
         List<IPreviewStoryDTO> result = new ArrayList<>();
         Set<String> opened = getOpenedStories();
-        for (IPreviewStoryDTO storyDTO: allStories) {
+        for (IPreviewStoryDTO storyDTO : allStories) {
             if (!opened.contains(Integer.toString(storyDTO.getId())) && !storyDTO.isOpened()) {
                 result.add(storyDTO);
             }
@@ -495,7 +498,6 @@ public class StoriesRepository implements IStoriesRepository {
         }
         return opens;
     }
-
 
 
     private void saveStoryOpened(int id, StoryType type) {
@@ -640,15 +642,10 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     private void changeStoryFavoriteStatus(final int storyId, boolean initialStatus) {
-        final List<IChangeStatusReaderCallback> callbacks = new ArrayList<>();
-        synchronized (readerFavoriteLock) {
-            List<IChangeStatusReaderCallback> temp = null;
-            if ((temp = readerFavoriteCallbacks.get(storyId)) != null) {
-                callbacks.addAll(temp);
-            }
-        }
-        for (IChangeStatusReaderCallback readerCallback : callbacks) {
-            readerCallback.onProcess();
+        final IBottomPanelViewModel panelViewModel =
+                IASUICore.getInstance().getStoriesReaderPageBottomPanelVM(storyId);
+        if (panelViewModel != null) {
+            panelViewModel.favoriteEnabled(false);
         }
         new ChangeStoryFavoriteStatus(storyId, initialStatus).changeStatus(
                 new IChangeFavoriteStatusCallback() {
@@ -690,8 +687,8 @@ public class StoriesRepository implements IStoriesRepository {
                                 cachedStoryDTO.setFavorite(status);
 
                         }
-                        for (IChangeStatusReaderCallback readerCallback : callbacks) {
-                            readerCallback.onSuccess(status ? 1 : 0);
+                        if (panelViewModel != null) {
+                            panelViewModel.changeFavoriteStatus(status);
                         }
                         updateFavoriteCell();
                         updateFavoriteList();
@@ -699,8 +696,8 @@ public class StoriesRepository implements IStoriesRepository {
 
                     @Override
                     public void onError() {
-                        for (IChangeStatusReaderCallback readerCallback : callbacks) {
-                            readerCallback.onError();
+                        if (panelViewModel != null) {
+                            panelViewModel.favoriteEnabled(true);
                         }
                     }
                 }
@@ -709,15 +706,16 @@ public class StoriesRepository implements IStoriesRepository {
 
     @Override
     public void removeAllFavorites() {
-        final List<IChangeStatusReaderCallback> callbacks = new ArrayList<>();
-        synchronized (readerFavoriteLock) {
-            for (List<IChangeStatusReaderCallback> value : readerFavoriteCallbacks.values()) {
-                if (value != null)
-                    callbacks.addAll(value);
+        final List<IBottomPanelViewModel> panelViewModels = new ArrayList<>();
+        if (IASUICore.getInstance().getStoriesReaderVM() != null) {
+            for (IStoriesReaderPageViewModel pageViewModel :
+                    IASUICore.getInstance().getStoriesReaderVM().getPageViewModels()
+            ) {
+                panelViewModels.add(pageViewModel.getBottomPanelViewModel());
             }
         }
-        for (IChangeStatusReaderCallback readerCallback : callbacks) {
-            readerCallback.onProcess();
+        for (IBottomPanelViewModel panelViewModel : panelViewModels) {
+            panelViewModel.favoriteEnabled(false);
         }
         new RemoveAllStoriesFromFavorites().remove(new IRemoveAllStoriesFromFavoritesCallback() {
             @Override
@@ -735,8 +733,8 @@ public class StoriesRepository implements IStoriesRepository {
                         storyDTO.setFavorite(false);
                     }
                 }
-                for (IChangeStatusReaderCallback readerCallback : callbacks) {
-                    readerCallback.onSuccess(0);
+                for (IBottomPanelViewModel panelViewModel : panelViewModels) {
+                    panelViewModel.changeFavoriteStatus(false);
                 }
                 updateFavoriteCell();
                 updateFavoriteList();
@@ -744,8 +742,8 @@ public class StoriesRepository implements IStoriesRepository {
 
             @Override
             public void onError() {
-                for (IChangeStatusReaderCallback readerCallback : callbacks) {
-                    readerCallback.onError();
+                for (IBottomPanelViewModel panelViewModel : panelViewModels) {
+                    panelViewModel.favoriteEnabled(true);
                 }
             }
         });
@@ -767,67 +765,6 @@ public class StoriesRepository implements IStoriesRepository {
     }
 
     @Override
-    public void addReaderStatusChangeCallbacks(
-            IChangeStatusReaderCallback likeCallback,
-            IChangeStatusReaderCallback favoriteCallback,
-            IChangeStatusReaderCallback shareCallback,
-            int storyId
-    ) {
-        synchronized (readerLikeLock) {
-            if (readerLikeCallbacks.get(storyId) == null)
-                readerLikeCallbacks.put(storyId,
-                        new ArrayList<IChangeStatusReaderCallback>()
-                );
-            readerLikeCallbacks.get(storyId).add(likeCallback);
-        }
-        synchronized (readerFavoriteLock) {
-            if (readerFavoriteCallbacks.get(storyId) == null)
-                readerFavoriteCallbacks.put(storyId,
-                        new ArrayList<IChangeStatusReaderCallback>()
-                );
-            readerFavoriteCallbacks.get(storyId).add(favoriteCallback);
-        }
-        synchronized (readerShareLock) {
-            if (readerShareCallbacks.get(storyId) == null)
-                readerShareCallbacks.put(storyId,
-                        new ArrayList<IChangeStatusReaderCallback>()
-                );
-            readerShareCallbacks.get(storyId).add(shareCallback);
-        }
-    }
-
-    @Override
-    public void removeReaderStatusChangeCallbacks(
-            IChangeStatusReaderCallback likeCallback,
-            IChangeStatusReaderCallback favoriteCallback,
-            IChangeStatusReaderCallback shareCallback,
-            int storyId
-    ) {
-        synchronized (readerLikeLock) {
-            if (readerLikeCallbacks.get(storyId) == null)
-                readerLikeCallbacks.put(storyId,
-                        new ArrayList<IChangeStatusReaderCallback>()
-                );
-            readerLikeCallbacks.get(storyId).remove(likeCallback);
-        }
-        synchronized (readerFavoriteLock) {
-            if (readerFavoriteCallbacks.get(storyId) == null)
-                readerFavoriteCallbacks.put(storyId,
-                        new ArrayList<IChangeStatusReaderCallback>()
-                );
-            readerFavoriteCallbacks.get(storyId).remove(favoriteCallback);
-        }
-        synchronized (readerShareLock) {
-            if (readerShareCallbacks.get(storyId) == null)
-                readerShareCallbacks.put(storyId,
-                        new ArrayList<IChangeStatusReaderCallback>()
-                );
-            readerShareCallbacks.get(storyId).remove(shareCallback);
-        }
-    }
-
-
-    @Override
     public void likeStory(int storyId) {
         changeStoryLikeStatus(storyId, true, false);
     }
@@ -842,17 +779,14 @@ public class StoriesRepository implements IStoriesRepository {
         changeStoryLikeStatus(storyId, true, true);
     }
 
+
     private void changeStoryLikeStatus(int storyId, boolean likeClicked, boolean initialStatus) {
-        final List<IChangeStatusReaderCallback> callbacks = new ArrayList<>();
-        synchronized (readerLikeLock) {
-            List<IChangeStatusReaderCallback> temp = null;
-            if ((temp = readerLikeCallbacks.get(storyId)) != null) {
-                callbacks.addAll(temp);
-            }
+        final IBottomPanelViewModel panelViewModel =
+                IASUICore.getInstance().getStoriesReaderPageBottomPanelVM(storyId);
+        if (panelViewModel != null) {
+            panelViewModel.likeEnabled(false);
         }
-        for (IChangeStatusReaderCallback readerCallback : callbacks) {
-            readerCallback.onProcess();
-        }
+
         new ChangeStoryLikeStatus(storyId, likeClicked, initialStatus)
                 .changeStatus(
                         new IChangeLikeStatusCallback() {
@@ -873,8 +807,8 @@ public class StoriesRepository implements IStoriesRepository {
 
                             @Override
                             public void onError() {
-                                for (IChangeStatusReaderCallback readerCallback : callbacks) {
-                                    readerCallback.onError();
+                                if (panelViewModel != null) {
+                                    panelViewModel.likeEnabled(true);
                                 }
                             }
 
@@ -889,8 +823,9 @@ public class StoriesRepository implements IStoriesRepository {
                                     if (cachedStoryDTO != null)
                                         cachedStoryDTO.setLike(status);
                                 }
-                                for (IChangeStatusReaderCallback readerCallback : callbacks) {
-                                    readerCallback.onSuccess(status);
+
+                                if (panelViewModel != null) {
+                                    panelViewModel.changeLikeStatus(status);
                                 }
                             }
                         }

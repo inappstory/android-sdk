@@ -1,4 +1,4 @@
-package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
+package com.inappstory.sdk.stories.ui.reader.views.storiesdisplay;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -13,56 +13,59 @@ import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
+import androidx.lifecycle.Observer;
 
 import com.inappstory.sdk.InAppStoryManager;
-
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.StoryReaderWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoryDisplay;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
+import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesWebViewDisplayViewModel;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 /**
  * Created by Paperrose on 07.06.2018.
  */
 
-public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
+public class StoriesWebViewDisplay extends IASWebView {
 
     boolean clientIsSet = false;
 
-    public void restartVideo() {
-        stopVideo();
-        slideStart();
+    IStoriesWebViewDisplayViewModel viewModel;
+
+    public void setViewModel(IStoriesWebViewDisplayViewModel viewModel) {
+        this.viewModel = viewModel;
     }
 
-    private void logMethod(String payload) {
-        InAppStoryManager.showDLog("JS_method_call",
-                manager.storyId + " " + manager.loadedIndex + " " + payload);
+    private void observeStates() {
+        viewModel.loadUrlCalls().observeForever(loadUrlObserver);
+        viewModel.evaluateJSCalls().observeForever(evaluateJSObserver);
     }
 
-    public void gameComplete(String data) {
-        if (data != null)
-            loadUrl("javascript:game_complete('" + data + "')");
-        else
-            loadUrl("javascript:game_complete()");
-        logMethod("game_complete " + data);
+    private void removeObservers() {
+        viewModel.loadUrlCalls().removeObserver(loadUrlObserver);
+        viewModel.evaluateJSCalls().removeObserver(evaluateJSObserver);
     }
 
-    private void replaceHtml(String page) {
-        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
 
-        logMethod("show_slide");
-    }
+    Observer<String> loadUrlObserver = new Observer<String>() {
+        @Override
+        public void onChanged(@NonNull String text) {
+            loadUrl(text);
+        }
+    };
 
-    @Override
-    public void clearSlide(int index) {
-        if (index < 0) return;
-        evaluateJavascript("(function(){clear_slide(" + index + ");})()", null);
-        logMethod("clear_slide " + index);
-    }
+    Observer<String> evaluateJSObserver = new Observer<String>() {
+        @Override
+        public void onChanged(@NonNull String text) {
+            evaluateJavascript(text, null);
+        }
+    };
 
     private String oldEscape(String raw) {
         String escaped = raw
@@ -84,97 +87,9 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
         return escaped;
     }
 
-
-    public void slidePause() {
-        loadUrl("javascript:(function(){" +
-                "if ('story_slide_pause' in window) " +
-                "{" +
-                " window.story_slide_pause(); " +
-                "}" +
-                "})()");
-
-        logMethod("story_slide_pause");
-    }
-
-    public void slideStart() {
-        String funAfterCheck = IASCore.getInstance().isSoundOn() ?
-                        "story_slide_start('{\"muted\": false}');" :
-                        "story_slide_start('{\"muted\": true}');";
-        loadUrl("javascript:(function(){" +
-                "if ('story_slide_start' in window) " +
-                "{" +
-                " window." + funAfterCheck +
-                "}" +
-                "})()");
-        logMethod("story_slide_start");
-    }
-
-    public void stopVideo() {
-        loadUrl("javascript:(function(){" +
-                "if ('story_slide_stop' in window) " +
-                "{" +
-                " window.story_slide_stop(); " +
-                "}" +
-                "})()");
-
-        logMethod("story_slide_stop");
-    }
-
-    @Override
-    public void swipeUp() {
-
-        loadUrl("javascript:window.story_slide_swipe_up()");
-        logMethod("story_slide_swipe_up");
-    }
-
-    @Override
-    public void loadJsApiResponse(String result, String cb) {
-        evaluateJavascript(cb + "('" + result + "');", null);
-    }
-
-    public void resumeVideo() {
-        loadUrl("javascript:(function() {" +
-                "if ('story_slide_resume' in window) " +
-                "{" +
-                " window.story_slide_resume(); " +
-                "}" +
-                "})()");
-        logMethod("story_slide_resume");
-    }
-
-    @Override
-    public void loadUrl(final String url) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                SimpleStoriesWebView.super.loadUrl(url);
-            }
-        });
-    }
-
-    public void changeSoundStatus() {
-        if (IASCore.getInstance().isSoundOn()) {
-            loadUrl("javascript:(function(){story_slide_enable_audio();})()");
-        } else {
-            loadUrl("javascript:(function(){story_slide_disable_audio();})()");
-        }
-    }
-
-    public void cancelDialog(String id) {
-        loadUrl("javascript:(function(){story_send_text_input_result(\"" + id + "\", \"\");})()");
-    }
-
-    public void sendDialog(String id, String data) {
-        data = data.replaceAll("\n", "<br>");
-        loadUrl("javascript:story_send_text_input_result(\"" + id + "\", \"" + data + "\")");
-    }
-
-    public SimpleStoriesWebView(Context context) {
+    public StoriesWebViewDisplay(Context context) {
         super(context);
     }
-
-    //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
-
 
     public void destroyView() {
         final Runtime runtime = Runtime.getRuntime();
@@ -191,7 +106,6 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
         destroyDrawingCache();
     }
 
-    @Override
     public float getCoordinate() {
         return coordinate1;
     }
@@ -201,14 +115,6 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
     public void loadWebData(String outerLayout, String outerData) {
         final String data = outerData;
         final String lt = outerLayout;
-
-      /*  clickListener = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                manager.storyClick(null);
-            }
-        };
-        setOnClickListener(clickListener);*/
         if (!notFirstLoading || data.isEmpty()) {
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -228,30 +134,36 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
         }
     }
 
-    public StoriesViewManager getManager() {
-        return manager;
+    private void replaceHtml(String page) {
+        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }
 
-    StoriesViewManager manager;
 
     protected void init() {
         super.init();
-        manager = new StoriesViewManager(getContext());
-        manager.setStoriesView(this);
     }
 
-
-    public void shareComplete(String id, boolean success) {
-        if (id == null) return;
-        loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
-        logMethod("share_complete " + id + " " + success);
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (viewModel != null) {
+            observeStates();
+        }
     }
 
-    public SimpleStoriesWebView(Context context, AttributeSet attrs) {
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (viewModel != null) {
+            removeObservers();
+        }
+    }
+
+    public StoriesWebViewDisplay(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public SimpleStoriesWebView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public StoriesWebViewDisplay(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -260,29 +172,10 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
     long lastTap;
 
 
-    public void freezeUI() {
-        touchSlider = true;
-
-        getParentForAccessibility().requestDisallowInterceptTouchEvent(true);
-    }
-
-    @Override
-    public void screenshotShare() {
-        evaluateJavascript("share_slide_screenshot();", null);
-        logMethod("share_slide_screenshot");
-    }
-
-    @Override
-    public void setStoriesView(StoryDisplay storiesView) {
-
-    }
-
-    @Override
     public void checkIfClientIsSet() {
 
         if (!clientIsSet) {
-            addJavascriptInterface(new WebAppInterface(getContext(),
-                    getManager()), "Android");
+            addJavascriptInterface(new WebAppInterface(viewModel), "Android");
             setWebViewClient(new StoryReaderWebViewClient());
             setWebChromeClient(new WebChromeClient() {
                 @Nullable
@@ -324,14 +217,6 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
         clientIsSet = true;
     }
 
-
-    @Override
-    public void goodsWidgetComplete(String widgetId) {
-        evaluateJavascript("goods_widget_complete(\"" + widgetId + "\");", null);
-
-        logMethod("goods_widget_complete " + widgetId);
-    }
-
     public void disableTouchEvent(DisableTouchEvent disableDispatchTouchEvent) {
         this.disableTouchEvent = disableDispatchTouchEvent;
     }
@@ -359,7 +244,6 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
             case MotionEvent.ACTION_CANCEL:
                 break;
         }
-
         boolean c = super.dispatchTouchEvent(motionEvent);
         return c;
     }
@@ -375,13 +259,11 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
                 return true;
             }
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            if (Sizes.isTablet(getContext()))
-                getManager().getPageManager().resumeSlide(false);
+       /*     if (Sizes.isTablet(getContext()))
+                getManager().getPageManager().resumeSlide(false);*/
         }
         return c;
     }
-
-    boolean touchSlider = false;
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
@@ -392,15 +274,15 @@ public class SimpleStoriesWebView extends IASWebView implements StoryDisplay {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
-            getManager().getPageManager().pauseSlide(false);
+         //   getManager().getPageManager().pauseSlide(false);
 
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
-            touchSlider = false;
+            viewModel.unfreezeUI();
 
-            getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
+         //   getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
         }
-        return c || touchSlider;
+        return c || viewModel.isUIFrozen();
     }
 
 

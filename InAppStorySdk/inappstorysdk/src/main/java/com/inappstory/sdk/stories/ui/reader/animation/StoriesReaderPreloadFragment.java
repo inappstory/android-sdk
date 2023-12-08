@@ -35,8 +35,6 @@ import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.reader.IStoriesReaderScreen;
 import com.inappstory.sdk.stories.ui.reader.IStoriesReaderScreenChild;
 import com.inappstory.sdk.stories.ui.widgets.RoundedOutlineProvider;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.uidomain.reader.IStoriesReaderViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
@@ -71,6 +69,8 @@ public final class StoriesReaderPreloadFragment extends Fragment implements ISto
                         appearanceSettings.csReaderRadius()
                 )
         );
+        binding.iasButtonsPanel.setIcons(appearanceSettings);
+        binding.iasButtonsPanel.setViewModel(pageViewModel.getBottomPanelViewModel());
         binding.iasRoundedContainer.setClipToOutline(true);
         binding.iasParentContainer.setBackgroundColor(appearanceSettings.csReaderBackgroundColor());
         setTimelineContainerParams(
