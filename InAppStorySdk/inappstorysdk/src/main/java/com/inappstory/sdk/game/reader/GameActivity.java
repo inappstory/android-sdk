@@ -907,8 +907,14 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     @Override
     protected void onDestroy() {
-        interruption.active = true;
-        refreshGame.removeCallbacks(showRefresh);
+        try {
+            if (interruption != null)
+                interruption.active = true;
+            if (refreshGame != null)
+                refreshGame.removeCallbacks(showRefresh);
+        } catch (Exception e) {
+
+        }
         if (ScreensManager.getInstance().currentGameActivity == this)
             ScreensManager.getInstance().currentGameActivity = null;
         super.onDestroy();
@@ -940,12 +946,14 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
                         "text/html; charset=utf-8", "UTF-8",
                         null);
-                refreshGame.postDelayed(showRefresh, 5000);
+                if (refreshGame != null)
+                    refreshGame.postDelayed(showRefresh, 5000);
             }
 
             @Override
             public void onError(String error) {
-                refreshGame.post(showRefresh);
+                if (refreshGame != null)
+                    refreshGame.post(showRefresh);
 
                 InAppStoryManager.showDLog("Game_Loading", error);
             }
