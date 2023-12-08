@@ -988,7 +988,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                     );
                 }
                 InAppStoryManager.showDLog("Game_Loading", error);
-                webView.post(showRefresh);
+                refreshGame.post(showRefresh);
             }
         }
     };
