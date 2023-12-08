@@ -4,7 +4,6 @@ public class SlideContentState {
     public SlideContentState(String layout, String page) {
         this.layout = layout;
         this.page = page;
-        this.firstLoading = false;
     }
 
     public String getLayout() {
@@ -17,15 +16,4 @@ public class SlideContentState {
 
     private String layout;
     private String page;
-
-    public boolean isFirstLoading() {
-        return firstLoading;
-    }
-
-    public SlideContentState firstLoading() {
-        this.firstLoading = true;
-        return this;
-    }
-
-    private boolean firstLoading;
 }

@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoryDisp
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesWebViewDisplayViewModel;
+import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.SlideContentState;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 /**
@@ -45,11 +46,13 @@ public class StoriesWebViewDisplay extends IASWebView {
     private void observeStates() {
         viewModel.loadUrlCalls().observeForever(loadUrlObserver);
         viewModel.evaluateJSCalls().observeForever(evaluateJSObserver);
+        viewModel.slideContentState().observeForever(slideContentObserver);
     }
 
     private void removeObservers() {
         viewModel.loadUrlCalls().removeObserver(loadUrlObserver);
         viewModel.evaluateJSCalls().removeObserver(evaluateJSObserver);
+        viewModel.slideContentState().removeObserver(slideContentObserver);
     }
 
 
@@ -64,6 +67,25 @@ public class StoriesWebViewDisplay extends IASWebView {
         @Override
         public void onChanged(@NonNull String text) {
             evaluateJavascript(text, null);
+        }
+    };
+
+    Observer<SlideContentState> slideContentObserver = new Observer<SlideContentState>() {
+        @Override
+        public void onChanged(@NonNull SlideContentState state) {
+            if (viewModel.getStoryDisplayState().firstLoading() || state.getPage().isEmpty()) {
+                viewModel.setStateAsLoaded();
+                String s0 = setDir(injectUnselectableStyle(state.getLayout()));
+                loadDataWithBaseURL("file:///data/",
+                        s0,
+                        "text/html; charset=utf-8",
+                        "UTF-8",
+                        null
+                );
+            } else {
+                replaceHtml(state.getPage());
+            }
+
         }
     };
 
@@ -100,8 +122,6 @@ public class StoriesWebViewDisplay extends IASWebView {
         clearHistory();
         clearCache(true);
         loadUrl("about:blank");
-        manager.loadedId = -1;
-        manager.loadedIndex = -1;
         removeAllViews();
         destroyDrawingCache();
     }
@@ -198,13 +218,12 @@ public class StoriesWebViewDisplay extends IASWebView {
 
                 @Override
                 public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-
-                    if (manager != null) {
-                        sendWebConsoleLog(consoleMessage,
-                                Integer.toString(manager.storyId),
-                                manager.index);
-                    }
-
+                    if (viewModel != null)
+                        sendWebConsoleLog(
+                                consoleMessage,
+                                Integer.toString(viewModel.getStoryDisplayState().storyId()),
+                                viewModel.getStoryDisplayState().slideIndex()
+                        );
                     Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
                             + consoleMessage.message() + " -- From line "
                             + consoleMessage.lineNumber() + " of "
@@ -259,8 +278,8 @@ public class StoriesWebViewDisplay extends IASWebView {
                 return true;
             }
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-       /*     if (Sizes.isTablet(getContext()))
-                getManager().getPageManager().resumeSlide(false);*/
+            if (Sizes.isTablet(getContext()))
+                viewModel.resumeSlide();
         }
         return c;
     }
@@ -274,13 +293,10 @@ public class StoriesWebViewDisplay extends IASWebView {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
-         //   getManager().getPageManager().pauseSlide(false);
-
+            viewModel.pauseSlide();
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
             viewModel.unfreezeUI();
-
-         //   getParentForAccessibility().requestDisallowInterceptTouchEvent(false);
         }
         return c || viewModel.isUIFrozen();
     }
