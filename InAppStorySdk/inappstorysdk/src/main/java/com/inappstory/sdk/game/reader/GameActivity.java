@@ -983,8 +983,10 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     @Override
     protected void onDestroy() {
-        interruption.active = true;
-        refreshGame.removeCallbacks(showRefresh);
+        if (interruption != null)
+            interruption.active = true;
+        if (refreshGame != null)
+            refreshGame.removeCallbacks(showRefresh);
         if (ScreensManager.getInstance().currentGameActivity == this)
             ScreensManager.getInstance().currentGameActivity = null;
         super.onDestroy();
