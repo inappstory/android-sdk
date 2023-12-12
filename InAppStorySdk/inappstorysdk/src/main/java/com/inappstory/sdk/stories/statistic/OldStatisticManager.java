@@ -14,6 +14,8 @@ import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class OldStatisticManager {
     private static OldStatisticManager INSTANCE;
@@ -29,15 +31,9 @@ public class OldStatisticManager {
     }
 
     public void refreshCallbacks() {
-        if (handler == null) handler = new Handler();
-        try {
-            handler.removeCallbacks(OldStatisticManager.getInstance().statisticUpdateThread);
-        } catch (Exception e) {
-            InAppStoryService.createExceptionLog(e);
-        } finally {
-            handler.postDelayed(OldStatisticManager.getInstance().statisticUpdateThread,
-                    statisticUpdateInterval);
-        }
+        statisticScheduledThread.shutdownNow();
+        statisticScheduledThread = new ScheduledThreadPoolExecutor(1);
+        submitRunnable();
     }
 
     public void refreshTimer() {
@@ -69,19 +65,30 @@ public class OldStatisticManager {
 
     public List<List<Object>> statistic = new ArrayList<>();
 
-    public Runnable statisticUpdateThread = new Runnable() {
+
+    public Runnable statisticUpdateRunnable = new Runnable() {
         @Override
         public void run() {
             if (InAppStoryService.isNull()
                     || InAppStoryService.getInstance().getContext() == null) {
-                handler.removeCallbacks(statisticUpdateThread);
                 return;
             }
-            if (sendStatistic()) {
-                handler.postDelayed(statisticUpdateThread, statisticUpdateInterval);
-            }
+            sendStatistic();
         }
     };
+
+    private void submitRunnable() {
+        statisticScheduledThread.scheduleAtFixedRate(
+                statisticUpdateRunnable,
+                statisticUpdateInterval,
+                statisticUpdateInterval,
+                TimeUnit.MILLISECONDS
+        );
+    }
+
+    private ScheduledThreadPoolExecutor statisticScheduledThread =
+            new ScheduledThreadPoolExecutor(1);
+
 
     public void clear() {
         if (statistic == null) {

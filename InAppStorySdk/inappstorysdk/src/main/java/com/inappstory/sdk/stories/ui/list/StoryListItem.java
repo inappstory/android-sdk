@@ -36,11 +36,11 @@ import java.io.File;
 public class StoryListItem extends BaseStoryListItem {
 
     protected AppCompatTextView source;
-    protected AppCompatImageView image;
-    protected VideoPlayer video;
+  //  protected AppCompatImageView image;
+  //  protected VideoPlayer video;
     protected AppCompatImageView hasAudioIcon;
     protected View border;
-    protected View gradient;
+ //   protected View gradient;
     public boolean isOpened;
     public boolean hasVideo;
 
@@ -81,9 +81,9 @@ public class StoryListItem extends BaseStoryListItem {
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
-            image = v.findViewById(R.id.image);
+            //image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
-            gradient = v.findViewById(R.id.cell_gradient);
+            View gradient = v.findViewById(R.id.cell_gradient);
             gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
             title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
@@ -115,13 +115,13 @@ public class StoryListItem extends BaseStoryListItem {
             RoundedCornerLayout cv = v.findViewById(R.id.item_cv);
             cv.setBackgroundColor(Color.TRANSPARENT);
             cv.setRadius(Math.max(manager.csListItemRadius(itemView.getContext()) - Sizes.dpToPxExt(4, itemView.getContext()), 0));
-            gradient = v.findViewById(R.id.cell_gradient);
+            View gradient = v.findViewById(R.id.cell_gradient);
             gradient.setVisibility(manager.csListItemGradientEnable() ? View.VISIBLE : View.INVISIBLE);
             title = v.findViewById(R.id.title);
             source = v.findViewById(R.id.source);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
-            video = v.findViewById(R.id.video);
-            image = v.findViewById(R.id.image);
+            //video = v.findViewById(R.id.video);
+           // image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
             title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
@@ -283,6 +283,9 @@ public class StoryListItem extends BaseStoryListItem {
                     PorterDuff.Mode.SRC_ATOP);
         }
         if (InAppStoryService.isNull()) return;
+
+        AppCompatImageView image = itemView.findViewById(R.id.image);
+        VideoPlayer video = itemView.findViewById(R.id.video);
         if (videoUrl != null) {
             if (image != null) {
                 if (imageUrl != null) {

@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.cache;
 
 import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRING;
 
-import android.os.Handler;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
@@ -21,6 +20,7 @@ import com.inappstory.sdk.stories.api.models.callbacks.LoadListCallback;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
+import com.inappstory.sdk.stories.utils.LoopedExecutor;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.StringsUtils;
 
@@ -29,35 +29,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 class StoryDownloader {
     StoryDownloader(DownloadStoryCallback callback, StoryDownloadManager manager) {
         this.callback = callback;
-        this.handler = new Handler();
-        this.errorHandler = new Handler();
         this.manager = manager;
-        handler.postDelayed(queueStoryReadRunnable, 100);
     }
 
     StoryDownloadManager manager;
 
 
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+
     void init() {
-        try {
-            if (handler != null) {
-                handler.removeCallbacks(queueStoryReadRunnable);
-            }
-        } catch (Exception e) {
-        }
-        handler.postDelayed(queueStoryReadRunnable, 100);
+        loopedExecutor.init(queueStoryReadRunnable);
     }
 
     private DownloadStoryCallback callback;
-
-    private final ExecutorService loader = Executors.newFixedThreadPool(1);
 
     private final Object storyTasksLock = new Object();
     private HashMap<StoryTaskData, StoryTaskWithPriority> storyTasks = new HashMap<>();
@@ -76,21 +64,9 @@ class StoryDownloader {
         }
     }
 
-    void destroy() {
-        if (handler != null) {
-            handler.removeCallbacks(queueStoryReadRunnable);
-        }
-    }
 
-    boolean uploadAdditional() {
-        synchronized (storyTasksLock) {
-            if (!storyTasks.isEmpty()) {
-                for (StoryTaskData i : storyTasks.keySet()) {
-                    if (getStoryLoadType(i) <= 1) return false;
-                }
-            }
-            return true;
-        }
+    void destroy() {
+        loopedExecutor.shutdown();
     }
 
     ArrayList<StoryTaskData> firstPriority = new ArrayList<>();
@@ -194,9 +170,6 @@ class StoryDownloader {
     }
 
 
-    private Handler handler;
-    private Handler errorHandler;
-
     void reload(int storyId, ArrayList<Integer> addIds, Story.StoryType type) {
         synchronized (storyTasksLock) {
             StoryTaskData key = new StoryTaskData(storyId, type);
@@ -235,7 +208,7 @@ class StoryDownloader {
                 e.printStackTrace();
             }
             if (tKey == null) {
-                handler.postDelayed(queueStoryReadRunnable, 100);
+                loopedExecutor.freeExecutor();
                 return;
             }
             final StoryTaskData key = tKey;
@@ -262,16 +235,10 @@ class StoryDownloader {
                             }
                         });
                 }
-                handler.postDelayed(queueStoryReadRunnable, 100);
+                loopedExecutor.freeExecutor();
                 return;
             }
-            loader.submit(new Callable<Void>() {
-                @Override
-                public Void call() {
-                    loadStory(key);
-                    return null;
-                }
-            });
+            loadStory(key);
         }
     };
 
@@ -298,7 +265,7 @@ class StoryDownloader {
         } else if (response.errorBody != null) {
             loadStoryError(key);
         }
-        handler.postDelayed(queueStoryReadRunnable, 200);
+        loopedExecutor.freeExecutor();
     }
 
 
@@ -332,7 +299,7 @@ class StoryDownloader {
         } catch (Throwable t) {
             t.printStackTrace();
             loadStoryError(key);
-            handler.postDelayed(queueStoryReadRunnable, 200);
+            loopedExecutor.freeExecutor();
         }
     }
 

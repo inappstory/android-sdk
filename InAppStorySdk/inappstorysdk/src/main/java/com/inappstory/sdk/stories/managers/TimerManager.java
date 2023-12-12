@@ -39,6 +39,7 @@ public class TimerManager {
                     pageManager.nextSlide(ShowStory.ACTION_AUTO);
                 return;
             }
+            timerHandler.removeCallbacksAndMessages(null);
             timerHandler.postDelayed(timerTask, 50);
         }
     };

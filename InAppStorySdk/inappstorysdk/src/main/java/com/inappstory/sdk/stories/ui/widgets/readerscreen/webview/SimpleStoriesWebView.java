@@ -188,6 +188,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         manager.setStoriesView(this);
     }
 
+
     private Context context;
 
     //  String emptyJSString = "javascript:document.body.style.setProperty(\"color\", \"black\"); ";
@@ -206,6 +207,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         manager.loadedIndex = -1;
         removeAllViews();
         destroyDrawingCache();
+        this.context = null;
     }
 
     @Override

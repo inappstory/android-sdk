@@ -15,6 +15,7 @@ import com.inappstory.sdk.network.models.Request;
 import com.inappstory.sdk.network.utils.GetUrl;
 import com.inappstory.sdk.network.utils.UserAgent;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ProfilingManager {
     ArrayList<ProfilingTask> tasks = new ArrayList<>();
@@ -29,7 +32,6 @@ public class ProfilingManager {
     private static ProfilingManager INSTANCE;
 
     Context context;
-    private static final ExecutorService netExecutor = Executors.newFixedThreadPool(1);
     private static final ExecutorService runnableExecutor = Executors.newFixedThreadPool(1);
 
     public static ProfilingManager getInstance() {
@@ -78,7 +80,6 @@ public class ProfilingManager {
     }
 
     public void setReady(String hash, boolean force) {
-        if (handler == null) return;
         synchronized (tasksLock) {
             ProfilingTask readyTask = null;
             for (ProfilingTask task : tasks) {
@@ -95,7 +96,7 @@ public class ProfilingManager {
 
             if (force && readyTask.isAllowToForceSend) {
                 final ProfilingTask finalReadyTask = readyTask;
-                this.handler.post(new Runnable() {
+                runnableExecutor.submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -105,7 +106,6 @@ public class ProfilingManager {
                         }
                     }
                 });
-
             } else {
                 readyTasks.add(readyTask);
             }
@@ -116,33 +116,29 @@ public class ProfilingManager {
         setReady(hash, false);
     }
 
-    private Handler handler;
-    private HandlerThread thread;
-
     public void cleanTasks() {
         synchronized (tasksLock) {
             tasks.clear();
         }
     }
 
+    LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+
+
     public void init() {
-        thread = new HandlerThread("ProfilingThread" + System.currentTimeMillis());
-        thread.start();
         context = InAppStoryManager.getInstance().getContext();
-        handler = new Handler(thread.getLooper());
-        handler.postDelayed(queueTasksRunnable, 100);
+        loopedExecutor.init(queueTasksRunnable);
     }
 
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (handler == null) return;
             boolean readyIsEmpty = false;
             synchronized (getInstance().tasksLock) {
                 readyIsEmpty = getInstance().readyTasks == null || getInstance().readyTasks.size() == 0;
             }
             if (readyIsEmpty || !InAppStoryService.isConnected() || !isAllowToSend()) {
-                handler.postDelayed(queueTasksRunnable, 100);
+                loopedExecutor.freeExecutor();
                 return;
             }
             ProfilingTask task;
@@ -157,7 +153,7 @@ public class ProfilingManager {
                 } catch (Exception e) {
                 }
             }
-            handler.postDelayed(queueTasksRunnable, 100);
+            loopedExecutor.freeExecutor();
         }
     };
 

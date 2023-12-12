@@ -47,6 +47,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class InAppStoryService {
 
@@ -255,7 +260,7 @@ public class InAppStoryService {
 
 
     public void onDestroy() {
-        spaceHandler.removeCallbacksAndMessages(null);
+        checkSpaceThread.shutdown();
         getDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;
@@ -632,12 +637,11 @@ public class InAppStoryService {
                     }
                 }
             }
-            spaceHandler.postDelayed(checkFreeSpace, 60000);
         }
     };
 
+    private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
 
-    Handler spaceHandler = new Handler();
 
     private void clearOldFiles() {
         FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "Stories"));
@@ -671,11 +675,14 @@ public class InAppStoryService {
         synchronized (lock) {
             INSTANCE = this;
         }
-        spaceHandler.postDelayed(checkFreeSpace, 60000);
+        if (checkSpaceThread.isShutdown()) {
+            checkSpaceThread = new ScheduledThreadPoolExecutor(1);
+        }
+        checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
 
 
-        if (exHandler == null) exHandler = new Handler();
-        exHandler.postDelayed(exHandlerThread, 100);
+      //  if (exHandler == null) exHandler = new Handler();
+        //  exHandler.postDelayed(exHandlerThread, 100);
     }
 
     private static final Object lock = new Object();

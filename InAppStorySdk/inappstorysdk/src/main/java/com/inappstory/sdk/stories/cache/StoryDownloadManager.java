@@ -451,10 +451,6 @@ public class StoryDownloadManager {
         storyDownloader.reload(storyId, new ArrayList<Integer>(), type);
     }
 
-    public void setCurrentSlide(int storyId, int slideIndex) {
-        slidesDownloader.setCurrentSlide(storyId, slideIndex);
-    }
-
 
     public void clearAllFavoriteStatus(Story.StoryType type) {
         List<Story> stories = getStoriesListByType(type);
