@@ -108,7 +108,7 @@ public class ReaderPageManager {
     }
 
     public void setSlideIndex(int slideIndex) {
-
+        if (this.slideIndex == slideIndex) return;
         if (checkIfManagersIsNull()) return;
         this.slideIndex = slideIndex;
         Story story = InAppStoryService.getInstance().getDownloadManager()
@@ -277,7 +277,6 @@ public class ReaderPageManager {
     boolean isPaused;
 
     public void resumeSlide(boolean withBackground) {
-        Log.e("resumeSlide", "" + withBackground);
         if (checkIfManagersIsNull()) return;
         if (!isPaused) return;
         isPaused = false;
@@ -428,7 +427,6 @@ public class ReaderPageManager {
             story.lastIndex = lastIndex;
             slideIndex = lastIndex;
             changeCurrentSlide(lastIndex);
-            Log.e("nextSlide", "" + lastIndex);
         } else {
             parentManager.nextStory(action);
         }

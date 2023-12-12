@@ -680,6 +680,7 @@ public class ReaderPageFragment extends Fragment {
         if (lastIndex >= 0) {
             story.lastIndex = lastIndex;
         }
+
         manager.setSlideIndex(story.lastIndex);
         setViews(getView());
         manager.storyLoadedInCache(story);

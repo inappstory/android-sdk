@@ -10,8 +10,14 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 public class TimerManager {
-    private Handler timerHandler = new Handler();
     private long timerStart;
 
     public void setTimerDuration(long timerDuration) {
@@ -32,18 +38,22 @@ public class TimerManager {
         @Override
         public void run() {
             if (timerDuration > 0 && System.currentTimeMillis() - timerStart >= timerDuration) {
-                Log.e("timerTaskEnded", timerStart + " " + timerDuration);
-                timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
                 if (pageManager != null)
                     pageManager.nextSlide(ShowStory.ACTION_AUTO);
-                return;
+                cancelTask();
             }
-            timerHandler.removeCallbacksAndMessages(null);
-            timerHandler.postDelayed(timerTask, 50);
         }
     };
 
+    private void cancelTask() {
+        if (scheduledFuture != null)
+            scheduledFuture.cancel(false);
+        scheduledFuture = null;
+        executorService.shutdown();
+    }
+
+    ScheduledFuture scheduledFuture;
 
     public long startPauseTime;
 
@@ -52,11 +62,7 @@ public class TimerManager {
 
 
     public void stopTimer() {
-        try {
-            timerHandler.removeCallbacks(timerTask);
-        } catch (Exception e) {
-
-        }
+        cancelTask();
     }
 
     public void resumeTimer(int timer) {
@@ -74,7 +80,7 @@ public class TimerManager {
     public void startTimer(long timerDuration, boolean clearDuration) {
         if (timerDuration == 0) {
             try {
-                timerHandler.removeCallbacks(timerTask);
+                cancelTask();
                 this.timerDuration = timerDuration;
                 if (clearDuration)
                     this.currentDuration = 0;
@@ -84,6 +90,8 @@ public class TimerManager {
             return;
         }
         if (timerDuration < 0) {
+            if (pageManager != null)
+                pageManager.nextSlide(ShowStory.ACTION_AUTO);
             return;
         }
         if (clearDuration)
@@ -91,13 +99,19 @@ public class TimerManager {
         pauseShift = 0;
         timerStart = System.currentTimeMillis();
         this.timerDuration = timerDuration;
-        try {
-            timerHandler.removeCallbacks(timerTask);
-        } catch (Exception e) {
-
+        if (executorService.isShutdown()) {
+            executorService = new ScheduledThreadPoolExecutor(1);
         }
-        timerHandler.post(timerTask);
+        scheduledFuture = executorService.scheduleAtFixedRate(
+                timerTask,
+                1L,
+                50L,
+                TimeUnit.MILLISECONDS
+        );
+
     }
+
+    private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
 
     public void restartTimer(long duration) {
         startTimer(duration, true);
@@ -120,11 +134,7 @@ public class TimerManager {
     }
 
     public void pauseLocalTimer() {
-        try {
-            timerHandler.removeCallbacks(timerTask);
-        } catch (Exception e) {
-
-        }
+        cancelTask();
         pauseShift = (System.currentTimeMillis() - timerStart);
     }
 
@@ -145,7 +155,6 @@ public class TimerManager {
             timerDuration = (long) (currentDuration - position);
             timerStart = System.currentTimeMillis();
         }
-        Log.e("moveTimerToPosition", position + " " + timerStart + " " + timerDuration + " " + currentDuration);
     }
 
     public void pauseTimer() {
