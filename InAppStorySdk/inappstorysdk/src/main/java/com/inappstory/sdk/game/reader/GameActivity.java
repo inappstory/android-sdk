@@ -378,8 +378,10 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                             View gameContainer = findViewById(R.id.gameContainer);
                             if (gameContainer != null) {
                                 Point size = Sizes.getScreenSize();
-                                size.y -= (windowInsets.getSystemWindowInsetTop() +
-                                        windowInsets.getSystemWindowInsetBottom());
+                                if (windowInsets != null) {
+                                    size.y -= (windowInsets.getSystemWindowInsetTop() +
+                                            windowInsets.getSystemWindowInsetBottom());
+                                }
                                 gameContainer.getLayoutParams().height = size.y;
                                 gameContainer.getLayoutParams().width = (int) (size.y / 1.5f);
                                 gameContainer.requestLayout();
