@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.video;
 
+import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE;
+
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
@@ -8,6 +10,10 @@ import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewParent;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -84,6 +90,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     public void destroy() {
         if (this.surface != null) this.surface.release();
+        this.surface = null;
         if (mp != null) {
             // this.surface.release();
             mp.stop();
@@ -139,6 +146,8 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     }
 
     public void prepareVideo(SurfaceTexture t) {
+        if (t == null) return;
+        if (parent != null && parent.getScrollState() != SCROLL_STATE_IDLE) return;
         this.surface = new Surface(t);
         if (mp == null)
             mp = new MediaPlayer();
@@ -196,8 +205,49 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     }
 
     @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (parent != null) {
+            parent.removeOnScrollListener(scrollListener);
+        }
+        destroy();
+    }
+
+    RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            if (lastState == SCROLL_STATE_IDLE && newState != SCROLL_STATE_IDLE) {
+                if (mp != null) mp.pause();
+                //  destroy();
+            } else if (newState == SCROLL_STATE_IDLE && lastState != SCROLL_STATE_IDLE) {
+                if (mp != null) mp.start();
+                else prepareVideo(getSurfaceTexture());
+            }
+            lastState = newState;
+        }
+    };
+
+    @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        parent = getParentRecyclerView(this);
+        if (parent != null)
+            parent.addOnScrollListener(scrollListener);
+        prepareVideo(getSurfaceTexture());
+
+    }
+
+    RecyclerView parent;
+    int lastState = SCROLL_STATE_IDLE;
+
+    private RecyclerView getParentRecyclerView(View view) {
+        ViewParent viewParent = view.getParentForAccessibility();
+        if (viewParent instanceof RecyclerView) return (RecyclerView) viewParent;
+        if (viewParent instanceof View) {
+            return getParentRecyclerView((View) viewParent);
+        }
+        return null;
     }
 
     @Override

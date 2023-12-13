@@ -11,6 +11,7 @@ import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CurrentState;
 import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.utils.LoopedExecutor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -122,9 +123,6 @@ public class StatisticManager {
     }
 
 
-    private Handler handler = new Handler();
-    private HandlerThread thread;
-
     public void pauseStoryEvent(boolean withBg) {
         if (INSTANCE != this) return;
         if (withBg) {
@@ -150,10 +148,10 @@ public class StatisticManager {
     }
 
 
+    LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+
+
     public void init() {
-        thread = new HandlerThread("SSMThread" + System.currentTimeMillis());
-        thread.start();
-        handler = new Handler(thread.getLooper());
         String tasksJson = SharedPreferencesAPI.getString(TASKS_KEY);
         String fakeTasksJson = SharedPreferencesAPI.getString(FAKE_TASKS_KEY);
         synchronized (statisticTasksLock) {
@@ -171,8 +169,9 @@ public class StatisticManager {
 
             SharedPreferencesAPI.remove(FAKE_TASKS_KEY);
         }
-        handler.postDelayed(queueTasksRunnable, 100);
+        loopedExecutor.init(queueTasksRunnable);
     }
+
 
     public StatisticManager() {
 
@@ -190,7 +189,7 @@ public class StatisticManager {
         public void run() {
             if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.isNull()
                     || !InAppStoryService.isConnected()) {
-                handler.postDelayed(queueTasksRunnable, 100);
+                loopedExecutor.freeExecutor();
                 return;
             }
             StatisticTask task;
@@ -551,22 +550,15 @@ public class StatisticManager {
                 public void run() {
                     try {
                         ff.get();
-                        handler.postDelayed(queueTasksRunnable, 100);
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                        handler.postDelayed(queueTasksRunnable, 100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        handler.postDelayed(queueTasksRunnable, 100);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        handler.postDelayed(queueTasksRunnable, 100);
                     }
+                    loopedExecutor.freeExecutor();
                 }
             });
         } catch (Exception e) {
             e.printStackTrace();
-            handler.postDelayed(queueTasksRunnable, 100);
+            loopedExecutor.freeExecutor();
         }
     }
 

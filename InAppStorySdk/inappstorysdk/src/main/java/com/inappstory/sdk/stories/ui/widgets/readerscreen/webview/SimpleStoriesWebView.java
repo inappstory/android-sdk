@@ -206,6 +206,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         manager.loadedIndex = -1;
         removeAllViews();
         destroyDrawingCache();
+        this.context = null;
     }
 
     @Override

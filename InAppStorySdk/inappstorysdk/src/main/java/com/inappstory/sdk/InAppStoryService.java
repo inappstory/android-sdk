@@ -47,6 +47,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class InAppStoryService {
 
@@ -119,18 +122,6 @@ public class InAppStoryService {
         }).start();
     }
 
-    Handler exHandler = new Handler();
-
-    public Runnable exHandlerThread = new Runnable() {
-        @Override
-        public void run() {
-            if (genException) {
-                genException = false;
-                generateException();
-            }
-            exHandler.postDelayed(exHandlerThread, 3000);
-        }
-    };
 
     public void saveStoriesOpened(List<Story> stories, Story.StoryType type) {
   /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
@@ -254,7 +245,7 @@ public class InAppStoryService {
 
 
     public void onDestroy() {
-        spaceHandler.removeCallbacksAndMessages(null);
+        checkSpaceThread.shutdown();
         getDownloadManager().destroy();
         if (INSTANCE == this)
             INSTANCE = null;
@@ -626,12 +617,10 @@ public class InAppStoryService {
                     }
                 }
             }
-            spaceHandler.postDelayed(checkFreeSpace, 60000);
         }
     };
 
-
-    Handler spaceHandler = new Handler();
+    private ScheduledExecutorService checkSpaceThread = new ScheduledThreadPoolExecutor(1);
 
     private void clearOldFiles() {
         FileManager.deleteRecursive(new File(context.getFilesDir() + File.separator + "Stories"));
@@ -665,11 +654,10 @@ public class InAppStoryService {
         synchronized (lock) {
             INSTANCE = this;
         }
-        spaceHandler.postDelayed(checkFreeSpace, 60000);
-
-
-        if (exHandler == null) exHandler = new Handler();
-        exHandler.postDelayed(exHandlerThread, 100);
+        if (checkSpaceThread.isShutdown()) {
+            checkSpaceThread = new ScheduledThreadPoolExecutor(1);
+        }
+        checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
     }
 
     private static Object lock = new Object();

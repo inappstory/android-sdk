@@ -10,6 +10,7 @@ import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.utils.LoopedExecutor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,21 +39,17 @@ class SlidesDownloader {
 
     StoryDownloadManager manager;
 
+    private final LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
+
     void init() {
-        try {
-            if (handler != null) {
-                handler.removeCallbacks(queuePageReadRunnable);
-            }
-        } catch (Exception ignored) {
-        }
-        handler.postDelayed(queuePageReadRunnable, 100);
+        loopedExecutor.init(queuePageReadRunnable);
     }
 
+
     void destroy() {
-        if (handler != null) {
-            handler.removeCallbacks(queuePageReadRunnable);
-        }
+        loopedExecutor.shutdown();
     }
+
 
     void cleanTasks() {
         synchronized (pageTasksLock) {
@@ -64,14 +61,10 @@ class SlidesDownloader {
 
 
     private final Object pageTasksLock = new Object();
-    private final ExecutorService loader = Executors.newFixedThreadPool(1);
 
     SlidesDownloader(DownloadPageCallback callback, StoryDownloadManager manager) {
         this.callback = callback;
-        this.handler = new Handler();
-        this.errorHandler = new Handler();
         this.manager = manager;
-        handler.postDelayed(queuePageReadRunnable, 100);
     }
 
     void setCurrentSlide(int storyId, int slideIndex) {
@@ -268,32 +261,23 @@ class SlidesDownloader {
             Objects.requireNonNull(pageTasks.get(key)).loadType = -1;
             callback.onSlideError(key);
         }
-        handler.postDelayed(queuePageReadRunnable, 200);
+        loopedExecutor.freeExecutor();
     }
 
-    private Handler handler;
-    private Handler errorHandler;
-
     private Runnable queuePageReadRunnable = new Runnable() {
-        boolean isRefreshing = false;
 
         @Override
         public void run() {
 
             final SlideTaskData key = getMaxPriorityPageTaskKey();
             if (key == null) {
-                handler.postDelayed(queuePageReadRunnable, 100);
+                loopedExecutor.freeExecutor();
                 return;
             }
             synchronized (pageTasksLock) {
                 Objects.requireNonNull(pageTasks.get(key)).loadType = 1;
             }
-            loader.submit(new Callable() {
-                @Override
-                public Object call() throws Exception {
-                    return loadSlide(key);
-                }
-            });
+            loadSlide(key);
         }
     };
 
@@ -301,7 +285,10 @@ class SlidesDownloader {
         try {
             ArrayList<String> allUrls = new ArrayList<>();
             SlideTask slideTask = pageTasks.get(slideTaskData);
-            if (slideTask == null) return null;
+            if (slideTask == null) {
+                loopedExecutor.freeExecutor();
+                return null;
+            }
             synchronized (pageTasksLock) {
                 allUrls.addAll(slideTask.videoUrls);
                 allUrls.addAll(slideTask.urls);
@@ -324,21 +311,11 @@ class SlidesDownloader {
                     Log.d("IAS_TAG", "download placeholder: " + slideTaskData.toString() + " " + urlWithAlter.getUrl());
                 }
             }
-
-            /*for (String url : videoUrls) {
-                if (callback != null) {
-                    success &= callback.downloadFile(url, storyId, key.index);
-                    synchronized (pageTasksLock) {
-                        if (!success) //pageTasks.get(key).videoUrls.remove(url);
-                            break;
-                    }
-                }
-            }*/
             synchronized (pageTasksLock) {
-                pageTasks.get(slideTaskData).loadType = 2;
+                slideTask.loadType = 2;
             }
             manager.slideLoaded(slideTaskData);
-            handler.postDelayed(queuePageReadRunnable, 200);
+            loopedExecutor.freeExecutor();
             return null;
 
         } catch (Throwable t) {
