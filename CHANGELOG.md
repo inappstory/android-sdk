@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version *1.16.11 (761)*
+----------------------------
+
+* Fixed: crash in game reader (insets for tablets)
+
+Version *1.16.10 (760)*
+----------------------------
+
+* Fixed: crash in game reader (onDestroy calls after returning from background)
 
 Version *1.17.6 (806)*
 ----------------------------
