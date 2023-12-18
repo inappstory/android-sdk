@@ -7,6 +7,7 @@ import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.models.api.Story.StoryType;
 import com.inappstory.sdk.stories.filedownloader.IFileDownloadCallback;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class StoryDownloadManager {
 
     private final Object lock = new Object();
     List<ReaderPageManager> subscribers = new ArrayList<>();
+    List<IStoriesReaderPageViewModel> pageViewModelSubscribers = new ArrayList<>();
 
     public void addSubscriber(ReaderPageManager manager) {
         synchronized (lock) {
@@ -107,6 +109,14 @@ public class StoryDownloadManager {
             for (ReaderPageManager subscriber : subscribers) {
                 if (subscriber.getStoryId() == storyId && subscriber.getStoryType() == type) {
                     subscriber.storyLoadedInCache();
+                    return;
+                }
+            }
+
+            for (IStoriesReaderPageViewModel subscriber : pageViewModelSubscribers) {
+                if (subscriber.getState().storyId() == storyId &&
+                        subscriber.getState().getStoryType() == type) {
+                    subscriber.storyLoaded();
                     return;
                 }
             }

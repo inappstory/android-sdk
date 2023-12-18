@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.reader.page;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +9,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.databinding.IasReaderPageBinding;
 import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.reader.IStoriesReaderPagerScreen;
@@ -46,9 +49,28 @@ public final class StoriesReaderPageFragment extends Fragment implements IStorie
         int index = getArguments().getInt(INDEX);
         pageViewModel = IASUICore.getInstance().getStoriesReaderVM().getPageViewModel(index);
         binding = IasReaderPageBinding.inflate(inflater, container, false);
-
-
         return binding.getRoot();
+    }
+
+    Observer<IStoryDTO> modelObserver = new Observer<IStoryDTO>() {
+        @Override
+        public void onChanged(IStoryDTO storyDTO) {
+            if (storyDTO != null) {
+
+            }
+        }
+    };
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (pageViewModel != null) pageViewModel.storyModel().observe(this, modelObserver);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (pageViewModel != null) pageViewModel.storyModel().removeObservers(this);
     }
 
     @Override

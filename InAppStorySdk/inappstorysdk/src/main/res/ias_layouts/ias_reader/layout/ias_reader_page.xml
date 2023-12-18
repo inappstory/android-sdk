@@ -32,9 +32,9 @@
                 android:elevation="1dp"
                 android:background="#0000FF"
                 android:layout_height="match_parent">
-                <com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.SimpleStoriesWebView
+                <com.inappstory.sdk.stories.ui.reader.views.storiesdisplay.StoriesWebViewDisplay
                     android:layout_width="match_parent"
-                    android:id="@+id/ias_stories_view"
+                    android:id="@id/ias_stories_view"
                     android:layout_height="match_parent"/>
             </FrameLayout>
             <View

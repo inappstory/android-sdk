@@ -35,13 +35,14 @@ import com.inappstory.sdk.stories.utils.Sizes;
 
 public class StoriesWebViewDisplay extends IASWebView {
 
-    boolean clientIsSet = false;
-
     IStoriesWebViewDisplayViewModel viewModel;
 
     public void setViewModel(IStoriesWebViewDisplayViewModel viewModel) {
         this.viewModel = viewModel;
+        addJavascriptInterface(new WebAppInterface(viewModel), "Android");
+        if (isAttachedToWindow()) observeStates();
     }
+
 
     private void observeStates() {
         viewModel.loadUrlCalls().observeForever(loadUrlObserver);
@@ -114,10 +115,6 @@ public class StoriesWebViewDisplay extends IASWebView {
     }
 
     public void destroyView() {
-        final Runtime runtime = Runtime.getRuntime();
-        final long usedMemInMB = (runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
-        final long maxHeapSizeInMB = runtime.maxMemory() / 1048576L;
-        final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
         removeAllViews();
         clearHistory();
         clearCache(true);
@@ -130,30 +127,6 @@ public class StoriesWebViewDisplay extends IASWebView {
         return coordinate1;
     }
 
-    boolean notFirstLoading = false;
-
-    public void loadWebData(String outerLayout, String outerData) {
-        final String data = outerData;
-        final String lt = outerLayout;
-        if (!notFirstLoading || data.isEmpty()) {
-            notFirstLoading = true;
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    String s0 = setDir(injectUnselectableStyle(lt));
-                    loadDataWithBaseURL("file:///data/", s0, "text/html; charset=utf-8", "UTF-8", null);
-                }
-            });
-        } else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    replaceHtml(data);
-                }
-            });
-        }
-    }
-
     private void replaceHtml(String page) {
         evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }
@@ -161,6 +134,42 @@ public class StoriesWebViewDisplay extends IASWebView {
 
     protected void init() {
         super.init();
+        setWebViewClient(new StoryReaderWebViewClient());
+        setWebChromeClient(new WebChromeClient() {
+            @Nullable
+            @Override
+            public Bitmap getDefaultVideoPoster() {
+                if (super.getDefaultVideoPoster() == null) {
+                    Bitmap bmp = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bmp);
+                    canvas.drawColor(Color.BLACK);
+                    return bmp;
+                } else {
+                    return super.getDefaultVideoPoster();
+                }
+            }
+
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+
+            }
+
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                if (viewModel != null)
+                    sendWebConsoleLog(
+                            consoleMessage,
+                            Integer.toString(viewModel.getStoryDisplayState().storyId()),
+                            viewModel.getStoryDisplayState().slideIndex()
+                    );
+                Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
+                        + consoleMessage.message() + " -- From line "
+                        + consoleMessage.lineNumber() + " of "
+                        + consoleMessage.sourceId());
+                return super.onConsoleMessage(consoleMessage);
+            }
+        });
+
     }
 
     @Override
@@ -191,50 +200,6 @@ public class StoriesWebViewDisplay extends IASWebView {
 
     long lastTap;
 
-
-    public void checkIfClientIsSet() {
-
-        if (!clientIsSet) {
-            addJavascriptInterface(new WebAppInterface(viewModel), "Android");
-            setWebViewClient(new StoryReaderWebViewClient());
-            setWebChromeClient(new WebChromeClient() {
-                @Nullable
-                @Override
-                public Bitmap getDefaultVideoPoster() {
-                    if (super.getDefaultVideoPoster() == null) {
-                        Bitmap bmp = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
-                        Canvas canvas = new Canvas(bmp);
-                        canvas.drawColor(Color.BLACK);
-                        return bmp;
-                    } else {
-                        return super.getDefaultVideoPoster();
-                    }
-                }
-
-                @Override
-                public void onProgressChanged(WebView view, int newProgress) {
-
-                }
-
-                @Override
-                public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-                    if (viewModel != null)
-                        sendWebConsoleLog(
-                                consoleMessage,
-                                Integer.toString(viewModel.getStoryDisplayState().storyId()),
-                                viewModel.getStoryDisplayState().slideIndex()
-                        );
-                    Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
-                            + consoleMessage.message() + " -- From line "
-                            + consoleMessage.lineNumber() + " of "
-                            + consoleMessage.sourceId());
-                    return super.onConsoleMessage(consoleMessage);
-                }
-            });
-
-        }
-        clientIsSet = true;
-    }
 
     public void disableTouchEvent(DisableTouchEvent disableDispatchTouchEvent) {
         this.disableTouchEvent = disableDispatchTouchEvent;
@@ -293,12 +258,15 @@ public class StoriesWebViewDisplay extends IASWebView {
             if (System.currentTimeMillis() - lastTap < 1500) {
                 return false;
             }
-            viewModel.pauseSlide();
+            if (viewModel != null)
+                viewModel.pauseSlide();
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
-            viewModel.unfreezeUI();
+
+            if (viewModel != null)
+                viewModel.unfreezeUI();
         }
-        return c || viewModel.isUIFrozen();
+        return c || (viewModel != null && viewModel.isUIFrozen());
     }
 
 
