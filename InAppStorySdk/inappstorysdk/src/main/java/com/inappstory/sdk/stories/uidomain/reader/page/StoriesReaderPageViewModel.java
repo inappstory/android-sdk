@@ -9,6 +9,7 @@ import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.IStoryTimelin
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.BottomPanelViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesDisplayViewModel;
+import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.SlideLoadState;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.StoriesWebViewDisplayViewModel;
 import com.inappstory.sdk.utils.ArrayUtil;
 
@@ -90,6 +91,14 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
 
     public LiveData<Boolean> isActiveLD() {
         return isActive;
+    }
+
+    private final MutableLiveData<SlideLoadState> slideLoadState
+            = new MutableLiveData<>(new SlideLoadState());
+
+    @Override
+    public LiveData<SlideLoadState> slideLoadState() {
+        return slideLoadState;
     }
 
     @Override

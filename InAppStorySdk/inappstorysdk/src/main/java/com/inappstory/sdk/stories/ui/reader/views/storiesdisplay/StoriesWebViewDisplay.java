@@ -25,6 +25,7 @@ import com.inappstory.sdk.stories.ui.views.StoryReaderWebViewClient;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoryDisplay;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
+import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesDisplayViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesWebViewDisplayViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.SlideContentState;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -37,10 +38,12 @@ public class StoriesWebViewDisplay extends IASWebView {
 
     IStoriesWebViewDisplayViewModel viewModel;
 
-    public void setViewModel(IStoriesWebViewDisplayViewModel viewModel) {
-        this.viewModel = viewModel;
-        addJavascriptInterface(new WebAppInterface(viewModel), "Android");
-        if (isAttachedToWindow()) observeStates();
+    public void setViewModel(IStoriesDisplayViewModel viewModel) {
+        if (viewModel instanceof IStoriesWebViewDisplayViewModel) {
+            this.viewModel = (IStoriesWebViewDisplayViewModel) viewModel;
+            addJavascriptInterface(new WebAppInterface(viewModel), "Android");
+            if (isAttachedToWindow()) observeStates();
+        }
     }
 
 
@@ -86,7 +89,6 @@ public class StoriesWebViewDisplay extends IASWebView {
             } else {
                 replaceHtml(state.getPage());
             }
-
         }
     };
 
