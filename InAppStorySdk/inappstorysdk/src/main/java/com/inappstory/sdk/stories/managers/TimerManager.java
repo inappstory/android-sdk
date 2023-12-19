@@ -90,8 +90,6 @@ public class TimerManager {
             return;
         }
         if (timerDuration < 0) {
-            if (pageManager != null)
-                pageManager.nextSlide(ShowStory.ACTION_AUTO);
             return;
         }
         if (clearDuration)
