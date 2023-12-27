@@ -658,6 +658,7 @@ public class InAppStoryService {
             checkSpaceThread = new ScheduledThreadPoolExecutor(1);
         }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
+        getDownloadManager().initDownloaders();
     }
 
     private static Object lock = new Object();
