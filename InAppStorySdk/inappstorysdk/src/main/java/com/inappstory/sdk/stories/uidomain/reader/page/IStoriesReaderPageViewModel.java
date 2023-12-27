@@ -57,6 +57,8 @@ public interface IStoriesReaderPageViewModel {
 
     void openNextSlide();
 
+    void openNextSlideByTimer();
+
     void openPrevSlide();
 
     void clickWithPayload(String payload);

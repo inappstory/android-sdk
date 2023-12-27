@@ -534,7 +534,7 @@ public class ReaderPageManager {
     }
 
     public void setTimerManager(TimerManager timerManager) {
-        timerManager.setPageManager(this);
+      //  timerManager.setPageManager(this);
         this.timerManager = timerManager;
     }
 

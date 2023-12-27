@@ -44,6 +44,7 @@ public final class StoriesReaderPagerFragment extends Fragment implements IStori
         StoriesReaderState state = IASUICore.getInstance().getStoriesReaderVM().getState();
 
         binding.iasStoriesPager.setPagerSwipeListener(this);
+        binding.iasStoriesPager.addOnPageChangeListener(this);
         binding.iasStoriesPager.setParameters(state.appearanceSettings().csStoryReaderAnimation());
         binding.iasStoriesPager.setAdapter(new StoriesReaderPagerAdapter(
                 getChildFragmentManager(),

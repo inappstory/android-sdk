@@ -89,7 +89,7 @@ public class ReaderPageFragment extends Fragment {
             manager.setWebViewManager(storiesView.getManager(), storyId);
         else
             readerInitSuccess = false;
-        manager.setTimerManager(new TimerManager());
+        //        manager.setTimerManager(new TimerManager());
         return readerInitSuccess;
     }
 

@@ -15,6 +15,7 @@ import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.core.utils.network.JsonParser;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.ShowStoryAction;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryData;
 import com.inappstory.sdk.stories.ui.IASUICore;
@@ -43,7 +44,7 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
         bottomPanelViewModel = new BottomPanelViewModel(this);
         storiesDisplayViewModel = new StoriesWebViewDisplayViewModel(this);
         timelineManager = new StoryTimelineManager();
-        timerManager = new TimerManager();
+        timerManager = new TimerManager(this);
         IStoryDTO storyDTO = IASCore.getInstance().getStoriesRepository(
                 initState.getStoryType()).getStoryById(
                 initState.storyId()
@@ -232,6 +233,10 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
 
     @Override
     public void openNextSlide() {
+        openNextSlide(ShowStoryAction.TAP);
+    }
+
+    private void openNextSlide(ShowStoryAction action) {
         IStoryDTO storyDTO = storyModel.getValue();
         if (storyDTO == null) return;
         timerManager.setTimerDuration(0);
@@ -246,6 +251,11 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
         } else {
             IASUICore.getInstance().getStoriesReaderVM().nextStory();
         }
+    }
+
+    @Override
+    public void openNextSlideByTimer() {
+        openNextSlide(ShowStoryAction.AUTO);
     }
 
     @Override

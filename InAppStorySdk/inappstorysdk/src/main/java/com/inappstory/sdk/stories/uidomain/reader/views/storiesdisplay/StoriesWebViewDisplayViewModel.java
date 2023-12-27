@@ -6,13 +6,23 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.repository.session.dto.SessionDTO;
+import com.inappstory.sdk.core.repository.session.interfaces.EmptyNetworkErrorCallback;
+import com.inappstory.sdk.core.repository.session.interfaces.IGetSessionDTOCallbackAdapter;
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
+import com.inappstory.sdk.core.utils.network.NetworkClient;
+import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
+import com.inappstory.sdk.core.utils.network.models.Response;
 import com.inappstory.sdk.game.reader.GameLaunchData;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
+import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
 import com.inappstory.sdk.stories.utils.WebPageConverter;
 import com.inappstory.sdk.utils.SingleTimeLiveEvent;
+
+import java.lang.reflect.Type;
 
 public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayViewModel {
     public StoriesWebViewDisplayViewModel(IStoriesReaderPageViewModel pageViewModel) {
@@ -203,18 +213,53 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
     }
 
     @Override
-    public void storySendData(String data) {
+    public void storySendData(final String data) {
+        if (!IASCore.getInstance().getSendStatistic()) return;
+        final NetworkClient networkClient = IASCore.getInstance().getNetworkClient();
+        if (networkClient == null) {
+            return;
+        }
+        final int storyId = pageViewModel.getState().storyId();
+        IASCore.getInstance().getSession(new IGetSessionDTOCallbackAdapter(
+                new EmptyNetworkErrorCallback()
+        ) {
+            @Override
+            public void onSuccess(SessionDTO response) {
+                networkClient.enqueue(
+                        networkClient.getApi().sendStoryData(
+                                Integer.toString(storyId),
+                                data,
+                                response.getId()
+                        ),
+                        new NetworkCallback<Response>() {
+                            @Override
+                            public void onSuccess(Response response) {
 
+                            }
+
+                            @Override
+                            public Type getType() {
+                                return null;
+                            }
+                        }
+                );
+            }
+        });
     }
 
     @Override
     public void storySetLocalData(String data, boolean sendToServer) {
-
+        final int storyId = pageViewModel.getState().storyId();
+        KeyValueStorage.saveString("story" + storyId + "__" + InAppStoryManager.getInstance().getUserId(), data);
+        if (sendToServer)
+            storySendData(data);
     }
 
     @Override
     public String storyGetLocalData() {
-        return null;
+        String res = KeyValueStorage.getString("story" + pageViewModel.getState().storyId()
+                + "__" + InAppStoryManager.getInstance().getUserId());
+        return res == null ? "" : res;
     }
 
     @Override

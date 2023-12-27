@@ -8,9 +8,12 @@ import com.inappstory.sdk.core.models.js.StoryIdSlideIndex;
 import com.inappstory.sdk.core.repository.stories.IStoriesRepository;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
 import com.inappstory.sdk.core.models.api.Story;
+import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
+import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
+import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 
 public class TimerManager {
     private Handler timerHandler = new Handler();
@@ -24,11 +27,11 @@ public class TimerManager {
     private long totalTimerDuration;
     private long pauseShift;
 
-    public void setPageManager(ReaderPageManager pageManager) {
-        this.pageManager = pageManager;
+    public TimerManager(IStoriesReaderPageViewModel viewModel) {
+        this.viewModel = viewModel;
     }
 
-    ReaderPageManager pageManager;
+    private final IStoriesReaderPageViewModel viewModel;
 
     Runnable timerTask = new Runnable() {
         @Override
@@ -36,8 +39,8 @@ public class TimerManager {
             if (timerDuration > 0 && System.currentTimeMillis() - timerStart >= timerDuration) {
                 timerHandler.removeCallbacks(timerTask);
                 pauseShift = 0;
-                if (pageManager != null)
-                    pageManager.nextSlide(ShowStory.ACTION_AUTO);
+                if (viewModel != null)
+                    viewModel.openNextSlideByTimer();
                 return;
             }
             timerHandler.postDelayed(timerTask, 50);
@@ -129,14 +132,15 @@ public class TimerManager {
     }
 
     public void pauseTimer() {
-        Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
+        StoriesReaderLaunchData launchData = IASUICore.getInstance().getStoriesReaderVM().getState().launchData();
+        Story.StoryType type = (launchData != null) ? launchData.getType() : Story.StoryType.COMMON;
         IStoriesRepository storiesRepository = IASCore.getInstance().getStoriesRepository(type);
         IPreviewStoryDTO story = storiesRepository.getCurrentStory();
         if (story != null) {
             int lastIndex = storiesRepository.getStoryLastIndex(story.getId());
             storyIdSlideIndex = new StoryIdSlideIndex(story.getId(), lastIndex);
             StatisticV2Manager.getInstance().addFakeEvents(story.getId(), lastIndex, story.getSlidesCount(),
-                    pageManager != null ? pageManager.getFeedId() : null);
+                    launchData != null ? launchData.getFeed() : null);
         }
 
         pauseLocalTimer();
