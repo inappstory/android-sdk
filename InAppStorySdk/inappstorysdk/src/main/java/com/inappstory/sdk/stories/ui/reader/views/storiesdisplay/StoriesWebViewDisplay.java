@@ -4,8 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -18,16 +16,13 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.lifecycle.Observer;
 
-import com.inappstory.sdk.InAppStoryManager;
-import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.stories.ui.views.IASWebView;
 import com.inappstory.sdk.stories.ui.views.StoryReaderWebViewClient;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoryDisplay;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.StoriesViewManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.webview.DisableTouchEvent;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesDisplayViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesWebViewDisplayViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.SlideContentState;
+import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.StoriesDisplayClickSide;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 /**
@@ -51,6 +46,9 @@ public class StoriesWebViewDisplay extends IASWebView {
         viewModel.loadUrlCalls().observeForever(loadUrlObserver);
         viewModel.evaluateJSCalls().observeForever(evaluateJSObserver);
         viewModel.slideContentState().observeForever(slideContentObserver);
+        if (viewModel.slideContentState().getValue() != null) {
+            slideContentObserver.onChanged(viewModel.slideContentState().getValue());
+        }
     }
 
     private void removeObservers() {
@@ -77,8 +75,7 @@ public class StoriesWebViewDisplay extends IASWebView {
     Observer<SlideContentState> slideContentObserver = new Observer<SlideContentState>() {
         @Override
         public void onChanged(@NonNull SlideContentState state) {
-            if (viewModel.getStoryDisplayState().firstLoading() || state.getPage().isEmpty()) {
-                viewModel.setStateAsLoaded();
+            if (viewModel.getStoryDisplayState().isFirstLoading() || state.getPage().isEmpty()) {
                 String s0 = setDir(injectUnselectableStyle(state.getLayout()));
                 loadDataWithBaseURL("file:///data/",
                         s0,
@@ -125,10 +122,6 @@ public class StoriesWebViewDisplay extends IASWebView {
         destroyDrawingCache();
     }
 
-    public float getCoordinate() {
-        return coordinate1;
-    }
-
     private void replaceHtml(String page) {
         evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
     }
@@ -161,7 +154,7 @@ public class StoriesWebViewDisplay extends IASWebView {
                 if (viewModel != null)
                     sendWebConsoleLog(
                             consoleMessage,
-                            Integer.toString(viewModel.getStoryDisplayState().storyId()),
+                            Integer.toString(viewModel.storyId()),
                             viewModel.getStoryDisplayState().slideIndex()
                     );
                 Log.d("InAppStory_SDK_Web", consoleMessage.messageLevel().name() + ": "
@@ -198,7 +191,7 @@ public class StoriesWebViewDisplay extends IASWebView {
         super(context, attrs, defStyleAttr);
     }
 
-    float coordinate1;
+    StoriesDisplayClickSide lastClickSide = StoriesDisplayClickSide.NOTHING;
 
     long lastTap;
 
@@ -219,19 +212,21 @@ public class StoriesWebViewDisplay extends IASWebView {
             return false;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                coordinate1 = motionEvent.getX();
-                if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
-                    int sz = (!Sizes.isTablet(getContext()) ? Sizes.getScreenSize(getContext()).x
-                            : Sizes.dpToPxExt(400, getContext()));
-                    coordinate1 = sz - coordinate1;
-                }
+                int screenWidth = (!Sizes.isTablet(getContext()) ?
+                        Sizes.getScreenSize(getContext()).x
+                        : Sizes.dpToPxExt(400, getContext()));
+                float coordinates =
+                        (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) ?
+                        (screenWidth - motionEvent.getX()) : motionEvent.getX();
+                viewModel.setLastClickSide(coordinates >= 0.3 * screenWidth ?
+                        StoriesDisplayClickSide.RIGHT : StoriesDisplayClickSide.LEFT
+                );
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 break;
         }
-        boolean c = super.dispatchTouchEvent(motionEvent);
-        return c;
+        return super.dispatchTouchEvent(motionEvent);
     }
 
 

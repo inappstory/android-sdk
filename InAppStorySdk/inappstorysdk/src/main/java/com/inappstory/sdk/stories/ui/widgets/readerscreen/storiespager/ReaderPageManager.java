@@ -25,6 +25,7 @@ import com.inappstory.sdk.core.repository.statistic.ProfilingManager;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.stories.ui.oldreader.ReaderManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanelManager;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.IStoryTimelineManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
@@ -39,7 +40,7 @@ import java.util.List;
 public class ReaderPageManager {
 
 
-    StoryTimelineManager timelineManager;
+    IStoryTimelineManager timelineManager;
     ButtonsPanelManager buttonsPanelManager;
     StoriesViewManager webViewManager;
     TimerManager timerManager;
@@ -515,7 +516,7 @@ public class ReaderPageManager {
 
     boolean currentSlideIsLoaded = false;
 
-    public void setTimelineManager(StoryTimelineManager timelineManager, int storyId) {
+    public void setTimelineManager(IStoryTimelineManager timelineManager, int storyId) {
         this.timelineManager = timelineManager;
     }
 

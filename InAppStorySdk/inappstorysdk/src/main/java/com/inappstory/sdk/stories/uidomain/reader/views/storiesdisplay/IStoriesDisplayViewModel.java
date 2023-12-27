@@ -3,12 +3,14 @@ package com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay;
 import com.inappstory.sdk.game.reader.GameLaunchData;
 
 public interface IStoriesDisplayViewModel {
+    int storyId();
     void freezeUI();
     void unfreezeUI();
+    void setLastClickSide(StoriesDisplayClickSide side);
     boolean isUIFrozen();
     StoryDisplayState getStoryDisplayState();
-
-    void storyClick(String payload);
+    void setStoryDisplayState(StoryDisplayState state);
+    void slideClick(String payload);
     void slideLoadError(int index);
     void changeIndex(int index);
     void showStorySlide(int id, int index);
@@ -27,9 +29,9 @@ public interface IStoriesDisplayViewModel {
     void restartSlideWithDuration(long duration);
     void storyShowTextInput(String id, String data);
 
-    void storyStarted();
-    void storyResumed(double startTime);
-    void storyLoaded(int slideIndex);
+    void jsSlideStarted();
+    void slideResumed(double startTime);
+    void jsSlideLoaded(int slideIndex);
     void storyStatisticEvent(
             String name,
             String data,
@@ -46,5 +48,10 @@ public interface IStoriesDisplayViewModel {
     void lockStoriesDisplayContainer();
 
     void setStateAsLoaded();
+
+    void jsCallStartSlide();
+    void jsCallStopSlide();
+    void jsCallPauseSlide();
+    void jsCallResumeSlide();
 
 }

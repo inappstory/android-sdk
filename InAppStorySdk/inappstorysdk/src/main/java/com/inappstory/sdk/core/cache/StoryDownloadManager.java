@@ -55,6 +55,18 @@ public class StoryDownloadManager {
     List<ReaderPageManager> subscribers = new ArrayList<>();
     List<IStoriesReaderPageViewModel> pageViewModelSubscribers = new ArrayList<>();
 
+    public void addSubscriber(IStoriesReaderPageViewModel viewModel) {
+        synchronized (lock) {
+            pageViewModelSubscribers.add(viewModel);
+        }
+    }
+
+    public void removeSubscriber(IStoriesReaderPageViewModel viewModel) {
+        synchronized (lock) {
+            pageViewModelSubscribers.remove(viewModel);
+        }
+    }
+
     public void addSubscriber(ReaderPageManager manager) {
         synchronized (lock) {
             subscribers.add(manager);
@@ -67,11 +79,13 @@ public class StoryDownloadManager {
         }
     }
 
+
     void slideLoaded(SlideTaskData key) {
         synchronized (lock) {
-            for (ReaderPageManager subscriber : subscribers) {
-                if (subscriber.getStoryId() == key.storyId && subscriber.getStoryType() == key.storyType) {
-                    subscriber.slideLoadedInCache(key.index);
+            for (IStoriesReaderPageViewModel subscriber: pageViewModelSubscribers) {
+                if (subscriber.getState().storyId() == key.storyId &&
+                        subscriber.getState().getStoryType() == key.storyType) {
+                    subscriber.cacheSlideLoaded(key.index);
                     return;
                 }
             }
@@ -116,7 +130,7 @@ public class StoryDownloadManager {
             for (IStoriesReaderPageViewModel subscriber : pageViewModelSubscribers) {
                 if (subscriber.getState().storyId() == storyId &&
                         subscriber.getState().getStoryType() == type) {
-                    subscriber.storyLoaded();
+                    subscriber.cacheStoryLoaded();
                     return;
                 }
             }

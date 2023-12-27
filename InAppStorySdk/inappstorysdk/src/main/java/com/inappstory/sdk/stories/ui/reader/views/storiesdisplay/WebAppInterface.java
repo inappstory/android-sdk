@@ -26,7 +26,7 @@ public class WebAppInterface {
     private void logMethod(String payload) {
         InAppStoryManager.showDLog(
                 "JS_method_test",
-                viewModel.getStoryDisplayState().storyId() + " " +
+                viewModel.storyId() + " " +
                         viewModel.getStoryDisplayState().slideIndex() + " " +
                         getMethodName() + " " +
                         payload
@@ -38,7 +38,7 @@ public class WebAppInterface {
      */
     @JavascriptInterface
     public void storyClick(String payload) {
-        viewModel.storyClick(payload);
+        viewModel.slideClick(payload);
         logMethod(payload);
     }
 
@@ -153,26 +153,26 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void storyStarted() {
-        viewModel.storyStarted();
+        viewModel.jsSlideStarted();
         logMethod("");
     }
 
     @JavascriptInterface
     public void storyStarted(double startTime) {
-        viewModel.storyStarted();
+        viewModel.jsSlideStarted();
         logMethod("" + startTime);
     }
 
     @JavascriptInterface
     public void storyResumed(double startTime) {
-        viewModel.storyResumed(startTime);
+        viewModel.slideResumed(startTime);
 
         logMethod("" + startTime);
     }
 
     @JavascriptInterface
     public void storyLoaded() {
-        viewModel.storyLoaded(-1);
+        viewModel.jsSlideLoaded(-1);
         logMethod("");
     }
 
@@ -180,9 +180,9 @@ public class WebAppInterface {
     public void storyLoaded(String data) {
         if (data != null) {
             int slideIndex = JsonParser.fromJson(data, StoryIdSlideIndex.class).index;
-            viewModel.storyLoaded(slideIndex);
+            viewModel.jsSlideLoaded(slideIndex);
         } else {
-            viewModel.storyLoaded(-1);
+            viewModel.jsSlideLoaded(-1);
         }
         logMethod(data + "");
     }

@@ -1,19 +1,14 @@
 package com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay;
 
 public class StoryDisplayState {
-    public StoryDisplayState(
-            int storyId
-    ) {
-        this.storyId = storyId;
+    public StoryDisplayState() {
         this.slideIndex = 0;
-        this.firstLoading = true;
     }
 
-    public int storyId() {
-        return storyId;
+    public StoryDisplayState(int slideIndex) {
+        this.slideIndex = slideIndex;
     }
 
-    private int storyId;
 
     public int slideIndex() {
         return slideIndex;
@@ -25,12 +20,13 @@ public class StoryDisplayState {
         this.slideIndex = slideIndex;
     }
 
-    public void loaded() {
-        this.firstLoading = false;
+    public boolean isFirstLoading() {
+        return firstLoading;
     }
 
-    public boolean firstLoading() {
-        return firstLoading;
+    public StoryDisplayState firstLoading() {
+        this.firstLoading = true;
+        return this;
     }
 
     private boolean firstLoading;

@@ -5,9 +5,10 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
-import com.inappstory.sdk.R;
+import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.databinding.IasReaderMainBinding;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
+import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.utils.StatusBarController;
 
 public class StoriesMainActivity extends FragmentActivity implements IStoriesReaderScreen {
@@ -15,6 +16,16 @@ public class StoriesMainActivity extends FragmentActivity implements IStoriesRea
     public void forceClose() {
         StatusBarController.showStatusBar(this);
         finish();
+        cleanReader();
+    }
+
+    boolean cleaned = false;
+
+    private void cleanReader() {
+        if (cleaned) return;
+        IASUICore.getInstance().clearReaderViewModel();
+        IASCore.getInstance().downloadManager.cleanTasks();
+        cleaned = true;
     }
 
     @Override

@@ -87,21 +87,22 @@ public class WebPageConverter {
         return new Pair<>(tmpData, tmpLayout);
     }
 
-    public void replaceDataAndLoad(String innerWebData, IStoryDTO story, int index, String layout,
+    public void replaceDataAndLoad(IStoryDTO story, int index,
                                    WebPageConvertCallback callback) {
-        String localData = innerWebData;
-        String newLayout = layout;
-        localData = replaceResources(localData, story, index);
-        localData = replaceImagePlaceholders(localData, story, index);
-        Pair<String, String> replaced = replacePlaceholders(localData, newLayout);
-        newLayout = replaced.second;
-        localData = replaced.first;
+
+        String content = story.getPages().get(index);
+        String layout = story.getLayout();
+        content = replaceResources(content, story, index);
+        content = replaceImagePlaceholders(content, story, index);
+        Pair<String, String> replaced = replacePlaceholders(content, layout);
+        layout = replaced.second;
+        content = replaced.first;
 
         try {
-            String wData = newLayout
+            String wData = layout
                     .replace("//_ratio = 0.66666666666,", "")
-                    .replace("{{%content}}", localData);
-            callback.onConvert(localData, wData, index);
+                    .replace("{{%content}}", content);
+            callback.onConvert(content, wData, index);
         } catch (Exception e) {
         }
     }

@@ -41,4 +41,8 @@ public final class IASUICore {
     public void init(Context context) {
         storiesReaderVM = new StoriesReaderViewModel();
     }
+
+    public void clearReaderViewModel() {
+        storiesReaderVM.clear();
+    }
 }

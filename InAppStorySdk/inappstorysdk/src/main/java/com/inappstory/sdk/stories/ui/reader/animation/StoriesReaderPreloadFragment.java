@@ -202,15 +202,14 @@ public final class StoriesReaderPreloadFragment extends Fragment implements ISto
                 layoutParams.addRule(RelativeLayout.BELOW, binding.iasTimeline.getId());
                 break;
         }
-        StoryTimelineManager timelineManager = binding.iasTimeline.getTimelineManager();
+        StoryTimelineManager timelineManager = new StoryTimelineManager();
+        binding.iasTimeline.setTimelineManager(timelineManager);
         IPreviewStoryDTO previewStoryDTO = IASCore.getInstance().getStoriesRepository(
                 launchData.getType()
         ).getStoryPreviewById(pageViewModel.getState().storyId());
         if (previewStoryDTO != null) {
             List<Integer> durations = new ArrayList<>();
-            for (int i = 0; i < previewStoryDTO.getSlidesCount(); i++, durations.add(0)) {
-                durations.add(0);
-            }
+            for (int i = 0; i < previewStoryDTO.getSlidesCount(); i++, durations.add(0)) {}
             timelineManager.setSlidesCount(previewStoryDTO.getSlidesCount());
             timelineManager.setDurations(durations, true);
         }

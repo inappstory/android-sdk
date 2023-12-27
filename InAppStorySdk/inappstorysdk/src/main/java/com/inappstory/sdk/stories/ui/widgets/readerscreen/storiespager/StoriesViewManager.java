@@ -308,7 +308,7 @@ public class StoriesViewManager {
         } else {
             isVideo = false;
         }
-        converter.replaceDataAndLoad(innerWebData, story, index, layout, callback);
+        converter.replaceDataAndLoad(story, index, callback);
     }
 
     WebPageConverter converter = new WebPageConverter();

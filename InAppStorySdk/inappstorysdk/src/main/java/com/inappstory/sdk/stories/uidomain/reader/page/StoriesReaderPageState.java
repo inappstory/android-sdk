@@ -5,15 +5,21 @@ import com.inappstory.sdk.stories.outercallbacks.screen.StoriesReaderAppearanceS
 
 public final class StoriesReaderPageState {
 
+    public int listIndex() {
+        return listIndex;
+    }
+
     public StoriesReaderPageState(
             StoriesReaderAppearanceSettings appearanceSettings,
             int storyId,
+            int listIndex,
             StoryType storyType,
             boolean hasSwipeUp,
             boolean disableClose
     ) {
         this.appearanceSettings = appearanceSettings;
         this.storyId = storyId;
+        this.listIndex = listIndex;
         this.storyType = storyType;
         this.hasSwipeUp = hasSwipeUp;
         this.disableClose = disableClose;
@@ -73,6 +79,7 @@ public final class StoriesReaderPageState {
 
     private StoriesReaderAppearanceSettings appearanceSettings;
     private int storyId;
+    private int listIndex;
 
     public StoryType getStoryType() {
         return storyType;
@@ -87,6 +94,7 @@ public final class StoriesReaderPageState {
         return new StoriesReaderPageState(
                 this.appearanceSettings,
                 this.storyId,
+                this.listIndex,
                 this.storyType,
                 this.hasSwipeUp,
                 this.disableClose
@@ -96,9 +104,12 @@ public final class StoriesReaderPageState {
     public StoriesReaderPageState(
             StoriesReaderAppearanceSettings appearanceSettings,
             int storyId,
+            int listIndex,
             StoryType storyType
     ) {
         this.appearanceSettings = appearanceSettings;
         this.storyId = storyId;
+        this.storyType = storyType;
+        this.listIndex = listIndex;
     }
 }

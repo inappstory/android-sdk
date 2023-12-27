@@ -35,16 +35,17 @@ import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.reader.IStoriesReaderPagerScreen;
 import com.inappstory.sdk.stories.ui.reader.IStoriesReaderScreen;
 import com.inappstory.sdk.stories.ui.widgets.RoundedOutlineProvider;
+import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.IStoryTimelineManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.uidomain.reader.IStoriesReaderViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallbackWithContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public final class StoriesReaderPageFragment extends Fragment implements IStoriesReaderPage {
-
 
 
     IStoriesReaderPageViewModel pageViewModel;
@@ -74,7 +75,7 @@ public final class StoriesReaderPageFragment extends Fragment implements IStorie
         View view = binding.getRoot();
         int index = getArguments().getInt(INDEX);
         readerViewModel = IASUICore.getInstance().getStoriesReaderVM();
-        pageViewModel = IASUICore.getInstance().getStoriesReaderVM().getPageViewModel(index);
+        pageViewModel = readerViewModel.getPageViewModel(index);
         StoriesReaderAppearanceSettings appearanceSettings =
                 readerViewModel.getState().appearanceSettings();
         binding.iasRoundedContainer.setOutlineProvider(
@@ -217,18 +218,17 @@ public final class StoriesReaderPageFragment extends Fragment implements IStorie
                 layoutParams.addRule(RelativeLayout.BELOW, binding.iasTimeline.getId());
                 break;
         }
-        StoryTimelineManager timelineManager = binding.iasTimeline.getTimelineManager();
-        IPreviewStoryDTO previewStoryDTO = IASCore.getInstance().getStoriesRepository(
+        IStoryTimelineManager timelineManager = pageViewModel.getTimelineManager();
+        binding.iasTimeline.setTimelineManager(timelineManager);
+       /* IPreviewStoryDTO previewStoryDTO = IASCore.getInstance().getStoriesRepository(
                 launchData.getType()
         ).getStoryPreviewById(pageViewModel.getState().storyId());
         if (previewStoryDTO != null) {
             List<Integer> durations = new ArrayList<>();
-            for (int i = 0; i < previewStoryDTO.getSlidesCount(); i++, durations.add(0)) {
-                durations.add(0);
-            }
+            for (int i = 0; i < previewStoryDTO.getSlidesCount(); i++, durations.add(0)) {}
             timelineManager.setSlidesCount(previewStoryDTO.getSlidesCount());
             timelineManager.setDurations(durations, true);
-        }
+        }*/
         binding.iasCloseButton.setLayoutParams(layoutParams);
         binding.iasTimelineContainer.setVisibility(View.VISIBLE);
     }
@@ -242,6 +242,13 @@ public final class StoriesReaderPageFragment extends Fragment implements IStorie
         }
     };
 
+    Observer<IUseCaseCallbackWithContext> eventsObserver = new Observer<IUseCaseCallbackWithContext>() {
+        @Override
+        public void onChanged(IUseCaseCallbackWithContext iUseCaseCallbackWithContext) {
+            iUseCaseCallbackWithContext.invoke(getContext());
+        }
+    };
+
     private void setPageViews(@NonNull IStoryDTO storyDTO) {
         binding.iasCloseButton.setVisibility(storyDTO.disableClose() ? View.GONE : View.VISIBLE);
     }
@@ -249,13 +256,19 @@ public final class StoriesReaderPageFragment extends Fragment implements IStorie
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (pageViewModel != null) pageViewModel.storyModel().observe(this, modelObserver);
+        if (pageViewModel != null) {
+            pageViewModel.storyModel().observe(this, modelObserver);
+            pageViewModel.eventWithContext().observe(this, eventsObserver);
+        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        if (pageViewModel != null) pageViewModel.storyModel().removeObservers(this);
+        if (pageViewModel != null) {
+            pageViewModel.storyModel().removeObservers(this);
+            pageViewModel.eventWithContext().removeObservers(this);
+        }
     }
 
     @Override

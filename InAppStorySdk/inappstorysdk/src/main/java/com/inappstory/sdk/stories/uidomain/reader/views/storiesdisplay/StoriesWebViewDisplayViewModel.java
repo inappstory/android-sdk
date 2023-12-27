@@ -1,16 +1,51 @@
 package com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay;
 
-import androidx.lifecycle.LiveData;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+import com.inappstory.sdk.core.IASCore;
+import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.game.reader.GameLaunchData;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
+import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
+import com.inappstory.sdk.stories.utils.WebPageConverter;
+import com.inappstory.sdk.utils.SingleTimeLiveEvent;
 
 public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayViewModel {
     public StoriesWebViewDisplayViewModel(IStoriesReaderPageViewModel pageViewModel) {
         this.pageViewModel = pageViewModel;
     }
 
+    private MutableLiveData<SlideContentState> currentSlideContentState = new MutableLiveData<>();
+    private MutableLiveData<StoryDisplayState> storyDisplayState = new MutableLiveData<>();
+    private SingleTimeLiveEvent<String> evaluateJSCalls = new SingleTimeLiveEvent<>();
+    private SingleTimeLiveEvent<String> loadUrlCalls = new SingleTimeLiveEvent<>();
+
     private IStoriesReaderPageViewModel pageViewModel;
+
+
+    @Override
+    public LiveData<String> evaluateJSCalls() {
+        return evaluateJSCalls;
+    }
+
+    @Override
+    public LiveData<String> loadUrlCalls() {
+        return loadUrlCalls;
+    }
+
+    @Override
+    public LiveData<SlideContentState> slideContentState() {
+        return currentSlideContentState;
+    }
+
+    @Override
+    public int storyId() {
+        return pageViewModel.getState().storyId();
+    }
 
     @Override
     public void freezeUI() {
@@ -22,6 +57,13 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     }
 
+    StoriesDisplayClickSide lastClickSide = StoriesDisplayClickSide.NOTHING;
+
+    @Override
+    public void setLastClickSide(StoriesDisplayClickSide side) {
+        lastClickSide = side;
+    }
+
     @Override
     public boolean isUIFrozen() {
         return false;
@@ -29,12 +71,35 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     @Override
     public StoryDisplayState getStoryDisplayState() {
-        return null;
+        return storyDisplayState.getValue();
     }
 
     @Override
-    public void storyClick(String payload) {
+    public void setStoryDisplayState(StoryDisplayState state) {
+        StoryDisplayState localState = storyDisplayState.getValue() == null ?
+                state.firstLoading() : state;
+        storyDisplayState.postValue(localState);
+        setSlideContentState(localState);
+    }
 
+    @Override
+    public void slideClick(String payload) {
+        if (payload == null || payload.isEmpty() || payload.equals("test")) {
+            if (lastClickSide == StoriesDisplayClickSide.RIGHT) {
+                pageViewModel.openNextSlide();
+            } else if (lastClickSide == StoriesDisplayClickSide.LEFT) {
+                pageViewModel.openPrevSlide();
+            } else {
+                //TODO - log error
+            }
+        } else if (payload.equals("forbidden")) {
+            if (lastClickSide == StoriesDisplayClickSide.LEFT) {
+                pageViewModel.openPrevSlide();
+            }
+        } else {
+            pageViewModel.clickWithPayload(payload);
+        }
+        lastClickSide = StoriesDisplayClickSide.NOTHING;
     }
 
     @Override
@@ -103,18 +168,18 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
     }
 
     @Override
-    public void storyStarted() {
+    public void jsSlideStarted() {
+        pageViewModel.jsSlideStarted();
+    }
+
+    @Override
+    public void slideResumed(double startTime) {
 
     }
 
     @Override
-    public void storyResumed(double startTime) {
-
-    }
-
-    @Override
-    public void storyLoaded(int slideIndex) {
-
+    public void jsSlideLoaded(int slideIndex) {
+        pageViewModel.jsSlideLoaded(slideIndex);
     }
 
     @Override
@@ -173,17 +238,59 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
     }
 
     @Override
-    public LiveData<String> evaluateJSCalls() {
-        return null;
+    public void jsCallStartSlide() {
+        String funAfterCheck = IASCore.getInstance().isSoundOn() ?
+                "story_slide_start('{\"muted\": false}');" :
+                "story_slide_start('{\"muted\": true}');";
+        String call = "javascript:(function(){" +
+                "if ('story_slide_start' in window) " +
+                "{" +
+                " window." + funAfterCheck +
+                "}" +
+                "})()";
+        loadUrlCalls.postValue(call);
     }
 
     @Override
-    public LiveData<String> loadUrlCalls() {
-        return null;
+    public void jsCallStopSlide() {
+        String call = "javascript:(function() {" +
+                "if ('story_slide_stop' in window) " +
+                "{ window.story_slide_stop(); }" +
+                "})()";
+        loadUrlCalls.postValue(call);
     }
 
     @Override
-    public LiveData<SlideContentState> slideContentState() {
-        return null;
+    public void jsCallPauseSlide() {
+        String call = "javascript:(function() {" +
+                "if ('story_slide_pause' in window) " +
+                "{ window.story_slide_pause(); }" +
+                "})()";
+        loadUrlCalls.postValue(call);
+    }
+
+    @Override
+    public void jsCallResumeSlide() {
+        String call = "javascript:(function() {" +
+                "if ('story_slide_resume' in window) " +
+                "{ window.story_slide_resume(); }" +
+                "})()";
+        loadUrlCalls.postValue(call);
+    }
+
+    private void setSlideContentState(@NonNull StoryDisplayState state) {
+        IStoryDTO storyDTO = pageViewModel.storyModel().getValue();
+        if (storyDTO == null) return;
+        Log.e("cacheSlideLoaded", "setSlideContentState " + storyDTO.getId() + " " + state.slideIndex());
+        new WebPageConverter().replaceDataAndLoad(
+                storyDTO,
+                state.slideIndex(),
+                new WebPageConvertCallback() {
+                    @Override
+                    public void onConvert(String content, String layout, int slideIndex) {
+                        currentSlideContentState.postValue(new SlideContentState(layout, content));
+                    }
+                }
+        );
     }
 }

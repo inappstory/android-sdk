@@ -41,10 +41,54 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
 
     @Override
     public void currentIndex(int index) {
+        if (pageViewModels.size() <= index || index < 0) return;
         currentIndex.postValue(index);
         for (int i = 0; i < pageViewModels.size(); i++) {
             pageViewModels.get(i).updateIsActive(index == i);
         }
+        downloadStory(index);
+    }
+
+    private int index() {
+        Integer index = currentIndex.getValue();
+        if (index == null) return 0;
+        return index;
+    }
+
+    @Override
+    public void nextStory() {
+        currentIndex(index() + 1);
+    }
+
+    @Override
+    public void prevStory() {
+        currentIndex(index() - 1);
+    }
+
+    private void downloadStory(int index) {
+        ArrayList<Integer> adds = new ArrayList<>();
+        Story.StoryType storyType = state.launchData().getType();
+        List<Integer> storiesIds = state.launchData().getStoriesIds();
+        if (storiesIds.size() > 1) {
+            if (index == 0) {
+                adds.add(storiesIds.get(index + 1));
+            } else if (index == storiesIds.size() - 1) {
+                adds.add(storiesIds.get(index - 1));
+            } else {
+                adds.add(storiesIds.get(index + 1));
+                adds.add(storiesIds.get(index - 1));
+            }
+        }
+        IASCore.getInstance().downloadManager.addStoryTask(
+                storiesIds.get(index),
+                adds,
+                storyType
+        );
+        IASCore.getInstance().downloadManager.changePriority(
+                storiesIds.get(index),
+                adds,
+                storyType
+        );
     }
 
     @Override
@@ -61,6 +105,19 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     public void isOpened(boolean isOpened) {
         this.isOpened.postValue(isOpened);
     }
+
+    @Override
+    public void clear() {
+        isOpened(false);
+        for (IStoriesReaderPageViewModel storiesReaderPageViewModel : pageViewModels) {
+            storiesReaderPageViewModel.destroy();
+        }
+        pageViewModels.clear();
+        IASCore.getInstance()
+                .getStoriesRepository(state.launchData().getType())
+                .clearReaderModels();
+    }
+
 
     private StoriesReaderState state;
 
@@ -114,6 +171,7 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
                             new StoriesReaderPageState(
                                     state.appearanceSettings(),
                                     ids.get(i),
+                                    i,
                                     storyType,
                                     previewStoryDTO.hasSwipeUp(),
                                     previewStoryDTO.disableClose()
@@ -121,6 +179,7 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
                             new StoriesReaderPageState(
                                     state.appearanceSettings(),
                                     ids.get(i),
+                                    i,
                                     storyType
                             )
             );

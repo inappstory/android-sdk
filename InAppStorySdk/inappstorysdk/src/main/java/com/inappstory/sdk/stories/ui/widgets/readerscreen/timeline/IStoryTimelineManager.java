@@ -11,6 +11,8 @@ public interface IStoryTimelineManager {
     void pause();
     void stop();
 
+
+    StoryTimelineState timelineState();
     void next();
 
     void prev();

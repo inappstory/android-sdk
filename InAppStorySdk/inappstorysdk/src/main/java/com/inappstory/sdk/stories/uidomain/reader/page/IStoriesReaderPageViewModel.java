@@ -1,13 +1,14 @@
 package com.inappstory.sdk.stories.uidomain.reader.page;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.IStoryTimelineManager;
 import com.inappstory.sdk.stories.uidomain.reader.views.bottompanel.IBottomPanelViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.IStoriesDisplayViewModel;
-import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.SlideContentState;
 import com.inappstory.sdk.stories.uidomain.reader.views.storiesdisplay.SlideLoadState;
+import com.inappstory.sdk.usecase.callbacks.IUseCaseCallbackWithContext;
 
 public interface IStoriesReaderPageViewModel {
     StoriesReaderPageState getState();
@@ -16,7 +17,15 @@ public interface IStoriesReaderPageViewModel {
 
     IStoryTimelineManager getTimelineManager();
 
-    void storyLoaded();
+    void cacheStoryLoaded();
+
+    String viewModelUUID();
+
+    void cacheSlideLoaded(int slideIndex);
+
+    void jsSlideLoaded(int slideIndex);
+
+    void jsSlideStarted();
 
     IStoriesDisplayViewModel displayViewModel();
 
@@ -32,6 +41,8 @@ public interface IStoriesReaderPageViewModel {
 
     LiveData<SlideLoadState> slideLoadState();
 
+    LiveData<IUseCaseCallbackWithContext> eventWithContext();
+
     void shareClick();
 
     void likeClick();
@@ -41,4 +52,12 @@ public interface IStoriesReaderPageViewModel {
     void favoriteClick();
 
     void soundClick();
+
+    void destroy();
+
+    void openNextSlide();
+
+    void openPrevSlide();
+
+    void clickWithPayload(String payload);
 }

@@ -104,6 +104,11 @@ public class StoryTimelineManager implements IStoryTimelineManager {
         timelineState.setCurrentSlideState(StoryTimelineSegmentState.EMPTY);
     }
 
+    @Override
+    public StoryTimelineState timelineState() {
+        return timelineState;
+    }
+
     public void setNextTimelineCallback(TimelineCallback timelineCallback) {
         this.timelineCallback = timelineCallback;
     }

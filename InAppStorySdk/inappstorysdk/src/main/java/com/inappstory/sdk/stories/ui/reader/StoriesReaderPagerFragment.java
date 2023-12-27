@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.databinding.IasReaderPagerBinding;
 import com.inappstory.sdk.stories.ui.IASUICore;
@@ -16,7 +17,7 @@ import com.inappstory.sdk.stories.ui.reader.views.pager.StoriesReaderPagerSwipeL
 import com.inappstory.sdk.stories.uidomain.reader.StoriesReaderState;
 
 public final class StoriesReaderPagerFragment extends Fragment implements IStoriesReaderPagerScreen,
-        StoriesReaderPagerSwipeListener {
+        StoriesReaderPagerSwipeListener, ViewPager.OnPageChangeListener {
 
     public static final String TAG = "StoriesReaderPagerFragment";
 
@@ -48,6 +49,7 @@ public final class StoriesReaderPagerFragment extends Fragment implements IStori
                 getChildFragmentManager(),
                 state.launchData().getStoriesIds()
         ));
+        binding.iasStoriesPager.setCurrentItem(state.launchData().getListIndex());
     }
 
     @Override
@@ -75,6 +77,21 @@ public final class StoriesReaderPagerFragment extends Fragment implements IStori
 
     @Override
     public void swipeRight(int index) {
+
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        IASUICore.getInstance().getStoriesReaderVM().currentIndex(position);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
 
     }
 }

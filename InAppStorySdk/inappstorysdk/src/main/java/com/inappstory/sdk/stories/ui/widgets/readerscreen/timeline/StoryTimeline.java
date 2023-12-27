@@ -30,9 +30,9 @@ public class StoryTimeline extends View {
         setAppearance(new StoryTimelineAppearance().convertDpToPx(context));
     }
 
-    private StoryTimelineManager timelineManager;
+    private IStoryTimelineManager timelineManager;
 
-    public void setTimelineManager(StoryTimelineManager timelineManager) {
+    public void setTimelineManager(IStoryTimelineManager timelineManager) {
         this.timelineManager = timelineManager;
     }
 
@@ -48,7 +48,7 @@ public class StoryTimeline extends View {
     StoryTimelineAppearance appearance = new StoryTimelineAppearance();
 
 
-    public StoryTimelineManager getTimelineManager() {
+    public IStoryTimelineManager getTimelineManager() {
         return timelineManager;
     }
 
@@ -58,7 +58,7 @@ public class StoryTimeline extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         drawTimeline(
-                timelineManager != null ? timelineManager.timelineState : emptyTimelineState,
+                timelineManager != null ? timelineManager.timelineState() : emptyTimelineState,
                 getMeasuredWidth(),
                 appearance.height,
                 appearance.cornerRadius,

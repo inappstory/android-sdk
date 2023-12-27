@@ -18,7 +18,10 @@ public interface IStoriesReaderViewModel {
     LiveData<Boolean> isPagerAnimation();
     LiveData<Integer> currentIndex();
     void currentIndex(int index);
+    void nextStory();
+    void prevStory();
     void pagerAnimation(boolean animated);
     void openAnimationStatus(boolean animated);
     void isOpened(boolean isOpened);
+    void clear();
 }
