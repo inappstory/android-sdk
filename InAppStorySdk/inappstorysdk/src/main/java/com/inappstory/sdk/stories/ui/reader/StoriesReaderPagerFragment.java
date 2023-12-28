@@ -8,13 +8,16 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.viewpager.widget.ViewPager;
 
 import com.inappstory.sdk.databinding.IasReaderPagerBinding;
 import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.reader.views.pager.StoriesReaderPagerAdapter;
 import com.inappstory.sdk.stories.ui.reader.views.pager.StoriesReaderPagerSwipeListener;
+import com.inappstory.sdk.stories.uidomain.reader.IStoriesReaderViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.StoriesReaderState;
+import com.inappstory.sdk.stories.uidomain.reader.StoriesReaderViewModel;
 
 public final class StoriesReaderPagerFragment extends Fragment implements IStoriesReaderPagerScreen,
         StoriesReaderPagerSwipeListener, ViewPager.OnPageChangeListener {
@@ -28,8 +31,8 @@ public final class StoriesReaderPagerFragment extends Fragment implements IStori
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
     ) {
         binding = IasReaderPagerBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -41,8 +44,8 @@ public final class StoriesReaderPagerFragment extends Fragment implements IStori
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
-        StoriesReaderState state = IASUICore.getInstance().getStoriesReaderVM().getState();
-
+        IStoriesReaderViewModel viewModel = IASUICore.getInstance().getStoriesReaderVM();
+        StoriesReaderState state = viewModel.getState();
         binding.iasStoriesPager.setPagerSwipeListener(this);
         binding.iasStoriesPager.addOnPageChangeListener(this);
         binding.iasStoriesPager.setParameters(state.appearanceSettings().csStoryReaderAnimation());
@@ -51,7 +54,23 @@ public final class StoriesReaderPagerFragment extends Fragment implements IStori
                 state.launchData().getStoriesIds()
         ));
         binding.iasStoriesPager.setCurrentItem(state.launchData().getListIndex());
+        viewModel.currentIndex().observe(getViewLifecycleOwner(), currentPageObserver);
+        viewModel.frozen().observe(getViewLifecycleOwner(), freezePagerObserver);
     }
+
+    private final Observer<Integer> currentPageObserver = new Observer<Integer>() {
+        @Override
+        public void onChanged(Integer index) {
+            binding.iasStoriesPager.setCurrentItem(index != null ? index : 0);
+        }
+    };
+
+    private final Observer<Boolean> freezePagerObserver = new Observer<Boolean>() {
+        @Override
+        public void onChanged(Boolean frozen) {
+            binding.iasStoriesPager.requestDisallowInterceptTouchEvent(frozen);
+        }
+    };
 
     @Override
     public IStoriesReaderScreen getStoriesReaderScreen() {

@@ -152,12 +152,12 @@ public final class StoriesReaderContainerFragment extends Fragment implements IS
 
             @Override
             public void touchPause() {
-
+                storiesReaderViewModel.pauseCurrentSlide(false);
             }
 
             @Override
             public void touchResume() {
-
+                storiesReaderViewModel.resumeCurrentSlide(false);
             }
 
             @Override

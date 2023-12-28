@@ -43,8 +43,6 @@ public interface IStoriesDisplayViewModel {
     void storySendData(String data);
     void storySetLocalData(String data, boolean sendToServer);
     String storyGetLocalData();
-    void pauseSlide();
-    void resumeSlide();
     void lockStoriesDisplayContainer();
 
     void setStateAsLoaded();

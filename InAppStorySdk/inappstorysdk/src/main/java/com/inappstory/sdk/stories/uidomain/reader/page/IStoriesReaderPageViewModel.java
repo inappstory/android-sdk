@@ -1,7 +1,6 @@
 package com.inappstory.sdk.stories.uidomain.reader.page;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 
 import com.inappstory.sdk.core.repository.stories.dto.IStoryDTO;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.IStoryTimelineManager;
@@ -27,9 +26,19 @@ public interface IStoriesReaderPageViewModel {
 
     void jsSlideStarted();
 
+
+    void startSlide();
+    void stopSlide();
+    void pauseSlide(boolean moveToBackground);
+    void resumeSlide(boolean returnFromBackground);
+
     IStoriesDisplayViewModel displayViewModel();
 
     void updateCurrentSlide(int currentSlide);
+
+    void restartSlide(long duration);
+
+    void changeCurrentSlideIndex(int currentSlide);
 
     LiveData<Integer> currentSlideLD();
 

@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.ShowStoryAction;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.page.StoriesReaderPageState;
 import com.inappstory.sdk.stories.uidomain.reader.page.StoriesReaderPageViewModel;
@@ -27,6 +28,16 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     @Override
     public LiveData<Boolean> isOpenAnimation() {
         return openAnimation;
+    }
+
+    @Override
+    public LiveData<Boolean> frozen() {
+        return frozen;
+    }
+
+    @Override
+    public void changeFreezeStatus(boolean frozen) {
+        this.frozen.postValue(frozen);
     }
 
     @Override
@@ -56,12 +67,12 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     }
 
     @Override
-    public void nextStory() {
+    public void nextStory(ShowStoryAction action) {
         currentIndex(index() + 1);
     }
 
     @Override
-    public void prevStory() {
+    public void prevStory(ShowStoryAction action) {
         currentIndex(index() - 1);
     }
 
@@ -97,6 +108,18 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     }
 
     @Override
+    public void pauseCurrentSlide(boolean moveToBackground) {
+        IStoriesReaderPageViewModel currentViewModel = pageViewModels.get(index());
+        currentViewModel.pauseSlide(moveToBackground);
+    }
+
+    @Override
+    public void resumeCurrentSlide(boolean returnFromBackground) {
+        IStoriesReaderPageViewModel currentViewModel = pageViewModels.get(index());
+        currentViewModel.resumeSlide(returnFromBackground);
+    }
+
+    @Override
     public void openAnimationStatus(boolean animated) {
         this.openAnimation.postValue(animated);
     }
@@ -124,6 +147,7 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     private final MutableLiveData<Boolean> isOpened = new MutableLiveData<>(true);
     private final MutableLiveData<Boolean> pagerAnimation = new MutableLiveData<>();
     private final MutableLiveData<Boolean> openAnimation = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> frozen = new MutableLiveData<>();
     private final MutableLiveData<Integer> currentIndex = new MutableLiveData<>(0);
 
     private List<IStoriesReaderPageViewModel> pageViewModels = new ArrayList<>();

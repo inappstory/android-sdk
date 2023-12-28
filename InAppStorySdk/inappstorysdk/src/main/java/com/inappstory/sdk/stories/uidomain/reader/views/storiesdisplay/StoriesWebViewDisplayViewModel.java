@@ -16,6 +16,9 @@ import com.inappstory.sdk.core.utils.network.NetworkClient;
 import com.inappstory.sdk.core.utils.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.core.utils.network.models.Response;
 import com.inappstory.sdk.game.reader.GameLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.objects.ShowStoryAction;
+import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.WebPageConvertCallback;
@@ -59,12 +62,12 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     @Override
     public void freezeUI() {
-
+        IASUICore.getInstance().getStoriesReaderVM().changeFreezeStatus(true);
     }
 
     @Override
     public void unfreezeUI() {
-
+        IASUICore.getInstance().getStoriesReaderVM().changeFreezeStatus(false);
     }
 
     StoriesDisplayClickSide lastClickSide = StoriesDisplayClickSide.NOTHING;
@@ -76,7 +79,7 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     @Override
     public boolean isUIFrozen() {
-        return false;
+        return Boolean.TRUE.equals(IASUICore.getInstance().getStoriesReaderVM().frozen().getValue());
     }
 
     @Override
@@ -119,7 +122,7 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     @Override
     public void changeIndex(int index) {
-
+        pageViewModel.changeCurrentSlideIndex(index);
     }
 
     @Override
@@ -149,12 +152,12 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     @Override
     public void storyShowNext() {
-
+        IASUICore.getInstance().getStoriesReaderVM().nextStory(ShowStoryAction.AUTO);
     }
 
     @Override
     public void storyShowPrev() {
-
+        IASUICore.getInstance().getStoriesReaderVM().prevStory(ShowStoryAction.AUTO);
     }
 
     @Override
@@ -164,12 +167,12 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     @Override
     public void nextSlide() {
-
+        pageViewModel.openNextSlide();
     }
 
     @Override
     public void restartSlideWithDuration(long duration) {
-
+        pageViewModel.restartSlide(duration);
     }
 
     @Override
@@ -204,12 +207,12 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
 
     @Override
     public void pauseUI() {
-
+        pageViewModel.pauseSlide(false);
     }
 
     @Override
     public void resumeUI() {
-
+        pageViewModel.resumeSlide(false);
     }
 
     @Override
@@ -260,16 +263,6 @@ public class StoriesWebViewDisplayViewModel implements IStoriesWebViewDisplayVie
         String res = KeyValueStorage.getString("story" + pageViewModel.getState().storyId()
                 + "__" + InAppStoryManager.getInstance().getUserId());
         return res == null ? "" : res;
-    }
-
-    @Override
-    public void pauseSlide() {
-
-    }
-
-    @Override
-    public void resumeSlide() {
-
     }
 
     @Override

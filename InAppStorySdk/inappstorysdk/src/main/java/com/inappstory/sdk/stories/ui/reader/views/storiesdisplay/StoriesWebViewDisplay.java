@@ -240,8 +240,7 @@ public class StoriesWebViewDisplay extends IASWebView {
                 return true;
             }
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            if (Sizes.isTablet(getContext()))
-                viewModel.resumeSlide();
+            viewModel.jsCallResumeSlide();
         }
         return c;
     }
@@ -256,7 +255,7 @@ public class StoriesWebViewDisplay extends IASWebView {
                 return false;
             }
             if (viewModel != null)
-                viewModel.pauseSlide();
+                viewModel.jsCallPauseSlide();
             lastTap = System.currentTimeMillis();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP || motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
 

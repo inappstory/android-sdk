@@ -146,6 +146,44 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
     }
 
     @Override
+    public void startSlide() {
+        storiesDisplayViewModel.jsCallStartSlide();
+    }
+
+    @Override
+    public void stopSlide() {
+        storiesDisplayViewModel.jsCallStopSlide();
+    }
+
+    @Override
+    public void pauseSlide(boolean moveToBackground) {
+        if (!moveToBackground && isPaused) return;
+        isPaused = true;
+        timelineManager.pause();
+        if (moveToBackground) {
+            timerManager.pauseTimer();
+        } else {
+            timerManager.pauseLocalTimer();
+        }
+        storiesDisplayViewModel.jsCallPauseSlide();
+    }
+
+    boolean isPaused;
+
+    @Override
+    public void resumeSlide(boolean returnFromBackground) {
+        if (!isPaused) return;
+        isPaused = false;
+        timelineManager.resume();
+        if (returnFromBackground) {
+            timerManager.resumeTimer();
+        } else {
+            timerManager.resumeLocalTimer();
+        }
+        storiesDisplayViewModel.jsCallResumeSlide();
+    }
+
+    @Override
     public IStoriesDisplayViewModel displayViewModel() {
         return storiesDisplayViewModel;
     }
@@ -153,15 +191,43 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
     private final MutableLiveData<Integer> currentSlide = new MutableLiveData<>(0);
 
     public void updateCurrentSlide(int currentSlide) {
-        this.currentSlide.postValue(currentSlide);
         boolean hasSlide;
         synchronized (loadedSlidesLock) {
             hasSlide = loadedSlides.contains(currentSlide);
         }
-        Log.e("cacheSlideLoaded", state.storyId() + " " + this.currentSlide.getValue() + " " + currentSlide + " hasSlide: " + hasSlide);
         if (Objects.equals(this.currentSlide.getValue(), currentSlide)) return;
+        Log.e("cacheSlideLoaded", state.storyId() + " " + this.currentSlide.getValue() + " " + currentSlide + " hasSlide: " + hasSlide);
+        this.currentSlide.postValue(currentSlide);
         if (hasSlide) {
             storiesDisplayViewModel.setStoryDisplayState(new StoryDisplayState(currentSlide));
+        }
+    }
+
+    @Override
+    public void restartSlide(long duration) {
+        IStoryDTO storyDTO = storyModel.getValue();
+        if (storyDTO == null) return;
+        List<Integer> durations = ArrayUtil.toIntegerList(storyDTO.getDurations());
+        int index = getSlideIndex();
+        if (durations.size() <= getSlideIndex()) return;
+        durations.set(index, (int) duration);
+        timelineManager.setDurations(durations, false);
+        timelineManager.startSegment(index);
+        timerManager.restartTimer(durations.get(index));
+    }
+
+    @Override
+    public void changeCurrentSlideIndex(int slideIndex) {
+        if (Objects.equals(this.currentSlide.getValue(), slideIndex)) return;
+        IStoryDTO storyDTO = storyModel.getValue();
+        if (storyDTO == null) return;
+        timerManager.setTimerDuration(0);
+        if (slideIndex > 0 && slideIndex < storyDTO.getSlidesCount() - 1) {
+            if (storiesDisplayViewModel != null)
+                storiesDisplayViewModel.jsCallStopSlide();
+            IASCore.getInstance().getStoriesRepository(state.getStoryType())
+                    .setStoryLastIndex(state.storyId(), slideIndex);
+            updateCurrentSlide(slideIndex);
         }
     }
 
@@ -249,7 +315,7 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
                     .setStoryLastIndex(state.storyId(), lastIndex);
             updateCurrentSlide(lastIndex);
         } else {
-            IASUICore.getInstance().getStoriesReaderVM().nextStory();
+            IASUICore.getInstance().getStoriesReaderVM().nextStory(action);
         }
     }
 
@@ -274,7 +340,7 @@ public final class StoriesReaderPageViewModel implements IStoriesReaderPageViewM
         } else if (this.state.listIndex() == 0) {
             restartSlide();
         } else {
-            IASUICore.getInstance().getStoriesReaderVM().prevStory();
+            IASUICore.getInstance().getStoriesReaderVM().prevStory(ShowStoryAction.TAP);
         }
     }
 
