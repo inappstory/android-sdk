@@ -1,13 +1,17 @@
 Change Log
 ==========
 
-Version *1.17.7 (807)*
+Version *1.17.8 (808)*
 ----------------------------
 
 * Fixed: memory usage optimization
 * Fixed: crash in game reader (insets for tablets)
 * Fixed: set orientation for old games
 * Fixed: crash in game reader (onDestroy calls after returning from background)
+
+Version *1.17.7 (807)*
+----------------------------
+* Version can't be used because of critical bugs.
 
 Version *1.16.11 (761)*
 ----------------------------
