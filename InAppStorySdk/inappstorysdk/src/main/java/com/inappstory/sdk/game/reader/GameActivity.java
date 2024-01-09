@@ -852,11 +852,17 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
     private void setOrientationFromOptions(GameScreenOptions options) {
         if (options != null) {
             if ("landscape".equals(options.screenOrientation)) {
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                setOrientationForNonOreo(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 return;
             }
         }
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setOrientationForNonOreo(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    private void setOrientationForNonOreo(int requestedOrientation) {
+        if (android.os.Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
+            setRequestedOrientation(requestedOrientation);
+        }
     }
 
     private void downloadGame(
