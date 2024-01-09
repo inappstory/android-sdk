@@ -672,7 +672,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void setOrientationFromOptions(GameScreenOptions options) {
         if (options != null) {
-            if (options.screenOrientation == "landscape") {
+            if (options.screenOrientation.equals("landscape")) {
                 setOrientationForNonOreo(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 return;
             }
