@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version *1.17.9 (809)*
+----------------------------
+
+* Fixed: screen orientation change in game reader for Android 8.0
+
 Version *1.17.8 (808)*
 ----------------------------
 
