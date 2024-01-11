@@ -18,14 +18,31 @@ public class InputDialogActionData {
     private String data;
     private String widgetId;
 
-    public InputDialogActionData(String data, String widgetId) {
+    private InputDialogActionData(
+            String data,
+            String widgetId,
+            InputDialogActionType type
+    ) {
         this.data = data;
         this.widgetId = widgetId;
-        this.actionType = InputDialogActionType.SEND;
+        this.actionType = type;
     }
 
-    public InputDialogActionData(String widgetId) {
-        this.widgetId = widgetId;
-        this.actionType = InputDialogActionType.CANCEL;
+    public static InputDialogActionData send(String data, String widgetId) {
+        return new InputDialogActionData(
+                data, widgetId, InputDialogActionType.SEND
+        );
+    }
+
+    public static InputDialogActionData cancel(String widgetId) {
+        return new InputDialogActionData(
+                null, widgetId, InputDialogActionType.CANCEL
+        );
+    }
+
+    public static InputDialogActionData error(String error, String widgetId) {
+        return new InputDialogActionData(
+                error, widgetId, InputDialogActionType.ERROR
+        );
     }
 }

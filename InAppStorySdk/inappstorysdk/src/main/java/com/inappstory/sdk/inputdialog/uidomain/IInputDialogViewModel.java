@@ -12,5 +12,5 @@ public interface IInputDialogViewModel {
     void openDialog(String currentDialogStructure, String widgetId, int storyId);
     void closeDialog();
     void cancelDialog();
-    void sendDialog(String data);
+    void validateAndSendDialog(String data, int maskLength);
 }
