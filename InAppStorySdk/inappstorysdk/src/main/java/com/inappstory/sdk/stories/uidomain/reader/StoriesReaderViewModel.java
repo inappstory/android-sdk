@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.inappstory.sdk.core.IASCore;
 import com.inappstory.sdk.core.models.api.Story;
 import com.inappstory.sdk.core.repository.stories.dto.IPreviewStoryDTO;
+import com.inappstory.sdk.inputdialog.uidomain.IInputDialogViewModel;
+import com.inappstory.sdk.inputdialog.uidomain.InputDialogViewModel;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ShowStoryAction;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 import com.inappstory.sdk.stories.uidomain.reader.page.StoriesReaderPageState;
@@ -151,6 +153,7 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     private final MutableLiveData<Integer> currentIndex = new MutableLiveData<>(0);
 
     private List<IStoriesReaderPageViewModel> pageViewModels = new ArrayList<>();
+    private IInputDialogViewModel dialogViewModel = new InputDialogViewModel();
 
     @Override
     public IStoriesReaderPageViewModel getPageViewModel(int index) {
@@ -168,6 +171,11 @@ public final class StoriesReaderViewModel implements IStoriesReaderViewModel {
     @Override
     public IStoriesReaderPageViewModel getLaunchedViewModel() {
         return getPageViewModel(state.launchData().getListIndex());
+    }
+
+    @Override
+    public IInputDialogViewModel getDialogViewModel() {
+        return dialogViewModel;
     }
 
     @Override

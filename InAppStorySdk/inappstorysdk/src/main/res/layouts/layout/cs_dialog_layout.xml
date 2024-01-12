@@ -38,10 +38,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <com.inappstory.sdk.stories.ui.widgets.TextMultiInput
+                        <!--<com.inappstory.sdk.stories.ui.widgets.TextMultiInput
                             android:id="@+id/editText"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
+                            android:layout_height="wrap_content" />-->
                         <!--   <androidx.appcompat.widget.AppCompatEditText
                                android:layout_width="match_parent"
                                android:layout_height="wrap_content"

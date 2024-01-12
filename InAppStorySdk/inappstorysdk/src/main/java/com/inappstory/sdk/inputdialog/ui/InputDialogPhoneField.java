@@ -1,6 +1,7 @@
 package com.inappstory.sdk.inputdialog.ui;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -116,7 +117,7 @@ public final class InputDialogPhoneField extends LinearLayout
 
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
-
+        setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
         LayoutParams mainTextLp = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1);
         mainTextLp.setMargins(Sizes.dpToPxExt(4, getContext()), 0, 0, 0);
@@ -284,6 +285,25 @@ public final class InputDialogPhoneField extends LinearLayout
     public void setHintTextColor(int color) {
         mainText.setHintTextColor(color);
         phoneNumberHint.setHintTextColor(color);
+    }
+
+    @Override
+    public void setTextSize(int type, int size) {
+        countryCodeText.setTextSize(type, size);
+        phoneNumberHint.setTextSize(type, size);
+        mainText.setTextSize(type, size);
+    }
+
+    @Override
+    public void setTypeface(Typeface typeface, int style) {
+        countryCodeText.setTypeface(typeface, style);
+        phoneNumberHint.setTypeface(typeface, style);
+        mainText.setTypeface(typeface, style);
+    }
+
+    @Override
+    public Typeface getTypeface() {
+        return mainText.getTypeface();
     }
 
 

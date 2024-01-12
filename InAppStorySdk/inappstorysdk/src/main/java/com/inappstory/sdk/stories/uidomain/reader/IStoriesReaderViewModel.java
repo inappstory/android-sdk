@@ -2,6 +2,7 @@ package com.inappstory.sdk.stories.uidomain.reader;
 
 import androidx.lifecycle.LiveData;
 
+import com.inappstory.sdk.inputdialog.uidomain.IInputDialogViewModel;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.ShowStoryAction;
 import com.inappstory.sdk.stories.uidomain.reader.page.IStoriesReaderPageViewModel;
 
@@ -11,6 +12,7 @@ public interface IStoriesReaderViewModel {
     IStoriesReaderPageViewModel getPageViewModel(int index);
     IStoriesReaderPageViewModel getPageViewModelByStoryId(int storyId);
     IStoriesReaderPageViewModel getLaunchedViewModel();
+    IInputDialogViewModel getDialogViewModel();
     List<IStoriesReaderPageViewModel> getPageViewModels();
     void initNewState(StoriesReaderState state);
     StoriesReaderState getState();
