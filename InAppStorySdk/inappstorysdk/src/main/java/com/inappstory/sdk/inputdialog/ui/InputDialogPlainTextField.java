@@ -70,6 +70,7 @@ public final class InputDialogPlainTextField extends AppCompatEditText
         super.setTextColor(color);
     }
 
+
     @Override
     public String getValue() {
         return dataHolder.currentText();

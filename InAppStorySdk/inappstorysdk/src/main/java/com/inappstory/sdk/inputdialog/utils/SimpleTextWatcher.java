@@ -11,14 +11,15 @@ public abstract class SimpleTextWatcher implements TextWatcher {
 
     @Override
     public final void onTextChanged(CharSequence s, int start, int before, int count) {
-    }
-
-    @Override
-    public final void afterTextChanged(Editable s) {
         if (s != null)
             textChanged(s.toString());
         else
             textChanged(null);
+    }
+
+    @Override
+    public final void afterTextChanged(Editable s) {
+
     }
 
     public abstract void textChanged(String newText);
