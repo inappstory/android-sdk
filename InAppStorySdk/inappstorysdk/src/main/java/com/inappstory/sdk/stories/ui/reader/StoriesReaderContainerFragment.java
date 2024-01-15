@@ -17,6 +17,9 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.core.repository.statistic.StatisticV2Manager;
 import com.inappstory.sdk.databinding.IasReaderContainerBinding;
+import com.inappstory.sdk.goodswidget.uidomain.IGoodsWidgetViewModel;
+import com.inappstory.sdk.inputdialog.uidomain.IInputDialogViewModel;
+import com.inappstory.sdk.inputdialog.uidomain.InputDialogActionData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.CloseReader;
 import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -101,6 +104,31 @@ public final class StoriesReaderContainerFragment extends Fragment implements IS
     };
 
     IStoriesReaderViewModel storiesReaderViewModel;
+    IGoodsWidgetViewModel goodsWidgetViewModel;
+    IInputDialogViewModel inputDialogViewModel;
+
+    Observer<InputDialogActionData> actionDataObserver = new Observer<InputDialogActionData>() {
+        @Override
+        public void onChanged(InputDialogActionData inputDialogActionData) {
+            switch (inputDialogActionData.actionType()) {
+                case SEND:
+                    break;
+                case CANCEL:
+                    break;
+            }
+        }
+    };
+
+    @Override
+    public void onDestroyView() {
+        if (storiesReaderViewModel != null)
+            storiesReaderViewModel.isOpenAnimation()
+                    .removeObserver(openAnimationStatusObserver);
+        if (inputDialogViewModel != null)
+            inputDialogViewModel.actionData()
+                    .removeObserver(actionDataObserver);
+        super.onDestroyView();
+    }
 
     @Override
     public void onViewCreated(
@@ -109,6 +137,9 @@ public final class StoriesReaderContainerFragment extends Fragment implements IS
     ) {
         super.onViewCreated(view, savedInstanceState);
         storiesReaderViewModel = IASUICore.getInstance().getStoriesReaderVM();
+        goodsWidgetViewModel = storiesReaderViewModel.getGoodsWidgetViewModel();
+        inputDialogViewModel = storiesReaderViewModel.getDialogViewModel();
+        inputDialogViewModel.actionData().observe(getViewLifecycleOwner(), actionDataObserver);
         storiesReaderViewModel
                 .isOpenAnimation()
                 .observe(
