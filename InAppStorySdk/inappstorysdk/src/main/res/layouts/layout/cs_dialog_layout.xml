@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="#30000000"
+    android:id="@+id/emptyArea">
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:id="@+id/close_area"
-        android:layout_height="wrap_content">
+        android:id="@+id/dialogArea"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/parentContainer"
@@ -38,10 +44,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <!--<com.inappstory.sdk.stories.ui.widgets.TextMultiInput
+                        <com.inappstory.sdk.stories.ui.widgets.TextMultiInput
                             android:id="@+id/editText"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />-->
+                            android:layout_height="wrap_content" />
                         <!--   <androidx.appcompat.widget.AppCompatEditText
                                android:layout_width="match_parent"
                                android:layout_height="wrap_content"
@@ -87,5 +93,5 @@
 
         </FrameLayout>
 
-    </RelativeLayout>
-</RelativeLayout>
+    </FrameLayout>
+</FrameLayout>

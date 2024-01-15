@@ -8,9 +8,10 @@ import com.inappstory.sdk.core.models.js.dialogstructure.DialogStructure;
 public interface IInputDialogViewModel {
     LiveData<KeyboardState> keyboardState();
     LiveData<DialogData> currentDialogData();
+    LiveData<InputDialogActionData> actionData();
 
     void openDialog(String currentDialogStructure, String widgetId, int storyId);
     void closeDialog();
     void cancelDialog();
-    void validateAndSendDialog(String data, int maskLength);
+    boolean validateAndSendDialog(String data, int maskLength);
 }

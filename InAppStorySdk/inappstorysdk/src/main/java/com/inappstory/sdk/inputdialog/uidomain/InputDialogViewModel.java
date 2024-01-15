@@ -35,15 +35,15 @@ public class InputDialogViewModel implements IInputDialogViewModel {
     }
 
     @Override
-    public void validateAndSendDialog(String data, int maskLength) {
+    public boolean validateAndSendDialog(String data, int maskLength) {
         DialogData dialogData = currentDialogData().getValue();
         if (dialogData != null) {
             if (validate(dialogData.dialogType(), data, maskLength)) {
-                sendDialog(data);
-            } else {
-                error(null);
+                sendDialog(data.replaceAll("\"", "\\\\\""));
+                return true;
             }
         }
+        return false;
     }
 
     private boolean validate(DialogType type, String data, int maskLength) {
@@ -91,6 +91,11 @@ public class InputDialogViewModel implements IInputDialogViewModel {
     @Override
     public LiveData<DialogData> currentDialogData() {
         return currentDialogData;
+    }
+
+    @Override
+    public LiveData<InputDialogActionData> actionData() {
+        return actionData;
     }
 
     @Override

@@ -306,6 +306,9 @@ public final class InputDialogPhoneField extends LinearLayout
         return mainText.getTypeface();
     }
 
+    public void setDividerColor(int color) {
+        divider.setBackgroundColor(color);
+    }
 
     @Override
     public String getValue() {
