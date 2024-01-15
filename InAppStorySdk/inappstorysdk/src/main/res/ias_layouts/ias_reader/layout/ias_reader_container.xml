@@ -35,9 +35,20 @@
         </androidx.core.widget.NestedScrollView>
     </com.inappstory.sdk.stories.ui.widgets.elasticview.ElasticDragDismissFrameLayout>
 
+    <FrameLayout
+        android:id="@+id/ias_dialog_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <View
         android:id="@+id/screen_block"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/ias_outer_top_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 </FrameLayout>
