@@ -398,6 +398,16 @@ public class ScreensManager {
                         intent2.putExtra("feedId", feed);
                     intent2.putIntegerArrayListExtra("stories_ids", storiesIds);
                     intent2.putExtra("slideIndex", slideIndex);
+
+
+                    InAppStoryManager.showDLog("IAS_Additional",
+                            "openReader" +
+                                    " storyId:" + storiesIds.get(index) +
+                                    " slideIndex:" + slideIndex +
+                                    " storiesIds" + storiesIds +
+                                    " feedId" + feed
+                    );
+
                     if (manager != null) {
                         int nightModeFlags =
                                 ctx.getResources().getConfiguration().uiMode &

@@ -1,6 +1,5 @@
 package com.inappstory.sdk.network.utils;
 
-import android.util.Pair;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.models.Response;
@@ -8,14 +7,13 @@ import com.inappstory.sdk.network.models.ResponseWithRawData;
 
 import java.net.HttpURLConnection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class RawResponseFromConnection {
     ResponseWithRawData get(HttpURLConnection connection, String requestId) throws Exception {
+        InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getURL().toString());
         ResponseWithRawData responseWithRawData = new ResponseWithRawData();
         int responseCode = connection.getResponseCode();
-        InAppStoryManager.showDLog("InAppStory_Network", requestId + " " + connection.getURL().toString() + " \nStatus Code: " + responseCode);
+        InAppStoryManager.showDLog("InAppStory_Network", requestId + " Status Code: " + responseCode);
         long contentLength = 0;
         String decompression = null;
         HashMap<String, String> responseHeaders = new ConnectionHeadersMap().get(connection);

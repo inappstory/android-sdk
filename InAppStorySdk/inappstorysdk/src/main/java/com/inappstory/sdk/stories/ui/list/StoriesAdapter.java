@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.GameStoryData;
@@ -182,6 +183,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         InAppStoryService service = InAppStoryService.getInstance();
         Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
+            InAppStoryManager.showDLog("IAS_Additional",
+                    "storyCellClick id:" + storiesIds.get(index));
             if (callback != null) {
                 callback.itemClick(
                         new StoryData(

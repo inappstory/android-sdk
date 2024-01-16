@@ -9,6 +9,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -52,12 +53,13 @@ public class IASWebViewClient extends WebViewClient {
         return file;
     }
     protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
-        Log.e("Game_File", url);
+        InAppStoryManager.showDLog("IAS_WebViewReplace",
+                "file check: " + url
+        );
         File file = getFileByUrl(url);
         WebResourceResponse response = null;
         if (file != null && file.exists()) {
-            Log.d(
-                    "IAS_TAG",
+            InAppStoryManager.showDLog("IAS_WebViewReplace",
                     "web view replace: "
                             + url
                             + " "
@@ -70,8 +72,6 @@ public class IASWebViewClient extends WebViewClient {
                 if (mimeType == null || mimeType.isEmpty()) {
                     mimeType = "application/octet-stream";
                 }
-
-                Log.e("Game_File", url + " " + mimeType + " " + file.getAbsolutePath());
                 response = new WebResourceResponse(mimeType, "BINARY",
                         new FileInputStream(file));
                 Map<String, String> currentHeaders = response.getResponseHeaders();
@@ -82,6 +82,10 @@ public class IASWebViewClient extends WebViewClient {
             } catch (Exception e) {
                 InAppStoryService.createExceptionLog(e);
             }
+        } else {
+            InAppStoryManager.showDLog("IAS_WebViewReplace",
+                    "file not found: " + url
+            );
         }
         return response;
     }
