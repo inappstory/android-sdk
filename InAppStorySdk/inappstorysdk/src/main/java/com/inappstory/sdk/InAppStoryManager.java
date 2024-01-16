@@ -905,7 +905,7 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
-        if (this.userId.equals(userId)) return;
+        if (userId.equals(this.userId)) return;
         localOpensKey = null;
         this.userId = userId;
         if (InAppStoryService.getInstance().getFavoriteImages() != null)
