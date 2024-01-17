@@ -75,21 +75,25 @@ public class SessionManager {
     public static final Object openProcessLock = new Object();
     public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
 
-    public void openStatisticSuccess(final SessionResponse response) {
+    private void saveSession(SessionResponse response) {
+        if (response == null || response.session == null) return;
+        response.session.statisticPermissions = new StatisticPermissions(
+                response.isAllowProfiling,
+                response.isAllowStatV1,
+                response.isAllowStatV2,
+                response.isAllowCrash
+        );
+        response.session.editor = response.editor;
+        response.session.save();
+        if (InAppStoryService.isNull()) return;
+        InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
+        InAppStoryService.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
+    }
+
+    private void sessionIsSaved(final SessionResponse response) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (response == null || response.session == null) return;
-                response.session.statisticPermissions = new StatisticPermissions(
-                        response.isAllowProfiling,
-                        response.isAllowStatV1,
-                        response.isAllowStatV2,
-                        response.isAllowCrash
-                );
-                response.session.editor = response.editor;
-                response.session.save();
-                InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
-                InAppStoryService.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
                 synchronized (openProcessLock) {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)
@@ -101,6 +105,10 @@ public class SessionManager {
                 Downloader.downloadFonts(response.cachedFonts);
             }
         });
+    }
+
+    public void openStatisticSuccess(SessionResponse response) {
+        sessionIsSaved(response);
     }
 
     private static final String FEATURES =
@@ -122,6 +130,10 @@ public class SessionManager {
             if (callback != null)
                 callbacks.add(callback);
         }
+        openSessionInner();
+    }
+
+    private void openSessionInner() {
         Context context = InAppStoryService.getInstance().getContext();
         String platform = "android";
         String deviceId = Settings.Secure.getString(
@@ -154,6 +166,7 @@ public class SessionManager {
             return;
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
+        final String initialUserId = InAppStoryService.getInstance().getUserId();
         networkClient.enqueue(networkClient.getApi().sessionOpen(
                         "cache", FEATURES,
                         platform,
@@ -169,12 +182,26 @@ public class SessionManager {
                         appPackageId,
                         appVersion,
                         appBuild,
-                        InAppStoryService.getInstance().getUserId()
+                        initialUserId
                 ),
                 new NetworkCallback<SessionResponse>() {
                     @Override
                     public void onSuccess(SessionResponse response) {
                         if (InAppStoryService.isNull()) return;
+                        saveSession(response);
+                        if (initialUserId == null) {
+                            if (InAppStoryService.getInstance().getUserId() != null) {
+                                closeSession(false, true, null);
+                                openSessionInner();
+                                return;
+                            }
+                        } else {
+                            if (!initialUserId.equals(InAppStoryService.getInstance().getUserId())) {
+                                closeSession(false, true, initialUserId);
+                                openSessionInner();
+                                return;
+                            }
+                        }
                         OldStatisticManager.getInstance().eventCount = 0;
                         ProfilingManager.getInstance().setReady(sessionOpenUID);
                         openStatisticSuccess(response);
