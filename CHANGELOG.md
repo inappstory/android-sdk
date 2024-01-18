@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+Version *1.17.10 (810)*
+----------------------------
+
+* Fixed: reopen session if UserId was changed in session opening time
+
+Version *1.16.12 (762)*
+----------------------------
+
+* Fixed: reopen session if UserId was changed in session opening time
+
 Version *1.17.9 (809)*
 ----------------------------
 
