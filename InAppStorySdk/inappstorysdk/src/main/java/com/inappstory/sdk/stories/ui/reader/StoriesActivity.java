@@ -30,6 +30,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -39,6 +40,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -373,7 +375,9 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             finish();
             return;
         }
-        InAppStoryService.getInstance().getListReaderConnector().openReader();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.getListReaderConnector().openReader();
         String stStoriesType = getIntent().getStringExtra("storiesType");
         if (stStoriesType != null) {
             if (stStoriesType.equals(Story.StoryType.UGC.name()))
@@ -495,64 +499,69 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     }
 
     @Override
-    public void closeStoryReader(int action) {
+    public void closeStoryReader(final int action) {
         if (closing) return;
         closing = true;
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
-        if (InAppStoryService.isNotNull()) {
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-            if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getIntent().getStringExtra("feedId"),
-                                            CallbackManager.getInstance().getSourceFromInt(
-                                                    getIntent().getIntExtra("source", 0)
-                                            )
-                                    ),
-                                    story.lastIndex,
-                                    story.getSlideEventPayload(story.lastIndex)
-                            ),
-                            CallbackManager.getInstance().getCloseTypeFromInt(action)
-                    );
-                }
-                String cause = StatisticManager.AUTO;
-                switch (action) {
-                    case CloseStory.CLICK:
-                        cause = StatisticManager.CLICK;
-                        break;
-                    case CloseStory.CUSTOM:
-                        cause = StatisticManager.CUSTOM;
-                        break;
-                    case -1:
-                        cause = StatisticManager.BACK;
-                        break;
-                    case CloseStory.SWIPE:
-                        cause = StatisticManager.SWIPE;
-                        break;
-                }
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                        story.getSlidesCount(),
-                        getIntent().getStringExtra("feedId"));
-            }
-        }
-        cleanReader();
-        animateFirst = true;
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
-            public void run() {
-                finishAfterTransition();
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getListReaderConnector().closeReader();
+                Story story = service.getDownloadManager()
+                        .getStoryById(service.getCurrentId(), type);
+                if (story != null) {
+                    if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                        CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                                new SlideData(
+                                        new StoryData(
+                                                story.id,
+                                                StringsUtils.getNonNull(story.statTitle),
+                                                StringsUtils.getNonNull(story.tags),
+                                                story.getSlidesCount(),
+                                                getIntent().getStringExtra("feedId"),
+                                                CallbackManager.getInstance().getSourceFromInt(
+                                                        getIntent().getIntExtra("source", 0)
+                                                )
+                                        ),
+                                        story.lastIndex,
+                                        story.getSlideEventPayload(story.lastIndex)
+                                ),
+                                CallbackManager.getInstance().getCloseTypeFromInt(action)
+                        );
+                    }
+                    String cause = StatisticManager.AUTO;
+                    switch (action) {
+                        case CloseStory.CLICK:
+                            cause = StatisticManager.CLICK;
+                            break;
+                        case CloseStory.CUSTOM:
+                            cause = StatisticManager.CUSTOM;
+                            break;
+                        case -1:
+                            cause = StatisticManager.BACK;
+                            break;
+                        case CloseStory.SWIPE:
+                            cause = StatisticManager.SWIPE;
+                            break;
+                    }
+                    StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                            story.getSlidesCount(),
+                            getIntent().getStringExtra("feedId"));
+                }
             }
         });
+        cleanReader();
+        animateFirst = true;
+        new Handler(Looper.getMainLooper()).post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        finishAfterTransition();
+                    }
+                }
+        );
     }
 
     @Override
@@ -568,15 +577,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        //  OldStatisticManager.getInstance().closeStatisticEvent();
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
-        if (InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex(type);
-        }
-        cleaned = true;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.setCurrentIndex(0);
+                service.setCurrentId(0);
+                service.getDownloadManager().cleanStoriesIndex(type);
+                cleaned = true;
+            }
+        });
     }
 
 

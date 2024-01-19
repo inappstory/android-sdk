@@ -4,11 +4,13 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -42,6 +44,8 @@ public class StoryDownloadManager {
     }
 
     private Context context;
+
+    public StoryDownloadManager() {}
 
     public void clearLocalData() {
         favoriteImages.clear();
@@ -200,17 +204,15 @@ public class StoryDownloadManager {
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
-        try {
-            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-            if (inAppStoryService != null) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
                 inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getCommonCache().clearCache();
                 inAppStoryService.getFastCache().clearCache();
                 inAppStoryService.getInfiniteCache().clearCache();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
 
@@ -402,16 +404,23 @@ public class StoryDownloadManager {
         this.slidesDownloader = new SlidesDownloader(new DownloadPageCallback() {
             @Override
             public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (service == null) return DownloadPageFileStatus.ERROR;
                 try {
                     DownloadFileState state = Downloader.downloadOrGetFile(
                             urlWithAlter.getUrl(),
                             true,
-                            InAppStoryService.getInstance().getCommonCache(),
+                            service.getCommonCache(),
                             null,
                             null
                     );
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                        state = Downloader.downloadOrGetFile(urlWithAlter.getAlter(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
+                        state = Downloader.downloadOrGetFile(
+                                urlWithAlter.getAlter(),
+                                true,
+                                service.getCommonCache(),
+                                null,
+                                null);
                         if (state == null || state.getFullFile() != null)
                             return DownloadPageFileStatus.SKIP;
                     }
@@ -799,9 +808,13 @@ public class StoryDownloadManager {
         }
     }
 
-    void setLocalsOpened(List<Story> response, Story.StoryType type) {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().saveStoriesOpened(response, type);
+    void setLocalsOpened(final List<Story> response, final Story.StoryType type) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.saveStoriesOpened(response, type);
+            }
+        });
     }
 
 

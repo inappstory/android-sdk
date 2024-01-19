@@ -63,8 +63,9 @@ public class StatisticManager {
 
 
     public void addTask(StatisticTask task, boolean force) {
-        if (!force && InAppStoryService.isNotNull() &&
-                !InAppStoryService.getInstance().getSendNewStatistic()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (!force && service != null &&
+                !service.getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -74,8 +75,9 @@ public class StatisticManager {
 
 
     public void addFakeTask(StatisticTask task) {
-        if (InAppStoryService.isNotNull() &&
-                !InAppStoryService.getInstance().getSendNewStatistic()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null &&
+                !service.getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -291,7 +293,8 @@ public class StatisticManager {
 
     public void generateBase(StatisticTask task) {
         task.sessionId = Session.getInstance().id;
-        if (InAppStoryService.isNotNull())
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
             task.userId = InAppStoryService.getInstance().getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;
     }

@@ -44,6 +44,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.managers.TimerManager;
@@ -167,23 +168,26 @@ public class ReaderPageFragment extends Fragment {
         storyId = getArguments().getInt("story_id");
     }
 
-    void setViews(View view) {
-        if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId,
-                manager.getStoryType());
-        if (story == null) return;
-        if (story.disableClose)
-            close.setVisibility(View.GONE);
-        if (buttonsPanel != null) {
-            buttonsPanel.setButtonsVisibility(readerSettings,
-                    story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
-            buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
-            aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
-        }
-        setOffsets(view);
-        if (storiesView != null)
-            storiesView.getManager().setIndex(story.lastIndex);
-
+    void setViews(final View view) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                Story story = service.getDownloadManager().getStoryById(storyId,
+                        manager.getStoryType());
+                if (story == null) return;
+                if (story.disableClose)
+                    close.setVisibility(View.GONE);
+                if (buttonsPanel != null) {
+                    buttonsPanel.setButtonsVisibility(readerSettings,
+                            story.hasLike(), story.hasFavorite(), story.hasShare(), story.hasAudio());
+                    buttonsPanel.setButtonsStatus(story.getLike(), story.favorite ? 1 : 0);
+                    aboveButtonsPanel.setVisibility(buttonsPanel.getVisibility());
+                }
+                setOffsets(view);
+                if (storiesView != null)
+                    storiesView.getManager().setIndex(story.lastIndex);
+            }
+        });
     }
 
     public void storyLoadStart() {
@@ -613,19 +617,28 @@ public class ReaderPageFragment extends Fragment {
         }
         bindViews(view);
         setActions();
-        if (setManagers() && InAppStoryService.getInstance() != null
-                && InAppStoryService.getInstance().getDownloadManager() != null) {
-            if (InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, manager.getStoryType()) != null)
-                manager.setSlideIndex(InAppStoryService.getInstance().getDownloadManager()
-                        .getStoryById(storyId, manager.getStoryType()).lastIndex);
+        final View tempView = view;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                if (setManagers() && service.getDownloadManager() != null) {
+                    if (service.getDownloadManager().getStoryById(storyId, manager.getStoryType()) != null)
+                        manager.setSlideIndex(service.getDownloadManager()
+                                .getStoryById(storyId, manager.getStoryType()).lastIndex);
 
-            setViews(view);
-            InAppStoryService.getInstance().getDownloadManager().addSubscriber(manager);
-            manager.storyLoadedInCache();
-        } else {
-            InAppStoryManager.closeStoryReader();
-        }
+                    setViews(tempView);
+                    service.getDownloadManager().addSubscriber(manager);
+                    manager.storyLoadedInCache();
+                } else {
+                    InAppStoryManager.closeStoryReader();
+                }
+            }
 
+            @Override
+            public void error() throws Exception {
+                InAppStoryManager.closeStoryReader();
+            }
+        });
     }
 
 
@@ -636,8 +649,12 @@ public class ReaderPageFragment extends Fragment {
         if (manager != null) {
             if (parentManager != null)
                 parentManager.removeSubscriber(manager);
-            if (InAppStoryService.getInstance() != null)
-                InAppStoryService.getInstance().getDownloadManager().removeSubscriber(manager);
+            InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) throws Exception {
+                    service.getDownloadManager().removeSubscriber(manager);
+                }
+            });
         }
         super.onDestroyView();
     }

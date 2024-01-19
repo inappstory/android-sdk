@@ -310,7 +310,11 @@ public class ScreensManager {
                                   final Story.StoryType type
     ) {
 
-
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Context context = outerContext != null ? outerContext : service.getContext();
+        if (context == null) return;
+        final Context ctx = context;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -321,7 +325,7 @@ public class ScreensManager {
                 closeGameReader();
                 closeUGCEditor();
                 AppearanceManager manager = appearanceManager;
-                if (Sizes.isTablet() && outerContext instanceof FragmentActivity) {
+                if (Sizes.isTablet() && ctx instanceof FragmentActivity) {
                     closeStoryReader(CloseStory.CUSTOM);
                     StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
                     Bundle bundle = new Bundle();
@@ -371,7 +375,7 @@ public class ScreensManager {
                     }
                     try {
                         storiesDialogFragment.show(
-                                ((FragmentActivity) outerContext).getSupportFragmentManager(),
+                                ((FragmentActivity) ctx).getSupportFragmentManager(),
                                 "DialogFragment");
                         currentScreen = storiesDialogFragment;
                     } catch (IllegalStateException e) {
@@ -382,8 +386,7 @@ public class ScreensManager {
                     if (currentScreen != null) {
                         currentScreen.forceFinish();
                     }
-                    Context ctx = (InAppStoryService.isNotNull() ?
-                            InAppStoryService.getInstance().getContext() : outerContext);
+
                     Intent intent2 = new Intent(ctx,
                             (manager != null ? manager.csIsDraggable()
                                     : AppearanceManager.getCommonInstance().csIsDraggable()) ?
@@ -444,15 +447,10 @@ public class ScreensManager {
                             intent2.putExtra(CS_TIMER_GRADIENT, defaultGradient);
                         }
                     }
-                    if (outerContext == null) {
+                    if (!(ctx instanceof Activity)) {
                         intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        ctx.startActivity(intent2);
-                    } else {
-                        if (!(outerContext instanceof Activity)) {
-                            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        }
-                        outerContext.startActivity(intent2);
                     }
+                    ctx.startActivity(intent2);
                 }
             }
         });

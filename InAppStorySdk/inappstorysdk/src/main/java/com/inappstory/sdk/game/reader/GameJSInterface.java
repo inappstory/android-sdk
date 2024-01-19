@@ -43,20 +43,22 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public String gameInstanceGetLocalData(String gameInstanceId) {
-        if (InAppStoryService.isNull()) return "";
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return "";
         String id = gameInstanceId;
         if (id == null) id = manager.gameCenterId;
         if (id == null) return "";
         String res = KeyValueStorage.getString("gameInstance_" + id
-                + "__" + InAppStoryService.getInstance().getUserId());
+                + "__" + service.getUserId());
         return res == null ? "" : res;
     }
 
     @JavascriptInterface
     public String storyGetLocalData(int storyId) {
-        if (InAppStoryService.isNull()) return "";
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return "";
         String res = KeyValueStorage.getString("story" + storyId
-                + "__" + InAppStoryService.getInstance().getUserId());
+                + "__" + service.getUserId());
         return res == null ? "" : res;
     }
 

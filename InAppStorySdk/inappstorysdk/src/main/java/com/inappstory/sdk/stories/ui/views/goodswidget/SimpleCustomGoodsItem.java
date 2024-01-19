@@ -148,12 +148,13 @@ public class SimpleCustomGoodsItem implements ICustomGoodsItem {
         }
 
         if (data.image != null && URLUtil.isNetworkUrl(data.image)) {
-            if (InAppStoryService.getInstance() != null)
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service != null)
                 ImageLoader.getInstance().displayImage(
                         data.image,
                         -1,
                         (AppCompatImageView) view.findViewById(R.id.image),
-                        InAppStoryService.getInstance().getCommonCache()
+                        service.getCommonCache()
                 );
         } else {
             ((AppCompatImageView) view.findViewById(R.id.image))

@@ -4,8 +4,11 @@ import static com.inappstory.sdk.stories.cache.StoryDownloadManager.EXPAND_STRIN
 
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -332,7 +335,7 @@ class StoryDownloader {
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
+        if (networkClient == null) {
             generateCommonLoadListError(UGC_FEED);
             callback.onError("");
             return;
@@ -403,146 +406,148 @@ class StoryDownloader {
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
+        if (networkClient == null || !InAppStoryService.isConnected()) {
             generateCommonLoadListError(feed);
             callback.onError("");
             return;
         }
-        if (InAppStoryService.isConnected()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess() {
-                    if (InAppStoryService.isNull()) return;
-                    final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getFeed(
-                                    feed,
-                                    ApiSettings.getInstance().getTestKey(),
-                                    0,
-                                    InAppStoryService.getInstance().getTagsString(),
-                                    null),
-                            new LoadFeedCallback() {
-                                @Override
-                                public void onSuccess(Feed response) {
-                                    if (InAppStoryService.isNull() || response == null) {
-                                        generateCommonLoadListError(feed);
-                                        callback.onError("");
-                                    } else {
-                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                        callback.onSuccess(response.stories, response.hasFavorite(), response.getFeedId());
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull final InAppStoryService service) {
+                SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (InAppStoryService.isNull()) return;
+                        final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
+                        networkClient.enqueue(
+                                networkClient.getApi().getFeed(
+                                        feed,
+                                        ApiSettings.getInstance().getTestKey(),
+                                        0,
+                                        service.getTagsString(),
+                                        null),
+                                new LoadFeedCallback() {
+                                    @Override
+                                    public void onSuccess(Feed response) {
+                                        if (response == null) {
+                                            generateCommonLoadListError(feed);
+                                            callback.onError("");
+                                        } else {
+                                            ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                            callback.onSuccess(response.stories, response.hasFavorite(), response.getFeedId());
+                                        }
                                     }
-                                }
 
-                                @Override
-                                public void errorDefault(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(feed);
-                                    callback.onError(message);
-                                }
+                                    @Override
+                                    public void errorDefault(String message) {
+                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                        generateCommonLoadListError(feed);
+                                        callback.onError(message);
+                                    }
 
 
-                                @Override
-                                public void error424(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError(message);
-                                    String oldUserId = "";
-                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                                    if (inAppStoryManager != null)
-                                        oldUserId = inAppStoryManager.getUserId();
-                                    SessionManager.getInstance().closeSession(
-                                            true,
-                                            false,
-                                            oldUserId
-                                    );
-                                    loadStoryListByFeed(feed, callback);
-                                }
-                            });
-                }
+                                    @Override
+                                    public void error424(String message) {
+                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                        generateCommonLoadListError(null);
+                                        callback.onError(message);
+                                        String oldUserId = "";
+                                        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                                        if (inAppStoryManager != null)
+                                            oldUserId = inAppStoryManager.getUserId();
+                                        SessionManager.getInstance().closeSession(
+                                                true,
+                                                false,
+                                                oldUserId
+                                        );
+                                        loadStoryListByFeed(feed, callback);
+                                    }
+                                });
+                    }
 
-                @Override
-                public void onError() {
-                    generateCommonLoadListError(feed);
-                    callback.onError("");
-                }
-            });
-        } else {
-            generateCommonLoadListError(feed);
-            callback.onError("");
-        }
+                    @Override
+                    public void onError() {
+                        generateCommonLoadListError(feed);
+                        callback.onError("");
+                    }
+                });
+            }
+
+            @Override
+            public void error() {
+                generateCommonLoadListError(feed);
+                callback.onError("");
+            }
+        });
+
     }
 
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
+        if (!InAppStoryService.isConnected() || networkClient == null) {
             generateCommonLoadListError(null);
             callback.onError("");
             return;
         }
-        if (InAppStoryService.isConnected()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess() {
-                    if (InAppStoryService.isNull()) return;
-                    final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
-                            ? "api_favorite_list" : "api_story_list");
-                    networkClient.enqueue(
-                            networkClient.getApi().getStories(
-                                    ApiSettings.getInstance().getTestKey(),
-                                    isFavorite ? 1 : 0,
-                                    isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
-                                    null
-                            ),
-                            new LoadListCallback() {
-                                @Override
-                                public void onSuccess(List<Story> response) {
-                                    if (InAppStoryService.isNull()) {
-                                        generateCommonLoadListError(null);
-                                        callback.onError("");
-                                    } else {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(final @NonNull InAppStoryService service) {
+                SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (InAppStoryService.isNull()) return;
+                        final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
+                                ? "api_favorite_list" : "api_story_list");
+                        networkClient.enqueue(
+                                networkClient.getApi().getStories(
+                                        ApiSettings.getInstance().getTestKey(),
+                                        isFavorite ? 1 : 0,
+                                        isFavorite ? null : service.getTagsString(),
+                                        null
+                                ),
+                                new LoadListCallback() {
+                                    @Override
+                                    public void onSuccess(List<Story> response) {
                                         ProfilingManager.getInstance().setReady(loadStoriesUID);
                                         callback.onSuccess(response);
                                     }
-                                }
 
-                                @Override
-                                public void errorDefault(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError(message);
-                                }
+                                    @Override
+                                    public void errorDefault(String message) {
+                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                        generateCommonLoadListError(null);
+                                        callback.onError(message);
+                                    }
 
 
-                                @Override
-                                public void error424(String message) {
-                                    ProfilingManager.getInstance().setReady(loadStoriesUID);
-                                    generateCommonLoadListError(null);
-                                    callback.onError(message);
+                                    @Override
+                                    public void error424(String message) {
+                                        ProfilingManager.getInstance().setReady(loadStoriesUID);
+                                        generateCommonLoadListError(null);
+                                        callback.onError(message);
 
-                                    String oldUserId = "";
-                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                                    if (inAppStoryManager != null)
-                                        oldUserId = inAppStoryManager.getUserId();
-                                    SessionManager.getInstance().closeSession(
-                                            true,
-                                            false,
-                                            oldUserId
-                                    );
-                                    loadStoryList(callback, isFavorite);
-                                }
-                            });
-                }
+                                        String oldUserId = "";
+                                        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                                        if (inAppStoryManager != null)
+                                            oldUserId = inAppStoryManager.getUserId();
+                                        SessionManager.getInstance().closeSession(
+                                                true,
+                                                false,
+                                                oldUserId
+                                        );
+                                        loadStoryList(callback, isFavorite);
+                                    }
+                                });
+                    }
 
-                @Override
-                public void onError() {
-                    generateCommonLoadListError(null);
-                    callback.onError("");
-                }
-            });
-        } else {
-            generateCommonLoadListError(null);
-            callback.onError("");
-        }
+                    @Override
+                    public void onError() {
+                        generateCommonLoadListError(null);
+                        callback.onError("");
+                    }
+                });
+            }
+        });
     }
 }

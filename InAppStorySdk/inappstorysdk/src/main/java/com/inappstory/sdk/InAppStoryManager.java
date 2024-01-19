@@ -86,8 +86,11 @@ public class InAppStoryManager {
     private static InAppStoryManager INSTANCE;
 
     public static NetworkClient getNetworkClient() {
-        if (InAppStoryManager.getInstance() == null) return null;
-        return InAppStoryManager.getInstance().networkClient;
+        synchronized (lock) {
+            if (INSTANCE == null) return null;
+            return INSTANCE.networkClient;
+        }
+
     }
 
     public static boolean testGenerated = false;
@@ -96,6 +99,20 @@ public class InAppStoryManager {
         synchronized (lock) {
             return INSTANCE == null;
         }
+    }
+
+    public static void useInstance(@NonNull UseManagerInstanceCallback callback) {
+        InAppStoryManager manager = getInstance();
+        try {
+            if (manager != null) {
+                callback.use(manager);
+            } else {
+                callback.error();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static void setInstance(InAppStoryManager manager) {
@@ -216,8 +233,12 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.getDownloadManager().clearCache();
+            }
+        });
     }
     //Test
 
@@ -225,8 +246,12 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache without manager
      */
     public void clearCache(Context context) {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.getDownloadManager().clearCache();
+            }
+        });
     }
 
     /**
@@ -237,18 +262,25 @@ public class InAppStoryManager {
     }
 
     @Deprecated
-    public void openGame(String gameId) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null && context != null) {
-            service.openGameReaderWithGC(context, null, gameId);
-        }
+    public void openGame(final String gameId) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                if (context != null) {
+                    service.openGameReaderWithGC(context, null, gameId);
+                }
+            }
+        });
     }
 
-    public void openGame(String gameId, @NonNull Context context) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            service.openGameReaderWithGC(context, null, gameId);
-        }
+    public void openGame(final String gameId, @NonNull final Context context) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.openGameReaderWithGC(context, null, gameId);
+            }
+        });
+
     }
 
     public void closeGame() {
@@ -528,7 +560,7 @@ public class InAppStoryManager {
                 this.defaultPlaceholders.put(key,
                         placeholder.defaultVal);
                 if (!this.placeholders.containsKey(key)) {
-                    InAppStoryManager.getInstance().placeholders.put(key,
+                    this.placeholders.put(key,
                             placeholder.defaultVal);
                 }
             }
@@ -675,9 +707,12 @@ public class InAppStoryManager {
     Thread serviceThread;
 
     void createServiceThread(final Context context, final String userId) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().onDestroy();
-        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.onDestroy();
+            }
+        });
         if (serviceThread != null) {
             serviceThread.interrupt();
             serviceThread = null;
@@ -742,16 +777,19 @@ public class InAppStoryManager {
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (InAppStoryService.isNotNull()) {
-                            InAppStoryService.getInstance().getDownloadManager()
-                                    .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                            InAppStoryService.getInstance().getDownloadManager()
-                                    .clearAllFavoriteStatus(Story.StoryType.UGC);
-                            InAppStoryService.getInstance().getFavoriteImages().clear();
-                            InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
-                        }
 
+                        ProfilingManager.getInstance().setReady(favUID);
+                        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                            @Override
+                            public void use(@NonNull InAppStoryService service) {
+                                service.getDownloadManager()
+                                        .clearAllFavoriteStatus(Story.StoryType.COMMON);
+                                service.getDownloadManager()
+                                        .clearAllFavoriteStatus(Story.StoryType.UGC);
+                                service.getFavoriteImages().clear();
+                                service.getListReaderConnector().clearAllFavorites();
+                            }
+                        });
                         if (ScreensManager.getInstance().currentScreen != null) {
                             ScreensManager.getInstance().currentScreen.removeAllStoriesFromFavorite();
                         }
@@ -787,13 +825,16 @@ public class InAppStoryManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(favUID);
-                        if (InAppStoryService.isNotNull()) {
-                            Story story = InAppStoryService.getInstance().getDownloadManager()
-                                    .getStoryById(storyId, Story.StoryType.COMMON);
-                            if (story != null)
-                                story.favorite = favorite;
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
-                        }
+                        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                            @Override
+                            public void use(@NonNull InAppStoryService service) {
+                                Story story = service.getDownloadManager()
+                                        .getStoryById(storyId, Story.StoryType.COMMON);
+                                if (story != null)
+                                    story.favorite = favorite;
+                                service.getListReaderConnector().storyFavorite(storyId, favorite);
+                            }
+                        });
                         if (ScreensManager.getInstance().currentScreen != null) {
                             ScreensManager.getInstance().currentScreen.removeStoryFromFavorite(storyId);
                         }
@@ -855,22 +896,24 @@ public class InAppStoryManager {
         KeyValueStorage.setContext(builder.context);
         SharedPreferencesAPI.setContext(builder.context);
         createServiceThread(builder.context, builder.userId);
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            long commonCacheSize = MB_100;
-            long fastCacheSize = MB_10;
-            switch (builder.cacheSize) {
-                case CacheSize.SMALL:
-                    fastCacheSize = MB_5;
-                    commonCacheSize = MB_10;
-                    break;
-                case CacheSize.LARGE:
-                    commonCacheSize = MB_200;
-                    break;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                long commonCacheSize = MB_100;
+                long fastCacheSize = MB_10;
+                switch (builder.cacheSize) {
+                    case CacheSize.SMALL:
+                        fastCacheSize = MB_5;
+                        commonCacheSize = MB_10;
+                        break;
+                    case CacheSize.LARGE:
+                        commonCacheSize = MB_200;
+                        break;
+                }
+                service.getFastCache().setCacheSize(fastCacheSize);
+                service.getCommonCache().setCacheSize(commonCacheSize);
             }
-            inAppStoryService.getFastCache().setCacheSize(fastCacheSize);
-            inAppStoryService.getCommonCache().setCacheSize(commonCacheSize);
-        }
+        });
         String domain = new HostFromSecretKey(
                 builder.apiKey
         ).get(builder.sandbox);
@@ -890,38 +933,34 @@ public class InAppStoryManager {
         new ExceptionManager().sendSavedException();
     }
 
-    private static void generateException() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.genException = true;
-        }
-    }
-
     private int getBytesLength(String value) {
         if (value == null) return 0;
         return value.getBytes(StandardCharsets.UTF_8).length;
     }
 
-    private void setUserIdInner(String userId) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) return;
-        if (userId == null || getBytesLength(userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
-        if (userId.equals(this.userId)) return;
-        localOpensKey = null;
-        String oldUserId = this.userId;
-        this.userId = userId;
-        if (inAppStoryService.getFavoriteImages() != null)
-            inAppStoryService.getFavoriteImages().clear();
-        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
-        inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
-        closeStoryReader(CloseStory.AUTO);
-        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId);
-        OldStatisticManager.getInstance().eventCount = 0;
-        inAppStoryService.getDownloadManager().cleanTasks(false);
-        inAppStoryService.setUserId(userId);
+    private void setUserIdInner(final String userId) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                if (userId == null || getBytesLength(userId) > 255) {
+                    showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+                    return;
+                }
+                if (userId.equals(InAppStoryManager.this.userId)) return;
+                localOpensKey = null;
+                String oldUserId = InAppStoryManager.this.userId;
+                InAppStoryManager.this.userId = userId;
+                if (service.getFavoriteImages() != null)
+                    service.getFavoriteImages().clear();
+                service.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
+                service.getDownloadManager().refreshLocals(Story.StoryType.UGC);
+                closeStoryReader(CloseStory.AUTO);
+                SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId);
+                OldStatisticManager.getInstance().eventCount = 0;
+                service.getDownloadManager().cleanTasks(false);
+                service.setUserId(userId);
+            }
+        });
     }
 
 
@@ -942,20 +981,24 @@ public class InAppStoryManager {
         return userId;
     }
 
-    public void clearCachedList(String id) {
+    public void clearCachedList(final String id) {
         if (id == null) return;
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.remove(id);
-        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.listStoriesIds.remove(id);
+            }
+        });
     }
 
 
     public void clearCachedLists() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
-        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.listStoriesIds.clear();
+            }
+        });
     }
 
     public void setActionBarColor(int actionBarColor) {
@@ -1018,24 +1061,26 @@ public class InAppStoryManager {
                 .host(cmsUrl);
 
         networkClient = new NetworkClient(context, cmsUrl);
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.getDownloadManager().initDownloaders();
-        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.getDownloadManager().initDownloaders();
+            }
+        });
     }
 
     private static final Object lock = new Object();
 
     public static void logout() {
-        if (!isNull()) {
-            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-            if (inAppStoryService != null) {
-                inAppStoryService.listStoriesIds.clear();
-                inAppStoryService.getListSubscribers().clear();
-                inAppStoryService.getDownloadManager().cleanTasks();
-                inAppStoryService.logout();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.listStoriesIds.clear();
+                service.getListSubscribers().clear();
+                service.getDownloadManager().cleanTasks();
+                service.logout();
             }
-        }
+        });
     }
 
     @Deprecated
@@ -1094,23 +1139,26 @@ public class InAppStoryManager {
     private Handler localHandler = new Handler();
     private Object handlerToken = new Object();
 
-    private void showLoadedOnboardings(final List<Story> response, final Context outerContext,
-                                       final AppearanceManager manager, final String feed, final String feedId) {
-        Story.StoryType storyType = Story.StoryType.COMMON;
+    private void showLoadedOnboardings(
+            final List<Story> response,
+            final Context outerContext,
+            final AppearanceManager manager,
+            final String feed,
+            final String feedId,
+            @NonNull final InAppStoryService service
+    ) {
         if (response == null || response.size() == 0) {
             if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
                 CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(0, StringsUtils.getNonNull(feed));
             }
             return;
         }
-
-        if (InAppStoryService.isNull()) return;
         if (ScreensManager.created == -1) {
             InAppStoryManager.closeStoryReader(CloseStory.AUTO);
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
+                    showLoadedOnboardings(response, outerContext, manager, feed, feedId, service);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -1119,7 +1167,7 @@ public class InAppStoryManager {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed, feedId);
+                    showLoadedOnboardings(response, outerContext, manager, feed, feedId, service);
                     ScreensManager.created = 0;
                 }
             }, 350);
@@ -1132,9 +1180,8 @@ public class InAppStoryManager {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null)
-            inAppStoryService.getDownloadManager().uploadingAdditional(stories, storyType);
+
+        service.getDownloadManager().uploadingAdditional(stories, Story.StoryType.COMMON);
         ScreensManager.getInstance().openStoriesReader(
                 outerContext,
                 null,
@@ -1145,88 +1192,122 @@ public class InAppStoryManager {
                 feed,
                 Story.StoryType.COMMON);
         if (CallbackManager.getInstance().getOnboardingLoadCallback() != null) {
-            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(response.size(), StringsUtils.getNonNull(feed));
+            CallbackManager.getInstance().getOnboardingLoadCallback().onboardingLoad(
+                    response.size(),
+                    StringsUtils.getNonNull(feed)
+            );
         }
     }
 
-    private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        if (InAppStoryService.isNull()) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
-                }
-            }, 1000);
-            return;
+    private boolean checkIfAnotherManager() {
+        synchronized (lock) {
+            return INSTANCE != this;
         }
+    }
 
-        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
-        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+    private void showOnboardingStoriesInner(
+            final Integer limit,
+            final String feed,
+            final List<String> tags,
+            final Context outerContext,
+            final AppearanceManager manager
+    ) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
-            public void onSuccess() {
-                String localTags = null;
-                if (tags != null) {
-                    localTags = TextUtils.join(",", tags);
-                } else if (getTags() != null) {
-                    localTags = TextUtils.join(",", getTags());
+            public void use(@NonNull final InAppStoryService service) {
+                if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+                    showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+                    return;
                 }
+                SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (checkIfAnotherManager()) {
+                            return;
+                        }
+                        String localTags = null;
+                        if (tags != null) {
+                            localTags = TextUtils.join(",", tags);
+                        } else if (getTags() != null) {
+                            localTags = TextUtils.join(",", getTags());
+                        }
 
-                final String onboardUID =
-                        ProfilingManager.getInstance().addTask("api_onboarding");
-                final String localFeed;
-                if (feed != null) localFeed = feed;
-                else localFeed = ONBOARDING_FEED;
-                networkClient.enqueue(
-                        networkClient.getApi().getOnboardingFeed(
-                                localFeed,
-                                limit,
-                                localTags == null ? getTagsString() : localTags
-                        ),
-                        new LoadFeedCallback() {
-                            @Override
-                            public void onSuccess(Feed response) {
-                                if (InAppStoryManager.isNull()) return;
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                List<Story> notOpened = new ArrayList<>();
-                                Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-                                if (opens == null) opens = new HashSet<>();
-                                if (response.stories != null) {
-                                    for (Story story : response.stories) {
-                                        boolean add = true;
-                                        for (String opened : opens) {
-                                            if (Integer.toString(story.id).equals(opened)) {
-                                                add = false;
+                        final String onboardUID =
+                                ProfilingManager.getInstance().addTask("api_onboarding");
+                        final String localFeed;
+                        if (feed != null) localFeed = feed;
+                        else localFeed = ONBOARDING_FEED;
+                        networkClient.enqueue(
+                                networkClient.getApi().getOnboardingFeed(
+                                        localFeed,
+                                        limit,
+                                        localTags == null ? getTagsString() : localTags
+                                ),
+                                new LoadFeedCallback() {
+                                    @Override
+                                    public void onSuccess(Feed response) {
+                                        if (checkIfAnotherManager()) {
+                                            return;
+                                        }
+                                        ProfilingManager.getInstance().setReady(onboardUID);
+                                        List<Story> notOpened = new ArrayList<>();
+                                        Set<String> opens = SharedPreferencesAPI.getStringSet(getLocalOpensKey());
+                                        if (opens == null) opens = new HashSet<>();
+                                        if (response.stories != null) {
+                                            for (Story story : response.stories) {
+                                                boolean add = true;
+                                                for (String opened : opens) {
+                                                    if (Integer.toString(story.id).equals(opened)) {
+                                                        add = false;
+                                                    }
+                                                }
+                                                if (add) notOpened.add(story);
                                             }
                                         }
-                                        if (add) notOpened.add(story);
+                                        showLoadedOnboardings(
+                                                notOpened,
+                                                outerContext,
+                                                manager,
+                                                localFeed,
+                                                response.getFeedId(),
+                                                service
+                                        );
                                     }
-                                }
-                                showLoadedOnboardings(notOpened, outerContext, manager, localFeed, response.getFeedId());
-                            }
 
-                            @Override
-                            public void onError(int code, String message) {
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                loadOnboardingError(localFeed);
-                            }
+                                    @Override
+                                    public void onError(int code, String message) {
+                                        ProfilingManager.getInstance().setReady(onboardUID);
+                                        loadOnboardingError(localFeed);
+                                    }
 
-                            @Override
-                            public void timeoutError() {
-                                ProfilingManager.getInstance().setReady(onboardUID);
-                                loadOnboardingError(localFeed);
-                            }
-                        });
+                                    @Override
+                                    public void timeoutError() {
+                                        ProfilingManager.getInstance().setReady(onboardUID);
+                                        loadOnboardingError(localFeed);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError() {
+                        loadOnboardingError(feed);
+                    }
+
+                });
             }
 
             @Override
-            public void onError() {
-                loadOnboardingError(feed);
+            public void error() {
+                localHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        showOnboardingStoriesInner(limit, feed, tags, outerContext, manager);
+                    }
+                }, 1000);
             }
-
         });
+
+
     }
 
     private void loadOnboardingError(String feed) {
@@ -1344,135 +1425,147 @@ public class InAppStoryManager {
                                 final Story.StoryType type,
                                 final int readerSource,
                                 final int readerAction) {
-        final InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) {
-            localHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showStoryInner(
-                            storyId,
-                            context,
-                            manager,
-                            callback,
-                            slide,
-                            type,
-                            readerSource,
-                            readerAction
-                    );
-                }
-            }, 1000);
-            return;
-        }
-        if (this.userId == null || getBytesLength(this.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
-        if (lastSingleOpen != null &&
-                lastSingleOpen.equals(storyId)) return;
-        lastSingleOpen = storyId;
-
-
-        service.getDownloadManager().getFullStoryByStringId(
-                new GetStoryByIdCallback() {
-                    @Override
-                    public void getStory(Story story) {
-                        if (story != null) {
-                            service.getDownloadManager().addCompletedStoryTask(story,
-                                    Story.StoryType.COMMON);
-                            if (ScreensManager.created == -1) {
-                                InAppStoryManager.closeStoryReader(CloseStory.AUTO);
-                                localHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        lastSingleOpen = null;
-                                        showStoryInner(
-                                                storyId,
-                                                context,
-                                                manager,
-                                                callback,
-                                                slide,
-                                                type,
-                                                readerSource,
-                                                readerAction
-                                        );
-                                        // StoriesActivity.destroyed = 0;
-                                    }
-                                }, 500);
-                                return;
-                            } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
-                                localHandler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showStoryInner(
-                                                storyId,
-                                                context,
-                                                manager,
-                                                callback,
-                                                slide,
-                                                type,
-                                                readerSource,
-                                                readerAction
-                                        );
-                                        ScreensManager.created = 0;
-                                    }
-                                }, 350);
-                                return;
-                            }
-
-
-                            try {
-                                int c = Integer.parseInt(lastSingleOpen);
-                                if (c != story.id)
-                                    return;
-                            } catch (Exception ignored) {
-
-                            }
-                            if (callback != null)
-                                callback.onShow();
-                            service.getDownloadManager().putStories(
-                                    InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
-                                    type
-                            );
-                            ArrayList<Integer> stIds = new ArrayList<>();
-                            stIds.add(story.id);
-                            ScreensManager.getInstance().openStoriesReader(
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull final InAppStoryService service) {
+                if (InAppStoryManager.this.userId == null ||
+                        getBytesLength(InAppStoryManager.this.userId) > 255) {
+                    showELog(
+                            IAS_ERROR_TAG,
+                            getErrorStringFromContext(
                                     context,
-                                    null,
-                                    manager,
-                                    stIds,
-                                    0,
-                                    readerSource,
-                                    readerAction,
-                                    slide,
-                                    null,
-                                    Story.StoryType.COMMON
-                            );
-                            localHandler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
+                                    R.string.ias_setter_user_length_error
+                            )
+                    );
+                    return;
+                }
+                if (lastSingleOpen != null &&
+                        lastSingleOpen.equals(storyId)) return;
+                lastSingleOpen = storyId;
+
+
+                service.getDownloadManager().getFullStoryByStringId(
+                        new GetStoryByIdCallback() {
+                            @Override
+                            public void getStory(Story story) {
+                                if (story != null) {
+                                    service.getDownloadManager().addCompletedStoryTask(story,
+                                            Story.StoryType.COMMON);
+                                    if (ScreensManager.created == -1) {
+                                        InAppStoryManager.closeStoryReader(CloseStory.AUTO);
+                                        localHandler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                lastSingleOpen = null;
+                                                showStoryInner(
+                                                        storyId,
+                                                        context,
+                                                        manager,
+                                                        callback,
+                                                        slide,
+                                                        type,
+                                                        readerSource,
+                                                        readerAction
+                                                );
+                                            }
+                                        }, 500);
+                                        return;
+                                    } else if (System.currentTimeMillis() - ScreensManager.created < 1000) {
+                                        localHandler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showStoryInner(
+                                                        storyId,
+                                                        context,
+                                                        manager,
+                                                        callback,
+                                                        slide,
+                                                        type,
+                                                        readerSource,
+                                                        readerAction
+                                                );
+                                                ScreensManager.created = 0;
+                                            }
+                                        }, 350);
+                                        return;
+                                    }
+
+
+                                    try {
+                                        int c = Integer.parseInt(lastSingleOpen);
+                                        if (c != story.id)
+                                            return;
+                                    } catch (Exception ignored) {
+
+                                    }
+                                    if (callback != null)
+                                        callback.onShow();
+                                    service.getDownloadManager().putStories(
+                                            service.getDownloadManager().getStories(Story.StoryType.COMMON),
+                                            type
+                                    );
+                                    ArrayList<Integer> stIds = new ArrayList<>();
+                                    stIds.add(story.id);
+                                    ScreensManager.getInstance().openStoriesReader(
+                                            context,
+                                            null,
+                                            manager,
+                                            stIds,
+                                            0,
+                                            readerSource,
+                                            readerAction,
+                                            slide,
+                                            null,
+                                            Story.StoryType.COMMON
+                                    );
+                                    localHandler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            lastSingleOpen = null;
+                                        }
+                                    }, 1000);
+                                } else {
+                                    if (callback != null)
+                                        callback.onError();
                                     lastSingleOpen = null;
+                                    return;
                                 }
-                            }, 1000);
-                        } else {
-                            if (callback != null)
-                                callback.onError();
-                            lastSingleOpen = null;
-                            return;
-                        }
-                    }
+                            }
 
+                            @Override
+                            public void loadError(int type) {
+                                if (callback != null)
+                                    callback.onError();
+                                lastSingleOpen = null;
+                            }
+
+                        },
+                        storyId,
+                        type,
+                        readerSource
+                );
+            }
+
+            @Override
+            public void error() {
+                localHandler.postDelayed(new Runnable() {
                     @Override
-                    public void loadError(int type) {
-                        if (callback != null)
-                            callback.onError();
-                        lastSingleOpen = null;
+                    public void run() {
+                        showStoryInner(
+                                storyId,
+                                context,
+                                manager,
+                                callback,
+                                slide,
+                                type,
+                                readerSource,
+                                readerAction
+                        );
                     }
+                }, 1000);
+            }
+        });
 
-                },
-                storyId,
-                type,
-                readerSource
-        );
     }
 
     private void showStoryInner(final String storyId, final Context context,

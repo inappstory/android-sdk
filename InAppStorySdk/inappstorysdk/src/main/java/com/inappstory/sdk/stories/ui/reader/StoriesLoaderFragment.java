@@ -59,8 +59,9 @@ public class StoriesLoaderFragment extends Fragment {
     }
 
     void setViews(View view) {
-        if (InAppStoryService.getInstance() == null) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Story story = service.getDownloadManager().getStoryById(
                 getArguments().getInt("storyId"),
                 Story.StoryType.valueOf(
                         getArguments().getString(

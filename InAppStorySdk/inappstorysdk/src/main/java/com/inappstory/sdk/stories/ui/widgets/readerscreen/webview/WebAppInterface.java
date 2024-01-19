@@ -245,8 +245,10 @@ public class WebAppInterface {
     @JavascriptInterface
     public String storyGetLocalData() {
         synchronized (manager) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return "";
             String res = KeyValueStorage.getString("story" + manager.storyId
-                    + "__" + InAppStoryService.getInstance().getUserId());
+                    + "__" + service.getUserId());
             logMethod(res != null ? res : "");
             return res == null ? "" : res;
         }

@@ -2,9 +2,11 @@ package com.inappstory.sdk.game.cache;
 
 import android.webkit.URLUtil;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameSplashScreen;
@@ -57,39 +59,46 @@ public class DownloadSplashUseCase {
             splashScreenCallback.onError("splash screen is not valid");
             return;
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService == null) {
-            splashScreenCallback.onError("InAppStory service is unavailable");
-            return;
-        }
-        Downloader.downloadFileBackground(
-                splashScreen.url,
-                false,
-                inAppStoryService.getInfiniteCache(),
-                new FileLoadProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
 
-                    }
+                Downloader.downloadFileBackground(
+                        splashScreen.url,
+                        false,
+                        service.getInfiniteCache(),
+                        new FileLoadProgressCallback() {
+                            @Override
+                            public void onProgress(long loadedSize, long totalSize) {
 
-                    @Override
-                    public void onSuccess(File file) {
-                        if (fileChecker.checkWithShaAndSize(
-                                file,
-                                splashScreen.size,
-                                splashScreen.sha1,
-                                true
-                        )) {
-                            splashScreenCallback.onSuccess(file);
-                        }
-                    }
+                            }
 
-                    @Override
-                    public void onError(String error) {
-                        splashScreenCallback.onError(error);
-                    }
-                },
-                null
-        );
+                            @Override
+                            public void onSuccess(File file) {
+                                if (fileChecker.checkWithShaAndSize(
+                                        file,
+                                        splashScreen.size,
+                                        splashScreen.sha1,
+                                        true
+                                )) {
+                                    splashScreenCallback.onSuccess(file);
+                                }
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                splashScreenCallback.onError(error);
+                            }
+                        },
+                        null
+                );
+            }
+
+            @Override
+            public void error() {
+                splashScreenCallback.onError("InAppStory service is unavailable");
+            }
+        });
+
     }
 }

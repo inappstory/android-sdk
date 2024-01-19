@@ -104,7 +104,8 @@ public class ZipLoader {
                                       final long curSize) {
         if (resources == null) return true;
         if (terminate) return false;
-        if (InAppStoryService.isNull()) return false;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return false;
         FileChecker fileChecker = new FileChecker();
         String pathName = file.getAbsolutePath();
         final File filePath = new File(
@@ -134,7 +135,7 @@ public class ZipLoader {
                         callback.onProgress(cnt, totalSize);
                     continue;
                 }
-                downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, InAppStoryService.getInstance().getInfiniteCache(),
+                downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, service.getInfiniteCache(),
                         resourceFile,
                         null);
                 fileChecker.checkWithShaAndSize(
@@ -232,7 +233,7 @@ public class ZipLoader {
                             deleteFolderRecursive(gameDirFile, true);
                         }
                     }
-                    File cachedArchive = InAppStoryService.getInstance().getInfiniteCache().getFullFile(
+                    File cachedArchive = inAppStoryService.getInfiniteCache().getFullFile(
                             Downloader.deleteQueryArgumentsFromUrlOld(url, true)
                     );
                     if (cachedArchive != null) {
@@ -244,7 +245,7 @@ public class ZipLoader {
                                         true
                                 )
                         ) {
-                            InAppStoryService.getInstance().getInfiniteCache().delete(url);
+                            inAppStoryService.getInfiniteCache().delete(url);
                             cachedArchive = null;
                             File directory = new File(
                                     getFile.getParent() +
@@ -266,7 +267,7 @@ public class ZipLoader {
                         fileState = Downloader.downloadOrGetFile(
                                 url,
                                 true,
-                                InAppStoryService.getInstance().getInfiniteCache(),
+                                inAppStoryService.getInfiniteCache(),
                                 getFile,
                                 new FileLoadProgressCallback() {
                                     @Override
@@ -332,8 +333,8 @@ public class ZipLoader {
                                 getFile.length() + (long) (0.2 * allFilesSize)
                         ))
                             ProfilingManager.getInstance().setReady(resourcesHash);
-                        if (InAppStoryService.getInstance().getInfiniteCache().get(directory.getName()) == null) {
-                            InAppStoryService.getInstance().getInfiniteCache().put(directory.getName(), directory);
+                        if (inAppStoryService.getInfiniteCache().get(directory.getName()) == null) {
+                            inAppStoryService.getInfiniteCache().put(directory.getName(), directory);
                         }
                     } else if (getFile.exists()) {
                         String unzipHash = ProfilingManager.getInstance().addTask(profilingPrefix + "_unzip");
@@ -349,7 +350,7 @@ public class ZipLoader {
                             }
                         });
                         ProfilingManager.getInstance().setReady(unzipHash);
-                        InAppStoryService.getInstance().getInfiniteCache().put(directory.getName(), directory);
+                        inAppStoryService.getInfiniteCache().put(directory.getName(), directory);
                         resourcesHash = ProfilingManager.getInstance().addTask(
                                 profilingPrefix + "_resources_download");
                         if (downloadResources(

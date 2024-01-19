@@ -102,9 +102,10 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public void slideStart() {
+        InAppStoryService service = InAppStoryService.getInstance();
         String funAfterCheck =
-                (InAppStoryService.getInstance() != null
-                        && InAppStoryService.getInstance().isSoundOn()) ?
+                (service != null
+                        && service.isSoundOn()) ?
                         "story_slide_start('{\"muted\": false}');" :
                         "story_slide_start('{\"muted\": true}');";
         loadUrl("javascript:(function(){" +
@@ -165,7 +166,8 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     }
 
     public void changeSoundStatus() {
-        if (InAppStoryService.getInstance().isSoundOn()) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && service.isSoundOn()) {
             loadUrl("javascript:(function(){story_slide_enable_audio();})()");
         } else {
             loadUrl("javascript:(function(){story_slide_disable_audio();})()");

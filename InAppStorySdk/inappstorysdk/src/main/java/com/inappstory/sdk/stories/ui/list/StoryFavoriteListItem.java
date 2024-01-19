@@ -16,6 +16,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -48,31 +49,41 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         imageView.setVisibility(View.INVISIBLE);
     }
 
-    private void setImage(AppCompatImageView imageView, FavoriteImage image) {
-        if (image.getImage() != null && InAppStoryService.isNotNull()) {
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
-                    InAppStoryService.getInstance().getFastCache());
-        } else {
-            imageView.setBackgroundColor(image.getBackgroundColor());
-        }
+    private void setImage(final AppCompatImageView imageView, final FavoriteImage image) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                if (image.getImage() != null) {
+                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                    ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
+                            service.getFastCache());
+                } else {
+                    imageView.setBackgroundColor(image.getBackgroundColor());
+                }
+            }
+
+            @Override
+            public void error() throws Exception {
+                imageView.setBackgroundColor(image.getBackgroundColor());
+            }
+        });
         imageView.setVisibility(View.VISIBLE);
     }
 
     private void loadFavoriteImages(final LoadFavoriteImagesCallback callback, final int count) {
         final List<String> downloadImages = new ArrayList<>();
         final int[] i = {0};
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         RunnableCallback runnableCallback = new RunnableCallback() {
             @Override
             public void run(String path) {
-                if (InAppStoryService.isNull()) return;
                 downloadImages.add(path);
                 i[0]++;
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    List<FavoriteImage> images = InAppStoryService.getInstance()
-                            .getFavoriteImages();
+                    List<FavoriteImage> images = service.getFavoriteImages();
                     if (images == null || images.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
@@ -83,14 +94,14 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
             @Override
             public void error() {
-                if (InAppStoryService.isNull()) return;
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (service == null) return;
                 downloadImages.add(null);
                 i[0]++;
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    List<FavoriteImage> images = InAppStoryService.getInstance()
-                            .getFavoriteImages();
+                    List<FavoriteImage> images = service.getFavoriteImages();
                     if (images == null || images.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
@@ -99,8 +110,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 }
             }
         };
-        downloadFileAndSendToInterface(InAppStoryService.getInstance()
-                .getFavoriteImages().get(0).getUrl(), runnableCallback);
+        downloadFileAndSendToInterface(service.getFavoriteImages().get(0).getUrl(), runnableCallback);
     }
 
     interface LoadFavoriteImagesCallback {
@@ -115,14 +125,15 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     public void bindFavorite() {
-
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         if (getFavoriteListItem != null
-                && InAppStoryService.isNotNull()
+                && service != null
                 && getFavoriteListItem.getFavoriteItem() != null) {
-            int count = InAppStoryService.getInstance().getFavoriteImages().size();
+            int count = service.getFavoriteImages().size();
             final List<Integer> backgroundColors = new ArrayList<>();
             for (int j = 0; j < count; j++) {
-                backgroundColors.add(InAppStoryService.getInstance().getFavoriteImages().get(j).getBackgroundColor());
+                backgroundColors.add(service.getFavoriteImages().get(j).getBackgroundColor());
             }
             getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
             loadFavoriteImages(new LoadFavoriteImagesCallback() {
@@ -157,7 +168,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         container3.setRadius(manager.csListItemRadius(context) / 2);
         container4.setRadius(manager.csListItemRadius(context) / 2);
         if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
+        List<FavoriteImage> favImages = service.getFavoriteImages();
 
         if (favImages.size() > 0) {
             AppCompatImageView image1 = itemView.findViewById(R.id.image1);
@@ -203,35 +214,45 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         void error();
     }
 
-    private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+    private void downloadFileAndSendToInterface(final String url, final RunnableCallback callback) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
-            public void onProgress(long loadedSize, long totalSize) {
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                Downloader.downloadFileBackground(
+                        url,
+                        false,
+                        service.getFastCache(),
+                        new FileLoadProgressCallback() {
+                            @Override
+                            public void onProgress(long loadedSize, long totalSize) {
 
-            }
+                            }
 
-            @Override
-            public void onSuccess(File file) {
-                final String path = file.getAbsolutePath();
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.run(path);
-                    }
-                });
-            }
+                            @Override
+                            public void onSuccess(File file) {
+                                final String path = file.getAbsolutePath();
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        callback.run(path);
+                                    }
+                                });
+                            }
 
-            @Override
-            public void onError(String error) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.error();
-                    }
-                });
+                            @Override
+                            public void onError(String error) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        callback.error();
+                                    }
+                                });
+                            }
+                        }
+                );
             }
         });
+
     }
 
     public Integer backgroundColor;

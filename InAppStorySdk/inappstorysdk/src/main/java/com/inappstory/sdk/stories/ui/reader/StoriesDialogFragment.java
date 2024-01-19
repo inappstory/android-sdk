@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -30,6 +31,7 @@ import androidx.lifecycle.Observer;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -69,38 +71,40 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     public void onDismiss(DialogInterface dialogInterface) {
         ScreensManager.getInstance().hideGoods();
         ScreensManager.getInstance().closeGameReader();
-        if (InAppStoryService.isNotNull()) {
-            OldStatisticManager.getInstance().sendStatistic();
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                OldStatisticManager.getInstance().sendStatistic();
+                Story story = service.getDownloadManager()
+                        .getStoryById(service.getCurrentId(), type);
 
-            if (story != null) {
-                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
-                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
-                            new SlideData(
-                                    new StoryData(
-                                            story.id,
-                                            StringsUtils.getNonNull(story.statTitle),
-                                            StringsUtils.getNonNull(story.tags),
-                                            story.getSlidesCount(),
-                                            getArguments().getString("feedId"),
-                                            CallbackManager.getInstance().getSourceFromInt(
-                                                    getArguments().getInt("source", 0)
-                                            )
-                                    ),
-                                    story.lastIndex,
-                                    story.getSlideEventPayload(story.lastIndex)
-                            ),
-                            CloseReader.CLICK
-                    );
+                if (story != null) {
+                    if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                        CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                                new SlideData(
+                                        new StoryData(
+                                                story.id,
+                                                StringsUtils.getNonNull(story.statTitle),
+                                                StringsUtils.getNonNull(story.tags),
+                                                story.getSlidesCount(),
+                                                getArguments().getString("feedId"),
+                                                CallbackManager.getInstance().getSourceFromInt(
+                                                        getArguments().getInt("source", 0)
+                                                )
+                                        ),
+                                        story.lastIndex,
+                                        story.getSlideEventPayload(story.lastIndex)
+                                ),
+                                CloseReader.CLICK
+                        );
+                    }
+                    String cause = StatisticManager.CLICK;
+                    StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
+                            story.getSlidesCount(),
+                            getArguments().getString("feedId"));
                 }
-                String cause = StatisticManager.CLICK;
-                StatisticManager.getInstance().sendCloseStory(story.id, cause, story.lastIndex,
-                        story.getSlidesCount(),
-                        getArguments().getString("feedId"));
             }
-
-        }
+        });
         cleanReader();
         removeGameObservables();
         super.onDismiss(dialogInterface);
@@ -111,15 +115,20 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
-        List<Story> stories = InAppStoryService.getInstance().getDownloadManager().getStories(type);
-        for (Story story : stories)
-            story.lastIndex = 0;
-        cleaned = true;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                OldStatisticManager.getInstance().closeStatisticEvent();
+                service.setCurrentIndex(0);
+                service.setCurrentId(0);
+                List<Story> stories = service.getDownloadManager().getStories(type);
+                for (Story story : stories)
+                    story.lastIndex = 0;
+                cleaned = true;
+            }
+        });
+
     }
 
     Observer<GameCompleteEvent> gameCompleteObserver = new Observer<GameCompleteEvent>() {
@@ -137,7 +146,9 @@ public class StoriesDialogFragment extends DialogFragment implements BackPressHa
 
     @Override
     public void closeStoryReader(int action) {
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null)
+            service.getListReaderConnector().closeReader();
         dismissAllowingStateLoss();
     }
 

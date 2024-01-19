@@ -16,18 +16,22 @@ import android.util.Log;
 import android.util.Pair;
 import android.webkit.URLUtil;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
+import com.inappstory.sdk.network.callbacks.Callback;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
+import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
@@ -57,6 +61,19 @@ public class InAppStoryService {
         synchronized (lock) {
             if (InAppStoryManager.getInstance() == null) return null;
             return INSTANCE;
+        }
+    }
+
+    public static void useInstance(@NonNull UseServiceInstanceCallback callback) {
+        InAppStoryService inAppStoryService = getInstance();
+        try {
+            if (inAppStoryService != null) {
+                callback.use(inAppStoryService);
+            } else {
+                callback.error();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -91,8 +108,10 @@ public class InAppStoryService {
     public HashMap<String, List<Integer>> listStoriesIds = new HashMap<>();
 
     public String getUserId() {
-        if (userId == null && !InAppStoryManager.isNull())
-            return InAppStoryManager.getInstance().getUserId();
+        if (userId == null) {
+            InAppStoryManager manager = InAppStoryManager.getInstance();
+            if (manager != null) return manager.getUserId();
+        }
         return userId;
     }
 
@@ -103,11 +122,8 @@ public class InAppStoryService {
     private String userId;
 
     public String getTagsString() {
-        if (InAppStoryManager.getInstance() != null) {
-            return InAppStoryManager.getInstance().getTagsString();
-        } else {
-            return null;
-        }
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        return manager != null ? manager.getTagsString() : null;
     }
 
     public boolean genException = false;
@@ -123,66 +139,68 @@ public class InAppStoryService {
     }
 
 
-    public void saveStoriesOpened(List<Story> stories, Story.StoryType type) {
-  /*      Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
-        if (opens == null) opens = new HashSet<>();
-        for (Story story : stories) {
-            opens.add(Integer.toString(story.id));
-        }
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(), opens);
-
-
-*/
-        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type));
-        if (opens == null) opens = new HashSet<>();
-        for (Story story : stories) {
-            if (story.isOpened) {
-                opens.add(Integer.toString(story.id));
-            } else if (opens.contains(Integer.toString(story.id))) {
-                story.isOpened = true;
+    public void saveStoriesOpened(final List<Story> stories, final Story.StoryType type) {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) {
+                Set<String> opens = SharedPreferencesAPI.getStringSet(manager.getLocalOpensKey(type));
+                if (opens == null) opens = new HashSet<>();
+                for (Story story : stories) {
+                    if (story.isOpened) {
+                        opens.add(Integer.toString(story.id));
+                    } else if (opens.contains(Integer.toString(story.id))) {
+                        story.isOpened = true;
+                    }
+                }
+                SharedPreferencesAPI.saveStringSet(manager.getLocalOpensKey(type), opens);
             }
-        }
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type), opens);
+        });
     }
 
-    public void saveStoryOpened(int id, Story.StoryType type) {
-        if (InAppStoryManager.getInstance() == null) return;
-        Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type));
-        if (opens == null) opens = new HashSet<>();
-        opens.add(Integer.toString(id));
-        SharedPreferencesAPI.saveStringSet(InAppStoryManager.getInstance().getLocalOpensKey(type), opens);
+    public void saveStoryOpened(final int id, final Story.StoryType type) {
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) {
+                Set<String> opens = SharedPreferencesAPI.getStringSet(manager.getLocalOpensKey(type));
+                if (opens == null) opens = new HashSet<>();
+                opens.add(Integer.toString(id));
+                SharedPreferencesAPI.saveStringSet(manager.getLocalOpensKey(type), opens);
+            }
+        });
     }
 
     public boolean isSoundOn() {
-        if (InAppStoryManager.getInstance() != null) {
-            return InAppStoryManager.getInstance().soundOn();
-        } else {
-            return true;
-        }
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        return manager == null || manager.soundOn();
     }
 
     public void changeSoundStatus() {
-        if (InAppStoryManager.getInstance() != null) {
-            InAppStoryManager.getInstance().soundOn(!InAppStoryManager.getInstance().soundOn());
-        }
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) {
+                manager.soundOn(!manager.soundOn());
+            }
+        });
     }
 
 
     public boolean getSendNewStatistic() {
-        if (InAppStoryManager.getInstance() == null) return false;
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return false;
         if (!Session.needToUpdate()) {
             if (Session.getInstance().statisticPermissions == null) return false;
-            return InAppStoryManager.getInstance().isSendStatistic()
-                    && Session.getInstance().statisticPermissions.allowStatV2;
+            return manager.isSendStatistic() &&
+                    Session.getInstance().statisticPermissions.allowStatV2;
         }
         return false;
     }
 
     public boolean getSendStatistic() {
-        if (InAppStoryManager.getInstance() == null) return false;
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return false;
         if (!Session.needToUpdate()) {
             if (Session.getInstance().statisticPermissions == null) return false;
-            return InAppStoryManager.getInstance().isSendStatistic()
+            return manager.isSendStatistic()
                     && Session.getInstance().statisticPermissions.allowStatV1;
         }
         return false;
@@ -193,9 +211,11 @@ public class InAppStoryService {
     }
 
     public StoryDownloadManager getDownloadManager() {
+        if (downloadManager == null) return fakeStoryDownloadManager;
         return downloadManager;
     }
 
+    FakeStoryDownloadManager fakeStoryDownloadManager = new FakeStoryDownloadManager();
     StoryDownloadManager downloadManager;
     GameCacheManager gameCacheManager = new GameCacheManager();
 
@@ -246,7 +266,7 @@ public class InAppStoryService {
 
     public void onDestroy() {
         checkSpaceThread.shutdown();
-        getDownloadManager().destroy();
+        downloadManager.destroy();
         if (INSTANCE == this)
             INSTANCE = null;
     }
@@ -403,24 +423,31 @@ public class InAppStoryService {
         return new HashMap<>();
     }
 
-    public void saveSessionPlaceholders(List<StoryPlaceholder> placeholders) {
+    public void saveSessionPlaceholders(final List<StoryPlaceholder> placeholders) {
         if (placeholders == null) return;
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return;
-        manager.setDefaultPlaceholders(placeholders);
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) {
+                manager.setDefaultPlaceholders(placeholders);
+            }
+        });
     }
 
-    public void saveSessionImagePlaceholders(List<StoryPlaceholder> placeholders) {
+    public void saveSessionImagePlaceholders(final List<StoryPlaceholder> placeholders) {
         if (placeholders == null) return;
-        if (InAppStoryManager.getInstance() == null) return;
-        for (StoryPlaceholder placeholder : placeholders) {
-            if (!URLUtil.isNetworkUrl(placeholder.defaultVal))
-                continue;
-            String key = placeholder.name;
-            ImagePlaceholderValue defaultVal = ImagePlaceholderValue.createByUrl(placeholder.defaultVal);
-            InAppStoryManager.getInstance().setDefaultImagePlaceholder(key,
-                    defaultVal);
-        }
+        InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryManager manager) {
+                for (StoryPlaceholder placeholder : placeholders) {
+                    if (!URLUtil.isNetworkUrl(placeholder.defaultVal))
+                        continue;
+                    String key = placeholder.name;
+                    ImagePlaceholderValue defaultVal = ImagePlaceholderValue.createByUrl(placeholder.defaultVal);
+                    manager.setDefaultImagePlaceholder(key,
+                            defaultVal);
+                }
+            }
+        });
     }
 
     public void openGameReaderWithGC(
@@ -452,49 +479,73 @@ public class InAppStoryService {
     }
 
     public class ListReaderConnector {
-        public void changeStory(int storyId, String listID) {
-            if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.changeStory(storyId, listID);
-            }
+        public void changeStory(final int storyId, final String listID) {
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    for (ListManager sub : service.getListSubscribers()) {
+                        sub.changeStory(storyId, listID);
+                    }
+                }
+            });
         }
 
         public void closeReader() {
-            if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.closeReader();
-            }
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    for (ListManager sub : service.getListSubscribers()) {
+                        sub.closeReader();
+                    }
+                }
+            });
         }
 
         public void openReader() {
-            if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.openReader();
-            }
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    for (ListManager sub : service.getListSubscribers()) {
+                        sub.openReader();
+                    }
+                }
+            });
+
         }
 
         public void changeUserId() {
-            if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.changeUserId();
-            }
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    for (ListManager sub : service.getListSubscribers()) {
+                        sub.changeUserId();
+                    }
+                }
+            });
         }
 
-        public void storyFavorite(int id, boolean favStatus) {
-            if (InAppStoryService.isNull()) return;
-
-            List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
-            boolean isEmpty = favImages.isEmpty();
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.storyFavorite(id, favStatus, isEmpty);
-            }
+        public void storyFavorite(final int id, final boolean favStatus) {
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    List<FavoriteImage> favImages = service.getFavoriteImages();
+                    boolean isEmpty = favImages.isEmpty();
+                    for (ListManager sub : service.getListSubscribers()) {
+                        sub.storyFavorite(id, favStatus, isEmpty);
+                    }
+                }
+            });
         }
 
         public void clearAllFavorites() {
-            if (InAppStoryService.isNull()) return;
-            for (ListManager sub : InAppStoryService.getInstance().getListSubscribers()) {
-                sub.clearAllFavorites();
-            }
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    for (ListManager sub : service.getListSubscribers()) {
+                        sub.clearAllFavorites();
+                    }
+                }
+            });
         }
     }
 
@@ -506,13 +557,19 @@ public class InAppStoryService {
         return listSubscribers;
     }
 
-    public static void checkAndAddListSubscriber(ListManager listManager) {
-        if (isNotNull()) {
-            getInstance().addListSubscriber(listManager);
-        } else {
-            if (tempListSubscribers == null) tempListSubscribers = new HashSet<>();
-            tempListSubscribers.add(listManager);
-        }
+    public static void checkAndAddListSubscriber(final ListManager listManager) {
+        useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.addListSubscriber(listManager);
+            }
+
+            @Override
+            public void error() {
+                if (tempListSubscribers == null) tempListSubscribers = new HashSet<>();
+                tempListSubscribers.add(listManager);
+            }
+        });
     }
 
     public void addListSubscriber(ListManager listManager) {
@@ -554,40 +611,42 @@ public class InAppStoryService {
         }
 
         @Override
-        public void uncaughtException(Thread thread, final Throwable throwable) {
+        public void uncaughtException(final Thread thread, final Throwable throwable) {
             createExceptionLog(throwable);
             Log.d("InAppStory_SDK_error", throwable.getCause() + "\n"
                     + throwable.getMessage());
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull final InAppStoryService service) {
+                    InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                        @Override
+                        public void use(@NonNull InAppStoryManager manager) {
+                            if (thread != manager.serviceThread) {
+                                if (oldHandler != null)
+                                    oldHandler.uncaughtException(thread, throwable);
+                                return;
+                            }
+                            manager.setExceptionCache(new ExceptionCache(
+                                    service.getDownloadManager().getStories(Story.StoryType.COMMON),
+                                    service.getDownloadManager().favStories,
+                                    service.getDownloadManager().favoriteImages
+                            ));
+                            synchronized (lock) {
+                                service.onDestroy();
+                            }
+                            manager.createServiceThread(
+                                    manager.context,
+                                    manager.getUserId()
+                            );
+                            if (manager.getExceptionCallback() != null) {
+                                manager.getExceptionCallback().onException(throwable);
+                            }
+                        }
+                    });
 
-            if (InAppStoryManager.getInstance() != null) {
-                if (thread != InAppStoryManager.getInstance().serviceThread) {
-                    if (oldHandler != null)
-                        oldHandler.uncaughtException(thread, throwable);
-                    return;
                 }
-                InAppStoryManager.getInstance().setExceptionCache(new ExceptionCache(
-                        getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
-                        getInstance().getDownloadManager().favStories,
-                        getInstance().getDownloadManager().favoriteImages
-                ));
+            });
 
-            }
-            try {
-                synchronized (lock) {
-                    if (getInstance() != null)
-                        getInstance().onDestroy();
-                }
-                if (InAppStoryManager.getInstance() != null) {
-                    InAppStoryManager.getInstance().createServiceThread(
-                            InAppStoryManager.getInstance().context,
-                            InAppStoryManager.getInstance().getUserId());
-                    if (InAppStoryManager.getInstance().getExceptionCallback() != null) {
-                        InAppStoryManager.getInstance().getExceptionCallback().onException(throwable);
-                    }
-                }
-            } catch (Exception ignored) {
-
-            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -658,7 +717,7 @@ public class InAppStoryService {
             checkSpaceThread = new ScheduledThreadPoolExecutor(1);
         }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
-        getDownloadManager().initDownloaders();
+        downloadManager.initDownloaders();
     }
 
     private static Object lock = new Object();

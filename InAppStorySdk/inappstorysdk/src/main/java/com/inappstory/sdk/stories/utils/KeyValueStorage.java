@@ -21,8 +21,9 @@ public class KeyValueStorage {
 
     public static SharedPreferences getDefaultPreferences() {
         if (context == null) {
-            if (InAppStoryService.isNull()) return null;
-            context = InAppStoryService.getInstance().getContext();
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return null;
+            context = service.getContext();
         }
         if (context == null) return null;
         return context.getSharedPreferences(SHARED_PREFERENCES_DEFAULT, Context.MODE_PRIVATE);

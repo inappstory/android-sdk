@@ -6,9 +6,12 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -70,34 +73,40 @@ public class GameManager {
         );
     }
 
-    void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
-        if (InAppStoryService.isNull()) return;
-        String id = gameInstanceId;
-        if (id == null) id = gameCenterId;
+    void gameInstanceSetData(final String gameInstanceId, final String data, final boolean sendToServer) {
+        final String id = gameInstanceId != null ? gameInstanceId : gameCenterId;
         if (id == null) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
         }
-        KeyValueStorage.saveString("gameInstance_" + gameInstanceId
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                KeyValueStorage.saveString("gameInstance_" + id
+                        + "__" + service.getUserId(), data);
+                if (!service.getSendStatistic()) return;
+                if (sendToServer) {
+                    networkClient.enqueue(
+                            networkClient.getApi().sendGameData(
+                                    id,
+                                    data
+                            ),
+                            new NetworkCallback<Response>() {
+                                @Override
+                                public void onSuccess(Response response) {
 
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
-        if (sendToServer) {
-            networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
+                                }
 
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    }
-            );
-        }
+                                @Override
+                                public Type getType() {
+                                    return null;
+                                }
+                            }
+                    );
+                }
+            }
+        });
     }
 
     void openUrl(String data) {
@@ -106,37 +115,42 @@ public class GameManager {
             tapOnLink(urlObject.url, host);
     }
 
-    void storySetData(String data, boolean sendToServer) {
-        if (InAppStoryService.isNull()) return;
+    void storySetData(final String data, final boolean sendToServer) {
         if (dataModel == null) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
             return;
         }
-        KeyValueStorage.saveString("story" + dataModel.slideData.story.id
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                KeyValueStorage.saveString("story" + dataModel.slideData.story.id
+                        + "__" + service.getUserId(), data);
+                if (!service.getSendStatistic()) return;
+                if (sendToServer) {
+                    networkClient.enqueue(
+                            networkClient.getApi().sendStoryData(
+                                    Integer.toString(dataModel.slideData.story.id),
+                                    data,
+                                    Session.getInstance().id
+                            ),
+                            new NetworkCallback<Response>() {
+                                @Override
+                                public void onSuccess(Response response) {
 
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
-        if (sendToServer) {
-            networkClient.enqueue(
-                    networkClient.getApi().sendStoryData(
-                            Integer.toString(dataModel.slideData.story.id),
-                            data,
-                            Session.getInstance().id
-                    ),
-                    new NetworkCallback<Response>() {
-                        @Override
-                        public void onSuccess(Response response) {
+                                }
 
-                        }
+                                @Override
+                                public Type getType() {
+                                    return null;
+                                }
+                            }
+                    );
+                }
+            }
+        });
 
-                        @Override
-                        public Type getType() {
-                            return null;
-                        }
-                    });
-        }
     }
 
     GameActivity host;
@@ -166,11 +180,13 @@ public class GameManager {
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
-            InAppStoryManager.getInstance().showStoryCustom(
-                    options.openStory.id,
-                    host,
-                    AppearanceManager.getCommonInstance()
-            );
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null)
+                inAppStoryManager.showStoryCustom(
+                        options.openStory.id,
+                        host,
+                        AppearanceManager.getCommonInstance()
+                );
         }
         host.gameCompleted(gameState, null);
 

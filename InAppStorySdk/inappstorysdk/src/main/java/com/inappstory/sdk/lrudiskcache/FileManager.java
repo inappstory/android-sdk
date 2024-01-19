@@ -162,6 +162,9 @@ public class FileManager {
     }
 
     public void prepareCacheDir(String subPath) throws IOException {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null)
+            throw formatException("InAppStoryManager is null, directory %s", cacheDir);
         if (!checkAndUse(cacheDir, subPath)) {
             if (!checkAndUse(InAppStoryManager.getInstance().getContext().getFilesDir(),
                     subPath)) {

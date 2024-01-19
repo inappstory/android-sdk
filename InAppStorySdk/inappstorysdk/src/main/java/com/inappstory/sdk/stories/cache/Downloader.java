@@ -7,6 +7,7 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.network.utils.ConnectionHeadersMap;
@@ -51,12 +52,16 @@ public class Downloader {
         return delete ? url.split("\\?")[0] : url;
     }
 
-    public static void downloadFonts(List<CacheFontObject> cachedFonts) {
+    public static void downloadFonts(final List<CacheFontObject> cachedFonts) {
         if (cachedFonts != null) {
-            for (CacheFontObject cacheFontObject : cachedFonts) {
-                if (InAppStoryService.isNull()) return;
-                downFontFile(cacheFontObject.url, InAppStoryService.getInstance().getCommonCache());
-            }
+            InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    for (CacheFontObject cacheFontObject : cachedFonts) {
+                        downFontFile(cacheFontObject.url, service.getCommonCache());
+                    }
+                }
+            });
         }
     }
 

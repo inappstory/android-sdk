@@ -9,8 +9,11 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.game.reader.GameReaderLoadProgressBar;
 import com.inappstory.sdk.inner.share.InnerShareData;
@@ -138,9 +141,13 @@ public class StoriesViewManager {
         loadedIndex = oInd;
         loadedId = oId;
         if (alreadyLoaded) return;
-        Story story = InAppStoryService.getInstance() != null ?
-                InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType()) : null;
-        innerLoad(story);
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                innerLoad(service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType()));
+            }
+        });
+
     }
 
     public void storyLoaded(int oId, int oInd) {
@@ -253,42 +260,47 @@ public class StoriesViewManager {
     boolean notFirstLoading = false;
 
     public void loadStory(final int id, final int index) {
-        if (InAppStoryService.isNull())
-            return;
-        final Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, pageManager.getStoryType());
-        synchronized (this) {
-            if (loadedId == id && loadedIndex == index) return;
-            if (story == null || story.checkIfEmpty()) {
-                return;
-            }
-            if (story.getSlidesCount() <= index) return;
-            storyId = id;
-            this.index = index;
-            loadedIndex = index;
-            loadedId = id;
-        }
-        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(id, index,
-                pageManager.getStoryType());
-        if (slideInCache == 1) {
-            innerLoad(story);
-            pageManager.slideLoadedInCache(index, true);
-        } else {
-
-            if (slideInCache == -1) {
-                pageManager.slideLoadError(index);
-            } else {
-                if (!InAppStoryService.isConnected()) {
-                    if (CallbackManager.getInstance().getErrorCallback() != null) {
-                        CallbackManager.getInstance().getErrorCallback().noConnection();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                final Story story = service.getDownloadManager().getStoryById(id, pageManager.getStoryType());
+                synchronized (this) {
+                    if (loadedId == id && loadedIndex == index) return;
+                    if (story == null || story.checkIfEmpty()) {
+                        return;
                     }
-                    return;
+                    if (story.getSlidesCount() <= index) return;
+                    storyId = id;
+                    StoriesViewManager.this.index = index;
+                    loadedIndex = index;
+                    loadedId = id;
                 }
-                pageManager.storyLoadStart();
+                slideInCache = service.getDownloadManager().checkIfPageLoaded(id, index,
+                        pageManager.getStoryType());
+                if (slideInCache == 1) {
+                    innerLoad(story);
+                    pageManager.slideLoadedInCache(index, true);
+                } else {
+
+                    if (slideInCache == -1) {
+                        pageManager.slideLoadError(index);
+                    } else {
+                        if (!InAppStoryService.isConnected()) {
+                            if (CallbackManager.getInstance().getErrorCallback() != null) {
+                                CallbackManager.getInstance().getErrorCallback().noConnection();
+                            }
+                            return;
+                        }
+                        pageManager.storyLoadStart();
+                    }
+                }
             }
-        }
+        });
+
     }
 
     void setWebViewSettings(Story story) throws IOException {
+        if (story == null) return;
         String innerWebData = story.pages.get(index);
         String layout = story.getLayout();//getLayoutWithFonts(story.getLayout());
         if (storiesView == null || !(storiesView instanceof SimpleStoriesWebView)) return;
@@ -495,35 +507,33 @@ public class StoriesViewManager {
 
     private boolean storyIsLoaded = false;
 
-    public void storyLoaded(int slideIndex) {
-        if (InAppStoryService.isNull()) return;
-
-        Log.e("currentSlideIsLoaded", storyId + " 0 " + slideIndex);
-        clearShowLoader();
-        clearShowRefresh();
-        storyIsLoaded = true;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
-        Log.e("currentSlideIsLoaded", storyId + " " + slideIndex + " " + story.lastIndex + " " + InAppStoryService.getInstance().getCurrentId());
-
-        if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
-            stopStory();
-        } else if (InAppStoryService.getInstance().getCurrentId() != storyId) {
-            stopStory();
-            setLatestVisibleIndex(slideIndex);
-        } else {
-            setLatestVisibleIndex(slideIndex);
-            pageManager.currentSlideIsLoaded = true;
-            playStory();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    resumeStory();
+    public void storyLoaded(final int slideIndex) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                clearShowLoader();
+                clearShowRefresh();
+                storyIsLoaded = true;
+                Story story = service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+                if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
+                    stopStory();
+                } else if (service.getCurrentId() != storyId) {
+                    stopStory();
+                    setLatestVisibleIndex(slideIndex);
+                } else {
+                    setLatestVisibleIndex(slideIndex);
+                    pageManager.currentSlideIsLoaded = true;
+                    playStory();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            resumeStory();
+                        }
+                    }, 200);
                 }
-            }, 200);
-        }
-        pageManager.host.storyLoadedSuccess();
-
-
+                pageManager.host.storyLoadedSuccess();
+            }
+        });
     }
 
 
@@ -533,24 +543,30 @@ public class StoriesViewManager {
     }
 
     public void sendShowSlideEvents() {
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
-        if (story != null) {
-            ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
-            if (showSlideCallback != null) {
-                showSlideCallback.showSlide(new SlideData(
-                        new StoryData(
-                                story.id,
-                                StringsUtils.getNonNull(story.statTitle),
-                                StringsUtils.getNonNull(story.tags),
-                                story.getSlidesCount(),
-                                pageManager != null ? pageManager.getFeedId() : null,
-                                pageManager != null ? pageManager.getSourceType() : SourceType.LIST
-                        ),
-                        index,
-                        story.getSlideEventPayload(story.lastIndex)
-                ));
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                Story story = service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+                if (story != null) {
+                    ShowSlideCallback showSlideCallback = CallbackManager.getInstance().getShowSlideCallback();
+                    if (showSlideCallback != null) {
+                        showSlideCallback.showSlide(new SlideData(
+                                new StoryData(
+                                        story.id,
+                                        StringsUtils.getNonNull(story.statTitle),
+                                        StringsUtils.getNonNull(story.tags),
+                                        story.getSlidesCount(),
+                                        pageManager != null ? pageManager.getFeedId() : null,
+                                        pageManager != null ? pageManager.getSourceType() : SourceType.LIST
+                                ),
+                                index,
+                                story.getSlideEventPayload(story.lastIndex)
+                        ));
+                    }
+                }
             }
-        }
+        });
+
     }
 
     public void pauseUI() {
@@ -602,10 +618,8 @@ public class StoriesViewManager {
     public int source = 0;
 
     public void storySendData(String data) {
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        if (!service.getSendStatistic()) return;
+        if (service == null || !service.getSendStatistic()) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;

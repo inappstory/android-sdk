@@ -4,8 +4,11 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -165,12 +168,18 @@ public class ButtonsPanelManager {
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(likeUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
-                        if (story != null)
-                            story.like = val;
-                        if (callback != null)
-                            callback.onSuccess(val);
+                        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                            @Override
+                            public void use(@NonNull InAppStoryService service) throws Exception {
+                                ProfilingManager.getInstance().setReady(likeUID);
+                                Story story = service.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+                                if (story != null)
+                                    story.like = val;
+                                if (callback != null)
+                                    callback.onSuccess(val);
+                            }
+                        });
+
                     }
 
 
@@ -233,15 +242,20 @@ public class ButtonsPanelManager {
                 new NetworkCallback<Response>() {
                     @Override
                     public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
-                        boolean res = !val;
-                        if (story != null)
-                            story.favorite = res;
-                        if (callback != null)
-                            callback.onSuccess(res ? 1 : 0);
-                        if (InAppStoryService.isNotNull())
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, res);
+                        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                            @Override
+                            public void use(@NonNull InAppStoryService service) throws Exception {
+                                ProfilingManager.getInstance().setReady(favUID);
+                                Story story = service.getDownloadManager().getStoryById(storyId, parentManager.getStoryType());
+                                boolean res = !val;
+                                if (story != null)
+                                    story.favorite = res;
+                                if (callback != null)
+                                    callback.onSuccess(res ? 1 : 0);
+                               service.getListReaderConnector().storyFavorite(storyId, res);
+                            }
+                        });
+
                     }
 
 

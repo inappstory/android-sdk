@@ -14,10 +14,7 @@ public class XUserIdHeader implements MutableHeader {
     public String getValue() {
         if (replacedValue != null) return replacedValue;
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service != null) {
-            return service.getUserId();
-        }
-        return null;
+        return service != null ? service.getUserId() : null;
     }
 
     @Override

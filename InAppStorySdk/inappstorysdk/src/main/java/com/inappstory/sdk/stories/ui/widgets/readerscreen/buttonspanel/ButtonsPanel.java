@@ -55,7 +55,8 @@ public class ButtonsPanel extends LinearLayout {
         favorite.setVisibility(hasFavorite ? VISIBLE : GONE);
         share.setVisibility(hasShare ? VISIBLE : GONE);
         sound.setVisibility(hasSound ? VISIBLE : GONE);
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+        InAppStoryService service = InAppStoryService.getInstance();
+        sound.setActivated(service != null && service.isSoundOn());
         if (hasFavorite || hasLike || hasShare || hasSound) {
             setVisibility(VISIBLE);
         } else {
@@ -69,7 +70,8 @@ public class ButtonsPanel extends LinearLayout {
 
 
     public void refreshSoundStatus() {
-        sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+        InAppStoryService service = InAppStoryService.getInstance();
+        sound.setActivated(service != null && service.isSoundOn());
     }
 
     ButtonsPanelManager manager;
@@ -117,7 +119,8 @@ public class ButtonsPanel extends LinearLayout {
                     soundClick();
                 }
             });
-            sound.setActivated(InAppStoryService.getInstance().isSoundOn());
+            InAppStoryService service = InAppStoryService.getInstance();
+            sound.setActivated(service != null && service.isSoundOn());
         }
     }
 

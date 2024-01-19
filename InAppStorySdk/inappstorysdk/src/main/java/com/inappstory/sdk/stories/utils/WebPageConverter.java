@@ -93,8 +93,10 @@ public class WebPageConverter {
     }
 
     private String replaceImagePlaceholders(String innerWebData, Story story, final int index, LruDiskCache cache) throws IOException {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return innerWebData;
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders =
-                InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults();
+                service.getImagePlaceholdersValuesWithDefaults();
         Map<String, String> imgPlaceholderKeys = story.getPlaceholdersList(index, "image-placeholder");
         for (Map.Entry<String, String> entry : imgPlaceholderKeys.entrySet()) {
             String placeholderKey = entry.getKey();
@@ -174,8 +176,9 @@ public class WebPageConverter {
                                    WebPageConvertCallback callback) throws IOException {
         String localData = innerWebData;
         String newLayout = layout;
-        if (InAppStoryService.isNotNull()) {
-            LruDiskCache cache = InAppStoryService.getInstance().getCommonCache();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            LruDiskCache cache = service.getCommonCache();
             localData = replaceResources(localData, story, index, cache);
             localData = replaceImagePlaceholders(localData, story, index, cache);
             Pair<String, String> replaced = replacePlaceholders(localData, newLayout);

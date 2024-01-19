@@ -343,8 +343,9 @@ public class StoriesFragment extends Fragment
 
     public void swipeCloseEvent(int position, boolean check) {
         if (check) {
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(currentIds.get(position), readerManager.storyType);
+            InAppStoryService service = InAppStoryService.getInstance();
+            Story story = service != null ? service.getDownloadManager()
+                    .getStoryById(currentIds.get(position), readerManager.storyType) : null;
             if (story == null || story.disableClose) return;
             InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
         }
@@ -369,8 +370,9 @@ public class StoriesFragment extends Fragment
 
 
     private int getCurIndexById(int id) {
-        if (InAppStoryService.getInstance().getDownloadManager() == null) return 0;
-        Story st = InAppStoryService.getInstance().getDownloadManager().getStoryById(id, readerManager.storyType);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return 0;
+        Story st = service.getDownloadManager().getStoryById(id, readerManager.storyType);
         return st == null ? 0 : st.lastIndex;
     }
 

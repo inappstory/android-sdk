@@ -4,7 +4,10 @@ import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderType;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
@@ -201,11 +204,14 @@ class SlidesDownloader {
         }
     }
 
-    void addStoryPages(Story story, int loadType, Story.StoryType type) throws Exception {
-        Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>();
-        if (InAppStoryService.isNotNull()) {
-            imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults());
-        }
+    void addStoryPages(Story story, int loadType, Story.StoryType type) {
+        final Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                imgPlaceholders.putAll(service.getImagePlaceholdersValuesWithDefaults());
+            }
+        });
         synchronized (pageTasksLock) {
             int key = story.id;
             int sz;

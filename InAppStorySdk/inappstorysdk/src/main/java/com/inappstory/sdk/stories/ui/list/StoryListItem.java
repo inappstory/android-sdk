@@ -19,6 +19,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -136,32 +137,37 @@ public class StoryListItem extends BaseStoryListItem {
         void error();
     }
 
-    private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+    private void downloadFileAndSendToInterface(final String url, final RunnableCallback callback) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
-            public void onProgress(long loadedSize, long totalSize) {
-
-            }
-
-            @Override
-            public void onSuccess(File file) {
-                final String path = file.getAbsolutePath();
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                Downloader.downloadFileBackground(url, false, service.getFastCache(), new FileLoadProgressCallback() {
                     @Override
-                    public void run() {
-                        if (getListItem != null) {
-                            callback.run(path);
-                        }
+                    public void onProgress(long loadedSize, long totalSize) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(File file) {
+                        final String path = file.getAbsolutePath();
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (getListItem != null) {
+                                    callback.run(path);
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
                     }
                 });
             }
-
-            @Override
-            public void onError(String error) {
-
-            }
         });
+
     }
 
     public Integer backgroundColor;
@@ -270,13 +276,14 @@ public class StoryListItem extends BaseStoryListItem {
                             manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
-        if (InAppStoryService.isNull()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         if (videoUrl != null) {
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
                     ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
+                            service.getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);
@@ -294,7 +301,7 @@ public class StoryListItem extends BaseStoryListItem {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
                     ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
+                            service.getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);

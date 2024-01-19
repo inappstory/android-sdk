@@ -3,7 +3,10 @@ package com.inappstory.sdk.stories.managers;
 import android.os.Handler;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -158,21 +161,23 @@ public class TimerManager {
     }
 
     public void pauseTimer() {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
-        Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
-        Story story = InAppStoryService.getInstance().getDownloadManager()
-                .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
-        if (story != null) {
-            StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
-                    pageManager != null ? pageManager.getFeedId() : null);
-        }
-        // pauseLocalTimer();
-        startPauseTime = System.currentTimeMillis();
-        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        OldStatisticManager.getInstance().sendStatistic();
-        OldStatisticManager.getInstance().eventCount++;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                Story.StoryType type = (pageManager != null) ? pageManager.getStoryType() : Story.StoryType.COMMON;
+                Story story = service.getDownloadManager()
+                        .getStoryById(service.getCurrentId(), type);
+                if (story != null) {
+                    StatisticManager.getInstance().addFakeEvents(story.id, story.lastIndex, story.getSlidesCount(),
+                            pageManager != null ? pageManager.getFeedId() : null);
+                }
+                // pauseLocalTimer();
+                startPauseTime = System.currentTimeMillis();
+                OldStatisticManager.getInstance().closeStatisticEvent(null, true);
+                OldStatisticManager.getInstance().sendStatistic();
+                OldStatisticManager.getInstance().eventCount++;
+            }
+        });
     }
 
 }

@@ -62,12 +62,13 @@ public class ProfilingManager {
     }
 
     public String addTask(String name) {
-        if (InAppStoryService.isNull()) return "";
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = Session.getInstance().id;
         task.isAllowToForceSend = isAllowToSend();
-        task.userId = InAppStoryService.getInstance().getUserId();
+        task.userId = service.getUserId();
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
@@ -124,7 +125,9 @@ public class ProfilingManager {
     LoopedExecutor loopedExecutor = new LoopedExecutor(100, 100);
 
     public void init() {
-        context = InAppStoryManager.getInstance().getContext();
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) return;
+        context = manager.getContext();
         loopedExecutor.init(queueTasksRunnable);
     }
 
