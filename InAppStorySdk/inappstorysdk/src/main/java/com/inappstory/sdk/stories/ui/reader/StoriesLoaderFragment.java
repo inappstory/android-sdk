@@ -73,7 +73,7 @@ public class StoriesLoaderFragment extends Fragment {
             StoryTimelineManager timelineManager = timeline.getTimelineManager();
             timelineManager.setSlidesCount(story.getSlidesCount());
             List<Integer> durations = new ArrayList<>();
-            for (int i= 0; i < story.getSlidesCount(); i++) {
+            for (int i = 0; i < story.getSlidesCount(); i++) {
                 durations.add(0);
             }
             timelineManager.setDurations(durations, true);
@@ -89,11 +89,15 @@ public class StoriesLoaderFragment extends Fragment {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
                 int topOffset = 0;
+                Point maxSize = Sizes.getScreenSize(getContext());
                 if (readerContainer != null) {
-                    screenSize = new Point(readerContainer.width(), readerContainer.height());
+                    screenSize = new Point(
+                            Math.min(readerContainer.width(), maxSize.x),
+                            Math.min(readerContainer.height(), maxSize.y)
+                    );
                     topOffset = readerContainer.top;
                 } else {
-                    screenSize = Sizes.getScreenSize(getContext());
+                    screenSize = maxSize;
                 }
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
