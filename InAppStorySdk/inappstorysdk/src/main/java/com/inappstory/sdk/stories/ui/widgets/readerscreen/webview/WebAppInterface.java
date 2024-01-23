@@ -77,6 +77,13 @@ public class WebAppInterface {
         logMethod(gameFile);
     }
 
+
+
+    @JavascriptInterface
+    public void vibrate(int[] vibratePattern) {
+        manager.vibrate(vibratePattern);
+    }
+
     @JavascriptInterface
     public void openGame(String gameInstanceId) {
         manager.openGameReaderFromGameCenter(gameInstanceId);

@@ -125,7 +125,6 @@ public class WebPageConverter {
                 }
             }
         }
-        Log.e("WebData", innerWebData);
         return innerWebData;
     }
 

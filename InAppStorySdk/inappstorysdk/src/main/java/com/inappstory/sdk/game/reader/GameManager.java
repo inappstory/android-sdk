@@ -110,6 +110,15 @@ public class GameManager {
             tapOnLink(urlObject.url, host.getContext());
     }
 
+    void vibrate(int[] vibratePattern) {
+        if (host != null && host.getContext() != null) {
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) {
+                inAppStoryManager.getVibrateUtils().vibrate(host.getContext(), vibratePattern);
+            }
+        }
+    }
+
     void storySetData(String data, boolean sendToServer) {
         if (InAppStoryService.isNull()) return;
         if (dataModel == null) return;

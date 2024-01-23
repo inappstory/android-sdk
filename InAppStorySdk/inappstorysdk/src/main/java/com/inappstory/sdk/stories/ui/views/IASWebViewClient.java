@@ -52,7 +52,6 @@ public class IASWebViewClient extends WebViewClient {
         return file;
     }
     protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
-        Log.e("Game_File", url);
         File file = getFileByUrl(url);
         WebResourceResponse response = null;
         if (file != null && file.exists()) {
@@ -64,7 +63,6 @@ public class IASWebViewClient extends WebViewClient {
                     mimeType = "application/octet-stream";
                 }
 
-                Log.e("Game_File", url + " " + mimeType + " " + file.getAbsolutePath());
                 response = new WebResourceResponse(mimeType, "BINARY",
                         new FileInputStream(file));
                 Map<String, String> currentHeaders = response.getResponseHeaders();

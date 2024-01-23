@@ -13,6 +13,7 @@ import static com.inappstory.sdk.AppearanceManager.TOP_START;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -39,13 +40,11 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderApp
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.buttonspanel.ButtonsPanel;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageFragment;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimeline;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.timeline.StoryTimelineManager;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -87,7 +86,15 @@ public class StoriesLoaderFragment extends Fragment {
         View blackTop = view.findViewById(R.id.ias_black_top);
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(getContext());
+                Point screenSize;
+                Rect readerContainer = getArguments().getParcelable("readerContainer");
+                int topOffset = 0;
+                if (readerContainer != null) {
+                    screenSize = new Point(readerContainer.width(), readerContainer.height());
+                    topOffset = readerContainer.top;
+                } else {
+                    screenSize = Sizes.getScreenSize(getContext());
+                }
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
                 float sn = 1.85f;
@@ -95,7 +102,7 @@ public class StoriesLoaderFragment extends Fragment {
                     lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
                     setCutout(view, lp.height);
                 } else {
-                    setCutout(view, 0);
+                    setCutout(view, topOffset);
                 }
                 blackBottom.setLayoutParams(lp);
                 blackTop.setLayoutParams(lp);
@@ -108,15 +115,12 @@ public class StoriesLoaderFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= 28) {
             if (getActivity() != null && getActivity().getWindow() != null &&
                     getActivity().getWindow().getDecorView().getRootWindowInsets() != null) {
-                Log.e("topOffsetHeight", StoriesLoaderFragment.this + " setOffsets");
-
                 DisplayCutout cutout = getActivity().getWindow().getDecorView().getRootWindowInsets().getDisplayCutout();
                 if (cutout != null) {
                     View view1 = view.findViewById(R.id.ias_timeline_container);
                     if (view1 != null) {
                         RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
                         lp1.topMargin += Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
-                        Log.e("topOffsetHeight", StoriesLoaderFragment.this + " " + lp1.topMargin + " ");
                         view1.setLayoutParams(lp1);
                     }
                 }

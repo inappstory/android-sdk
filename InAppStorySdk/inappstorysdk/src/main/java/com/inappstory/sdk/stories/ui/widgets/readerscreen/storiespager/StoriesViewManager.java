@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Vibrator;
 import android.view.View;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -48,6 +49,7 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -78,6 +80,15 @@ public class StoriesViewManager {
             storiesView.screenshotShare();
 
 
+    }
+
+    public void vibrate(int[] vibratePattern) {
+        if (context != null) {
+            InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+            if (inAppStoryManager != null) {
+                inAppStoryManager.getVibrateUtils().vibrate(context, vibratePattern);
+            }
+        }
     }
 
     void goodsWidgetComplete(String widgetId) {
@@ -465,6 +476,9 @@ public class StoriesViewManager {
     public void storyShowPrev() {
         pageManager.prevStory(ShowStory.ACTION_CUSTOM);
     }
+
+    Vibrator vibrator;
+
 
     public void openGameReaderFromGameCenter(String gameId) {
         InAppStoryService service = InAppStoryService.getInstance();

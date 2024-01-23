@@ -1,7 +1,9 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -33,16 +35,19 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
 
     ReaderManager manager;
     SourceType source = SourceType.SINGLE;
+    Rect readerContainer = null;
 
     public ReaderPagerAdapter(@NonNull FragmentManager fm,
                               SourceType source,
                               StoriesReaderAppearanceSettings appearanceSettings,
+                              Rect readerContainer,
                               List<Integer> ids,
                               ReaderManager manager) {
         super(fm);
         this.storiesIds.clear();
         this.source = source;
         this.storiesIds.addAll(ids);
+        this.readerContainer = readerContainer;
         this.appearanceSettings = appearanceSettings;
         this.manager = manager;
     }
@@ -80,6 +85,7 @@ public class ReaderPagerAdapter extends FragmentStatePagerAdapter {
         Bundle a = new Bundle();
         a.putInt("story_id", storiesIds.get(position));
         a.putSerializable("source", source);
+        a.putParcelable("readerContainer", readerContainer);
         a.putSerializable(StoriesReaderAppearanceSettings.SERIALIZABLE_KEY, appearanceSettings);
         frag.setArguments(a);
         frag.parentManager = manager;

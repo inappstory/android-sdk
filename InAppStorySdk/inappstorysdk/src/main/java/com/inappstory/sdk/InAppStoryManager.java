@@ -69,6 +69,7 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.StringsUtils;
 
 import java.lang.reflect.Type;
@@ -96,7 +97,11 @@ public class InAppStoryManager {
         return InAppStoryManager.getInstance().networkClient;
     }
 
-    public static boolean testGenerated = false;
+    IVibrateUtils vibrateUtils = new VibrateUtils();
+
+    public IVibrateUtils getVibrateUtils() {
+        return vibrateUtils;
+    }
 
     public static boolean isNull() {
         synchronized (lock) {

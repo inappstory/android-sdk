@@ -686,8 +686,6 @@ public class StoriesList extends RecyclerView {
                 new Runnable() {
                     @Override
                     public void run() {
-
-                        Log.e("onVisibleAreaUpdated", scrolledItems.entrySet().toString());
                         if (scrollCallback != null && !scrolledItems.isEmpty()) {
 
                             scrollCallback.onVisibleAreaUpdated(

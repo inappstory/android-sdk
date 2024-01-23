@@ -1,5 +1,6 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_END;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_LEFT;
 import static com.inappstory.sdk.AppearanceManager.BOTTOM_RIGHT;
@@ -16,6 +17,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.PaintDrawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -24,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.VibrationEffect;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
@@ -92,8 +95,6 @@ public class ReaderPageFragment extends Fragment {
 
 
     void bindViews(View view) {
-
-        Log.e("ReaderPageFragmentLP", this + " bindViews");
         close = view.findViewById(R.id.ias_close_button);
         refresh = view.findViewById(R.id.ias_refresh_button);
         blackBottom = view.findViewById(R.id.ias_black_bottom);
@@ -181,7 +182,6 @@ public class ReaderPageFragment extends Fragment {
         if (story != null) {
             outState.putInt("lastIndex", story.lastIndex);
         }
-        Log.e("SavedBundle", this + " " + outState);
         super.onSaveInstanceState(outState);
     }
 
@@ -199,7 +199,6 @@ public class ReaderPageFragment extends Fragment {
     Story story;
 
     void setViews(View view) {
-        Log.e("ReaderPageFragmentLP", storyId + " setViews");
         if (InAppStoryService.getInstance() == null) return;
 
         setOffsets(view);
@@ -209,7 +208,6 @@ public class ReaderPageFragment extends Fragment {
         if (story.disableClose)
             close.setVisibility(View.GONE);
         if (buttonsPanel != null) {
-            Log.e("ReaderPageFragmentLP", storyId + " buttonsPanel");
             buttonsPanel.setButtonsVisibility(
                     appearanceSettings,
                     story.hasLike(),
@@ -236,7 +234,15 @@ public class ReaderPageFragment extends Fragment {
     private void setOffsets(View view) {
         if (!Sizes.isTablet()) {
             if (blackBottom != null) {
-                Point screenSize = Sizes.getScreenSize(getContext());
+                Point screenSize;
+                Rect readerContainer = getArguments().getParcelable("readerContainer");
+                int topOffset = 0;
+                if (readerContainer != null) {
+                    screenSize = new Point(readerContainer.width(), readerContainer.height());
+                    topOffset = readerContainer.top;
+                } else {
+                    screenSize = Sizes.getScreenSize(getContext());
+                }
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) blackBottom.getLayoutParams();
                 float realProps = screenSize.y / ((float) screenSize.x);
                 float sn = 1.85f;
@@ -244,7 +250,7 @@ public class ReaderPageFragment extends Fragment {
                     lp.height = (int) (screenSize.y - screenSize.x * sn) / 2;
                     setCutout(view, lp.height);
                 } else {
-                    setCutout(view, 0);
+                    setCutout(view, topOffset);
                 }
                 blackBottom.setLayoutParams(lp);
                 blackTop.setLayoutParams(lp);
@@ -263,7 +269,6 @@ public class ReaderPageFragment extends Fragment {
                     if (view1 != null) {
                         RelativeLayout.LayoutParams lp1 = (RelativeLayout.LayoutParams) view1.getLayoutParams();
                         lp1.topMargin += Math.max(cutout.getSafeInsetTop() - minusOffset, 0);
-                        Log.e("topOffsetHeight", ReaderPageFragment.this + " " + lp1.topMargin + " ");
                         view1.setLayoutParams(lp1);
                     }
                 }
@@ -384,20 +389,18 @@ public class ReaderPageFragment extends Fragment {
         Context context = getContext();
 
         RelativeLayout res = new RelativeLayout(context);
-        res.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        res.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
 
         linearLayout = new LinearLayout(context);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        linearLayout.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
 
         if (!Sizes.isTablet() && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);
-
-        Log.e("ReaderPageFragmentLP", this + " createFragmentView");
         res.addView(linearLayout);
 
         return res;
@@ -422,23 +425,23 @@ public class ReaderPageFragment extends Fragment {
     private void setLinearContainer(Context context, LinearLayout linearLayout) {
         blackTop = new View(context);
         blackTop.setId(R.id.ias_black_top);
-        blackTop.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
+        blackTop.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, 1));
         blackTop.setBackgroundColor(Color.TRANSPARENT);
         blackBottom = new View(context);
         blackBottom.setId(R.id.ias_black_bottom);
-        blackBottom.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1));
+        blackBottom.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, 1));
         blackBottom.setBackgroundColor(Color.TRANSPARENT);
         RelativeLayout content = new RelativeLayout(context);
-        content.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        content.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT, 1));
         ViewGroup main;
-        RelativeLayout.LayoutParams contentLP = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams contentLP = new RelativeLayout.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT);
         contentLP.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         aboveButtonsPanel = new View(context);
         aboveButtonsPanel.setBackgroundColor(Color.BLACK);
         aboveButtonsPanel.setVisibility(View.GONE);
-        RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+        RelativeLayout.LayoutParams aboveLp = new RelativeLayout.LayoutParams(MATCH_PARENT,
                 Sizes.dpToPxExt(appearanceSettings.csReaderRadius(), context));
         aboveLp.addRule(RelativeLayout.ABOVE, R.id.ias_buttons_panel);
         aboveButtonsPanel.setLayoutParams(aboveLp);
@@ -450,8 +453,8 @@ public class ReaderPageFragment extends Fragment {
         main.setElevation(0);
 
         RelativeLayout cardContent = new RelativeLayout(context);
-        cardContent.setLayoutParams(new CardView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                CardView.LayoutParams.MATCH_PARENT));
+        cardContent.setLayoutParams(new CardView.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
         cardContent.addView(createReaderContainer(context));
         cardContent.addView(createTimelineContainer(context));
         main.addView(cardContent);
@@ -467,8 +470,8 @@ public class ReaderPageFragment extends Fragment {
     private RelativeLayout createReaderContainer(Context context) {
         RelativeLayout readerContainer = new RelativeLayout(context);
 
-        readerContainer.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT));
+        readerContainer.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
         readerContainer.setElevation(9);
 
         // readerContainer.addView(createProgressContainer(context));
@@ -485,8 +488,8 @@ public class ReaderPageFragment extends Fragment {
         loaderContainer.setAlpha(0.99f);
         loaderContainer.setLayoutParams(
                 new RelativeLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
+                        MATCH_PARENT,
+                        MATCH_PARENT
                 )
         );
         loaderContainer.setBackgroundColor(Color.BLACK);
@@ -501,8 +504,8 @@ public class ReaderPageFragment extends Fragment {
     private void createLoader() {
         Context context = getContext();
         loader = new RelativeLayout(context);
-        loader.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        loader.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
         loader.setElevation(8);
         ((ViewGroup) loader).addView(AppearanceManager.getLoader(context));
     }
@@ -511,7 +514,7 @@ public class ReaderPageFragment extends Fragment {
     private View createWebViewContainer(Context context) {
         LinearLayout webViewContainer = new LinearLayout(context);
         RelativeLayout.LayoutParams webViewContainerParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT
+                MATCH_PARENT, MATCH_PARENT
         );
         webViewContainer.setElevation(4);
         webViewContainer.setOrientation(LinearLayout.VERTICAL);
@@ -519,7 +522,7 @@ public class ReaderPageFragment extends Fragment {
         storiesView = new SimpleStoriesWebView(context);
         ((SimpleStoriesWebView) storiesView).setId(R.id.ias_stories_view);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                MATCH_PARENT, MATCH_PARENT);
         ((SimpleStoriesWebView) storiesView).setLayoutParams(lp);
         webViewContainer.addView(((SimpleStoriesWebView) storiesView));
         return webViewContainer;
@@ -534,7 +537,7 @@ public class ReaderPageFragment extends Fragment {
     private void createButtonsPanel(Context context) {
         buttonsPanel = new ButtonsPanel(context, getArguments().getInt("story_id"));
         RelativeLayout.LayoutParams buttonsPanelParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT, Sizes.dpToPxExt(60, context)
+                MATCH_PARENT, Sizes.dpToPxExt(60, context)
         );
         buttonsPanelParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
         buttonsPanel.setVisibility(View.GONE);
@@ -548,8 +551,8 @@ public class ReaderPageFragment extends Fragment {
     private void addGradient(Context context, RelativeLayout relativeLayout) {
         View gradientView = new View(context);
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT
+                MATCH_PARENT,
+                MATCH_PARENT
         );
         gradientView.setElevation(8);
         gradientView.setOutlineProvider(null);
@@ -605,7 +608,7 @@ public class ReaderPageFragment extends Fragment {
 
     private RelativeLayout createTimelineContainer(Context context) {
         RelativeLayout timelineContainer = new RelativeLayout(context);
-        RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+        RelativeLayout.LayoutParams tclp = new RelativeLayout.LayoutParams(MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         int offset = Sizes.dpToPxExt(Math.max(0, appearanceSettings.csReaderRadius() - 16), getContext()) / 2;
         tclp.setMargins(offset, offset, offset, 0);
@@ -615,7 +618,7 @@ public class ReaderPageFragment extends Fragment {
         timelineContainer.setElevation(20);
         timeline = new StoryTimeline(context);
         timeline.setId(R.id.ias_timeline);
-        timeline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+        timeline.setLayoutParams(new RelativeLayout.LayoutParams(MATCH_PARENT,
                 Sizes.dpToPxExt(3, getContext())));
 
         close = new AppCompatImageView(context);

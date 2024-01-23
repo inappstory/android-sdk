@@ -84,7 +84,6 @@ public class Downloader {
             DownloadInterruption interruption,
             String hash
     ) throws Exception {
-        Log.e("downloadUrl", url);
         String requestId = UUID.randomUUID().toString();
         ApiLogRequest requestLog = new ApiLogRequest();
         ApiLogResponse responseLog = new ApiLogResponse();
@@ -157,7 +156,6 @@ public class Downloader {
             File img,
             FileLoadProgressCallback callback
     ) throws Exception {
-        Log.e("downloadUrl", url);
         long offset = 0;
         if (cache.hasKey(key)) {
             DownloadFileState fileState = cache.get(key);
@@ -177,7 +175,6 @@ public class Downloader {
             img = cache.getFileFromKey(key);
         }
 
-        Log.e("Game_File", "download " + key + " " + url);
         DownloadFileState downloadFileState = downloadFile(
                 url,
                 img,

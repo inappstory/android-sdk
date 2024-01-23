@@ -275,7 +275,6 @@ public class TimelineProgressBar extends View {
                         long curTime = System.currentTimeMillis();
                         float val = 1f - ((dur -
                                 (curTime - startTime)) / (1f * totalDuration));
-                        Log.e("newTimelineResume", val + " " + (dur - (curTime - startTime)) + " " + totalDuration);
                         if (isActive) {
                             setCurrentProgress(Math.min(Math.max(0f, val), 1f));
                             if (curTime - startTime <= dur && !isPaused()) {

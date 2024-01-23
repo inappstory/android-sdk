@@ -1,7 +1,10 @@
 package com.inappstory.sdk.stories.ui.reader;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -340,11 +343,11 @@ public class StoriesContentFragment extends Fragment
         FrameLayout resView = new FrameLayout(context);
         storiesViewPager = new ReaderPager(context);
         storiesViewPager.setHost(this);
-        storiesViewPager.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        storiesViewPager.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
         invMask = new View(context);
-        invMask.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+        invMask.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT,
+                MATCH_PARENT));
         invMask.setVisibility(View.GONE);
         storiesViewPager.setId(R.id.ias_stories_pager);
         invMask.setId(R.id.ias_inv_mask);
@@ -390,7 +393,10 @@ public class StoriesContentFragment extends Fragment
                         getChildFragmentManager(),
                         source,
                         getAppearanceSettings(),
-                        currentIds, readerManager);
+                        ((Rect)getArguments().getParcelable("readerContainer")),
+                        currentIds,
+                        readerManager
+                );
         storiesViewPager.setAdapter(outerViewPagerAdapter);
         storiesViewPager.addOnPageChangeListener(this);
         if (ind > 0) {

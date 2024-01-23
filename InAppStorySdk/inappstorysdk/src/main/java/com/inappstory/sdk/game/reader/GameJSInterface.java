@@ -37,6 +37,11 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
+    public void vibrate(int[] vibratePattern) {
+        manager.vibrate(vibratePattern);
+    }
+
+    @JavascriptInterface
     public void gameInstanceSetLocalData(String gameInstanceId, String data, boolean sendToServer) {
         manager.gameInstanceSetData(gameInstanceId, data, sendToServer);
     }

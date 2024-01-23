@@ -176,7 +176,6 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
 
             @Override
             public void onGlobalLayout() {
-                Log.e("keyboardSize", "onGlobalLayout");
                 keyboardHandler.removeCallbacks(checkRunnable);
                 keyboardHandler.postDelayed(checkRunnable, 500);
             }

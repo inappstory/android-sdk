@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -110,7 +111,6 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        Log.e("SavedBundle", this + " " + outState);
         super.onSaveInstanceState(outState);
     }
 
@@ -192,10 +192,13 @@ public abstract class StoriesMainFragment extends Fragment implements
         }
     }
 
-    private void createStoriesFragment(Bundle savedInstanceState) {
+    private void createStoriesFragment(Bundle savedInstanceState, Rect readerContainer) {
         if (savedInstanceState == null) {
             StoriesContentFragment storiesContentFragment = new StoriesContentFragment();
-            storiesContentFragment.setArguments(getArguments());
+            Bundle args = new Bundle();
+            args.putAll(getArguments());
+            args.putParcelable("readerContainer", readerContainer);
+            storiesContentFragment.setArguments(args);
             FragmentManager fragmentManager = getChildFragmentManager();
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .replace(R.id.stories_fragments_layout, storiesContentFragment, "STORIES_FRAGMENT");
@@ -233,7 +236,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         }
     }
 
-    public void startAnim(final Bundle savedInstanceState) {
+    public void startAnim(final Bundle savedInstanceState, final Rect readerContainer) {
         try {
             Activity activity = requireActivity();
             final Window window = activity.getWindow();
@@ -258,7 +261,7 @@ public abstract class StoriesMainFragment extends Fragment implements
                         public void onAnimationEnd() {
                             window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             isAnimation = false;
-                            createStoriesFragment(savedInstanceState);
+                            createStoriesFragment(savedInstanceState, readerContainer);
                         }
                     })
                     .start();
@@ -282,7 +285,6 @@ public abstract class StoriesMainFragment extends Fragment implements
             @Nullable Bundle savedInstanceState
     ) {
         Bundle arguments = requireArguments();
-        Log.e("StoriesMainFragment", "onCreateView " + this);
         appearanceSettings = (StoriesReaderAppearanceSettings) arguments.getSerializable(
                 StoriesReaderAppearanceSettings.SERIALIZABLE_KEY
         );
@@ -384,21 +386,34 @@ public abstract class StoriesMainFragment extends Fragment implements
                 outsideClick();
             }
         });
-        useContentFragment(new FragmentAction<StoriesContentFragment>() {
-            @Override
-            public void invoke(StoriesContentFragment fragment) {
-                createStoriesFragment(savedInstanceState);
-            }
+        final Context context = view.getContext();
 
+        draggableFrame.post(new Runnable() {
             @Override
-            public void error() {
-                setLoaderFragment(savedInstanceState);
-                try {
-                    startAnim(savedInstanceState);
-                } catch (Exception e) {
-                }
+            public void run() {
+                final Rect readerContainer = new Rect();
+                draggableFrame.getGlobalVisibleRect(readerContainer);
+                final int height = draggableFrame.getHeight();
+                final int width = draggableFrame.getWidth();
+
+                useContentFragment(new FragmentAction<StoriesContentFragment>() {
+                    @Override
+                    public void invoke(StoriesContentFragment fragment) {
+                        createStoriesFragment(savedInstanceState, readerContainer);
+                    }
+
+                    @Override
+                    public void error() {
+                        setLoaderFragment(savedInstanceState, readerContainer);
+                        try {
+                            startAnim(savedInstanceState, readerContainer);
+                        } catch (Exception e) {
+                        }
+                    }
+                });
             }
         });
+
     }
 
 
@@ -473,7 +488,6 @@ public abstract class StoriesMainFragment extends Fragment implements
             animateFirst = false;
             closeAnim();
         } else {
-            Log.e("StoriesMainFragment", "finishWithoutTransition " + this);
             requireActivity().getSupportFragmentManager().popBackStack();
         }
     }
@@ -506,7 +520,6 @@ public abstract class StoriesMainFragment extends Fragment implements
 
     @Override
     public void onDestroy() {
-        Log.e("StoriesMainFragment", "onDestroy " + this);
         super.onDestroy();
     }
 
@@ -516,7 +529,6 @@ public abstract class StoriesMainFragment extends Fragment implements
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(getActivity());
         }
-        Log.e("StoriesMainFragment", "onDestroyView " + this);
         super.onDestroyView();
     }
 
@@ -672,12 +684,15 @@ public abstract class StoriesMainFragment extends Fragment implements
     StoriesReaderLaunchData launchData;
 
 
-    private void setLoaderFragment(Bundle savedInstanceState) {
+    private void setLoaderFragment(Bundle savedInstanceState, Rect readerContainer) {
         if (savedInstanceState != null) return;
         try {
             FragmentManager fragmentManager = getChildFragmentManager();
             StoriesLoaderFragment storiesLoaderFragment = new StoriesLoaderFragment();
-            storiesLoaderFragment.setArguments(getArguments());
+            Bundle args = new Bundle();
+            args.putAll(getArguments());
+            args.putParcelable("readerContainer", readerContainer);
+            storiesLoaderFragment.setArguments(args);
             FragmentTransaction t = fragmentManager.beginTransaction()
                     .replace(R.id.stories_fragments_layout, storiesLoaderFragment, "STORIES_LOADER_FRAGMENT");
             t.addToBackStack("STORIES_LOADER_FRAGMENT");

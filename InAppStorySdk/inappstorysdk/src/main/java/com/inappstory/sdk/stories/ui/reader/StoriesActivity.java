@@ -118,7 +118,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     protected void onResume() {
         super.onResume();
         subscribeClicks();
-        Log.e("activityLifecycle", "onResume");
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null) {
             inAppStoryManager.getOpenStoriesReader().onHideStatusBar(this);
