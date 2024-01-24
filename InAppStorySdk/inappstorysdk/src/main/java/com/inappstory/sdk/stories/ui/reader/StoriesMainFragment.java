@@ -667,13 +667,15 @@ public abstract class StoriesMainFragment extends Fragment implements
     boolean closing = false;
 
     public boolean onBackPressed() {
-        Fragment fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_outer_top_container);
-        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
-            return true;
-        }
-        fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_dialog_container);
-        if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
-            return true;
+        if (isAdded()) {
+            Fragment fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_outer_top_container);
+            if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
+                return true;
+            }
+            fragmentById = getChildFragmentManager().findFragmentById(R.id.ias_dialog_container);
+            if (fragmentById instanceof IASBackPressHandler && ((IASBackPressHandler) fragmentById).onBackPressed()) {
+                return true;
+            }
         }
         closeStoryReader(-1);
         return true;

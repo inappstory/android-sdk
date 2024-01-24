@@ -197,7 +197,6 @@ public class ScreensManager {
     }
 
 
-
     public void openGameReader(final Context context,
                                final GameStoryData data,
                                final String gameId,
@@ -276,6 +275,9 @@ public class ScreensManager {
                 if (currentStoriesReaderScreen != null) {
                     currentStoriesReaderScreen.forceFinish();
                 }
+                InAppStoryService service = InAppStoryService.getInstance();
+                if (service != null)
+                    service.getDownloadManager().cleanTasks(false);
                 AppearanceManager manager = appearanceManager;
                 if (manager == null) manager = AppearanceManager.getCommonInstance();
                 if (manager == null) manager = new AppearanceManager();

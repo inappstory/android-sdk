@@ -213,6 +213,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         final long usedMemInMB = (runtime.totalMemory() - runtime.freeMemory()) / 1048576L;
         final long maxHeapSizeInMB = runtime.maxMemory() / 1048576L;
         final long availHeapSizeInMB = maxHeapSizeInMB - usedMemInMB;
+        currentPage = "";
         removeAllViews();
         clearHistory();
         clearCache(true);
