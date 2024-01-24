@@ -173,8 +173,8 @@ public class GameManager {
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().finishGame(
                     dataModel,
-                    gameCenterId,
-                    eventData
+                    eventData,
+                    gameCenterId
             );
         }
         if (options.openStory != null
@@ -207,8 +207,8 @@ public class GameManager {
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().finishGame(
                     dataModel,
-                    gameCenterId,
-                    eventData
+                    eventData,
+                    gameCenterId
             );
         }
         host.gameCompleted(gameState, link);
