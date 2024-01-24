@@ -56,10 +56,24 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
         logMethod("game_complete " + data);
     }
 
-    private void replaceHtml(String page) {
-        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
+    String currentPage = "";
 
+    public void reloadPage() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                loadCurrentPage(currentPage);
+            }
+        });
+    }
+
+    private void loadCurrentPage(String page) {
+        evaluateJavascript("(function(){show_slide(\"" + oldEscape(page) + "\");})()", null);
         logMethod("show_slide");
+    }
+
+    private void replaceHtml(String page) {
+        loadCurrentPage(page);
     }
 
     @Override
@@ -220,6 +234,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
     public void loadWebData(String outerLayout, String outerData) {
         final String data = outerData;
         final String lt = outerLayout;
+        currentPage = data;
         if (!notFirstLoading || data.isEmpty()) {
             notFirstLoading = true;
             new Handler(Looper.getMainLooper()).post(new Runnable() {

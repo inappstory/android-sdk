@@ -358,6 +358,13 @@ public class ReaderPageManager {
         }
     }
 
+    public void restartCurrentWithoutDuration() {
+        if (checkIfManagersIsNull()) return;
+        if (parentManager != null && parentManager.getCurrentStoryId() == storyId) {
+            restartSlide();
+        }
+    }
+
 
     public void resetCurrentDuration() {
         if (checkIfManagersIsNull()) return;

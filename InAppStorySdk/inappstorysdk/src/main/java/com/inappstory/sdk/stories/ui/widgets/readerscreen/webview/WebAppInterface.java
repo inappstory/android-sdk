@@ -51,6 +51,8 @@ public class WebAppInterface {
     public void storyShowSlide(int index) {
         if (manager.index != index) {
             manager.changeIndex(index);
+        } else {
+            manager.restartSlide();
         }
         logMethod("" + index);
     }

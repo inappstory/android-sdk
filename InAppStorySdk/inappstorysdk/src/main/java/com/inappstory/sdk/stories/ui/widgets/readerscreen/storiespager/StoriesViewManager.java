@@ -671,6 +671,11 @@ public class StoriesViewManager {
         storiesView.restartVideo();
     }
 
+    public void restartSlide() {
+        pageManager.restartCurrentWithoutDuration();
+        ((SimpleStoriesWebView) storiesView).reloadPage();
+    }
+
     public void playStory() {
         if (storyIsLoaded) {
             sendShowStoryEvents();
