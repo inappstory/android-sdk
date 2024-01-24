@@ -277,7 +277,7 @@ public class ScreensManager {
                 }
                 InAppStoryService service = InAppStoryService.getInstance();
                 if (service != null)
-                    service.getDownloadManager().cleanTasks(false);
+                    service.getDownloadManager().cleanStoriesScript();
                 AppearanceManager manager = appearanceManager;
                 if (manager == null) manager = AppearanceManager.getCommonInstance();
                 if (manager == null) manager = new AppearanceManager();

@@ -198,6 +198,18 @@ public class StoryDownloadManager {
         slidesDownloader.cleanTasks();
     }
 
+    public void cleanStoriesScript() {
+        List<Story> storyList = getStoriesListByType(Story.StoryType.COMMON);
+        List<Story> ugcStoryList = getStoriesListByType(Story.StoryType.UGC);
+        for (Story story: storyList) {
+            story.loadedScript = null;
+        }
+        for (Story story: ugcStoryList) {
+            story.loadedScript = null;
+        }
+    }
+
+
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();

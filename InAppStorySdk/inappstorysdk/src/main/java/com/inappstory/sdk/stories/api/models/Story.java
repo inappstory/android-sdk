@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
 import com.inappstory.sdk.stories.api.models.slidestructure.SlideStructure;
@@ -92,6 +93,8 @@ public class Story implements Parcelable {
         return layout;
     }
 
+    @Ignore
+    public String loadedScript = null;
 
     public String getTitleColor() {
         return titleColor;

@@ -205,8 +205,8 @@ public class GameManager {
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().finishGame(
                     dataModel,
-                    eventData,
-                    gameCenterId
+                    gameCenterId,
+                    eventData
             );
         }
         host.gameCompleted(gameState, link);
