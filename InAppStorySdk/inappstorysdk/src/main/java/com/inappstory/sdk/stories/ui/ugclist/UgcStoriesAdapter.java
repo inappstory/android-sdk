@@ -128,7 +128,6 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             holder.bind(story.id,
                     story.getTitle(),
                     story.getTitleColor() != null ? Color.parseColor(story.getTitleColor()) : null,
-                    story.getSource(),
                     imgUrl,
                     Color.parseColor(story.getBackgroundColor()),
                     story.isOpened,

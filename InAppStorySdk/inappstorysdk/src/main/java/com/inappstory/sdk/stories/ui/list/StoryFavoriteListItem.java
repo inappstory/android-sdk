@@ -112,7 +112,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
             Integer id,
             String titleText,
             Integer titleColor,
-            String sourceText,
             String imageUrl,
             Integer backgroundColor,
             boolean isOpened,

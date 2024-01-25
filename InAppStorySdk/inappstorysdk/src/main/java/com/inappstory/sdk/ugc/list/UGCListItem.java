@@ -72,7 +72,7 @@ public class UGCListItem extends BaseStoryListItem {
 
     @Override
     public void bind(Integer id, String titleText, Integer titleColor,
-                     String sourceText, String imageUrl,
+                     String imageUrl,
                      Integer backgroundColor, boolean isOpened, boolean hasAudio,
                      String videoUrl, StoryData storyData, ClickCallback callback) {
 

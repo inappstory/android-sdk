@@ -58,7 +58,6 @@ public abstract class BaseStoryListItem extends RecyclerView.ViewHolder {
     public abstract void bind(Integer id,
                               String titleText,
                               Integer titleColor,
-                              String sourceText,
                               String imageUrl,
                               Integer backgroundColor,
                               boolean isOpened,

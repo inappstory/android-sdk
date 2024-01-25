@@ -94,9 +94,6 @@ public class AppearanceManager {
         this.csListItemTitleSize = other.csListItemTitleSize;
         this.csListItemTitleColor = other.csListItemTitleColor;
         this.csListItemRadius = other.csListItemRadius;
-        this.csListItemSourceVisibility = other.csListItemSourceVisibility;
-        this.csListItemSourceSize = other.csListItemSourceSize;
-        this.csListItemSourceColor = other.csListItemSourceColor;
         this.csListItemWidth = other.csListItemWidth;
         this.csListItemHeight = other.csListItemHeight;
         this.csListItemBorderVisibility = other.csListItemBorderVisibility;
@@ -160,10 +157,6 @@ public class AppearanceManager {
 
 
     private int csListItemRadius = -1;
-
-    private boolean csListItemSourceVisibility = false;
-    private int csListItemSourceSize = -1;
-    private int csListItemSourceColor = Color.WHITE;
 
     private Integer csListItemWidth;
     private Integer csListItemHeight;
@@ -236,7 +229,6 @@ public class AppearanceManager {
 
     private boolean csCloseOnSwipe = true;
     private boolean csCloseOnOverscroll = true;
-
 
 
     private float getCurrentRatio(Context context) {
@@ -883,30 +875,6 @@ public class AppearanceManager {
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csListItemSourceVisibility(boolean csListItemSourceVisibility) {
-        this.csListItemSourceVisibility = csListItemSourceVisibility;
-        return AppearanceManager.this;
-    }
-
-    @Deprecated
-    public AppearanceManager csListItemSourceSize(int csListItemSourceSize) {
-        this.csListItemSourceSize = csListItemSourceSize;
-        return AppearanceManager.this;
-    }
-
-    @Deprecated
-    public AppearanceManager csListItemSourceColor(int csListItemSourceColor) {
-        this.csListItemSourceColor = csListItemSourceColor;
-        return AppearanceManager.this;
-    }
-
-    @Deprecated
-    public AppearanceManager csListItemBorderVisibility(boolean csListItemBorderVisibility) {
-        this.csListItemBorderVisibility = csListItemBorderVisibility;
-        return AppearanceManager.this;
-    }
-
    /* public AppearanceManager csListItemBorderSize(int csListItemBorderSize) {
         this.csListItemBorderSize = csListItemBorderSize;
         return AppearanceManager.this;
@@ -918,20 +886,23 @@ public class AppearanceManager {
      * @param csListItemBorderColor (csListItemBorderColor)
      * @return {@link AppearanceManager}
      */
-    public AppearanceManager csListItemBorderColor(int csListItemBorderColor) {
-        this.csListItemBorderColor = csListItemBorderColor;
+    public AppearanceManager csListItemBorderColor(Integer csListItemBorderColor) {
+        if (csListItemBorderColor == null) {
+            csListItemBorderVisibility = false;
+        } else {
+            csListItemBorderVisibility = true;
+            this.csListItemBorderColor = csListItemBorderColor;
+        }
         return AppearanceManager.this;
     }
 
-    @Deprecated
-    public AppearanceManager csListOpenedItemBorderVisibility(boolean csListOpenedItemBorderVisibility) {
-        this.csListOpenedItemBorderVisibility = csListOpenedItemBorderVisibility;
-        return AppearanceManager.this;
-    }
-
-
-    public AppearanceManager csListOpenedItemBorderColor(int csListOpenedItemBorderColor) {
-        this.csListOpenedItemBorderColor = csListOpenedItemBorderColor;
+    public AppearanceManager csListOpenedItemBorderColor(Integer csListOpenedItemBorderColor) {
+        if (csListOpenedItemBorderColor == null) {
+            csListOpenedItemBorderVisibility = false;
+        } else {
+            csListOpenedItemBorderVisibility = true;
+            this.csListOpenedItemBorderColor = csListOpenedItemBorderColor;
+        }
         return AppearanceManager.this;
     }
 
@@ -981,20 +952,6 @@ public class AppearanceManager {
 
     public Float csListItemRatio() {
         return csListItemRatio;
-    }
-
-
-    public boolean csListItemSourceVisibility() {
-        return csListItemSourceVisibility;
-    }
-
-    public int csListItemSourceSize() {
-        if (csListItemSourceSize == -1) return Sizes.dpToPxExt(14);
-        return csListItemSourceSize;
-    }
-
-    public int csListItemSourceColor() {
-        return csListItemSourceColor;
     }
 
     public boolean csListItemBorderVisibility() {
