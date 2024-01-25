@@ -331,16 +331,16 @@ class StoryDownloader {
 
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null|| networkClient == null) {
             generateCommonLoadListError(UGC_FEED);
             callback.onError("");
             return;
         }
-        if (InAppStoryService.isServiceConnected()) {
+        if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
-                    if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getUgcStories(
@@ -351,7 +351,7 @@ class StoryDownloader {
                             new NetworkCallback<List<Story>>() {
                                 @Override
                                 public void onSuccess(List<Story> response) {
-                                    if (InAppStoryService.isNull() || response == null) {
+                                    if (response == null) {
                                         generateCommonLoadListError(UGC_FEED);
                                         callback.onError("");
                                     } else {

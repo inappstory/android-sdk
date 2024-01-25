@@ -30,6 +30,7 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -38,6 +39,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -379,10 +381,11 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void closeStoryReader(int action) {
-        if (InAppStoryService.isNotNull()) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
 
-            InAppStoryService.getInstance().getListReaderConnector().closeReader();
-            Story story = InAppStoryService.getInstance().getDownloadManager()
+            service.getListReaderConnector().closeReader();
+            Story story = service.getDownloadManager()
                     .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
             if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                 CallbackManager.getInstance().getCloseStoryCallback().closeStory(
@@ -441,15 +444,18 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
         OldStatisticManager.getInstance().closeStatisticEvent();
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
-        if (InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex(type);
-        }
-        cleaned = true;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.setCurrentIndex(0);
+                service.setCurrentId(0);
+                service.getDownloadManager().cleanStoriesIndex(type);
+                cleaned = true;
+            }
+        });
+
     }
 
 

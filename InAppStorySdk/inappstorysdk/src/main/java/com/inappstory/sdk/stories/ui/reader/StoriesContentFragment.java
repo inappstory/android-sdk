@@ -471,7 +471,6 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public void onPageScrollStateChanged(int state) {
-        if (InAppStoryService.isNull()) return;
         if (state == ViewPager.SCROLL_STATE_DRAGGING)
             readerManager.latestShowStoryAction = ShowStory.ACTION_SWIPE;
         if (state == ViewPager.SCROLL_STATE_IDLE) {

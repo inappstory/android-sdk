@@ -6,12 +6,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseManagerInstanceCallback;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -185,38 +188,48 @@ public class ReaderManager {
     }
 
     public void showSingleStory(final int storyId, final int slideIndex) {
-        if (InAppStoryService.isNull()) return;
-        if (storyType == Story.StoryType.COMMON)
-            OldStatisticManager.getInstance().addLinkOpenStatistic();
-        if (storiesIds.contains(storyId)) {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    Story.StoryType type = Story.StoryType.COMMON;
-                    Story st = InAppStoryService.getInstance().getDownloadManager()
-                            .getStoryById(storyId, type);
-                    if (st != null) {
-                        if (st.getSlidesCount() <= slideIndex) {
-                            st.lastIndex = 0;
-                        } else {
-                            st.lastIndex = slideIndex;
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull final InAppStoryService service) throws Exception {
+                if (storyType == Story.StoryType.COMMON)
+                    OldStatisticManager.getInstance().addLinkOpenStatistic();
+                if (storiesIds.contains(storyId)) {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Story.StoryType type = Story.StoryType.COMMON;
+                            Story st = service.getDownloadManager()
+                                    .getStoryById(storyId, type);
+                            if (st != null) {
+                                if (st.getSlidesCount() <= slideIndex) {
+                                    st.lastIndex = 0;
+                                } else {
+                                    st.lastIndex = slideIndex;
+                                }
+                            }
+                            latestShowStoryAction = ShowStory.ACTION_CUSTOM;
+                            parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
                         }
-                    }
-                    latestShowStoryAction = ShowStory.ACTION_CUSTOM;
-                    parentFragment.setCurrentItem(storiesIds.indexOf(storyId));
+                    });
+                } else {
+                    InAppStoryManager.useInstance(new UseManagerInstanceCallback() {
+                        @Override
+                        public void use(@NonNull InAppStoryManager manager) throws Exception {
+                            manager.showStoryWithSlide(
+                                    storyId + "",
+                                    parentFragment.getContext(),
+                                    slideIndex,
+                                    parentFragment.getAppearanceSettings(),
+                                    storyType,
+                                    SourceType.SINGLE,
+                                    ShowStory.ACTION_CUSTOM
+                            );
+                        }
+                    });
                 }
-            });
-        } else {
-            InAppStoryManager.getInstance().showStoryWithSlide(
-                    storyId + "",
-                    parentFragment.getContext(),
-                    slideIndex,
-                    parentFragment.getAppearanceSettings(),
-                    storyType,
-                    SourceType.SINGLE,
-                    ShowStory.ACTION_CUSTOM
-            );
-        }
+            }
+        });
+
     }
 
     void sendStat(int position, SourceType source) {
@@ -255,8 +268,9 @@ public class ReaderManager {
                 adds.add(storiesIds.get(pos - 1));
             }
         }
-        if (InAppStoryService.isNull()) return;
-        if (!InAppStoryService.getInstance().getDownloadManager().changePriority(
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        if (!service.getDownloadManager().changePriority(
                 storiesIds.get(pos),
                 adds,
                 storyType
@@ -264,7 +278,7 @@ public class ReaderManager {
             host.forceFinish();
             return;
         }
-        InAppStoryService.getInstance().getDownloadManager().addStoryTask(
+        service.getDownloadManager().addStoryTask(
                 storiesIds.get(pos),
                 adds,
                 storyType);
@@ -286,13 +300,14 @@ public class ReaderManager {
     }
 
     void onPageSelected(SourceType source, int position) {
-        if (InAppStoryService.isNull()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         sendStat(position, source);
 
         lastPos = position;
         lastSentId = 0;
         currentStoryId = storiesIds.get(position);
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(currentStoryId, storyType);
+        Story story = service.getDownloadManager().getStoryById(currentStoryId, storyType);
         if (story != null) {
             if (firstStoryId > 0 && startedSlideInd > 0) {
                 if (story.getSlidesCount() > startedSlideInd)
@@ -306,8 +321,8 @@ public class ReaderManager {
         }
         final int pos = position;
 
-        InAppStoryService.getInstance().getListReaderConnector().changeStory(currentStoryId, listID);
-        InAppStoryService.getInstance().setCurrentId(currentStoryId);
+        service.getListReaderConnector().changeStory(currentStoryId, listID);
+        service.setCurrentId(currentStoryId);
         if (story != null) {
             currentSlideIndex = story.lastIndex;
         }
@@ -378,14 +393,14 @@ public class ReaderManager {
     private String feedSlug;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
-        if (InAppStoryService.isNull()) return;
-        Story story2 = InAppStoryService.getInstance()
-                .getDownloadManager().getStoryById(id, storyType);
+
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Story story2 = service.getDownloadManager().getStoryById(id, storyType);
         if (story2 == null) return;
         StatisticManager.getInstance().sendCurrentState();
         if (hasCloseEvent) {
-            Story story = InAppStoryService.getInstance()
-                    .getDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
+            Story story = service.getDownloadManager().getStoryById(storiesIds.get(lastPos), storyType);
             StatisticManager.getInstance().sendCloseStory(story.id, whence, story.lastIndex, story.getSlidesCount(), feedId);
         }
         StatisticManager.getInstance().sendViewStory(id, whence, feedId);

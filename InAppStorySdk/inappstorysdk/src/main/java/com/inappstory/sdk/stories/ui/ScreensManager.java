@@ -206,9 +206,6 @@ public class ScreensManager {
                                final List<WebResource> gameResources,
                                final GameScreenOptions options,
                                final String observableId) {
-        if (InAppStoryService.isNull()) {
-            return;
-        }
         if (currentGameScreen != null) {
             closeGameReader();
             new Handler().postDelayed(new Runnable() {

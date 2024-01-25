@@ -86,7 +86,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
 
             @Override
             public void error() {
-                if (InAppStoryService.isNull()) return;
                 downloadImages.add(null);
                 i[0]++;
                 if (i[0] >= count)
@@ -126,14 +125,14 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     public void bindFavorite() {
-
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         if (getFavoriteListItem != null
-                && InAppStoryService.isNotNull()
                 && getFavoriteListItem.getFavoriteItem() != null) {
-            int count = InAppStoryService.getInstance().getFavoriteImages().size();
+            int count = service.getFavoriteImages().size();
             final List<Integer> backgroundColors = new ArrayList<>();
             for (int j = 0; j < count; j++) {
-                backgroundColors.add(InAppStoryService.getInstance().getFavoriteImages().get(j).getBackgroundColor());
+                backgroundColors.add(service.getFavoriteImages().get(j).getBackgroundColor());
             }
             getFavoriteListItem.bindFavoriteItem(itemView, backgroundColors, count);
             loadFavoriteImages(new LoadFavoriteImagesCallback() {
@@ -168,7 +167,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
         container3.setRadius(manager.csListItemRadius(context) / 2);
         container4.setRadius(manager.csListItemRadius(context) / 2);
         if (lpC) itemView.findViewById(R.id.outerLayout).requestLayout();
-        List<FavoriteImage> favImages = InAppStoryService.getInstance().getFavoriteImages();
+        List<FavoriteImage> favImages = service.getFavoriteImages();
 
         if (favImages.size() > 0) {
             AppCompatImageView image1 = itemView.findViewById(R.id.image1);
@@ -215,8 +214,9 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Downloader.downloadFileBackground(url, false, service.getFastCache(), new FileLoadProgressCallback() {
             @Override
             public void onProgress(long loadedSize, long totalSize) {
 

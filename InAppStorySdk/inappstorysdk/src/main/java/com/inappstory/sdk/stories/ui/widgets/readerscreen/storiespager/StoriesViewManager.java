@@ -255,8 +255,8 @@ public class StoriesViewManager {
     }
 
     public void loadStory(Story story, int index) {
-        if (InAppStoryService.isNull())
-            return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         synchronized (this) {
             if (story == null || story.checkIfEmpty()) {
                 return;
@@ -269,7 +269,7 @@ public class StoriesViewManager {
             loadedIndex = index;
             loadedId = storyId;
         }
-        slideInCache = InAppStoryService.getInstance().getDownloadManager().checkIfPageLoaded(
+        slideInCache = service.getDownloadManager().checkIfPageLoaded(
                 storyId,
                 index,
                 pageManager.getStoryType());
@@ -281,7 +281,7 @@ public class StoriesViewManager {
             if (slideInCache == -1) {
                 pageManager.slideLoadError(index);
             } else {
-                if (!InAppStoryService.isServiceConnected()) {
+                if (!service.isConnected()) {
                     if (CallbackManager.getInstance().getErrorCallback() != null) {
                         CallbackManager.getInstance().getErrorCallback().noConnection();
                     }
@@ -445,8 +445,7 @@ public class StoriesViewManager {
     }
 
     public void storyStartedEvent() {
-        if (InAppStoryService.isNotNull())
-            pageManager.startStoryTimers();
+        pageManager.startStoryTimers();
 
         final StoriesContentFragment storiesContentFragment =
                 (StoriesContentFragment) pageManager.host.getParentFragment();
@@ -544,14 +543,16 @@ public class StoriesViewManager {
     private boolean storyIsLoaded = false;
 
     public void storyLoaded(int slideIndex) {
-        if (InAppStoryService.isNull()) return;
+
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         clearShowLoader();
         clearShowRefresh();
         storyIsLoaded = true;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+        Story story = service.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
         if ((slideIndex >= 0 && story.lastIndex != slideIndex)) {
             stopStory();
-        } else if (InAppStoryService.getInstance().getCurrentId() != storyId) {
+        } else if (service.getCurrentId() != storyId) {
             stopStory();
             setLatestVisibleIndex(slideIndex);
         } else {

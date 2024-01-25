@@ -421,9 +421,9 @@ public class ReaderPageManager {
 
     public void nextSlide(int action) {
         if (checkIfManagersIsNull()) return;
-        if (InAppStoryService.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
-
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Story story = service.getDownloadManager().getStoryById(storyId, getStoryType());
         if (story == null) return;
         timerManager.setTimerDuration(0);
         int lastIndex = slideIndex;
@@ -494,8 +494,10 @@ public class ReaderPageManager {
 
     public void prevSlide(int action) {
         if (checkIfManagersIsNull()) return;
-        if (InAppStoryService.isNull()) return;
-        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, getStoryType());
+
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Story story = service.getDownloadManager().getStoryById(storyId, getStoryType());
 
         if (story == null) return;
         timerManager.setTimerDuration(0);
@@ -517,8 +519,9 @@ public class ReaderPageManager {
     }
 
     public void changeSoundStatus() {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().changeSoundStatus();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        service.changeSoundStatus();
         if (parentManager != null) {
             parentManager.updateSoundStatus();
         }
@@ -592,7 +595,6 @@ public class ReaderPageManager {
 
     public void storyLoadedInCache(Story story) {
         if (checkIfManagersIsNull()) return;
-        if (InAppStoryService.isNull()) return;
         host.story = story;
         if (story.durations != null && !story.durations.isEmpty()) {
             if (this.durations == null)
@@ -603,14 +605,10 @@ public class ReaderPageManager {
             if (slideIndex < story.durations.size()) {
                 timerManager.setCurrentDuration(story.durations.get(slideIndex));
             }
-            //timelineManager.setStoryDurations(story.durations);
         }
 
 
         setStoryInfo(story);
-        /*if (story.durations != null && !story.durations.isEmpty()) {
-            timelineManager.createFirstAnimation();
-        }*/
     }
 
 }

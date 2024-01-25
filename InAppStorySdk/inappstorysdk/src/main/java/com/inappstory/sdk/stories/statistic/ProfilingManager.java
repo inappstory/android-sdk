@@ -41,7 +41,6 @@ public class ProfilingManager {
     private final Object tasksLock = new Object();
 
     public String addTask(String name, String hash) {
-        if (InAppStoryService.isNull()) return "";
         ProfilingTask task = new ProfilingTask();
         task.uniqueHash = hash;
         task.name = name;

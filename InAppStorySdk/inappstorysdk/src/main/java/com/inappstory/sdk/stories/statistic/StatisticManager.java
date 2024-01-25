@@ -40,7 +40,7 @@ public class StatisticManager {
     public static final String SWIPE = "swipe-close";
     public static final String CUSTOM = "custom-close";
 
-    private Object statisticTasksLock = new Object();
+    private final Object statisticTasksLock = new Object();
 
     public ArrayList<StatisticTask> getTasks() {
         return tasks;
@@ -184,15 +184,16 @@ public class StatisticManager {
     private Runnable queueTasksRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.isNull()
-                    || !InAppStoryService.isServiceConnected()) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (tasks == null || tasks.size() == 0 || service == null
+                    || !service.isConnected()) {
                 loopedExecutor.freeExecutor();
                 return;
             }
             StatisticTask task;
-            synchronized (getInstance().statisticTasksLock) {
-                task = getInstance().tasks.get(0);
-                getInstance().tasks.remove(0);
+            synchronized (statisticTasksLock) {
+                task = tasks.get(0);
+                tasks.remove(0);
                 saveTasksSP();
             }
             if (task != null) {

@@ -86,17 +86,14 @@ public class StoryDownloadManager {
             final SourceType readerSource
     ) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (networkClient == null || InAppStoryService.isNull()) {
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (networkClient == null || service == null) {
             storyByIdCallback.loadError(-1);
             return;
         }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
-                if (InAppStoryService.isNull()) {
-                    storyByIdCallback.loadError(-1);
-                    return;
-                }
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
                 networkClient.enqueue(
                         networkClient.getApi().getStoryById(
@@ -107,10 +104,6 @@ public class StoryDownloadManager {
                         new NetworkCallback<Story>() {
                             @Override
                             public void onSuccess(final Story response) {
-                                if (InAppStoryService.isNull()) {
-                                    storyByIdCallback.loadError(-1);
-                                    return;
-                                }
                                 ProfilingManager.getInstance().setReady(storyUID);
                                 if (CallbackManager.getInstance().getSingleLoadCallback() != null) {
                                     CallbackManager.getInstance().getSingleLoadCallback().singleLoad(

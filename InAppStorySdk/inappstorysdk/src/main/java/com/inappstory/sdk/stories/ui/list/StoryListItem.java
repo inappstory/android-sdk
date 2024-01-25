@@ -141,8 +141,9 @@ public class StoryListItem extends BaseStoryListItem {
     }
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(), new FileLoadProgressCallback() {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Downloader.downloadFileBackground(url, false, service.getFastCache(), new FileLoadProgressCallback() {
             @Override
             public void onProgress(long loadedSize, long totalSize) {
 
@@ -282,7 +283,8 @@ public class StoryListItem extends BaseStoryListItem {
                             manager.csListItemBorderColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
-        if (InAppStoryService.isNull()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
 
         AppCompatImageView image = itemView.findViewById(R.id.image);
         VideoPlayer video = itemView.findViewById(R.id.video);
@@ -290,8 +292,11 @@ public class StoryListItem extends BaseStoryListItem {
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
+                    ImageLoader.getInstance().displayImage(
+                            imageUrl,
+                            0,
+                            image,
+                            service.getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);
@@ -308,8 +313,11 @@ public class StoryListItem extends BaseStoryListItem {
             if (image != null) {
                 if (imageUrl != null) {
                     //  image.setImageResource(0);
-                    ImageLoader.getInstance().displayImage(imageUrl, 0, image,
-                            InAppStoryService.getInstance().getFastCache());
+                    ImageLoader.getInstance().displayImage(
+                            imageUrl,
+                            0,
+                            image,
+                            service.getFastCache());
                 } else if (backgroundColor != null) {
                     image.setImageResource(0);
                     image.setBackgroundColor(backgroundColor);

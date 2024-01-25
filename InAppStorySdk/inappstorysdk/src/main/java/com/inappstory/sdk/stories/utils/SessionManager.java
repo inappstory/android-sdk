@@ -12,8 +12,11 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
@@ -85,7 +88,7 @@ public class SessionManager {
     public ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
     public ArrayList<IOpenSessionCallback> staticCallbacks = new ArrayList<>();
 
-    private void saveSession(SessionResponse response) {
+    private void saveSession(final SessionResponse response) {
         if (response == null || response.session == null) return;
         response.session.statisticPermissions = new StatisticPermissions(
                 response.isAllowProfiling,
@@ -95,9 +98,14 @@ public class SessionManager {
         );
         response.session.isAllowUgc = response.isAllowUgc;
         response.session.save();
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().saveSessionPlaceholders(response.placeholders);
-        InAppStoryService.getInstance().saveSessionImagePlaceholders(response.imagePlaceholders);
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.saveSessionPlaceholders(response.placeholders);
+                service.saveSessionImagePlaceholders(response.imagePlaceholders);
+            }
+        });
+
     }
 
     private void sessionIsSaved(final SessionResponse response) {
@@ -214,16 +222,18 @@ public class SessionManager {
                 new NetworkCallback<SessionResponse>() {
                     @Override
                     public void onSuccess(SessionResponse response) {
-                        if (InAppStoryService.isNull()) return;
+                        InAppStoryService service = InAppStoryService.getInstance();
+                        if (service == null) return;
+                        String serviceUserId = service.getUserId();
                         saveSession(response);
                         if (initialUserId == null) {
-                            if (InAppStoryService.getInstance().getUserId() != null) {
+                            if (serviceUserId != null) {
                                 closeSession(false, true, null);
                                 openSessionInner();
                                 return;
                             }
                         } else {
-                            if (!initialUserId.equals(InAppStoryService.getInstance().getUserId())) {
+                            if (!initialUserId.equals(serviceUserId)) {
                                 closeSession(false, true, initialUserId);
                                 openSessionInner();
                                 return;
@@ -233,13 +243,13 @@ public class SessionManager {
                         ProfilingManager.getInstance().setReady(sessionOpenUID);
                         openStatisticSuccess(response);
                         CachedSessionData cachedSessionData = new CachedSessionData();
-                        cachedSessionData.userId = InAppStoryService.getInstance().getUserId();
+                        cachedSessionData.userId = serviceUserId;
                         cachedSessionData.placeholders = response.placeholders;
                         cachedSessionData.previewAspectRatio = response.getPreviewAspectRatio();
                         cachedSessionData.sessionId = response.session.id;
                         cachedSessionData.testKey = ApiSettings.getInstance().getTestKey();
                         cachedSessionData.token = ApiSettings.getInstance().getApiKey();
-                        cachedSessionData.tags = InAppStoryService.getInstance().getTagsString();
+                        cachedSessionData.tags = service.getTagsString();
                         CachedSessionData.setInstance(cachedSessionData);
                     }
 

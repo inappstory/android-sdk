@@ -104,7 +104,8 @@ public class ZipLoader {
                                       final long curSize) {
         if (resources == null) return true;
         if (terminate) return false;
-        if (InAppStoryService.isNull()) return false;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return false;
         FileChecker fileChecker = new FileChecker();
         String pathName = file.getAbsolutePath();
         final File filePath = new File(
@@ -134,7 +135,7 @@ public class ZipLoader {
                         callback.onProgress(cnt, totalSize);
                     continue;
                 }
-                downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, InAppStoryService.getInstance().getInfiniteCache(),
+                downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, service.getInfiniteCache(),
                         resourceFile,
                         null);
                 fileChecker.checkWithShaAndSize(

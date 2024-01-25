@@ -149,7 +149,7 @@ public class ButtonsPanelManager {
     }
 
     public void favoriteClick(final ButtonClickCallback callback) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        final InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) return;
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
@@ -177,14 +177,13 @@ public class ButtonsPanelManager {
                     @Override
                     public void onSuccess(Response response) {
                         ProfilingManager.getInstance().setReady(favUID);
-                        Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
+                        Story story = inAppStoryService.getDownloadManager().getStoryById(storyId, pageManager.getStoryType());
                         boolean res = !val;
                         if (story != null)
                             story.favorite = res;
                         if (callback != null)
                             callback.onSuccess(res ? 1 : 0);
-                        if (InAppStoryService.isNotNull())
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, res);
+                        inAppStoryService.getListReaderConnector().storyFavorite(storyId, res);
                     }
 
 

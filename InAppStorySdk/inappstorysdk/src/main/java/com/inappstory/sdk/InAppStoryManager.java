@@ -770,7 +770,6 @@ public class InAppStoryManager {
     private ExceptionCache exceptionCache;
 
     public void removeFromFavorite(final int storyId) {
-        if (InAppStoryService.isNull()) return;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
@@ -785,7 +784,6 @@ public class InAppStoryManager {
     }
 
     public void removeAllFavorites() {
-        if (InAppStoryService.isNull()) return;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
             public void onSuccess() {
@@ -889,7 +887,6 @@ public class InAppStoryManager {
                         });
             }
         });
-        if (InAppStoryService.isNull()) return;
 
     }
 
@@ -1201,7 +1198,8 @@ public class InAppStoryManager {
             return;
         }
 
-        if (InAppStoryService.isNull()) return;
+        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        if (inAppStoryService == null) return;
         if (ScreensManager.getInstance().currentStoriesReaderScreen != null) {
             InAppStoryManager.closeStoryReader(CloseStory.AUTO);
             localHandler.postDelayed(new Runnable() {
@@ -1220,9 +1218,7 @@ public class InAppStoryManager {
         for (Story story : response) {
             storiesIds.add(story.id);
         }
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null)
-            inAppStoryService.getDownloadManager().uploadingAdditional(stories, storyType);
+        inAppStoryService.getDownloadManager().uploadingAdditional(stories, storyType);
         StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 null,
                 feed,
@@ -1245,7 +1241,8 @@ public class InAppStoryManager {
     }
 
     private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
-        if (InAppStoryService.isNull()) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -1283,10 +1280,13 @@ public class InAppStoryManager {
                         new LoadFeedCallback() {
                             @Override
                             public void onSuccess(Feed response) {
-                                if (InAppStoryManager.isNull()) return;
+                                InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+                                if (inAppStoryManager == null) return;
                                 ProfilingManager.getInstance().setReady(onboardUID);
                                 List<Story> notOpened = new ArrayList<>();
-                                Set<String> opens = SharedPreferencesAPI.getStringSet(InAppStoryManager.getInstance().getLocalOpensKey());
+                                Set<String> opens = SharedPreferencesAPI.getStringSet(
+                                        inAppStoryManager.getLocalOpensKey()
+                                );
                                 if (opens == null) opens = new HashSet<>();
                                 if (response.stories != null) {
                                     for (Story story : response.stories) {

@@ -233,7 +233,6 @@ public class GameManager {
     }
 
     void tapOnLink(String link, Context context) {
-        if (InAppStoryService.isNull()) return;
         SlideData data = null;
         if (dataModel != null) {
             data = dataModel.slideData;

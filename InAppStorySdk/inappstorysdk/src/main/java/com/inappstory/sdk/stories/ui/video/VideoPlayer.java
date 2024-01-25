@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 
@@ -118,31 +119,36 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     File file = null;
 
-    private void downloadCoverVideo(String url) {
-        if (InAppStoryService.isNull()) return;
-        Downloader.downloadFileBackground(url, false, InAppStoryService.getInstance().getFastCache(),
-                new FileLoadProgressCallback() {
-                    @Override
-                    public void onProgress(long loadedSize, long totalSize) {
+    private void downloadCoverVideo(final String url) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                Downloader.downloadFileBackground(url, false, service.getFastCache(),
+                        new FileLoadProgressCallback() {
+                            @Override
+                            public void onProgress(long loadedSize, long totalSize) {
 
-                    }
+                            }
 
-                    @Override
-                    public void onSuccess(File file) {
-                        if (mp == null) return;
-                        try {
-                            mp.setDataSource(file.getAbsolutePath());
-                            mp.prepareAsync();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                            @Override
+                            public void onSuccess(File file) {
+                                if (mp == null) return;
+                                try {
+                                    mp.setDataSource(file.getAbsolutePath());
+                                    mp.prepareAsync();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
 
-                    @Override
-                    public void onError(String error) {
+                            @Override
+                            public void onError(String error) {
 
-                    }
-                });
+                            }
+                        });
+            }
+        });
+
     }
 
 

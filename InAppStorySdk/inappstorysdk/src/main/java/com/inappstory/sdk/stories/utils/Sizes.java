@@ -30,7 +30,8 @@ public class Sizes {
 
 
     public static float getPixelScaleFactorExt() {
-        if (InAppStoryService.isNull()) return 1;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return 1;
         Context con = InAppStoryService.getInstance().getContext();
         if (con == null)
             return 1;
@@ -39,17 +40,16 @@ public class Sizes {
     }
 
     public static float getPixelScaleFactorExt(Context context) {
-        Context con = context;
-        if (con == null)
+        if (context == null)
             return 1;
-        DisplayMetrics displayMetrics = con.getResources().getDisplayMetrics();
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         return displayMetrics.density;
     }
 
     public static Point getScreenSize() {
         Context con = null;
-        if (InAppStoryService.isNotNull())
-            con = InAppStoryService.getInstance().getContext();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) con = service.getContext();
         if (con == null) return new Point(0, 0);
         WindowManager wm = (WindowManager) con.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
@@ -82,8 +82,9 @@ public class Sizes {
     }
 
     public static boolean isTablet() {
-        if (InAppStoryService.isNotNull() && InAppStoryService.getInstance().getContext() != null)
-            return InAppStoryService.getInstance().getContext().getResources().getBoolean(R.bool.isTablet);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && service.getContext() != null)
+            return service.getContext().getResources().getBoolean(R.bool.isTablet);
         else return false;
     }
 

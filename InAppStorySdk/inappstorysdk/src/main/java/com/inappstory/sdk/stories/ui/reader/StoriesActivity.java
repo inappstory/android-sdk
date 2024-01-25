@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -26,6 +27,7 @@ import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderAppearanceSettings;
@@ -302,6 +304,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void resumeReader() {
 
     }
+
     @Override
     public void disableDrag(boolean disable) {
         boolean draggable = appearanceSettings == null || appearanceSettings.csIsDraggable();
@@ -517,13 +520,14 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     public void closeStoryReader(int action) {
         if (closing) return;
         closing = true;
-        InAppStoryService.getInstance().getListReaderConnector().closeReader();
+        InAppStoryService service = InAppStoryService.getInstance();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         blockView.setVisibility(View.VISIBLE);
-        if (InAppStoryService.isNotNull()) {
-            Story story = InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(InAppStoryService.getInstance().getCurrentId(), type);
+        if (service != null) {
+            service.getListReaderConnector().closeReader();
+            Story story = service.getDownloadManager()
+                    .getStoryById(service.getCurrentId(), type);
             if (story != null) {
                 if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
                     CallbackManager.getInstance().getCloseStoryCallback().closeStory(
@@ -582,14 +586,17 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
     boolean cleaned = false;
 
     public void cleanReader() {
-        if (InAppStoryService.isNull()) return;
         if (cleaned) return;
-        InAppStoryService.getInstance().setCurrentIndex(0);
-        InAppStoryService.getInstance().setCurrentId(0);
-        if (InAppStoryService.getInstance().getDownloadManager() != null) {
-            InAppStoryService.getInstance().getDownloadManager().cleanStoriesIndex(type);
-        }
-        cleaned = true;
+        OldStatisticManager.getInstance().closeStatisticEvent();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.setCurrentIndex(0);
+                service.setCurrentId(0);
+                service.getDownloadManager().cleanStoriesIndex(type);
+                cleaned = true;
+            }
+        });
     }
 
 
