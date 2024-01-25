@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version *1.17.11 (811)*
+----------------------------
+
+* Fixed: NPEs for InAppStoryService
+  
 Version *1.17.10 (810)*
 ----------------------------
 
