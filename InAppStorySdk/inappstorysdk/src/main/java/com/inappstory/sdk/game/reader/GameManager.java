@@ -75,7 +75,9 @@ public class GameManager {
     }
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
-        if (InAppStoryService.isNull()) return;
+
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         String id = gameInstanceId;
         if (id == null) id = gameCenterId;
         if (id == null) return;
@@ -84,9 +86,9 @@ public class GameManager {
             return;
         }
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
+                + "__" + service.getUserId(), data);
 
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
+        if (!service.getSendStatistic()) return;
         if (sendToServer) {
             networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
                     new NetworkCallback<Response>() {
@@ -120,7 +122,8 @@ public class GameManager {
     }
 
     void storySetData(String data, boolean sendToServer) {
-        if (InAppStoryService.isNull()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         if (dataModel == null) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
@@ -128,9 +131,9 @@ public class GameManager {
             return;
         }
         KeyValueStorage.saveString("story" + dataModel.slideData.story.id
-                + "__" + InAppStoryService.getInstance().getUserId(), data);
+                + "__" + service.getUserId(), data);
 
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
+        if (!service.getSendStatistic()) return;
         if (sendToServer) {
             networkClient.enqueue(
                     networkClient.getApi().sendStoryData(

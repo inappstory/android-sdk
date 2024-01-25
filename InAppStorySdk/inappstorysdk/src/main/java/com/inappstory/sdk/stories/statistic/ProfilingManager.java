@@ -5,8 +5,6 @@ import static java.util.UUID.randomUUID;
 
 import android.content.Context;
 import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.telephony.TelephonyManager;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -23,8 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class ProfilingManager {
     ArrayList<ProfilingTask> tasks = new ArrayList<>();
@@ -64,12 +60,13 @@ public class ProfilingManager {
     }
 
     public String addTask(String name) {
-        if (InAppStoryService.isNull()) return "";
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
         task.sessionId = Session.getInstance().id;
         task.isAllowToForceSend = isAllowToSend();
-        task.userId = InAppStoryService.getInstance().getUserId();
+        task.userId = service.getUserId();
         task.uniqueHash = hash;
         task.name = name;
         task.startTime = System.currentTimeMillis();
@@ -137,7 +134,7 @@ public class ProfilingManager {
             synchronized (getInstance().tasksLock) {
                 readyIsEmpty = getInstance().readyTasks == null || getInstance().readyTasks.size() == 0;
             }
-            if (readyIsEmpty || !InAppStoryService.isConnected() || !isAllowToSend()) {
+            if (readyIsEmpty || !InAppStoryService.isServiceConnected() || !isAllowToSend()) {
                 loopedExecutor.freeExecutor();
                 return;
             }

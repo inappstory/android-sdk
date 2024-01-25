@@ -64,7 +64,7 @@ public class SessionManager {
         synchronized (openProcessLock) {
             checkOpen = openProcess;
         }
-        if (InAppStoryService.isConnected()) {
+        if (InAppStoryService.isServiceConnected()) {
             if (Session.needToUpdate() || checkOpen) {
                 openSession(callback);
                 return false;
@@ -184,7 +184,7 @@ public class SessionManager {
         String appVersion = (pInfo != null ? pInfo.versionName : "");
         String appBuild = (pInfo != null ? Integer.toString(pInfo.versionCode) : "");
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (!InAppStoryService.isConnected() || networkClient == null) {
+        if (!InAppStoryService.isServiceConnected() || networkClient == null) {
             synchronized (openProcessLock) {
                 openProcess = false;
             }

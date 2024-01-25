@@ -955,10 +955,16 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void setLoaderOld() {
+
+        InAppStoryService service = InAppStoryService.getInstance();
         if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()
-                && InAppStoryService.isNotNull())
-            ImageLoader.getInstance().displayImage(manager.splashImagePath, -1, loader,
-                    InAppStoryService.getInstance().getCommonCache());
+                && service != null)
+            ImageLoader.getInstance().displayImage(
+                    manager.splashImagePath,
+                    -1,
+                    loader,
+                    service.getCommonCache()
+            );
         else
             loader.setBackgroundColor(Color.BLACK);
     }

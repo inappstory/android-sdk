@@ -44,10 +44,12 @@ public class DownloadResourceUseCase {
                     progressCallback.onProgress(resource.size, resource.size);
                 useCaseCallback.onSuccess(null);
             }
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return;
             Downloader.downloadOrGetResourceFile(
                     url,
                     fileName,
-                    InAppStoryService.getInstance().getInfiniteCache(),
+                    service.getInfiniteCache(),
                     resourceFile,
                     new FileLoadProgressCallback() {
                         @Override

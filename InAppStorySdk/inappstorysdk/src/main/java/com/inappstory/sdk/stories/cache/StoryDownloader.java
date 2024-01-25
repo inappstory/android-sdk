@@ -336,7 +336,7 @@ class StoryDownloader {
             callback.onError("");
             return;
         }
-        if (InAppStoryService.isConnected()) {
+        if (InAppStoryService.isServiceConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
@@ -402,28 +402,28 @@ class StoryDownloader {
 
     void loadStoryListByFeed(final String feed, final SimpleApiCallback<List<Story>> callback) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || networkClient == null) {
             generateCommonLoadListError(feed);
             callback.onError("");
             return;
         }
-        if (InAppStoryService.isConnected()) {
+        if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
-                    if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getFeed(
                                     feed,
                                     ApiSettings.getInstance().getTestKey(),
                                     0,
-                                    InAppStoryService.getInstance().getTagsString(),
+                                    service.getTagsString(),
                                     null),
                             new LoadFeedCallback() {
                                 @Override
                                 public void onSuccess(Feed response) {
-                                    if (InAppStoryService.isNull() || response == null) {
+                                    if (response == null) {
                                         generateCommonLoadListError(feed);
                                         callback.onError("");
                                     } else {
@@ -474,29 +474,29 @@ class StoryDownloader {
 
     void loadStoryList(final SimpleApiCallback<List<Story>> callback, final boolean isFavorite) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (InAppStoryService.isNull() || networkClient == null) {
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || networkClient == null) {
             generateCommonLoadListError(null);
             callback.onError("");
             return;
         }
-        if (InAppStoryService.isConnected()) {
+        if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
                 public void onSuccess() {
-                    if (InAppStoryService.isNull()) return;
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
                             ? "api_favorite_list" : "api_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getStories(
                                     ApiSettings.getInstance().getTestKey(),
                                     isFavorite ? 1 : 0,
-                                    isFavorite ? null : InAppStoryService.getInstance().getTagsString(),
+                                    isFavorite ? null : service.getTagsString(),
                                     null
                             ),
                             new LoadListCallback() {
                                 @Override
                                 public void onSuccess(List<Story> response) {
-                                    if (InAppStoryService.isNull()) {
+                                    if (response == null) {
                                         generateCommonLoadListError(null);
                                         callback.onError("");
                                     } else {

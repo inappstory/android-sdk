@@ -275,9 +275,6 @@ public class ScreensManager {
                 if (currentStoriesReaderScreen != null) {
                     currentStoriesReaderScreen.forceFinish();
                 }
-                InAppStoryService service = InAppStoryService.getInstance();
-                if (service != null)
-                    service.getDownloadManager().cleanStoriesScript();
                 AppearanceManager manager = appearanceManager;
                 if (manager == null) manager = AppearanceManager.getCommonInstance();
                 if (manager == null) manager = new AppearanceManager();

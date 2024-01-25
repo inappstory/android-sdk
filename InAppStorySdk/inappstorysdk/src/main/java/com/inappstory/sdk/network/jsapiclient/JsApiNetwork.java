@@ -37,7 +37,7 @@ public class JsApiNetwork {
         jsResponse.requestId = requestId;
 
         NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-        if (!InAppStoryService.isConnected() || networkClient == null) {
+        if (!InAppStoryService.isServiceConnected() || networkClient == null) {
             jsResponse.status = 12163;
             return jsResponse;
         }

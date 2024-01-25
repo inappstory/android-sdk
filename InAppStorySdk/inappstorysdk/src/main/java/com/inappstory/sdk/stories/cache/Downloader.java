@@ -54,10 +54,12 @@ public class Downloader {
     }
 
     public static void downloadFonts(List<CacheFontObject> cachedFonts) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         if (cachedFonts != null) {
             for (CacheFontObject cacheFontObject : cachedFonts) {
                 if (InAppStoryService.isNull()) return;
-                downFontFile(cacheFontObject.url, InAppStoryService.getInstance().getCommonCache());
+                downFontFile(cacheFontObject.url, service.getCommonCache());
             }
         }
     }

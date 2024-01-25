@@ -176,8 +176,9 @@ class SlidesDownloader {
 
     void addStoryPages(Story story, int loadType, Story.StoryType type) throws Exception {
         Map<String, Pair<ImagePlaceholderValue, ImagePlaceholderValue>> imgPlaceholders = new HashMap<>();
-        if (InAppStoryService.isNotNull()) {
-            imgPlaceholders.putAll(InAppStoryService.getInstance().getImagePlaceholdersValuesWithDefaults());
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            imgPlaceholders.putAll(service.getImagePlaceholdersValuesWithDefaults());
         }
         synchronized (pageTasksLock) {
             int key = story.id;

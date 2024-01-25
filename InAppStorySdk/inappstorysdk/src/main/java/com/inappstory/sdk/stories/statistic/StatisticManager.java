@@ -17,8 +17,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 
 public class StatisticManager {
@@ -62,19 +60,20 @@ public class StatisticManager {
 
 
     public void addTask(StatisticTask task, boolean force) {
-        if (!force && InAppStoryService.isNotNull() &&
-                !InAppStoryService.getInstance().getSendNewStatistic()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (!force && service != null &&
+                !service.getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
         }
-
     }
 
 
     public void addFakeTask(StatisticTask task) {
-        if (InAppStoryService.isNotNull() &&
-                !InAppStoryService.getInstance().getSendNewStatistic()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null &&
+                !service.getSendNewStatistic()) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -186,7 +185,7 @@ public class StatisticManager {
         @Override
         public void run() {
             if (getInstance().tasks == null || getInstance().tasks.size() == 0 || InAppStoryService.isNull()
-                    || !InAppStoryService.isConnected()) {
+                    || !InAppStoryService.isServiceConnected()) {
                 loopedExecutor.freeExecutor();
                 return;
             }
@@ -288,9 +287,10 @@ public class StatisticManager {
     }
 
     public void generateBase(StatisticTask task) {
+        InAppStoryService service = InAppStoryService.getInstance();
         task.sessionId = Session.getInstance().id;
-        if (InAppStoryService.isNotNull())
-            task.userId = InAppStoryService.getInstance().getUserId();
+        if (service != null)
+            task.userId = service.getUserId();
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 

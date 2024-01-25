@@ -3,11 +3,13 @@ package com.inappstory.sdk.stories.cache;
 import android.content.Context;
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.listwidget.StoriesWidgetService;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -198,34 +200,20 @@ public class StoryDownloadManager {
         slidesDownloader.cleanTasks();
     }
 
-    public void cleanStoriesScript() {
-        List<Story> storyList = getStoriesListByType(Story.StoryType.COMMON);
-        List<Story> ugcStoryList = getStoriesListByType(Story.StoryType.UGC);
-        for (Story story: storyList) {
-            story.loadedScript = null;
-        }
-        for (Story story: ugcStoryList) {
-            story.loadedScript = null;
-        }
-    }
-
 
     public void clearCache() {
         storyDownloader.cleanTasks();
         slidesDownloader.cleanTasks();
-        try {
-            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-            if (inAppStoryService != null) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
                 inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getCommonCache().clearCache();
                 inAppStoryService.getFastCache().clearCache();
                 inAppStoryService.getInfiniteCache().clearCache();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
-
 
     private final Object lock = new Object();
     List<ReaderPageManager> subscribers = new ArrayList<>();
@@ -378,6 +366,9 @@ public class StoryDownloadManager {
         }
     }
 
+
+    public StoryDownloadManager() {}
+
     public StoryDownloadManager(final Context context, ExceptionCache cache) {
         this.context = context;
         this.stories = new ArrayList<>();
@@ -416,9 +407,23 @@ public class StoryDownloadManager {
             @Override
             public DownloadPageFileStatus downloadFile(UrlWithAlter urlWithAlter, SlideTaskData slideTaskData) {
                 try {
-                    DownloadFileState state = Downloader.downloadOrGetFile(urlWithAlter.getUrl(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
+                    InAppStoryService service = InAppStoryService.getInstance();
+                    if (service == null) return DownloadPageFileStatus.ERROR;
+                    DownloadFileState state = Downloader.downloadOrGetFile(
+                            urlWithAlter.getUrl(),
+                            true,
+                            service.getCommonCache(),
+                            null,
+                            null
+                    );
                     if (urlWithAlter.getAlter() != null && (state == null || state.getFullFile() == null)) {
-                        Downloader.downloadOrGetFile(urlWithAlter.getAlter(), true, InAppStoryService.getInstance().getCommonCache(), null, null);
+                        Downloader.downloadOrGetFile(
+                                urlWithAlter.getAlter(),
+                                true,
+                                service.getCommonCache(),
+                                null,
+                                null
+                        );
                         if (state != null && state.getFullFile() != null)
                             return DownloadPageFileStatus.SUCCESS;
                         return DownloadPageFileStatus.SKIP;
@@ -804,11 +809,14 @@ public class StoryDownloadManager {
         }
     }
 
-    void setLocalsOpened(List<Story> response, Story.StoryType type) {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().saveStoriesOpened(response, type);
+    void setLocalsOpened(final List<Story> response, final Story.StoryType type) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.saveStoriesOpened(response, type);
+            }
+        });
     }
-
 
     private List<Story> stories = new ArrayList<>();
     private List<Story> ugcStories = new ArrayList<>();

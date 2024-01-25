@@ -50,10 +50,11 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     }
 
     private void setImage(AppCompatImageView imageView, FavoriteImage image) {
-        if (image.getImage() != null && InAppStoryService.isNotNull()) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (image.getImage() != null && service != null) {
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             ImageLoader.getInstance().displayImage(image.getUrl(), -1, imageView,
-                    InAppStoryService.getInstance().getFastCache());
+                    service.getFastCache());
         } else {
             imageView.setBackgroundColor(image.getBackgroundColor());
         }
@@ -63,17 +64,18 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     private void loadFavoriteImages(final LoadFavoriteImagesCallback callback, final int count) {
         final List<String> downloadImages = new ArrayList<>();
         final int[] i = {0};
+
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         RunnableCallback runnableCallback = new RunnableCallback() {
             @Override
             public void run(String path) {
-                if (InAppStoryService.isNull()) return;
                 downloadImages.add(path);
                 i[0]++;
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    List<FavoriteImage> images = InAppStoryService.getInstance()
-                            .getFavoriteImages();
+                    List<FavoriteImage> images = service.getFavoriteImages();
                     if (images == null || images.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
@@ -90,8 +92,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 if (i[0] >= count)
                     callback.onLoad(downloadImages);
                 else {
-                    List<FavoriteImage> images = InAppStoryService.getInstance()
-                            .getFavoriteImages();
+                    List<FavoriteImage> images = service.getFavoriteImages();
                     if (images == null || images.size() <= i[0]) {
                         downloadFileAndSendToInterface("", this);
                     } else {
@@ -100,8 +101,7 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
                 }
             }
         };
-        downloadFileAndSendToInterface(InAppStoryService.getInstance()
-                .getFavoriteImages().get(0).getUrl(), runnableCallback);
+        downloadFileAndSendToInterface(service.getFavoriteImages().get(0).getUrl(), runnableCallback);
     }
 
     interface LoadFavoriteImagesCallback {

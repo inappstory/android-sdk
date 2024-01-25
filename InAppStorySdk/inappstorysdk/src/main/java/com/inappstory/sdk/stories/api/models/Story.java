@@ -3,7 +3,10 @@ package com.inappstory.sdk.stories.api.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.annotations.models.Ignore;
 import com.inappstory.sdk.network.annotations.models.Required;
 import com.inappstory.sdk.network.annotations.models.SerializedName;
@@ -93,9 +96,6 @@ public class Story implements Parcelable {
         return layout;
     }
 
-    @Ignore
-    public String loadedScript = null;
-
     public String getTitleColor() {
         return titleColor;
     }
@@ -120,15 +120,6 @@ public class Story implements Parcelable {
         return (videoUrl != null && !videoUrl.isEmpty()) ? videoUrl.get(0).getUrl() : null;
     }
 
-    public void setLastIndex(int lastIndex, StoryType type) {
-        this.lastIndex = lastIndex;
-        try {
-            InAppStoryService.getInstance().getDownloadManager()
-                    .getStoryById(id, type).lastIndex = lastIndex;
-        } catch (Exception e) {
-
-        }
-    }
 
 
     /**
@@ -148,7 +139,7 @@ public class Story implements Parcelable {
     private String getReplacedField(String tmp) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return tmp;
-        Map<String, String> localPlaceholders = InAppStoryService.getInstance().getPlaceholders();
+        Map<String, String> localPlaceholders = service.getPlaceholders();
         for (String key : localPlaceholders.keySet()) {
             String modifiedKey = "%" + key + "%";
             String value = localPlaceholders.get(key);
@@ -362,10 +353,13 @@ public class Story implements Parcelable {
         return hasAudio != null ? hasAudio : false;
     }
 
-    public void saveStoryOpened(StoryType type) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().saveStoryOpened(id, type);
-        }
+    public void saveStoryOpened(final StoryType type) {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.saveStoryOpened(id, type);
+            }
+        });
     }
 
 

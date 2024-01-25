@@ -2,8 +2,11 @@ package com.inappstory.sdk.stories.statistic;
 
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Session;
@@ -69,11 +72,8 @@ public class OldStatisticManager {
     public Runnable statisticUpdateRunnable = new Runnable() {
         @Override
         public void run() {
-            if (InAppStoryService.isNull()
-                    || InAppStoryService.getInstance().getContext() == null) {
-                return;
-            }
             sendStatistic();
+
         }
     };
 
@@ -135,11 +135,13 @@ public class OldStatisticManager {
     }
 
     public boolean sendStatistic() {
-        if (!InAppStoryService.isConnected()) return true;
-        final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+        NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return true;
         }
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || !service.isConnected()) return true;
+
         if (Session.needToUpdate())
             return false;
         synchronized (openProcessLock) {
@@ -147,7 +149,7 @@ public class OldStatisticManager {
                 return true;
             }
         }
-        if (!InAppStoryService.getInstance().getSendStatistic()) {
+        if (!service.getSendStatistic()) {
             Session.getInstance();
             Session.updateStatistic();
             if (statistic != null)
@@ -155,7 +157,6 @@ public class OldStatisticManager {
             return true;
         }
         try {
-
             synchronized (openProcessLock) {
                 final List<List<Object>> sendingStatistic = new ArrayList<>();
                 sendingStatistic.addAll(statistic);

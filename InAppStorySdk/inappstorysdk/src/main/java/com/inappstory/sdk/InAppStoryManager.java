@@ -93,8 +93,23 @@ public class InAppStoryManager {
     private static InAppStoryManager INSTANCE;
 
     public static NetworkClient getNetworkClient() {
-        if (InAppStoryManager.getInstance() == null) return null;
-        return InAppStoryManager.getInstance().networkClient;
+        synchronized (lock) {
+            if (INSTANCE == null) return null;
+            return INSTANCE.networkClient;
+        }
+    }
+
+    public static void useInstance(@NonNull UseManagerInstanceCallback callback) {
+        InAppStoryManager manager = getInstance();
+        try {
+            if (manager != null) {
+                callback.use(manager);
+            } else {
+                callback.error();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     IVibrateUtils vibrateUtils = new VibrateUtils();
@@ -227,8 +242,12 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache
      */
     public void clearCache() {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.getDownloadManager().clearCache();
+            }
+        });
     }
     //Test
 
@@ -236,8 +255,12 @@ public class InAppStoryManager {
      * use to clear downloaded files and in-app cache without manager
      */
     public void clearCache(Context context) {
-        if (InAppStoryService.isNull()) return;
-        InAppStoryService.getInstance().getDownloadManager().clearCache();
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.getDownloadManager().clearCache();
+            }
+        });
     }
 
     /**
@@ -717,9 +740,12 @@ public class InAppStoryManager {
     }
 
     void createServiceThread(final Context context) {
-        if (InAppStoryService.isNotNull()) {
-            InAppStoryService.getInstance().onDestroy();
-        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.onDestroy();
+            }
+        });
         if (serviceThread != null) {
             serviceThread.interrupt();
             serviceThread = null;
@@ -776,88 +802,95 @@ public class InAppStoryManager {
     NetworkClient networkClient;
 
     private void favoriteRemoveAll() {
-        if (InAppStoryService.isNull()) return;
         if (networkClient == null) return;
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
-        networkClient.enqueue(
-                networkClient.getApi().removeAllFavorites(),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (InAppStoryService.isNotNull()) {
-                            InAppStoryService.getInstance().getDownloadManager()
-                                    .clearAllFavoriteStatus(Story.StoryType.COMMON);
-                            InAppStoryService.getInstance().getDownloadManager()
-                                    .clearAllFavoriteStatus(Story.StoryType.UGC);
-                            InAppStoryService.getInstance().getFavoriteImages().clear();
-                            InAppStoryService.getInstance().getListReaderConnector().clearAllFavorites();
-                        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull final InAppStoryService service) throws Exception {
+                final String favUID = ProfilingManager.getInstance().addTask("api_favorite_remove_all");
+                networkClient.enqueue(
+                        networkClient.getApi().removeAllFavorites(),
+                        new NetworkCallback<Response>() {
+                            @Override
+                            public void onSuccess(Response response) {
+                                ProfilingManager.getInstance().setReady(favUID);
+                                service.getDownloadManager()
+                                        .clearAllFavoriteStatus(Story.StoryType.COMMON);
+                                service.getDownloadManager()
+                                        .clearAllFavoriteStatus(Story.StoryType.UGC);
+                                service.getFavoriteImages().clear();
+                                service.getListReaderConnector().clearAllFavorites();
 
-                        if (ScreensManager.getInstance().currentStoriesReaderScreen != null) {
-                            ScreensManager.getInstance().currentStoriesReaderScreen.removeAllStoriesFromFavorite();
-                        }
-                    }
+                                if (ScreensManager.getInstance().currentStoriesReaderScreen != null) {
+                                    ScreensManager.getInstance().currentStoriesReaderScreen.removeAllStoriesFromFavorite();
+                                }
+                            }
 
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        super.onError(code, message);
-                    }
+                            @Override
+                            public void onError(int code, String message) {
+                                ProfilingManager.getInstance().setReady(favUID);
+                                super.onError(code, message);
+                            }
 
-                    @Override
-                    public void timeoutError() {
-                        super.timeoutError();
-                        ProfilingManager.getInstance().setReady(favUID);
-                    }
+                            @Override
+                            public void timeoutError() {
+                                super.timeoutError();
+                                ProfilingManager.getInstance().setReady(favUID);
+                            }
 
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
+                            @Override
+                            public Type getType() {
+                                return null;
+                            }
+                        });
+            }
+        });
+
     }
 
 
     private void favoriteOrRemoveStory(final int storyId, final boolean favorite) {
-        if (InAppStoryService.isNull()) return;
         if (networkClient == null) return;
-        final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
-        networkClient.enqueue(
-                networkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),
-                new NetworkCallback<Response>() {
-                    @Override
-                    public void onSuccess(Response response) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        if (InAppStoryService.isNotNull()) {
-                            Story story = InAppStoryService.getInstance().getDownloadManager()
-                                    .getStoryById(storyId, Story.StoryType.COMMON);
-                            if (story != null)
-                                story.favorite = favorite;
-                            InAppStoryService.getInstance().getListReaderConnector().storyFavorite(storyId, favorite);
-                        }
-                        if (ScreensManager.getInstance().currentStoriesReaderScreen != null) {
-                            ScreensManager.getInstance().currentStoriesReaderScreen.removeStoryFromFavorite(storyId);
-                        }
-                    }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull final InAppStoryService service) throws Exception {
+                final String favUID = ProfilingManager.getInstance().addTask("api_favorite");
+                networkClient.enqueue(
+                        networkClient.getApi().storyFavorite(Integer.toString(storyId), favorite ? 1 : 0),
+                        new NetworkCallback<Response>() {
+                            @Override
+                            public void onSuccess(Response response) {
+                                ProfilingManager.getInstance().setReady(favUID);
+                                Story story = service.getDownloadManager()
+                                        .getStoryById(storyId, Story.StoryType.COMMON);
+                                if (story != null)
+                                    story.favorite = favorite;
+                                service.getListReaderConnector().storyFavorite(storyId, favorite);
+                                if (ScreensManager.getInstance().currentStoriesReaderScreen != null) {
+                                    ScreensManager.getInstance().currentStoriesReaderScreen.removeStoryFromFavorite(storyId);
+                                }
+                            }
 
-                    @Override
-                    public void onError(int code, String message) {
-                        ProfilingManager.getInstance().setReady(favUID);
-                        super.onError(code, message);
-                    }
+                            @Override
+                            public void onError(int code, String message) {
+                                ProfilingManager.getInstance().setReady(favUID);
+                                super.onError(code, message);
+                            }
 
-                    @Override
-                    public void timeoutError() {
-                        super.timeoutError();
-                        ProfilingManager.getInstance().setReady(favUID);
-                    }
+                            @Override
+                            public void timeoutError() {
+                                super.timeoutError();
+                                ProfilingManager.getInstance().setReady(favUID);
+                            }
 
-                    @Override
-                    public Type getType() {
-                        return null;
-                    }
-                });
+                            @Override
+                            public Type getType() {
+                                return null;
+                            }
+                        });
+            }
+        });
+        if (InAppStoryService.isNull()) return;
+
     }
 
     private boolean isSandbox = false;
@@ -898,6 +931,12 @@ public class InAppStoryManager {
                     R.string.ias_min_free_space_error));
             return;
         }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+
+            }
+        });
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService != null) {
             inAppStoryService.setUserId(builder.userId);
@@ -931,13 +970,6 @@ public class InAppStoryManager {
                 builder.imagePlaceholders != null ? builder.imagePlaceholders : null
         );
         new ExceptionManager().sendSavedException();
-    }
-
-    private static void generateException() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.genException = true;
-        }
     }
 
     private int getBytesLength(String value) {
@@ -1080,22 +1112,27 @@ public class InAppStoryManager {
                 .host(cmsUrl);
 
         networkClient = new NetworkClient(context, cmsUrl);
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.getDownloadManager().initDownloaders();
-        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.getDownloadManager().initDownloaders();
+            }
+        });
+
     }
 
     private static final Object lock = new Object();
 
     public static void logout() {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-        if (inAppStoryService != null) {
-            inAppStoryService.listStoriesIds.clear();
-            inAppStoryService.getListSubscribers().clear();
-            inAppStoryService.getDownloadManager().cleanTasks();
-            inAppStoryService.logout();
-        }
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
+                inAppStoryService.listStoriesIds.clear();
+                inAppStoryService.getListSubscribers().clear();
+                inAppStoryService.getDownloadManager().cleanTasks();
+                inAppStoryService.logout();
+            }
+        });
     }
 
     @Deprecated
@@ -1411,10 +1448,16 @@ public class InAppStoryManager {
         }
         if (callback != null)
             callback.onShow();
-        service.getDownloadManager().putStories(
-                InAppStoryService.getInstance().getDownloadManager().getStories(Story.StoryType.COMMON),
-                type
-        );
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) {
+                service.getDownloadManager().putStories(
+                        service.getDownloadManager().getStories(Story.StoryType.COMMON),
+                        type
+                );
+            }
+        });
+
         ArrayList<Integer> stIds = new ArrayList<>();
         stIds.add(story.id);
         StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(

@@ -42,7 +42,7 @@ public class GetZipFileUseCase extends GameNameHolder {
             final ProgressCallback progressCallback,
             final long totalGameSize
     ) {
-        InAppStoryService inAppStoryService = InAppStoryService.getInstance();
+        final InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) {
             callback.onError("InAppStory service is unavailable");
             return;
@@ -79,7 +79,7 @@ public class GetZipFileUseCase extends GameNameHolder {
                             fileState = Downloader.downloadOrGetFile(
                                     url,
                                     true,
-                                    InAppStoryService.getInstance().getInfiniteCache(),
+                                    inAppStoryService.getInfiniteCache(),
                                     zipFile,
                                     new FileLoadProgressCallback() {
                                         @Override

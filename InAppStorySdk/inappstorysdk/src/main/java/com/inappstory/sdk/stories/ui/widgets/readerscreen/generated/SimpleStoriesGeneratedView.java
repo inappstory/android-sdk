@@ -4,7 +4,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -301,7 +300,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
         if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
-        if (!InAppStoryService.isConnected()) return true;
+        if (!InAppStoryService.isServiceConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();

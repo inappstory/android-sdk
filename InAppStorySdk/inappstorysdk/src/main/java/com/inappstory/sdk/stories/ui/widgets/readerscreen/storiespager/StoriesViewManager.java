@@ -2,7 +2,6 @@ package com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager;
 
 import android.content.Context;
 import android.media.AudioManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
@@ -49,7 +48,6 @@ import com.inappstory.sdk.stories.utils.WebPageConverter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.regex.Pattern;
 
 public class StoriesViewManager {
@@ -283,7 +281,7 @@ public class StoriesViewManager {
             if (slideInCache == -1) {
                 pageManager.slideLoadError(index);
             } else {
-                if (!InAppStoryService.isConnected()) {
+                if (!InAppStoryService.isServiceConnected()) {
                     if (CallbackManager.getInstance().getErrorCallback() != null) {
                         CallbackManager.getInstance().getErrorCallback().noConnection();
                     }

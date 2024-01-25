@@ -32,7 +32,6 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
 import com.inappstory.sdk.ugc.list.UGCListItem;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,9 +103,10 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         this.isFavoriteList = isFavoriteList;
         this.useFavorite = useFavorite;
         this.useUGC = useUGC;
-        hasFavItem = !isFavoriteList && InAppStoryService.isNotNull()
+        InAppStoryService service = InAppStoryService.getInstance();
+        hasFavItem = !isFavoriteList && service != null
                 && manager != null && manager.csHasFavorite()
-                && InAppStoryService.getInstance().getFavoriteImages().size() > 0;
+                && service.getFavoriteImages().size() > 0;
         notifyChanges();
     }
 
@@ -138,7 +138,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     @Override
     public void onBindViewHolder(@NonNull BaseStoryListItem holder, int position) {
-        if (holder == null || InAppStoryService.isNull()) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (holder == null || service == null) return;
         if (holder.isFavorite) {
             holder.bindFavorite();
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -161,7 +162,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             });
         } else {
             int hasUGC = useUGC ? 1 : 0;
-            final Story story = InAppStoryService.getInstance().getDownloadManager()
+            final Story story = service.getDownloadManager()
                     .getStoryById(storiesIds.get(position - hasUGC), Story.StoryType.COMMON);
             if (story == null) return;
             String imgUrl = (story.getImage() != null && story.getImage().size() > 0) ?
@@ -259,7 +260,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
                     CallbackManager.getInstance().getUrlClickCallback().onUrlClick(current.deeplink);
                 } else {
-                    if (!InAppStoryService.isConnected()) {
+                    if (!InAppStoryService.isServiceConnected()) {
                         if (CallbackManager.getInstance().getErrorCallback() != null) {
                             CallbackManager.getInstance().getErrorCallback().noConnection();
                         }
@@ -323,8 +324,11 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         try {
             int pos = position - hasUGC;
             int pref = pos * 10;
-            Story story = InAppStoryService.getInstance().getDownloadManager()
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) return 0;
+            Story story = service.getDownloadManager()
                     .getStoryById(storiesIds.get(pos), Story.StoryType.COMMON);
+            if (story == null) return 0;
             if (story.getVideoUrl() != null) pref += 5;
             return story.isOpened ? (pref + 2) : (pref + 1);
         } catch (Exception e) {
