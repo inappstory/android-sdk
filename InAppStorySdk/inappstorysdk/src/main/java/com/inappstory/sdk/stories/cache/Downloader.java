@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.cache;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -15,7 +17,9 @@ import com.inappstory.sdk.stories.api.models.CacheFontObject;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogRequestHeader;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
+import com.inappstory.sdk.stories.ui.list.StoryListItem;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.stories.utils.RunnableCallback;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,6 +52,33 @@ public class Downloader {
         return url;//delete ? url.split("\\?")[0] : url;
     }
 
+
+    public static void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        downloadFileBackground(url, false, service.getFastCache(), new FileLoadProgressCallback() {
+            @Override
+            public void onProgress(long loadedSize, long totalSize) {
+
+            }
+
+            @Override
+            public void onSuccess(File file) {
+                final String path = file.getAbsolutePath();
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.run(path);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
+    }
 
     public static String deleteQueryArgumentsFromUrl(String url, boolean delete) {
         return delete ? url.split("\\?")[0] : url;

@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.video.VideoPlayer;
 import com.inappstory.sdk.stories.ui.views.IStoriesListItemWithStoryData;
+import com.inappstory.sdk.stories.utils.RunnableCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
@@ -113,7 +114,7 @@ public class StoryListItem extends BaseStoryListItem {
             title = v.findViewById(R.id.title);
             hasAudioIcon = v.findViewById(R.id.hasAudio);
             //video = v.findViewById(R.id.video);
-           // image = v.findViewById(R.id.image);
+            // image = v.findViewById(R.id.image);
             border = v.findViewById(R.id.border);
             title.setTextSize(TypedValue.COMPLEX_UNIT_PX, manager.csListItemTitleSize(itemView.getContext()));
             title.setTextColor(manager.csListItemTitleColor());
@@ -122,41 +123,6 @@ public class StoryListItem extends BaseStoryListItem {
                     PorterDuff.Mode.SRC_ATOP);
         }
         return v;
-    }
-
-    interface RunnableCallback {
-        void run(String path);
-
-        void error();
-    }
-
-    private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null) return;
-        Downloader.downloadFileBackground(url, false, service.getFastCache(), new FileLoadProgressCallback() {
-            @Override
-            public void onProgress(long loadedSize, long totalSize) {
-
-            }
-
-            @Override
-            public void onSuccess(File file) {
-                final String path = file.getAbsolutePath();
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getListItem != null) {
-                            callback.run(path);
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-
-            }
-        });
     }
 
     public Integer backgroundColor;
@@ -182,7 +148,7 @@ public class StoryListItem extends BaseStoryListItem {
                 int y = location[1];
                 ScreensManager.getInstance().coordinates =
                         new StoryItemCoordinates(x + v.getWidth() / 2 - Sizes.dpToPxExt(8, itemView.getContext()),
-                        y + v.getHeight() / 2);
+                                y + v.getHeight() / 2);
                 if (StoryListItem.this.callback != null)
                     StoryListItem.this.callback.onItemClick(
                             getAbsoluteAdapterPosition(),
@@ -201,18 +167,20 @@ public class StoryListItem extends BaseStoryListItem {
                         StoryListItem.this.backgroundColor);
             } else {
                 if (imageUrl != null) {
-                    downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
+                    Downloader.downloadFileAndSendToInterface(imageUrl, new RunnableCallback() {
                         @Override
                         public void run(String path) {
                             ImageLoader.getInstance().addLink(imageUrl, path);
-                            getListItem.setImage(itemView, path,
-                                    StoryListItem.this.backgroundColor);
+                            if (getListItem != null)
+                                getListItem.setImage(itemView, path,
+                                        StoryListItem.this.backgroundColor);
                         }
 
                         @Override
                         public void error() {
-                            getListItem.setImage(itemView, null,
-                                    StoryListItem.this.backgroundColor);
+                            if (getListItem != null)
+                                getListItem.setImage(itemView, null,
+                                        StoryListItem.this.backgroundColor);
                         }
                     });
                 } else {
@@ -223,15 +191,17 @@ public class StoryListItem extends BaseStoryListItem {
 
             getListItem.setOpened(itemView, isOpened);
             if (videoUrl != null) {
-                downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
+                Downloader.downloadFileAndSendToInterface(videoUrl, new RunnableCallback() {
                     @Override
                     public void run(String path) {
-                        getListItem.setVideo(itemView, path);
+                        if (getListItem != null)
+                            getListItem.setVideo(itemView, path);
                     }
 
                     @Override
                     public void error() {
-                        getListItem.setVideo(itemView, null);
+                        if (getListItem != null)
+                            getListItem.setVideo(itemView, null);
                     }
                 });
             }

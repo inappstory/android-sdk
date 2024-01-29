@@ -34,6 +34,7 @@ import com.inappstory.sdk.stories.cache.FakeStoryDownloadManager;
 import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
+import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -498,6 +499,8 @@ public class InAppStoryService {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
+                    StackStoryObserver stackStoryObserver = stackStoryObservers.get(listID);
+                    if (stackStoryObserver != null) stackStoryObserver.onUpdate(storyId);
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.changeStory(storyId, listID);
                     }
@@ -565,11 +568,24 @@ public class InAppStoryService {
     }
 
     Set<ListManager> listSubscribers;
+    final HashMap<String, StackStoryObserver> stackStoryObservers = new HashMap<>();
     public static Set<ListManager> tempListSubscribers;
 
     public Set<ListManager> getListSubscribers() {
         if (listSubscribers == null) listSubscribers = new HashSet<>();
         return listSubscribers;
+    }
+
+    public void subscribeStackStoryObserver(String key, StackStoryObserver observer) {
+        synchronized (stackStoryObservers) {
+            stackStoryObservers.put(key, observer);
+        }
+    }
+
+    public void unsubscribeStackStoryObserver(StackStoryObserver observer) {
+        synchronized (stackStoryObservers) {
+            stackStoryObservers.remove(observer);
+        }
     }
 
     public static void checkAndAddListSubscriber(final ListManager listManager) {
@@ -596,6 +612,9 @@ public class InAppStoryService {
     public void clearSubscribers() {
         for (ListManager listManager : listSubscribers) {
             listManager.clear();
+        }
+        synchronized (stackStoryObservers) {
+            stackStoryObservers.clear();
         }
         tempListSubscribers.clear();
         listSubscribers.clear();

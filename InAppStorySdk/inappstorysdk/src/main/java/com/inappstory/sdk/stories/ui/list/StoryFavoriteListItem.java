@@ -21,6 +21,7 @@ import com.inappstory.sdk.imageloader.RoundedCornerLayout;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
+import com.inappstory.sdk.stories.utils.RunnableCallback;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -204,12 +205,6 @@ public class StoryFavoriteListItem extends BaseStoryListItem {
     @Override
     public void bindUGC() {
 
-    }
-
-    interface RunnableCallback {
-        void run(String path);
-
-        void error();
     }
 
     private void downloadFileAndSendToInterface(String url, final RunnableCallback callback) {

@@ -35,6 +35,7 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
+import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
@@ -63,11 +64,17 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallba
 import com.inappstory.sdk.stories.outercallbacks.common.single.SingleLoadCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
+import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
+import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
+import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
+import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
+import com.inappstory.sdk.stories.utils.RunnableCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -1240,6 +1247,113 @@ public class InAppStoryManager {
         }
     }
 
+
+    public void getStackFeed(
+            final String feed,
+            final String uniqueStackId,
+            final List<String> tags,
+            final AppearanceManager appearanceManager,
+            final IStackFeedResult stackFeedResult
+    ) {
+        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+            stackFeedResult.error();
+            return;
+        }
+        final String localFeed;
+        if (feed != null && !feed.isEmpty()) localFeed = feed;
+        else localFeed = "default";
+        final String localUniqueStackId = (uniqueStackId != null) ? uniqueStackId : localFeed;
+        final AppearanceManager localAppearanceManager =
+                appearanceManager != null ? appearanceManager
+                        : AppearanceManager.getCommonInstance();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) {
+            localHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getStackFeed(feed, uniqueStackId, tags, appearanceManager, stackFeedResult);
+                }
+            }, 1000);
+            return;
+        }
+        if (networkClient == null) {
+            stackFeedResult.error();
+            return;
+        }
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess() {
+                String localTags = null;
+                if (tags != null) {
+                    localTags = TextUtils.join(",", tags);
+                } else if (getTags() != null) {
+                    localTags = TextUtils.join(",", getTags());
+                }
+                networkClient.enqueue(
+                        networkClient.getApi().getFeed(
+                                localFeed,
+                                ApiSettings.getInstance().getTestKey(),
+                                0,
+                                localTags == null ? getTagsString() : localTags,
+                                null
+                        ),
+                        new LoadFeedCallback() {
+                            @Override
+                            public void onSuccess(Feed response) {
+                                if (response == null || response.stories == null) {
+                                    stackFeedResult.error();
+                                } else {
+                                    final StackStoryObserver observer = new StackStoryObserver(
+                                            response.stories,
+                                            localAppearanceManager,
+                                            localUniqueStackId,
+                                            localFeed,
+                                            new StackStoryUpdatedCallback() {
+                                                @Override
+                                                public void onUpdate(IStackStoryData newStackStoryData) {
+                                                    stackFeedResult.update(newStackStoryData);
+                                                }
+                                            }
+                                    );
+                                    observer.subscribe();
+                                    observer.onLoad(new StackStoryUpdatedCallback() {
+                                        @Override
+                                        public void onUpdate(IStackStoryData newStackStoryData) {
+                                            stackFeedResult.success(
+                                                    newStackStoryData,
+                                                    new IStackFeedActions() {
+                                                        @Override
+                                                        public void openReader(Context context) {
+                                                            observer.openReader(context);
+                                                        }
+
+                                                        @Override
+                                                        public void unsubscribe() {
+                                                            observer.unsubscribe();
+                                                        }
+                                                    }
+                                            );
+                                        }
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onError(int code, String message) {
+                                stackFeedResult.error();
+                            }
+                        }
+                );
+            }
+
+            @Override
+            public void onError() {
+                stackFeedResult.error();
+            }
+        });
+    }
+
     private void showOnboardingStoriesInner(final Integer limit, final String feed, final List<String> tags, final Context outerContext, final AppearanceManager manager) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) {
@@ -1253,7 +1367,7 @@ public class InAppStoryManager {
         }
 
         if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
             return;
         }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
