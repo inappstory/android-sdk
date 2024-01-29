@@ -1300,10 +1300,19 @@ public class InAppStoryManager {
                         ),
                         new LoadFeedCallback() {
                             @Override
-                            public void onSuccess(Feed response) {
+                            public void onSuccess(final Feed response) {
                                 if (response == null || response.stories == null) {
                                     stackFeedResult.error();
                                 } else {
+                                    InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                                        @Override
+                                        public void use(@NonNull InAppStoryService service) throws Exception {
+                                            service.getDownloadManager().uploadingAdditional(
+                                                    response.stories,
+                                                    Story.StoryType.COMMON
+                                            );
+                                        }
+                                    });
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             response.stories,
                                             localAppearanceManager,
