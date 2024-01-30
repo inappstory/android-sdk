@@ -1,20 +1,28 @@
 package com.inappstory.sdk.stories.stackfeed;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
+import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.ClickAction;
+import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
+import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.RunnableCallback;
 
@@ -204,11 +212,75 @@ public class StackStoryObserver implements IStackFeedActions {
 
     @Override
     public void openReader(Context context) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         Story currentStory = stories.get(oldIndex);
+        Story current = service.getDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
+        if (current != null) {
+            current.isOpened = true;
+            current.saveStoryOpened(Story.StoryType.COMMON);
+        }
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
+            StatisticManager.getInstance().sendDeeplinkStory(
+                    currentStory.id,
+                    currentStory.getDeeplink(),
+                    feed
+            );
+            OldStatisticManager.getInstance().addDeeplinkClickStatistic(currentStory.id);
+            if (CallbackManager.getInstance().getCallToActionCallback() != null) {
+                CallbackManager.getInstance().getCallToActionCallback().callToAction(
+                        context,
+                        new SlideData(
+                                new StoryData(
+                                        currentStory,
+                                        feed,
+                                        SourceType.STACK
+                                ),
+                                0,
+                                null
+                        ),
+                        currentStory.getDeeplink(),
+                        ClickAction.DEEPLINK
+                );
+            } else if (CallbackManager.getInstance().getUrlClickCallback() != null) {
+                CallbackManager.getInstance().getUrlClickCallback().onUrlClick(
+                        currentStory.getDeeplink()
+                );
+            } else {
+                if (!InAppStoryService.isServiceConnected()) {
+                    if (CallbackManager.getInstance().getErrorCallback() != null) {
+                        CallbackManager.getInstance().getErrorCallback().noConnection();
+                    }
+                    return;
+                }
+                try {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(currentStory.getDeeplink()));
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+                } catch (Exception ignored) {
+                    InAppStoryService.createExceptionLog(ignored);
+                }
+            }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
-        } else if (currentStory.isHideInReader()) {
-        } else {
+            service.openGameReaderWithGC(
+                    context,
+                    new GameStoryData(
+                            new SlideData(
+                                    new StoryData(
+                                            currentStory,
+                                            feed,
+                                            SourceType.STACK
+                                    ),
+                                    0,
+                                    null
+                            )
+
+                    ),
+                    currentStory.getGameInstanceId(),
+                    null
+            );
+        } else if (!currentStory.isHideInReader()) {
             List<Integer> readerStories = new ArrayList<>();
             int j = 0;
             int correctedIndex = 0;
