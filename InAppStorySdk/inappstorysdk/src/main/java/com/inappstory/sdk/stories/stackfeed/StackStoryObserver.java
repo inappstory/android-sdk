@@ -109,9 +109,6 @@ public class StackStoryObserver implements IStackFeedActions {
                         );
                     }
                 });
-            } else {
-                currentStackStoryData = localStackStoryData;
-                stackStoryUpdated.onUpdate(localStackStoryData);
             }
         }
     }
