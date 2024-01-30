@@ -1116,13 +1116,26 @@ public class InAppStoryManager {
                 .host(cmsUrl);
 
         networkClient = new NetworkClient(context, cmsUrl);
+        initDownloaders();
+    }
+
+    private void initDownloaders() {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) {
                 service.getDownloadManager().initDownloaders();
             }
-        });
 
+            @Override
+            public void error() throws Exception {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        initDownloaders();
+                    }
+                }, 500);
+            }
+        });
     }
 
     private static final Object lock = new Object();
