@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
@@ -118,7 +119,10 @@ public class StackStoryObserver implements IStackFeedActions {
             StackStoryUpdatedCallback stackStoryUpdated
     ) {
         final Story currentStory = stories.get(newIndex);
-        String image = currentStory.getProperImage(appearanceManager.csCoverQuality()).getUrl();
+        Image imageObject = currentStory.getProperImage(appearanceManager.csCoverQuality());
+        final String image;
+        if (imageObject != null) image = imageObject.getUrl();
+        else image = null;
         final String video = currentStory.getVideoUrl();
         boolean[] statuses = new boolean[stories.size()];
         StoryData[] storiesData = new StoryData[stories.size()];
