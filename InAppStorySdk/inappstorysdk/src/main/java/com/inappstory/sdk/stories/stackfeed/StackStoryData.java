@@ -53,7 +53,7 @@ public class StackStoryData implements IStackStoryData {
         synchronized (this) {
             if (type == StackStoryCoverLoadType.VIDEO) {
                 if (stackStoryCoverLoadType == StackStoryCoverLoadType.VIDEO_IMAGE)
-                    stackStoryCoverLoadType = StackStoryCoverLoadType.VIDEO;
+                    stackStoryCoverLoadType = StackStoryCoverLoadType.IMAGE;
                 else if (stackStoryCoverLoadType == StackStoryCoverLoadType.VIDEO) {
                     stackStoryCoverLoadType = StackStoryCoverLoadType.NOTHING;
                 }
@@ -61,7 +61,7 @@ public class StackStoryData implements IStackStoryData {
             } else if (type == StackStoryCoverLoadType.IMAGE) {
                 if (stackStoryCoverLoadType == StackStoryCoverLoadType.VIDEO_IMAGE)
                     stackStoryCoverLoadType = StackStoryCoverLoadType.VIDEO;
-                else if (stackStoryCoverLoadType == StackStoryCoverLoadType.VIDEO) {
+                else if (stackStoryCoverLoadType == StackStoryCoverLoadType.IMAGE) {
                     stackStoryCoverLoadType = StackStoryCoverLoadType.NOTHING;
                 }
                 this.cover.imageCoverPath(cover);
