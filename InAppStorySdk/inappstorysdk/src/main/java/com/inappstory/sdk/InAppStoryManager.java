@@ -1292,7 +1292,7 @@ public class InAppStoryManager {
                                 0,
                                 localTags == null ? getTagsString() : localTags,
                                 null,
-                                "feed_info"
+                                null//"feed_info"
                         ),
                         new LoadFeedCallback() {
                             @Override
@@ -1321,6 +1321,22 @@ public class InAppStoryManager {
                                                 }
                                             }
                                     );
+
+                                    final IStackFeedActions stackFeedActions = new IStackFeedActions() {
+                                        @Override
+                                        public void openReader(Context context) {
+                                            observer.openReader(context);
+                                        }
+
+                                        @Override
+                                        public void unsubscribe() {
+                                            observer.unsubscribe();
+                                        }
+                                    };
+                                    if (response.stories.size() == 0) {
+                                        stackFeedResult.success(null, stackFeedActions);
+                                        return;
+                                    }
                                     final Runnable loadObserver = new Runnable() {
                                         @Override
                                         public void run() {
@@ -1330,17 +1346,7 @@ public class InAppStoryManager {
                                                 public void onUpdate(IStackStoryData newStackStoryData) {
                                                     stackFeedResult.success(
                                                             newStackStoryData,
-                                                            new IStackFeedActions() {
-                                                                @Override
-                                                                public void openReader(Context context) {
-                                                                    observer.openReader(context);
-                                                                }
-
-                                                                @Override
-                                                                public void unsubscribe() {
-                                                                    observer.unsubscribe();
-                                                                }
-                                                            }
+                                                            stackFeedActions
                                                     );
                                                 }
                                             });

@@ -129,6 +129,9 @@ public class StackStoryObserver implements IStackFeedActions {
             int newIndex,
             StackStoryUpdatedCallback stackStoryUpdated
     ) {
+        if (stories.size() <= newIndex) {
+            stackStoryUpdated.onUpdate(null);
+        }
         final Story currentStory = stories.get(newIndex);
         Image imageObject = currentStory.getProperImage(appearanceManager.csCoverQuality());
         final String image;
@@ -159,23 +162,7 @@ public class StackStoryObserver implements IStackFeedActions {
     }
 
     public void onLoad(StackStoryUpdatedCallback stackStoryUpdated) {
-        int newIndex = stories.size() - 1;
-        for (int i = 0; i < stories.size(); i++) {
-            Story story = stories.get(i);
-            StoryFeedInfo feedInfo = story.feedInfo;
-            if (i == 0
-                    && feedInfo != null
-                    && feedInfo.pinPositionIgnoreMode == 0
-                    && feedInfo.pinPosition == 0
-            ) {
-                newIndex = 0;
-                break;
-            }
-            if (!story.isOpened) {
-                newIndex = i;
-                break;
-            }
-        }
+        int newIndex = 0;
         checkLastIndex(newIndex, stackStoryUpdated);
     }
 
