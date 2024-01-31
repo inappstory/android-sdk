@@ -57,6 +57,8 @@ public class StackStoryObserver implements IStackFeedActions {
     private final StackStoryUpdatedCallback stackStoryUpdated;
     private IStackStoryData currentStackStoryData;
 
+    public String feedCover;
+
     int oldIndex = -1;
 
     private void loadCovers(
@@ -65,18 +67,18 @@ public class StackStoryObserver implements IStackFeedActions {
             String video,
             final StackStoryUpdatedCallback stackStoryUpdated
     ) {
+        final StackStoryCoverCompleteCallback coverCompleteCallback =
+                new StackStoryCoverCompleteCallback() {
+                    @Override
+                    public void onComplete() {
+                        localStackStoryData.cover.feedCoverPath(feedCover);
+                        currentStackStoryData = localStackStoryData;
+                        stackStoryUpdated.onUpdate(localStackStoryData);
+                    }
+                };
         if (image == null && video == null) {
-            currentStackStoryData = localStackStoryData;
-            stackStoryUpdated.onUpdate(localStackStoryData);
+            coverCompleteCallback.onComplete();
         } else {
-            final StackStoryCoverCompleteCallback coverCompleteCallback =
-                    new StackStoryCoverCompleteCallback() {
-                        @Override
-                        public void onComplete() {
-                            currentStackStoryData = localStackStoryData;
-                            stackStoryUpdated.onUpdate(localStackStoryData);
-                        }
-                    };
             if (image != null) {
                 Downloader.downloadFileAndSendToInterface(image,
                         new RunnableCallback() {

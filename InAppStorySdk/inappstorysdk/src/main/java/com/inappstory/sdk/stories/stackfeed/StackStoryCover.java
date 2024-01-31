@@ -9,6 +9,11 @@ public class StackStoryCover implements IStackStoryCover {
         return imageCoverPath;
     }
 
+    @Override
+    public String feedCoverPath() {
+        return feedCoverPath;
+    }
+
     public String videoCoverPath() {
         return videoCoverPath;
     }
@@ -33,6 +38,11 @@ public class StackStoryCover implements IStackStoryCover {
         this.videoCoverPath = videoCoverPath;
     }
 
+    public void feedCoverPath(String feedCoverPath) {
+        this.feedCoverPath = feedCoverPath;
+    }
+
     String imageCoverPath;
     String videoCoverPath;
+    String feedCoverPath;
 }

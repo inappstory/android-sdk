@@ -12,6 +12,9 @@ public class Feed {
     @SerializedName("stories")
     public List<Story> stories;
 
+    @SerializedName("feedCover")
+    public String feedCover;
+
     public String getFeedId() {
         if (feedId != null) return Integer.toString(feedId);
         return null;

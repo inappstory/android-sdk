@@ -67,6 +67,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
+import com.inappstory.sdk.stories.stackfeed.StackStoryCoverLoadType;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
@@ -1320,26 +1321,47 @@ public class InAppStoryManager {
                                                 }
                                             }
                                     );
-                                    observer.subscribe();
-                                    observer.onLoad(new StackStoryUpdatedCallback() {
+                                    final Runnable loadObserver = new Runnable() {
                                         @Override
-                                        public void onUpdate(IStackStoryData newStackStoryData) {
-                                            stackFeedResult.success(
-                                                    newStackStoryData,
-                                                    new IStackFeedActions() {
-                                                        @Override
-                                                        public void openReader(Context context) {
-                                                            observer.openReader(context);
-                                                        }
+                                        public void run() {
+                                            observer.subscribe();
+                                            observer.onLoad(new StackStoryUpdatedCallback() {
+                                                @Override
+                                                public void onUpdate(IStackStoryData newStackStoryData) {
+                                                    stackFeedResult.success(
+                                                            newStackStoryData,
+                                                            new IStackFeedActions() {
+                                                                @Override
+                                                                public void openReader(Context context) {
+                                                                    observer.openReader(context);
+                                                                }
 
-                                                        @Override
-                                                        public void unsubscribe() {
-                                                            observer.unsubscribe();
-                                                        }
-                                                    }
-                                            );
+                                                                @Override
+                                                                public void unsubscribe() {
+                                                                    observer.unsubscribe();
+                                                                }
+                                                            }
+                                                    );
+                                                }
+                                            });
                                         }
-                                    });
+                                    };
+                                    if (response.feedCover != null) {
+                                        Downloader.downloadFileAndSendToInterface(response.feedCover, new RunnableCallback() {
+                                            @Override
+                                            public void run(String coverPath) {
+                                                observer.feedCover = coverPath;
+                                                loadObserver.run();
+                                            }
+
+                                            @Override
+                                            public void error() {
+                                                loadObserver.run();
+                                            }
+                                        });
+                                    } else {
+                                        loadObserver.run();
+                                    }
                                 }
                             }
 

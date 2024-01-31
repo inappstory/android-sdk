@@ -46,9 +46,10 @@ public class StackStoryData implements IStackStoryData {
 
     StackStoryCoverLoadType stackStoryCoverLoadType = StackStoryCoverLoadType.NOTHING;
 
-    public void updateStoryDataCover(String cover,
-                                     StackStoryCoverLoadType type,
-                                     StackStoryCoverCompleteCallback loadCompleteCallback
+    public void updateStoryDataCover(
+            String cover,
+            StackStoryCoverLoadType type,
+            StackStoryCoverCompleteCallback loadCompleteCallback
     ) {
         synchronized (this) {
             if (type == StackStoryCoverLoadType.VIDEO) {
