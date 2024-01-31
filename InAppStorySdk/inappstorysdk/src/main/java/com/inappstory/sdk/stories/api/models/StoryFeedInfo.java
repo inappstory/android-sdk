@@ -7,8 +7,8 @@ public class StoryFeedInfo {
     @SerializedName("pin_position")
     public int pinPosition;
 
-    @SerializedName("unpin_mode")
-    public int unpinMode;
+    @SerializedName("pin_position_ignore_mode")
+    public int pinPositionIgnoreMode;
 
     @SerializedName("priority")
     public int priority;

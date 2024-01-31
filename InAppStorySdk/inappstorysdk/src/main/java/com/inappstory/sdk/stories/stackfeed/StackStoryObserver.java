@@ -163,7 +163,7 @@ public class StackStoryObserver implements IStackFeedActions {
             StoryFeedInfo feedInfo = story.feedInfo;
             if (i == 0
                     && feedInfo != null
-                    && feedInfo.unpinMode == 0
+                    && feedInfo.pinPositionIgnoreMode == 0
                     && feedInfo.pinPosition == 0
             ) {
                 newIndex = 0;
