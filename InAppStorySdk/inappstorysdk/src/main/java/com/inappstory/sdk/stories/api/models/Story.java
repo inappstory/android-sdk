@@ -112,6 +112,9 @@ public class Story implements Parcelable {
     @SerializedName("slides_payload")
     public List<PayloadObject> slidesPayload;
 
+    @SerializedName("feed_info")
+    public StoryFeedInfo feedInfo;
+
     @SerializedName("payload")
     public HashMap<String, Object> ugcPayload;
 

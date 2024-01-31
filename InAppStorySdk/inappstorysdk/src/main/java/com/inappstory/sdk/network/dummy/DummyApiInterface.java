@@ -28,7 +28,7 @@ public class DummyApiInterface implements ApiInterface {
 
     @Override
     public Request getFeed(String feed, String test, Integer favorite,
-                           String tags, String fields) {
+                           String tags, String fields, String expand) {
         return new DummyRequest();
     }
 

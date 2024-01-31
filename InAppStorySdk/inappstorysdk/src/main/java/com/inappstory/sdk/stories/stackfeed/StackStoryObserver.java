@@ -13,6 +13,7 @@ import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.Story;
+import com.inappstory.sdk.stories.api.models.StoryFeedInfo;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
@@ -156,17 +157,28 @@ public class StackStoryObserver implements IStackFeedActions {
     }
 
     public void onLoad(StackStoryUpdatedCallback stackStoryUpdated) {
-        checkLastIndex(stackStoryUpdated);
-    }
-
-    private void checkLastIndex(StackStoryUpdatedCallback stackStoryUpdated) {
         int newIndex = stories.size() - 1;
         for (int i = 0; i < stories.size(); i++) {
-            if (!stories.get(i).isOpened) {
+            Story story = stories.get(i);
+            StoryFeedInfo feedInfo = story.feedInfo;
+            if (i == 0
+                    && feedInfo != null
+                    && feedInfo.unpinMode == 0
+                    && feedInfo.pinPosition == 0
+            ) {
+                newIndex = 0;
+                break;
+            }
+            if (!story.isOpened) {
                 newIndex = i;
                 break;
             }
         }
+        checkLastIndex(newIndex, stackStoryUpdated);
+    }
+
+    private void checkLastIndex(int newIndex, StackStoryUpdatedCallback stackStoryUpdated) {
+
         if (stackStoryUpdated == null) return;
         if (newIndex != oldIndex) {
             oldIndex = newIndex;
@@ -184,7 +196,14 @@ public class StackStoryObserver implements IStackFeedActions {
             }
         }
         if (openedIndex < 0) return;
-        checkLastIndex(stackStoryUpdated);
+        int newIndex = stories.size() - 1;
+        for (int i = 0; i < stories.size(); i++) {
+            if (!stories.get(i).isOpened) {
+                newIndex = i;
+                break;
+            }
+        }
+        checkLastIndex(newIndex, stackStoryUpdated);
     }
 
     public void subscribe() {
@@ -220,6 +239,7 @@ public class StackStoryObserver implements IStackFeedActions {
             current.isOpened = true;
             current.saveStoryOpened(Story.StoryType.COMMON);
         }
+        service.getListReaderConnector().changeStory(currentStory.id, listId);
         if (currentStory.getDeeplink() != null && !currentStory.getDeeplink().isEmpty()) {
             StatisticManager.getInstance().sendDeeplinkStory(
                     currentStory.id,
@@ -311,6 +331,5 @@ public class StackStoryObserver implements IStackFeedActions {
             );
             return;
         }
-        onUpdate(currentStory.id);
     }
 }

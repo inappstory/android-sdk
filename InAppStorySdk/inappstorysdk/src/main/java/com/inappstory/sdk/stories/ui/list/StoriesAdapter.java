@@ -236,7 +236,8 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
                 current.isOpened = true;
                 current.saveStoryOpened(Story.StoryType.COMMON);
-                notifyItemChanged(ind);
+                service.getListReaderConnector().changeStory(current.id, listID);
+               // notifyItemChanged(ind);
                 return;
             } else if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
@@ -277,7 +278,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
                 current.isOpened = true;
                 current.saveStoryOpened(Story.StoryType.COMMON);
-                notifyItemChanged(ind);
+                service.getListReaderConnector().changeStory(current.id, listID);
                 return;
             }
             if (current.isHideInReader()) {

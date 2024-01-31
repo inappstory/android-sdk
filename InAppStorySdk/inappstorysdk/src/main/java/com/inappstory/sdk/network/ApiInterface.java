@@ -64,7 +64,8 @@ public interface ApiInterface {
             @Query("test") String test,
             @Query("favorite") Integer favorite,
             @Query("tags") String tags,
-            @Query("fields") String fields
+            @Query("fields") String fields,
+            @Query("expand") String expand
     );
 
 

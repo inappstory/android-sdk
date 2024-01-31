@@ -499,8 +499,9 @@ public class InAppStoryService {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
-                    StackStoryObserver stackStoryObserver = stackStoryObservers.get(listID);
-                    if (stackStoryObserver != null) stackStoryObserver.onUpdate(storyId);
+                    for (StackStoryObserver storyObserver: stackStoryObservers.values()) {
+                        storyObserver.onUpdate(storyId);
+                    }
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.changeStory(storyId, listID);
                     }

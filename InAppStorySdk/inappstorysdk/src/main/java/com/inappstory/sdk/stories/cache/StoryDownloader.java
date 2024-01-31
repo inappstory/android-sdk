@@ -419,7 +419,9 @@ class StoryDownloader {
                                     ApiSettings.getInstance().getTestKey(),
                                     0,
                                     service.getTagsString(),
-                                    null),
+                                    null,
+                                    null
+                            ),
                             new LoadFeedCallback() {
                                 @Override
                                 public void onSuccess(Feed response) {

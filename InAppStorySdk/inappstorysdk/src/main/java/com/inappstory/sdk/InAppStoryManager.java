@@ -1290,7 +1290,8 @@ public class InAppStoryManager {
                                 ApiSettings.getInstance().getTestKey(),
                                 0,
                                 localTags == null ? getTagsString() : localTags,
-                                null
+                                null,
+                                "feed_info"
                         ),
                         new LoadFeedCallback() {
                             @Override
