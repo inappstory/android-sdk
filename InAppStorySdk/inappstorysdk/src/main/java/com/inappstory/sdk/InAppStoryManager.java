@@ -1355,7 +1355,9 @@ public class InAppStoryManager {
                                     };
                                     Image feedCover = response.getProperCover(localAppearanceManager.csCoverQuality());
                                     if (feedCover != null) {
-                                        Downloader.downloadFileAndSendToInterface(feedCover.getUrl(), new RunnableCallback() {
+                                        observer.feedCover = feedCover.getUrl();
+                                        loadObserver.run();
+                                      /*  Downloader.downloadFileAndSendToInterface(feedCover.getUrl(), new RunnableCallback() {
                                             @Override
                                             public void run(String coverPath) {
                                                 observer.feedCover = coverPath;
@@ -1366,7 +1368,7 @@ public class InAppStoryManager {
                                             public void error() {
                                                 loadObserver.run();
                                             }
-                                        });
+                                        });*/
                                     } else {
                                         loadObserver.run();
                                     }

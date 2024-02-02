@@ -158,7 +158,11 @@ public class StackStoryObserver implements IStackFeedActions {
                 storiesData,
                 newIndex
         );
-        loadCovers(localStackStoryData, image, video, stackStoryUpdated);
+        localStackStoryData.cover = new StackStoryCover(backgroundColor, image, video);
+        localStackStoryData.cover.feedCoverPath(feedCover);
+        currentStackStoryData = localStackStoryData;
+        stackStoryUpdated.onUpdate(localStackStoryData);
+        //loadCovers(localStackStoryData, image, video, stackStoryUpdated);
     }
 
     public void onLoad(StackStoryUpdatedCallback stackStoryUpdated) {
