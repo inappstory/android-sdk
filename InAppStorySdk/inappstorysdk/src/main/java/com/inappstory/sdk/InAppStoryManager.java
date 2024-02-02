@@ -25,6 +25,7 @@ import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.network.utils.HostFromSecretKey;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.Feed;
+import com.inappstory.sdk.stories.api.models.Image;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
@@ -1352,8 +1353,9 @@ public class InAppStoryManager {
                                             });
                                         }
                                     };
-                                    if (response.feedCover != null) {
-                                        Downloader.downloadFileAndSendToInterface(response.feedCover, new RunnableCallback() {
+                                    Image feedCover = response.getProperCover(localAppearanceManager.csCoverQuality());
+                                    if (feedCover != null) {
+                                        Downloader.downloadFileAndSendToInterface(feedCover.getUrl(), new RunnableCallback() {
                                             @Override
                                             public void run(String coverPath) {
                                                 observer.feedCover = coverPath;
