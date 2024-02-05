@@ -1304,6 +1304,7 @@ public class InAppStoryManager {
                                     InAppStoryService.useInstance(new UseServiceInstanceCallback() {
                                         @Override
                                         public void use(@NonNull InAppStoryService service) throws Exception {
+                                            service.saveStoriesOpened(response.stories, Story.StoryType.COMMON);
                                             service.getDownloadManager().uploadingAdditional(
                                                     response.stories,
                                                     Story.StoryType.COMMON
