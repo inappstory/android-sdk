@@ -173,17 +173,28 @@ public class GameManager {
 
     private void closeOrFinishGameCallback(GameStoryData dataModel, String gameCenterId, String eventData) {
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            if (eventData != null && !eventData.isEmpty())
-                CallbackManager.getInstance().getGameReaderCallback().finishGame(
-                        dataModel,
-                        eventData,
-                        gameCenterId
-                );
-            else
-                CallbackManager.getInstance().getGameReaderCallback().closeGame(
-                        dataModel,
-                        gameCenterId
-                );
+            if (eventData == null ||
+                    eventData.isEmpty() ||
+                    eventData.equals("{}") ||
+                    eventData.equals("null")
+            ) {
+                CallbackManager
+                        .getInstance()
+                        .getGameReaderCallback()
+                        .closeGame(
+                                dataModel,
+                                gameCenterId
+                        );
+            } else {
+                CallbackManager
+                        .getInstance()
+                        .getGameReaderCallback()
+                        .finishGame(
+                                dataModel,
+                                eventData,
+                                gameCenterId
+                        );
+            }
         }
     }
 
