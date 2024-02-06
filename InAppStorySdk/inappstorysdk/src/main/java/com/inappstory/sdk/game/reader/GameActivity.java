@@ -1003,29 +1003,36 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
 
     private void closeGame() {
         if (closing) return;
-        GameStoryData dataModel = getStoryDataModel();
         ZipLoader.getInstance().terminate();
         if (manager == null) {
             finish();
             return;
         }
         closing = true;
-        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            CallbackManager.getInstance().getGameReaderCallback().closeGame(
-                    dataModel,
-                    getIntent().getStringExtra("gameId")
-            );
-        }
+
         if (manager.gameLoaded) {
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
-                    if (!s.equals("true"))
+                    if (!s.equals("true")) {
                         gameCompleted(null, null);
+                        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                            CallbackManager.getInstance().getGameReaderCallback().closeGame(
+                                    getStoryDataModel(),
+                                    getIntent().getStringExtra("gameId")
+                            );
+                        }
+                    }
                 }
             });
         } else {
             gameCompleted(null, null);
+            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                CallbackManager.getInstance().getGameReaderCallback().closeGame(
+                        getStoryDataModel(),
+                        getIntent().getStringExtra("gameId")
+                );
+            }
         }
     }
 

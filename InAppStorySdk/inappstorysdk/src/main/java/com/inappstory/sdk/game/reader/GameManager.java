@@ -169,14 +169,24 @@ public class GameManager {
             StatisticManager.getInstance().sendGameEvent(name, data, dataModel.slideData.story.feed);
     }
 
-    private void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
+    private void closeOrFinishGameCallback(GameStoryData dataModel, String gameCenterId, String eventData) {
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            CallbackManager.getInstance().getGameReaderCallback().finishGame(
-                    dataModel,
-                    eventData,
-                    gameCenterId
-            );
+            if (eventData != null && !eventData.isEmpty())
+                CallbackManager.getInstance().getGameReaderCallback().finishGame(
+                        dataModel,
+                        eventData,
+                        gameCenterId
+                );
+            else
+                CallbackManager.getInstance().getGameReaderCallback().closeGame(
+                        dataModel,
+                        gameCenterId
+                );
         }
+    }
+
+    private void gameCompletedWithObject(String gameState, GameFinishOptions options, String eventData) {
+        closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
         if (options.openStory != null
                 && options.openStory.id != null
                 && !options.openStory.id.isEmpty()) {
@@ -204,13 +214,7 @@ public class GameManager {
     }
 
     private void gameCompletedWithUrl(String gameState, String link, String eventData) {
-        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            CallbackManager.getInstance().getGameReaderCallback().finishGame(
-                    dataModel,
-                    eventData,
-                    gameCenterId
-            );
-        }
+        closeOrFinishGameCallback(dataModel, gameCenterId, eventData);
         host.gameCompleted(gameState, link);
     }
 
