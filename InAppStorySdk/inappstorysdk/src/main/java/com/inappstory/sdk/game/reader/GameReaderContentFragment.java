@@ -347,29 +347,36 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void closeGame() {
         if (closing) return;
-        GameStoryData dataModel = getStoryDataModel();
         ZipLoader.getInstance().terminate();
         if (manager == null) {
             forceFinish();
             return;
         }
         closing = true;
-        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            CallbackManager.getInstance().getGameReaderCallback().closeGame(
-                    dataModel,
-                    gameReaderLaunchData.getGameId()
-            );
-        }
+
         if (manager.gameLoaded) {
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
-                    if (!s.equals("true"))
+                    if (!s.equals("true")) {
                         gameCompleted(null, null);
+                        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                            CallbackManager.getInstance().getGameReaderCallback().closeGame(
+                                    getStoryDataModel(),
+                                    gameReaderLaunchData.getGameId()
+                            );
+                        }
+                    }
                 }
             });
         } else {
             gameCompleted(null, null);
+            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                CallbackManager.getInstance().getGameReaderCallback().closeGame(
+                        getStoryDataModel(),
+                        gameReaderLaunchData.getGameId()
+                );
+            }
         }
     }
 
@@ -795,6 +802,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                             null);
                                 }
                             });
+                            loaderView.setIndeterminate(true);
                             refreshGame.postDelayed(showRefresh, 5000);
                         }
                     }
