@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version *1.17.12 (812)*
+----------------------------
+
+* Fixed: change finishGame and closeGame callbacks logic
+
 Version *1.17.11 (811)*
 ----------------------------
 
