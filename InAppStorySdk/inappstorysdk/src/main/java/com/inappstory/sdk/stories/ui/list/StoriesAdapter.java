@@ -207,6 +207,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             }
             String gameInstanceId = current.getGameInstanceId();
             if (gameInstanceId != null) {
+                OldStatisticManager.getInstance().addGameClickStatistic(current.id);
                 service.openGameReaderWithGC(
                         context,
                         new GameStoryData(

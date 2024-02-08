@@ -23,6 +23,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.BaseStoryListItem;
@@ -149,6 +150,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             }
             String gameInstanceId = current.getGameInstanceId();
             if (gameInstanceId != null) {
+                OldStatisticManager.getInstance().addGameClickStatistic(current.id);
                 service.openGameReaderWithGC(
                         context,
                         new GameStoryData(
