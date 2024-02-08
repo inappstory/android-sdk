@@ -9,6 +9,8 @@ import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 public interface BaseGameReaderScreen {
     void forceFinish();
 
+    void close();
+
     void pause();
 
     void resume();

@@ -107,6 +107,23 @@ public class GameActivity extends AppCompatActivity implements BaseGameReaderScr
         finish();
     }
 
+    @Override
+    public void close() {
+        useContentFragment(
+                new FragmentAction<GameReaderContentFragment>() {
+                    @Override
+                    public void invoke(GameReaderContentFragment fragment) {
+                        fragment.closeGame();
+                    }
+
+                    @Override
+                    public void error() {
+
+                    }
+                }
+        );
+    }
+
 
     @Override
     public void pause() {

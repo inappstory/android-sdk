@@ -97,6 +97,23 @@ public class GameMainFragment extends Fragment
         getParentFragmentManager().popBackStack();
     }
 
+    @Override
+    public void close() {
+        useContentFragment(
+                new FragmentAction<GameReaderContentFragment>() {
+                    @Override
+                    public void invoke(GameReaderContentFragment fragment) {
+                        fragment.closeGame();
+                    }
+
+                    @Override
+                    public void error() {
+
+                    }
+                }
+        );
+    }
+
 
     @Override
     public void pause() {

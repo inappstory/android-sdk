@@ -345,7 +345,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         checkIntentValues(gameLoadedCallback);
     }
 
-    private void closeGame() {
+    public void closeGame() {
         if (closing) return;
         ZipLoader.getInstance().terminate();
         if (manager == null) {
