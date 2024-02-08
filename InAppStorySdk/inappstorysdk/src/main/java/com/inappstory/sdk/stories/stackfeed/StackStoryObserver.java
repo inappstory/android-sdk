@@ -276,6 +276,7 @@ public class StackStoryObserver implements IStackFeedActions {
                 }
             }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
+            OldStatisticManager.getInstance().addGameClickStatistic(currentStory.id);
             service.openGameReaderWithGC(
                     context,
                     new GameStoryData(

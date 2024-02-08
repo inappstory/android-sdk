@@ -327,4 +327,9 @@ public class OldStatisticManager {
         closeStatisticEvent(0, false);
     }
 
+    public void addGameClickStatistic(int id) {
+        closeStatisticEvent();
+        addStatisticEvent(1, id, 0);
+        closeStatisticEvent(0, false);
+    }
 }
