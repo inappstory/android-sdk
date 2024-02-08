@@ -47,9 +47,8 @@ public class OldStatisticManager {
         }
     }
 
-    public static Object openProcessLock = new Object();
-    public static Object previewLock = new Object();
-    public static ArrayList<OpenSessionCallback> callbacks = new ArrayList<>();
+    public final Object openProcessLock = new Object();
+    public Object previewLock = new Object();
 
     public OldStatisticManager() {
     }
@@ -60,8 +59,16 @@ public class OldStatisticManager {
 
     public void putStatistic(List<Object> e) {
         synchronized (openProcessLock) {
-            if (statistic != null) {
-                statistic.add(e);
+            if (statistic != null && e != null) {
+                boolean alreadyAdded = false;
+                for (List<Object> statisticObject : statistic) {
+                    if (statisticObject.size() > 1 && e.size() > 1
+                            && statisticObject.get(1).equals(e.get(1))) {
+                        alreadyAdded = true;
+                    }
+                }
+                if (!alreadyAdded)
+                    statistic.add(e);
             }
         }
     }
@@ -155,19 +162,18 @@ public class OldStatisticManager {
         }
         try {
             synchronized (openProcessLock) {
-                final List<List<Object>> sendingStatistic = new ArrayList<>();
-                sendingStatistic.addAll(statistic);
+                final List<List<Object>> notSendingStatistic = new ArrayList<>(statistic);
+                StatisticSendObject statisticSendObject = new StatisticSendObject(
+                        Session.getInstance().id,
+                        new ArrayList<>(statistic)
+                );
                 statistic.clear();
-
                 final String updateUUID = ProfilingManager.getInstance().addTask(
                         "api_session_update"
                 );
                 networkClient.enqueue(
                         networkClient.getApi().sessionUpdate(
-                                new StatisticSendObject(
-                                        Session.getInstance().id,
-                                        sendingStatistic
-                                )
+                                statisticSendObject
                         ),
                         new NetworkCallback<SessionResponse>() {
                             @Override
@@ -180,9 +186,10 @@ public class OldStatisticManager {
                             public void errorDefault(String message) {
                                 ProfilingManager.getInstance().setReady(updateUUID);
                                 cleanStatistic();
-                                synchronized (openProcessLock) {
-                                    statistic.addAll(sendingStatistic);
+                                for (List<Object> statisticObject : notSendingStatistic) {
+                                    putStatistic(statisticObject);
                                 }
+
                             }
 
                             @Override
