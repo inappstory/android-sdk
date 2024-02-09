@@ -455,6 +455,10 @@ public class InAppStoryManager {
                         break;
                     }
                 }
+            } else {
+                this.tags = new ArrayList<>(newList);
+                clearCachedLists();
+                forceCloseStoryReader();
             }
         }
     }
