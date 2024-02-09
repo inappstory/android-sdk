@@ -707,6 +707,14 @@ public class InAppStoryManager {
         forceCloseStoryReader();
     }
 
+    public static boolean isStoryReaderOpened() {
+        return ScreensManager.getInstance().currentScreen != null;
+    }
+
+    public static boolean isGameReaderOpened() {
+        return ScreensManager.getInstance().currentGameActivity != null;
+    }
+
     private boolean setNewImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
         if (Objects.equals(imagePlaceholders.get(key), value)) {
             return false;
