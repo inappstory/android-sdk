@@ -51,7 +51,6 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
-import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;

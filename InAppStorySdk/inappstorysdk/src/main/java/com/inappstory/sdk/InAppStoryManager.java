@@ -72,6 +72,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -435,12 +436,40 @@ public class InAppStoryManager {
             showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
             return;
         }
+        List<String> currentTags = getTags();
+        Set<String> oldList = new HashSet<>();
+        if (currentTags != null) {
+            oldList.addAll(currentTags);
+        }
+        Set<String> newList = new HashSet<>();
+        if (tags != null) {
+            newList.addAll(tags);
+        }
         synchronized (tagsLock) {
-            this.tags = tags;
-            clearCachedLists();
+            if (oldList.size() == newList.size()) {
+                for (String newTag : newList) {
+                    if (!oldList.contains(newTag)) {
+                        this.tags = new ArrayList<>(newList);
+                        clearCachedLists();
+                        forceCloseStoryReader();
+                        break;
+                    }
+                }
+            }
         }
     }
 
+    public static void forceCloseStoryReader() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                ScreensManager.getInstance().forceCloseGameReader();
+                ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
+                ScreensManager.getInstance().hideGoods();
+                ScreensManager.getInstance().closeUGCEditor();
+            }
+        });
+    }
 
     private final static int TAG_LIMIT = 4000;
 
@@ -453,6 +482,7 @@ public class InAppStoryManager {
      */
 
     public void addTags(ArrayList<String> newTags) {
+        boolean hasNewTags = false;
         synchronized (tagsLock) {
             if (newTags == null || newTags.isEmpty()) return;
             if (tags == null) tags = new ArrayList<>();
@@ -463,8 +493,11 @@ public class InAppStoryManager {
                 return;
             }
             for (String tag : newTags) {
-                addTag(tag);
+                hasNewTags |= addTag(tag);
             }
+        }
+        if (hasNewTags) {
+            forceCloseStoryReader();
             clearCachedLists();
         }
     }
@@ -476,11 +509,15 @@ public class InAppStoryManager {
      */
 
     public void removeTags(ArrayList<String> removedTags) {
+        boolean tagIsRemoved = false;
         synchronized (tagsLock) {
             if (tags == null || removedTags == null || removedTags.isEmpty()) return;
             for (String tag : removedTags) {
-                removeTag(tag);
+                tagIsRemoved |= removeTag(tag);
             }
+        }
+        if (tagIsRemoved) {
+            forceCloseStoryReader();
             clearCachedLists();
         }
     }
@@ -490,8 +527,12 @@ public class InAppStoryManager {
      *
      * @param tag (tag) - single additional tag
      */
-    private void addTag(String tag) {
-        if (!tags.contains(tag)) tags.add(tag);
+    private boolean addTag(String tag) {
+        if (!tags.contains(tag)) {
+            tags.add(tag);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -499,8 +540,12 @@ public class InAppStoryManager {
      *
      * @param tag (tag) - single removing tags
      */
-    private void removeTag(String tag) {
-        if (tags.contains(tag)) tags.remove(tag);
+    private boolean removeTag(String tag) {
+        if (tags.contains(tag)) {
+            tags.remove(tag);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -510,20 +555,30 @@ public class InAppStoryManager {
      * @param value (value) - replacement result
      */
     public void setPlaceholder(String key, String value) {
+        boolean isNewPlaceholder = false;
         synchronized (placeholdersLock) {
+            if (key == null) return;
             if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
             if (placeholders == null) placeholders = new HashMap<>();
             if (value == null) {
                 if (defaultPlaceholders.containsKey(key)) {
-                    placeholders.put(key, defaultPlaceholders.get(key));
+                    isNewPlaceholder = setNewPlaceholder(key, defaultPlaceholders.get(key));
                 } else {
-                    placeholders.remove(key);
+                    isNewPlaceholder = setNewPlaceholder(key, null);
                 }
             } else {
-                placeholders.put(key, value);
+                isNewPlaceholder = setNewPlaceholder(key, value);
             }
-
         }
+        if (isNewPlaceholder) {
+            forceCloseStoryReader();
+        }
+    }
+
+    private boolean setNewPlaceholder(String key, String value) {
+        if (Objects.equals(placeholders.get(key), value)) return false;
+        placeholders.put(key, value);
+        return true;
     }
 
     /**
@@ -532,6 +587,7 @@ public class InAppStoryManager {
      * @param newPlaceholders (newPlaceholders) - key-value map (key - what we replace, value - replacement result)
      */
     public void setPlaceholders(@NonNull Map<String, String> newPlaceholders) {
+        boolean isNewPlaceholder = false;
         synchronized (placeholdersLock) {
             if (defaultPlaceholders == null) defaultPlaceholders = new HashMap<>();
             if (this.placeholders == null)
@@ -542,14 +598,18 @@ public class InAppStoryManager {
                 String value = newPlaceholders.get(key);
                 if (value == null) {
                     if (defaultPlaceholders.containsKey(key)) {
-                        this.placeholders.put(key, defaultPlaceholders.get(key));
+                        isNewPlaceholder |= setNewPlaceholder(key, defaultPlaceholders.get(key));
                     } else {
-                        this.placeholders.remove(key);
+                        isNewPlaceholder |= setNewPlaceholder(key, null);
                     }
                 } else {
-                    this.placeholders.put(key, value);
+                    isNewPlaceholder |= setNewPlaceholder(key, value);
                 }
+
             }
+        }
+        if (isNewPlaceholder) {
+            forceCloseStoryReader();
         }
     }
 
@@ -636,13 +696,23 @@ public class InAppStoryManager {
 
     public void setImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
         synchronized (placeholdersLock) {
-            imagePlaceholders.clear();
             if (imagePlaceholders == null)
                 imagePlaceholders = new HashMap<>();
             else
                 imagePlaceholders.clear();
             imagePlaceholders.putAll(placeholders);
+
         }
+        clearCachedLists();
+        forceCloseStoryReader();
+    }
+
+    private boolean setNewImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
+        if (Objects.equals(imagePlaceholders.get(key), value)) {
+            return false;
+        }
+        imagePlaceholders.put(key, value);
+        return true;
     }
 
     void setDefaultImagePlaceholders(@NonNull Map<String, ImagePlaceholderValue> placeholders) {
@@ -662,10 +732,14 @@ public class InAppStoryManager {
 
 
     public void setImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
+        boolean isNewPlaceholder = false;
         synchronized (placeholdersLock) {
             if (imagePlaceholders == null) imagePlaceholders = new HashMap<>();
-            if (value == null) imagePlaceholders.remove(key);
-            else imagePlaceholders.put(key, value);
+            isNewPlaceholder = setNewImagePlaceholder(key, value);
+        }
+        if (isNewPlaceholder) {
+            clearCachedLists();
+            forceCloseStoryReader();
         }
     }
 
@@ -947,6 +1021,7 @@ public class InAppStoryManager {
                     return;
                 }
                 if (userId.equals(InAppStoryManager.this.userId)) return;
+                forceCloseStoryReader();
                 localOpensKey = null;
                 String oldUserId = InAppStoryManager.this.userId;
                 InAppStoryManager.this.userId = userId;
@@ -954,7 +1029,7 @@ public class InAppStoryManager {
                     service.getFavoriteImages().clear();
                 service.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
                 service.getDownloadManager().refreshLocals(Story.StoryType.UGC);
-                closeStoryReader(CloseStory.AUTO);
+
                 SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId);
                 OldStatisticManager.getInstance().eventCount = 0;
                 service.getDownloadManager().cleanTasks(false);

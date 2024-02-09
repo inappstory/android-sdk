@@ -201,9 +201,17 @@ public class ScreensManager {
         if (ugcCloseCallback != null) ugcCloseCallback.onClose();
     }
 
+
     public void closeGameReader() {
         if (currentGameActivity != null) {
             currentGameActivity.close();
+            currentGameActivity = null;
+        }
+    }
+
+    public void forceCloseGameReader() {
+        if (currentGameActivity != null) {
+            currentGameActivity.finish();
             currentGameActivity = null;
         }
     }
@@ -255,7 +263,14 @@ public class ScreensManager {
                                String gameConfig,
                                String resources,
                                String options) {
-        if (InAppStoryService.isNull()) {
+        if (InAppStoryService.isNull() || ScreensManager.getInstance().currentGameActivity != null) {
+            InAppStoryManager.showELog("InAppStory_Game",
+                    "Can't open game reader: " +
+                            (InAppStoryService.isNull() ?
+                                    "Service is unavailable" :
+                                    "Game reader already opened"
+                            )
+            );
             return;
         }
         Intent intent2 = new Intent(context, GameActivity.class);
