@@ -325,6 +325,7 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        init = false;
                         downloadGame();
                     }
                 }, 500);
@@ -698,12 +699,12 @@ public class GameActivity extends AppCompatActivity implements OverlapFragmentOb
         webView.evaluateJavascript(cb + "('" + gameResponse + "');", null);
     }
 
+    private boolean init = false;
 
     private void initWebView() {
         final GameStoryData dataModel = getStoryDataModel();
         webView.setWebViewClient(new IASWebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
-            boolean init = false;
 
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
