@@ -23,4 +23,9 @@ public class GameReaderCallbackAdapter implements GameReaderCallback {
     public void gameLoadError(GameStoryData data, String gameId) {
 
     }
+
+    @Override
+    public void gameOpenError(GameStoryData data, String gameId) {
+
+    }
 }
