@@ -55,26 +55,56 @@ public class ScreensManager {
         }
     }
 
+    public void closeAllReaders(final int action) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                closeStoryReader(action);
+                closeGameReader();
+                closeUGCEditor();
+            }
+        });
+    }
+
+    public void forceCloseAllReaders(final int action) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                closeStoryReader(action);
+                forceFinishGameReader();
+                closeUGCEditor();
+            }
+        });
+    }
+
     public void subscribeGameScreen(BaseGameReaderScreen screen) {
-        if (currentGameScreen != null && currentGameScreen != screen) {
-            currentGameScreen.forceFinish();
+        synchronized (gameReaderScreenLock) {
+            if (currentGameScreen != null && currentGameScreen != screen) {
+                currentGameScreen.forceFinish();
+            }
+            currentGameScreen = screen;
         }
-        currentGameScreen = screen;
     }
 
     public void resumeStoriesReader() {
-        if (currentStoriesReaderScreen != null)
-            currentStoriesReaderScreen.resumeReader();
+        synchronized (storiesReaderScreenLock) {
+            if (currentStoriesReaderScreen != null)
+                currentStoriesReaderScreen.resumeReader();
+        }
     }
 
     public void pauseStoriesReader() {
-        if (currentStoriesReaderScreen != null)
-            currentStoriesReaderScreen.pauseReader();
+        synchronized (storiesReaderScreenLock) {
+            if (currentStoriesReaderScreen != null)
+                currentStoriesReaderScreen.pauseReader();
+        }
     }
 
     public void unsubscribeGameScreen(BaseGameReaderScreen screen) {
-        if (screen == currentGameScreen) {
-            currentGameScreen = null;
+        synchronized (gameReaderScreenLock) {
+            if (screen == currentGameScreen) {
+                currentGameScreen = null;
+            }
         }
     }
 
@@ -82,20 +112,59 @@ public class ScreensManager {
         shareCompleteListener(null);
     }
 
-    public static long created = 0;
-
     public void setTempShareStatus(boolean tempShareStatus) {
         this.tempShareStatus = tempShareStatus;
     }
 
-    public BaseReaderScreen currentStoriesReaderScreen;
+    private BaseReaderScreen currentStoriesReaderScreen;
+
+    public void subscribeReaderScreen(BaseReaderScreen readerScreen) {
+        synchronized (storiesReaderScreenLock) {
+            currentStoriesReaderScreen = readerScreen;
+        }
+    }
+
+    public void unsubscribeReaderScreen(BaseReaderScreen readerScreen) {
+        synchronized (storiesReaderScreenLock) {
+            if (currentStoriesReaderScreen == readerScreen) {
+                currentStoriesReaderScreen = null;
+            }
+        }
+    }
+
+    public BaseReaderScreen getCurrentStoriesReaderScreen() {
+        synchronized (storiesReaderScreenLock) {
+            return currentStoriesReaderScreen;
+        }
+    }
+
+
+    public void useCurrentStoriesReaderScreen(GetBaseReaderScreenCallback callback) {
+        BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+        if (readerScreen != null) callback.get(readerScreen);
+    }
+
+
+    private final Object storiesReaderScreenLock = new Object();
+    private final Object gameReaderScreenLock = new Object();
+
     public OverlapFragmentObserver overlapFragmentObserver;
 
     public void closeStoryReader(int action) {
-        if (currentStoriesReaderScreen != null)
-            currentStoriesReaderScreen.closeStoryReader(action);
+        BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+        if (readerScreen != null)
+            readerScreen.closeStoryReader(action);
     }
 
+    public boolean isStoryReaderOpened() {
+        return getCurrentStoriesReaderScreen() != null;
+    }
+
+    public boolean isGameReaderOpened() {
+        synchronized (gameReaderScreenLock) {
+            return currentGameScreen != null;
+        }
+    }
 
     private BaseGameReaderScreen currentGameScreen;
 
@@ -143,8 +212,18 @@ public class ScreensManager {
     }
 
     public void closeGameReader() {
-        if (currentGameScreen != null) {
-            currentGameScreen.forceFinish();
+        synchronized (gameReaderScreenLock) {
+            if (currentGameScreen != null) {
+                currentGameScreen.close();
+            }
+        }
+    }
+
+    public void forceFinishGameReader() {
+        synchronized (gameReaderScreenLock) {
+            if (currentGameScreen != null) {
+                currentGameScreen.forceFinish();
+            }
         }
     }
 
@@ -206,24 +285,26 @@ public class ScreensManager {
                                final List<WebResource> gameResources,
                                final GameScreenOptions options,
                                final String observableId) {
-        if (currentGameScreen != null) {
-            closeGameReader();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    openGameReader(
-                            context,
-                            data,
-                            gameId,
-                            gameUrl,
-                            splashImagePath,
-                            gameConfig,
-                            gameResources, options,
-                            observableId
-                    );
-                }
-            }, 500);
-            return;
+        synchronized (gameReaderScreenLock) {
+            if (currentGameScreen != null) {
+                closeGameReader();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        openGameReader(
+                                context,
+                                data,
+                                gameId,
+                                gameUrl,
+                                splashImagePath,
+                                gameConfig,
+                                gameResources, options,
+                                observableId
+                        );
+                    }
+                }, 500);
+                return;
+            }
         }
         //TODO skip same game id?
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
@@ -269,8 +350,11 @@ public class ScreensManager {
                 lastOpenTry = System.currentTimeMillis();
                 closeGameReader();
                 closeUGCEditor();
-                if (currentStoriesReaderScreen != null) {
-                    currentStoriesReaderScreen.forceFinish();
+
+                synchronized (storiesReaderScreenLock) {
+                    if (currentStoriesReaderScreen != null) {
+                        currentStoriesReaderScreen.forceFinish();
+                    }
                 }
                 AppearanceManager manager = appearanceManager;
                 if (manager == null) manager = AppearanceManager.getCommonInstance();

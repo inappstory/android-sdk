@@ -48,7 +48,7 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
                 storiesDialogFragment.show(
                         ((FragmentActivity) context).getSupportFragmentManager(),
                         "DialogFragment");
-                ScreensManager.getInstance().currentStoriesReaderScreen = storiesDialogFragment;
+                ScreensManager.getInstance().subscribeReaderScreen(storiesDialogFragment);
             } catch (IllegalStateException ignored) {
 
             }

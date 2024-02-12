@@ -303,7 +303,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         } else {
             reInitUI();
         }
-        ScreensManager.getInstance().currentStoriesReaderScreen = this;
+        ScreensManager.getInstance().subscribeReaderScreen(this);
         return view;
     }
 
@@ -332,7 +332,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             @Override
             public void onDragDismissed() {
                 animateFirst = true;
-                InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
+                ScreensManager.getInstance().closeStoryReader(CloseStory.SWIPE);
             }
 
             @Override
@@ -504,7 +504,7 @@ public abstract class StoriesMainFragment extends Fragment implements
             oldOrientation = getActivity().getRequestedOrientation();
             getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        ScreensManager.getInstance().currentStoriesReaderScreen = this;
+        ScreensManager.getInstance().subscribeReaderScreen(this);
     }
 
     boolean orientationChangeIsLocked() {
@@ -517,8 +517,7 @@ public abstract class StoriesMainFragment extends Fragment implements
         if (orientationChangeIsLocked()) {
             getActivity().setRequestedOrientation(oldOrientation);
         }
-        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
-            ScreensManager.getInstance().currentStoriesReaderScreen = null;
+        ScreensManager.getInstance().unsubscribeReaderScreen(this);
     }
 
     @Override

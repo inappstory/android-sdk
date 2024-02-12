@@ -440,7 +440,7 @@ public class StoriesContentFragment extends Fragment
             Story story = InAppStoryService.getInstance().getDownloadManager()
                     .getStoryById(currentIds.get(position), readerManager.storyType);
             if (story == null || story.disableClose) return;
-            InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
+            ScreensManager.getInstance().closeStoryReader(CloseStory.SWIPE);
         }
     }
 
@@ -535,7 +535,7 @@ public class StoriesContentFragment extends Fragment
                     storiesViewPager.cubeAnimation = true;
                     storiesViewPager.setCurrentItem(storiesViewPager.getCurrentItem() + 1);
                 } else {
-                    InAppStoryManager.closeStoryReader(CloseStory.AUTO);
+                    ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
                 }
             }
         });

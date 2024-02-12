@@ -8,4 +8,6 @@ public interface GameReaderCallback {
     void closeGame(GameStoryData data, String gameId);
 
     void gameLoadError(GameStoryData data, String gameId);
+
+    void gameOpenError(GameStoryData data, String gameId);
 }

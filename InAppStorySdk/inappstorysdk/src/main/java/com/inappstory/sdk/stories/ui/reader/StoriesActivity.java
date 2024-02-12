@@ -72,7 +72,6 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             }
 
             OldStatisticManager.getInstance().sendStatistic();
-            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -344,7 +343,8 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
         int navColor = appearanceSettings.csNavBarColor();
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        ScreensManager.getInstance().currentStoriesReaderScreen = this;
+
+        ScreensManager.getInstance().subscribeReaderScreen(this);
         View view = getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -374,7 +374,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             @Override
             public void onDragDismissed() {
                 animateFirst = true;
-                InAppStoryManager.closeStoryReader(CloseStory.SWIPE);
+                ScreensManager.getInstance().closeStoryReader(CloseStory.SWIPE);
             }
 
             @Override
@@ -602,15 +602,13 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onDestroy() {
-        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
-            ScreensManager.getInstance().currentStoriesReaderScreen = null;
+       ScreensManager.getInstance().unsubscribeReaderScreen(this);
         if (!pauseDestroyed) {
             InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }
             OldStatisticManager.getInstance().sendStatistic();
-            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;

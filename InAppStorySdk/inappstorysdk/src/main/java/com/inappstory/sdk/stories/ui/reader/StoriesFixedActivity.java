@@ -86,7 +86,6 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -272,7 +271,7 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
         int navColor = getIntent().getIntExtra(CS_NAVBAR_COLOR, Color.TRANSPARENT);
         if (navColor != 0)
             getWindow().setNavigationBarColor(navColor);
-        ScreensManager.getInstance().currentStoriesReaderScreen = this;
+        ScreensManager.getInstance().subscribeReaderScreen(this);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         setWindowFlag(this, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, false);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -464,13 +463,11 @@ public class StoriesFixedActivity extends AppCompatActivity implements BaseReade
 
     @Override
     public void onDestroy() {
-        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
-            ScreensManager.getInstance().currentStoriesReaderScreen = null;
+        ScreensManager.getInstance().unsubscribeReaderScreen(this);
         if (!pauseDestroyed) {
             StatusBarController.showStatusBar(this);
 
             OldStatisticManager.getInstance().sendStatistic();
-            ScreensManager.created = 0;
             cleanReader();
             System.gc();
             pauseDestroyed = true;

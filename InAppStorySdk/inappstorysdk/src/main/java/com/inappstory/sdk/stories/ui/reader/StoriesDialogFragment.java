@@ -99,8 +99,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
         }
         cleanReader();
         super.onDismiss(dialogInterface);
-        if (ScreensManager.getInstance().currentStoriesReaderScreen == this)
-            ScreensManager.getInstance().currentStoriesReaderScreen = null;
+        ScreensManager.getInstance().unsubscribeReaderScreen(this);
     }
 
     boolean cleaned = false;
@@ -221,7 +220,6 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     public void onDestroyView() {
         OldStatisticManager.getInstance().sendStatistic();
-        ScreensManager.created = System.currentTimeMillis();
         super.onDestroyView();
     }
 

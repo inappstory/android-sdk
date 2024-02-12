@@ -321,6 +321,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        init = false;
                         downloadGame();
                     }
                 }, 500);
@@ -499,11 +500,12 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.evaluateJavascript(data, null);
     }
 
+    private boolean init = false;
+
     private void initWebView() {
         final GameStoryData dataModel = getStoryDataModel();
         webView.setWebViewClient(new IASWebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
-            boolean init = false;
 
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
