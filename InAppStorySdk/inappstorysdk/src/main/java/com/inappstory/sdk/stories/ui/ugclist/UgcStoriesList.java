@@ -30,6 +30,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListScrollCallback;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -191,10 +192,8 @@ public class UgcStoriesList extends RecyclerView {
     OnItemTouchListener itemTouchListener;
 
     private boolean hasSessionUGC() {
-        synchronized (Session.class) {
-            return (!Session.needToUpdate()
-                    && Session.getInstance().isAllowUgc);
-        }
+        InAppStoryService service = InAppStoryService.getInstance();
+        return service != null && service.getSession().allowUGC();
     }
 
     void sendIndexes() {
@@ -335,7 +334,15 @@ public class UgcStoriesList extends RecyclerView {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) {
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.useInstance(
+                    lastSessionId,
+                    new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.sendStatistic();
+                        }
+                    }
+            );
         }
     }
 
@@ -414,6 +421,7 @@ public class UgcStoriesList extends RecyclerView {
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
         adapter = new UgcStoriesAdapter(getContext(),
                 uniqueID,
+                lastSessionId,
                 storiesIds,
                 appearanceManager,
                 callback,
@@ -423,8 +431,10 @@ public class UgcStoriesList extends RecyclerView {
         setAdapter(adapter);
     }
 
+    String lastSessionId;
 
     private void loadStoriesInner(final String payload) {
+
         lastPayload = payload;
         if (InAppStoryManager.getInstance() == null) {
             InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "'InAppStoryManager' cannot be null");
@@ -435,17 +445,17 @@ public class UgcStoriesList extends RecyclerView {
             return;
         }
 
+        final InAppStoryService service = InAppStoryService.getInstance();
+
         checkAppearanceManager();
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
-        if (InAppStoryService.isNotNull()) {
+        if (service != null) {
+            lastSessionId  = service.getSession().getSessionId();
             lcallback = new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(final List<Integer> storiesIds) {
                     if (cacheId != null && !cacheId.isEmpty()) {
-                        if (InAppStoryService.isNotNull()) {
-                            InAppStoryService.getInstance()
-                                    .listStoriesIds.put(cacheId, storiesIds);
-                        }
+                       service.listStoriesIds.put(cacheId, storiesIds);
                     }
                     post(new Runnable() {
                         @Override
@@ -472,13 +482,15 @@ public class UgcStoriesList extends RecyclerView {
                     if (callback != null) callback.loadError("");
                 }
             };
-            InAppStoryService.getInstance().getDownloadManager().loadUgcStories(lcallback, payload);
+            service.getDownloadManager().loadUgcStories(lcallback, payload);
 
         } else {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (InAppStoryService.isNotNull()) {
+                    InAppStoryService service1 = InAppStoryService.getInstance();
+                    if (service1 != null) {
+                        lastSessionId  = service1.getSession().getSessionId();
                         lcallback = new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(final List<Integer> storiesIds) {
@@ -508,7 +520,7 @@ public class UgcStoriesList extends RecyclerView {
                                 if (callback != null) callback.loadError("");
                             }
                         };
-                        InAppStoryService.getInstance().getDownloadManager().loadUgcStories(lcallback, payload);
+                        service1.getDownloadManager().loadUgcStories(lcallback, payload);
                     }
                 }
             }, 1000);

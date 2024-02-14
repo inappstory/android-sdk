@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -55,6 +56,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
     public Context context;
     private String listID;
     private String feed;
+    private String sessionId;
     private String feedID;
 
     public void setFeedID(String feedID) {
@@ -81,6 +83,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
 
     public StoriesAdapter(Context context,
                           String listID,
+                          String sessionId,
                           List<Integer> storiesIds,
                           AppearanceManager manager,
                           boolean isFavoriteList,
@@ -94,6 +97,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         this.context = context;
         this.listID = listID;
         this.feed = feed;
+        this.sessionId = sessionId;
         this.storiesIds = storiesIds;
         this.feedID = feedID;
         this.manager = manager;
@@ -202,7 +206,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
+        final Story current = service.getDownloadManager().getStoryById(storiesIds.get(index), Story.StoryType.COMMON);
         if (current != null) {
             if (callback != null) {
                 callback.itemClick(
@@ -216,7 +220,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
             }
             String gameInstanceId = current.getGameInstanceId();
             if (gameInstanceId != null) {
-                OldStatisticManager.getInstance().addGameClickStatistic(current.id);
+                OldStatisticManager.useInstance(
+                        sessionId,
+                        new GetOldStatisticManagerCallback() {
+                            @Override
+                            public void get(@NonNull OldStatisticManager manager) {
+                                manager.addGameClickStatistic(current.id);
+                            }
+                        }
+                );
                 service.openGameReaderWithGC(
                         context,
                         new GameStoryData(
@@ -242,7 +254,15 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
                 return;
             } else if (current.deeplink != null) {
                 StatisticManager.getInstance().sendDeeplinkStory(current.id, current.deeplink, feedID);
-                OldStatisticManager.getInstance().addDeeplinkClickStatistic(current.id);
+                OldStatisticManager.useInstance(
+                        sessionId,
+                        new GetOldStatisticManagerCallback() {
+                            @Override
+                            public void get(@NonNull OldStatisticManager manager) {
+                                manager.addDeeplinkClickStatistic(current.id);
+                            }
+                        }
+                );
                 if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                     CallbackManager.getInstance().getCallToActionCallback().callToAction(
                             context,
@@ -299,6 +319,7 @@ public class StoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> impl
         StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 listID,
                 feed,
+                sessionId,
                 tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
                 ShowStory.ACTION_OPEN,

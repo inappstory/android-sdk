@@ -63,7 +63,7 @@ public class ProfilingManager {
         if (service == null) return "";
         String hash = randomUUID().toString();
         ProfilingTask task = new ProfilingTask();
-        task.sessionId = Session.getInstance().id;
+        task.sessionId = service.getSession().getSessionId();
         task.isAllowToForceSend = isAllowToSend();
         task.userId = service.getUserId();
         task.uniqueHash = hash;
@@ -154,8 +154,8 @@ public class ProfilingManager {
     };
 
     private boolean isAllowToSend() {
-        return !Session.needToUpdate()
-                && Session.getInstance().isAllowProfiling();
+        InAppStoryService service = InAppStoryService.getInstance();
+        return service != null && service.getSession().allowProfiling();
     }
 
     private String getCC() {
@@ -176,10 +176,10 @@ public class ProfilingManager {
 
 
     private int sendTiming(ProfilingTask task) throws Exception {
-
+        InAppStoryService service = InAppStoryService.getInstance();
         Map<String, String> qParams = new HashMap<>();
         qParams.put("s", (task.sessionId != null && !task.sessionId.isEmpty()) ? task.sessionId :
-                Session.getInstance().id);
+                (service != null ? service.getSession().getSessionId() : ""));
         qParams.put("u", task.userId != null ? task.userId : "");
         String cc = getCC();
         qParams.put("ts", "" + System.currentTimeMillis() / 1000);

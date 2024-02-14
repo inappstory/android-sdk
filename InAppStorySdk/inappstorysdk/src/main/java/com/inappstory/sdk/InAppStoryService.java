@@ -26,7 +26,6 @@ import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.ExceptionCache;
 import com.inappstory.sdk.stories.api.models.ImagePlaceholderValue;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryPlaceholder;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
@@ -35,13 +34,16 @@ import com.inappstory.sdk.stories.cache.StoryDownloadManager;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
 import com.inappstory.sdk.stories.managers.TimerManager;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.FavoriteImage;
 import com.inappstory.sdk.stories.ui.list.ListManager;
+import com.inappstory.sdk.stories.utils.SessionHolder;
 import com.inappstory.sdk.stories.utils.SessionManager;
+import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +64,12 @@ public class InAppStoryService {
             if (InAppStoryManager.getInstance() == null) return null;
             return INSTANCE;
         }
+    }
+
+    private ISessionHolder sessionHolder = new SessionHolder();
+
+    public ISessionHolder getSession() {
+        return sessionHolder;
     }
 
     public static boolean isNotNull() {
@@ -196,26 +204,12 @@ public class InAppStoryService {
         });
     }
 
-    public boolean getSendNewStatistic() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return false;
-        if (!Session.needToUpdate()) {
-            if (Session.getInstance().statisticPermissions == null) return false;
-            return manager.isSendStatistic() &&
-                    Session.getInstance().statisticPermissions.allowStatV2;
-        }
-        return false;
+    public boolean statV2Disallowed() {
+        return !sessionHolder.allowStatV2();
     }
 
-    public boolean getSendStatistic() {
-        InAppStoryManager manager = InAppStoryManager.getInstance();
-        if (manager == null) return false;
-        if (!Session.needToUpdate()) {
-            if (Session.getInstance().statisticPermissions == null) return false;
-            return manager.isSendStatistic()
-                    && Session.getInstance().statisticPermissions.allowStatV1;
-        }
-        return false;
+    public boolean statV1Disallowed() {
+        return !sessionHolder.allowStatV1();
     }
 
     public InAppStoryService(String userId) {
@@ -246,9 +240,18 @@ public class InAppStoryService {
     }
 
     void logout() {
-        OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-        SessionManager.getInstance().closeSession(true, false, userId);
-        OldStatisticManager.getInstance().clear();
+        OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
+            @Override
+            public void get(@NonNull OldStatisticManager manager) {
+                manager.closeStatisticEvent(null, true);
+            }
+        });
+        SessionManager.getInstance().closeSession(
+                true,
+                false,
+                userId,
+                sessionHolder.getSessionId()
+        );
     }
 
     public void clearLocalData() {
@@ -285,8 +288,13 @@ public class InAppStoryService {
     }
 
 
-    public void sendPageOpenStatistic(int storyId, int index, String feedId) {
-        OldStatisticManager.getInstance().addStatisticBlock(storyId, index);
+    public void sendPageOpenStatistic(final int storyId, final int index, String feedId) {
+        OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
+            @Override
+            public void get(@NonNull OldStatisticManager manager) {
+                manager.addStatisticBlock(storyId, index);
+            }
+        });
         StatisticManager.getInstance().createCurrentState(storyId, index, feedId);
     }
 
@@ -484,7 +492,12 @@ public class InAppStoryService {
     }
 
     public void runStatisticThread() {
-        OldStatisticManager.getInstance().refreshCallbacks();
+        OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
+            @Override
+            public void get(@NonNull OldStatisticManager manager) {
+                manager.refreshCallbacks();
+            }
+        });
     }
 
     ListReaderConnector connector = new ListReaderConnector();
@@ -499,7 +512,7 @@ public class InAppStoryService {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
-                    for (StackStoryObserver storyObserver: stackStoryObservers.values()) {
+                    for (StackStoryObserver storyObserver : stackStoryObservers.values()) {
                         storyObserver.onUpdate(storyId);
                     }
                     for (ListManager sub : service.getListSubscribers()) {
@@ -736,7 +749,6 @@ public class InAppStoryService {
         });
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
-        OldStatisticManager.getInstance().statistic = new ArrayList<>();
         createDownloadManager(exceptionCache);
         timerManager = new TimerManager();
         if (tempListSubscribers != null) {

@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.exceptions;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.network.JsonParser;
@@ -30,11 +31,12 @@ public class ExceptionManager {
         if (networkClient == null) {
             return;
         }
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
-                if (Session.getInstance().statisticPermissions != null
-                        && Session.getInstance().statisticPermissions.allowCrash)
+            public void onSuccess(String sessionId) {
+                if (service.getSession().allowCrash())
                     networkClient.enqueue(
                             networkClient.getApi().sendException(
                                     copiedLog.session,
@@ -79,7 +81,9 @@ public class ExceptionManager {
         log.id = UUID.randomUUID().toString();
         log.timestamp = System.currentTimeMillis();
         log.message = throwable.getClass().getCanonicalName() + ": " + throwable.getMessage();
-        log.session = Session.getInstance().id;
+
+        InAppStoryService service = InAppStoryService.getInstance();
+        log.session = (service != null ? service.getSession().getSessionId() : null);
         StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         if (stackTraceElements.length > 0) {
             String stackTrace = "";

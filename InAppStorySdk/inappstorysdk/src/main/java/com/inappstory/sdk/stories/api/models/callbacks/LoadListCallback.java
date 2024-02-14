@@ -1,6 +1,7 @@
 package com.inappstory.sdk.stories.api.models.callbacks;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.StoryListType;
@@ -36,7 +37,15 @@ public abstract class LoadListCallback extends NetworkCallback<List<Story>> {
         InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
         if (inAppStoryManager != null)
             oldUserId = inAppStoryManager.getUserId();
-        SessionManager.getInstance().closeSession(true, false, oldUserId);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null) {
+            SessionManager.getInstance().closeSession(
+                    true,
+                    false,
+                    oldUserId,
+                    service.getSession().getSessionId()
+            );
+        }
     }
 
 }

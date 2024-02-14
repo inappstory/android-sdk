@@ -28,7 +28,7 @@ public class GetGameModelUseCase {
             demoMode = false;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(String sessionId) {
                 networkClient.enqueue(
                         networkClient.getApi().getGameByInstanceId(gameId, new GameLaunchConfigObject(demoMode)),
                         new NetworkCallback<GameCenterData>() {

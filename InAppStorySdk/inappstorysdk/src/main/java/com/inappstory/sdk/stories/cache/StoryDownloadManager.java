@@ -61,24 +61,6 @@ public class StoryDownloadManager {
 
     final Object storiesLock = new Object();
 
-    public void getFullStoryById(final GetStoryByIdCallback storyByIdCallback,
-                                 final int id,
-                                 Story.StoryType type) {
-        List<Story> lStories = new ArrayList<>();
-        List<Story> stories = getStoriesListByType(type);
-        synchronized (storiesLock) {
-            if (stories != null)
-                lStories.addAll(stories);
-        }
-        for (Story story : lStories) {
-            if (story.id == id) {
-                storyByIdCallback.getStory(story);
-                return;
-            }
-        }
-    }
-
-
     public void getFullStoryByStringId(
             final GetStoryByIdCallback storyByIdCallback,
             final String id,
@@ -93,7 +75,7 @@ public class StoryDownloadManager {
         }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(final String sessionId) {
                 final String storyUID = ProfilingManager.getInstance().addTask("api_story");
                 networkClient.enqueue(
                         networkClient.getApi().getStoryById(
@@ -120,7 +102,7 @@ public class StoryDownloadManager {
                                 uploadingAdditional(st, type);
                                 setStory(response, response.id, type);
                                 if (storyByIdCallback != null)
-                                    storyByIdCallback.getStory(response);
+                                    storyByIdCallback.getStory(response, sessionId);
                             }
 
                             @Override

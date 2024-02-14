@@ -9,6 +9,7 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.widgets.readerscreen.storiespager.ReaderPageManager;
@@ -71,9 +72,20 @@ public class TimerManager {
     public void resumeTimer(int timer) {
         StatisticManager.getInstance().cleanFakeEvents();
         startTimer(timer, false);
-        if (OldStatisticManager.getInstance().currentEvent == null) return;
-        OldStatisticManager.getInstance().currentEvent.eventType = 1;
-        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
+        if (pageManager == null) return;
+        OldStatisticManager.useInstance(
+                pageManager.getParentManager().getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        if (manager.currentEvent == null) return;
+                        manager.currentEvent.eventType = 1;
+                        manager.currentEvent.timer = System.currentTimeMillis();
+                    }
+                }
+        );
+
+
         pauseTime += System.currentTimeMillis() - startPauseTime;
         StatisticManager.getInstance().currentState.storyPause = pauseTime;
         startPauseTime = 0;
@@ -142,9 +154,18 @@ public class TimerManager {
     public void resumeTimer() {
         StatisticManager.getInstance().cleanFakeEvents();
         // resumeLocalTimer();
-        if (OldStatisticManager.getInstance().currentEvent == null) return;
-        OldStatisticManager.getInstance().currentEvent.eventType = 1;
-        OldStatisticManager.getInstance().currentEvent.timer = System.currentTimeMillis();
+        if (pageManager == null) return;
+        OldStatisticManager.useInstance(
+                pageManager.getParentManager().getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        if (manager.currentEvent == null) return;
+                        manager.currentEvent.eventType = 1;
+                        manager.currentEvent.timer = System.currentTimeMillis();
+                    }
+                }
+        );
         pauseTime += System.currentTimeMillis() - startPauseTime;
         if (StatisticManager.getInstance() != null && StatisticManager.getInstance().currentState != null)
             StatisticManager.getInstance().currentState.storyPause = pauseTime;
@@ -159,6 +180,18 @@ public class TimerManager {
     }
 
     public void pauseTimer() {
+        if (pageManager == null) return;
+        OldStatisticManager.useInstance(
+                pageManager.getParentManager().getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        manager.closeStatisticEvent(null, true);
+                        manager.sendStatistic();
+                        manager.increaseEventCount();
+                    }
+                }
+        );
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
@@ -170,9 +203,6 @@ public class TimerManager {
                             pageManager != null ? pageManager.getFeedId() : null);
                 }
                 startPauseTime = System.currentTimeMillis();
-                OldStatisticManager.getInstance().closeStatisticEvent(null, true);
-                OldStatisticManager.getInstance().sendStatistic();
-                OldStatisticManager.getInstance().eventCount++;
             }
         });
     }

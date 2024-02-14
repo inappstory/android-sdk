@@ -8,7 +8,6 @@ import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.stories.api.models.CurrentState;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.utils.LoopedExecutor;
 
 import java.util.ArrayList;
@@ -62,7 +61,7 @@ public class StatisticManager {
     public void addTask(StatisticTask task, boolean force) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (!force && service != null &&
-                !service.getSendNewStatistic()) return;
+                service.statV2Disallowed()) return;
         synchronized (statisticTasksLock) {
             tasks.add(task);
             saveTasksSP();
@@ -73,7 +72,7 @@ public class StatisticManager {
     public void addFakeTask(StatisticTask task) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null &&
-                !service.getSendNewStatistic()) return;
+                service.statV2Disallowed()) return;
         synchronized (statisticTasksLock) {
             faketasks.add(task);
             saveFakeTasksSP();
@@ -289,9 +288,10 @@ public class StatisticManager {
 
     public void generateBase(StatisticTask task) {
         InAppStoryService service = InAppStoryService.getInstance();
-        task.sessionId = Session.getInstance().id;
-        if (service != null)
+        if (service != null) {
             task.userId = service.getUserId();
+            task.sessionId = service.getSession().getSessionId();
+        }
         task.timestamp = System.currentTimeMillis() / 1000;
     }
 

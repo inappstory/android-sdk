@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.JsonParser;
@@ -17,6 +19,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -39,7 +42,6 @@ public class ReaderPageManager {
     StoriesViewManager webViewManager;
     TimerManager timerManager;
     ReaderPageFragment host;
-
 
 
     public void unlockShareButton() {
@@ -164,10 +166,12 @@ public class ReaderPageManager {
 
     private void tapOnLink(String link) {
         StoryLinkObject object = JsonParser.fromJson(link, StoryLinkObject.class);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         if (object != null) {
 
             ClickAction action = ClickAction.BUTTON;
-            Story story = InAppStoryService.getInstance().getDownloadManager().getStoryById(
+            Story story = service.getDownloadManager().getStoryById(
                     storyId, getStoryType()
             );
             switch (object.getLink().getType()) {
@@ -178,7 +182,15 @@ public class ReaderPageManager {
                         }
                     }
                     if (getStoryType() == Story.StoryType.COMMON)
-                        OldStatisticManager.getInstance().addLinkOpenStatistic();
+                        OldStatisticManager.useInstance(
+                                parentManager.getSessionId(),
+                                new GetOldStatisticManagerCallback() {
+                                    @Override
+                                    public void get(@NonNull OldStatisticManager manager) {
+                                        manager.addLinkOpenStatistic();
+                                    }
+                                }
+                        );
                     if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                         if (story != null) {
                             CallbackManager.getInstance().getCallToActionCallback().callToAction(
@@ -216,10 +228,6 @@ public class ReaderPageManager {
                     break;
             }
         }
-    }
-
-    void storyLoaded(int id, int index) {
-        webViewManager.storyLoaded(id, index);
     }
 
     public void startStoryTimers() {
@@ -442,6 +450,8 @@ public class ReaderPageManager {
     public void changeCurrentSlide(int slideIndex) {
         if (checkIfManagersIsNull()) return;
         if (durations == null) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         List<Integer> localDurations = new ArrayList<>(durations);
         if (localDurations.size() <= slideIndex) return;
         host.showLoader();
@@ -453,10 +463,10 @@ public class ReaderPageManager {
         timerManager.stopTimer();
         timerManager.setCurrentDuration(localDurations.get(slideIndex));
         StatisticManager.getInstance().sendCurrentState();
-        InAppStoryService.getInstance().getDownloadManager().changePriorityForSingle(storyId,
+        service.getDownloadManager().changePriorityForSingle(storyId,
                 parentManager.storyType);
         if (getStoryType() == Story.StoryType.COMMON)
-            InAppStoryService.getInstance().sendPageOpenStatistic(storyId, slideIndex,
+            service.sendPageOpenStatistic(storyId, slideIndex,
                     parentManager != null ? parentManager.getFeedId() : null);
         loadStoryAndSlide(host.story, slideIndex);
     }

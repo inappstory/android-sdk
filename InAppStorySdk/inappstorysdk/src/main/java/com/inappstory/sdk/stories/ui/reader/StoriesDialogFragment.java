@@ -42,6 +42,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.CloseReader;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -68,7 +69,15 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         ScreensManager.getInstance().closeGameReader();
-        OldStatisticManager.getInstance().sendStatistic();
+        OldStatisticManager.useInstance(
+                launchData.getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        manager.sendStatistic();
+                    }
+                }
+        );
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null) {
             Story story = service.getDownloadManager()
@@ -106,7 +115,16 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
 
     public void cleanReader() {
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
+
+        OldStatisticManager.useInstance(
+                launchData.getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        manager.closeStatisticEvent();
+                    }
+                }
+        );
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
@@ -219,7 +237,16 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
     }
 
     public void onDestroyView() {
-        OldStatisticManager.getInstance().sendStatistic();
+
+        OldStatisticManager.useInstance(
+                launchData.getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        manager.sendStatistic();
+                    }
+                }
+        );
         super.onDestroyView();
     }
 

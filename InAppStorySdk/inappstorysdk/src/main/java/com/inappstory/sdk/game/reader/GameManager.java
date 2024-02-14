@@ -4,9 +4,6 @@ import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
 
 import android.content.Context;
 import android.media.AudioManager;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
@@ -88,7 +85,7 @@ public class GameManager {
         KeyValueStorage.saveString("gameInstance_" + gameInstanceId
                 + "__" + service.getUserId(), data);
 
-        if (!service.getSendStatistic()) return;
+        if (service.statV1Disallowed()) return;
         if (sendToServer) {
             networkClient.enqueue(networkClient.getApi().sendGameData(gameInstanceId, data),
                     new NetworkCallback<Response>() {
@@ -133,13 +130,14 @@ public class GameManager {
         KeyValueStorage.saveString("story" + dataModel.slideData.story.id
                 + "__" + service.getUserId(), data);
 
-        if (!service.getSendStatistic()) return;
+        String sessionId = service.getSession().getSessionId();
+        if (service.statV1Disallowed() || sessionId.isEmpty()) return;
         if (sendToServer) {
             networkClient.enqueue(
                     networkClient.getApi().sendStoryData(
                             Integer.toString(dataModel.slideData.story.id),
                             data,
-                            Session.getInstance().id
+                            sessionId
                     ),
                     new NetworkCallback<Response>() {
                         @Override

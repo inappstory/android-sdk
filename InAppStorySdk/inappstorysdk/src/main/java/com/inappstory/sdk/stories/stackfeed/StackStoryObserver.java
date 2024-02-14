@@ -22,6 +22,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -33,6 +34,7 @@ import java.util.List;
 public class StackStoryObserver implements IStackFeedActions {
     public StackStoryObserver(
             List<Story> stories,
+            String sessionId,
             AppearanceManager appearanceManager,
             String feed,
             String listId,
@@ -40,12 +42,14 @@ public class StackStoryObserver implements IStackFeedActions {
     ) {
         this.stories = stories;
         this.appearanceManager = appearanceManager;
+        this.sessionId = sessionId;
         this.feed = feed;
         this.listId = listId;
         this.stackStoryUpdated = stackStoryUpdated;
     }
 
     private final String listId;
+    String sessionId;
     private final AppearanceManager appearanceManager;
 
     public String listId() {
@@ -226,7 +230,7 @@ public class StackStoryObserver implements IStackFeedActions {
     public void openReader(Context context) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        Story currentStory = stories.get(oldIndex);
+        final Story currentStory = stories.get(oldIndex);
         Story current = service.getDownloadManager().getStoryById(currentStory.id, Story.StoryType.COMMON);
         if (current != null) {
             current.isOpened = true;
@@ -239,7 +243,12 @@ public class StackStoryObserver implements IStackFeedActions {
                     currentStory.getDeeplink(),
                     feed
             );
-            OldStatisticManager.getInstance().addDeeplinkClickStatistic(currentStory.id);
+            OldStatisticManager.useInstance(sessionId, new GetOldStatisticManagerCallback() {
+                @Override
+                public void get(@NonNull OldStatisticManager manager) {
+                    manager.addDeeplinkClickStatistic(currentStory.id);
+                }
+            });
             if (CallbackManager.getInstance().getCallToActionCallback() != null) {
                 CallbackManager.getInstance().getCallToActionCallback().callToAction(
                         context,
@@ -276,7 +285,15 @@ public class StackStoryObserver implements IStackFeedActions {
                 }
             }
         } else if (currentStory.getGameInstanceId() != null && !currentStory.getGameInstanceId().isEmpty()) {
-            OldStatisticManager.getInstance().addGameClickStatistic(currentStory.id);
+            OldStatisticManager.useInstance(
+                    sessionId,
+                    new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.addGameClickStatistic(currentStory.id);
+                        }
+                    }
+            );
             service.openGameReaderWithGC(
                     context,
                     new GameStoryData(
@@ -310,6 +327,7 @@ public class StackStoryObserver implements IStackFeedActions {
             StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                     listId,
                     feed,
+                    sessionId,
                     readerStories,
                     correctedIndex,
                     ShowStory.ACTION_OPEN,

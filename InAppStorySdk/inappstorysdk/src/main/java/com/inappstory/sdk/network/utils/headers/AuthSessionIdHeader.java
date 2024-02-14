@@ -1,6 +1,6 @@
 package com.inappstory.sdk.network.utils.headers;
 
-import com.inappstory.sdk.stories.api.models.Session;
+import com.inappstory.sdk.InAppStoryService;
 
 public class AuthSessionIdHeader implements Header {
     @Override
@@ -10,8 +10,7 @@ public class AuthSessionIdHeader implements Header {
 
     @Override
     public String getValue() {
-        if (Session.needToUpdate())
-            return null;
-        return Session.getInstance().id;
+        InAppStoryService service = InAppStoryService.getInstance();
+        return (service != null ? service.getSession().getSessionId() : null);
     }
 }

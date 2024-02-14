@@ -22,7 +22,6 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
@@ -604,7 +603,7 @@ public class StoriesViewManager {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
         KeyValueStorage.saveString("story" + storyId + "__" + service.getUserId(), data);
-        if (!service.getSendStatistic()) return;
+        if (service.statV1Disallowed()) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
@@ -614,7 +613,7 @@ public class StoriesViewManager {
                     networkClient.getApi().sendStoryData(
                             Integer.toString(storyId),
                             data,
-                            Session.getInstance().id
+                            service.getSession().getSessionId()
                     ),
                     new NetworkCallback<Response>() {
                         @Override
@@ -634,10 +633,10 @@ public class StoriesViewManager {
     public SourceType source = SourceType.SINGLE;
 
     public void storySendData(String data) {
-        if (!InAppStoryService.getInstance().getSendStatistic()) return;
+        if (InAppStoryService.getInstance().statV1Disallowed()) return;
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
-        if (!service.getSendStatistic()) return;
+        if (service.statV1Disallowed()) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             return;
@@ -646,7 +645,7 @@ public class StoriesViewManager {
                 networkClient.getApi().sendStoryData(
                         Integer.toString(storyId),
                         data,
-                        Session.getInstance().id
+                        service.getSession().getSessionId()
                 ),
                 new NetworkCallback<Response>() {
                     @Override

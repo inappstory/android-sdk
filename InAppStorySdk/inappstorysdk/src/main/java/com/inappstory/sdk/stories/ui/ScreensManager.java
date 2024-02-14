@@ -306,7 +306,13 @@ public class ScreensManager {
                 return;
             }
         }
-        //TODO skip same game id?
+        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+            CallbackManager.getInstance().getGameReaderCallback().startGame(
+                    data, gameId
+            );
+        }
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager == null) return;
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
                 gameId,
                 observableId,
@@ -317,13 +323,6 @@ public class ScreensManager {
                 options,
                 data != null ? data.slideData : null
         );
-        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-            CallbackManager.getInstance().getGameReaderCallback().startGame(
-                    data, gameId
-            );
-        }
-        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-        if (inAppStoryManager == null) return;
         Bundle bundle = new Bundle();
         bundle.putSerializable(gameReaderLaunchData.getSerializableKey(), gameReaderLaunchData);
         inAppStoryManager.getOpenGameReader().onOpen(

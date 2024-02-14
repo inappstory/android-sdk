@@ -29,7 +29,7 @@ import com.inappstory.sdk.ugc.list.IStoriesListUGCItem;
 
 /**
  * Defines appearance of the stories list, as well as some elements of the reader.
- * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStoriesInner()}.
+ * It must be set globally for the library, or separately for the list before calling {@link StoriesList#loadStories()}.
  * For a global setting, you must call the static method of the class {@link #setCommonInstance(AppearanceManager)}.
  */
 public class AppearanceManager {

@@ -29,6 +29,7 @@ import com.inappstory.sdk.stories.api.models.StatisticSendObject;
 import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.ugc.extinterfaces.IOpenSessionCallback;
@@ -51,9 +52,7 @@ public class SessionManager {
     }
 
     public void useOrOpenSession(OpenSessionCallback callback) {
-        if (checkOpenStatistic(callback)) {
-            callback.onSuccess();
-        }
+        checkOpenStatistic(callback);
     }
 
     public void addStaticOpenSessionCallback(IOpenSessionCallback callback) {
@@ -62,22 +61,22 @@ public class SessionManager {
         }
     }
 
-    public boolean checkOpenStatistic(final OpenSessionCallback callback) {
+    public void checkOpenStatistic(final OpenSessionCallback callback) {
         boolean checkOpen = false;
         synchronized (openProcessLock) {
             checkOpen = openProcess;
         }
-        if (InAppStoryService.isServiceConnected()) {
-            if (Session.needToUpdate() || checkOpen) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service != null && service.isConnected()) {
+            String session = service.getSession().getSessionId();
+            if (session.isEmpty() || checkOpen) {
                 openSession(callback);
-                return false;
             } else {
-                return true;
+                callback.onSuccess(session);
             }
         } else {
             if (callback != null)
                 callback.onError();
-            return false;
         }
     }
 
@@ -90,17 +89,17 @@ public class SessionManager {
 
     private void saveSession(final SessionResponse response) {
         if (response == null || response.session == null) return;
-        response.session.statisticPermissions = new StatisticPermissions(
-                response.isAllowProfiling,
-                response.isAllowStatV1,
-                response.isAllowStatV2,
-                response.isAllowCrash
-        );
-        response.session.isAllowUgc = response.isAllowUgc;
-        response.session.save();
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
+                response.session.statisticPermissions = new StatisticPermissions(
+                        response.isAllowProfiling,
+                        response.isAllowStatV1,
+                        response.isAllowStatV2,
+                        response.isAllowCrash
+                );
+                response.session.isAllowUgc = response.isAllowUgc;
+                service.getSession().setSession(response.session);
                 service.saveSessionPlaceholders(response.placeholders);
                 service.saveSessionImagePlaceholders(response.imagePlaceholders);
             }
@@ -116,10 +115,15 @@ public class SessionManager {
                     openProcess = false;
                     for (OpenSessionCallback localCallback : callbacks)
                         if (localCallback != null)
-                            localCallback.onSuccess();
+                            localCallback.onSuccess(response.session.id);
                     callbacks.clear();
                 }
-                InAppStoryService.getInstance().runStatisticThread();
+                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryService service) throws Exception {
+                        service.runStatisticThread();
+                    }
+                });
                 Downloader.downloadFonts(response.cachedFonts);
             }
         });
@@ -167,7 +171,9 @@ public class SessionManager {
 
     @SuppressLint("HardwareIds")
     private void openSessionInner() {
-        Context context = InAppStoryService.getInstance().getContext();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        Context context = service.getContext();
         String platform = "android";
         String deviceId = Settings.Secure.getString(
                 context.getContentResolver(),
@@ -200,7 +206,8 @@ public class SessionManager {
         }
         final String sessionOpenUID = ProfilingManager.getInstance().addTask("api_session_open");
         final String initialUserId = InAppStoryService.getInstance().getUserId();
-        networkClient.enqueue(networkClient.getApi().sessionOpen(
+        networkClient.enqueue(
+                networkClient.getApi().sessionOpen(
                         SESSION_FIELDS,
                         SESSION_EXPAND,
                         FEATURES,
@@ -224,22 +231,32 @@ public class SessionManager {
                     public void onSuccess(SessionResponse response) {
                         InAppStoryService service = InAppStoryService.getInstance();
                         if (service == null) return;
+                        String currentSession = service.getSession().getSessionId();
                         String serviceUserId = service.getUserId();
                         saveSession(response);
                         if (initialUserId == null) {
                             if (serviceUserId != null) {
-                                closeSession(false, true, null);
+                                closeSession(
+                                        false,
+                                        true,
+                                        null,
+                                        currentSession
+                                );
                                 openSessionInner();
                                 return;
                             }
                         } else {
                             if (!initialUserId.equals(serviceUserId)) {
-                                closeSession(false, true, initialUserId);
+                                closeSession(
+                                        false,
+                                        true,
+                                        initialUserId,
+                                        currentSession
+                                );
                                 openSessionInner();
                                 return;
                             }
                         }
-                        OldStatisticManager.getInstance().eventCount = 0;
                         ProfilingManager.getInstance().setReady(sessionOpenUID);
                         openStatisticSuccess(response);
                         CachedSessionData cachedSessionData = new CachedSessionData();
@@ -294,61 +311,65 @@ public class SessionManager {
     }
 
     public void closeSession(
-            boolean sendStatistic,
+            final boolean sendStatistic,
             final boolean changeUserId,
-            final String oldUserId
+            final String oldUserId,
+            final String oldSessionId
     ) {
+        if (oldSessionId == null) return;
         clearCaches();
-        if (Session.getInstance().id != null) {
-            List<List<Object>> stat = new ArrayList<>(
-                    sendStatistic ?
-                            OldStatisticManager.getInstance().statistic :
-                            new ArrayList<List<Object>>()
-            );
-            if (OldStatisticManager.getInstance() != null)
-                OldStatisticManager.getInstance().clear();
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        OldStatisticManager.useInstance(oldSessionId, new GetOldStatisticManagerCallback() {
+            @Override
+            public void get(@NonNull OldStatisticManager manager) {
+                List<List<Object>> stat = new ArrayList<>(
+                        sendStatistic ?
+                                manager.statistic :
+                                new ArrayList<List<Object>>()
+                );
+                manager.clear();
 
-            final String sessionCloseUID =
-                    ProfilingManager.getInstance().addTask("api_session_close");
+                final String sessionCloseUID =
+                        ProfilingManager.getInstance().addTask("api_session_close");
+                NetworkClient networkClient = InAppStoryManager.getNetworkClient();
+                if (networkClient == null) {
+                    if (changeUserId)
+                        service.getListReaderConnector().changeUserId();
+                    return;
+                }
+                networkClient.enqueue(
+                        networkClient.getApi().sessionClose(
+                                new StatisticSendObject(
+                                        oldSessionId,
+                                        stat
+                                ),
+                                oldUserId
+                        ),
+                        new NetworkCallback<SessionResponse>() {
+                            @Override
+                            public void onSuccess(SessionResponse response) {
+                                ProfilingManager.getInstance().setReady(sessionCloseUID, true);
+                                if (changeUserId)
+                                    service.getListReaderConnector().changeUserId();
+                            }
 
-            NetworkClient networkClient = InAppStoryManager.getNetworkClient();
-            if (networkClient == null) {
-                InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-                if (changeUserId && inAppStoryService != null)
-                    inAppStoryService.getListReaderConnector().changeUserId();
+                            @Override
+                            public Type getType() {
+                                return SessionResponse.class;
+                            }
+
+                            @Override
+                            public void errorDefault(String message) {
+                                ProfilingManager.getInstance().setReady(sessionCloseUID);
+                                if (changeUserId)
+                                    service.getListReaderConnector().changeUserId();
+                            }
+                        }
+                );
             }
-            networkClient.enqueue(
-                    networkClient.getApi().sessionClose(
-                            new StatisticSendObject(
-                                    Session.getInstance().id,
-                                    stat
-                            ),
-                            oldUserId
-                    ),
-                    new NetworkCallback<SessionResponse>() {
-                        @Override
-                        public void onSuccess(SessionResponse response) {
-                            ProfilingManager.getInstance().setReady(sessionCloseUID, true);
-                            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-                            if (changeUserId && inAppStoryService != null)
-                                inAppStoryService.getListReaderConnector().changeUserId();
-                        }
-
-                        @Override
-                        public Type getType() {
-                            return SessionResponse.class;
-                        }
-
-                        @Override
-                        public void errorDefault(String message) {
-                            ProfilingManager.getInstance().setReady(sessionCloseUID);
-                            InAppStoryService inAppStoryService = InAppStoryService.getInstance();
-                            if (changeUserId && inAppStoryService != null)
-                                inAppStoryService.getListReaderConnector().changeUserId();
-                        }
-                    });
-        }
-        Session.clear();
+        });
+        service.getSession().clear(oldSessionId);
     }
 
 }

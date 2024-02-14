@@ -36,7 +36,6 @@ import com.inappstory.sdk.stories.api.models.logs.ApiLogRequest;
 import com.inappstory.sdk.stories.api.models.logs.ApiLogResponse;
 import com.inappstory.sdk.stories.api.models.logs.ExceptionLog;
 import com.inappstory.sdk.stories.api.models.logs.WebConsoleLog;
-import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
@@ -68,17 +67,14 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedActions;
 import com.inappstory.sdk.stories.stackfeed.IStackFeedResult;
 import com.inappstory.sdk.stories.stackfeed.IStackStoryData;
-import com.inappstory.sdk.stories.stackfeed.StackStoryCoverLoadType;
 import com.inappstory.sdk.stories.stackfeed.StackStoryObserver;
 import com.inappstory.sdk.stories.stackfeed.StackStoryUpdatedCallback;
-import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.GetBaseReaderScreenCallback;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
-import com.inappstory.sdk.stories.utils.RunnableCallback;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
 import com.inappstory.sdk.utils.StringsUtils;
@@ -150,7 +146,6 @@ public class InAppStoryManager {
 
 
     static final String DEBUG_API = "IAS debug api";
-
 
     @SuppressLint(DEBUG_API)
     public static void debugSDKCalls(String methodName, String args) {
@@ -477,8 +472,6 @@ public class InAppStoryManager {
             }
         }
     }
-
-
 
 
     private final static int TAG_LIMIT = 4000;
@@ -853,7 +846,7 @@ public class InAppStoryManager {
     public void removeFromFavorite(final int storyId) {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(String sessionId) {
                 favoriteOrRemoveStory(storyId, false);
             }
 
@@ -867,7 +860,7 @@ public class InAppStoryManager {
     public void removeAllFavorites() {
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(String sessionId) {
                 favoriteRemoveAll();
             }
 
@@ -1073,6 +1066,7 @@ public class InAppStoryManager {
             return;
         }
         if (userId.equals(this.userId)) return;
+        String sessionId = inAppStoryService.getSession().getSessionId();
         forceCloseAndClearCache();
         localOpensKey = null;
         String oldUserId = this.userId;
@@ -1081,8 +1075,7 @@ public class InAppStoryManager {
             inAppStoryService.getFavoriteImages().clear();
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
-        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId);
-        OldStatisticManager.getInstance().eventCount = 0;
+        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId, sessionId);
         inAppStoryService.getDownloadManager().cleanTasks(false);
         inAppStoryService.setUserId(userId);
     }
@@ -1183,8 +1176,6 @@ public class InAppStoryManager {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
         }
-
-        OldStatisticManager.getInstance().statistic = new ArrayList<>();
         setInstance(this);
         if (ApiSettings.getInstance().hostIsDifferent(cmsUrl)) {
             if (networkClient != null) {
@@ -1273,6 +1264,7 @@ public class InAppStoryManager {
             final List<Story> response,
             final Context outerContext,
             final AppearanceManager manager,
+            final String sessionId,
             final String feed
     ) {
         Story.StoryType storyType = Story.StoryType.COMMON;
@@ -1290,7 +1282,7 @@ public class InAppStoryManager {
             localHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    showLoadedOnboardings(response, outerContext, manager, feed);
+                    showLoadedOnboardings(response, outerContext, manager, sessionId, feed);
                 }
             }, 500);
             return;
@@ -1306,6 +1298,7 @@ public class InAppStoryManager {
         StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 null,
                 feed,
+                sessionId,
                 storiesIds,
                 0,
                 ShowStory.ACTION_OPEN,
@@ -1360,7 +1353,7 @@ public class InAppStoryManager {
         }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(final String sessionId) {
                 String localTags = null;
                 if (tags != null) {
                     localTags = TextUtils.join(",", tags);
@@ -1394,6 +1387,7 @@ public class InAppStoryManager {
                                     });
                                     final StackStoryObserver observer = new StackStoryObserver(
                                             response.stories,
+                                            sessionId,
                                             localAppearanceManager,
                                             localUniqueStackId,
                                             localFeed,
@@ -1490,7 +1484,7 @@ public class InAppStoryManager {
         }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(final String sessionId) {
                 String localTags = null;
                 if (tags != null) {
                     localTags = TextUtils.join(",", tags);
@@ -1531,7 +1525,7 @@ public class InAppStoryManager {
                                         if (add) notOpened.add(story);
                                     }
                                 }
-                                showLoadedOnboardings(notOpened, outerContext, manager, localFeed);
+                                showLoadedOnboardings(notOpened, outerContext, manager, sessionId, localFeed);
                             }
 
                             @Override
@@ -1663,14 +1657,16 @@ public class InAppStoryManager {
 
     private String lastSingleOpen = null;
 
-    private void showStoryInner(final Story story,
-                                final Context context,
-                                final AppearanceManager manager,
-                                final IShowStoryCallback callback,
-                                final Integer slide,
-                                final Story.StoryType type,
-                                final SourceType readerSource,
-                                final int readerAction) {
+    private void openStoryInReader(
+            final Story story,
+            final String sessionId,
+            final Context context,
+            final AppearanceManager manager,
+            final IShowStoryCallback callback,
+            final Integer slide,
+            final Story.StoryType type,
+            final SourceType readerSource,
+            final int readerAction) {
         try {
             int c = Integer.parseInt(lastSingleOpen);
             if (c != story.id)
@@ -1695,6 +1691,7 @@ public class InAppStoryManager {
         StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 null,
                 null,
+                sessionId,
                 stIds,
                 0,
                 readerAction,
@@ -1753,7 +1750,7 @@ public class InAppStoryManager {
         service.getDownloadManager().getFullStoryByStringId(
                 new GetStoryByIdCallback() {
                     @Override
-                    public void getStory(final Story story) {
+                    public void getStory(final Story story, final String sessionId) {
                         if (story != null) {
                             service.getDownloadManager().addCompletedStoryTask(story,
                                     Story.StoryType.COMMON);
@@ -1762,8 +1759,9 @@ public class InAppStoryManager {
                                 localHandler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
-                                        showStoryInner(
+                                        openStoryInReader(
                                                 story,
+                                                sessionId,
                                                 context,
                                                 manager,
                                                 callback,
@@ -1776,8 +1774,9 @@ public class InAppStoryManager {
                                 }, 500);
                                 return;
                             }
-                            showStoryInner(
+                            openStoryInReader(
                                     story,
+                                    sessionId,
                                     context,
                                     manager,
                                     callback,
@@ -1808,11 +1807,15 @@ public class InAppStoryManager {
         );
     }
 
-    private void showStoryInner(final String storyId, final Context context,
-                                final AppearanceManager manager,
-                                final IShowStoryCallback callback, Story.StoryType type,
-                                final SourceType readerSource,
-                                final int readerAction) {
+    private void showStoryInner(
+            final String storyId,
+            final Context context,
+            final AppearanceManager manager,
+            final IShowStoryCallback callback,
+            Story.StoryType type,
+            final SourceType readerSource,
+            final int readerAction
+    ) {
         showStoryInner(storyId, context, manager, callback, null, type, readerSource, readerAction);
     }
 

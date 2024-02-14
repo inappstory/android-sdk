@@ -1,18 +1,12 @@
 package com.inappstory.sdk.stories.statistic;
 
-import android.os.Handler;
-
-import androidx.annotation.NonNull;
-
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
-import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticSendObject;
-import com.inappstory.sdk.stories.api.models.callbacks.OpenSessionCallback;
+import com.inappstory.sdk.utils.ISessionHolder;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -21,16 +15,20 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class OldStatisticManager {
-    private static OldStatisticManager INSTANCE;
 
-    public static OldStatisticManager getInstance() {
-        if (INSTANCE == null) {
-            synchronized (OldStatisticManager.class) {
-                if (INSTANCE == null)
-                    INSTANCE = new OldStatisticManager();
-            }
-        }
-        return INSTANCE;
+    public static void useInstance(GetOldStatisticManagerCallback callback) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        OldStatisticManager manager = service.getSession().currentStatisticManager();
+        if (manager != null) callback.get(manager);
+    }
+
+    public static void useInstance(String sessionId, GetOldStatisticManagerCallback callback) {
+        if (sessionId == null) return;
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        OldStatisticManager manager = service.getSession().getStatisticManager(sessionId);
+        if (manager != null) callback.get(manager);
     }
 
     public void refreshCallbacks() {
@@ -53,11 +51,9 @@ public class OldStatisticManager {
     public OldStatisticManager() {
     }
 
-    private static final long statisticUpdateInterval = 15000;
-
     public void putStatistic(List<Object> e) {
         synchronized (openProcessLock) {
-            if (statistic != null && e != null) {
+            if (e != null) {
                 boolean alreadyAdded = false;
                 for (List<Object> statisticObject : statistic) {
                     if (statisticObject.size() > 1 && e.size() > 1
@@ -71,7 +67,7 @@ public class OldStatisticManager {
         }
     }
 
-    public List<List<Object>> statistic = new ArrayList<>();
+    public final List<List<Object>> statistic = new ArrayList<>();
 
 
     public Runnable statisticUpdateRunnable = new Runnable() {
@@ -83,6 +79,7 @@ public class OldStatisticManager {
     };
 
     private void submitRunnable() {
+        long statisticUpdateInterval = 15000;
         statisticScheduledThread.scheduleAtFixedRate(
                 statisticUpdateRunnable,
                 statisticUpdateInterval,
@@ -96,18 +93,17 @@ public class OldStatisticManager {
 
 
     public void clear() {
-        if (statistic == null) {
-            statistic = new ArrayList<>();
-        }
         statistic.clear();
     }
 
     public ArrayList<Integer> newStatisticPreviews(ArrayList<Integer> vals) {
 
         ArrayList<Integer> sendObject = new ArrayList<>();
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return sendObject;
         synchronized (previewLock) {
             for (Integer val : vals) {
-                if (!Session.getInstance().viewed.contains(val)) {
+                if (!service.getSession().hasViewedId(val)) {
                     sendObject.add(val);
                 }
             }
@@ -116,15 +112,18 @@ public class OldStatisticManager {
     }
 
     public void previewStatisticEvent(ArrayList<Integer> vals) {
-        boolean firstSend = (Session.getInstance().viewed.size() == 0);
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
+        ISessionHolder sessionHolder = service.getSession();
+        boolean firstSend = !sessionHolder.hasViewedIds();
         ArrayList<Object> sendObject = new ArrayList<Object>();
         sendObject.add(5);
         sendObject.add(eventCount);
         synchronized (previewLock) {
             for (Integer val : vals) {
-                if (!Session.getInstance().viewed.contains(val)) {
+                if (!sessionHolder.hasViewedId(val)) {
                     sendObject.add(val);
-                    Session.getInstance().viewed.add(val);
+                    sessionHolder.addViewedId(val);
                 }
             }
         }
@@ -146,26 +145,23 @@ public class OldStatisticManager {
         }
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null || !service.isConnected()) return true;
-
-        if (Session.needToUpdate())
+        String sessionId = service.getSession().getSessionId();
+        if (sessionId.isEmpty())
             return false;
         synchronized (openProcessLock) {
-            if (statistic == null || (statistic.isEmpty() && !Session.needToUpdate())) {
+            if (statistic.isEmpty()) {
                 return true;
             }
         }
-        if (!service.getSendStatistic()) {
-            Session.getInstance();
-            Session.updateStatistic();
-            if (statistic != null)
-                statistic.clear();
+        if (service.statV1Disallowed()) {
+            statistic.clear();
             return true;
         }
         try {
             synchronized (openProcessLock) {
                 final List<List<Object>> notSendingStatistic = new ArrayList<>(statistic);
                 StatisticSendObject statisticSendObject = new StatisticSendObject(
-                        Session.getInstance().id,
+                        sessionId,
                         new ArrayList<>(statistic)
                 );
                 statistic.clear();
@@ -179,13 +175,11 @@ public class OldStatisticManager {
                             @Override
                             public void onSuccess(SessionResponse response) {
                                 ProfilingManager.getInstance().setReady(updateUUID);
-                                cleanStatistic();
                             }
 
                             @Override
                             public void errorDefault(String message) {
                                 ProfilingManager.getInstance().setReady(updateUUID);
-                                cleanStatistic();
                                 for (List<Object> statisticObject : notSendingStatistic) {
                                     putStatistic(statisticObject);
                                 }
@@ -205,15 +199,7 @@ public class OldStatisticManager {
     }
 
 
-    public void cleanStatistic() {
-        Session.getInstance();
-        Session.updateStatistic();
-    }
-
-    public static boolean openProcess = false;
-
-
-    public class StatisticEvent {
+    public static class StatisticEvent {
         public int eventType;
         public int storyId;
         public int index;
@@ -255,6 +241,9 @@ public class OldStatisticManager {
 
     public int eventCount = 0;
 
+    public void increaseEventCount() {
+        eventCount++;
+    }
 
     private final Object eventLock = new Object();
 
@@ -271,7 +260,7 @@ public class OldStatisticManager {
             count = eventCount;
         }
 
-        ArrayList statObject = new ArrayList<Object>();
+        ArrayList<Object> statObject = new ArrayList<>();
         statObject.add(event.eventType);
         statObject.add(count);
         statObject.add(event.storyId);
@@ -301,18 +290,6 @@ public class OldStatisticManager {
 
     public int articleEventCount = 0;
     public long articleTimer = 0;
-
-    public void addArticleOpenStatistic(int eventType, int articleId) {
-        articleEventCount = eventCount;
-
-        synchronized (eventLock) {
-            if (currentEvent != null)
-                currentEvent.eventType = 2;
-        }
-        closeStatisticEvent();
-        articleTimer = System.currentTimeMillis();
-        addArticleStatisticEvent(eventType, articleId);
-    }
 
     public void addLinkOpenStatistic() {
         synchronized (eventLock) {

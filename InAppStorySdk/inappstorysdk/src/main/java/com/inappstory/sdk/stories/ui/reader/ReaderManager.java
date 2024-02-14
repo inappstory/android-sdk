@@ -22,6 +22,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
@@ -45,14 +46,18 @@ public class ReaderManager {
     public ReaderManager() {
     }
 
-    public ReaderManager(String listID,
-                         String feedId,
-                         String feedSlug,
-                         Story.StoryType storyType,
-                         SourceType source,
-                         int latestShowStoryAction) {
+    public ReaderManager(
+            String listID,
+            String sessionId,
+            String feedId,
+            String feedSlug,
+            Story.StoryType storyType,
+            SourceType source,
+            int latestShowStoryAction
+    ) {
         this.listID = listID;
         this.feedId = feedId;
+        this.sessionId = sessionId;
         this.feedSlug = feedSlug;
         this.storyType = storyType;
         this.source = source;
@@ -192,7 +197,12 @@ public class ReaderManager {
             @Override
             public void use(@NonNull final InAppStoryService service) throws Exception {
                 if (storyType == Story.StoryType.COMMON)
-                    OldStatisticManager.getInstance().addLinkOpenStatistic();
+                    OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.addLinkOpenStatistic();
+                        }
+                    });
                 if (storiesIds.contains(storyId)) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
@@ -351,14 +361,17 @@ public class ReaderManager {
     }
 
     void changeStory() {
-        if (storyType == Story.StoryType.COMMON)
-            OldStatisticManager.getInstance().addStatisticBlock(currentStoryId,
-                    currentSlideIndex);
-
-        ArrayList<Integer> lst = new ArrayList<>();
+        final ArrayList<Integer> lst = new ArrayList<>();
         lst.add(currentStoryId);
         if (storyType == Story.StoryType.COMMON)
-            OldStatisticManager.getInstance().previewStatisticEvent(lst);
+            OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
+                @Override
+                public void get(@NonNull OldStatisticManager manager) {
+                    manager.addStatisticBlock(currentStoryId,
+                            currentSlideIndex);
+                    manager.previewStatisticEvent(lst);
+                }
+            });
         synchronized (subscribers) {
             for (ReaderPageManager pageManager : subscribers) {
                 if (pageManager.getStoryId() != currentStoryId) {
@@ -385,11 +398,16 @@ public class ReaderManager {
         return feedId;
     }
 
+    public String getSessionId() {
+        return sessionId;
+    }
+
     public String getFeedSlug() {
         return feedId;
     }
 
     private String feedId;
+    private String sessionId;
     private String feedSlug;
 
     private void sendStatBlock(boolean hasCloseEvent, String whence, int id) {
@@ -469,7 +487,7 @@ public class ReaderManager {
     }
 
     private StoriesContentFragment parentFragment;
-    private HashSet<ReaderPageManager> subscribers = new HashSet<>();
+    private final HashSet<ReaderPageManager> subscribers = new HashSet<>();
 
     public void addSubscriber(ReaderPageManager manager) {
         synchronized (subscribers) {
@@ -520,8 +538,13 @@ public class ReaderManager {
     public void resumeCurrent(boolean withBackground) {
         if (getCurrentSubscriber() != null)
             getCurrentSubscriber().resumeSlide(withBackground);
-        if (withBackground && OldStatisticManager.getInstance() != null) {
-            OldStatisticManager.getInstance().refreshTimer();
+        if (withBackground) {
+            OldStatisticManager.useInstance(getSessionId(), new GetOldStatisticManagerCallback() {
+                @Override
+                public void get(@NonNull OldStatisticManager manager) {
+                    manager.refreshTimer();
+                }
+            });
         }
         StatisticManager.getInstance().resumeStoryEvent(withBackground);
     }

@@ -26,6 +26,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.UgcStoryData;
 import com.inappstory.sdk.stories.outercallbacks.storieslist.ListCallback;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -51,15 +52,18 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
 
     public Context context;
     private String listID;
+    private String sessionId;
 
     public UgcStoriesAdapter(Context context,
                              String listID,
+                             String sessionId,
                              List<Integer> storiesIds,
                              AppearanceManager manager,
                              ListCallback callback,
                              boolean useUGC,
                              OnUGCItemClick ugcItemClick) {
         this.context = context;
+        this.sessionId = sessionId;
         this.listID = listID;
         this.storiesIds = storiesIds;
         this.manager = manager;
@@ -153,7 +157,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         int hasUGC = useUGC ? 1 : 0;
         int index = ind - hasUGC;
         clickTimestamp = System.currentTimeMillis();
-        Story current = service.getDownloadManager()
+        final Story current = service.getDownloadManager()
                 .getStoryById(storiesIds.get(index), Story.StoryType.UGC);
         if (current != null) {
             if (callback != null) {
@@ -167,7 +171,16 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
             }
             String gameInstanceId = current.getGameInstanceId();
             if (gameInstanceId != null) {
-                OldStatisticManager.getInstance().addGameClickStatistic(current.id);
+
+                OldStatisticManager.useInstance(
+                        sessionId,
+                        new GetOldStatisticManagerCallback() {
+                            @Override
+                            public void get(@NonNull OldStatisticManager manager) {
+                                manager.addGameClickStatistic(current.id);
+                            }
+                        }
+                );
                 service.openGameReaderWithGC(
                         context,
                         new GameStoryData(
@@ -240,6 +253,7 @@ public class UgcStoriesAdapter extends RecyclerView.Adapter<BaseStoryListItem> i
         StoriesReaderLaunchData launchData = new StoriesReaderLaunchData(
                 listID,
                 null,
+                sessionId,
                 tempStories,
                 tempStories.indexOf(storiesIds.get(index)),
                 ShowStory.ACTION_OPEN,

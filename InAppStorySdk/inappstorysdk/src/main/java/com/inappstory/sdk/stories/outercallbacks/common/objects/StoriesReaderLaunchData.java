@@ -13,6 +13,7 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
     public StoriesReaderLaunchData(
             String listUniqueId,
             String feed,
+            String sessionId,
             List<Integer> storiesIds,
             int listIndex,
             int firstAction,
@@ -22,6 +23,7 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
             StoryItemCoordinates initCoordinates
     ) {
         this.listUniqueId = listUniqueId;
+        this.sessionId = sessionId;
         this.storiesIds = storiesIds;
         this.listIndex = listIndex;
         this.sourceType = sourceType;
@@ -61,11 +63,16 @@ public class StoriesReaderLaunchData implements SerializableWithKey {
         return feed;
     }
 
+    public String getSessionId() {
+        return sessionId;
+    }
+
     public StoryType getType() {
         return type;
     }
 
     private final String listUniqueId;
+    private final String sessionId;
     private final List<Integer> storiesIds;
     private final int listIndex;
     private final SourceType sourceType;

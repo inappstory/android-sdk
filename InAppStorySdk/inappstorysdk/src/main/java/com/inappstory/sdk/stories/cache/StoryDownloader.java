@@ -219,13 +219,18 @@ class StoryDownloader {
                     setStoryLoadType(key, 2);
                 }
             }
-            if (Session.needToUpdate()) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service == null) {
+                loopedExecutor.freeExecutor();
+                return;
+            }
+            if (service.getSession().getSessionId().isEmpty()) {
                 if (!isRefreshing) {
                     isRefreshing = true;
                     if (SessionManager.getInstance() != null)
                         SessionManager.getInstance().openSession(new OpenSessionCallback() {
                             @Override
-                            public void onSuccess() {
+                            public void onSuccess(String sessionId) {
                                 isRefreshing = false;
                             }
 
@@ -332,7 +337,7 @@ class StoryDownloader {
     void loadUgcStoryList(final SimpleApiCallback<List<Story>> callback, final String payload) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null|| networkClient == null) {
+        if (service == null || networkClient == null) {
             generateCommonLoadListError(UGC_FEED);
             callback.onError("");
             return;
@@ -340,7 +345,7 @@ class StoryDownloader {
         if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
-                public void onSuccess() {
+                public void onSuccess(final String sessionId) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_ugc_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getUgcStories(
@@ -378,11 +383,7 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    String oldUserId = "";
-                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                                    if (inAppStoryManager != null)
-                                        oldUserId = inAppStoryManager.getUserId();
-                                    SessionManager.getInstance().closeSession(true, false, oldUserId);
+                                    closeSessionIf424(sessionId);
                                     loadUgcStoryList(callback, payload);
                                 }
                             });
@@ -411,7 +412,7 @@ class StoryDownloader {
         if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
-                public void onSuccess() {
+                public void onSuccess(final String sessionId) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask("api_story_list");
                     networkClient.enqueue(
                             networkClient.getApi().getFeed(
@@ -447,15 +448,7 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-                                    String oldUserId = "";
-                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                                    if (inAppStoryManager != null)
-                                        oldUserId = inAppStoryManager.getUserId();
-                                    SessionManager.getInstance().closeSession(
-                                            true,
-                                            false,
-                                            oldUserId
-                                    );
+                                    closeSessionIf424(sessionId);
                                     loadStoryListByFeed(feed, callback);
                                 }
                             });
@@ -485,7 +478,7 @@ class StoryDownloader {
         if (service.isConnected()) {
             SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
                 @Override
-                public void onSuccess() {
+                public void onSuccess(final String sessionId) {
                     final String loadStoriesUID = ProfilingManager.getInstance().addTask(isFavorite
                             ? "api_favorite_list" : "api_story_list");
                     networkClient.enqueue(
@@ -520,16 +513,7 @@ class StoryDownloader {
                                     ProfilingManager.getInstance().setReady(loadStoriesUID);
                                     generateCommonLoadListError(null);
                                     callback.onError(message);
-
-                                    String oldUserId = "";
-                                    InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
-                                    if (inAppStoryManager != null)
-                                        oldUserId = inAppStoryManager.getUserId();
-                                    SessionManager.getInstance().closeSession(
-                                            true,
-                                            false,
-                                            oldUserId
-                                    );
+                                    closeSessionIf424(sessionId);
                                     loadStoryList(callback, isFavorite);
                                 }
                             });
@@ -544,6 +528,20 @@ class StoryDownloader {
         } else {
             generateCommonLoadListError(null);
             callback.onError("");
+        }
+    }
+
+    private void closeSessionIf424(String sessionId) {
+        String oldUserId = "";
+        InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
+        if (inAppStoryManager != null) {
+            oldUserId = inAppStoryManager.getUserId();
+            SessionManager.getInstance().closeSession(
+                    true,
+                    false,
+                    oldUserId,
+                    sessionId
+            );
         }
     }
 }

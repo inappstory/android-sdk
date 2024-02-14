@@ -36,6 +36,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordin
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -70,8 +71,15 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }
-
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.useInstance(
+                    launchData.getSessionId(),
+                    new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.sendStatistic();
+                        }
+                    }
+            );
             cleanReader();
             System.gc();
             pauseDestroyed = true;
@@ -587,7 +595,16 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     public void cleanReader() {
         if (cleaned) return;
-        OldStatisticManager.getInstance().closeStatisticEvent();
+
+        OldStatisticManager.useInstance(
+                launchData.getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        manager.closeStatisticEvent();
+                    }
+                }
+        );
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull InAppStoryService service) throws Exception {
@@ -602,13 +619,21 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void onDestroy() {
-       ScreensManager.getInstance().unsubscribeReaderScreen(this);
+        ScreensManager.getInstance().unsubscribeReaderScreen(this);
         if (!pauseDestroyed) {
             InAppStoryManager inAppStoryManager = InAppStoryManager.getInstance();
             if (inAppStoryManager != null) {
                 inAppStoryManager.getOpenStoriesReader().onRestoreStatusBar(this);
             }
-            OldStatisticManager.getInstance().sendStatistic();
+            OldStatisticManager.useInstance(
+                    launchData.getSessionId(),
+                    new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.sendStatistic();
+                        }
+                    }
+            );
             cleanReader();
             System.gc();
             pauseDestroyed = true;

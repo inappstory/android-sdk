@@ -40,6 +40,7 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLau
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SourceType;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
+import com.inappstory.sdk.stories.statistic.GetOldStatisticManagerCallback;
 import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -246,7 +247,15 @@ public class StoriesContentFragment extends Fragment
 
     @Override
     public void onDestroyView() {
-        OldStatisticManager.getInstance().currentEvent = null;
+        OldStatisticManager.useInstance(
+                launchData.getSessionId(),
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        manager.currentEvent = null;
+                    }
+                }
+        );
         super.onDestroyView();
     }
 
@@ -317,6 +326,7 @@ public class StoriesContentFragment extends Fragment
 
             Story.StoryType type = launchData.getType();
             readerManager = new ReaderManager(
+                    launchData.getListUniqueId(),
                     launchData.getListUniqueId(),
                     launchData.getFeed(),
                     launchData.getFeed(),

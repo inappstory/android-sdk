@@ -1,6 +1,7 @@
 package com.inappstory.sdk.ugc.usecases;
 
 import com.inappstory.sdk.InAppStoryManager;
+import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.Session;
@@ -22,9 +23,11 @@ public class GetUgcEditor implements IGetUgcEditor {
             callback.onError();
             return;
         }
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) return;
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(final String sessionId) {
                 networkClient.enqueue(
                         networkClient.getApi().getUgcEditor(),
                         new NetworkCallback<SessionEditor>() {
@@ -33,7 +36,7 @@ public class GetUgcEditor implements IGetUgcEditor {
                                 callback.get(
                                         new SessionEditorDTO(
                                                 response,
-                                                Session.getInstance().id
+                                                sessionId
                                         )
                                 );
                             }

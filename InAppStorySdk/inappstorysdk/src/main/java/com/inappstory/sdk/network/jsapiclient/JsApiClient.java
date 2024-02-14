@@ -50,43 +50,28 @@ public class JsApiClient {
                                     final String cb,
                                     final String profilingKey,
                                     final JsApiResponseCallback callback) {
-        if (Session.needToUpdate()) {
-            SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
-                @Override
-                public void onSuccess() {
-                    sendRequest(
-                            method,
-                            path,
-                            baseUrl,
-                            headers,
-                            getParams,
-                            body,
-                            requestId,
-                            cb,
-                            profilingKey,
-                            callback
-                    );
-                }
+        SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
+            @Override
+            public void onSuccess(String sessionId) {
+                sendRequest(
+                        method,
+                        path,
+                        baseUrl,
+                        headers,
+                        getParams,
+                        body,
+                        requestId,
+                        cb,
+                        profilingKey,
+                        callback
+                );
+            }
 
-                @Override
-                public void onError() {
+            @Override
+            public void onError() {
 
-                }
-            });
-        } else {
-            sendRequest(
-                    method,
-                    path,
-                    baseUrl,
-                    headers,
-                    getParams,
-                    body,
-                    requestId,
-                    cb,
-                    profilingKey,
-                    callback
-            );
-        }
+            }
+        });
     }
 
     String oldEscape(String raw) {
