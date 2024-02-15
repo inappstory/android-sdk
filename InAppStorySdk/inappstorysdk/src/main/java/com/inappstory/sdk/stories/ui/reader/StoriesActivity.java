@@ -595,7 +595,7 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     public void cleanReader() {
         if (cleaned) return;
-
+        Log.e("statisticTests", "closeReader");
         OldStatisticManager.useInstance(
                 launchData.getSessionId(),
                 new GetOldStatisticManagerCallback() {

@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -21,7 +22,6 @@ import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.NetworkClient;
 import com.inappstory.sdk.network.callbacks.NetworkCallback;
 import com.inappstory.sdk.stories.api.models.CachedSessionData;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.SessionRequestFields;
 import com.inappstory.sdk.stories.api.models.SessionResponse;
 import com.inappstory.sdk.stories.api.models.StatisticPermissions;
@@ -231,9 +231,9 @@ public class SessionManager {
                     public void onSuccess(SessionResponse response) {
                         InAppStoryService service = InAppStoryService.getInstance();
                         if (service == null) return;
-                        String currentSession = service.getSession().getSessionId();
-                        String serviceUserId = service.getUserId();
                         saveSession(response);
+                        String serviceUserId = service.getUserId();
+                        String currentSession = service.getSession().getSessionId();
                         if (initialUserId == null) {
                             if (serviceUserId != null) {
                                 closeSession(
@@ -257,6 +257,7 @@ public class SessionManager {
                                 return;
                             }
                         }
+                        service.getListReaderConnector().sessionIsOpened(currentSession);
                         ProfilingManager.getInstance().setReady(sessionOpenUID);
                         openStatisticSuccess(response);
                         CachedSessionData cachedSessionData = new CachedSessionData();
@@ -335,9 +336,11 @@ public class SessionManager {
                 NetworkClient networkClient = InAppStoryManager.getNetworkClient();
                 if (networkClient == null) {
                     if (changeUserId)
-                        service.getListReaderConnector().changeUserId();
+                        service.getListReaderConnector().userIdChanged();
                     return;
                 }
+
+                Log.e("statisticTests", "closeSession");
                 networkClient.enqueue(
                         networkClient.getApi().sessionClose(
                                 new StatisticSendObject(
@@ -351,7 +354,7 @@ public class SessionManager {
                             public void onSuccess(SessionResponse response) {
                                 ProfilingManager.getInstance().setReady(sessionCloseUID, true);
                                 if (changeUserId)
-                                    service.getListReaderConnector().changeUserId();
+                                    service.getListReaderConnector().userIdChanged();
                             }
 
                             @Override
@@ -363,7 +366,7 @@ public class SessionManager {
                             public void errorDefault(String message) {
                                 ProfilingManager.getInstance().setReady(sessionCloseUID);
                                 if (changeUserId)
-                                    service.getListReaderConnector().changeUserId();
+                                    service.getListReaderConnector().userIdChanged();
                             }
                         }
                 );

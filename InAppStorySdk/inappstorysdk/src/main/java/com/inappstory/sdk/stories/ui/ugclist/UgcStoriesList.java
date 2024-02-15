@@ -151,6 +151,7 @@ public class UgcStoriesList extends RecyclerView {
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
+        manager.checkCurrentSession();
     }
 
     private void renewCoordinates(final int index) {
@@ -335,7 +336,7 @@ public class UgcStoriesList extends RecyclerView {
         super.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) {
             OldStatisticManager.useInstance(
-                    lastSessionId,
+                    manager != null ? manager.currentSessionId : "",
                     new GetOldStatisticManagerCallback() {
                         @Override
                         public void get(@NonNull OldStatisticManager manager) {
@@ -421,7 +422,7 @@ public class UgcStoriesList extends RecyclerView {
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
         adapter = new UgcStoriesAdapter(getContext(),
                 uniqueID,
-                lastSessionId,
+                manager != null ? manager.currentSessionId : "",
                 storiesIds,
                 appearanceManager,
                 callback,
@@ -430,8 +431,6 @@ public class UgcStoriesList extends RecyclerView {
         setLayoutManager(layoutManager);
         setAdapter(adapter);
     }
-
-    String lastSessionId;
 
     private void loadStoriesInner(final String payload) {
 
@@ -450,7 +449,6 @@ public class UgcStoriesList extends RecyclerView {
         checkAppearanceManager();
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
         if (service != null) {
-            lastSessionId  = service.getSession().getSessionId();
             lcallback = new LoadStoriesCallback() {
                 @Override
                 public void storiesLoaded(final List<Integer> storiesIds) {
@@ -490,7 +488,6 @@ public class UgcStoriesList extends RecyclerView {
                 public void run() {
                     InAppStoryService service1 = InAppStoryService.getInstance();
                     if (service1 != null) {
-                        lastSessionId  = service1.getSession().getSessionId();
                         lcallback = new LoadStoriesCallback() {
                             @Override
                             public void storiesLoaded(final List<Integer> storiesIds) {

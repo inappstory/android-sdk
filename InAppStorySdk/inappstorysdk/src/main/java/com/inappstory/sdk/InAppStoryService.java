@@ -545,12 +545,23 @@ public class InAppStoryService {
 
         }
 
-        public void changeUserId() {
+        public void userIdChanged() {
             useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (ListManager sub : service.getListSubscribers()) {
-                        sub.changeUserId();
+                        sub.userIdChanged();
+                    }
+                }
+            });
+        }
+
+        public void sessionIsOpened(final String currentSessionId) {
+            useInstance(new UseServiceInstanceCallback() {
+                @Override
+                public void use(@NonNull InAppStoryService service) {
+                    for (ListManager sub : service.getListSubscribers()) {
+                        sub.sessionIsOpened(currentSessionId);
                     }
                 }
             });

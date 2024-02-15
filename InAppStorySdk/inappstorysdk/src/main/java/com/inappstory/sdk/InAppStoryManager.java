@@ -580,7 +580,7 @@ public class InAppStoryManager {
 
     private void forceCloseAndClearCache() {
         clearCachedLists();
-        ScreensManager.getInstance().forceCloseAllReaders(CloseStory.CUSTOM);
+        ScreensManager.getInstance().forceCloseAllReaders(CloseStory.CUSTOM, null);
     }
 
     private boolean setNewPlaceholder(String key, String value) {
@@ -1066,16 +1066,26 @@ public class InAppStoryManager {
             return;
         }
         if (userId.equals(this.userId)) return;
-        String sessionId = inAppStoryService.getSession().getSessionId();
-        forceCloseAndClearCache();
+        final String sessionId = inAppStoryService.getSession().getSessionId();
+
+        clearCachedLists();
+
         localOpensKey = null;
-        String oldUserId = this.userId;
+        final String oldUserId = this.userId;
         this.userId = userId;
+        ScreensManager.getInstance().forceCloseAllReaders(
+                CloseStory.CUSTOM,
+                new ScreensManager.ForceCloseReaderCallback() {
+                    @Override
+                    public void onClose() {
+                        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId, sessionId);
+                    }
+                }
+        );
         if (inAppStoryService.getFavoriteImages() != null)
             inAppStoryService.getFavoriteImages().clear();
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.COMMON);
         inAppStoryService.getDownloadManager().refreshLocals(Story.StoryType.UGC);
-        SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId, sessionId);
         inAppStoryService.getDownloadManager().cleanTasks(false);
         inAppStoryService.setUserId(userId);
     }
@@ -1199,11 +1209,19 @@ public class InAppStoryManager {
     public static void logout() {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
-            public void use(@NonNull InAppStoryService inAppStoryService) throws Exception {
+            public void use(@NonNull final InAppStoryService inAppStoryService) throws Exception {
                 inAppStoryService.listStoriesIds.clear();
                 inAppStoryService.getListSubscribers().clear();
                 inAppStoryService.getDownloadManager().cleanTasks();
-                inAppStoryService.logout();
+                ScreensManager.getInstance().forceCloseAllReaders(
+                        CloseStory.CUSTOM,
+                        new ScreensManager.ForceCloseReaderCallback() {
+                    @Override
+                    public void onClose() {
+
+                        inAppStoryService.logout();
+                    }
+                });
             }
         });
     }

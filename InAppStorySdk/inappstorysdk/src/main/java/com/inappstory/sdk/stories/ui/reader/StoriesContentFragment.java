@@ -327,7 +327,7 @@ public class StoriesContentFragment extends Fragment
             Story.StoryType type = launchData.getType();
             readerManager = new ReaderManager(
                     launchData.getListUniqueId(),
-                    launchData.getListUniqueId(),
+                    launchData.getSessionId(),
                     launchData.getFeed(),
                     launchData.getFeed(),
                     type,

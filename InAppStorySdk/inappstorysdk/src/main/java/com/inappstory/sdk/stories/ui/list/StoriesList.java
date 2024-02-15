@@ -236,6 +236,7 @@ public class StoriesList extends RecyclerView {
         InAppStoryManager.debugSDKCalls("StoriesList_onAttachedToWindow", ""
                 + InAppStoryService.isNotNull());
         InAppStoryService.checkAndAddListSubscriber(manager);
+        manager.checkCurrentSession();
     }
 
     private void init(AttributeSet attributeSet) {
@@ -308,21 +309,24 @@ public class StoriesList extends RecyclerView {
             }
         }
 
-        OldStatisticManager.useInstance(lastSessionId, new GetOldStatisticManagerCallback() {
-            @Override
-            public void get(@NonNull OldStatisticManager manager) {
-                ArrayList<Integer> newIndexes = manager.newStatisticPreviews(indexes);
-                try {
-                    if (StatisticManager.getInstance() != null) {
-                        StatisticManager.getInstance().sendViewStory(newIndexes,
-                                isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feedId);
-                    }
-                } catch (Exception e) {
+        OldStatisticManager.useInstance(
+                manager != null ? manager.currentSessionId : "",
+                new GetOldStatisticManagerCallback() {
+                    @Override
+                    public void get(@NonNull OldStatisticManager manager) {
+                        ArrayList<Integer> newIndexes = manager.newStatisticPreviews(indexes);
+                        try {
+                            if (StatisticManager.getInstance() != null) {
+                                StatisticManager.getInstance().sendViewStory(newIndexes,
+                                        isFavoriteList ? StatisticManager.FAVORITE : StatisticManager.LIST, feedId);
+                            }
+                        } catch (Exception e) {
 
+                        }
+                        manager.previewStatisticEvent(indexes);
+                    }
                 }
-                manager.previewStatisticEvent(indexes);
-            }
-        });
+        );
 
     }
 
@@ -438,6 +442,9 @@ public class StoriesList extends RecyclerView {
         getVisibleItems();
     }
 
+    void sessionIsOpened() {
+
+    }
 
     void refreshList() {
         adapter = null;
@@ -541,12 +548,15 @@ public class StoriesList extends RecyclerView {
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) {
-            OldStatisticManager.useInstance(lastSessionId, new GetOldStatisticManagerCallback() {
-                @Override
-                public void get(@NonNull OldStatisticManager manager) {
-                    manager.sendStatistic();
-                }
-            });
+            OldStatisticManager.useInstance(
+                    manager != null ? manager.currentSessionId : "",
+                    new GetOldStatisticManagerCallback() {
+                        @Override
+                        public void get(@NonNull OldStatisticManager manager) {
+                            manager.sendStatistic();
+                        }
+                    }
+            );
         }
     }
 
@@ -662,7 +672,7 @@ public class StoriesList extends RecyclerView {
                 OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
         adapter = new StoriesAdapter(getContext(),
                 uniqueID,
-                lastSessionId,
+                manager != null ? manager.currentSessionId : "",
                 storiesIds,
                 appearanceManager,
                 isFavoriteList,
@@ -752,10 +762,8 @@ public class StoriesList extends RecyclerView {
         });
     }
 
-    private String lastSessionId;
 
     private void loadStoriesLocal(final @NonNull InAppStoryService service, final String listUid, boolean hasFavorite) {
-        lastSessionId  = service.getSession().getSessionId();
         lcallback = new LoadStoriesCallback() {
             @Override
             public void storiesLoaded(final List<Integer> storiesIds) {

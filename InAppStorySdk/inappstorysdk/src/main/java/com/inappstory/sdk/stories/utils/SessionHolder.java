@@ -119,7 +119,9 @@ public class SessionHolder implements ISessionHolder {
 
     @Override
     public OldStatisticManager getStatisticManager(String sessionId) {
-        return statisticManagers.get(sessionId);
+        synchronized (sessionLock) {
+            return statisticManagers.get(sessionId);
+        }
     }
 
     @Override

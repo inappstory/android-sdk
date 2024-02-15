@@ -66,13 +66,19 @@ public class ScreensManager {
         });
     }
 
-    public void forceCloseAllReaders(final int action) {
+    public interface ForceCloseReaderCallback {
+        void onClose();
+    }
+
+    public void forceCloseAllReaders(final int action, final ForceCloseReaderCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 closeStoryReader(action);
                 forceFinishGameReader();
                 closeUGCEditor();
+                if (callback != null)
+                    callback.onClose();
             }
         });
     }
@@ -285,6 +291,8 @@ public class ScreensManager {
                                final List<WebResource> gameResources,
                                final GameScreenOptions options,
                                final String observableId) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || service.getSession().getSessionId().isEmpty()) return;
         synchronized (gameReaderScreenLock) {
             if (currentGameScreen != null) {
                 closeGameReader();
@@ -338,6 +346,8 @@ public class ScreensManager {
             final AppearanceManager appearanceManager,
             final StoriesReaderLaunchData launchData
     ) {
+        InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null || service.getSession().getSessionId().isEmpty()) return;
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

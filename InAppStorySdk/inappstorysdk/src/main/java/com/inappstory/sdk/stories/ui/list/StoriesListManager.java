@@ -14,6 +14,16 @@ import java.util.List;
 
 public class StoriesListManager implements ListManager {
     StoriesList list;
+    String currentSessionId;
+
+    void checkCurrentSession() {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                currentSessionId = service.getSession().getSessionId();
+            }
+        });
+    }
 
     public void clear() {
         list = null;
@@ -22,6 +32,7 @@ public class StoriesListManager implements ListManager {
     public StoriesListManager() {
       //  this.list = list;
         handler = new Handler(Looper.getMainLooper());
+        checkCurrentSession();
     }
 
     private void checkHandler() {
@@ -79,7 +90,7 @@ public class StoriesListManager implements ListManager {
         });
     }
 
-    public void changeUserId() {
+    public void userIdChanged() {
         post(new Runnable() {
             @Override
             public void run() {
@@ -87,6 +98,11 @@ public class StoriesListManager implements ListManager {
                 list.refreshList();
             }
         });
+    }
+
+    @Override
+    public void sessionIsOpened(String currentSessionId) {
+        this.currentSessionId = currentSessionId;
     }
 
     public void clearAllFavorites() {
