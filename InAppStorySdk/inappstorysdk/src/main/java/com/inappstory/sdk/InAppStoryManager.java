@@ -451,14 +451,14 @@ public class InAppStoryManager {
                     if (!oldList.contains(newTag)) {
                         this.tags = new ArrayList<>(newList);
                         clearCachedLists();
-                        forceCloseStoryReader();
+                   //     forceCloseStoryReader();
                         break;
                     }
                 }
             } else {
                 this.tags = new ArrayList<>(newList);
                 clearCachedLists();
-                forceCloseStoryReader();
+              //  forceCloseStoryReader();
             }
         }
     }
@@ -501,7 +501,7 @@ public class InAppStoryManager {
             }
         }
         if (hasNewTags) {
-            forceCloseStoryReader();
+            //forceCloseStoryReader();
             clearCachedLists();
         }
     }
@@ -521,7 +521,7 @@ public class InAppStoryManager {
             }
         }
         if (tagIsRemoved) {
-            forceCloseStoryReader();
+            //forceCloseStoryReader();
             clearCachedLists();
         }
     }
@@ -575,7 +575,7 @@ public class InAppStoryManager {
             }
         }
         if (isNewPlaceholder) {
-            forceCloseStoryReader();
+            //forceCloseStoryReader();
         }
     }
 
@@ -613,7 +613,7 @@ public class InAppStoryManager {
             }
         }
         if (isNewPlaceholder) {
-            forceCloseStoryReader();
+            //forceCloseStoryReader();
         }
     }
 
@@ -708,7 +708,7 @@ public class InAppStoryManager {
 
         }
         clearCachedLists();
-        forceCloseStoryReader();
+        //forceCloseStoryReader();
     }
 
     public static boolean isStoryReaderOpened() {
@@ -751,7 +751,7 @@ public class InAppStoryManager {
         }
         if (isNewPlaceholder) {
             clearCachedLists();
-            forceCloseStoryReader();
+            //forceCloseStoryReader();
         }
     }
 
