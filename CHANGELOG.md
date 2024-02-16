@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version *1.17.13 (813)*
+----------------------------
+
+* Fixed: statistic for game opening (from list item)
+* Fixed: game loading after refresh clicking
+  
 Version *1.17.12 (812)*
 ----------------------------
 
