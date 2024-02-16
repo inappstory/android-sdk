@@ -4,6 +4,7 @@ Change Log
 Version *1.17.13 (813)*
 ----------------------------
 
+* Added: InAppStoryManager.isStoryReaderOpened() and InAppStoryManager.isGameReaderOpened()
 * Fixed: statistic for game opening (from list item)
 * Fixed: game loading after refresh clicking
   
