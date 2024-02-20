@@ -20,6 +20,11 @@ public class GameReaderCallbackAdapter implements GameReaderCallback {
     }
 
     @Override
+    public void eventGame(GameStoryData data, String gameId, String eventName, String payload) {
+
+    }
+
+    @Override
     public void gameLoadError(GameStoryData data, String gameId) {
 
     }
