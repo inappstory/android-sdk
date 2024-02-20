@@ -287,11 +287,19 @@ public class InAppStoryManager {
 
     public void openGame(String gameId, @NonNull Context context) {
         InAppStoryService service = InAppStoryService.getInstance();
+        GameReaderCallback callback = CallbackManager.getInstance().getGameReaderCallback();
         if (isGameReaderOpened()) {
-            GameReaderCallback callback = CallbackManager.getInstance().getGameReaderCallback();
             if (callback != null) {
                 callback.gameOpenError(null, gameId);
             }
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.game_reader_already_opened_error));
+            return;
+        }
+        if (this.userId == null || getBytesLength(this.userId) > 255) {
+            if (callback != null) {
+                callback.gameOpenError(null, gameId);
+            }
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
         if (service != null) {

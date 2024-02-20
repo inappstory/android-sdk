@@ -292,7 +292,7 @@ public class ScreensManager {
                                final GameScreenOptions options,
                                final String observableId) {
         InAppStoryService service = InAppStoryService.getInstance();
-        if (service == null || service.getSession().getSessionId().isEmpty()) return;
+        if (service == null) return;
         synchronized (gameReaderScreenLock) {
             if (currentGameScreen != null) {
                 closeGameReader();
@@ -306,7 +306,8 @@ public class ScreensManager {
                                 gameUrl,
                                 splashImagePath,
                                 gameConfig,
-                                gameResources, options,
+                                gameResources,
+                                options,
                                 observableId
                         );
                     }
