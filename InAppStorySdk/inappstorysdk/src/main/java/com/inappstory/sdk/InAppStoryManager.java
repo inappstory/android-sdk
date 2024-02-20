@@ -462,13 +462,15 @@ public class InAppStoryManager {
                 for (String newTag : newList) {
                     if (!oldList.contains(newTag)) {
                         this.tags = new ArrayList<>(newList);
-                        forceCloseAndClearCache();
+                        clearCachedLists();
+                    //    forceCloseAndClearCache();
                         break;
                     }
                 }
             } else {
                 this.tags = new ArrayList<>(newList);
-                forceCloseAndClearCache();
+                clearCachedLists();
+             //   forceCloseAndClearCache();
             }
         }
     }
@@ -499,7 +501,8 @@ public class InAppStoryManager {
                 hasNewTags |= addTag(tag);
             }
             if (hasNewTags) {
-                forceCloseAndClearCache();
+                clearCachedLists();
+              //  forceCloseAndClearCache();
             }
         }
     }
@@ -519,7 +522,8 @@ public class InAppStoryManager {
             }
         }
         if (tagIsRemoved) {
-            forceCloseAndClearCache();
+            clearCachedLists();
+            //forceCloseAndClearCache();
         }
     }
 
@@ -574,7 +578,7 @@ public class InAppStoryManager {
 
         }
         if (isNewPlaceholder) {
-            forceCloseAndClearCache();
+       //     forceCloseAndClearCache();
         }
     }
 
@@ -616,7 +620,7 @@ public class InAppStoryManager {
             }
         }
         if (isNewPlaceholder) {
-            forceCloseAndClearCache();
+      //      forceCloseAndClearCache();
         }
     }
 
@@ -710,7 +714,7 @@ public class InAppStoryManager {
             imagePlaceholders.putAll(placeholders);
 
         }
-        forceCloseAndClearCache();
+        //forceCloseAndClearCache();
     }
 
     private boolean setNewImagePlaceholder(@NonNull String key, ImagePlaceholderValue value) {
@@ -746,7 +750,7 @@ public class InAppStoryManager {
             isNewPlaceholder = setNewImagePlaceholder(key, value);
         }
         if (isNewPlaceholder) {
-            forceCloseAndClearCache();
+        //    forceCloseAndClearCache();
         }
     }
 

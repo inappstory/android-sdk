@@ -48,6 +48,7 @@ public class IASWebView extends WebView {
         setVerticalScrollBarEnabled(false);
         setHorizontalScrollBarEnabled(false);
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        getSettings().setMinimumFontSize(1);
         getSettings().setTextZoom(100);
         getSettings().setAllowContentAccess(true);
         getSettings().setAllowFileAccess(true);
