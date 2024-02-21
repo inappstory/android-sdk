@@ -156,10 +156,15 @@ public class ScreensManager {
 
     public OverlapFragmentObserver overlapFragmentObserver;
 
-    public void closeStoryReader(int action) {
-        BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
-        if (readerScreen != null)
-            readerScreen.closeStoryReader(action);
+    public void closeStoryReader(final int action) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+                if (readerScreen != null)
+                    readerScreen.closeStoryReader(action);
+            }
+        });
     }
 
     public boolean isStoryReaderOpened() {
