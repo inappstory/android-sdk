@@ -223,11 +223,17 @@ public class ScreensManager {
     }
 
     public void closeGameReader() {
-        synchronized (gameReaderScreenLock) {
-            if (currentGameScreen != null) {
-                currentGameScreen.close();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (gameReaderScreenLock) {
+                    if (currentGameScreen != null) {
+                        currentGameScreen.close();
+                    }
+                }
             }
-        }
+        });
+
     }
 
     public void forceFinishGameReader() {
