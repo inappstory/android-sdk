@@ -27,7 +27,12 @@ public class IASWebViewClient extends WebViewClient {
         if (service == null) return null;
         LruDiskCache cache = service.getCommonCache();
         try {
-            return Downloader.updateFile(cache.getFullFile(key), url, cache, key);
+            File cachedFile = cache.getFullFile(key);
+            if (cachedFile == null) {
+                Downloader.downloadOrGetFile(url, true, cache, null, null);
+                return null;
+            }
+            return Downloader.updateFile(cachedFile, url, cache, key);
         } catch (Exception e) {
             InAppStoryService.createExceptionLog(e);
             return null;
@@ -51,6 +56,7 @@ public class IASWebViewClient extends WebViewClient {
         }
         return file;
     }
+
     protected WebResourceResponse getChangedResponse(String url) throws FileNotFoundException {
         File file = getFileByUrl(url);
         WebResourceResponse response = null;
