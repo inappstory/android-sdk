@@ -7,5 +7,6 @@ public class InputStructure implements Serializable {
     public BorderStructure border;
     public TextStructure text;
     public PaddingStructure padding;
+    public Integer letterLimit;
     public String type;
 }
