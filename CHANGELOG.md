@@ -4,13 +4,13 @@ Change Log
 Version *1.17.14 (814)*
 ----------------------------
 
-* Updated: get dialog input parameters from server
-* Updated: minimum font size for WebViews
+* Update: get dialog input parameters from server
+* Update: minimum font size for WebViews
 
 Version *1.17.13 (813)*
 ----------------------------
 
-* Added: InAppStoryManager.isStoryReaderOpened() and InAppStoryManager.isGameReaderOpened()
+* New: added InAppStoryManager.isStoryReaderOpened() and InAppStoryManager.isGameReaderOpened()
 * Fixed: statistic for game opening (from list item)
 * Fixed: game loading after refresh clicking
   
@@ -121,7 +121,7 @@ Version *1.16.6 (756)*
 Version *1.17.2 (802)*
 ----------------------------
 
-* New: Added support for widget "layers" in stories.
+* New: added support for widget "layers" in stories.
   In previous versions timers won't reset when you switch between layers.
 
-* New: Added demo mode for games in private API
+* New: added demo mode for games in private API
