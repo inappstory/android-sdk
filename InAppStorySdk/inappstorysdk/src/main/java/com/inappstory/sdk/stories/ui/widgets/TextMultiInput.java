@@ -171,7 +171,7 @@ public class TextMultiInput extends LinearLayout {
                 mainText.setInputType(InputType.TYPE_CLASS_TEXT |
                         InputType.TYPE_TEXT_FLAG_MULTI_LINE |
                         InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-                mainText.setSingleLine(maxLines == 1);
+                mainText.setSingleLine(false);
                 mainText.setMaxLines(maxLines);
                 mainText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
                 mainTextLp.setMargins(0, 0, 0, 0);
