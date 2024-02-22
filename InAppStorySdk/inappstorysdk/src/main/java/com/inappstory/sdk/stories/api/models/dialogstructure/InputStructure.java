@@ -14,6 +14,6 @@ public class InputStructure {
     }
 
     public int maxLines() {
-        return Math.min(text.maxLines, 1);
+        return Math.max(text.maxLines, 1);
     }
 }
