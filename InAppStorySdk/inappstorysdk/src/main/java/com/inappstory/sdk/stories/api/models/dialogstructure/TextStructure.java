@@ -12,6 +12,8 @@ public class TextStructure implements Serializable {
     String family;
     String weight;
     String style;
+    public Integer limit;
+    public Integer maxLines;
 
     public boolean isBold() {
         return weight != null && weight.equals("bold");

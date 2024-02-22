@@ -210,7 +210,7 @@ public class TextMultiInput extends LinearLayout {
         }
     };
 
-    public void init(int inputType) {
+    public void init(int inputType, int maxLines) {
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
         this.inputType = inputType;
@@ -236,7 +236,7 @@ public class TextMultiInput extends LinearLayout {
                         InputType.TYPE_TEXT_FLAG_MULTI_LINE |
                         InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
                 mainText.setSingleLine(false);
-                mainText.setMaxLines(3);
+                mainText.setMaxLines(maxLines);
                 mainText.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
                 mainTextLp.setMargins(0, 0, 0, 0);
                 mainText.setLayoutParams(mainTextLp);

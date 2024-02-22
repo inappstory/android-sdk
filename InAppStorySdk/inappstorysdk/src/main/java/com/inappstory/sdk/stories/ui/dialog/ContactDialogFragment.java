@@ -293,10 +293,12 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         editContainer.setElevation(0f);
         editText = dialog.findViewById(R.id.editText);
         String type = dialogStructure.configV2.main.input.type;
+        final int limit = dialogStructure.configV2.main.input.limit();
+        int maxLines = dialogStructure.configV2.main.input.maxLines();
         int inttype = TEXT;
         if (type.equals("email")) inttype = MAIL;
         if (type.equals("tel")) inttype = PHONE;
-        editText.init(inttype);
+        editText.init(inttype, maxLines);
         AppCompatTextView text = dialog.findViewById(R.id.text);
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
@@ -548,15 +550,16 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
                     }
                 } catch (Exception e) {
                 }
-
                 editText.getMainText().removeTextChangedListener(this);
-
-                if (editText.getMainText().getLineCount() > 3) {
-                    editText.getMainText().setText(specialRequests);
-                    editText.getMainText().setSelection(lastSpecialRequestsCursorPosition);
-                } else
-                    specialRequests = editText.getMainText().getText().toString();
-
+                Editable editableText = editText.getMainText().getText();
+                if (editableText != null) {
+                    if (editableText.length() > limit) {
+                        editText.getMainText().setText(specialRequests);
+                        editText.getMainText().setSelection(lastSpecialRequestsCursorPosition);
+                    } else {
+                        specialRequests = editableText.toString();
+                    }
+                }
                 editText.getMainText().addTextChangedListener(this);
             }
         });
