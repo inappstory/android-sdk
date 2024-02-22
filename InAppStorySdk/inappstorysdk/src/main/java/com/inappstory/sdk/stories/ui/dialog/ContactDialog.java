@@ -379,12 +379,17 @@ public class ContactDialog {
                 }
 
                 editText.getMainText().removeTextChangedListener(this);
-
-                if (editText.getMainText().getLineCount() > 3) {
+                Integer limit = dialogStructure.configV2.main.input.limit();
+                Integer lineCount = dialogStructure.configV2.main.input.maxLines();
+                Editable editableText = editText.getMainText().getText();
+                if ((limit != null && editableText!= null &&
+                        editableText.length() > limit)
+                        || (editText.getMainText().getLineCount() > lineCount)) {
                     editText.getMainText().setText(specialRequests);
                     editText.getMainText().setSelection(lastSpecialRequestsCursorPosition);
-                } else
+                } else {
                     specialRequests = editText.getMainText().getText().toString();
+                }
 
                 editText.getMainText().addTextChangedListener(this);
             }
