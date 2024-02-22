@@ -120,6 +120,7 @@ public class ContactDialog {
         }
         final FrameLayout borderContainer = dialog.findViewById(R.id.borderContainer);
 
+        int lineCount = dialogStructure.configV2.main.input.maxLines();
         //  contentContainer.setUseCompatPadding(true);
         final FrameLayout editBorderContainer = dialog.findViewById(R.id.editBorderContainer);
         FrameLayout editContainer = dialog.findViewById(R.id.editContainer);
@@ -130,7 +131,7 @@ public class ContactDialog {
         int inttype = TEXT;
         if (type.equals("email")) inttype = MAIL;
         if (type.equals("tel")) inttype = PHONE;
-        editText.init(inttype);
+        editText.init(inttype, lineCount);
         AppCompatTextView text = dialog.findViewById(R.id.text);
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
@@ -379,12 +380,10 @@ public class ContactDialog {
                 }
 
                 editText.getMainText().removeTextChangedListener(this);
-                Integer limit = dialogStructure.configV2.main.input.limit();
-                Integer lineCount = dialogStructure.configV2.main.input.maxLines();
+                int limit = dialogStructure.configV2.main.input.limit();
                 Editable editableText = editText.getMainText().getText();
-                if ((limit != null && editableText!= null &&
-                        editableText.length() > limit)
-                        || (editText.getMainText().getLineCount() > lineCount)) {
+                if (editableText!= null &&
+                        editableText.length() > limit) {
                     editText.getMainText().setText(specialRequests);
                     editText.getMainText().setSelection(lastSpecialRequestsCursorPosition);
                 } else {

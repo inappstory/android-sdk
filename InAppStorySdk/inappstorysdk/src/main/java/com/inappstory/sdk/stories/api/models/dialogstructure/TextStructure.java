@@ -11,8 +11,8 @@ public class TextStructure {
     String family;
     String weight;
     String style;
-    public Integer limit;
-    public Integer maxLines;
+    public int limit;
+    public int maxLines;
 
 
     public boolean isBold() {
