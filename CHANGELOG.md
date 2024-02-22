@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version *1.17.14 (814)*
+----------------------------
+
+* Updated: get dialog input parameters from server
+* Updated: minimum font size for WebViews
+
 Version *1.17.13 (813)*
 ----------------------------
 
