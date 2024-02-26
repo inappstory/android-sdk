@@ -140,7 +140,7 @@ public class CoreProgressBar extends View {
 
         paint.setColor(getContext().getResources().getColor(R.color.cs_loaderColor));
         paint.setTypeface(tf);
-        paint.setTextSize(Sizes.dpToPxExt(12));
+        paint.setTextSize(Sizes.dpToPxExt(12, getContext()));
         paint.setTextAlign(Paint.Align.CENTER);
 
         paint.setStyle(Paint.Style.STROKE);

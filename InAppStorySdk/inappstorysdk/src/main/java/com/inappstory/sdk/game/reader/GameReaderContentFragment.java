@@ -893,7 +893,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         WindowInsets windowInsets = getActivity().getWindow().getDecorView().getRootWindowInsets();
                         if (windowInsets != null) {
                             ((RelativeLayout.LayoutParams) closeButton.getLayoutParams()).topMargin =
-                                    Math.max(windowInsets.getSystemWindowInsetTop(), Sizes.dpToPxExt(16));
+                                    Math.max(windowInsets.getSystemWindowInsetTop(),
+                                            Sizes.dpToPxExt(16, getContext())
+                                    );
                             closeButton.requestLayout();
                         }
                         if (Sizes.isTablet()) {

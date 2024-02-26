@@ -288,7 +288,7 @@ public class ImageLoader {
             o.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(new FileInputStream(f), null, o);
             //Find the correct scale value. It should be the power of 2.
-            final int REQUIRED_SIZE = Sizes.dpToPxExt(800);
+            final int REQUIRED_SIZE = Sizes.dpToPxExt(800, mContext);
             int width_tmp = o.outWidth, height_tmp = o.outHeight;
             int scale = 1;
             while (true) {
@@ -317,7 +317,7 @@ public class ImageLoader {
         o.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(stream, null, o);
 
-        final int REQUIRED_SIZE = Sizes.dpToPxExt(800);
+        final int REQUIRED_SIZE = Sizes.dpToPxExt(800, mContext);
         int width_tmp = o.outWidth, height_tmp = o.outHeight;
         int scale = 1;
         while (true) {
