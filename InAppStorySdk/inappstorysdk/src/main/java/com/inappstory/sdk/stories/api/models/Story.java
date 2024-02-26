@@ -336,7 +336,7 @@ public class Story implements Parcelable {
     }
 
     public boolean isHideInReader() {
-        return hideInReader != null && hideInReader;
+        return (hideInReader != null && hideInReader) || slidesCount <= 0;
     }
 
 
