@@ -27,7 +27,6 @@ import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.cache.DownloadFileState;
 import com.inappstory.sdk.stories.cache.Downloader;
-import com.inappstory.sdk.stories.ui.widgets.readerscreen.generated.GeneratedImageView;
 import com.inappstory.sdk.stories.utils.Sizes;
 
 import java.io.File;
@@ -104,9 +103,6 @@ public class ImageLoader {
             Bitmap bitmap = memoryCache.get(path);
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
-                if (imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView) imageView).onLoaded();
-                }
             } else {
                 queuePhoto(path, imageView, cache);
             }
@@ -392,9 +388,6 @@ public class ImageLoader {
                 return;
             if (bitmap != null) {
                 photoToLoad.imageView.setImageBitmap(bitmap);
-                if (photoToLoad.imageView instanceof GeneratedImageView) {
-                    ((GeneratedImageView) photoToLoad.imageView).onLoaded();
-                }
             }
         }
     }
