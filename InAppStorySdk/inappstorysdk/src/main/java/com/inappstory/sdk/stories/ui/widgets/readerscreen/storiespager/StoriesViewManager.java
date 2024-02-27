@@ -511,34 +511,6 @@ public class StoriesViewManager {
         return data;
     }
 
-    public void openGameReaderWithoutGameCenter(
-            String gameUrl,
-            String splashScreenPath,
-            String gameConfig,
-            String resources,
-            String options
-    ) {
-        ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
-        final StoriesContentFragment storiesContentFragment =
-                (StoriesContentFragment) pageManager.host.getParentFragment();
-        String uniqueId = null;
-        if (storiesContentFragment != null) {
-            uniqueId = storiesContentFragment.getReaderUniqueId();
-            storiesContentFragment.observeGameReader();
-        }
-        ScreensManager.getInstance().openGameReader(
-                context,
-                getGameStoryData(),
-                null,
-                gameUrl,
-                splashScreenPath,
-                gameConfig,
-                JsonParser.listFromJson(resources, WebResource.class),
-                JsonParser.fromJson(options, GameScreenOptions.class),
-                uniqueId
-        );
-    }
-
     private boolean storyIsLoaded = false;
 
     public void storyLoaded(int slideIndex) {

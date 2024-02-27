@@ -482,11 +482,6 @@ public class InAppStoryService {
                 context,
                 data,
                 gameId,
-                null,
-                null,
-                null,
-                null,
-                null,
                 observableId
         );
     }

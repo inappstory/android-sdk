@@ -296,11 +296,6 @@ public class ScreensManager {
     public void openGameReader(final Context context,
                                final GameStoryData data,
                                final String gameId,
-                               final String gameUrl,
-                               final String splashImagePath,
-                               final String gameConfig,
-                               final List<WebResource> gameResources,
-                               final GameScreenOptions options,
                                final String observableId) {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return;
@@ -314,11 +309,6 @@ public class ScreensManager {
                                 context,
                                 data,
                                 gameId,
-                                gameUrl,
-                                splashImagePath,
-                                gameConfig,
-                                gameResources,
-                                options,
                                 observableId
                         );
                     }
@@ -336,11 +326,6 @@ public class ScreensManager {
         GameReaderLaunchData gameReaderLaunchData = new GameReaderLaunchData(
                 gameId,
                 observableId,
-                gameUrl,
-                splashImagePath,
-                gameConfig,
-                gameResources,
-                options,
                 data != null ? data.slideData : null
         );
         Bundle bundle = new Bundle();

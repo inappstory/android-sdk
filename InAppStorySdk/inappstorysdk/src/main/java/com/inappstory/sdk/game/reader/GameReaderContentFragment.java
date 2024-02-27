@@ -640,32 +640,19 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
     private void checkIntentValues(final GameLoadedCallback callback) {
         manager.gameCenterId = gameReaderLaunchData.getGameId();
-        manager.path = gameReaderLaunchData.getGameUrl();
         manager.dataModel = getStoryDataModel();
-        if (manager.path == null) {
-            if (manager.gameCenterId == null) {
-                callback.complete(null, "No game path or id");
-                forceFinish();
-                return;
-            }
-            String splashPath = KeyValueStorage.getString("gameInstanceSplash_" + manager.gameCenterId);
-            if (splashPath != null) {
-                File splash = new File(splashPath);
-                hasSplashFile = splash.exists();
-                setLoader(splash);
-            }
-            downloadGame();
-        } else {
-            GameScreenOptions options = gameReaderLaunchData.getOptions();
-            setOrientationFromOptions(options);
-            setFullScreenFromOptions(options);
-            manager.resources = gameReaderLaunchData.getGameResources();
-            manager.gameConfig = gameReaderLaunchData.getGameConfig();
-            manager.splashImagePath = gameReaderLaunchData.getSplashImagePath();
-            replaceConfigs();
-            setLoaderOld();
-            callback.complete(null, null);
+        if (manager.gameCenterId == null) {
+            callback.complete(null, "No game id");
+            forceFinish();
+            return;
         }
+        String splashPath = KeyValueStorage.getString("gameInstanceSplash_" + manager.gameCenterId);
+        if (splashPath != null) {
+            File splash = new File(splashPath);
+            hasSplashFile = splash.exists();
+            setLoader(splash);
+        }
+        downloadGame();
     }
 
     private void setFullScreenFromOptions(GameScreenOptions options) {
@@ -964,21 +951,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         } else {
             ImageLoader.getInstance().displayImage(splashFile.getAbsolutePath(), -1, loader);
         }
-    }
-
-    private void setLoaderOld() {
-
-        InAppStoryService service = InAppStoryService.getInstance();
-        if (manager.splashImagePath != null && !manager.splashImagePath.isEmpty()
-                && service != null)
-            ImageLoader.getInstance().displayImage(
-                    manager.splashImagePath,
-                    -1,
-                    loader,
-                    service.getCommonCache()
-            );
-        else
-            loader.setBackgroundColor(Color.BLACK);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")

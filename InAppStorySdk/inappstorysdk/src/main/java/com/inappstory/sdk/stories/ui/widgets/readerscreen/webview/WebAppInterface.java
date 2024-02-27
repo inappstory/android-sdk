@@ -72,14 +72,6 @@ public class WebAppInterface {
         manager.sendApiRequest(data);
     }
 
-    @JavascriptInterface
-    public void openGameReader(String gameFile, String coverFile,
-                               String initCode, String gameResources, String options) {
-        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, options);
-        logMethod(gameFile);
-    }
-
-
 
     @JavascriptInterface
     public void vibrate(int[] vibratePattern) {
@@ -91,14 +83,6 @@ public class WebAppInterface {
         manager.openGameReaderFromGameCenter(gameInstanceId);
         logMethod(gameInstanceId);
     }
-
-    @JavascriptInterface
-    public void openGameReader(String gameFile, String coverFile,
-                               String initCode, String gameResources) {
-        manager.openGameReaderWithoutGameCenter(gameFile, coverFile, initCode, gameResources, null);
-        logMethod(gameFile);
-    }
-
 
     @JavascriptInterface
     public void setAudioManagerMode(String mode) {

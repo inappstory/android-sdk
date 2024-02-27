@@ -40,7 +40,6 @@ public class GameManager {
     String path;
     String gameCenterId;
     List<WebResource> resources;
-    String splashImagePath;
     boolean gameLoaded;
     String gameConfig;
 
