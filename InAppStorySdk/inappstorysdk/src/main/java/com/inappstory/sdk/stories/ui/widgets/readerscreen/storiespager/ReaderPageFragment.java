@@ -233,7 +233,7 @@ public class ReaderPageFragment extends Fragment {
     }
 
     private void setOffsets(View view) {
-        if (!Sizes.isTablet()) {
+        if (!Sizes.isTablet(getContext())) {
             if (blackBottom != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
@@ -402,7 +402,7 @@ public class ReaderPageFragment extends Fragment {
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT,
                 MATCH_PARENT));
 
-        if (!Sizes.isTablet() && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
+        if (!Sizes.isTablet(getContext()) && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);

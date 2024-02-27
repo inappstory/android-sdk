@@ -4,7 +4,6 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.MAIL;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.PHONE;
 import static com.inappstory.sdk.stories.ui.widgets.TextMultiInput.TEXT;
-import static com.inappstory.sdk.stories.utils.Sizes.isTablet;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -303,7 +302,7 @@ public class ContactDialogFragment extends Fragment implements IASBackPressHandl
         final FrameLayout buttonBackground = dialog.findViewById(R.id.buttonBackground);
         AppCompatTextView buttonText = dialog.findViewById(R.id.buttonText);
 
-        if (isTablet()) {
+        if (Sizes.isTablet(getContext())) {
             fullWidth = getContext().getResources().getDimensionPixelSize(R.dimen.cs_tablet_width);
             fullHeight = getContext().getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
         } else {

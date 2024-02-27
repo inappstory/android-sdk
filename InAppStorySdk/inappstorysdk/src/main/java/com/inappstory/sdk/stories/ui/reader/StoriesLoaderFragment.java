@@ -85,7 +85,7 @@ public class StoriesLoaderFragment extends Fragment {
     private void setOffsets(View view) {
         View blackBottom = view.findViewById(R.id.ias_black_bottom);
         View blackTop = view.findViewById(R.id.ias_black_top);
-        if (!Sizes.isTablet()) {
+        if (!Sizes.isTablet(getContext())) {
             if (blackBottom != null) {
                 Point screenSize;
                 Rect readerContainer = getArguments().getParcelable("readerContainer");
@@ -209,7 +209,7 @@ public class StoriesLoaderFragment extends Fragment {
         linearLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        if (!Sizes.isTablet() && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
+        if (!Sizes.isTablet(context) && appearanceSettings.csReaderBackgroundColor() != Color.BLACK) {
             linearLayout.setBackgroundColor(Color.BLACK);
         }
         setLinearContainer(context, linearLayout);

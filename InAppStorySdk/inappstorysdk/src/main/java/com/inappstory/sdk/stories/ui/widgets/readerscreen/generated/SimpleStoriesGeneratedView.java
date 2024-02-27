@@ -69,7 +69,14 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         animatorHashMap.clear();
         for (View v : temp2) {
             if (v instanceof GeneratedImageView) {
-                animatorHashMap.put(v, new ViewAnimator().animate(v, ViewAnimator.SHAKE));
+                animatorHashMap.put(
+                        v,
+                        new ViewAnimator().animate(
+                                v,
+                                ViewAnimator.SHAKE,
+                                Sizes.getScreenSize(getContext())
+                        )
+                );
             }
         }
         if (manager != null)
@@ -203,8 +210,8 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
             checkGenerator(null);
             return;
         }
-
-        int xSize = Sizes.getScreenSize().x;
+        Context context = getContext();
+        int xSize = Sizes.getScreenSize(context).x;
         int ySize = getHeight();
         float ratio = 480f / 310;
         float ratio2 = 1f * ySize / xSize;
@@ -212,18 +219,18 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
         int leftPadding = 0;
         if (ratio2 > ratio) {
             xSize = (int) (1f * ySize / ratio);
-            leftPadding = (xSize - Sizes.getScreenSize().x) / 2;
+            leftPadding = (xSize - Sizes.getScreenSize(context).x) / 2;
         } else {
             ySize = (int) (1f * xSize * ratio);
             topPadding = (ySize - getHeight()) / 2;
         }
-        RelativeLayout rl = new RelativeLayout(getContext());
+        RelativeLayout rl = new RelativeLayout(context);
         rl.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         rl.setPaddingRelative(-leftPadding, -topPadding, -leftPadding, -topPadding);
         rl.setVisibility(GONE);
         rl.setElevation(4);
-        RelativeLayout rl2 = new RelativeLayout(getContext());
+        RelativeLayout rl2 = new RelativeLayout(context);
         rl2.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         rl2.setPaddingRelative(-leftPadding, -topPadding, -leftPadding, -topPadding);
@@ -299,7 +306,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         if (!InAppStoryService.isServiceConnected()) return true;
         switch (motionEvent.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -318,7 +325,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onInterceptTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             lastTempTap = System.currentTimeMillis();
@@ -336,7 +343,7 @@ public class SimpleStoriesGeneratedView extends RelativeLayout implements Simple
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if (((ReaderPager)getParentForAccessibility()).cubeAnimation) return false;
+        if (((ReaderPager) getParentForAccessibility()).cubeAnimation) return false;
         boolean c = super.onTouchEvent(motionEvent);
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             if (System.currentTimeMillis() - lastTap < 1500) {

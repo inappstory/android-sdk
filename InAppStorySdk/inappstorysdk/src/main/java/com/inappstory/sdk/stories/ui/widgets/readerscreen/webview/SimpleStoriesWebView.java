@@ -373,7 +373,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
             case MotionEvent.ACTION_DOWN:
                 coordinate1 = motionEvent.getX();
                 if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL) {
-                    int sz = (!Sizes.isTablet() ?
+                    int sz = (!Sizes.isTablet(getContext()) ?
                             Sizes.getScreenSize(getContext()).x :
                             Sizes.dpToPxExt(400, getContext()));
                     coordinate1 = sz - coordinate1;
@@ -398,7 +398,7 @@ public class SimpleStoriesWebView extends IASWebView implements SimpleStoriesVie
                 return true;
             }
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            if (Sizes.isTablet())
+            if (Sizes.isTablet(getContext()))
                 getManager().getPageManager().resumeSlide(false);
         }
         return c;

@@ -97,9 +97,9 @@ public abstract class StoriesMainFragment extends Fragment implements
         });
     }
 
-    public static StoriesMainFragment newInstance(Bundle bundle) {
+    public static StoriesMainFragment newInstance(Bundle bundle, Context context) {
         StoriesMainFragment fragment;
-        if (Sizes.isTablet()) fragment = new StoriesMainTabletFragment();
+        if (Sizes.isTablet(context)) fragment = new StoriesMainTabletFragment();
         else fragment = new StoriesMainPhoneFragment();
         fragment.setArguments(bundle);
         return fragment;
@@ -509,7 +509,7 @@ public abstract class StoriesMainFragment extends Fragment implements
     }
 
     boolean orientationChangeIsLocked() {
-        return !Sizes.isTablet();
+        return !Sizes.isTablet(getContext());
     }
 
     @Override

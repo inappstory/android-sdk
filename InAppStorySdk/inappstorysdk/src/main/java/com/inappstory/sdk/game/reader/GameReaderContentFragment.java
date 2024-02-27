@@ -328,7 +328,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
             }
         });
-        if (Sizes.isTablet() && baseContainer != null) {
+        if (Sizes.isTablet(getContext()) && baseContainer != null) {
             baseContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -885,11 +885,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                     );
                             closeButton.requestLayout();
                         }
-                        if (Sizes.isTablet()) {
+                        if (Sizes.isTablet(getContext())) {
 
                             View gameContainer = getView().findViewById(R.id.gameContainer);
                             if (gameContainer != null) {
-                                Point size = Sizes.getScreenSize();
+                                Point size = Sizes.getScreenSize(getContext());
                                 if (windowInsets != null) {
                                     size.y -= (windowInsets.getSystemWindowInsetTop() +
                                             windowInsets.getSystemWindowInsetBottom());

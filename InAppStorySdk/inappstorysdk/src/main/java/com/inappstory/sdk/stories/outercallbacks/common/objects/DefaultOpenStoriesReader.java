@@ -41,7 +41,7 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
                 bundle.putInt("parentLayoutInDisplayCutoutMode", window.getAttributes().layoutInDisplayCutoutMode);
             }
         }
-        if (Sizes.isTablet() && context instanceof FragmentActivity) {
+        if (Sizes.isTablet(context) && context instanceof FragmentActivity) {
             StoriesDialogFragment storiesDialogFragment = new StoriesDialogFragment();
             storiesDialogFragment.setArguments(bundle);
             try {

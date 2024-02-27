@@ -37,7 +37,8 @@ public class GameLoadProgressBar extends View implements IGameLoaderView {
 
     private final int sizeDP = 36;
     private final boolean rounded = false;
-    private float STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP);
+
+    private float STROKE_WIDTH = Sizes.dpToPxExt(strokeWidthDP, null);
     private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
 
     private static Paint COLOR_PAINT;

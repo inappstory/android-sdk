@@ -29,7 +29,7 @@ public class Sizes {
     }
 
 
-    public static float getPixelScaleFactorExt() {
+    private static float getPixelScaleFactorExt() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service == null) return 1;
         Context con = InAppStoryService.getInstance().getContext();
@@ -39,13 +39,14 @@ public class Sizes {
         return displayMetrics.density;
     }
 
-    public static float getPixelScaleFactorExt(Context context) {
+    private static float getPixelScaleFactorExt(Context context) {
         if (context == null)
             return 1;
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         return displayMetrics.density;
     }
 
+    @Deprecated
     public static Point getScreenSize() {
         Context con = null;
         InAppStoryService service = InAppStoryService.getInstance();
@@ -59,6 +60,12 @@ public class Sizes {
     }
 
     public static Point getScreenSize(Context context) {
+        if (context == null) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service != null) context = service.getContext();
+        }
+        if (context == null)
+            return new Point(0, 0);
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
@@ -77,10 +84,13 @@ public class Sizes {
     public static int dpFloatToPxExt(float dp, Context context) {
         return Math.round(dp * getPixelScaleFactorExt(context));
     }
+
+    @Deprecated
     public static int dpToPxExt(int dp) {
         return Math.round(dp * getPixelScaleFactorExt());
     }
 
+    @Deprecated
     public static boolean isTablet() {
         InAppStoryService service = InAppStoryService.getInstance();
         if (service != null && service.getContext() != null)
@@ -88,10 +98,25 @@ public class Sizes {
         else return false;
     }
 
+    public static boolean isTablet(Context context) {
+        Context localContext = null;
+        if (context == null) {
+            InAppStoryService service = InAppStoryService.getInstance();
+            if (service != null)
+                localContext = service.getContext();
+        } else {
+            localContext = context;
+        }
+        if (localContext != null)
+            return localContext.getResources().getBoolean(R.bool.isTablet);
+        return false;
+    }
+
     public static int dpToPxExt(int dp, Context context) {
         return Math.round(dp * getPixelScaleFactorExt(context));
     }
 
+    @Deprecated
     public static int pxToDpExt(int dp) {
         return Math.round(dp / getPixelScaleFactorExt());
     }

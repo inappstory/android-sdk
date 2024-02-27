@@ -205,7 +205,7 @@ public class StoriesDialogFragment extends DialogFragment implements IASBackPres
             return;
         int dialogHeight = getResources().getDimensionPixelSize(R.dimen.cs_tablet_height);
 
-        Point size = Sizes.getScreenSize();
+        Point size = Sizes.getScreenSize(getContext());
         if (Build.VERSION.SDK_INT >= 28) {
             if (getContext() instanceof Activity) {
                 WindowInsets insets =

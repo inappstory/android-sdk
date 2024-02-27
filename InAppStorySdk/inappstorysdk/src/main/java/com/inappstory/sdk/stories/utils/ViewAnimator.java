@@ -3,6 +3,7 @@ package com.inappstory.sdk.stories.utils;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.graphics.Point;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -53,26 +54,26 @@ public class ViewAnimator {
         return animator;
     }
 
-    public ValueAnimator fadeIn(final View gv, String animation) {
+    public ValueAnimator fadeIn(final View gv, String animation, Point size) {
         int xPlus = 0;
         int yPlus = 0;
         int duration = 1000;
         switch (animation) {
             case FADE_IN_UP:
-                yPlus = -Sizes.getScreenSize().y;
+                yPlus = -size.y;
                 xPlus = 0;
                 break;
             case FADE_IN_DOWN:
-                yPlus = Sizes.getScreenSize().y;
+                yPlus = size.y;
                 xPlus = 0;
                 break;
             case FADE_IN_LEFT:
                 yPlus = 0;
-                xPlus = -Sizes.getScreenSize().x;
+                xPlus = -size.x;
                 break;
             case FADE_IN_RIGHT:
                 yPlus = 0;
-                xPlus = Sizes.getScreenSize().x;
+                xPlus = size.x;
                 break;
         }
 
@@ -91,12 +92,12 @@ public class ViewAnimator {
         return animator;
     }
 
-    public ValueAnimator zoom(final View gv, String animation) {
+    public ValueAnimator zoom(final View gv, String animation, Point size) {
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) gv.getLayoutParams();
         int xSize = lp.width;
         int ySize = lp.height;
-        if (xSize == -1) xSize = Sizes.getScreenSize().x;
-        if (ySize == -1) ySize = Sizes.getScreenSize().y;
+        if (xSize == -1) xSize = size.x;
+        if (ySize == -1) ySize = size.y;
 
         float from = 1f;
         float to = 1f;
@@ -111,8 +112,8 @@ public class ViewAnimator {
                 to = 1f;
         }
         if (from > 1) {
-            gv.setPivotX(xSize / 2);
-            gv.setPivotY(ySize / 2);
+            gv.setPivotX(xSize / 2f);
+            gv.setPivotY(ySize / 2f);
             gv.setScaleX(from);
             gv.setScaleY(from);
         }
@@ -135,13 +136,13 @@ public class ViewAnimator {
         return animator;
     }
 
-    public ValueAnimator shake(final View gv) {
+    public ValueAnimator shake(final View gv, Point size) {
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) gv.getLayoutParams();
         int xSize = lp.width;
         int ySize = lp.height;
-        if (ySize == -1) ySize = Sizes.getScreenSize().y;
+        if (ySize == -1) ySize = size.y;
         if (xSize == -1) {
-            xSize = Sizes.getScreenSize().x;
+            xSize = size.x;
             gv.setPivotX(xSize / 2f);
             gv.setPivotY(ySize / 2f);
             gv.setScaleX(1.1f);
@@ -186,20 +187,20 @@ public class ViewAnimator {
         return animator;
     }
 
-    public ValueAnimator scroll(final View gv, String animation) {
+    public ValueAnimator scroll(final View gv, String animation, Point size) {
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) gv.getLayoutParams();
         int xSize = lp.width;
         int ySize = lp.height;
-        if (xSize == -1) xSize = Sizes.getScreenSize().x;
-        if (ySize == -1) ySize = Sizes.getScreenSize().y;
+        if (xSize == -1) xSize = size.x;
+        if (ySize == -1) ySize = size.y;
 
         float xf = lp.topMargin;
         float xt = lp.topMargin;
         float yf = lp.leftMargin;
         float yt = lp.leftMargin;
 
-        gv.setPivotX(xSize / 2);
-        gv.setPivotY(ySize / 2);
+        gv.setPivotX(xSize / 2f);
+        gv.setPivotY(ySize / 2f);
         gv.setScaleX(1.2f);
         gv.setScaleY(1.2f);
         switch (animation) {
@@ -242,7 +243,7 @@ public class ViewAnimator {
         return null;
     }
 
-    public ValueAnimator animate(View gv, String animation) {
+    public ValueAnimator animate(View gv, String animation, Point size) {
         switch (animation) {
             case FOCUS_IN:
                 return focusIn(gv);
@@ -250,18 +251,18 @@ public class ViewAnimator {
             case FADE_IN_DOWN:
             case FADE_IN_LEFT:
             case FADE_IN_RIGHT:
-                return fadeIn(gv, animation);
+                return fadeIn(gv, animation, size);
             case ZOOM:
             case ZOOM_IN:
             case ZOOM_OUT:
-                return zoom(gv, animation);
+                return zoom(gv, animation, size);
             case SHAKE:
-                return shake(gv);
+                return shake(gv, size);
             case SCROLL_UP:
             case SCROLL_DOWN:
             case SCROLL_LEFT:
             case SCROLL_RIGHT:
-                return scroll(gv, animation);
+                return scroll(gv, animation, size);
             case BLUR:
                 return blur(gv);
         }

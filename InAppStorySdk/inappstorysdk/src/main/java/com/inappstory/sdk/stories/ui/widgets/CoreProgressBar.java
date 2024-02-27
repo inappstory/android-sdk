@@ -21,8 +21,8 @@ public class CoreProgressBar extends View {
     private static final int FRAME_DURATION = 50; // ms
 
 
-    static final float STROKE_WIDTH = Sizes.dpToPxExt(4);
-    private static final float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
+    private float STROKE_WIDTH = Sizes.dpToPxExt(4, null);
+    private float STROKE_SIZE_HALF = STROKE_WIDTH / 2;
 
 
     public int getProgress() {
@@ -87,6 +87,8 @@ public class CoreProgressBar extends View {
     private void init(Context con, AttributeSet attrs) {
 
         tf = Typeface.DEFAULT;
+        STROKE_WIDTH = Sizes.dpToPxExt(4, con);
+        STROKE_SIZE_HALF = STROKE_WIDTH / 2;
         setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
 
@@ -103,7 +105,7 @@ public class CoreProgressBar extends View {
 
     private static Paint COLOR_PAINT;
 
-    static Paint getColorPaint(Resources resources) {
+    private Paint getColorPaint(Resources resources) {
         if (COLOR_PAINT == null) {
             COLOR_PAINT = new Paint();
             COLOR_PAINT.setColor(resources.getColor(R.color.cs_loaderColor));
