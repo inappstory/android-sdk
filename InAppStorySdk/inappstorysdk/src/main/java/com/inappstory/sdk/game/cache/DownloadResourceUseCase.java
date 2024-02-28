@@ -4,6 +4,7 @@ import androidx.annotation.WorkerThread;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
@@ -46,12 +47,19 @@ public class DownloadResourceUseCase {
                 if (progressCallback != null)
                     progressCallback.onProgress(resource.size, resource.size);
                 useCaseCallback.onSuccess(null);
+                return;
+            }
+            String key = resource.sha1;
+            if (key == null) key = FileManager.SHA1(resource.url);
+            if (key == null) {
+                useCaseCallback.onError(null);
+                return;
             }
             InAppStoryService service = InAppStoryService.getInstance();
             if (service == null) return;
             Downloader.downloadOrGetResourceFile(
                     url,
-                    gameInstanceId + "_" + fileName,
+                    gameInstanceId + "_" + key,
                     service.getInfiniteCache(),
                     resourceFile,
                     new FileLoadProgressCallback() {
