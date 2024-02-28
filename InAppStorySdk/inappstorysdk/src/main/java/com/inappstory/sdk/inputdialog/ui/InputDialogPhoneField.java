@@ -9,14 +9,12 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.lifecycle.Observer;
 
@@ -42,16 +40,6 @@ public final class InputDialogPhoneField extends LinearLayout
 
     public InputDialogPhoneField(Context context) {
         super(context);
-        init();
-    }
-
-    public InputDialogPhoneField(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public InputDialogPhoneField(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
         init();
     }
 
@@ -178,6 +166,8 @@ public final class InputDialogPhoneField extends LinearLayout
         }
     };
 
+    SimpleTextWatcher resetWatcher;
+
     Observer<String> maskObserver = new Observer<String>() {
         @Override
         public void onChanged(String mask) {
@@ -236,13 +226,11 @@ public final class InputDialogPhoneField extends LinearLayout
         countryCodeText.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void textChanged(String newText) {
-
                 String mask = PhoneFormats.getMaskByCode(newText);
                 dataHolder.setMask(mask);
             }
 
         });
-
         mainText.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void textChanged(String newText) {
@@ -292,6 +280,37 @@ public final class InputDialogPhoneField extends LinearLayout
         countryCodeText.setTextSize(type, size);
         phoneNumberHint.setTextSize(type, size);
         mainText.setTextSize(type, size);
+    }
+
+    @Override
+    public void addTextWatcher(TextWatcher watcher) {
+        mainText.addTextChangedListener(watcher);
+    }
+
+    @Override
+    public void addResetWatcher(TextWatcher watcher) {
+        countryCodeText.addTextChangedListener(watcher);
+        mainText.addTextChangedListener(watcher);
+    }
+
+    @Override
+    public void removeTextWatcher(TextWatcher watcher) {
+        mainText.removeTextChangedListener(watcher);
+    }
+
+    @Override
+    public void setText(CharSequence text) {
+        mainText.setText(text);
+    }
+
+    @Override
+    public void setSelection(int index) {
+        setSelection(index);
+    }
+
+    @Override
+    public int getSelectionStart() {
+        return mainText.getSelectionStart();
     }
 
     @Override

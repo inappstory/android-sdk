@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -36,6 +38,7 @@ import com.inappstory.sdk.databinding.CsDialogLayoutBinding;
 import com.inappstory.sdk.inputdialog.uidomain.IInputDialogViewModel;
 import com.inappstory.sdk.inputdialog.uidomain.InputDialogActionData;
 import com.inappstory.sdk.inputdialog.uidomain.KeyboardState;
+import com.inappstory.sdk.inputdialog.utils.SimpleTextWatcher;
 import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.utils.Sizes;
 
@@ -237,7 +240,7 @@ public class InputDialogFragment extends Fragment {
     }
 
     private void createInput(DialogData data) {
-        InputStructure inputStructure = data.dialogStructure().configV2().main().input();
+        final InputStructure inputStructure = data.dialogStructure().configV2().main().input();
         if (inputStructure == null) return;
         binding.editContainer.removeAllViewsInLayout();
 
@@ -333,6 +336,52 @@ public class InputDialogFragment extends Fragment {
                     break;
             }
         }
+
+        SimpleTextWatcher resetField = new SimpleTextWatcher() {
+            @Override
+            public void textChanged(String newText) {
+                binding.editBorderContainer.setBackground(editBorderContainerGradient);
+                binding.editText.setTextColor(hex2color(inputStructure.text().color()));
+            }
+        };
+        textField.addResetWatcher(resetField);
+        textField.addTextWatcher(new TextWatcher() {
+            int lastSpecialRequestsCursorPosition;
+            String specialRequests;
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                lastSpecialRequestsCursorPosition = textField.getSelectionStart();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String str = editable.toString();
+                try {
+                    if (str.isEmpty()) {
+                        binding.buttonBackground.setVisibility(View.GONE);
+                    } else {
+                        binding.buttonBackground.setVisibility(View.VISIBLE);
+                    }
+                } catch (Exception e) {
+                }
+
+                textField.removeTextWatcher(this);
+
+                if (str.length() > inputStructure.limit()) {
+                    textField.setText(specialRequests);
+                    textField.setSelection(lastSpecialRequestsCursorPosition);
+                } else
+                    specialRequests = textField.getDataHolder().currentText();
+
+                textField.addTextWatcher(this);
+            }
+        });
         setTypeface(textField, inputStructure.text().isBold(),
                 inputStructure.text().isItalic(),
                 inputStructure.text().isSecondary());

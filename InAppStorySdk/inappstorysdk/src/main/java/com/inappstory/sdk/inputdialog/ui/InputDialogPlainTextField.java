@@ -72,6 +72,22 @@ public final class InputDialogPlainTextField extends AppCompatEditText
 
 
     @Override
+    public void addTextWatcher(TextWatcher watcher) {
+        super.addTextChangedListener(watcher);
+    }
+
+    @Override
+    public void addResetWatcher(TextWatcher watcher) {
+        addTextWatcher(watcher);
+    }
+
+    @Override
+    public void removeTextWatcher(TextWatcher watcher) {
+        super.removeTextChangedListener(watcher);
+    }
+
+
+    @Override
     public String getValue() {
         return dataHolder.currentText();
     }

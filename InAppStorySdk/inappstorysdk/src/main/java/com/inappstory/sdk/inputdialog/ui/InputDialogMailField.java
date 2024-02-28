@@ -2,6 +2,7 @@ package com.inappstory.sdk.inputdialog.ui;
 
 import android.content.Context;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.inputmethod.EditorInfo;
 
@@ -41,7 +42,6 @@ public final class InputDialogMailField extends AppCompatEditText
         setSingleLine(false);
         setMaxLines(3);
         setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
-
         addTextWatchers();
     }
 
@@ -74,6 +74,21 @@ public final class InputDialogMailField extends AppCompatEditText
     @Override
     public void setTextSize(int type, int size) {
         super.setTextSize(type, size);
+    }
+
+    @Override
+    public void addTextWatcher(TextWatcher watcher) {
+        super.addTextChangedListener(watcher);
+    }
+
+    @Override
+    public void addResetWatcher(TextWatcher watcher) {
+        addTextWatcher(watcher);
+    }
+
+    @Override
+    public void removeTextWatcher(TextWatcher watcher) {
+        super.removeTextChangedListener(watcher);
     }
 
 
