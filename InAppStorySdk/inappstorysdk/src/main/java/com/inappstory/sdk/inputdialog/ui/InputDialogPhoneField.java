@@ -1,6 +1,7 @@
 package com.inappstory.sdk.inputdialog.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -9,6 +10,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,7 @@ import android.widget.RelativeLayout;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.lifecycle.Observer;
 
+import com.inappstory.sdk.core.models.js.dialogstructure.InputStructure;
 import com.inappstory.sdk.inputdialog.uidomain.IInputBaseDialogDataHolder;
 import com.inappstory.sdk.inputdialog.uidomain.IInputPhoneDialogDataHolder;
 import com.inappstory.sdk.inputdialog.uidomain.InputPhoneDialogDataHolder;
@@ -25,10 +28,13 @@ import com.inappstory.sdk.inputdialog.utils.SimpleTextWatcher;
 import com.inappstory.sdk.stories.ui.widgets.MaskedWatcher;
 import com.inappstory.sdk.stories.utils.PhoneFormats;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.FontUtils;
 
 public final class InputDialogPhoneField extends LinearLayout
         implements IInputDialogTextField {
     IInputPhoneDialogDataHolder dataHolder = new InputPhoneDialogDataHolder();
+    private InputStructure inputStructure;
+    private float factor = 1f;
 
     AppCompatEditText mainText;
     AppCompatEditText countryCodeText;
@@ -38,8 +44,14 @@ public final class InputDialogPhoneField extends LinearLayout
     private final String PHONE_CODE_MASK = "+−−−−";
 
 
-    public InputDialogPhoneField(Context context) {
+    public InputDialogPhoneField(
+            Context context,
+            InputStructure inputStructure,
+            float factor
+    ) {
         super(context);
+        this.factor = factor;
+        this.inputStructure = inputStructure;
         init();
     }
 
@@ -119,6 +131,22 @@ public final class InputDialogPhoneField extends LinearLayout
         createDivider();
         createCountryCodeTextField(countryCodeLp);
         createPhoneNumberHintField(mainTextLp);
+
+        FontUtils.setTypeface(mainText,
+                inputStructure.text().isBold(),
+                inputStructure.text().isItalic(),
+                inputStructure.text().isSecondary()
+        );
+        FontUtils.setTypeface(countryCodeText,
+                inputStructure.text().isBold(),
+                inputStructure.text().isItalic(),
+                inputStructure.text().isSecondary()
+        );
+
+        setHint(inputStructure.text().placeholder());
+        setTextColor(Color.parseColor(inputStructure.text().color()));
+        setHintTextColor(Color.parseColor(inputStructure.text().color()));
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) (factor * inputStructure.text().size()));
 
         RelativeLayout rl = new RelativeLayout(getContext());
         rl.setLayoutParams(mainTextLp);

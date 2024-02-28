@@ -1,47 +1,60 @@
 package com.inappstory.sdk.inputdialog.ui;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 
+import com.inappstory.sdk.core.models.js.dialogstructure.InputStructure;
 import com.inappstory.sdk.inputdialog.uidomain.IInputBaseDialogDataHolder;
 import com.inappstory.sdk.inputdialog.uidomain.InputBaseDialogDataHolder;
 import com.inappstory.sdk.inputdialog.utils.SimpleTextWatcher;
+import com.inappstory.sdk.utils.FontUtils;
 
 public final class InputDialogMailField extends AppCompatEditText
         implements IInputDialogTextField {
 
     IInputBaseDialogDataHolder dataHolder = new InputBaseDialogDataHolder();
+    private InputStructure inputStructure;
+    private float factor = 1f;
 
-    public InputDialogMailField(Context context) {
+    public InputDialogMailField(
+            Context context,
+            InputStructure inputStructure,
+            float factor
+    ) {
         super(context);
-        init();
-    }
-
-    public InputDialogMailField(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public InputDialogMailField(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        this.factor = factor;
+        this.inputStructure = inputStructure;
         init();
     }
 
     private void init() {
+
         setBackground(null);
         setPaddingRelative(0, 0, 0, 0);
-        setInputType(InputType.TYPE_CLASS_TEXT |
-                InputType.TYPE_TEXT_FLAG_MULTI_LINE |
-                InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        setSingleLine(false);
-        setMaxLines(3);
-        setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+        setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        setSingleLine(true);
+        setMaxLines(1);
+
+
+        FontUtils.setTypeface(this,
+                inputStructure.text().isBold(),
+                inputStructure.text().isItalic(),
+                inputStructure.text().isSecondary()
+        );
+
+        setHint(inputStructure.text().placeholder());
+        setTextColor(Color.parseColor(inputStructure.text().color()));
+        setHintTextColor(Color.parseColor(inputStructure.text().color()));
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) (factor * inputStructure.text().size()));
+
         addTextWatchers();
     }
 

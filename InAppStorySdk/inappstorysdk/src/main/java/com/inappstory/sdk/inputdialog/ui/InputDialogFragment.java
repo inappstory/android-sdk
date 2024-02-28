@@ -41,6 +41,7 @@ import com.inappstory.sdk.inputdialog.uidomain.KeyboardState;
 import com.inappstory.sdk.inputdialog.utils.SimpleTextWatcher;
 import com.inappstory.sdk.stories.ui.IASUICore;
 import com.inappstory.sdk.stories.utils.Sizes;
+import com.inappstory.sdk.utils.FontUtils;
 
 
 public class InputDialogFragment extends Fragment {
@@ -96,13 +97,6 @@ public class InputDialogFragment extends Fragment {
     };
 
     private void setTypeface(AppCompatTextView textView, boolean bold, boolean italic, boolean secondary) {
-        Typeface t = AppearanceManager.getCommonInstance().getFont(secondary, bold, italic);
-        int boldV = bold ? 1 : 0;
-        int italicV = italic ? 2 : 0;
-        textView.setTypeface(t != null ? t : textView.getTypeface(), boldV + italicV);
-    }
-
-    private void setTypeface(IInputDialogTextField textView, boolean bold, boolean italic, boolean secondary) {
         Typeface t = AppearanceManager.getCommonInstance().getFont(secondary, bold, italic);
         int boldV = bold ? 1 : 0;
         int italicV = italic ? 2 : 0;
@@ -205,7 +199,7 @@ public class InputDialogFragment extends Fragment {
             );
             binding.text.setLineSpacing(0, questionStructure.text().lineHeight() / questionStructure.text().size());
         }
-        setTypeface(
+        FontUtils.setTypeface(
                 binding.text, questionStructure.text().isBold(),
                 questionStructure.text().isItalic(),
                 questionStructure.text().isSecondary()
@@ -300,16 +294,24 @@ public class InputDialogFragment extends Fragment {
         final IInputDialogTextField textField;
         switch (data.dialogType()) {
             case PHONE:
-                textField = new InputDialogPhoneField(getContext());
+                textField = new InputDialogPhoneField(
+                        getContext(),
+                        inputStructure,
+                        factor
+                );
                 break;
             case MAIL:
-                textField = new InputDialogMailField(getContext());
+                textField = new InputDialogMailField(
+                        getContext(),
+                        inputStructure,
+                        factor
+                );
                 break;
             default:
                 textField = new InputDialogPlainTextField(
                         getContext(),
-                        inputStructure.limit(),
-                        inputStructure.maxLines()
+                        inputStructure,
+                        factor
                 );
                 break;
         }
@@ -382,14 +384,7 @@ public class InputDialogFragment extends Fragment {
                 textField.addTextWatcher(this);
             }
         });
-        setTypeface(textField, inputStructure.text().isBold(),
-                inputStructure.text().isItalic(),
-                inputStructure.text().isSecondary());
-        textField.setHint(inputStructure.text().placeholder());
-        textField.setTextColor(hex2color(inputStructure.text().color()));
-        textField.setHintTextColor(hex2color(inputStructure.text().color()));
-        textField.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                getSize(inputStructure.text().size()));
+
         binding.editContainer.addView((View) textField);
 
         binding.buttonBackground.setOnClickListener(new View.OnClickListener() {
@@ -423,9 +418,12 @@ public class InputDialogFragment extends Fragment {
         binding.buttonText.setLineSpacing(0,
                 buttonStructure.text().lineHeight() /
                         buttonStructure.text().size());
-        setTypeface(binding.buttonText, buttonStructure.text().isBold(),
+        FontUtils.setTypeface(
+                binding.buttonText,
+                buttonStructure.text().isBold(),
                 buttonStructure.text().isItalic(),
-                buttonStructure.text().isSecondary());
+                buttonStructure.text().isSecondary()
+        );
         switch (buttonStructure.text().align()) {
             case "right":
                 binding.buttonText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
