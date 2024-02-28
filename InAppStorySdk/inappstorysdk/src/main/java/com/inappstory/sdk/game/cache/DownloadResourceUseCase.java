@@ -14,9 +14,12 @@ import java.util.List;
 
 public class DownloadResourceUseCase {
     private WebResource resource;
+    private String gameInstanceId;
 
-    public DownloadResourceUseCase(WebResource resource) {
+    public DownloadResourceUseCase(WebResource resource, String gameInstanceId) {
         this.resource = resource;
+        this.gameInstanceId = gameInstanceId;
+
     }
 
     @WorkerThread
@@ -48,7 +51,7 @@ public class DownloadResourceUseCase {
             if (service == null) return;
             Downloader.downloadOrGetResourceFile(
                     url,
-                    fileName,
+                    gameInstanceId + "_" + fileName,
                     service.getInfiniteCache(),
                     resourceFile,
                     new FileLoadProgressCallback() {

@@ -135,9 +135,13 @@ public class ZipLoader {
                         callback.onProgress(cnt, totalSize);
                     continue;
                 }
-                downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, service.getInfiniteCache(),
+                downloaded |= Downloader.downloadOrGetResourceFile(
+                        url,
+                        instanceId + "_" + fileName,
+                        service.getInfiniteCache(),
                         resourceFile,
-                        null);
+                        null
+                );
                 fileChecker.checkWithShaAndSize(
                         resourceFile,
                         resource.size,

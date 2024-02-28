@@ -11,9 +11,11 @@ import java.util.List;
 public class DownloadResourcesUseCase {
     private List<WebResource> resources;
     private long totalResourcesSize;
+    private String gameInstanceId;
 
-    public DownloadResourcesUseCase(List<WebResource> resources) {
+    public DownloadResourcesUseCase(List<WebResource> resources, String gameInstanceId) {
         this.resources = resources;
+        this.gameInstanceId = gameInstanceId;
         if (resources == null) return;
         totalResourcesSize = 0;
         for (WebResource resource : resources) {
@@ -35,7 +37,7 @@ public class DownloadResourcesUseCase {
             if (terminate) {
                 return;
             }
-            new DownloadResourceUseCase(resource).download(
+            new DownloadResourceUseCase(resource, gameInstanceId).download(
                     directory,
                     new ProgressCallback() {
                         @Override
