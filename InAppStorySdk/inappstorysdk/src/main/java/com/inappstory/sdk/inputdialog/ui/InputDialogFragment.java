@@ -124,45 +124,46 @@ public class InputDialogFragment extends Fragment {
             fullWidth = Sizes.getScreenSize(getContext()).x;
             fullHeight = Sizes.getScreenSize(getContext()).y;
         }
-        if (dialogStructure.size == null) {
-            dialogStructure.size = new SizeStructure();
-            dialogStructure.size.width = 95;
-            dialogStructure.size.height = 40;
+        SizeStructure sizeStructure = dialogStructure.size();
+        if (sizeStructure == null) {
+            sizeStructure = new SizeStructure(95, 40);
         }
-        dialogHeight = (int) ((dialogStructure.size.height / 100) * fullHeight);
-        dialogWidth = (int) ((dialogStructure.size.width / 100) * fullWidth);
+        dialogHeight = (int) ((sizeStructure.height() / 100) * fullHeight);
+        dialogWidth = (int) ((sizeStructure.width() / 100) * fullWidth);
 
-        factor = (1f * fullWidth) / dialogStructure.configV2.factor;
-        MainV2 main = dialogStructure.configV2.main;
+        factor = (1f * fullWidth) / dialogStructure.configV2().factor();
+        MainV2 main = dialogStructure.configV2().main();
         binding.contentContainer.setPaddingRelative(
-                getSize(main.padding.left),
-                getSize(main.padding.top),
-                getSize(main.padding.right),
-                getSize(main.padding.bottom));
+                getSize(main.padding().left()),
+                getSize(main.padding().top()),
+                getSize(main.padding().right()),
+                getSize(main.padding().bottom())
+        );
 
 
-        startedCenterStructure = dialogStructure.size.center;
-        currentCenterStructure = dialogStructure.size.center;
-        if (startedCenterStructure == null) startedCenterStructure = new CenterStructure(50, 50);
+        startedCenterStructure = sizeStructure.center();
+        currentCenterStructure = sizeStructure.center();
+        if (startedCenterStructure == null)
+            startedCenterStructure = new CenterStructure(50, 50);
         newCenterStructure = new CenterStructure(50, 50);
         FrameLayout.LayoutParams dialogAreaParams = new FrameLayout.LayoutParams(dialogWidth, WRAP_CONTENT);
-        int topMargin = (int) (fullHeight * startedCenterStructure.y / 100 - dialogHeight / 2);
-        int leftMargin = (int) (fullWidth * startedCenterStructure.x / 100 - dialogWidth / 2);
+        int topMargin = (int) (fullHeight * startedCenterStructure.y() / 100 - dialogHeight / 2);
+        int leftMargin = (int) (fullWidth * startedCenterStructure.x() / 100 - dialogWidth / 2);
         dialogAreaParams.setMargins(leftMargin, topMargin, 0, 0);
-        int radius = getSize(main.border.radius);
+        int radius = getSize(main.border().radius());
         binding.dialogArea.setLayoutParams(dialogAreaParams);
 
 
         final GradientDrawable borderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(main.border.color),
-                        hex2color(main.border.color)});
+                new int[]{hex2color(main.border().color()),
+                        hex2color(main.border().color())});
         borderContainerGradient.setCornerRadius(radius);
 
         GradientDrawable parentContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(main.background.color),
-                        hex2color(main.background.color)});
+                new int[]{hex2color(main.background().color()),
+                        hex2color(main.background().color())});
         parentContainerGradient.setCornerRadius(radius);
 
         binding.borderContainer.setBackground(borderContainerGradient);
@@ -185,27 +186,29 @@ public class InputDialogFragment extends Fragment {
     }
 
     private void createQuestion(DialogData data) {
-        QuestionStructure questionStructure = data.dialogStructure().configV2.main.question;
+        QuestionStructure questionStructure = data.dialogStructure().configV2().main().question();
         if (questionStructure == null) return;
-        if (questionStructure.text.value.isEmpty()) {
+        if (questionStructure.text().value().isEmpty()) {
             binding.text.setVisibility(View.GONE);
         } else {
-            binding.text.setText(questionStructure.text.value);
-            binding.text.setTextColor(hex2color(questionStructure.text.color));
-            binding.text.setTextSize(TypedValue.COMPLEX_UNIT_PX, getSize(questionStructure.text.size));
+            binding.text.setText(questionStructure.text().value());
+            binding.text.setTextColor(hex2color(questionStructure.text().color()));
+            binding.text.setTextSize(TypedValue.COMPLEX_UNIT_PX, getSize(questionStructure.text().size()));
             binding.text.setPaddingRelative(
-                    getSize(questionStructure.padding.left),
-                    getSize(questionStructure.padding.top),
-                    getSize(questionStructure.padding.right),
-                    getSize(questionStructure.padding.bottom)
+                    getSize(questionStructure.padding().left()),
+                    getSize(questionStructure.padding().top()),
+                    getSize(questionStructure.padding().right()),
+                    getSize(questionStructure.padding().bottom())
             );
-            binding.text.setLineSpacing(0, questionStructure.text.lineHeight / questionStructure.text.size);
+            binding.text.setLineSpacing(0, questionStructure.text().lineHeight() / questionStructure.text().size());
         }
-        setTypeface(binding.text, questionStructure.text.isBold(),
-                questionStructure.text.isItalic(),
-                questionStructure.text.isSecondary());
+        setTypeface(
+                binding.text, questionStructure.text().isBold(),
+                questionStructure.text().isItalic(),
+                questionStructure.text().isSecondary()
+        );
 
-        switch (questionStructure.text.align) {
+        switch (questionStructure.text().align()) {
             case "right":
                 ((LinearLayout.LayoutParams) binding.text.getLayoutParams()).gravity =
                         Gravity.RIGHT;
@@ -234,7 +237,7 @@ public class InputDialogFragment extends Fragment {
     }
 
     private void createInput(DialogData data) {
-        InputStructure inputStructure = data.dialogStructure().configV2.main.input;
+        InputStructure inputStructure = data.dialogStructure().configV2().main().input();
         if (inputStructure == null) return;
         binding.editContainer.removeAllViewsInLayout();
 
@@ -244,9 +247,9 @@ public class InputDialogFragment extends Fragment {
 
         final GradientDrawable editBorderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(inputStructure.border.color),
-                        hex2color(inputStructure.border.color)});
-        editBorderContainerGradient.setCornerRadius(getSize(inputStructure.border.radius));
+                new int[]{hex2color(inputStructure.border().color()),
+                        hex2color(inputStructure.border().color())});
+        editBorderContainerGradient.setCornerRadius(getSize(inputStructure.border().radius()));
 
         final GradientDrawable editBorderContainerErrorGradient =
                 new GradientDrawable(
@@ -257,18 +260,18 @@ public class InputDialogFragment extends Fragment {
                         }
                 );
         editBorderContainerErrorGradient.setCornerRadius(
-                getSize(inputStructure.border.radius));
+                getSize(inputStructure.border().radius()));
 
         GradientDrawable editContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(inputStructure.background.color),
-                        hex2color(inputStructure.background.color)});
-        editContainerGradient.setCornerRadius(getSize(inputStructure.border.radius));
+                new int[]{hex2color(inputStructure.background().color()),
+                        hex2color(inputStructure.background().color())});
+        editContainerGradient.setCornerRadius(getSize(inputStructure.border().radius()));
 
         binding.editBorderContainer.setBackground(editBorderContainerGradient);
         binding.editContainer.setBackground(editContainerGradient);
 
-        int borderWidth = getSize(inputStructure.border.width);
+        int borderWidth = getSize(inputStructure.border().width());
 
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) binding.editContainer.getLayoutParams();
         lp.setMargins(
@@ -285,10 +288,10 @@ public class InputDialogFragment extends Fragment {
                 borderWidth
         );
         binding.editContainer.setPaddingRelative(
-                getSize(inputStructure.padding.left),
-                getSize(inputStructure.padding.top),
-                getSize(inputStructure.padding.right),
-                getSize(inputStructure.padding.bottom)
+                getSize(inputStructure.padding().left()),
+                getSize(inputStructure.padding().top()),
+                getSize(inputStructure.padding().right()),
+                getSize(inputStructure.padding().bottom())
         );
 
         final IInputDialogTextField textField;
@@ -300,21 +303,25 @@ public class InputDialogFragment extends Fragment {
                 textField = new InputDialogMailField(getContext());
                 break;
             default:
-                textField = new InputDialogPlainTextField(getContext());
+                textField = new InputDialogPlainTextField(
+                        getContext(),
+                        inputStructure.limit(),
+                        inputStructure.maxLines()
+                );
                 break;
         }
 
         if (textField instanceof InputDialogPhoneField) {
             ((InputDialogPhoneField) textField).setDividerColor(
-                    hex2color(data.dialogStructure().configV2.main.background.color)
+                    hex2color(data.dialogStructure().configV2().main().background().color())
             );
         } else {
             AppCompatEditText editText = (AppCompatEditText) textField;
             editText.setLineSpacing(
                     0,
-                    inputStructure.text.lineHeight / inputStructure.text.size
+                    inputStructure.text().lineHeight() / inputStructure.text().size()
             );
-            switch (inputStructure.text.align) {
+            switch (inputStructure.text().align()) {
                 case "right":
                     editText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                     break;
@@ -326,14 +333,14 @@ public class InputDialogFragment extends Fragment {
                     break;
             }
         }
-        setTypeface(textField, inputStructure.text.isBold(),
-                inputStructure.text.isItalic(),
-                inputStructure.text.isSecondary());
-        textField.setHint(inputStructure.text.placeholder);
-        textField.setTextColor(hex2color(inputStructure.text.color));
-        textField.setHintTextColor(hex2color(inputStructure.text.color));
+        setTypeface(textField, inputStructure.text().isBold(),
+                inputStructure.text().isItalic(),
+                inputStructure.text().isSecondary());
+        textField.setHint(inputStructure.text().placeholder());
+        textField.setTextColor(hex2color(inputStructure.text().color()));
+        textField.setHintTextColor(hex2color(inputStructure.text().color()));
         textField.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                getSize(inputStructure.text.size));
+                getSize(inputStructure.text().size()));
         binding.editContainer.addView((View) textField);
 
         binding.buttonBackground.setOnClickListener(new View.OnClickListener() {
@@ -351,26 +358,26 @@ public class InputDialogFragment extends Fragment {
     }
 
     private void createButton(DialogData data) {
-        ButtonStructure buttonStructure = data.dialogStructure().configV2.main.button;
+        ButtonStructure buttonStructure = data.dialogStructure().configV2().main().button();
         if (buttonStructure == null) return;
-        int radius = getSize(data.dialogStructure().configV2.main.border.radius);
+        int radius = getSize(data.dialogStructure().configV2().main().border().radius());
         binding.buttonText.setPaddingRelative(
-                getSize(buttonStructure.padding.left),
-                getSize(buttonStructure.padding.top),
-                getSize(buttonStructure.padding.right),
-                getSize(buttonStructure.padding.bottom)
+                getSize(buttonStructure.padding().left()),
+                getSize(buttonStructure.padding().top()),
+                getSize(buttonStructure.padding().right()),
+                getSize(buttonStructure.padding().bottom())
         );
-        binding.buttonText.setText(buttonStructure.text.value);
-        binding.buttonText.setTextColor(hex2color(buttonStructure.text.color));
+        binding.buttonText.setText(buttonStructure.text().value());
+        binding.buttonText.setTextColor(hex2color(buttonStructure.text().color()));
         binding.buttonText.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                getSize(buttonStructure.text.size));
+                getSize(buttonStructure.text().size()));
         binding.buttonText.setLineSpacing(0,
-                buttonStructure.text.lineHeight /
-                        buttonStructure.text.size);
-        setTypeface(binding.buttonText, buttonStructure.text.isBold(),
-                buttonStructure.text.isItalic(),
-                buttonStructure.text.isSecondary());
-        switch (buttonStructure.text.align) {
+                buttonStructure.text().lineHeight() /
+                        buttonStructure.text().size());
+        setTypeface(binding.buttonText, buttonStructure.text().isBold(),
+                buttonStructure.text().isItalic(),
+                buttonStructure.text().isSecondary());
+        switch (buttonStructure.text().align()) {
             case "right":
                 binding.buttonText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 break;
@@ -385,8 +392,8 @@ public class InputDialogFragment extends Fragment {
         GradientDrawable buttonBackgroundGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
                 new int[]{
-                        hex2color(buttonStructure.background.color),
-                        hex2color(buttonStructure.background.color)
+                        hex2color(buttonStructure.background().color()),
+                        hex2color(buttonStructure.background().color())
                 });
         buttonBackgroundGradient.setCornerRadii(new float[]{0, 0, 0, 0, radius, radius, radius, radius});
 

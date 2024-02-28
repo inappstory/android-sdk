@@ -445,16 +445,6 @@ public class StoriesViewManager {
         return data;
     }
 
-    public void openGameReaderWithoutGameCenter(GameLaunchData gameLaunchData) {
-        ProfilingManager.getInstance().addTask("game_init", "game_" + storyId + "_" + index);
-        ScreensManager.getInstance().openGameReader(
-                context,
-                getGameStoryData(),
-                null,
-                gameLaunchData
-        );
-    }
-
     private boolean storyIsLoaded = false;
 
     public void storyLoaded(int slideIndex) {

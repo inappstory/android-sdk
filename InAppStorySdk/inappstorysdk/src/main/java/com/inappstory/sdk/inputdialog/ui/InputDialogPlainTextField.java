@@ -19,29 +19,24 @@ public final class InputDialogPlainTextField extends AppCompatEditText
 
     IInputBaseDialogDataHolder dataHolder = new InputBaseDialogDataHolder();
 
-    public InputDialogPlainTextField(Context context) {
+    private int limit;
+    private int maxLines;
+
+    public InputDialogPlainTextField(Context context, int limit, int maxLines) {
         super(context);
+        this.limit = limit;
+        this.maxLines = maxLines;
         init();
     }
 
-
-    public InputDialogPlainTextField(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public InputDialogPlainTextField(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
 
     private void init() {
         setBackground(null);
         setPaddingRelative(0, 0, 0, 0);
         setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         setGravity(Gravity.CENTER);
-        setSingleLine(true);
-        setMaxLines(1);
+        setSingleLine(false);
+        setMaxLines(maxLines);
         addTextWatchers();
     }
 
@@ -68,6 +63,11 @@ public final class InputDialogPlainTextField extends AppCompatEditText
     @Override
     public void setTextColor(int color) {
         super.setTextColor(color);
+    }
+
+    @Override
+    public void setTextSize(int type, int size) {
+        super.setTextSize(type, size);
     }
 
 

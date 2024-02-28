@@ -283,17 +283,17 @@ public class ContactDialog {
 
         GradientDrawable buttonBackgroundGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.configV2.main.button.background.color),
-                        hex2color(dialogStructure.configV2.main.button.background.color)});
+                new int[]{hex2color(dialogStructure.configV2().main().button().background().color()),
+                        hex2color(dialogStructure.configV2().main().button().background().color())});
         buttonBackgroundGradient.setCornerRadii(new float[]{0, 0, 0, 0, rad, rad, rad, rad});
 
         buttonBackground.setBackground(buttonBackgroundGradient);
 
         final GradientDrawable editBorderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.configV2.main.input.border.color),
-                        hex2color(dialogStructure.configV2.main.input.border.color)});
-        editBorderContainerGradient.setCornerRadius(getSize(dialogStructure.configV2.main.input.border.radius));
+                new int[]{hex2color(dialogStructure.configV2().main().input().border().color()),
+                        hex2color(dialogStructure.configV2().main().input().border().color())});
+        editBorderContainerGradient.setCornerRadius(getSize(dialogStructure.configV2().main().input().border().radius()));
 
         final GradientDrawable editBorderContainerErrorGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
@@ -304,21 +304,21 @@ public class ContactDialog {
 
         GradientDrawable editContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.configV2.main.input.background.color),
-                        hex2color(dialogStructure.configV2.main.input.background.color)});
-        editContainerGradient.setCornerRadius(getSize(dialogStructure.configV2.main.input.border.radius));
+                new int[]{hex2color(dialogStructure.configV2().main().input().background().color()),
+                        hex2color(dialogStructure.configV2().main().input().background().color())});
+        editContainerGradient.setCornerRadius(getSize(dialogStructure.configV2().main().input().border.radius));
 
         final GradientDrawable borderContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.configV2.main.border.color),
-                        hex2color(dialogStructure.configV2.main.border.color)});
+                new int[]{hex2color(dialogStructure.configV2().main().border().color()),
+                        hex2color(dialogStructure.configV2().main().border().color())});
         borderContainerGradient.setCornerRadius(
-                getSize(dialogStructure.configV2.main.border.radius));
+                getSize(dialogStructure.configV2().main().border().radius()));
 
         GradientDrawable parentContainerGradient = new GradientDrawable(
                 GradientDrawable.Orientation.TOP_BOTTOM, //set a gradient direction
-                new int[]{hex2color(dialogStructure.configV2.main.background.color),
-                        hex2color(dialogStructure.configV2.main.background.color)});
+                new int[]{hex2color(dialogStructure.configV2().main().background().color()),
+                        hex2color(dialogStructure.configV2().main().background().color())});
         parentContainerGradient.setCornerRadius(
                 getSize(dialogStructure.configV2.main.border.radius));
 

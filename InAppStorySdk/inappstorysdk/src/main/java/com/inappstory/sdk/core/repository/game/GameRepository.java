@@ -14,8 +14,7 @@ public class GameRepository implements IGameRepository {
         ScreensManager.getInstance().openGameReader(
                 context,
                 data,
-                gameId,
-                null
+                gameId
         );
     }
 

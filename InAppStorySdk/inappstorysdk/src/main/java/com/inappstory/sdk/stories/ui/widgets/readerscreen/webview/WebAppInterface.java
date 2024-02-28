@@ -74,25 +74,6 @@ public class WebAppInterface {
         manager.sendApiRequest(data);
     }
 
-    @JavascriptInterface
-    public void openGameReader(
-            String gameUrl,
-            String splashScreenPath,
-            String gameConfig,
-            String resources,
-            String options
-    ) {
-        manager.openGameReaderWithoutGameCenter(
-                new GameLaunchData(
-                        gameUrl,
-                        splashScreenPath,
-                        gameConfig,
-                        resources,
-                        options
-                )
-        );
-        logMethod(gameUrl);
-    }
 
     @JavascriptInterface
     public void openGame(String gameInstanceId) {
@@ -100,20 +81,6 @@ public class WebAppInterface {
         logMethod(gameInstanceId);
     }
 
-    @JavascriptInterface
-    public void openGameReader(String gameUrl, String splashScreenPath,
-                               String gameConfig, String resources) {
-        manager.openGameReaderWithoutGameCenter(
-                new GameLaunchData(
-                        gameUrl,
-                        splashScreenPath,
-                        gameConfig,
-                        resources,
-                        null
-                )
-        );
-        logMethod(gameUrl);
-    }
 
 
     @JavascriptInterface

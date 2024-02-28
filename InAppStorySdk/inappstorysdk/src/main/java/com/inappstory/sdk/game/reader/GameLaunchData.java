@@ -24,23 +24,4 @@ public class GameLaunchData implements Serializable {
     private String resources;
     private String options;
 
-    public String getGameUrl() {
-        return gameUrl;
-    }
-
-    public String getSplashImagePath() {
-        return splashImagePath;
-    }
-
-    public String getGameConfig() {
-        return gameConfig;
-    }
-
-    public String getResources() {
-        return resources;
-    }
-
-    public String getOptions() {
-        return options;
-    }
 }

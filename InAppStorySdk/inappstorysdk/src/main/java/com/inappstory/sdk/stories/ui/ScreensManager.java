@@ -222,17 +222,9 @@ public class ScreensManager {
 
     public void openGameReader(Context context,
                                GameStoryData gameStoryData,
-                               String gameId,
-                               GameLaunchData gameLaunchData) {
+                               String gameId) {
         Intent intent2 = new Intent(context, GameActivity.class);
         if (gameStoryData != null) {
-            intent2.putExtra("storyId", Integer.toString(gameStoryData.slideData.story.id));
-            intent2.putExtra("slideIndex", gameStoryData.slideData.index);
-            intent2.putExtra("slidesCount", gameStoryData.slideData.story.slidesCount);
-            intent2.putExtra("feedId", gameStoryData.slideData.story.feed);
-            intent2.putExtra("storyType", Story.nameFromStoryType(gameStoryData.slideData.story.storyType));
-            intent2.putExtra("tags", gameStoryData.slideData.story.tags);
-            intent2.putExtra("title", gameStoryData.slideData.story.title);
             intent2.putExtra("gameStoryData", gameStoryData);
         }
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
@@ -241,15 +233,6 @@ public class ScreensManager {
             );
         }
         intent2.putExtra("gameId", gameId);
-        intent2.putExtra("gameLaunchData", gameLaunchData);
-        if (gameLaunchData != null) {
-            intent2.putExtra("options", gameLaunchData.getOptions());
-            intent2.putExtra("gameConfig", gameLaunchData.getGameConfig());
-            intent2.putExtra("gameResources", gameLaunchData.getResources());
-            intent2.putExtra("splashImagePath", gameLaunchData.getSplashImagePath());
-            intent2.putExtra("gameUrl", gameLaunchData.getGameUrl());
-        }
-
         if (Sizes.isTablet(context)) {
             if (currentStoriesReaderScreen != null) {
                 String observableUID = randomUUID().toString();

@@ -71,6 +71,11 @@ public final class InputDialogMailField extends AppCompatEditText
         super.setTextColor(color);
     }
 
+    @Override
+    public void setTextSize(int type, int size) {
+        super.setTextSize(type, size);
+    }
+
 
     @Override
     public String getValue() {
