@@ -81,7 +81,7 @@ public class GameCacheManager {
                                 data.archiveSha1
                         );
                 final DownloadResourcesUseCase downloadResourcesUseCase =
-                        new DownloadResourcesUseCase(data.resources);
+                        new DownloadResourcesUseCase(data.resources, gameId);
                 final RemoveOldGameFilesUseCase removeOldGameFilesUseCase =
                         new RemoveOldGameFilesUseCase(archiveUrl);
                 DownloadSplashUseCase downloadSplashUseCase = new DownloadSplashUseCase(

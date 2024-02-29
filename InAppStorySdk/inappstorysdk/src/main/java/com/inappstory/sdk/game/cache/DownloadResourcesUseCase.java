@@ -12,14 +12,18 @@ public class DownloadResourcesUseCase {
     private List<WebResource> resources;
     private long totalResourcesSize;
 
-    public DownloadResourcesUseCase(List<WebResource> resources) {
+    private String gameInstanceId;
+
+    public DownloadResourcesUseCase(List<WebResource> resources, String gameInstanceId) {
         this.resources = resources;
+        this.gameInstanceId = gameInstanceId;
         if (resources == null) return;
         totalResourcesSize = 0;
         for (WebResource resource : resources) {
             totalResourcesSize += resource.size;
         }
     }
+
 
     private boolean terminate;
 
@@ -35,7 +39,7 @@ public class DownloadResourcesUseCase {
             if (terminate) {
                 return;
             }
-            new DownloadResourceUseCase(resource).download(
+            new DownloadResourceUseCase(resource, gameInstanceId).download(
                     directory,
                     new ProgressCallback() {
                         @Override

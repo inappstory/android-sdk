@@ -7,6 +7,7 @@ import android.os.Looper;
 
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.lrudiskcache.LruDiskCache;
 import com.inappstory.sdk.stories.api.models.GameCenterData;
 import com.inappstory.sdk.stories.api.models.WebResource;
@@ -135,9 +136,19 @@ public class ZipLoader {
                         callback.onProgress(cnt, totalSize);
                     continue;
                 }
-                downloaded |= Downloader.downloadOrGetResourceFile(url, fileName, service.getInfiniteCache(),
+                String key = resource.sha1;
+                if (key == null) key = FileManager.SHA1(resource.url);
+                if (key == null) {
+                    continue;
+                }
+
+                downloaded |= Downloader.downloadOrGetResourceFile(
+                        url,
+                        instanceId + "_" + key,
+                        service.getInfiniteCache(),
                         resourceFile,
-                        null);
+                        null
+                );
                 fileChecker.checkWithShaAndSize(
                         resourceFile,
                         resource.size,

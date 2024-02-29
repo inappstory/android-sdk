@@ -6,6 +6,7 @@ import androidx.annotation.WorkerThread;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.lrudiskcache.FileChecker;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.cache.Downloader;
 import com.inappstory.sdk.stories.cache.FileLoadProgressCallback;
@@ -17,8 +18,12 @@ import java.util.List;
 public class DownloadResourceUseCase {
     private WebResource resource;
 
-    public DownloadResourceUseCase(WebResource resource) {
+    private String gameInstanceId;
+
+    public DownloadResourceUseCase(WebResource resource, String gameInstanceId) {
         this.resource = resource;
+        this.gameInstanceId = gameInstanceId;
+
     }
 
     @WorkerThread
@@ -45,13 +50,21 @@ public class DownloadResourceUseCase {
                 if (progressCallback != null)
                     progressCallback.onProgress(resource.size, resource.size);
                 useCaseCallback.onSuccess(null);
+                return;
             }
+            String key = resource.sha1;
+            if (key == null) key = FileManager.SHA1(resource.url);
+            if (key == null) {
+                useCaseCallback.onError(null);
+                return;
+            }
+            final String finalKey = key;
             InAppStoryService.useInstance(new UseServiceInstanceCallback() {
                 @Override
                 public void use(@NonNull InAppStoryService service) throws Exception {
                     Downloader.downloadOrGetResourceFile(
                             url,
-                            fileName,
+                            gameInstanceId + "_" + finalKey,
                             service.getInfiniteCache(),
                             resourceFile,
                             new FileLoadProgressCallback() {
