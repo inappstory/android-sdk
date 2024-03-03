@@ -1,7 +1,5 @@
 package com.inappstory.sdk.game.reader;
 
-import static com.inappstory.sdk.network.NetworkClient.NC_IS_UNAVAILABLE;
-
 import android.content.Context;
 import android.media.AudioManager;
 
@@ -18,8 +16,6 @@ import com.inappstory.sdk.network.jsapiclient.JsApiClient;
 import com.inappstory.sdk.network.jsapiclient.JsApiResponseCallback;
 import com.inappstory.sdk.network.models.Response;
 import com.inappstory.sdk.share.IShareCompleteListener;
-import com.inappstory.sdk.stories.api.models.GameCenterData;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.UrlObject;
 import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
@@ -29,45 +25,23 @@ import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.utils.StringsUtils;
-import com.inappstory.sdk.utils.ZipLoadCallback;
-import com.inappstory.sdk.utils.ZipLoader;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameManager {
     String path;
     String gameCenterId;
     List<WebResource> resources;
-    boolean gameLoaded;
+    final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
+    private int currentReloadTry = 0;
+    private int totalReloadTries = 0;
 
     GameStoryData dataModel;
-    ZipLoadCallback callback;
 
     public GameManager(GameReaderContentFragment host) {
         this.host = host;
-    }
-
-    void loadGame(GameCenterData gameCenterData) {
-        ArrayList<WebResource> resourceList;
-        if (resources != null) {
-            resourceList = new ArrayList<>(resources);
-        } else {
-            resourceList = new ArrayList<>();
-        }
-        String[] urlParts = ZipLoader.urlParts(path);
-        ZipLoader.getInstance().downloadAndUnzip(
-                resourceList,
-                path,
-                urlParts[0],
-                gameCenterId,
-                gameCenterData,
-                callback,
-                host.interruption,
-                "game"
-        );
     }
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
@@ -123,7 +97,6 @@ public class GameManager {
         if (dataModel == null) return;
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
-            callback.onError(NC_IS_UNAVAILABLE);
             return;
         }
         KeyValueStorage.saveString("story" + dataModel.slideData.story.id
@@ -273,12 +246,41 @@ public class GameManager {
                 AudioManager.AUDIOFOCUS_GAIN);
     }
 
+
     void gameLoaded(String data) {
+        if (statusHolder.hasGameLoadStatus()) return;
         GameLoadedConfig config = JsonParser.fromJson(data, GameLoadedConfig.class);
         host.gameReaderGestureBack = config.backGesture;
         host.showClose = config.showClose;
-        gameLoaded = true;
+        statusHolder.setGameLoaded();
         host.updateUI();
+    }
+
+    void gameLoadFailed(String reason, boolean canTryReload) {
+        if (statusHolder.hasGameLoadStatus()) return;
+        statusHolder.setGameFailed();;
+        if (canTryReload && updateReloadTries()) {
+            reloadGame();
+        } else {
+            host.gameLoadedErrorCallback.onError(null, reason);
+        }
+    }
+
+    void eventGame(String name, String data) {
+        host.eventGame(name, data);
+    }
+
+    void reloadGame() {
+        statusHolder.clearGameStatus();
+        host.restartGame();
+    }
+
+    private boolean updateReloadTries() {
+        if (totalReloadTries > currentReloadTry) {
+            currentReloadTry++;
+            return true;
+        }
+        return false;
     }
 
 

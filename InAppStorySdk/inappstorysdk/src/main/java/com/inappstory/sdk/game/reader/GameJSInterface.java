@@ -68,8 +68,26 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
+    public void eventGame(
+            String name,
+            String data
+    ) {
+        manager.eventGame(name,  data);
+    }
+
+    @JavascriptInterface
     public void gameLoaded(String data) {
         manager.gameLoaded(data);
+    }
+
+    @JavascriptInterface
+    public void gameLoadFailed(String reason, boolean canTryReload) {
+        manager.gameLoadFailed(reason, canTryReload);
+    }
+
+    @JavascriptInterface
+    public void reloadGameReader() {
+        manager.reloadGame();
     }
 
     @JavascriptInterface

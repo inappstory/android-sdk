@@ -172,6 +172,7 @@ public class GameCacheManager {
                                             public void onSuccess(Void ignore) {
                                                 ProfilingManager.getInstance().setReady(resourcesHash);
                                                 String fileName = result + File.separator + INDEX_NAME;
+                                                loadedFilePath = fileName;
                                                 try {
                                                     gameLoadCallback.onSuccess(
                                                             new FilePathAndContent(
@@ -257,6 +258,20 @@ public class GameCacheManager {
                 gameLoadCallback.onError("Can't retrieve game from game center");
             }
         });
+    }
+
+    private String loadedFilePath = "";
+
+    public FilePathAndContent getCurrentFilePathAndContent() {
+        if (loadedFilePath == null || loadedFilePath.isEmpty()) return null;
+        try {
+            return new FilePathAndContent(
+                    FILE + loadedFilePath,
+                    FileManager.getStringFromFile(new File(loadedFilePath))
+            );
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {

@@ -47,11 +47,13 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
+import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
+import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -71,7 +73,7 @@ import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedCallback;
+import com.inappstory.sdk.stories.outercallbacks.game.GameLoadedError;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.OverlapFragmentObserver;
 import com.inappstory.sdk.stories.ui.ScreensManager;
@@ -139,26 +141,36 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         return screen;
     }
 
+    void eventGame(String name, String data) {
+        GameStoryData dataModel = getStoryDataModel();
+        if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+            CallbackManager.getInstance().getGameReaderCallback().eventGame(
+                    dataModel,
+                    gameReaderLaunchData.getGameId(),
+                    name,
+                    data
+            );
+        }
+    }
 
-    GameLoadedCallback gameLoadedCallback = new GameLoadedCallback() {
+    GameLoadedError gameLoadedErrorCallback = new GameLoadedError() {
         @Override
-        public void complete(final GameCenterData data, String error) {
-            if (error == null) {
-                setLayout();
-                loaderView.setIndeterminate(false);
-                manager.loadGame(data);
-            } else {
-                closeButton.setVisibility(View.VISIBLE);
-                GameStoryData dataModel = getStoryDataModel();
-                if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-                    CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
-                            dataModel,
-                            gameReaderLaunchData.getGameId()
-                    );
-                }
-                InAppStoryManager.showDLog("Game_Loading", error);
-                webView.post(showRefresh);
+        public void onError(final GameCenterData data, String error) {
+            GameStoryData dataModel = getStoryDataModel();
+            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
+                CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
+                        dataModel,
+                        gameReaderLaunchData.getGameId()
+                );
             }
+            InAppStoryManager.showDLog("Game_Loading", error);
+            webView.post(new Runnable() {
+                @Override
+                public void run() {
+                    closeButton.setVisibility(View.VISIBLE);
+                    showRefresh.run();
+                }
+            });
         }
     };
 
@@ -169,6 +181,33 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         webView.loadUrl("javascript:(function(){share_complete(\"" + id + "\", " + success + ");})()");
     }
 
+    void restartGame() {
+        init = false;
+        InAppStoryService service = InAppStoryService.getInstance();
+        final GameCacheManager cacheManager;
+        if (service != null) {
+            cacheManager = service.gameCacheManager();
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    closeButton.setVisibility(View.VISIBLE);
+                    loaderContainer.setVisibility(View.VISIBLE);
+                    webView.loadUrl("about:blank");
+                    FilePathAndContent filePathAndContent = cacheManager.getCurrentFilePathAndContent();
+                    webView.loadDataWithBaseURL(
+                            filePathAndContent.getFilePath(),
+                            webView.setDir(
+                                    filePathAndContent.getFileContent()
+                            ),
+                            "text/html; charset=utf-8", "UTF-8",
+                            null
+                    );
+                }
+            });
+        }
+
+    }
+
     void updateUI() {
         GameStoryData dataModel = getStoryDataModel();
         if (dataModel != null)
@@ -177,7 +216,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             @Override
             public void run() {
                 closeButton.setVisibility(showClose ? View.VISIBLE : View.GONE);
-                refreshGame.removeCallbacks(showRefresh);
                 hideView(loaderContainer);
             }
         });
@@ -291,27 +329,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
         if (getActivity() != null)
             oldOrientation = getActivity().getRequestedOrientation();
-        manager.callback = new ZipLoadCallback() {
-            @Override
-            public void onLoad(String baseUrl, String data) {
-                manager.gameLoaded = true;
-                webView.loadDataWithBaseURL(baseUrl, webView.setDir(data),
-                        "text/html; charset=utf-8", "UTF-8",
-                        null);
-                refreshGame.postDelayed(showRefresh, 5000);
-            }
 
-            @Override
-            public void onError(String error) {
-                refreshGame.post(showRefresh);
-            }
-
-            @Override
-            public void onProgress(long loadedSize, long totalSize) {
-                int percent = (int) ((loadedSize * 100) / totalSize);
-                loaderView.setProgress(percent, 100);
-            }
-        };
         initWebView();
         refreshGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -343,7 +361,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             }
         });
         checkInsets();
-        checkIntentValues(gameLoadedCallback);
+        checkIntentValues(gameLoadedErrorCallback);
     }
 
     public void closeGame() {
@@ -355,7 +373,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
         closing = true;
 
-        if (manager.gameLoaded) {
+        if (manager.statusHolder.gameLoaded()) {
             webView.evaluateJavascript("closeGameReader();", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
@@ -638,11 +656,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         getBaseGameReader().forceFinish();
     }
 
-    private void checkIntentValues(final GameLoadedCallback callback) {
+    private void checkIntentValues(final GameLoadedError callback) {
         manager.gameCenterId = gameReaderLaunchData.getGameId();
         manager.dataModel = getStoryDataModel();
         if (manager.gameCenterId == null) {
-            callback.complete(null, "No game id");
+            callback.onError(null, "No game id");
             forceFinish();
             return;
         }
@@ -731,7 +749,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     new UseCaseCallback<GameCenterData>() {
                         @Override
                         public void onError(String message) {
-
+                            gameLoadedErrorCallback.onError(null, message);
                         }
 
                         @Override
@@ -759,26 +777,11 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     new UseCaseCallback<FilePathAndContent>() {
                         @Override
                         public void onError(String message) {
-                            webView.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    closeButton.setVisibility(View.VISIBLE);
-                                    showRefresh.run();
-                                }
-                            });
-                            GameStoryData dataModel = getStoryDataModel();
-                            if (CallbackManager.getInstance().getGameReaderCallback() != null) {
-                                CallbackManager.getInstance().getGameReaderCallback().gameLoadError(
-                                        dataModel,
-                                        gameReaderLaunchData.getGameId()
-                                );
-                            }
-                            InAppStoryManager.showDLog("Game_Loading", message);
+                            gameLoadedErrorCallback.onError(null, message);
                         }
 
                         @Override
                         public void onSuccess(final FilePathAndContent result) {
-                            manager.gameLoaded = true;
                             webView.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -792,11 +795,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 }
                             });
                             loaderView.setIndeterminate(true);
-                            refreshGame.postDelayed(showRefresh, 5000);
                         }
                     }
             );
-
     }
 
     private void replaceConfigs() {
@@ -1052,7 +1053,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void gameReaderGestureBack() {
-        if (manager.gameLoaded) {
+        if (manager.statusHolder.gameLoaded()) {
             webView.evaluateJavascript("gameReaderGestureBack();", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
