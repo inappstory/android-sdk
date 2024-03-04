@@ -40,7 +40,6 @@ public class GameManager {
 
     public GameManager(GameReaderContentFragment host) {
         this.host = host;
-        statusHolder.setTotalReloadTries(10);
     }
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {

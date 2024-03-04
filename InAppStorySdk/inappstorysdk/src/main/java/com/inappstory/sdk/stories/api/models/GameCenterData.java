@@ -23,6 +23,9 @@ public class GameCenterData {
     @SerializedName("initCode")
     public String initCode;
 
+    @SerializedName("canTryReloadCount")
+    public Integer canTryReloadCount;
+
     @SerializedName("archiveSize")
     public Long archiveSize;
 
@@ -34,6 +37,12 @@ public class GameCenterData {
 
     @SerializedName("archiveUncompressedSize")
     public Long archiveUncompressedSize;
+
+    public int canTryReloadCount() {
+        if (canTryReloadCount == null)
+             return 5;
+        return canTryReloadCount;
+    }
 
     public long getTotalSize() {
         long totalSize = 0;

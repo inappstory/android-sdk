@@ -786,11 +786,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
                         @Override
                         public void onSuccess(final GameCenterData gameCenterData) {
+
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
                                     setLayout();
                                     loaderView.setIndeterminate(false);
+                                    manager.statusHolder.setTotalReloadTries(
+                                            gameCenterData.canTryReloadCount()
+                                    );
                                     manager.gameConfig = gameCenterData.initCode;
                                     manager.path = gameCenterData.url;
                                     try {
