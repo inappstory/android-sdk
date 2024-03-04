@@ -53,7 +53,6 @@ import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
 import com.inappstory.sdk.inner.share.ShareFilesPrepareCallback;
-import com.inappstory.sdk.lrudiskcache.FileManager;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.network.NetworkClient;
@@ -88,7 +87,6 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.ProgressCallback;
-import com.inappstory.sdk.utils.ZipLoadCallback;
 import com.inappstory.sdk.utils.ZipLoader;
 
 import java.io.File;
@@ -141,7 +139,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         return screen;
     }
 
-    void eventGame(String name, String data) {
+    void jsEvent(String name, String data) {
         GameStoryData dataModel = getStoryDataModel();
         if (CallbackManager.getInstance().getGameReaderCallback() != null) {
             CallbackManager.getInstance().getGameReaderCallback().eventGame(
@@ -182,7 +180,6 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     void restartGame() {
-        init = false;
         InAppStoryService service = InAppStoryService.getInstance();
         final GameCacheManager cacheManager;
         if (service != null) {
@@ -192,16 +189,40 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 public void run() {
                     closeButton.setVisibility(View.VISIBLE);
                     loaderContainer.setVisibility(View.VISIBLE);
-                    webView.loadUrl("about:blank");
-                    FilePathAndContent filePathAndContent = cacheManager.getCurrentFilePathAndContent();
-                    webView.loadDataWithBaseURL(
-                            filePathAndContent.getFilePath(),
-                            webView.setDir(
-                                    filePathAndContent.getFileContent()
-                            ),
-                            "text/html; charset=utf-8", "UTF-8",
-                            null
-                    );
+                    if (webView != null) {
+                        webView.post(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        synchronized (initLock) {
+                                            initWithEmpty = true;
+                                        }
+                                        if (webView != null)
+                                            webView.loadUrl("about:blank");
+                                    }
+                                }
+                        );
+                        webView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                synchronized (initLock) {
+                                    init = false;
+                                    initWithEmpty = false;
+                                }
+                                FilePathAndContent filePathAndContent = cacheManager.getCurrentFilePathAndContent();
+                                if (webView != null)
+                                    webView.loadDataWithBaseURL(
+                                            filePathAndContent.getFilePath(),
+                                            webView.setDir(
+                                                    filePathAndContent.getFileContent()
+                                            ),
+                                            "text/html; charset=utf-8", "UTF-8",
+                                            null
+                                    );
+                            }
+                        }, 200);
+                    }
+
                 }
             });
         }
@@ -339,7 +360,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        init = false;
+                        synchronized (initLock) {
+                            init = false;
+                        }
                         downloadGame();
                     }
                 }, 500);
@@ -519,6 +542,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private boolean init = false;
+    private boolean initWithEmpty = false;
+
+    private final Object initLock = new Object();
 
     private void initWebView() {
         final GameStoryData dataModel = getStoryDataModel();
@@ -527,11 +553,17 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
-                if (newProgress > 10) {
-                    if (!init && manager.gameConfig != null) {
-                        init = true;
-                        initGame(manager.gameConfig);
+                boolean canInit = false;
+                if (newProgress > 30) {
+                    synchronized (initLock) {
+                        if (!init && !initWithEmpty) {
+                            init = true;
+                            canInit = true;
+                        }
                     }
+                }
+                if (canInit && manager.gameConfig != null) {
+                    initGame(manager.gameConfig);
                 }
             }
 

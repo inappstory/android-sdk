@@ -1,5 +1,7 @@
 package com.inappstory.sdk.stories.ui.widgets.readerscreen.webview;
 
+import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
+
 import android.webkit.JavascriptInterface;
 
 import com.inappstory.sdk.InAppStoryManager;
@@ -19,10 +21,6 @@ public class WebAppInterface {
         this.manager = manager;
     }
 
-    static String getMethodName() {
-        final StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-        return ste[4].getMethodName();
-    }
 
     private void logMethod(String payload) {
         InAppStoryManager.showDLog("JS_method_test",

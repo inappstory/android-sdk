@@ -35,13 +35,12 @@ public class GameManager {
     List<WebResource> resources;
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
-    private int currentReloadTry = 0;
-    private int totalReloadTries = 0;
 
     GameStoryData dataModel;
 
     public GameManager(GameReaderContentFragment host) {
         this.host = host;
+        statusHolder.setTotalReloadTries(10);
     }
 
     void gameInstanceSetData(String gameInstanceId, String data, boolean sendToServer) {
@@ -258,29 +257,25 @@ public class GameManager {
 
     void gameLoadFailed(String reason, boolean canTryReload) {
         if (statusHolder.hasGameLoadStatus()) return;
-        statusHolder.setGameFailed();;
-        if (canTryReload && updateReloadTries()) {
-            reloadGame();
+        statusHolder.setGameFailed();
+        if (canTryReload && statusHolder.updateCurrentReloadTry()) {
+            reloadGame(false);
         } else {
+            statusHolder.clearGameLoadTries();
             host.gameLoadedErrorCallback.onError(null, reason);
         }
     }
 
-    void eventGame(String name, String data) {
-        host.eventGame(name, data);
+    void jsEvent(String name, String data) {
+        host.jsEvent(name, data);
     }
 
-    void reloadGame() {
+    void reloadGame(boolean clearTries) {
+        if (clearTries) {
+            statusHolder.clearGameLoadTries();
+        }
         statusHolder.clearGameStatus();
         host.restartGame();
-    }
-
-    private boolean updateReloadTries() {
-        if (totalReloadTries > currentReloadTry) {
-            currentReloadTry++;
-            return true;
-        }
-        return false;
     }
 
 

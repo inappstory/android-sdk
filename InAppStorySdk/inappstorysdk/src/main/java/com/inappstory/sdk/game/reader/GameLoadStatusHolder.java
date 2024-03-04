@@ -4,6 +4,27 @@ public class GameLoadStatusHolder {
     private final Object gameLoadStatusLock = new Object();
     private boolean gameLoaded;
     private boolean gameLoadFailed;
+    private int currentReloadTry;
+
+    private int totalReloadTries;
+
+    public void setTotalReloadTries(int totalReloadTries) {
+
+        synchronized (gameLoadStatusLock) {
+            this.totalReloadTries = totalReloadTries;
+        }
+    }
+
+    public boolean updateCurrentReloadTry() {
+        synchronized (gameLoadStatusLock) {
+            if (currentReloadTry < totalReloadTries) {
+                currentReloadTry++;
+                return true;
+            }
+            return false;
+        }
+    }
+
 
     boolean hasGameLoadStatus() {
         synchronized (gameLoadStatusLock) {
@@ -20,6 +41,7 @@ public class GameLoadStatusHolder {
     void setGameLoaded() {
         synchronized (gameLoadStatusLock) {
             gameLoaded = true;
+            currentReloadTry = 0;
         }
     }
 
@@ -29,7 +51,11 @@ public class GameLoadStatusHolder {
         }
     }
 
-
+    void clearGameLoadTries() {
+        synchronized (gameLoadStatusLock) {
+            currentReloadTry = 0;
+        }
+    }
 
     void clearGameStatus() {
         synchronized (gameLoadStatusLock) {

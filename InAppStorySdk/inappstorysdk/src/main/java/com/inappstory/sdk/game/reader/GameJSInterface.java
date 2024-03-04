@@ -1,7 +1,10 @@
 package com.inappstory.sdk.game.reader;
 
+import static com.inappstory.sdk.utils.DebugUtils.getMethodName;
+
 import android.webkit.JavascriptInterface;
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 
@@ -68,36 +71,47 @@ public class GameJSInterface {
     }
 
     @JavascriptInterface
-    public void eventGame(
+    public void event(
             String name,
             String data
     ) {
-        manager.eventGame(name,  data);
+        manager.jsEvent(name,  data);
+        logMethod("name:" + name + " | data:" + data);
     }
 
     @JavascriptInterface
     public void gameLoaded(String data) {
         manager.gameLoaded(data);
+        logMethod(data);
+    }
+
+    private void logMethod(String payload) {
+        InAppStoryManager.showDLog("JS_game_method_test",
+                manager.gameCenterId + " " + getMethodName() + " " + payload);
     }
 
     @JavascriptInterface
     public void gameLoadFailed(String reason, boolean canTryReload) {
         manager.gameLoadFailed(reason, canTryReload);
+        logMethod("reason:" + reason + " | canTryReload:" + canTryReload);
     }
 
     @JavascriptInterface
     public void reloadGameReader() {
-        manager.reloadGame();
+        manager.reloadGame(true);
+        logMethod("null");
     }
 
     @JavascriptInterface
     public void sendApiRequest(String data) {
         manager.sendApiRequest(data);
+        logMethod(data);
     }
 
     @JavascriptInterface
     public void gameComplete(String data) {
         manager.gameCompleted(data, null, null);
+        logMethod(data);
     }
 
     @JavascriptInterface
@@ -108,11 +122,13 @@ public class GameJSInterface {
     @JavascriptInterface
     public void gameComplete(String data, String eventData, String deeplink) {
         manager.gameCompleted(data, deeplink, eventData);
+        logMethod("data:" + data + " | deeplink:" + deeplink + " | eventData:" + eventData);
     }
 
     @JavascriptInterface
     public void gameStatisticEvent(String name, String data) {
         manager.sendGameStat(name, data);
+        logMethod("name:" + name + " | data:" + data);
     }
 
     @JavascriptInterface
