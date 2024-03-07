@@ -17,8 +17,6 @@ public class StringsUtils {
     private final static String[] escapedSymbols = {"\\\"", "\\\n", "\\\r"};//, "\t", "\b", "\f"};
 
     public static String getEscapedString(String raw) {
-        if (1 == 1)
-            return raw;
         String doubleSlash = Matcher.quoteReplacement("\\\\");
         String doubleSlashTag = Matcher.quoteReplacement("%double_back_slash%");
         String escapedTag = Matcher.quoteReplacement("%escaped_symbol%");
