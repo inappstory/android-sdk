@@ -31,7 +31,7 @@ public class GameCacheManager {
         cachedGames.clear();
     }
 
-    public void getGame(String gameId, GameLoadCallback callback) {
+   /* public void getGame(String gameId, GameLoadCallback callback) {
         getGameFromGameCenter(gameId, callback);
     }
 
@@ -42,7 +42,7 @@ public class GameCacheManager {
         }
         return null;
     }
-
+*/
     private static final String INDEX_NAME = "index.html";
     public static final String FILE = "file://";
     private final ExecutorService gameUseCasesThread = Executors.newFixedThreadPool(1);
@@ -51,16 +51,17 @@ public class GameCacheManager {
             final String gameId,
             final DownloadInterruption interruption,
             final ProgressCallback progressCallback,
-            final UseCaseCallback<File> splashScreenCallback,
+            final UseCaseWarnCallback<File> splashScreenCallback,
             final UseCaseCallback<GameCenterData> gameModelCallback,
-            final UseCaseCallback<FilePathAndContent> gameLoadCallback
+            final UseCaseCallback<FilePathAndContent> gameLoadCallback,
+            final SetGameLoggerCallback setGameLoggerCallback
     ) {
         final String[] oldSplashPath = {null};
         GetLocalSplashUseCase getLocalSplashUseCase = new GetLocalSplashUseCase(gameId);
         getLocalSplashUseCase.get(new UseCaseCallback<File>() {
             @Override
             public void onError(String message) {
-                splashScreenCallback.onError(message);
+                splashScreenCallback.onWarn(message);
             }
 
             @Override
@@ -92,7 +93,7 @@ public class GameCacheManager {
                 downloadSplashUseCase.download(new UseCaseCallback<File>() {
                     @Override
                     public void onError(String message) {
-                        splashScreenCallback.onError(message);
+                        splashScreenCallback.onWarn(message);
                     }
 
                     @Override
@@ -257,6 +258,11 @@ public class GameCacheManager {
             public void onError(String message) {
                 gameLoadCallback.onError("Can't retrieve game from game center");
             }
+
+            @Override
+            public void onCreateLog(int loggerLevel) {
+                setGameLoggerCallback.setLogger(loggerLevel);
+            }
         });
     }
 
@@ -274,7 +280,7 @@ public class GameCacheManager {
         }
     }
 
-    private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {
+  /*  private void getGameFromGameCenter(final String gameId, final GameLoadCallback callback) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
         if (networkClient == null) {
             callback.onError(NC_IS_UNAVAILABLE);
@@ -332,5 +338,5 @@ public class GameCacheManager {
                 callback.onError("Open session error");
             }
         });
-    }
+    }*/
 }

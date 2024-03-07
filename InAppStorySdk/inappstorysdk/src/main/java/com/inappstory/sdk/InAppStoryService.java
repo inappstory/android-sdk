@@ -20,6 +20,10 @@ import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.game.cache.GameCacheManager;
 import com.inappstory.sdk.game.reader.GameStoryData;
+import com.inappstory.sdk.game.reader.logger.GameLogSaver;
+import com.inappstory.sdk.game.reader.logger.GameLogSender;
+import com.inappstory.sdk.game.reader.logger.IGameLogSaver;
+import com.inappstory.sdk.game.reader.logger.IGameLogSender;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.lrudiskcache.CacheType;
 import com.inappstory.sdk.lrudiskcache.FileManager;
@@ -238,6 +242,14 @@ public class InAppStoryService {
     public void clearGames() {
         gameCacheManager().clearGames();
     }
+
+    IGameLogSender logSender;
+
+    public IGameLogSaver getLogSaver() {
+        return logSaver;
+    }
+
+    IGameLogSaver logSaver;
 
     void logout() {
         OldStatisticManager.useInstance(new GetOldStatisticManagerCallback() {
@@ -756,6 +768,7 @@ public class InAppStoryService {
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
         new ImageLoader(context);
         createDownloadManager(exceptionCache);
+
         timerManager = new TimerManager();
         if (tempListSubscribers != null) {
             if (listSubscribers == null) listSubscribers = new HashSet<>();
@@ -771,6 +784,8 @@ public class InAppStoryService {
         }
         checkSpaceThread.scheduleAtFixedRate(checkFreeSpace, 1L, 60000L, TimeUnit.MILLISECONDS);
         getDownloadManager().initDownloaders();
+        logSaver = new GameLogSaver();
+        logSender = new GameLogSender(this, logSaver);
     }
 
     private static final Object lock = new Object();

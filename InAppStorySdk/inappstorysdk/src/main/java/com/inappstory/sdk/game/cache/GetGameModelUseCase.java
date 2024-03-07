@@ -34,6 +34,7 @@ public class GetGameModelUseCase {
                         new NetworkCallback<GameCenterData>() {
                             @Override
                             public void onSuccess(final GameCenterData response) {
+                                callback.onCreateLog(response.loggerLevel());
                                 if (response.url == null ||
                                         response.url.isEmpty() ||
                                         response.initCode == null ||

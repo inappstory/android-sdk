@@ -6,6 +6,12 @@ import android.media.AudioManager;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
+import com.inappstory.sdk.game.reader.logger.AbstractGameLogger;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl2;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl3;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.network.ApiSettings;
 import com.inappstory.sdk.network.JsonParser;
@@ -35,8 +41,26 @@ public class GameManager {
     List<WebResource> resources;
     final GameLoadStatusHolder statusHolder = new GameLoadStatusHolder();
     String gameConfig;
+    AbstractGameLogger logger;
 
     GameStoryData dataModel;
+
+    public void setLogger(int loggerLevel) {
+        switch (loggerLevel) {
+            case 0:
+                logger = new GameLoggerLvl0();
+                break;
+            case 1:
+                logger = new GameLoggerLvl1(gameCenterId);
+                break;
+            case 2:
+                logger = new GameLoggerLvl2(gameCenterId);
+                break;
+            case 3:
+                logger = new GameLoggerLvl3(gameCenterId);
+                break;
+        }
+    }
 
     public GameManager(GameReaderContentFragment host) {
         this.host = host;
@@ -247,20 +271,26 @@ public class GameManager {
 
     void gameLoaded(String data) {
         if (statusHolder.hasGameLoadStatus()) return;
+        logger.gameLoaded(true);
+        statusHolder.setGameLoaded();
         GameLoadedConfig config = JsonParser.fromJson(data, GameLoadedConfig.class);
         host.gameReaderGestureBack = config.backGesture;
         host.showClose = config.showClose;
-        statusHolder.setGameLoaded();
         host.updateUI();
     }
 
     void gameLoadFailed(String reason, boolean canTryReload) {
         if (statusHolder.hasGameLoadStatus()) return;
         statusHolder.setGameFailed();
+        if (logger != null) {
+            logger.gameLoaded(false);
+            logger.sendGameError(reason);
+        }
         if (canTryReload && statusHolder.updateCurrentReloadTry()) {
-            reloadGame(false);
+            logger.launchTryNumber(statusHolder.launchTryNumber() + 1);
+            reloadGame();
         } else {
-            statusHolder.clearGameLoadTries();
+            clearTries();
             host.gameLoadedErrorCallback.onError(null, reason);
         }
     }
@@ -269,11 +299,14 @@ public class GameManager {
         host.jsEvent(name, data);
     }
 
-    void reloadGame(boolean clearTries) {
-        if (clearTries) {
-            statusHolder.clearGameLoadTries();
-        }
+    void clearTries() {
+        statusHolder.clearGameLoadTries();
+        logger.launchTryNumber(1);
+    }
+
+    void reloadGame() {
         statusHolder.clearGameStatus();
+        logger.gameLoaded(false);
         host.restartGame();
     }
 

@@ -48,7 +48,13 @@ import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.cache.FilePathAndContent;
 import com.inappstory.sdk.game.cache.GameCacheManager;
+import com.inappstory.sdk.game.cache.SetGameLoggerCallback;
 import com.inappstory.sdk.game.cache.UseCaseCallback;
+import com.inappstory.sdk.game.cache.UseCaseWarnCallback;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl0;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl1;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl2;
+import com.inappstory.sdk.game.reader.logger.GameLoggerLvl3;
 import com.inappstory.sdk.imageloader.ImageLoader;
 import com.inappstory.sdk.inner.share.InnerShareData;
 import com.inappstory.sdk.inner.share.InnerShareFilesPrepare;
@@ -87,6 +93,7 @@ import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.stories.utils.StoryShareBroadcastReceiver;
 import com.inappstory.sdk.utils.ProgressCallback;
+import com.inappstory.sdk.utils.StringsUtils;
 import com.inappstory.sdk.utils.ZipLoader;
 
 import java.io.File;
@@ -570,16 +577,28 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
 
             @Override
             public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-
                 if (dataModel != null && webView != null) {
                     webView.sendWebConsoleLog(consoleMessage,
                             Integer.toString(dataModel.slideData.story.id),
                             dataModel.slideData.index);
                 }
-                Log.d("InAppStory_SDK_Game", "Console: " + consoleMessage.messageLevel().name() + ": "
-                        + consoleMessage.message() + " -- From line "
+                String msg = consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
-                        + consoleMessage.sourceId());
+                        + consoleMessage.sourceId();
+                if (manager != null && manager.logger != null)
+                    switch (consoleMessage.messageLevel()) {
+                        case ERROR:
+                            manager.logger.sendConsoleError(msg);
+                            break;
+                        case WARNING:
+                            manager.logger.sendConsoleWarn(msg);
+                            break;
+                        default:
+                            manager.logger.sendConsoleInfo(msg);
+                            break;
+                    }
+                Log.d("InAppStory_SDK_Game", "Console: " +
+                        consoleMessage.messageLevel().name() + ": " + msg);
                 return super.onConsoleMessage(consoleMessage);
             }
 
@@ -645,11 +664,22 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
     }
 
     private void resumeGame() {
-        webView.evaluateJavascript("resumeUI();", null);
+        webView.loadUrl("javascript:(function() {" +
+                "if ('resumeUI' in window) " +
+                "{" +
+                " window.resumeUI(); " +
+                "}" +
+                "})()");
     }
 
     private void pauseGame() {
-        webView.evaluateJavascript("pauseUI();", null);
+        webView.loadUrl("javascript:(function() {" +
+                "if ('pauseUI' in window) " +
+                "{" +
+                " window.pauseUI(); " +
+                "}" +
+                "})()");
+        // webView.evaluateJavascript("pauseUI();", null);
     }
 
     Runnable showRefresh = new Runnable() {
@@ -767,7 +797,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 });
                         }
                     },
-                    new UseCaseCallback<File>() {
+                    new UseCaseWarnCallback<File>() {
+                        @Override
+                        public void onWarn(String message) {
+                            if (manager != null && manager.logger != null) {
+                                manager.logger.sendSdkWarn(message);
+                            }
+                            InAppStoryManager.showDLog("Game_Loading", message);
+                        }
+
                         @Override
                         public void onError(String message) {
                             InAppStoryManager.showDLog("Game_Loading", message);
@@ -781,12 +819,15 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     new UseCaseCallback<GameCenterData>() {
                         @Override
                         public void onError(String message) {
+                            if (manager != null && manager.logger != null) {
+                                manager.logger.sendSdkError(message, null);
+                            }
                             gameLoadedErrorCallback.onError(null, message);
                         }
 
                         @Override
                         public void onSuccess(final GameCenterData gameCenterData) {
-
+                            if (manager == null) return;
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -813,6 +854,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                     new UseCaseCallback<FilePathAndContent>() {
                         @Override
                         public void onError(String message) {
+                            if (manager != null && manager.logger != null) {
+                                manager.logger.sendSdkError(message, null);
+                            }
                             gameLoadedErrorCallback.onError(null, message);
                         }
 
@@ -831,6 +875,14 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                                 }
                             });
                             loaderView.setIndeterminate(true);
+                        }
+                    },
+                    new SetGameLoggerCallback() {
+                        @Override
+                        public void setLogger(int loggerLevel) {
+                            if (manager != null) {
+                                manager.setLogger(loggerLevel);
+                            }
                         }
                     }
             );
@@ -851,6 +903,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         }
     }
 
+
     private String generateJsonConfig() {
         Context context = getContext();
         GameConfigOptions options = new GameConfigOptions();
@@ -867,7 +920,9 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         int orientation = getResources().getConfiguration().orientation;
         options.screenOrientation =
                 (orientation == Configuration.ORIENTATION_LANDSCAPE) ? "landscape" : "portrait";
-        options.userAgent = new UserAgent().generate(context);
+        options.userAgent = StringsUtils.getEscapedString(
+                new UserAgent().generate(context)
+        );
         String appPackageName = "";
         try {
             appPackageName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).packageName;
@@ -875,15 +930,23 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
             e.printStackTrace();
         }
         options.appPackageId = appPackageName;
-        options.sdkVersion = BuildConfig.VERSION_NAME;
+        options.sdkVersion = StringsUtils.getEscapedString(
+                BuildConfig.VERSION_NAME
+        );
         if (inAppStoryManager != null) {
             options.apiKey = inAppStoryManager.getApiKey();
-            options.userId = inAppStoryManager.getUserId();
+            options.userId = StringsUtils.getEscapedString(
+                    inAppStoryManager.getUserId()
+            );
         }
         options.sessionId = CachedSessionData.getInstance(context).sessionId;
         options.lang = Locale.getDefault().toLanguageTag();
-        options.deviceId = Settings.Secure.getString(context.getContentResolver(),
-                Settings.Secure.ANDROID_ID);
+        options.deviceId = StringsUtils.getEscapedString(
+                Settings.Secure.getString(
+                        context.getContentResolver(),
+                        Settings.Secure.ANDROID_ID
+                )
+        );
         options.placeholders = generatePlaceholders();
         SafeAreaInsets insets = new SafeAreaInsets();
         if (Build.VERSION.SDK_INT >= 28) {
@@ -965,18 +1028,32 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
         ArrayList<GameDataPlaceholder> gameDataPlaceholders = new ArrayList<GameDataPlaceholder>();
         for (Map.Entry<String, String> entry : textPlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null)
-                gameDataPlaceholders.add(new GameDataPlaceholder(
-                        "text",
-                        entry.getKey(),
-                        entry.getValue()));
+                gameDataPlaceholders.add(
+                        new GameDataPlaceholder(
+                                "text",
+                                StringsUtils.getEscapedString(
+                                        entry.getKey()
+                                ),
+                                StringsUtils.getEscapedString(
+                                        entry.getValue()
+                                )
+                        )
+                );
         }
         for (Map.Entry<String, ImagePlaceholderValue> entry : imagePlaceholders.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null
                     && entry.getValue().getType() == ImagePlaceholderType.URL)
-                gameDataPlaceholders.add(new GameDataPlaceholder(
-                        "image",
-                        entry.getKey(),
-                        entry.getValue().getUrl()));
+                gameDataPlaceholders.add(
+                        new GameDataPlaceholder(
+                                "image",
+                                StringsUtils.getEscapedString(
+                                        entry.getKey()
+                                ),
+                                StringsUtils.getEscapedString(
+                                        entry.getValue().getUrl()
+                                )
+                        )
+                );
         }
         return gameDataPlaceholders;
     }
@@ -1003,6 +1080,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 GameReaderLaunchData.SERIALIZABLE_KEY
         );
         manager = new GameManager(this);
+        manager.logger = new GameLoggerLvl1(gameReaderLaunchData.getGameId());
         webView = view.findViewById(R.id.gameWebview);
         loader = view.findViewById(R.id.loader);
         baseContainer = view.findViewById(R.id.draggable_frame);

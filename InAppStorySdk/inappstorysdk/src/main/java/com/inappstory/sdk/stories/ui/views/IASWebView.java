@@ -52,8 +52,8 @@ public class IASWebView extends WebView {
         getSettings().setTextZoom(100);
         getSettings().setAllowContentAccess(true);
         getSettings().setAllowFileAccess(true);
-      //  getSettings().setAllowFileAccessFromFileURLs(true);
-      //  getSettings().setAllowUniversalAccessFromFileURLs(true);
+        //  getSettings().setAllowFileAccessFromFileURLs(true);
+        //  getSettings().setAllowUniversalAccessFromFileURLs(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getSettings().setOffscreenPreRaster(true);
         }
@@ -62,8 +62,11 @@ public class IASWebView extends WebView {
         getSettings().setJavaScriptEnabled(true);
     }
 
-    public void sendWebConsoleLog(ConsoleMessage consoleMessage,
-                                  String storyId, int slideIndex) {
+    public void sendWebConsoleLog(
+            ConsoleMessage consoleMessage,
+            String storyId,
+            int slideIndex
+    ) {
         WebConsoleLog log = new WebConsoleLog();
         log.timestamp = System.currentTimeMillis();
         log.id = UUID.randomUUID().toString();

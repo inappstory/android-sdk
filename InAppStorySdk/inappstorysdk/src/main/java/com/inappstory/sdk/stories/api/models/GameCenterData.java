@@ -16,6 +16,8 @@ public class GameCenterData {
     public List<WebResource> resources;
     @SerializedName("options")
     public GameScreenOptions options;
+    @SerializedName("loggerLevel")
+    public Integer loggerLevel;
     @Required
     @SerializedName("downloadUrl")
     public String url;
@@ -37,6 +39,11 @@ public class GameCenterData {
 
     @SerializedName("archiveUncompressedSize")
     public Long archiveUncompressedSize;
+
+    public int loggerLevel() {
+        if (loggerLevel == null) return 0;
+        return loggerLevel;
+    }
 
     public int canTryReloadCount() {
         if (canTryReloadCount == null)

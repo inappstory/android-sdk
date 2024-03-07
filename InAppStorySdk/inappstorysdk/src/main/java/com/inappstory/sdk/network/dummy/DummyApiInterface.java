@@ -63,6 +63,20 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
+    public Request sendGameLogMessage(
+            String gameInstanceId,
+            String type,
+            int launchTryNumber,
+            Long timestamp,
+            String message,
+            String stacktrace,
+            String logSession,
+            boolean gameLaunched
+    ) {
+        return new DummyRequest();
+    }
+
+    @Override
     public Request sendStat(String eventName, String sessionId, String userId,
                             Long timestamp, String feedId, String storyId,
                             String whence, String cause, Integer slideIndex,

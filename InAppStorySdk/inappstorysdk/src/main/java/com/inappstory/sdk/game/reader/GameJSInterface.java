@@ -98,7 +98,8 @@ public class GameJSInterface {
 
     @JavascriptInterface
     public void reloadGameReader() {
-        manager.reloadGame(true);
+        manager.clearTries();
+        manager.reloadGame();
         logMethod("null");
     }
 

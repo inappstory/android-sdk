@@ -118,6 +118,19 @@ public interface ApiInterface {
             @Field("l") Integer line,
             @Field("t") String trace);
 
+    @FormUrlEncoded
+    @POST("v2/game/{id}/logger")
+    Request sendGameLogMessage(
+            @Path("id") String gameInstanceId,
+            @Field("type") String type,
+            @Field("launchTryNumber") int launchTryNumber,
+            @Field("timestamp") Long timestamp,
+            @Field("message") String message,
+            @Field("stacktrace") String stacktrace,
+            @Field("logSession") String logSession,
+            @Field("gameLaunched") boolean gameLaunched
+    );
+
 
     @GET("stat/{event_name}")
     @ExcludeHeaders({
