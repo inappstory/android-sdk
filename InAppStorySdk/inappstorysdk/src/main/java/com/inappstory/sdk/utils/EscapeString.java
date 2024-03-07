@@ -20,7 +20,7 @@ public class EscapeString {
                 curInd--;
             }
             if (slashCount % 2 == 0) {
-                insertIndexes.add(curInd + 1);
+                insertIndexes.add(index);
             }
         }
         StringBuilder builder = new StringBuilder(raw);
