@@ -1,6 +1,10 @@
 package com.inappstory.sdk.game.reader.logger;
 
 public class GameLog {
+    public GameLog() {
+
+    }
+
     public GameLog(
             String gameInstanceId,
             String logSession,
@@ -60,15 +64,15 @@ public class GameLog {
         return stacktrace;
     }
 
-    private String gameInstanceId;
-    private String type;
-    private Long timestamp;
+    public String gameInstanceId;
+    public String type;
+    public Long timestamp;
 
     public int launchTryNumber() {
         return launchTryNumber;
     }
 
-    private int launchTryNumber;
+    public int launchTryNumber;
 
     public GameLog(
             String gameInstanceId,
@@ -88,9 +92,9 @@ public class GameLog {
         this.gameLoaded = gameLoaded;
     }
 
-    private String message;
-    private String logSession;
-    private String stacktrace;
-    private boolean gameLoaded;
+    public String message;
+    public String logSession;
+    public String stacktrace;
+    public boolean gameLoaded;
 
 }

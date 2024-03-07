@@ -88,7 +88,8 @@ public class GameLogSender implements IGameLogSender {
     }
 
     private List<GameLog> getLogs() {
-        return saver.getLogs();
+        List<GameLog> logs = saver.getLogs();
+        return logs;
     }
 
 

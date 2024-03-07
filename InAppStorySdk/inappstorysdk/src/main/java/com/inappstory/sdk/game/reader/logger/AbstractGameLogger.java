@@ -1,9 +1,12 @@
 package com.inappstory.sdk.game.reader.logger;
 
+import android.os.Handler;
+
 import androidx.annotation.NonNull;
 
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.UseServiceInstanceCallback;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
@@ -65,10 +68,15 @@ public abstract class AbstractGameLogger {
     }
 
     public final void sendLog(final GameLog log) {
-        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+        new Handler().post(new Runnable() {
             @Override
-            public void use(@NonNull InAppStoryService service) throws Exception {
-                service.getLogSaver().saveLog(log);
+            public void run() {
+                InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+                    @Override
+                    public void use(@NonNull InAppStoryService service) throws Exception {
+                        service.getLogSaver().saveLog(log);
+                    }
+                });
             }
         });
     }

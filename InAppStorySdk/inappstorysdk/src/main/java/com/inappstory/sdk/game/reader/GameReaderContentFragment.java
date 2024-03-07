@@ -370,6 +370,10 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                         synchronized (initLock) {
                             init = false;
                         }
+                        if (manager != null) {
+                            manager.statusHolder.clearGameStatus();
+                            manager.logger.gameLoaded(false);
+                        }
                         downloadGame();
                     }
                 }, 500);
@@ -585,7 +589,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                 String msg = consoleMessage.message() + " -- From line "
                         + consoleMessage.lineNumber() + " of "
                         + consoleMessage.sourceId();
-                if (manager != null && manager.logger != null)
+                if (manager != null && manager.logger != null) {
                     switch (consoleMessage.messageLevel()) {
                         case ERROR:
                             manager.logger.sendConsoleError(msg);
@@ -597,6 +601,7 @@ public class GameReaderContentFragment extends Fragment implements OverlapFragme
                             manager.logger.sendConsoleInfo(msg);
                             break;
                     }
+                }
                 Log.d("InAppStory_SDK_Game", "Console: " +
                         consoleMessage.messageLevel().name() + ": " + msg);
                 return super.onConsoleMessage(consoleMessage);

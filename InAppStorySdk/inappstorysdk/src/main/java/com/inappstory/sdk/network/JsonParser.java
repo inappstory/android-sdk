@@ -233,10 +233,11 @@ public class JsonParser {
 
     public static <T> ArrayList<T> listFromJson(String json, Class<T> typeOfT) {
         ArrayList<T> res = new ArrayList<>();
+        if (json == null) return res;
         try {
             JSONTokener jsonT = new JSONTokener(json);
             Object object = jsonT.nextValue();
-            if (object != null && object instanceof JSONArray) {
+            if (object instanceof JSONArray) {
                 for (int i = 0; i < ((JSONArray) object).length(); i++) {
                     Object obj = ((JSONArray) object).get(i);
                     if (typeOfT.isPrimitive() || typeOfT.equals(Integer.class)
