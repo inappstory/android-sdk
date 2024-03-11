@@ -63,11 +63,9 @@ public class ScreensManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                forceCloseStoryReader();
+                forceCloseStoryReader(callback);
                 forceFinishGameReader();
                 closeUGCEditor();
-                if (callback != null)
-                    callback.onClose();
             }
         });
     }
@@ -156,13 +154,16 @@ public class ScreensManager {
         });
     }
 
-    public void forceCloseStoryReader() {
+    public void forceCloseStoryReader(final ForceCloseReaderCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
-                if (readerScreen != null)
+                if (readerScreen != null) {
                     readerScreen.forceFinish();
+                    if (callback != null)
+                        callback.onClose();
+                }
             }
         });
     }
