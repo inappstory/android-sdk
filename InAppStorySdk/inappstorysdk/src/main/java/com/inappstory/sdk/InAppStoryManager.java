@@ -60,6 +60,7 @@ import com.inappstory.sdk.stories.statistic.OldStatisticManager;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.ScreensManager;
+import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.ui.reader.StoriesReaderSettings;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
@@ -262,6 +263,15 @@ public class InAppStoryManager {
         closeStoryReader(CloseStory.CUSTOM);
     }
 
+    public static void closeStoryReader(boolean force, ForceCloseReaderCallback callback) {
+        if (force) {
+            forceCloseStoryReader(callback);
+        } else {
+            closeStoryReader(CloseStory.CUSTOM);
+        }
+    }
+
+
     @Deprecated
     public void openGame(final String gameId) {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
@@ -463,12 +473,12 @@ public class InAppStoryManager {
         }
     }
 
-    public static void forceCloseStoryReader() {
+    public static void forceCloseStoryReader(final ForceCloseReaderCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 ScreensManager.getInstance().forceCloseGameReader();
-                ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
+                ScreensManager.getInstance().forceCloseStoryReader(callback);
                 ScreensManager.getInstance().hideGoods();
                 ScreensManager.getInstance().closeUGCEditor();
             }
@@ -1033,7 +1043,7 @@ public class InAppStoryManager {
                     return;
                 }
                 if (userId.equals(InAppStoryManager.this.userId)) return;
-                forceCloseStoryReader();
+                forceCloseStoryReader(null);
                 localOpensKey = null;
                 String oldUserId = InAppStoryManager.this.userId;
                 InAppStoryManager.this.userId = userId;

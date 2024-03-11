@@ -71,6 +71,7 @@ import com.inappstory.sdk.stories.outerevents.ShowStory;
 import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 import com.inappstory.sdk.stories.ui.reader.StoriesActivity;
 import com.inappstory.sdk.stories.ui.reader.StoriesDialogFragment;
@@ -165,6 +166,15 @@ public class ScreensManager {
     public void closeStoryReader(int action) {
         if (currentScreen != null)
             currentScreen.closeStoryReader(action);
+    }
+
+
+
+    public void forceCloseStoryReader(ForceCloseReaderCallback callback) {
+        if (currentScreen != null) {
+            currentScreen.forceFinish();
+            callback.onClose();
+        }
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {

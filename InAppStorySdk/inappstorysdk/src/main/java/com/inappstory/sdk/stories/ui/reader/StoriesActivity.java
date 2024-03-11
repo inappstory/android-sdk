@@ -566,6 +566,41 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void forceFinish() {
+        InAppStoryService.useInstance(new UseServiceInstanceCallback() {
+            @Override
+            public void use(@NonNull InAppStoryService service) throws Exception {
+                service.getListReaderConnector().closeReader();
+                Story story = service.getDownloadManager()
+                        .getStoryById(service.getCurrentId(), type);
+                if (story != null) {
+                    if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                        CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                                new SlideData(
+                                        new StoryData(
+                                                story.id,
+                                                StringsUtils.getNonNull(story.statTitle),
+                                                StringsUtils.getNonNull(story.tags),
+                                                story.getSlidesCount(),
+                                                getIntent().getStringExtra("feedId"),
+                                                CallbackManager.getInstance().getSourceFromInt(
+                                                        getIntent().getIntExtra("source", 0)
+                                                )
+                                        ),
+                                        story.lastIndex,
+                                        story.getSlideEventPayload(story.lastIndex)
+                                ),
+                                CallbackManager.getInstance().getCloseTypeFromInt(CloseStory.CUSTOM)
+                        );
+                    }
+                    StatisticManager.getInstance().sendCloseStory(
+                            story.id,
+                            StatisticManager.CUSTOM, story.lastIndex,
+                            story.getSlidesCount(),
+                            getIntent().getStringExtra("feedId")
+                    );
+                }
+            }
+        });
         finishWithoutAnimation();
     }
 
