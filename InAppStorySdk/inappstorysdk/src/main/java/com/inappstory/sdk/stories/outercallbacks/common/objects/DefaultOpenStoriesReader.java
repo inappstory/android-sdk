@@ -59,9 +59,9 @@ public class DefaultOpenStoriesReader implements IOpenStoriesReader {
             }
             intent2.putExtras(bundle);
             context.startActivity(intent2);
+            ((Activity) context).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
     }
-
 
 
     @Override

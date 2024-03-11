@@ -83,6 +83,7 @@ public interface ApiInterface {
     @GET("v2/story/{id}")
     Request getStoryById(
             @Path("id") String id,
+            @Query("once") Integer once,
             @Query("src_list") Integer srcList,
             @Query("expand") String expand
     );

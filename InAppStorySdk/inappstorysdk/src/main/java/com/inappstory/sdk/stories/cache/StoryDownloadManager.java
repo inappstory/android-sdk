@@ -65,6 +65,7 @@ public class StoryDownloadManager {
             final GetStoryByIdCallback storyByIdCallback,
             final String id,
             final Story.StoryType type,
+            final boolean showOnce,
             final SourceType readerSource
     ) {
         final NetworkClient networkClient = InAppStoryManager.getNetworkClient();
@@ -80,6 +81,7 @@ public class StoryDownloadManager {
                 networkClient.enqueue(
                         networkClient.getApi().getStoryById(
                                 id,
+                                showOnce ? 1 : 0,
                                 1,
                                 EXPAND_STRING
                         ),
@@ -108,6 +110,12 @@ public class StoryDownloadManager {
                             @Override
                             public Type getType() {
                                 return Story.class;
+                            }
+
+                            @Override
+                            public void emptyContent() {
+                                if (storyByIdCallback != null)
+                                    storyByIdCallback.loadError(-2);
                             }
 
                             @Override

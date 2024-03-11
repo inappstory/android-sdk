@@ -29,10 +29,12 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderApp
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
+import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
 import java.util.HashMap;
@@ -55,26 +57,13 @@ public class ScreensManager {
         }
     }
 
-    public void closeAllReaders(final int action) {
+
+
+    public void forceCloseAllReaders(final ForceCloseReaderCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                closeStoryReader(action);
-                closeGameReader();
-                closeUGCEditor();
-            }
-        });
-    }
-
-    public interface ForceCloseReaderCallback {
-        void onClose();
-    }
-
-    public void forceCloseAllReaders(final int action, final ForceCloseReaderCallback callback) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                closeStoryReader(action);
+                forceCloseStoryReader();
                 forceFinishGameReader();
                 closeUGCEditor();
                 if (callback != null)
@@ -163,6 +152,17 @@ public class ScreensManager {
                 BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
                 if (readerScreen != null)
                     readerScreen.closeStoryReader(action);
+            }
+        });
+    }
+
+    public void forceCloseStoryReader() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
+                if (readerScreen != null)
+                    readerScreen.forceFinish();
             }
         });
     }

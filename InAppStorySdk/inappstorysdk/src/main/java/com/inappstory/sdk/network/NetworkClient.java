@@ -73,7 +73,10 @@ public class NetworkClient {
             if (callback == null) {
                 return response;
             }
-            if (response.body != null) {
+            if (response.code == 204) {
+                callback.onEmptyContent();
+                return response;
+            } else if (response.body != null) {
                 if (callback.getType() == null) {
                     callback.onSuccess(response);
                     return response;

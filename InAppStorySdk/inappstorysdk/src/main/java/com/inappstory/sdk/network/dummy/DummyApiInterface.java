@@ -43,7 +43,7 @@ public class DummyApiInterface implements ApiInterface {
     }
 
     @Override
-    public Request getStoryById(String id, Integer srcList, String expand) {
+    public Request getStoryById(String id, Integer once, Integer srcList, String expand) {
         return new DummyRequest();
     }
 

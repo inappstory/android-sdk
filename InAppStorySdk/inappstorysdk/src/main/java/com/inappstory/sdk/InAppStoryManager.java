@@ -40,6 +40,7 @@ import com.inappstory.sdk.stories.callbacks.AppClickCallback;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.callbacks.ExceptionCallback;
 import com.inappstory.sdk.stories.callbacks.IShowStoryCallback;
+import com.inappstory.sdk.stories.callbacks.IShowStoryOnceCallback;
 import com.inappstory.sdk.stories.callbacks.ShareCallback;
 import com.inappstory.sdk.stories.callbacks.UrlClickCallback;
 import com.inappstory.sdk.stories.exceptions.ExceptionManager;
@@ -74,6 +75,7 @@ import com.inappstory.sdk.stories.statistic.SharedPreferencesAPI;
 import com.inappstory.sdk.stories.ui.GetBaseReaderScreenCallback;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.reader.BaseReaderScreen;
+import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.utils.KeyValueStorage;
 import com.inappstory.sdk.stories.utils.SessionManager;
 import com.inappstory.sdk.utils.IVibrateUtils;
@@ -276,6 +278,16 @@ public class InAppStoryManager {
     public static void closeStoryReader() {
         ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
     }
+    /**
+     * use to force close story reader
+     */
+    public static void closeStoryReader(boolean forceClose, ForceCloseReaderCallback callback) {
+        if (forceClose) {
+            ScreensManager.getInstance().forceCloseAllReaders(callback);
+        } else {
+            ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
+        }
+    }
 
     @Deprecated
     public void openGame(String gameId) {
@@ -471,14 +483,14 @@ public class InAppStoryManager {
                     if (!oldList.contains(newTag)) {
                         this.tags = new ArrayList<>(newList);
                         clearCachedLists();
-                    //    forceCloseAndClearCache();
+                        //    forceCloseAndClearCache();
                         break;
                     }
                 }
             } else {
                 this.tags = new ArrayList<>(newList);
                 clearCachedLists();
-             //   forceCloseAndClearCache();
+                //   forceCloseAndClearCache();
             }
         }
     }
@@ -510,7 +522,7 @@ public class InAppStoryManager {
             }
             if (hasNewTags) {
                 clearCachedLists();
-              //  forceCloseAndClearCache();
+                //  forceCloseAndClearCache();
             }
         }
     }
@@ -586,13 +598,13 @@ public class InAppStoryManager {
 
         }
         if (isNewPlaceholder) {
-       //     forceCloseAndClearCache();
+            //     forceCloseAndClearCache();
         }
     }
 
     private void forceCloseAndClearCache() {
         clearCachedLists();
-        ScreensManager.getInstance().forceCloseAllReaders(CloseStory.CUSTOM, null);
+        ScreensManager.getInstance().forceCloseAllReaders(null);
     }
 
     private boolean setNewPlaceholder(String key, String value) {
@@ -628,7 +640,7 @@ public class InAppStoryManager {
             }
         }
         if (isNewPlaceholder) {
-      //      forceCloseAndClearCache();
+            //      forceCloseAndClearCache();
         }
     }
 
@@ -758,7 +770,7 @@ public class InAppStoryManager {
             isNewPlaceholder = setNewImagePlaceholder(key, value);
         }
         if (isNewPlaceholder) {
-        //    forceCloseAndClearCache();
+            //    forceCloseAndClearCache();
         }
     }
 
@@ -1086,8 +1098,7 @@ public class InAppStoryManager {
         final String oldUserId = this.userId;
         this.userId = userId;
         ScreensManager.getInstance().forceCloseAllReaders(
-                CloseStory.CUSTOM,
-                new ScreensManager.ForceCloseReaderCallback() {
+                new ForceCloseReaderCallback() {
                     @Override
                     public void onClose() {
                         SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId, sessionId);
@@ -1226,14 +1237,13 @@ public class InAppStoryManager {
                 inAppStoryService.getListSubscribers().clear();
                 inAppStoryService.getDownloadManager().cleanTasks();
                 ScreensManager.getInstance().forceCloseAllReaders(
-                        CloseStory.CUSTOM,
-                        new ScreensManager.ForceCloseReaderCallback() {
-                    @Override
-                    public void onClose() {
+                        new ForceCloseReaderCallback() {
+                            @Override
+                            public void onClose() {
 
-                        inAppStoryService.logout();
-                    }
-                });
+                                inAppStoryService.logout();
+                            }
+                        });
             }
         });
     }
@@ -1743,6 +1753,115 @@ public class InAppStoryManager {
         }, 1000);
     }
 
+    private void showStoryOnceInner(
+            final String storyId,
+            final Context context,
+            final AppearanceManager manager,
+            final IShowStoryOnceCallback callback,
+            final Integer slide,
+            final Story.StoryType type,
+            final SourceType readerSource,
+            final int readerAction
+    ) {
+        final InAppStoryService service = InAppStoryService.getInstance();
+        if (service == null) {
+            localHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showStoryOnceInner(
+                            storyId,
+                            context,
+                            manager,
+                            callback,
+                            slide,
+                            type,
+                            readerSource,
+                            readerAction
+                    );
+                }
+            }, 1000);
+            return;
+        }
+        if (this.userId == null || getBytesLength(this.userId) > 255) {
+            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            return;
+        }
+        if (lastSingleOpen != null &&
+                lastSingleOpen.equals(storyId)) return;
+        Set<String> opens = SharedPreferencesAPI.getStringSet(
+                getLocalOpensKey()
+        );
+        if (opens != null && opens.contains(storyId) && callback != null) {
+            callback.alreadyShown();
+            return;
+        }
+        lastSingleOpen = storyId;
+        service.getDownloadManager().getFullStoryByStringId(
+                new GetStoryByIdCallback() {
+                    @Override
+                    public void getStory(final Story story, final String sessionId) {
+                        if (story != null) {
+                            service.getDownloadManager().addCompletedStoryTask(story,
+                                    Story.StoryType.COMMON);
+                            if (isStoryReaderOpened()) {
+                                ScreensManager.getInstance().closeStoryReader(CloseStory.AUTO);
+                                localHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        openStoryInReader(
+                                                story,
+                                                sessionId,
+                                                context,
+                                                manager,
+                                                callback,
+                                                slide,
+                                                type,
+                                                readerSource,
+                                                readerAction
+                                        );
+                                    }
+                                }, 500);
+                                return;
+                            }
+                            openStoryInReader(
+                                    story,
+                                    sessionId,
+                                    context,
+                                    manager,
+                                    callback,
+                                    slide,
+                                    type,
+                                    readerSource,
+                                    readerAction
+                            );
+                        } else {
+                            if (callback != null)
+                                callback.onError();
+                            lastSingleOpen = null;
+                            return;
+                        }
+                    }
+
+                    @Override
+                    public void loadError(int type) {
+                        if (type == -2) {
+                            if (callback != null)
+                                callback.alreadyShown();
+                        } else {
+                            if (callback != null)
+                                callback.onError();
+                        }
+                        lastSingleOpen = null;
+                    }
+
+                },
+                storyId,
+                type,
+                true,
+                readerSource
+        );
+    }
+
     private void showStoryInner(final String storyId,
                                 final Context context,
                                 final AppearanceManager manager,
@@ -1833,6 +1952,7 @@ public class InAppStoryManager {
                 },
                 storyId,
                 type,
+                false,
                 readerSource
         );
     }
@@ -1876,6 +1996,24 @@ public class InAppStoryManager {
                 manager,
                 callback,
                 slide,
+                Story.StoryType.COMMON,
+                SourceType.SINGLE,
+                ShowStory.ACTION_OPEN
+        );
+    }
+
+
+    public void showStoryOnce(String storyId,
+                              Context context,
+                              AppearanceManager manager,
+                              IShowStoryOnceCallback callback
+    ) {
+        showStoryOnceInner(
+                storyId,
+                context,
+                manager,
+                callback,
+                0,
                 Story.StoryType.COMMON,
                 SourceType.SINGLE,
                 ShowStory.ACTION_OPEN

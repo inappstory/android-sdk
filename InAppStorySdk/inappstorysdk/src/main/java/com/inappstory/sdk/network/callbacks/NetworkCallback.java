@@ -6,8 +6,13 @@ import com.inappstory.sdk.network.models.Response;
 
 public abstract class NetworkCallback<T> implements Callback<T>, NetworkErrorsHandler {
     @Override
-    public void onFailure(Response response) {
+    public final void onFailure(Response response) {
         onError(response.code, response.errorBody);
+    }
+
+    @Override
+    public final void onEmptyContent() {
+        emptyContent();
     }
 
     @Override
@@ -167,6 +172,12 @@ public abstract class NetworkCallback<T> implements Callback<T>, NetworkErrorsHa
     public void jsonError(String message) {
         errorDefault(message);
     }
+
+    @Override
+    public void emptyContent() {
+
+    }
+
     @Override
     public void errorDefault(String message) {
 

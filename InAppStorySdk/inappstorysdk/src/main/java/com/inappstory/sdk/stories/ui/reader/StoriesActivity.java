@@ -588,6 +588,40 @@ public class StoriesActivity extends AppCompatActivity implements BaseReaderScre
 
     @Override
     public void forceFinish() {
+        InAppStoryService service = InAppStoryService.getInstance();
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        blockView.setVisibility(View.VISIBLE);
+        if (service != null) {
+            service.getListReaderConnector().closeReader();
+            Story story = service.getDownloadManager()
+                    .getStoryById(service.getCurrentId(), type);
+            if (story != null) {
+                if (CallbackManager.getInstance().getCloseStoryCallback() != null) {
+                    CallbackManager.getInstance().getCloseStoryCallback().closeStory(
+                            new SlideData(
+                                    StoryData.getStoryData(
+                                            story,
+                                            launchData.getFeed(),
+                                            launchData.getSourceType(),
+                                            type
+                                    ),
+                                    story.lastIndex,
+                                    story.getSlideEventPayload(story.lastIndex)
+                            ),
+                            CallbackManager.getInstance().getCloseTypeFromInt(CloseStory.CUSTOM)
+                    );
+                }
+                StatisticManager.getInstance().sendCloseStory(
+                        story.id,
+                        StatisticManager.CUSTOM,
+                        story.lastIndex,
+                        story.getSlidesCount(),
+                        launchData.getFeed()
+                );
+            }
+        }
+        cleanReader();
         finishWithoutAnimation();
     }
 

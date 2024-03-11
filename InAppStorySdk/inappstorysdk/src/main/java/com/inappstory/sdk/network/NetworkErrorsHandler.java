@@ -41,4 +41,5 @@ public interface NetworkErrorsHandler {
     void connectionError();
     void jsonError(String message);
     void errorDefault(String message);
+    void emptyContent();
 }

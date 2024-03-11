@@ -294,6 +294,7 @@ class StoryDownloader {
                 response = networkClient.execute(
                         networkClient.getApi().getStoryById(
                                 Integer.toString(key.storyId),
+                                0,
                                 1,
                                 EXPAND_STRING
                         )
