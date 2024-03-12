@@ -161,9 +161,9 @@ public class ScreensManager {
                 BaseReaderScreen readerScreen = getCurrentStoriesReaderScreen();
                 if (readerScreen != null) {
                     readerScreen.forceFinish();
-                    if (callback != null)
-                        callback.onClose();
                 }
+                if (callback != null)
+                    callback.onClose();
             }
         });
     }
