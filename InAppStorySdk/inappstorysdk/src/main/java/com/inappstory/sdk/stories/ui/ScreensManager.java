@@ -173,8 +173,9 @@ public class ScreensManager {
     public void forceCloseStoryReader(ForceCloseReaderCallback callback) {
         if (currentScreen != null) {
             currentScreen.forceFinish();
-            callback.onClose();
         }
+        if (callback != null)
+            callback.onClose();
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
