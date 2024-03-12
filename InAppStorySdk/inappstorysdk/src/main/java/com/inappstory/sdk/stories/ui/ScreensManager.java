@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui;
 import static java.util.UUID.randomUUID;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,12 +15,10 @@ import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
 import com.inappstory.sdk.R;
 import com.inappstory.sdk.game.reader.BaseGameReaderScreen;
-import com.inappstory.sdk.game.reader.GameScreenOptions;
 import com.inappstory.sdk.game.reader.GameStoryData;
 import com.inappstory.sdk.share.IASShareData;
 import com.inappstory.sdk.share.IShareCompleteListener;
 import com.inappstory.sdk.share.ShareListener;
-import com.inappstory.sdk.stories.api.models.WebResource;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEventObserver;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.GameReaderLaunchData;
@@ -29,7 +26,6 @@ import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderApp
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoriesReaderLaunchData;
 import com.inappstory.sdk.stories.outercallbacks.common.objects.StoryItemCoordinates;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.statistic.StatisticManager;
 import com.inappstory.sdk.stories.ui.goods.GoodsWidgetFragment;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
@@ -38,7 +34,6 @@ import com.inappstory.sdk.stories.ui.reader.ForceCloseReaderCallback;
 import com.inappstory.sdk.stories.ui.reader.OverlapFragment;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class ScreensManager {
 
@@ -163,7 +158,7 @@ public class ScreensManager {
                     readerScreen.forceFinish();
                 }
                 if (callback != null)
-                    callback.onClose();
+                    callback.onComplete();
             }
         });
     }

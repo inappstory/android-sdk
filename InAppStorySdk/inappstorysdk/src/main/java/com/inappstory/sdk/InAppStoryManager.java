@@ -273,17 +273,20 @@ public class InAppStoryManager {
     }
 
     /**
-     * use to force close story reader
+     * use to close story reader
      */
     public static void closeStoryReader() {
         ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
     }
+
     /**
-     * use to force close story reader
+     * use to close story reader
+     * @param forceClose (forceClose) - close reader immediately without animation
+     * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
      */
-    public static void closeStoryReader(boolean forceClose, ForceCloseReaderCallback callback) {
+    public static void closeStoryReader(boolean forceClose, ForceCloseReaderCallback forceCloseReaderCallback) {
         if (forceClose) {
-            ScreensManager.getInstance().forceCloseAllReaders(callback);
+            ScreensManager.getInstance().forceCloseAllReaders(forceCloseReaderCallback);
         } else {
             ScreensManager.getInstance().closeStoryReader(CloseStory.CUSTOM);
         }
@@ -1100,7 +1103,7 @@ public class InAppStoryManager {
         ScreensManager.getInstance().forceCloseAllReaders(
                 new ForceCloseReaderCallback() {
                     @Override
-                    public void onClose() {
+                    public void onComplete() {
                         SessionManager.getInstance().closeSession(sendStatistic, true, oldUserId, sessionId);
                     }
                 }
@@ -1239,7 +1242,7 @@ public class InAppStoryManager {
                 ScreensManager.getInstance().forceCloseAllReaders(
                         new ForceCloseReaderCallback() {
                             @Override
-                            public void onClose() {
+                            public void onComplete() {
 
                                 inAppStoryService.logout();
                             }
