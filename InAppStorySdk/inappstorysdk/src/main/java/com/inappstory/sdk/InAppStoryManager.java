@@ -257,15 +257,21 @@ public class InAppStoryManager {
     }
 
     /**
-     * use to force close story reader
+     * use to close story reader
      */
     public static void closeStoryReader() {
         closeStoryReader(CloseStory.CUSTOM);
     }
 
-    public static void closeStoryReader(boolean force, ForceCloseReaderCallback callback) {
-        if (force) {
-            forceCloseStoryReader(callback);
+
+    /**
+     * use to close story reader
+     * @param forceClose (forceClose) - close reader immediately without animation
+     * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
+     */
+    public static void closeStoryReader(boolean forceClose, ForceCloseReaderCallback forceCloseReaderCallback) {
+        if (forceClose) {
+            forceCloseStoryReader(forceCloseReaderCallback);
         } else {
             closeStoryReader(CloseStory.CUSTOM);
         }

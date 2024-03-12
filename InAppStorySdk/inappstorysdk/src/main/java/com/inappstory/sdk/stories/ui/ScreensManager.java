@@ -64,7 +64,6 @@ import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.callbacks.CallbackManager;
 import com.inappstory.sdk.stories.events.GameCompleteEvent;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.SlideData;
-import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryData;
 import com.inappstory.sdk.stories.outercallbacks.common.reader.StoryWidgetCallback;
 import com.inappstory.sdk.stories.outerevents.CloseStory;
 import com.inappstory.sdk.stories.outerevents.ShowStory;
@@ -84,7 +83,6 @@ import com.inappstory.sdk.stories.ui.views.goodswidget.GoodsWidgetAppearanceAdap
 import com.inappstory.sdk.stories.ui.views.goodswidget.IGoodsWidgetAppearance;
 import com.inappstory.sdk.stories.utils.ShowGoodsCallback;
 import com.inappstory.sdk.stories.utils.Sizes;
-import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -175,7 +173,7 @@ public class ScreensManager {
             currentScreen.forceFinish();
         }
         if (callback != null)
-            callback.onClose();
+            callback.onComplete();
     }
 
     public void clearCurrentFragment(StoriesDialogFragment fragment) {
