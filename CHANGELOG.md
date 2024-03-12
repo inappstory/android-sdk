@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version *1.17.15 (815)*
+----------------------------
+
+* New: added InAppStoryManager.closeStoryReader() with force closing feature
+* Fixed: change resources cache keys (sha1 and url dependency). 
+
 Version *1.17.14 (814)*
 ----------------------------
 
