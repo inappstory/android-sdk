@@ -3,7 +3,6 @@ package com.inappstory.sdk.stories.ui.ugclist;
 import static java.util.UUID.randomUUID;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -12,15 +11,14 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
-import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.Story;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
 import com.inappstory.sdk.stories.callbacks.OnFavoriteItemClick;
@@ -36,8 +34,8 @@ import com.inappstory.sdk.stories.statistic.ProfilingManager;
 import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.ui.reader.ActiveStoryItem;
-import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -435,14 +433,18 @@ public class UgcStoriesList extends RecyclerView {
     private void loadStoriesInner(final String payload) {
 
         lastPayload = payload;
-        if (InAppStoryManager.getInstance() == null) {
-            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "'InAppStoryManager' cannot be null");
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            getContext(),
+                            R.string.ias_npe_manager
+                    )
+            );
             return;
         }
-        if (InAppStoryManager.getInstance().getUserId() == null) {
-            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "Parameter 'userId' cannot be null");
-            return;
-        }
+        if (manager.noCorrectUserIdOrDevice()) return;
 
         final InAppStoryService service = InAppStoryService.getInstance();
 

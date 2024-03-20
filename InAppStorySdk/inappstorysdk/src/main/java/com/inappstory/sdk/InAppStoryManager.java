@@ -281,7 +281,8 @@ public class InAppStoryManager {
 
     /**
      * use to close story reader
-     * @param forceClose (forceClose) - close reader immediately without animation
+     *
+     * @param forceClose               (forceClose) - close reader immediately without animation
      * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
      */
     public static void closeStoryReader(boolean forceClose, ForceCloseReaderCallback forceCloseReaderCallback) {
@@ -303,18 +304,17 @@ public class InAppStoryManager {
     public void openGame(String gameId, @NonNull Context context) {
         InAppStoryService service = InAppStoryService.getInstance();
         GameReaderCallback callback = CallbackManager.getInstance().getGameReaderCallback();
+        if (noCorrectUserIdOrDevice()) {
+            if (callback != null) {
+                callback.gameOpenError(null, gameId);
+            }
+            return;
+        }
         if (isGameReaderOpened()) {
             if (callback != null) {
                 callback.gameOpenError(null, gameId);
             }
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.game_reader_already_opened_error));
-            return;
-        }
-        if (this.userId == null || getBytesLength(this.userId) > 255) {
-            if (callback != null) {
-                callback.gameOpenError(null, gameId);
-            }
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.game_reader_already_opened_error));
             return;
         }
         if (service != null) {
@@ -467,8 +467,8 @@ public class InAppStoryManager {
 
 
     public void setTags(ArrayList<String> tags) {
-        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
             return;
         }
         List<String> currentTags = getTags();
@@ -516,8 +516,8 @@ public class InAppStoryManager {
             if (tags == null) tags = new ArrayList<>();
             String oldTagsString = TextUtils.join(",", tags);
             String newTagsString = TextUtils.join(",", newTags);
-            if (getBytesLength(oldTagsString + newTagsString) > TAG_LIMIT - 1) {
-                showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+            if (StringsUtils.getBytesLength(oldTagsString + newTagsString) > TAG_LIMIT - 1) {
+                showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
                 return;
             }
             for (String tag : newTags) {
@@ -1005,37 +1005,32 @@ public class InAppStoryManager {
 
     public final static String IAS_ERROR_TAG = "InAppStory_SDK_error";
 
-    private String getErrorStringFromContext(Context context, @StringRes int resourceId) {
-        if (context != null)
-            return context.getResources().getString(resourceId);
-        return "";
-    }
 
     private void build(final Builder builder) {
         Context context = this.context;
+        Integer errorStringId = null;
         if (context == null) {
-            showELog(IAS_ERROR_TAG, "InAppStoryManager data is not valid. 'context' can't be null");
-            return;
+            errorStringId = R.string.ias_context_is_null;
+        } else if (builder.apiKey == null && context.getResources().getString(R.string.csApiKey).isEmpty()) {
+            errorStringId = R.string.ias_api_key_error;
+        } else if (StringsUtils.getBytesLength(builder.userId) > 255) {
+            errorStringId = R.string.ias_builder_user_length_error;
+        } else if (builder.tags != null && StringsUtils.getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
+            errorStringId = R.string.ias_builder_tags_length_error;
         }
-        if (builder.apiKey == null &&
-                context.getResources().getString(R.string.csApiKey).isEmpty()) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
-                    R.string.ias_api_key_error));
-            return;
-        }
-        if (getBytesLength(builder.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
-                    R.string.ias_builder_user_length_error));
-            return;
-        }
-        if (builder.tags != null && getBytesLength(TextUtils.join(",", builder.tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
-                    R.string.ias_builder_tags_length_error));
+        if (errorStringId != null) {
+            showELog(
+                    IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            context,
+                            errorStringId
+                    )
+            );
             return;
         }
         long freeSpace = context.getCacheDir().getFreeSpace();
         if (freeSpace < MB_5 + MB_10 + MB_10) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context,
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context,
                     R.string.ias_min_free_space_error));
             return;
         }
@@ -1070,26 +1065,23 @@ public class InAppStoryManager {
         initManager(
                 context,
                 domain,
-                builder.apiKey != null ? builder.apiKey : context.getResources().getString(R.string.csApiKey),
-                builder.testKey != null ? builder.testKey : null,
-                builder.userId,
-                builder.tags != null ? builder.tags : null,
-                builder.placeholders != null ? builder.placeholders : null,
-                builder.imagePlaceholders != null ? builder.imagePlaceholders : null
+                builder.apiKey() != null ? builder.apiKey() : context.getResources().getString(R.string.csApiKey),
+                builder.testKey() != null ? builder.testKey() : null,
+                builder.userId(),
+                builder.gameDemoMode(),
+                builder.isDeviceIdEnabled(),
+                builder.tags() != null ? builder.tags() : null,
+                builder.placeholders() != null ? builder.placeholders() : null,
+                builder.imagePlaceholders() != null ? builder.imagePlaceholders() : null
         );
         new ExceptionManager().sendSavedException();
-    }
-
-    private int getBytesLength(String value) {
-        if (value == null) return 0;
-        return value.getBytes(StandardCharsets.UTF_8).length;
     }
 
     private void setUserIdInner(String userId) {
         InAppStoryService inAppStoryService = InAppStoryService.getInstance();
         if (inAppStoryService == null) return;
-        if (userId == null || getBytesLength(userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+        if (userId == null || StringsUtils.getBytesLength(userId) > 255) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
             return;
         }
         if (userId.equals(this.userId)) return;
@@ -1187,17 +1179,28 @@ public class InAppStoryManager {
 
     private boolean gameDemoMode = false;
 
-    private void initManager(Context context,
-                             String cmsUrl,
-                             String apiKey,
-                             String testKey,
-                             String userId,
-                             ArrayList<String> tags,
-                             Map<String, String> placeholders,
-                             Map<String, ImagePlaceholderValue> imagePlaceholders) {
+    public boolean isDeviceIDEnabled() {
+        return isDeviceIDEnabled;
+    }
+
+    private boolean isDeviceIDEnabled = true;
+
+    private void initManager(
+            Context context,
+            String cmsUrl,
+            String apiKey,
+            String testKey,
+            String userId,
+            boolean gameDemoMode,
+            boolean isDeviceIDEnabled,
+            ArrayList<String> tags,
+            Map<String, String> placeholders,
+            Map<String, ImagePlaceholderValue> imagePlaceholders
+    ) {
         this.context = context;
         soundOn = !context.getResources().getBoolean(R.bool.defaultMuted);
-
+        this.isDeviceIDEnabled = isDeviceIDEnabled;
+        this.gameDemoMode = gameDemoMode;
         synchronized (tagsLock) {
             this.tags = tags;
         }
@@ -1360,6 +1363,17 @@ public class InAppStoryManager {
         }
     }
 
+    public boolean noCorrectUserIdOrDevice() {
+        if (this.userId == null || StringsUtils.getBytesLength(this.userId) > 255) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            return true;
+        }
+        if (!isDeviceIDEnabled && userId.isEmpty()) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_usage_without_user_and_device));
+            return true;
+        }
+        return false;
+    }
 
     public void getStackFeed(
             final String feed,
@@ -1368,8 +1382,9 @@ public class InAppStoryManager {
             final AppearanceManager appearanceManager,
             final IStackFeedResult stackFeedResult
     ) {
-        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+        if (noCorrectUserIdOrDevice()) return;
+        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
             stackFeedResult.error();
             return;
         }
@@ -1521,8 +1536,9 @@ public class InAppStoryManager {
             return;
         }
 
-        if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
+        if (noCorrectUserIdOrDevice()) return;
+        if (tags != null && StringsUtils.getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_tags_length_error));
             return;
         }
         SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
@@ -1785,10 +1801,7 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
-        if (this.userId == null || getBytesLength(this.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
+        if (noCorrectUserIdOrDevice()) return;
         if (lastSingleOpen != null &&
                 lastSingleOpen.equals(storyId)) return;
         Set<String> opens = SharedPreferencesAPI.getStringSet(
@@ -1892,10 +1905,7 @@ public class InAppStoryManager {
             }, 1000);
             return;
         }
-        if (this.userId == null || getBytesLength(this.userId) > 255) {
-            showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
-            return;
-        }
+        if (noCorrectUserIdOrDevice()) return;
         if (lastSingleOpen != null &&
                 lastSingleOpen.equals(storyId)) return;
         lastSingleOpen = storyId;
@@ -2103,6 +2113,14 @@ public class InAppStoryManager {
             return apiKey;
         }
 
+        public boolean gameDemoMode() {
+            return gameDemoMode;
+        }
+
+        public boolean isDeviceIdEnabled() {
+            return deviceIdEnabled;
+        }
+
         public String testKey() {
             return testKey;
         }
@@ -2119,7 +2137,13 @@ public class InAppStoryManager {
             return placeholders;
         }
 
+        public Map<String, ImagePlaceholderValue> imagePlaceholders() {
+            return imagePlaceholders;
+        }
+
         boolean sandbox;
+        boolean gameDemoMode;
+        boolean deviceIdEnabled = true;
 
         int cacheSize;
         String userId;
@@ -2135,6 +2159,16 @@ public class InAppStoryManager {
         @Deprecated
         public Builder sandbox(boolean sandbox) {
             Builder.this.sandbox = sandbox;
+            return Builder.this;
+        }
+
+        public Builder gameDemoMode(boolean gameDemoMode) {
+            Builder.this.gameDemoMode = gameDemoMode;
+            return Builder.this;
+        }
+
+        public Builder isDeviceIDEnabled(boolean deviceIdEnabled) {
+            Builder.this.deviceIdEnabled = deviceIdEnabled;
             return Builder.this;
         }
 

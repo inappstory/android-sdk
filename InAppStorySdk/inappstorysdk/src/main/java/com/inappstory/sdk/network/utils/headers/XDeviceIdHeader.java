@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.provider.Settings;
 
+import com.inappstory.sdk.InAppStoryManager;
+
 public class XDeviceIdHeader implements Header {
     private Context appContext;
 
@@ -22,11 +24,14 @@ public class XDeviceIdHeader implements Header {
     @Override
     public String getValue() {
         String deviceId = null;
-        if (appContext != null)
-            deviceId = Settings.Secure.getString(
-                    appContext.getContentResolver(),
-                    Settings.Secure.ANDROID_ID
-            );
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager != null && manager.isDeviceIDEnabled()) {
+            if (appContext != null)
+                deviceId = Settings.Secure.getString(
+                        appContext.getContentResolver(),
+                        Settings.Secure.ANDROID_ID
+                );
+        }
         return deviceId != null ? deviceId : "-";
     }
 }

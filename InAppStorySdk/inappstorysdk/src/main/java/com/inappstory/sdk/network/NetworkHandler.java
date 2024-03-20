@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Pair;
 
 
+import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.network.annotations.api.Body;
 import com.inappstory.sdk.network.annotations.api.DELETE;
 import com.inappstory.sdk.network.annotations.api.ExcludeHeaders;
@@ -138,6 +139,8 @@ public final class NetworkHandler implements InvocationHandler {
             boolean isFormEncoded,
             boolean hasBody
     ) {
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        boolean hasDeviceId = manager == null || manager.isDeviceIDEnabled();
         List<String> excludeList = Arrays.asList(exclude);
         List<Header> resHeaders = new ArrayList<>();
         if (!excludeList.contains(HeadersKeys.ACCEPT))
@@ -154,7 +157,7 @@ public final class NetworkHandler implements InvocationHandler {
             resHeaders.add(new AuthSessionIdHeader());
         if (!excludeList.contains(HeadersKeys.CONTENT_TYPE))
             resHeaders.add(new ContentTypeHeader(isFormEncoded, hasBody));
-        if (!excludeList.contains(HeadersKeys.DEVICE_ID))
+        if (!excludeList.contains(HeadersKeys.DEVICE_ID) && hasDeviceId)
             resHeaders.add(new XDeviceIdHeader(context));
         if (!excludeList.contains(HeadersKeys.REQUEST_ID))
             resHeaders.add(new XRequestIdHeader());
