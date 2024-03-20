@@ -686,15 +686,18 @@ public class StoriesList extends RecyclerView {
 
 
     public void loadStoriesInner() {
-
-        if (InAppStoryManager.getInstance() == null) {
-            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "'InAppStoryManager' cannot be null");
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            getContext(),
+                            R.string.ias_npe_manager
+                    )
+            );
             return;
         }
-        if (InAppStoryManager.getInstance().getUserId() == null) {
-            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "Parameter 'userId' cannot be null");
-            return;
-        }
+        if (manager.noCorrectUserIdOrDevice()) return;
 
         checkAppearanceManager();
         InAppStoryManager.debugSDKCalls("StoriesList_loadStoriesInner", "");

@@ -266,7 +266,8 @@ public class InAppStoryManager {
 
     /**
      * use to close story reader
-     * @param forceClose (forceClose) - close reader immediately without animation
+     *
+     * @param forceClose               (forceClose) - close reader immediately without animation
      * @param forceCloseReaderCallback (forceCloseReaderCallback) - triggers after reader is closed and only if {@code forceClose == true}
      */
     public static void closeStoryReader(boolean forceClose, ForceCloseReaderCallback forceCloseReaderCallback) {
@@ -467,14 +468,14 @@ public class InAppStoryManager {
                     if (!oldList.contains(newTag)) {
                         this.tags = new ArrayList<>(newList);
                         clearCachedLists();
-                   //     forceCloseStoryReader();
+                        //     forceCloseStoryReader();
                         break;
                     }
                 }
             } else {
                 this.tags = new ArrayList<>(newList);
                 clearCachedLists();
-              //  forceCloseStoryReader();
+                //  forceCloseStoryReader();
             }
         }
     }
@@ -1028,6 +1029,8 @@ public class InAppStoryManager {
                         .getResources().getString(R.string.csApiKey),
                 builder.testKey != null ? builder.testKey : null,
                 builder.userId,
+                builder.gameDemoMode,
+                builder.deviceIdEnabled,
                 builder.tags != null ? builder.tags : null,
                 builder.placeholders != null ? builder.placeholders : null,
                 builder.imagePlaceholders != null ? builder.imagePlaceholders : null
@@ -1122,11 +1125,31 @@ public class InAppStoryManager {
 
     private boolean gameDemoMode = false;
 
+    public boolean isDeviceIDEnabled() {
+        return isDeviceIDEnabled;
+    }
+
+    private boolean isDeviceIDEnabled = true;
+
+    public boolean noCorrectUserIdOrDevice() {
+        if (this.userId == null || StringsUtils.getBytesLength(this.userId) > 255) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+            return true;
+        }
+        if (!isDeviceIDEnabled && userId.isEmpty()) {
+            showELog(IAS_ERROR_TAG, StringsUtils.getErrorStringFromContext(context, R.string.ias_usage_without_user_and_device));
+            return true;
+        }
+        return false;
+    }
+
     private void initManager(Context context,
                              String cmsUrl,
                              String apiKey,
                              String testKey,
                              String userId,
+                             boolean gameDemoMode,
+                             boolean isDeviceIDEnabled,
                              ArrayList<String> tags,
                              Map<String, String> placeholders,
                              Map<String, ImagePlaceholderValue> imagePlaceholders) {
@@ -1143,6 +1166,8 @@ public class InAppStoryManager {
         this.API_KEY = apiKey;
         this.TEST_KEY = testKey;
         this.userId = userId;
+        this.gameDemoMode = gameDemoMode;
+        this.isDeviceIDEnabled = isDeviceIDEnabled;
         if (!isNull()) {
             localHandler.removeCallbacksAndMessages(null);
             localDestroy();
@@ -1318,8 +1343,16 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) {
+
+                if (noCorrectUserIdOrDevice()) return;
                 if (tags != null && getBytesLength(TextUtils.join(",", tags)) > TAG_LIMIT) {
-                    showELog(IAS_ERROR_TAG, getErrorStringFromContext(context, R.string.ias_setter_user_length_error));
+                    showELog(
+                            IAS_ERROR_TAG,
+                            getErrorStringFromContext(
+                                    context,
+                                    R.string.ias_builder_tags_length_error
+                            )
+                    );
                     return;
                 }
                 SessionManager.getInstance().useOrOpenSession(new OpenSessionCallback() {
@@ -1409,8 +1442,6 @@ public class InAppStoryManager {
                 }, 1000);
             }
         });
-
-
     }
 
     private void loadOnboardingError(String feed) {
@@ -1531,17 +1562,7 @@ public class InAppStoryManager {
         InAppStoryService.useInstance(new UseServiceInstanceCallback() {
             @Override
             public void use(@NonNull final InAppStoryService service) {
-                if (InAppStoryManager.this.userId == null ||
-                        getBytesLength(InAppStoryManager.this.userId) > 255) {
-                    showELog(
-                            IAS_ERROR_TAG,
-                            getErrorStringFromContext(
-                                    context,
-                                    R.string.ias_setter_user_length_error
-                            )
-                    );
-                    return;
-                }
+                if (noCorrectUserIdOrDevice()) return;
                 if (lastSingleOpen != null &&
                         lastSingleOpen.equals(storyId)) return;
                 lastSingleOpen = storyId;
@@ -1791,7 +1812,14 @@ public class InAppStoryManager {
             return placeholders;
         }
 
+
+        public Map<String, ImagePlaceholderValue> imagePlaceholders() {
+            return imagePlaceholders;
+        }
+
         boolean sandbox;
+        boolean gameDemoMode;
+        boolean deviceIdEnabled = true;
 
         int cacheSize;
         String userId;
@@ -1803,6 +1831,17 @@ public class InAppStoryManager {
 
         public Builder() {
         }
+
+        public Builder gameDemoMode(boolean gameDemoMode) {
+            Builder.this.gameDemoMode = gameDemoMode;
+            return Builder.this;
+        }
+
+        public Builder isDeviceIDEnabled(boolean deviceIdEnabled) {
+            Builder.this.deviceIdEnabled = deviceIdEnabled;
+            return Builder.this;
+        }
+
 
         public Builder context(Context context) {
             Builder.this.context = context;

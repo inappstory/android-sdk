@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.inappstory.sdk.AppearanceManager;
 import com.inappstory.sdk.InAppStoryManager;
 import com.inappstory.sdk.InAppStoryService;
+import com.inappstory.sdk.R;
 import com.inappstory.sdk.network.JsonParser;
 import com.inappstory.sdk.stories.api.models.Session;
 import com.inappstory.sdk.stories.api.models.callbacks.LoadStoriesCallback;
@@ -31,6 +32,7 @@ import com.inappstory.sdk.stories.ui.ScreensManager;
 import com.inappstory.sdk.stories.ui.list.StoryTouchListener;
 import com.inappstory.sdk.stories.utils.Sizes;
 import com.inappstory.sdk.ugc.list.OnUGCItemClick;
+import com.inappstory.sdk.utils.StringsUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -392,14 +394,18 @@ public class UgcStoriesList extends RecyclerView {
 
     private void loadStoriesInner(final String payload) {
         lastPayload = payload;
-        if (InAppStoryManager.getInstance() == null) {
-            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "'InAppStoryManager' cannot be null");
+        InAppStoryManager manager = InAppStoryManager.getInstance();
+        if (manager == null) {
+            InAppStoryManager.showELog(
+                    InAppStoryManager.IAS_ERROR_TAG,
+                    StringsUtils.getErrorStringFromContext(
+                            getContext(),
+                            R.string.ias_npe_manager
+                    )
+            );
             return;
         }
-        if (InAppStoryManager.getInstance().getUserId() == null) {
-            InAppStoryManager.showELog(InAppStoryManager.IAS_ERROR_TAG, "Parameter 'userId' cannot be null");
-            return;
-        }
+        if (manager.noCorrectUserIdOrDevice()) return;
 
         checkAppearanceManager();
         final String listUid = ProfilingManager.getInstance().addTask("widget_init");
