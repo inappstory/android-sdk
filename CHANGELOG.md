@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version *1.17.16 (816)*
+----------------------------
+
+* New: added InAppStoryManager.Builder.isDeviceIDEnabled setting
+* New: added InAppStoryManager.Builder.gameDemoMode setting
+
 Version *1.17.15 (815)*
 ----------------------------
 
