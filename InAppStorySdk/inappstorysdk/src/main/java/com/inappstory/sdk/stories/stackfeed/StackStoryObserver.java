@@ -183,7 +183,7 @@ public class StackStoryObserver implements IStackFeedActions {
         }
     }
 
-    public void onUpdate(int storyId) {
+    public void onUpdate(int storyId, String listId) {
         int openedIndex = -1;
         for (int i = 0; i < stories.size(); i++) {
             if (storyId == stories.get(i).id) {
@@ -192,14 +192,15 @@ public class StackStoryObserver implements IStackFeedActions {
                 break;
             }
         }
+        if (!listId.equals(this.listId())) return;
         if (openedIndex < 0) return;
-        int newIndex = stories.size() - 1;
-        for (int i = 0; i < stories.size(); i++) {
+        int newIndex = (openedIndex + 1) % stories.size();
+       /* for (int i = 0; i < stories.size(); i++) {
             if (!stories.get(i).isOpened) {
                 newIndex = i;
                 break;
             }
-        }
+        }*/
         checkLastIndex(newIndex, stackStoryUpdated);
     }
 

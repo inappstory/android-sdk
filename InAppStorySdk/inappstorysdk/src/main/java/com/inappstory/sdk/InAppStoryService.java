@@ -520,7 +520,7 @@ public class InAppStoryService {
                 @Override
                 public void use(@NonNull InAppStoryService service) {
                     for (StackStoryObserver storyObserver : stackStoryObservers.values()) {
-                        storyObserver.onUpdate(storyId);
+                        storyObserver.onUpdate(storyId, listID);
                     }
                     for (ListManager sub : service.getListSubscribers()) {
                         sub.changeStory(storyId, listID);
